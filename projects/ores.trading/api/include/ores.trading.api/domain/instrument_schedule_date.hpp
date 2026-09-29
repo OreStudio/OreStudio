@@ -74,7 +74,7 @@ struct instrument_schedule_date final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which list of the instrument states the owning schedule: bond, trs_funding, repo,
+     * @brief Which list of the instrument states the owning schedule: trs_funding, repo,
      * ascot_swap, option or trs.
      */
     std::string owner_role;

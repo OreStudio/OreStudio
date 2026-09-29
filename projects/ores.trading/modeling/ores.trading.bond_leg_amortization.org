@@ -13,7 +13,7 @@
 #+created: 2026-09-11
 #+updated: 2026-09-11
 
-One row per step of a bond leg's amortization schedule, keyed to the
+One row per step of a leg's amortization schedule, keyed to the
 leg and the step's ordinal.
 
 A step is not a bare amount. The schema states a type that says how
@@ -52,8 +52,8 @@ The trade this amortization belongs to.
 :primary_key: true
 :END:
 
-Which leg list of the instrument the leg holding this step belongs to:
-=bond=, =trs_funding=, =repo= or =ascot_swap=.
+Which leg list of the trade the leg holding this step belongs to:
+=trs_funding=, =repo= or =ascot_swap=.
 
 ** leg_number
 :PROPERTIES:
@@ -158,7 +158,7 @@ trigger checks it there.
 
 | expression                                                  |
 |-------------------------------------------------------------|
-| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_role" in ('trs_funding', 'repo', 'ascot_swap') |
 | "leg_number" > 0                                            |
 | "sequence_number" > 0                                       |
 | "amortization_type" in ('FixedAmount', 'RelativeToInitialNotional', 'RelativeToPreviousNotional', 'Annuity', 'LinearToMaturity') |

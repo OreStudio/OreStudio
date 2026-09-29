@@ -24,7 +24,7 @@
  *
  * Bond Leg Amortization Table
  *
- * One row per step of a bond leg's amortization schedule, keyed to the
+ * One row per step of a leg's amortization schedule, keyed to the
  * leg and the step's ordinal.
  *
  * A step is not a bare amount. The schema states a type that says how
@@ -68,7 +68,7 @@ create table if not exists "ores_trading_bond_leg_amortizations_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_role" <> ''),
-    check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
+    check ("leg_role" in ('trs_funding', 'repo', 'ascot_swap')),
     check ("leg_number" > 0),
     check ("sequence_number" > 0),
     check ("amortization_type" in ('FixedAmount', 'RelativeToInitialNotional', 'RelativeToPreviousNotional', 'Annuity', 'LinearToMaturity'))

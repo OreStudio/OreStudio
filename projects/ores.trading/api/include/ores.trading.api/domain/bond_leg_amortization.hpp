@@ -37,7 +37,7 @@ namespace ores::trading::domain {
 /**
  * @brief One step of a bond leg's amortization schedule, keyed to the leg and the step's ordinal.
  *
- * One row per step of a bond leg's amortization schedule, keyed to the
+ * One row per step of a leg's amortization schedule, keyed to the
  * leg and the step's ordinal.
  *
  * A step is not a bare amount. The schema states a type that says how
@@ -66,8 +66,8 @@ struct bond_leg_amortization final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which leg list of the instrument the leg holding this step belongs to: bond,
-     * trs_funding, repo or ascot_swap.
+     * @brief Which leg list of the trade the leg holding this step belongs to: trs_funding, repo or
+     * ascot_swap.
      */
     std::string leg_role;
 

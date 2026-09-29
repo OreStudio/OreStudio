@@ -25,6 +25,12 @@
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_amortization_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_rate_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/bond_leg_rate_repository.hpp"
@@ -58,6 +64,12 @@ using ores::trading::domain::bond_instrument;
 using ores::trading::domain::bond_issue;
 using ores::trading::domain::bond_issue_call_date;
 using ores::trading::domain::bond_issue_conversion_target;
+using ores::trading::domain::bond_issue_leg;
+using ores::trading::domain::bond_issue_leg_amortization;
+using ores::trading::domain::bond_issue_leg_amount;
+using ores::trading::domain::bond_issue_leg_rate;
+using ores::trading::domain::bond_issue_leg_schedule;
+using ores::trading::domain::bond_issue_leg_schedule_date;
 using ores::trading::domain::bond_leg;
 using ores::trading::domain::bond_leg_amortization;
 using ores::trading::domain::bond_leg_amount;
@@ -77,6 +89,12 @@ using ores::trading::repository::bond_instrument_repository;
 using ores::trading::repository::bond_issue_call_date_repository;
 using ores::trading::repository::bond_issue_conversion_target_repository;
 using ores::trading::repository::bond_issue_repository;
+using ores::trading::repository::bond_issue_leg_amortization_repository;
+using ores::trading::repository::bond_issue_leg_amount_repository;
+using ores::trading::repository::bond_issue_leg_rate_repository;
+using ores::trading::repository::bond_issue_leg_repository;
+using ores::trading::repository::bond_issue_leg_schedule_date_repository;
+using ores::trading::repository::bond_issue_leg_schedule_repository;
 using ores::trading::repository::bond_leg_amortization_repository;
 using ores::trading::repository::bond_leg_amount_repository;
 using ores::trading::repository::bond_leg_rate_repository;
@@ -287,54 +305,6 @@ bond_leg make_leg(const stamps& s,
     return r;
 }
 
-bond_leg_amount make_amount(const stamps& s,
-                            const boost::uuids::uuid& trade_id,
-                            const std::string& leg_role,
-                            int leg_number,
-                            const std::string& amount_role,
-                            int sequence_number,
-                            const char* value) {
-    bond_leg_amount r;
-    stamp(r, s);
-    r.trade_id = trade_id;
-    r.leg_role = leg_role;
-    r.leg_number = leg_number;
-    r.amount_role = amount_role;
-    r.sequence_number = sequence_number;
-    r.value = ores::utility::decimal::decimal::from_string(value).value();
-    return r;
-}
-
-bond_leg_rate make_rate(const stamps& s,
-                        const boost::uuids::uuid& trade_id,
-                        const std::string& leg_role,
-                        int leg_number,
-                        const std::string& rate_kind) {
-    bond_leg_rate r;
-    stamp(r, s);
-    r.trade_id = trade_id;
-    r.leg_role = leg_role;
-    r.leg_number = leg_number;
-    r.rate_kind = rate_kind;
-    return r;
-}
-
-bond_leg_amortization make_amortization(const stamps& s,
-                                        const boost::uuids::uuid& trade_id,
-                                        const std::string& leg_role,
-                                        int leg_number,
-                                        int sequence_number) {
-    bond_leg_amortization r;
-    stamp(r, s);
-    r.trade_id = trade_id;
-    r.leg_role = leg_role;
-    r.leg_number = leg_number;
-    r.sequence_number = sequence_number;
-    r.amortization_type = "FixedAmount";
-    r.value = ores::utility::decimal::decimal::from_string("100").value();
-    return r;
-}
-
 instrument_schedule make_schedule(const stamps& s,
                                   const boost::uuids::uuid& trade_id,
                                   const std::string& owner_role,
@@ -366,6 +336,100 @@ instrument_schedule_date make_schedule_date(const stamps& s,
     r.trade_id = trade_id;
     r.owner_role = owner_role;
     r.owner_number = owner_number;
+    r.schedule_role = schedule_role;
+    r.schedule_sequence_number = schedule_sequence_number;
+    r.sequence_number = sequence_number;
+    r.schedule_date = ores::platform::time::datetime::from_iso8601_date(schedule_date);
+    return r;
+}
+
+/*
+ * The security's own rows. A bond's legs belong to the issue rather than
+ * to the trade, so one set serves every instrument of the ISIN.
+ */
+bond_issue_leg make_issue_leg(const stamps& s,
+                              const boost::uuids::uuid& issue_id,
+                              int leg_number) {
+    bond_issue_leg r;
+    stamp(r, s);
+    r.issue_id = issue_id;
+    r.leg_number = leg_number;
+    r.payer = true;
+    r.leg_type = "Fixed";
+    r.currency = "EUR";
+    r.day_counter = "ACT/365";
+    return r;
+}
+
+bond_issue_leg_amount make_issue_amount(const stamps& s,
+                                        const boost::uuids::uuid& issue_id,
+                                        int leg_number,
+                                        const std::string& amount_role,
+                                        int sequence_number,
+                                        const char* value) {
+    bond_issue_leg_amount r;
+    stamp(r, s);
+    r.issue_id = issue_id;
+    r.leg_number = leg_number;
+    r.amount_role = amount_role;
+    r.sequence_number = sequence_number;
+    r.value = ores::utility::decimal::decimal::from_string(value).value();
+    return r;
+}
+
+bond_issue_leg_rate make_issue_rate(const stamps& s,
+                                    const boost::uuids::uuid& issue_id,
+                                    int leg_number,
+                                    const std::string& rate_kind) {
+    bond_issue_leg_rate r;
+    stamp(r, s);
+    r.issue_id = issue_id;
+    r.leg_number = leg_number;
+    r.rate_kind = rate_kind;
+    return r;
+}
+
+bond_issue_leg_amortization make_issue_amortization(const stamps& s,
+                                                    const boost::uuids::uuid& issue_id,
+                                                    int leg_number,
+                                                    int sequence_number) {
+    bond_issue_leg_amortization r;
+    stamp(r, s);
+    r.issue_id = issue_id;
+    r.leg_number = leg_number;
+    r.sequence_number = sequence_number;
+    r.amortization_type = "FixedAmount";
+    r.value = ores::utility::decimal::decimal::from_string("100").value();
+    return r;
+}
+
+bond_issue_leg_schedule make_issue_schedule(const stamps& s,
+                                            const boost::uuids::uuid& issue_id,
+                                            int leg_number,
+                                            const std::string& schedule_role,
+                                            int sequence_number,
+                                            const std::string& schedule_kind) {
+    bond_issue_leg_schedule r;
+    stamp(r, s);
+    r.issue_id = issue_id;
+    r.leg_number = leg_number;
+    r.schedule_role = schedule_role;
+    r.sequence_number = sequence_number;
+    r.schedule_kind = schedule_kind;
+    return r;
+}
+
+bond_issue_leg_schedule_date make_issue_schedule_date(const stamps& s,
+                                                      const boost::uuids::uuid& issue_id,
+                                                      int leg_number,
+                                                      const std::string& schedule_role,
+                                                      int schedule_sequence_number,
+                                                      int sequence_number,
+                                                      const std::string& schedule_date) {
+    bond_issue_leg_schedule_date r;
+    stamp(r, s);
+    r.issue_id = issue_id;
+    r.leg_number = leg_number;
     r.schedule_role = schedule_role;
     r.schedule_sequence_number = schedule_sequence_number;
     r.sequence_number = sequence_number;
@@ -477,39 +541,43 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
-    auto leg = make_leg(s, trade_id, "bond", 1);
+    auto leg = make_issue_leg(s, issue.issue_id, 1);
     leg.last_period_day_counter = "ACT/360";
     leg.notional_payment_lag = 2;
     leg.settlement_fx_index = "EUR/USD";
     leg.settlement_fixing_date = "2024-04-15";
-    bond_leg_repository().write(ctx, leg);
+    bond_issue_leg_repository().write(ctx, leg);
 
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "notional", 1, "1000"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "notional", 1, "1000"));
     // Written in reverse ordinal order, so the order read back is the
     // query's doing rather than the insert order's.
-    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "rate", 2, "5"));
-    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "rate", 1, "4"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "rate", 2, "5"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "rate", 1, "4"));
 
-    bond_leg_rate_repository().write(ctx, make_rate(s, trade_id, "bond", 1, "fixed"));
+    bond_issue_leg_rate_repository().write(ctx, make_issue_rate(s, issue.issue_id, 1, "fixed"));
 
-    auto amortization = make_amortization(s, trade_id, "bond", 1, 1);
+    auto amortization = make_issue_amortization(s, issue.issue_id, 1, 1);
     amortization.end_date = "2030-01-15";
-    bond_leg_amortization_repository().write(ctx, amortization);
+    bond_issue_leg_amortization_repository().write(ctx, amortization);
 
-    auto rules = make_schedule(s, trade_id, "bond", 1, "schedule", 1, "rules");
+    auto rules = make_issue_schedule(s, issue.issue_id, 1, "schedule", 1, "rules");
     rules.start_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     rules.tenor = "1Y";
     rules.calendar = "TARGET";
     rules.convention = "ModifiedFollowing";
-    instrument_schedule_repository().write(ctx, rules);
+    bond_issue_leg_schedule_repository().write(ctx, rules);
 
-    auto payment_dates = make_schedule(s, trade_id, "bond", 1, "payment_dates", 1, "dates");
-    instrument_schedule_repository().write(ctx, payment_dates);
-    instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, trade_id, "bond", 1, "payment_dates", 1, 1, "2024-07-15"));
-    instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, trade_id, "bond", 1, "payment_dates", 1, 2, "2025-01-15"));
+    auto payment_dates = make_issue_schedule(s, issue.issue_id, 1, "payment_dates", 1, "dates");
+    bond_issue_leg_schedule_repository().write(ctx, payment_dates);
+    bond_issue_leg_schedule_date_repository().write(
+        ctx,
+        make_issue_schedule_date(s, issue.issue_id, 1, "payment_dates", 1, 1, "2024-07-15"));
+    bond_issue_leg_schedule_date_repository().write(
+        ctx,
+        make_issue_schedule_date(s, issue.issue_id, 1, "payment_dates", 1, 2, "2025-01-15"));
 
     const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
@@ -567,9 +635,9 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     bond_instrument_repository().write(ctx, instr);
     const auto trade_id = instr.identity.trade_id;
 
-    bond_leg_repository().write(ctx, make_leg(s, trade_id, "bond", 1));
+    bond_issue_leg_repository().write(ctx, make_issue_leg(s, issue.issue_id, 1));
 
-    auto rate = make_rate(s, trade_id, "bond", 1, "floating");
+    auto rate = make_issue_rate(s, issue.issue_id, 1, "floating");
     rate.index = "EURIBOR-6M";
     rate.is_in_arrears = false;
     rate.fixing_days = 2;
@@ -577,32 +645,36 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     rate.front_stub_long_index = "EURIBOR-6M";
     rate.front_stub_rounding_precision = 5;
     rate.observation_shift = true;
-    bond_leg_rate_repository().write(ctx, rate);
+    bond_issue_leg_rate_repository().write(ctx, rate);
 
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, trade_id, "bond", 1, "notional", 1, "1000000"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "spread", 2, "0.75"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "spread", 1, "0.5"));
-    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "cap", 1, "6"));
-    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "floor", 1, "1"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "gearing", 1, "1.5"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "notional", 1, "1000000"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "spread", 2, "0.75"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "spread", 1, "0.5"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "cap", 1, "6"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "floor", 1, "1"));
+    bond_issue_leg_amount_repository().write(
+        ctx, make_issue_amount(s, issue.issue_id, 1, "gearing", 1, "1.5"));
 
-    auto fixing = make_schedule(s, trade_id, "bond", 1, "fixing_schedule", 1, "dates");
+    auto fixing = make_issue_schedule(s, issue.issue_id, 1, "fixing_schedule", 1, "dates");
     fixing.convention = "Following";
-    instrument_schedule_repository().write(ctx, fixing);
-    instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 1, "2024-04-15"));
-    instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 2, "2024-10-15"));
+    bond_issue_leg_schedule_repository().write(ctx, fixing);
+    bond_issue_leg_schedule_date_repository().write(
+        ctx,
+        make_issue_schedule_date(s, issue.issue_id, 1, "fixing_schedule", 1, 1, "2024-04-15"));
+    bond_issue_leg_schedule_date_repository().write(
+        ctx,
+        make_issue_schedule_date(s, issue.issue_id, 1, "fixing_schedule", 1, 2, "2024-10-15"));
 
-    auto reset = make_schedule(s, trade_id, "bond", 1, "reset_schedule", 1, "rules");
+    auto reset = make_issue_schedule(s, issue.issue_id, 1, "reset_schedule", 1, "rules");
     reset.calendar = "TARGET";
     reset.convention = "ModifiedFollowing";
     reset.tenor = "6M";
-    instrument_schedule_repository().write(ctx, reset);
+    bond_issue_leg_schedule_repository().write(ctx, reset);
 
     const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
@@ -644,14 +716,14 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     CHECK(floating.reset_schedule.rules[0].calendar == "TARGET");
 }
 
-TEST_CASE("read_instruments_keeps_each_leg_in_its_own_role", tags) {
+TEST_CASE("read_instruments_keeps_two_trades_of_one_security_apart", tags) {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);
 
     const auto issue = make_issue(s, "XS0000000007");
     bond_issue_repository().write(ctx, issue);
-    const auto first_instrument = make_instrument(s, issue.issue_id, "Bond");
+    const auto first_instrument = make_instrument(s, issue.issue_id, "BondTRS");
     const auto second_instrument = make_instrument(s, issue.issue_id, "BondTRS");
     bond_instrument_repository().write(ctx, first_instrument);
     bond_instrument_repository().write(ctx, second_instrument);
@@ -659,16 +731,21 @@ TEST_CASE("read_instruments_keeps_each_leg_in_its_own_role", tags) {
     const auto first_id_uuid = first_instrument.identity.trade_id;
     const auto second_id_uuid = second_instrument.identity.trade_id;
 
-    // The second leg is written first, so the order read back is the
-    // leg's own order rather than the insert order's.
-    auto second_leg = make_leg(s, first_id_uuid, "bond", 2);
+    // The security states the bond's legs once, and both trades read the
+    // same rows. The second leg is written first, so the order read back
+    // is the leg's own order rather than the insert order's.
+    auto second_leg = make_issue_leg(s, issue.issue_id, 2);
     second_leg.leg_type = "Floating";
-    bond_leg_repository().write(ctx, second_leg);
-    bond_leg_repository().write(ctx, make_leg(s, first_id_uuid, "bond", 1));
+    bond_issue_leg_repository().write(ctx, second_leg);
+    bond_issue_leg_repository().write(ctx, make_issue_leg(s, issue.issue_id, 1));
 
-    auto funding = make_leg(s, second_id_uuid, "trs_funding", 1);
-    funding.leg_type = "Floating";
-    bond_leg_repository().write(ctx, funding);
+    // Each trade states its own funding leg. Keying it on the trade is
+    // what stops the two trades of one ISIN from sharing it, which is the
+    // collision that splitting the leg family by parent prevents.
+    bond_leg_repository().write(ctx, make_leg(s, first_id_uuid, "trs_funding", 1));
+    auto second_funding = make_leg(s, second_id_uuid, "trs_funding", 1);
+    second_funding.leg_type = "Floating";
+    bond_leg_repository().write(ctx, second_funding);
 
     const auto first_id = boost::uuids::to_string(first_id_uuid);
     const auto second_id = boost::uuids::to_string(second_id_uuid);
@@ -677,17 +754,22 @@ TEST_CASE("read_instruments_keeps_each_leg_in_its_own_role", tags) {
 
     REQUIRE(instruments.size() == 2);
 
-    // One instrument's legs must not reach the other's container.
+    // Both trades see the security's two legs.
     const auto& first = instruments.at(first_id);
     REQUIRE(first.bond_legs.size() == 2);
     CHECK(first.bond_legs[0].leg_type == "Fixed");
     CHECK(first.bond_legs[1].leg_type == "Floating");
-    CHECK(!first.trs_funding_leg.leg_type.has_value());
 
     const auto& second = instruments.at(second_id);
-    CHECK(second.bond_legs.empty());
+    REQUIRE(second.bond_legs.size() == 2);
+    CHECK(second.bond_legs[0].leg_type == "Fixed");
+    CHECK(second.bond_legs[1].leg_type == "Floating");
+
+    // Each trade keeps the funding leg it stated.
+    CHECK(first.trs_funding_leg.leg_type == "Fixed");
     CHECK(second.trs_funding_leg.leg_type == "Floating");
     CHECK(!second.repo_leg.leg_type.has_value());
+    CHECK(!second.ascot_swap_leg.leg_type.has_value());
 }
 
 TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {

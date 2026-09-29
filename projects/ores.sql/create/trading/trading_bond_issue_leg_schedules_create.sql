@@ -1,0 +1,200 @@
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Bond Issue Leg Schedule Table
+ *
+ * One row per schedule entry a bond issue's leg states, keyed to the
+ * issue, the leg that states it, the schedule's role and the entry's
+ * ordinal within that role.
+ *
+ * The ORE schema states a schedule as a choice: a rule block that a
+ * calendar expands, or an explicit list of dates. The generated code
+ * mirrors the choice as two lists on bond_schedule_data, and the
+ * mapping container carries both. This table holds the rule arm's
+ * scalars and the schedule_kind column records which arm the document
+ * chose, so a reader rebuilds the arm it read rather than guessing. The
+ * date arm's rows land in the keyed child table.
+ *
+ * Both lists are unbounded and a document interleaves their entries, so
+ * the role alone does not identify a row. sequence_number is the
+ * entry's ordinal within its leg's list for that role, counting from
+ * one, and it preserves the order the document stated.
+ *
+ * A bond leg states four schedules: its own schedule, its payment
+ * schedule, and, when the leg is floating, the fixing and reset
+ * schedules. The role column names which one, so one table holds all
+ * four.
+ *
+ * The security owns the leg, so it owns the schedules the leg states:
+ * one schedule serves every instrument of that ISIN. The trade-keyed
+ * instrument_schedule holds the schedules of the three product legs
+ * and of the option and return blocks, whose owners are the trade's own.
+ *
+ * Every scalar the schema declares optional is nullable here and an
+ * std::optional in C++, so a member the document states and the row
+ * cannot hold stays distinguishable from one the document omits.
+ */
+
+create table if not exists "ores_trading_bond_issue_leg_schedules_tbl" (
+    "issue_id" uuid not null,
+    "leg_number" integer not null,
+    "schedule_role" text not null,
+    "sequence_number" integer not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
+    "schedule_kind" text not null,
+    "start_date" date null,
+    "end_date" date null,
+    "adjust_end_date_to_previous_month_end" text null,
+    "tenor" text null,
+    "calendar" text null,
+    "convention" text null,
+    "term_convention" text null,
+    "rule" text null,
+    "end_of_month" text null,
+    "end_of_month_convention" text null,
+    "first_date" date null,
+    "last_date" date null,
+    "remove_first_date" boolean null,
+    "remove_last_date" boolean null,
+    "include_duplicate_dates" text null,
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key (tenant_id, issue_id, leg_number, schedule_role, sequence_number, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        issue_id WITH =,
+        leg_number WITH =,
+        schedule_role WITH =,
+        sequence_number WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to"),
+    check ("issue_id" <> ores_utility_nil_uuid_fn()),
+    check ("schedule_role" <> ''),
+    check ("schedule_kind" in ('rules', 'dates')),
+    check ("leg_number" > 0),
+    check ("sequence_number" > 0)
+);
+
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists bond_issue_leg_schedules_version_uniq_idx
+on "ores_trading_bond_issue_leg_schedules_tbl" (tenant_id, issue_id, leg_number, schedule_role, sequence_number, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists bond_issue_leg_schedules_id_uniq_idx
+on "ores_trading_bond_issue_leg_schedules_tbl" (tenant_id, issue_id, leg_number, schedule_role, sequence_number)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists bond_issue_leg_schedules_tenant_idx
+on "ores_trading_bond_issue_leg_schedules_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create or replace function ores_trading_bond_issue_leg_schedules_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate issue_id (soft FK to ores_trading_bond_issues_tbl)
+    if not exists (
+        select 1 from ores_trading_bond_issues_tbl
+        where tenant_id = NEW.tenant_id
+          and issue_id = NEW.issue_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid issue_id: %. Bond issue must exist for tenant.', NEW.issue_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
+    select version into current_version
+    from "ores_trading_bond_issue_leg_schedules_tbl"
+    where tenant_id = NEW.tenant_id
+      and issue_id = NEW.issue_id and leg_number = NEW.leg_number and schedule_role = NEW.schedule_role and sequence_number = NEW.sequence_number
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                raise exception
+                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
+                    using errcode = '23505';
+            end if;
+        elsif NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
+        update "ores_trading_bond_issue_leg_schedules_tbl"
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and issue_id = NEW.issue_id and leg_number = NEW.leg_number and schedule_role = NEW.schedule_role and sequence_number = NEW.sequence_number
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < clock_timestamp();
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    return NEW;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_trading_bond_issue_leg_schedules_insert_trg
+before insert on "ores_trading_bond_issue_leg_schedules_tbl"
+for each row execute function ores_trading_bond_issue_leg_schedules_insert_fn();
+
+create or replace rule ores_trading_bond_issue_leg_schedules_delete_rule as
+on delete to "ores_trading_bond_issue_leg_schedules_tbl" do instead (
+    update "ores_trading_bond_issue_leg_schedules_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and issue_id = OLD.issue_id and leg_number = OLD.leg_number and schedule_role = OLD.schedule_role and sequence_number = OLD.sequence_number
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);

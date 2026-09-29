@@ -13,7 +13,7 @@
 #+created: 2026-09-11
 #+updated: 2026-09-11
 
-One row per numbered amount a bond leg states, keyed to the leg, the
+One row per numbered amount a leg states, keyed to the leg, the
 role the amount plays and its ordinal in the document's list.
 
 The ORE schema spells the same pair of members six times: a value and
@@ -54,8 +54,8 @@ The trade this amount belongs to.
 :primary_key: true
 :END:
 
-Which leg list of the instrument the leg holding this amount belongs
-to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+Which leg list of the trade the leg holding this amount belongs
+to: =trs_funding=, =repo= or =ascot_swap=.
 
 ** leg_number
 :PROPERTIES:
@@ -152,7 +152,7 @@ trigger checks it there.
 
 | expression                                                  |
 |-------------------------------------------------------------|
-| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_role" in ('trs_funding', 'repo', 'ascot_swap') |
 | "leg_number" > 0                                            |
 | "sequence_number" > 0                                       |
 

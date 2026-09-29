@@ -41,12 +41,17 @@
  * entry's ordinal within its owner's list for that role, counting from
  * one, and it preserves the order the document stated.
  *
- * A bond leg states four schedules: its own schedule, its payment
+ * A product leg states four schedules: its own schedule, its payment
  * schedule, and, when the leg is floating, the fixing and reset
  * schedules. The role column names which one, so one table holds all
  * four. The column also carries the schedules that hang off an option
  * block and off a total return swap, so the table is keyed by owner
  * rather than by leg.
+ *
+ * The bond's own legs are stated by the security, so the schedules they
+ * state live in bond_issue_leg_schedule, keyed by the issue. This
+ * table holds the schedules of the trade's own owners: the three product
+ * legs, the option block and the return block.
  *
  * The nine bond tables carry no schedule column, and the org models of
  * the family record this table as the destination. It is keyed by the
@@ -103,7 +108,7 @@ create table if not exists "ores_trading_instrument_schedules_tbl" (
     check ("owner_role" <> ''),
     check ("schedule_role" <> ''),
     check ("schedule_kind" in ('rules', 'dates')),
-    check ("owner_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap', 'option', 'trs')),
+    check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs')),
     check ("owner_number" > 0),
     check ("sequence_number" > 0)
 );

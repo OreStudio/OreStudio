@@ -195,6 +195,12 @@
 \ir ./trading_bond_issue_leg_rates_create.sql
 \ir ./trading_bond_issue_leg_rates_notify_trigger_create.sql
 
+\ir ./trading_bond_issue_leg_schedules_create.sql
+\ir ./trading_bond_issue_leg_schedules_notify_trigger_create.sql
+
+\ir ./trading_bond_issue_leg_schedule_dates_create.sql
+\ir ./trading_bond_issue_leg_schedule_dates_notify_trigger_create.sql
+
 -- Shared instrument-keyed tables (task B753AD00, waves B.1, B.2 and B.3):
 -- everything the nine bond tables cannot hold. The leg family carries a
 -- leg and its amounts, amortizations and rate group; the schedule tables

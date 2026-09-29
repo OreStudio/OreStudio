@@ -47,7 +47,7 @@
  * The three lists the floating arm states, its spreads, caps, floors and
  * gearings, are not here: each is a numbered amount and lives in
  * bond_issue_leg_amount under its own role. Its two schedules live in
- * instrument_schedule, under the fixing_schedule and
+ * bond_issue_leg_schedule, under the fixing_schedule and
  * reset_schedule roles.
  *
  * The two stub interpolation blocks are folded into columns here. Each

@@ -49,7 +49,7 @@ namespace ores::trading::domain {
  * The row carries the leg's payment terms, its day counters, its
  * settlement block and the two flags the schema states on the leg itself.
  * Everything else the leg states lives in a table of its own: the
- * schedules in instrument_schedule, the amortizations, the named
+ * schedules in bond_issue_leg_schedule, the amortizations, the named
  * amounts and the rate group below. Those tables key on issue_id as
  * well, so a schedule or an amount reaches the leg that stated it.
  *

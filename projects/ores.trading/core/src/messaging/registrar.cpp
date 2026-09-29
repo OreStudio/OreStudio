@@ -28,6 +28,12 @@
 #include "ores.trading.core/messaging/bond_issue_call_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_conversion_target_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_amortization_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_amount_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_rate_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_schedule_date_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_schedule_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_leg_amortization_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_leg_amount_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_leg_history_provider_registrar.hpp"
@@ -136,6 +142,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_bond_issue_call_date_history_provider(hist_registry);
     register_bond_issue_conversion_target_history_provider(hist_registry);
     register_bond_issue_history_provider(hist_registry);
+    register_bond_issue_leg_amortization_history_provider(hist_registry);
+    register_bond_issue_leg_amount_history_provider(hist_registry);
+    register_bond_issue_leg_history_provider(hist_registry);
+    register_bond_issue_leg_rate_history_provider(hist_registry);
+    register_bond_issue_leg_schedule_date_history_provider(hist_registry);
+    register_bond_issue_leg_schedule_history_provider(hist_registry);
     register_bond_leg_amortization_history_provider(hist_registry);
     register_bond_leg_amount_history_provider(hist_registry);
     register_bond_leg_history_provider(hist_registry);

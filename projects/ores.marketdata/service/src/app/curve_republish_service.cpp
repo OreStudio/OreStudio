@@ -24,6 +24,9 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
+#include "ores.marketdata.api/domain/oresmd_uri.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -139,21 +142,27 @@ read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_co
     return pillars;
 }
 
-// Ensures the config's pre-minted output market_series is stamped IR_CURVE_BOOTSTRAP -- the
-// config-creation task's own doc comment describes this as happening at config-creation time, but
-// no service code does it yet (see this task's own * Plan for why re-opening that task is out of
-// scope here). A missing row is a config-integrity error, not auto-fabricated: this service has
+// Reads the config's pre-minted output market_series, which the keys below are projected
+// from. A missing row is a config-integrity error, not auto-fabricated: this service has
 // none of series_type/metric/qualifier to invent one from.
-void ensure_output_series_stamped(ores::database::context ctx,
-                                  const ores::refdata::domain::ir_curve_bootstrap_config& config) {
+domain::market_series read_output_series(ores::database::context ctx,
+                                         const ores::refdata::domain::ir_curve_bootstrap_config& config) {
     repository::market_series_repository series_repo;
     auto series = series_repo.read_latest(ctx, boost::uuids::to_string(config.output_series_id));
     if (series.empty())
         throw std::invalid_argument(
             "curve_republish_service: output market_series not found for bootstrap config: " +
             boost::uuids::to_string(config.output_series_id));
+    return series.front();
+}
 
-    auto s = series.front();
+// Stamps the config's output market_series IR_CURVE_BOOTSTRAP -- the config-creation
+// task's own doc comment describes this as happening at config-creation time, but no
+// service code does it yet (see this task's own * Plan for why re-opening that task is
+// out of scope here).
+void stamp_output_series(ores::database::context ctx,
+                         const ores::refdata::domain::ir_curve_bootstrap_config& config,
+                         domain::market_series s) {
     if (s.derivation_kind != "OBSERVED")
         return;
 
@@ -165,7 +174,24 @@ void ensure_output_series_stamped(ores::database::context ctx,
     s.change_reason_code = "system.derived_series";
     s.change_commentary = "Claimed by IR curve bootstrap config " +
                           boost::uuids::to_string(config.id) + " on first republish";
+    repository::market_series_repository series_repo;
     series_repo.write(ctx, s);
+}
+
+// The key an observation is written under, projected from the output series' identity
+// and the pillar's own point. Every other writer stores the key it holds -- the import
+// keeps the file's, the ingest loop keeps the tick's -- and this writer holds the two
+// facts the grammar needs instead. A series and a point the grammar cannot put back
+// together is a config-integrity error: the row would export without a key.
+std::string datum_key_for(const domain::market_data_identifier& series,
+                          const std::string& point_id) {
+    const auto datum = core::oresmd_parser::with_point(series, point_id);
+    if (datum) {
+        if (const auto key = core::oresmd_projections::to_quote_key(*datum))
+            return *key;
+    }
+    throw std::invalid_argument("curve_republish_service: output series and point '" + point_id +
+                                "' name no ORE quote key");
 }
 
 // One republish's whole input and output: the config, the curve it bootstraps, and
@@ -259,7 +285,18 @@ void curve_republish_service::republish(context ctx,
     const auto& config = computed.config;
     const auto& bootstrapped = computed.points;
 
-    ensure_output_series_stamped(ctx, config);
+    const auto output_series = read_output_series(ctx, config);
+    // Every key before the series is stamped or a row is written: a point the output
+    // series cannot name fails here, so a failure leaves neither a half-claimed series
+    // nor an observation without a key. The identity is parsed once, not per pillar.
+    const auto output_series_id =
+        core::oresmd_parser::parse(domain::oresmd_uri{output_series.oresmd_uri});
+    std::vector<std::string> datum_keys;
+    datum_keys.reserve(bootstrapped.size());
+    for (const auto& point : bootstrapped)
+        datum_keys.push_back(datum_key_for(output_series_id, point.point_id));
+
+    stamp_output_series(ctx, config, output_series);
 
     const std::string source_series_ids = source_series_ids_json(computed.source_series_ids);
 
@@ -270,7 +307,8 @@ void curve_republish_service::republish(context ctx,
     lineages.reserve(bootstrapped.size());
 
     repository::observation_lineage_repository lineage_repo;
-    for (const auto& point : bootstrapped) {
+    for (std::size_t i = 0; i < bootstrapped.size(); ++i) {
+        const auto& point = bootstrapped[i];
         domain::market_observation obs;
         obs.id = uuid_gen();
         obs.tenant_id = ctx.tenant_id();
@@ -280,6 +318,10 @@ void curve_republish_service::republish(context ctx,
         obs.point_id = point.point_id;
         obs.value = std::format("{:.17g}", point.discount_factor);
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
+        // The key the row is written under, kept with the row the way the import keeps
+        // the file's and the ingest loop keeps the tick's, so the export emits a key
+        // rather than rebuilding one from columns that no longer hold a series.
+        obs.key = datum_keys[i];
         observations.push_back(std::move(obs));
 
         // A rerun over the same (series, as_of, point_id) natural key must reuse the prior

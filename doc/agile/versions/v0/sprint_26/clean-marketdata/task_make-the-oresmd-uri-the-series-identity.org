@@ -28,7 +28,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The identity is the natural key with =party_id= -- not null, non-empty, unique per party -- and the triple no longer keys the row, though its columns stay for the readers that still ask by it. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
+| Now          | =market_series= carries =oresmd_uri= as its natural key with =party_id=, and every writer of an observation stores the key the row is written under: the import keeps the file's, the ingest loop keeps the tick's, and the republish service now projects its own from the output series' identity and the pillar's point through the grammar's =oresmd_parser::with_point()=. The triple no longer keys a series and no reader falls back to it; the columns and the import classification table are what step four has left to delete. |
 | Waiting on   | Nothing. |
 | Next         | Decide who names the series the IR curve's vintage seeding reads -- either the synthetic config gains the identity it seeds from, or the DQ dataset carries the ORE key its own source names -- and then delete =series_type=, =metric= and =qualifier= from =market_series=, and the import classification table that classifies by them, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. |
 | Last touched | 2026-09-29                               |
@@ -330,9 +330,15 @@ is left is the cutover the task takes its name from.
    seeding, and it cannot move the same way: it reads the DQ deposit grid, whose series
    the cutover names generically, so the synthetic config has to name the series it seeds
    from or the path retires. The generated =read_latest_by_type= has gone, because
-   nothing called it; what is left is that decision and then =series_type=, =metric=,
-   =qualifier= and the import classification table going, with the census's 21 + 32 C++
-   files, 4 SQL files, 2 TypeScript twins and 80 org documents as the checklist.
+   nothing called it, and the datum-key projection the export's rebuild was waiting on
+   exists now: =oresmd_parser::with_point()= puts an observation's point back into the
+   field its family keeps it in, so the republish service -- the last writer that stored
+   no key -- projects one from the output series' identity and the pillar's point and
+   keeps it on the row. What is left is that decision, the export reading a fixing's
+   index name off the identity rather than off the =qualifier= column, and then
+   =series_type=, =metric=, =qualifier= and the import classification table going, with
+   the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents
+   as the checklist.
 
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
@@ -395,9 +401,11 @@ own key emission: =ores.cpp.oresmd.projections.org= writes each family's key out
 identifier's members, so which member is the coordinate is written down there, per family,
 already. The next unit therefore adds a per-family arm beside that emission -- a setter the
 writer calls to place a point before projecting -- rather than reading =point_semantics=,
-inventing a rule, or extending a hand-written helper that cannot know it. Until that exists the writers that hold a producer key store it (the
-import and the ingest loop do; the republish service does not), and the export's rebuild
-stays.
+inventing a rule, or extending a hand-written helper that cannot know it. That arm is
+delivered, one unit after this note was written: =oresmd_parser::with_point()= places the
+point in the field the family's own key emission reads, the family survey's pairs walk
+backwards through it, and the republish service -- the writer that held no key -- stores
+the one it projects from its output series and the pillar's point.
 
 **The export cannot rebuild a datum's key from the identity, and that was worth finding
 before the columns go.** The export writes an observation under the key it was given when
@@ -407,8 +415,10 @@ the corpus case fails: the identity is the *series'* key, and a datum's key need
 point placed in a field that differs per family, because a future's coordinate is a
 contract code and a tenor rather than the URI's =point=. The experiment was reverted.
 What the deletion needs instead is for every writer to store the key with the datum, the
-way the import already does; the ingest loop does now, and the republish service is the
-one left, which can build it from the output series it already reads.
+way the import already does. The ingest loop does, and the republish service did with the
+projection above: it builds the key from the output series it already reads and the
+pillar's point, so the rebuild described here has nothing left to serve and goes with the
+columns.
 
 That also closes the identity review's other recorded prerequisite. With the fallback
 gone there is no contest to settle: the import finds a series by the real identity when
@@ -549,6 +559,14 @@ which is the same reason the identity lookups fall back to the triple.
 | =reachability=, with the retirement | 7780 declared cases in 956 sources | =check_test_case_reachability.py= | =ac4e03519b= |
 | Grid readers left in the reader | 1, the fallback in =read_pillar_rates=; no case exercises it | =grep -n "read_grid_rates" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =e3e237ded1= |
 | Component file lists stale on the trunk this branch sits on | 2, =ores.iam/api/src= and =ores.workflow/api/src=, neither of them this change's | =regenerate_cmake_component_files.py --all --check= | =e3e237ded1= |
+| The projection from a series identity and a point | one grammar function, =oresmd_parser::with_point()=, generated beside =to_series_uri()= | =grep -n "with_point" projects/ores.marketdata/core/include/ores.marketdata.core/oresmd/oresmd_parser.hpp= | =a67cc26b8b= |
+| Families the round trip names | seven: =MM=, =FRA=, =IR_SWAP=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= and =OI_FUTURE=, with a surface and a fixing pinned as refusals | =ores.marketdata.core.tests "a_series_identity_and_a_point_project_back_to_the_datum_key"= | =a67cc26b8b= |
+| =ores.marketdata.core= suite, with the projection | 1920 assertions in 415 cases | =ores.marketdata.core.tests= | =a67cc26b8b= |
+| Writers that store the key with the datum | 3 of 3: the import, the ingest loop and the republish service | =grep -n "obs.key = " projects/ores.marketdata/core/src/service/import_service.cpp projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =4fb044c271= |
+| Evidence for the republish service's key | the grammar's own case and a whole build; the service has no harness, so the row it writes is not read back by any test | =grep -rln "curve_republish_service" projects/ --include=*tests*.cpp= | =4fb044c271= |
+| =ores.marketdata.service= suite, with the republish key | 176 assertions in 28 cases | =ores.marketdata.service.tests= | =4fb044c271= |
+| =codegen= suite | 1016 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | =4fb044c271= |
+| =reachability=, with the projection's case | 7741 declared cases in 952 sources | =check_test_case_reachability.py= | =4fb044c271= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -818,6 +836,25 @@ to rebuild one for every feed row from the registry columns. It stores it now, b
 export's own rule, so nothing the export writes changes and the row carries the key the
 deletion needs it to carry. Measured on the rebuilt tree: 176 service assertions in 28
 cases and 1893 core assertions in 414.
+
+**An eleventh unit gave the grammar the projection the deletion was waiting on, and
+made the republish writer keep its key.** The export rebuilt a datum's key from the
+series' registry columns because a datum's key needs its point, and which identifier
+field holds that point differs per family; two hand-written helpers guessed it and both
+were reverted. The fact now lives in the grammar, beside the =to_series_uri()= drop it
+inverts: =oresmd_parser::with_point()= places one observation's point in the field its
+family keeps it in -- a discount curve's maturity in =tenor=, a future's coordinate
+split into its contract fields, every other indexed family in =point= -- and refuses a
+surface, whose coordinate is the vol point rather than one string, and a fixing, whose
+key is an index name. The family survey's pairs walk backwards through it in a new
+case: each corpus key projects to its series, the point goes back in, and the key
+projects again. The republish service, the last writer that stored no key, projects its
+observations' keys from the output series' identity and the pillar's point and keeps
+them on the rows, so the export's rebuild has nothing left to serve. The service has no
+harness, so what is proved is the projection and the whole build, not a republished row
+read back; that is recorded with the other missing harnesses. Measured on the rebuilt
+tree: 1920 core assertions in 415 cases, 176 service assertions in 28, and the codegen
+suite at 1016 passed.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

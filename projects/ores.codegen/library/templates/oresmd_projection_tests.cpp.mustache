@@ -1450,6 +1450,21 @@ TEST_CASE("a_series_identity_and_a_point_project_back_to_the_datum_key", tags) {
         CHECK(oresmd_projections::to_quote_key(*rebuilt) == key);
     }
 
+    // A future's coordinate reaches the setter as one string, so a string that is
+    // not the family's whole coordinate is refused rather than split at a guess.
+    const auto future = oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M");
+    REQUIRE(future);
+    const auto future_series = oresmd_parser::parse(oresmd_parser::to_series_uri(*future));
+    CHECK_FALSE(oresmd_parser::with_point(future_series, "XICE:FEI"));
+    CHECK_FALSE(oresmd_parser::with_point(future_series, "XICE:FEI/3M/4M"));
+
+    const auto overnight =
+        oresmd_projections::from_ore_key("OI_FUTURE/PRICE/USD/2025-11/XCME:SRA/3M");
+    REQUIRE(overnight);
+    const auto overnight_series = oresmd_parser::parse(oresmd_parser::to_series_uri(*overnight));
+    CHECK_FALSE(oresmd_parser::with_point(overnight_series, "XCME:SRA/3M"));
+    CHECK_FALSE(oresmd_parser::with_point(overnight_series, "2025-11/XCME:SRA/3M/4M"));
+
     // A surface's coordinate is its vol point rather than one string, and the drop
     // above removes that point rather than leaving a field to refill, so a surface is
     // refused rather than half-restored.

@@ -33,6 +33,9 @@
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -1236,6 +1239,9 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
             if (id.type != instrument_type::quote)
                 return false;
             if constexpr (std::is_same_v<T, ir_market_data_identifier>) {
+                // The coordinate-bearing families, named one by one: a quote type
+                // this does not know keeps its coordinate somewhere else, and a
+                // silently wrong key is worse than no key, so the default refuses.
                 switch (id.quote_type.value_or(ir_quote_type::ir_swap)) {
                     case ir_quote_type::discount:
                         id.tenor = point;
@@ -1260,9 +1266,19 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                         id.tenor = parts[1];
                         return true;
                     }
-                    default:
+                    case ir_quote_type::mm:
+                    case ir_quote_type::fra:
+                    case ir_quote_type::imm_fra:
+                    case ir_quote_type::ir_swap:
+                    case ir_quote_type::basis_swap:
+                    case ir_quote_type::bma_swap:
+                    case ir_quote_type::cc_basis_swap:
+                    case ir_quote_type::cc_fix_float_swap:
+                    case ir_quote_type::zero:
                         id.point = point;
                         return true;
+                    default:
+                        return false;
                 }
             }
             if constexpr (requires { id.point; }) {

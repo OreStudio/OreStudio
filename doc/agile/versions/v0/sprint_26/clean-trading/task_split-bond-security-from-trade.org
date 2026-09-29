@@ -343,6 +343,23 @@ task and name that file in the Command column.
   work. If the split cannot land whole, stop at a green tree with the
   shared entities in place and record the rest rather than leaving the
   family half-reshaped.
+- The round-trip gate is blocked before it reaches any bond code, on
+  =trades.put_many=. The run: recreate the database, provision the Acme
+  Corporation tenant with =provision tenant --source acme=, stage
+  =external/ore/examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml=
+  as =portfolio_roundtrip.xml=, then run the recipe's three shell verbs.
+  The import fails at its first step with =All 4 trade save(s) failed=,
+  and the trading service's own log gives the cause:
+  =ores.trading.repository.trade_repository= reports =modified_by cannot
+  be null or empty= from =ores_iam_validate_account_username_fn=, raised
+  by =ores_trading_trades_insert_fn=. Every later failure --
+  =Invalid trade_id= on the bond instrument -- is a consequence of the
+  trade never landing. The empty =modified_by= arrives on the
+  =trades.put_many= request, which carries no audit field, so the
+  exporter's caller context and not the split decides it. Nothing in this
+  task touches the trade write path, and the four suites pass without it.
+  The gate stays unrun, not passed; fixing the import's audit context is
+  the bond pilot's, whose plan already owns the add and delete paths.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -23,7 +23,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { FirstSignIn } from './FirstSignIn.js';
+import { FirstSignIn, signInComplete } from './FirstSignIn.js';
 import { ProfileCards, RunStep, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyServer } from './server.js';
 import { detailsFor } from './state.js';
@@ -385,5 +385,45 @@ describe("a run's step", () => {
         const html = render(<RunStep step={step} words={(sentence) => `[${sentence}]`} />);
 
         expect(html).toContain('[Import the legal entities]');
+    });
+});
+
+describe('when the first sign-in is finished', () => {
+    const tenant = 'tenant_admin@northwind.example.com';
+
+    it('is finished when the account is signed in and owes nothing', () => {
+        expect(
+            signInComplete(
+                { kind: 'active', principal: tenant, password: 'p', resetRequired: false },
+                false,
+            ),
+        ).toBe(true);
+    });
+
+    it('is not finished while a party is still to be chosen', () => {
+        expect(
+            signInComplete(
+                {
+                    kind: 'party',
+                    principal: tenant,
+                    password: 'p',
+                    parties: [],
+                    resetRequired: false,
+                },
+                false,
+            ),
+        ).toBe(false);
+    });
+
+    it('is not finished until a required password change has happened', () => {
+        const active = {
+            kind: 'active',
+            principal: tenant,
+            password: 'p',
+            resetRequired: true,
+        } as const;
+
+        expect(signInComplete(active, false)).toBe(false);
+        expect(signInComplete(active, true)).toBe(true);
     });
 });

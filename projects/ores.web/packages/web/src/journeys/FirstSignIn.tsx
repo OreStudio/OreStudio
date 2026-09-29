@@ -32,7 +32,7 @@
  * answered with, so a rule that changes on the server changes here.
  */
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
@@ -61,6 +61,22 @@ export type TenantEntry =
           readonly password: string;
           readonly resetRequired: boolean;
       };
+
+/**
+ * Whether the first sign-in has finished.
+ *
+ * The step is finished once the account is signed in and no change is
+ * outstanding. A browser that took the account over at the hand-over arrives
+ * already signed in, so the answer is about the state the step is in rather
+ * than about anything a handler did: the panel's action opens the moment the
+ * state says so, whichever way the person reached it.
+ */
+export function signInComplete(state: TenantEntry, changed: boolean): boolean {
+    if (state.kind !== 'active') {
+        return false;
+    }
+    return !state.resetRequired || changed;
+}
 
 function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
@@ -91,6 +107,15 @@ export function FirstSignIn({
     const [acceptable, setAcceptable] = useState(false);
     const [failure, setFailure] = useState<string>();
     const [busy, setBusy] = useState(false);
+
+    const ready = signInComplete(current, changed);
+    const reported = useRef(false);
+    useEffect(() => {
+        if (ready && !reported.current) {
+            reported.current = true;
+            onReady();
+        }
+    }, [ready, onReady]);
 
     const run = async (action: () => Promise<void>): Promise<void> => {
         setFailure(undefined);
@@ -124,9 +149,6 @@ export function FirstSignIn({
                           resetRequired: outcome.passwordResetRequired,
                       },
             );
-            if (!outcome.passwordResetRequired) {
-                onReady();
-            }
         });
     };
 
@@ -142,9 +164,6 @@ export function FirstSignIn({
                 password: current.password,
                 resetRequired: current.resetRequired,
             });
-            if (!current.resetRequired) {
-                onReady();
-            }
         });
     };
 
@@ -156,7 +175,6 @@ export function FirstSignIn({
         void run(async () => {
             await server.changePassword(current.password, chosen);
             setChanged(true);
-            onReady();
         });
     };
 

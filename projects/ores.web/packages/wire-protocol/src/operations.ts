@@ -72,13 +72,21 @@ export const SUBJECTS = {
 /**
  * Whether the deployment still needs provisioning.
  *
- * The IAM service answers the flag and leaves the sentence to the caller: a
+ * The IAM service answers the flags and leaves the sentence to the caller: a
  * deployment in bootstrap mode has no accounts to sign in with, so the words
  * that say so are the interface's, not the wire's.
  */
 export const bootstrapStatusResponseSchema = z.object({
     is_in_bootstrap_mode: z.boolean().default(false),
     message: z.string().default(''),
+    /*
+     * Whether the deployment has a tenant of its own, the system tenant being
+     * its bookkeeping rather than a tenant somebody set up. A deployment with
+     * none has not been set up, which the interface states alongside the
+     * administrator question: the screen that brings an installation to life
+     * stays the screen a person belongs on until there is something in it.
+     */
+    has_tenant: z.boolean().default(false),
     /*
      * The build the answering service runs. It travels with this read because
      * this is the read a browser makes before it has a session, and a screen

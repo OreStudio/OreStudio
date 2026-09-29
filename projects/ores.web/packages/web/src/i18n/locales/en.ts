@@ -473,6 +473,10 @@ export const en: SourceCatalogue = {
             email: 'Administrator email',
             password: 'Administrator password',
             create: 'Create administrator',
+            resumeTitle: 'Sign in as the administrator',
+            resumeLead:
+                'This installation already has its administrator. Sign in as that account to carry on. The password is also what the tenant takes when its profile shares yours.',
+            signIn: 'Sign in and continue',
             partyChoice:
                 'The administrator works in more than one party. Sign in and choose one first.',
         },

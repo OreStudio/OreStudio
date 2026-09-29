@@ -220,10 +220,13 @@ export class OresClient {
      * Asked before a login, not after it. A deployment in bootstrap mode has no
      * accounts to sign in with, so the answer decides whether a login is worth
      * attempting at all: the Qt client checked this first and never reached the
-     * credential form.
+     * credential form. The tenant answer travels with it because both describe
+     * the same thing from two sides: an installation is set up when it has an
+     * administrator and a tenant of its own.
      */
     async bootstrapStatus(): Promise<{
         isInBootstrapMode: boolean;
+        hasTenant: boolean;
         message: string;
         version: string;
     }> {
@@ -235,6 +238,7 @@ export class OresClient {
         );
         return {
             isInBootstrapMode: reply.is_in_bootstrap_mode,
+            hasTenant: reply.has_tenant,
             message: reply.message,
             version: reply.version,
         };

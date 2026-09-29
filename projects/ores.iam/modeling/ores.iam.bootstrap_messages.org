@@ -46,6 +46,24 @@ The bootstrap protocol messages.
 :cpp_type: std::string
 :END:
 
+*** has_tenant
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the deployment has a tenant of its own.
+ *
+ * The system tenant is the deployment's own bookkeeping and not a tenant
+ * somebody set up, so it does not count. A deployment without one has not
+ * been set up: it has no work in it, and the screen that brings it to life
+ * is still the screen a person belongs on, however far through that screen
+ * they got before they closed the browser.
+ */
+#+end_src
+
 *** version
 :PROPERTIES:
 :cpp_type: std::string

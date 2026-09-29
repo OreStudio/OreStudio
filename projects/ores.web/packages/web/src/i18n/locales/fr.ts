@@ -472,6 +472,10 @@ const fr: SourceCatalogue = {
             email: "Courriel de l'administrateur",
             password: "Mot de passe de l'administrateur",
             create: "Créer l'administrateur",
+            resumeTitle: "Se connecter en tant qu'administrateur",
+            resumeLead:
+                "Cette installation a déjà son administrateur. Connectez-vous avec ce compte pour continuer. Le mot de passe est aussi celui que l'entité reprend lorsque son profil partage le vôtre.",
+            signIn: 'Se connecter et continuer',
             partyChoice:
                 "L'administrateur travaille dans plusieurs entités. Connectez-vous et choisissez-en une d'abord.",
         },

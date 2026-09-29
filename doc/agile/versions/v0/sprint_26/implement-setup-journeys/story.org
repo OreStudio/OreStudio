@@ -48,10 +48,10 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. A stopped run can be followed through the progress read and retried from the step that failed. |
+| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. A stopped run can be followed through the progress read and retried from the step that failed. The gate now answers the deployment rather than the tab, so a browser that reloads half way through comes back to the setup rail and signs in as the administrator the deployment already has. |
 | Waiting on    | Nothing. |
-| Next          | Plan step 9: carry the forced password change and read the password policy. |
-| Last touched  | 2026-09-28                               |
+| Next          | The size of the hierarchy a starting point would import, and the shape of a tenant code checked by the database itself. |
+| Last touched  | 2026-09-29                               |
 
 * Acceptance
 
@@ -108,6 +108,7 @@ state and the progress are real.
 | [[id:5E955F6F-6C1A-4F80-BD3F-6FB29958DDC7][Carry the forced password change and read the password policy]] | DONE | 2026-09-28 | 2026-09-28 | The profile's force-password-change choice reaches the account the provisioner creates, the login reply carries the flag the account holds, and a read returns the password policy the server enforces, so the first sign-in can force a change against rules read from the server. |
 | [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Build the First run journey]] | DONE | 2026-09-29 | 2026-09-29 | The first run journey leads an empty installation from the welcome screen through creating the system administrator, the first tenant's steps inline on one rail, the hand-over to its administrator, their first sign-in, and Ready. |
 | [[id:01CF4ADC-404E-4CEA-8594-C033245A7342][Start a tenant from a GLEIF entity]] | BACKLOG | | | The starting points become three: build the tenant by hand, build it around a parent legal entity the deployment holds in its GLEIF data, or take the prefilled demo. The GLEIF card opens on a search over those entities and derives the tenant from the one chosen; the manual card may leave the legal entity out altogether. |
+| [[id:CD991920-78E3-4CD3-965D-B1E76665BAB2][Keep the setup screen after a reload]] | BACKLOG | | | An installation is set up when it has an administrator and a tenant of its own, so the setup journey is the only screen until it has both. A browser that reloads half way through comes back to the rail and signs in as the administrator the deployment already has, rather than being stranded with no way back to the work. |
 
 * Plan
 
@@ -137,6 +138,16 @@ none of them depends on it and all of them are permanent.
 
 * Decisions
 
+- *The gate answers the deployment, not the tab.* An installation is set
+  up when it has an administrator and a tenant of its own, so the setup
+  screen is the only screen while either is missing, and the tab's own
+  memory holds the rail afterwards, until the person finishes. The
+  earlier rule stopped at the administrator, which left a browser that
+  reloaded half way through stranded on a sign-in screen with no way
+  back to the work: closing a page is not finishing a journey. The
+  deployment's state survives a reload; a position held only in memory
+  does not, so the rail opens at the step that signs in as the
+  administrator the deployment already has rather than at the beginning.
 - *The three journeys share one runtime and one step library.* First
   run inlines the new tenant steps. Positions in the rail are named
   rather than counted, so adding a step to one journey cannot silently

@@ -51,9 +51,19 @@ const session: SessionView = {
 const inBootstrap: BootstrapState = {
     status: 'ready',
     inBootstrapMode: true,
+    hasTenant: false,
     message: 'This deployment has not been provisioned.',
+    version: 'v0.0.25 (test)',
 };
-const ready: BootstrapState = { status: 'ready', inBootstrapMode: false, message: '' };
+const ready: BootstrapState = {
+    status: 'ready',
+    inBootstrapMode: false,
+    hasTenant: true,
+    message: '',
+    version: 'v0.0.25 (test)',
+};
+/** An installation whose administrator exists and whose first tenant does not. */
+const tenantless: BootstrapState = { ...ready, hasTenant: false };
 const anonymous: SessionState = { status: 'anonymous' };
 const authenticated: SessionState = { status: 'authenticated', session };
 
@@ -149,6 +159,24 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('Acme Operations');
         expect(html).toContain('admin@acme.test');
         expect(html).toContain('Sign out');
+    });
+});
+
+describe('an installation that has no tenant of its own', () => {
+    it('holds a person whose deployment has not been set up, signed in or not', () => {
+        const visitor = render('/iam/account', tenantless, anonymous);
+        const signedIn = render('/', tenantless, authenticated);
+
+        expect(visitor).toContain('First run journey');
+        expect(signedIn).toContain('First run journey');
+        expect(signedIn).not.toContain('Sign out');
+    });
+
+    it('hands the browser over as soon as there is one', () => {
+        const html = render('/', ready, authenticated);
+
+        expect(html).not.toContain('First run journey');
+        expect(html).toContain('Signed in');
     });
 });
 

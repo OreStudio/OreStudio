@@ -120,6 +120,10 @@ function steps(
         readonly creatingPassword?: string;
         /** Whether the run has reached its end. */
         readonly runComplete?: boolean;
+        /** Whether the deployment already has its administrator. */
+        readonly administratorExists?: boolean;
+        readonly onCreateAdministrator?: () => Promise<void>;
+        readonly onAdministratorEntered?: () => Promise<void>;
     } = {},
 ) {
     return firstRunSteps({
@@ -141,8 +145,11 @@ function steps(
         entry: undefined,
         welcome: 'Welcome body',
         administratorForm: 'Administrator body',
+        administratorExists: overrides.administratorExists ?? false,
+        administratorSignIn: 'Administrator sign-in body',
         goTo: vi.fn(),
-        onAdministratorSignedIn: vi.fn(async () => undefined),
+        onCreateAdministrator: overrides.onCreateAdministrator ?? vi.fn(async () => undefined),
+        onAdministratorEntered: overrides.onAdministratorEntered ?? vi.fn(async () => undefined),
         onHandOff: vi.fn(async () => undefined),
         onFinished: vi.fn(),
     });
@@ -247,5 +254,50 @@ describe('a step with no state behind it', () => {
         const [, , , details] = steps();
 
         expect(details?.body).toBeNull();
+    });
+});
+
+describe('an installation that has no administrator yet', () => {
+    it('asks for the account that owns it, and creates it', async () => {
+        const created = vi.fn(async () => undefined);
+        const [, administrator] = steps({ onCreateAdministrator: created });
+
+        expect(administrator?.title).toBe('Create the administrator');
+        expect(administrator?.body).toBe('Administrator body');
+        expect(administrator?.next?.label).toBe('Create administrator');
+        await administrator?.next?.run?.();
+        expect(created).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('an installation that already has its administrator', () => {
+    it('asks the person to sign in as it, because it cannot be created twice', () => {
+        const [, administrator] = steps({ administratorExists: true });
+
+        expect(administrator?.title).toBe('Sign in as the administrator');
+        expect(administrator?.body).toBe('Administrator sign-in body');
+        expect(administrator?.next?.label).toBe('Sign in and continue');
+    });
+
+    it('signs in rather than creating a second account', async () => {
+        const created = vi.fn(async () => undefined);
+        const entered = vi.fn(async () => undefined);
+        const [, administrator] = steps({
+            administratorExists: true,
+            onCreateAdministrator: created,
+            onAdministratorEntered: entered,
+        });
+
+        await administrator?.next?.run?.();
+        expect(entered).toHaveBeenCalledTimes(1);
+        expect(created).not.toHaveBeenCalled();
+    });
+
+    it('does not measure a password that already exists against the policy', () => {
+        // The password was accepted when it was set. A rule tightened since
+        // must not lock somebody out of the installation they own.
+        const [, administrator] = steps({ administratorExists: true, acceptable: false });
+
+        expect(administrator?.next?.enabled).toBe(true);
     });
 });

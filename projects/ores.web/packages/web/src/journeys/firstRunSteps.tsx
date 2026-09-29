@@ -63,21 +63,24 @@ export interface FirstRunStepsInput {
     readonly onTenantSignInComplete: () => void;
     /** The splash, and what the three stages of the journey are. */
     readonly welcome: ReactNode;
+    /** Whether the deployment already has its administrator. */
+    readonly administratorExists: boolean;
     /** The form that describes the installation's first account. */
     readonly administratorForm: ReactNode;
+    /** The form that signs back in as an administrator the deployment holds. */
+    readonly administratorSignIn: ReactNode;
     readonly goTo: (id: StepId) => void;
-    /**
-     * Runs once the administrator exists and the browser is signed in as it:
-     * the page keeps the password a profile may reuse and reads the starting
-     * points, which need that session.
-     */
-    readonly onAdministratorSignedIn: () => Promise<void>;
+    /** Creates the administrator and enters the deployment as it. */
+    readonly onCreateAdministrator: () => Promise<void>;
+    /** Signs in as the administrator the deployment already has. */
+    readonly onAdministratorEntered: () => Promise<void>;
     readonly onHandOff: (continueAsAdmin: boolean) => Promise<void>;
     readonly onFinished: () => void;
 }
 
 export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<ReactNode>[] {
     const { t, server, policy, administrator, entry } = input;
+    const known = input.administratorExists;
 
     return [
         {
@@ -89,43 +92,30 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
         },
         {
             id: 'administrator',
-            title: t('journey.admin.title'),
-            lead: t('journey.admin.lead'),
-            body: input.administratorForm,
-            next: {
-                label: t('journey.admin.create'),
-                enabled:
-                    administrator.principal !== '' &&
-                    administrator.email !== '' &&
-                    administrator.acceptable,
-                run: async () => {
-                    await server.createAdministrator({
-                        principal: administrator.principal,
-                        password: administrator.password,
-                        email: administrator.email,
-                    });
-                    /*
-                     * The deployment leaves bootstrap mode when that succeeds,
-                     * and the journey stays on its rail because it said it had
-                     * started. Then it signs in as the account it just made,
-                     * because the starting points and the provisioning request
-                     * belong to an account.
-                     */
-                    await server.recheckBootstrap();
-                    const outcome = await server.signIn({
-                        username: administrator.principal,
-                        password: administrator.password,
-                    });
-                    if (outcome.outcome === 'party-required') {
-                        const only = outcome.parties.length === 1 ? outcome.parties[0] : undefined;
-                        if (only === undefined) {
-                            throw new Error(t('journey.admin.partyChoice'));
-                        }
-                        await server.chooseParty(only.id, outcome.parties);
-                    }
-                    await input.onAdministratorSignedIn();
-                },
-            },
+            title: t(known ? 'journey.admin.resumeTitle' : 'journey.admin.title'),
+            lead: t(known ? 'journey.admin.resumeLead' : 'journey.admin.lead'),
+            body: known ? input.administratorSignIn : input.administratorForm,
+            next: known
+                ? {
+                      label: t('journey.admin.signIn'),
+                      /*
+                       * Only the two fields matter here. The password exists
+                       * and met whatever rules it met when it was set, so the
+                       * deployment's policy is not applied to it a second
+                       * time: a rule tightened since would lock somebody out
+                       * of the installation they own.
+                       */
+                      enabled: administrator.principal !== '' && administrator.password !== '',
+                      run: async () => input.onAdministratorEntered(),
+                  }
+                : {
+                      label: t('journey.admin.create'),
+                      enabled:
+                          administrator.principal !== '' &&
+                          administrator.email !== '' &&
+                          administrator.acceptable,
+                      run: async () => input.onCreateAdministrator(),
+                  },
         },
         ...newTenantSteps({
             t,

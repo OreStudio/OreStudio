@@ -39,7 +39,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
-import { NewPasswordField } from '../ui/PasswordField.js';
+import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
 import { heroSplash } from '../assets/brand.js';
 import { JourneyPage } from './JourneyPage.js';
 import { indexOfStep } from './runtime.js';
@@ -192,8 +192,60 @@ function AdministratorForm({
     );
 }
 
+/**
+ * The deployment's administrator, signing back in.
+ *
+ * A browser that closed after the administrator was created comes back to a
+ * deployment that has one, so the journey cannot create it again and cannot
+ * carry on without it either: the starting points and the provisioning request
+ * belong to an account. The password typed here is kept for the same reason the
+ * created one was: a profile may hand the creating administrator's password to
+ * the tenant's administrator, and this is that password.
+ *
+ * The policy is not applied to the field. The password exists and meets
+ * whatever rules it met when it was set, and refusing it here because a rule
+ * changed since would lock somebody out of their own installation.
+ */
+function AdministratorSignIn({
+    draft,
+    onPrincipal,
+    onPassword,
+}: {
+    readonly draft: AdministratorDraft;
+    readonly onPrincipal: (value: string) => void;
+    readonly onPassword: (value: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const stop = (event: FormEvent): void => event.preventDefault();
+    return (
+        <form className="space-y-4" onSubmit={stop}>
+            <Field label={t('journey.admin.username')}>
+                <Input
+                    value={draft.principal}
+                    autoComplete="username"
+                    onChange={(event) => onPrincipal(event.target.value)}
+                />
+            </Field>
+            <Field label={t('journey.admin.password')}>
+                <PasswordInput
+                    value={draft.password}
+                    autoComplete="current-password"
+                    onChange={(event) => onPassword(event.target.value)}
+                />
+            </Field>
+        </form>
+    );
+}
+
 export interface FirstRunJourneyProps {
     readonly server: JourneyServer;
+    /**
+     * Whether the deployment still has no administrator.
+     *
+     * It decides the first step that does anything: one deployment creates its
+     * administrator, the other signs in as the one it has.
+     */
+    readonly inBootstrapMode: boolean;
     /** Called once the journey owns the rail, so the route table stays on it. */
     readonly onStarted: () => void;
     /** Called when the person is done, so the route table hands the browser over. */
@@ -202,6 +254,7 @@ export interface FirstRunJourneyProps {
 
 export function FirstRunJourney({
     server,
+    inBootstrapMode,
     onStarted,
     onFinished,
 }: FirstRunJourneyProps): ReactNode {
@@ -219,7 +272,14 @@ export function FirstRunJourney({
     const [creatingPassword, setCreatingPassword] = useState('');
     const [entry, setEntry] = useState<TenantEntry>();
     const [tenantSignInComplete, setTenantSignInComplete] = useState(false);
-    const [at, setAt] = useState(0);
+    /*
+     * Where the rail stands. Nothing is stated until somebody moves: the
+     * deployment decides where the journey opens, which is the step that signs
+     * in as its administrator when it has one and the welcome when it does not.
+     * A browser that closed halfway through comes back to that step rather than
+     * to the beginning of work that is partly done.
+     */
+    const [at, setAt] = useState<number>();
     const tenant = useNewTenant();
     const started = useRef(false);
 
@@ -289,6 +349,44 @@ export function FirstRunJourney({
         setAt(indexOfStep(steps, 'signIn'));
     };
 
+    /**
+     * Signing in as the deployment's administrator, which the starting-point
+     * read and the provisioning request both belong to.
+     *
+     * The password is kept for the journey's length, because a profile may hand
+     * the creating administrator's password to the tenant's administrator and
+     * the hand-over signs in with it. It reaches no storage.
+     */
+    const enterAsAdministrator = async (password: string): Promise<void> => {
+        const outcome = await server.signIn({ username: draft.principal, password });
+        if (outcome.outcome === 'party-required') {
+            const only = outcome.parties.length === 1 ? outcome.parties[0] : undefined;
+            if (only === undefined) {
+                throw new Error(t('journey.admin.partyChoice'));
+            }
+            await server.chooseParty(only.id, outcome.parties);
+        }
+        setCreatingPassword(password);
+        setProfiles(await server.seedProfiles());
+    };
+
+    /**
+     * Creating the administrator, and then entering as it.
+     *
+     * The deployment leaves bootstrap mode when the account exists, which is
+     * the fact the next question turns on, so it is asked again before the
+     * journey signs in as the account it has just made.
+     */
+    const createAdministrator = async (): Promise<void> => {
+        await server.createAdministrator({
+            principal: draft.principal,
+            password: draft.password,
+            email: draft.email,
+        });
+        await server.recheckBootstrap();
+        await enterAsAdministrator(draft.password);
+    };
+
     if (policy === undefined) {
         return (
             <div className="card p-6">
@@ -337,10 +435,16 @@ export function FirstRunJourney({
             />
         ),
         goTo: (id) => setAt(indexOfStep(steps, id)),
-        onAdministratorSignedIn: async () => {
-            setCreatingPassword(draft.password);
-            setProfiles(await server.seedProfiles());
-        },
+        administratorExists: !inBootstrapMode,
+        administratorSignIn: (
+            <AdministratorSignIn
+                draft={draft}
+                onPrincipal={(principal) => setDraft((current) => ({ ...current, principal }))}
+                onPassword={(password) => setDraft((current) => ({ ...current, password }))}
+            />
+        ),
+        onCreateAdministrator: createAdministrator,
+        onAdministratorEntered: () => enterAsAdministrator(draft.password),
         onHandOff: handOff,
         onFinished: () => onFinished(),
     });
@@ -348,7 +452,7 @@ export function FirstRunJourney({
     return (
         <JourneyPage
             steps={steps}
-            at={at}
+            at={at ?? indexOfStep(steps, inBootstrapMode ? 'welcome' : 'administrator')}
             onMove={setAt}
             header={<JourneyHeader tenant={tenant} />}
         />

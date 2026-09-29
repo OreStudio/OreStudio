@@ -43,6 +43,14 @@ export type BootstrapState =
     | {
           readonly status: 'ready';
           readonly inBootstrapMode: boolean;
+          /**
+           * Whether the deployment has a tenant of its own.
+           *
+           * An installation is set up when it has an administrator and a
+           * tenant, and the two facts arrive together because the screen that
+           * finishes the job is the same screen in both cases.
+           */
+          readonly hasTenant: boolean;
           readonly message: string;
           /** The build the deployment answered with, which every shell states. */
           readonly version: string;
@@ -100,6 +108,7 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
             state: {
                 status: 'ready',
                 inBootstrapMode: data.isInBootstrapMode,
+                hasTenant: data.hasTenant,
                 message: data.message,
                 version: data.version,
             },

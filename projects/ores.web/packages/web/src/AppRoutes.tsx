@@ -34,19 +34,22 @@ import { Button, Notice } from './ui/Primitives.js';
 import type { SessionView } from '@ores/wire-protocol/browser';
 
 /**
- * The route table, and the bootstrap gate.
+ * The route table, and the gate that keeps an installation on its setup screen.
  *
  * The gate is the whole reason this is a function of two states rather than a
- * component that reads them: "while the system is in bootstrap mode, the setup
+ * component that reads them: "while the deployment is not set up, the setup
  * page is the only page" is a rule, and a rule a test cannot call is a rule
  * nobody has checked. `ConnectedApp` below is the wiring.
  *
- * A deployment in bootstrap mode has nobody to sign in as, so every path
+ * A deployment with no administrator has nobody to sign in as, so every path
  * renders the first run journey rather than redirecting to a setup path: there
  * is nothing else to be at, and a redirect leaves a URL somebody can share that
- * leads nowhere. The journey outlives that mode — creating the administrator
- * closes it — so the gate carries its second reason to stay: the journey has
- * begun in this browser, and it stays on the rail until it finishes.
+ * leads nowhere. Creating the administrator closes that question but not the
+ * job, so the gate carries two further reasons to stay: the deployment has no
+ * tenant of its own, which is the state the journey exists to leave behind, and
+ * the journey has begun in this browser, which holds the rail after the tenant
+ * exists until the person finishes. The deployment's own state is what survives
+ * a reload; the tab's memory only outlives the tenant.
  */
 export interface AppRoutesProps {
     readonly gate: BootstrapState;
@@ -92,7 +95,7 @@ export function AppRoutes({
         );
     }
 
-    if (gate.inBootstrapMode || journeyInProgress) {
+    if (gate.inBootstrapMode || !gate.hasTenant || journeyInProgress) {
         return (
             <Routes>
                 <Route
@@ -151,8 +154,19 @@ export function ConnectedApp(): ReactNode {
             journey={
                 <FirstRunJourney
                     server={server}
+                    inBootstrapMode={gate.status === 'ready' && gate.inBootstrapMode}
                     onStarted={() => setJourneyInProgress(true)}
-                    onFinished={() => setJourneyInProgress(false)}
+                    onFinished={() => {
+                        setJourneyInProgress(false);
+                        /*
+                         * The tenant the journey just made is the fact that
+                         * releases the gate, and this answer is what carries
+                         * it: without asking again the deployment would still
+                         * read as one with no tenant, and the journey would
+                         * keep the browser it has just finished with.
+                         */
+                        void recheck();
+                    }}
                 />
             }
             journeyInProgress={journeyInProgress}

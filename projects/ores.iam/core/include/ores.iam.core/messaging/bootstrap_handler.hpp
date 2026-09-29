@@ -25,6 +25,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
@@ -37,6 +38,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/version/version.hpp"
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -75,6 +77,17 @@ public:
             auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
                 ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
+            /*
+             * A deployment with no tenant of its own has nothing in it, so a
+             * screen asks this alongside the administrator question: an
+             * installation is brought to life in one sitting, and a browser
+             * that closed halfway through it belongs on the same screen when it
+             * comes back. The system tenant is the deployment's own bookkeeping
+             * and is not a tenant somebody set up.
+             */
+            const auto tenants = repository::read_all_active_tenants(ctx_);
+            const bool has_tenant = std::ranges::any_of(
+                tenants, [](const auto& tenant) { return !tenant.tenant_id.is_system(); });
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
             /*
              * The version travels with this read because it is the one a
@@ -84,6 +97,7 @@ public:
             reply(nats_,
                   msg,
                   bootstrap_status_response{.is_in_bootstrap_mode = bms.is_in_bootstrap_mode(),
+                                            .has_tenant = has_tenant,
                                             .version = utility::version::full_version_string()});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();

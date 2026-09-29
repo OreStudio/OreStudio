@@ -1687,6 +1687,7 @@ TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags
         {"COMMODITY_FWD/PRICE/GOLD/USD/2016-02-29", "COMMODITY_FWD/PRICE/GOLD/USD/2016-03-31"},
         {"DISCOUNT/RATE/EUR/EUR/1D", "DISCOUNT/RATE/EUR/EUR/10Y"},
         {"MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M", "MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/6M"},
+        {"OI_FUTURE/PRICE/USD/2025-11/XCME:SRA/3M", "OI_FUTURE/PRICE/USD/2025-12/XCME:SRA/3M"},
     };
     for (const auto& [one, other] : pairs) {
         const auto first = oresmd_projections::from_ore_key(one);
@@ -1696,5 +1697,23 @@ TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags
         CHECK(oresmd_parser::to_series_uri(*first).value ==
               oresmd_parser::to_series_uri(*second).value);
         CHECK(oresmd_parser::to_series_uri(*first).value.find("point=") == std::string::npos);
+    }
+
+    // The other direction: a field the series keeps must keep two series apart, or the
+    // drop above would be over-clearing. A contract month separates two futures of one
+    // currency, a tenor separates two swaps of one currency, and a currency separates
+    // two discount curves of one curve name.
+    const std::pair<const char*, const char*> distinct[] = {
+        {"MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M", "MM_FUTURE/PRICE/EUR/2024-05/XICE:FEI/3M"},
+        {"IR_SWAP/RATE/USD/0D/1D/5Y", "IR_SWAP/RATE/USD/0D/3M/5Y"},
+        {"DISCOUNT/RATE/EUR/EUR/1D", "DISCOUNT/RATE/USD/USD/1D"},
+    };
+    for (const auto& [one, other] : distinct) {
+        const auto first = oresmd_projections::from_ore_key(one);
+        const auto second = oresmd_projections::from_ore_key(other);
+        REQUIRE(first);
+        REQUIRE(second);
+        CHECK(oresmd_parser::to_series_uri(*first).value !=
+              oresmd_parser::to_series_uri(*second).value);
     }
 }

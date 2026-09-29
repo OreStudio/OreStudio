@@ -270,8 +270,8 @@ plan itself stays — it is the historical record of what we did.)
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
 | =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
 | Families whose projection dropped the coordinate, and now do not | 36 =DISCOUNT= series and 70 in =MM_FUTURE=/=OI_FUTURE=; the 232 no-index series were never affected | =count(*) filter (where series_type = 'DISCOUNT')= and =... in ('MM_FUTURE','OI_FUTURE')= over =ores_marketdata_market_series_tbl= | =94e2d8645d=, the merge of #2363 |
-| Families the case walks, two points each | seven: =MM=, =FRA=, =IR_SWAP=, =SWAPTION=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= | =ores.marketdata.core.tests "every_family_that_carries_a_point_projects_one_series_identity"= | =0819a6d9b6= |
-| =ores.marketdata.core= suite, with the family survey | 1826 assertions in 403 cases | =ores.marketdata.core.tests= | =0819a6d9b6= |
+| Families the case walks, two points each | eight: =MM=, =FRA=, =IR_SWAP=, =SWAPTION=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= and =OI_FUTURE=, plus three pairs that must stay apart | =ores.marketdata.core.tests "every_family_that_carries_a_point_projects_one_series_identity"= | =0819a6d9b6= |
+| =ores.marketdata.core= suite, with the family survey | 1839 assertions in 403 cases | =ores.marketdata.core.tests= | =0819a6d9b6= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -333,6 +333,12 @@ via its "Verifies task" field.
 | 18 | The corpus claims carry no path | the FOMC shapes | accepted | Both spellings name =external/ore/examples=, and the dated-OIS count is given. |
 | 19 | The =DISCOUNT= shape could read as the tenor-in-identifier defect | the FOMC shapes | accepted | A sentence says the curve is the series and the =TENOR= is the coordinate, which is why the family is in the defect list rather than the shape being wrong. |
 | 20 | Which unit adds the shapes' tests is not stated | Status | accepted | =Next= named the series-inverse unit at the time; the case landed with the projection fix instead, and the body records why the inverse is not needed. |
+| 21 | =OI_FUTURE= is handled but untested | =oresmd_parser.cpp= | accepted, fixed | The corpus's =OI_FUTURE/PRICE/USD/2025-11/XCME:SRA/3M= joins the survey, and it exposed a third split: an overnight-index future's series is the currency alone, so its contract month is part of the coordinate too and is now dropped. |
+| 22 | The two resets were not separate, so a field could be cleared for a family that keeps it | =oresmd_parser.cpp= | accepted, fixed | The resets are now one branch per family, each naming what its series holds. |
+| 23 | Different contract codes can merge into one series | =oresmd_parser.cpp= | answered, pinned | Intended: the registry gives a money-market future's series the currency and the contract month, so the code and the underlying tenor are the coordinate. A pair of futures differing only in month now pins that the series still separates. |
+| 24 | No negative assertion, so over-clearing would pass | the family case | accepted, fixed | Three pairs that must stay apart -- two futures' months, two swaps' tenors, two curves' currencies -- assert different identities. |
+| 25 | One pair per family could hide a second shape | the family case | recorded | The corpus coverage case and the per-class round trips remain the wider net; the survey is the identity rule's own guard. |
+| 26 | =std::is_same_v= and =std::decay_t= need =<type_traits>= | =oresmd_parser.cpp= | answered | The generated file compiles in CI and the nightly include check is the wider net; the template's own include list is where the header would go if it is ever named. |
 
 * Result
 
@@ -360,7 +366,9 @@ identifier with its point dropped, both writers call it, and the ingest loop bui
 the datum's full key before falling back to the triple. Two IR families kept their
 coordinate where that projection did not look -- a discount curve's maturity and a
 future's contract code and tenor -- and it now drops those too, with a case walking one
-two-point pair per family. Measured on the rebuilt tree: 1826 assertions in 403 cases.
+two-point pair per family and three pairs that must stay apart, which is what guards
+the drop against over-clearing. Measured on the rebuilt tree: 1839 assertions in 403
+cases.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

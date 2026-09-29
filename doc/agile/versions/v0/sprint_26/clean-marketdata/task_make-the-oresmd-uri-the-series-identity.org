@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2361
+#+pr: 2362
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -255,6 +255,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2362][#2362]] | [marketdata,codegen] Name a series, not one of its points |
 | [[https://github.com/OreStudio/OreStudio/pull/2361][#2361]] | [agile] Decide the FOMC segment's identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2359][#2359]] | [marketdata,agile] Settle the cutover's review record |
 | [[https://github.com/OreStudio/OreStudio/pull/2358][#2358]] | [marketdata] Write the market series' oresmd identity |

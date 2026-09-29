@@ -1,0 +1,384 @@
+:PROPERTIES:
+:ID: 42B27F4A-F09C-4DBC-9B9B-F9EFE601E2EA
+:END:
+#+title: ores.refdata.cross_currency_fix_float_convention
+#+description: Codegen entity model for the refdata =cross_currency_fix_float_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a cross-currency swap with one fixed leg and one floating leg.
+#+entity_singular: cross_currency_fix_float_convention
+#+entity_plural: cross_currency_fix_float_conventions
+#+entity_title: Cross-Currency Fix-Float Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds a cross-currency swap whose fixed leg pays one
+currency and whose floating leg pays an index in another. Corresponds to the
+<CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the
+natural key (ORE <Id> element).
+
+Nine fields are required and nine are optional. The corpus sets all nine
+required in all forty-one elements and sets none of the optional ones, so the
+optional half of the mapping is proven by a case that builds the element rather
+than by the corpus walk.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique cross-currency fix-float identifier.
+
+#+begin_src cpp :name generator
+std::string("USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS")
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:END:
+
+Number of business days between a trade and its settlement.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** settlement_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendars both legs settle on, comma separated when there is more than one.
+
+#+begin_src cpp :name generator
+std::string("US,UK,TRY")
+#+end_src
+
+** settlement_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention the settlement date rolls on, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** fixed_currency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Currency the fixed leg pays.
+
+#+begin_src cpp :name generator
+std::string("TRY")
+#+end_src
+
+** fixed_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Payment frequency of the fixed leg, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Semiannual")
+#+end_src
+
+** fixed_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention of the fixed leg.
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** fixed_day_count_fraction
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Day count fraction of the fixed leg.
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the floating leg pays.
+
+#+begin_src cpp :name generator
+std::string("USD-LIBOR-3M")
+#+end_src
+
+** eom
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether coupons roll to the end of the month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** is_resettable
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the fixed leg's rate resets.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** float_index_is_resettable
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the floating leg's index resets.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** include_spread
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread is included in the coupon that carries it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** lookback
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Lookback period applied to the index's fixings, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fixing_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Number of days between a fixing and the coupon it feeds.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rate_cutoff
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Number of days before a payment date after which no fixing is read.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** is_averaged
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the floating leg's coupons are averaged rather than compounded.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** observation_shift
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the observation dates shift with the coupon dates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cross_currency_fix_float_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cross_currency_fix_float_convention
+:entity_plural_short:   cross_currency_fix_float_conventions
+:entity_singular_words: cross-currency fix-float convention
+:entity_plural_words:   cross-currency fix-float conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ccf
+:END:
+
+** Table display
+
+| column              | header              |
+|---------------------+---------------------|
+| id                  | Id                  |
+| fixed_currency      | Fixed Currency      |
+| index               | Index               |
+| modified_by         | Modified By         |
+| version             | Version             |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           cross_currency_fix_float_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   cross_currency_fix_float_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter cross-currency fix-float id |
+| settlement_days | Settlement Days | settlementDaysEdit | line_edit |  | true | e.g. 2 |
+| settlement_calendar | Settlement Calendar | settlementCalendarEdit | line_edit |  | true | e.g. US,UK,TRY |
+| settlement_convention | Settlement Convention | settlementConventionEdit | line_edit |  | true | e.g. Following |
+| fixed_currency | Fixed Currency | fixedCurrencyEdit | line_edit |  | true | e.g. TRY |
+| fixed_frequency | Fixed Frequency | fixedFrequencyEdit | line_edit |  | true | e.g. Semiannual |
+| fixed_convention | Fixed Convention | fixedConventionEdit | line_edit |  | true | e.g. Following |
+| fixed_day_count_fraction | Fixed DCF | fixedDayCountFractionEdit | line_edit |  | true | e.g. ACT/360 |
+| index | Index | indexEdit | line_edit |  | true | e.g. USD-LIBOR-3M |
+| eom | EOM | eomEdit | checkbox |  |  |  |
+| is_resettable | Is Resettable | isResettableEdit | checkbox |  |  |  |
+| float_index_is_resettable | Float Index Resettable | floatIndexIsResettableEdit | checkbox |  |  |  |
+| include_spread | Include Spread | includeSpreadEdit | checkbox |  |  |  |
+| lookback | Lookback | lookbackEdit | line_edit |  |  | e.g. 1D |
+| fixing_days | Fixing Days | fixingDaysEdit | line_edit |  |  | e.g. 0 |
+| rate_cutoff | Rate Cutoff | rateCutoffEdit | line_edit |  |  | e.g. 0 |
+| is_averaged | Is Averaged | isAveragedEdit | checkbox |  |  |  |
+| observation_shift | Observation Shift | observationShiftEdit | checkbox |  |  |  |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 220 |
+| SettlementDays | settlement_days | Settlement Days | int | 130 |
+| SettlementCalendar | settlement_calendar | Settlement Calendar | string | 160 |
+| SettlementConvention | settlement_convention | Settlement Convention | string | 170 |
+| FixedCurrency | fixed_currency | Fixed Currency | string | 130 |
+| FixedFrequency | fixed_frequency | Fixed Frequency | string | 140 |
+| FixedConvention | fixed_convention | Fixed Convention | string | 150 |
+| FixedDayCounter | fixed_day_count_fraction | Fixed DCF | string | 120 |
+| Index | index | Index | string | 160 |
+| EOM | eom | EOM | bool | 80 |
+| IsResettable | is_resettable | Is Resettable | bool | 110 |
+| FloatIndexIsResettable | float_index_is_resettable | Float Index Resettable | bool | 160 |
+| IncludeSpread | include_spread | Include Spread | bool | 120 |
+| Lookback | lookback | Lookback | string | 110 |
+| FixingDays | fixing_days | Fixing Days | int | 110 |
+| RateCutoff | rate_cutoff | Rate Cutoff | int | 110 |
+| IsAveraged | is_averaged | Is Averaged | bool | 110 |
+| ObservationShift | observation_shift | Observation Shift | bool | 140 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

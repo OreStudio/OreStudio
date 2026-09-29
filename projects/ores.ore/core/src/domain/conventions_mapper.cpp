@@ -402,6 +402,42 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
+crossCurrencyFixFloatType
+reverse_cross_currency_fix_float(const refdata::domain::cross_currency_fix_float_convention& v) {
+    crossCurrencyFixFloatType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
+    static_cast<std::string&>(r.SettlementCalendar) = v.settlement_calendar;
+    r.SettlementConvention = parse_bdc(v.settlement_convention);
+    r.FixedCurrency = parse_currency_code(v.fixed_currency);
+    r.FixedFrequency = parse_frequency(v.fixed_frequency);
+    r.FixedConvention = parse_bdc(v.fixed_convention);
+    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
+    static_cast<std::string&>(r.Index) = v.index;
+    if (v.eom)
+        r.EOM = make_bool(*v.eom);
+    if (v.is_resettable)
+        r.IsResettable = make_bool(*v.is_resettable);
+    if (v.float_index_is_resettable)
+        r.FloatIndexIsResettable = make_bool(*v.float_index_is_resettable);
+    if (v.include_spread)
+        r.IncludeSpread = make_bool(*v.include_spread);
+    if (v.lookback) {
+        crossCurrencyFixFloatType_Lookback_t x;
+        static_cast<std::string&>(x) = *v.lookback;
+        r.Lookback = x;
+    }
+    if (v.fixing_days)
+        r.FixingDays = static_cast<int64_t>(*v.fixing_days);
+    if (v.rate_cutoff)
+        r.RateCutoff = static_cast<int64_t>(*v.rate_cutoff);
+    if (v.is_averaged)
+        r.IsAveraged = make_bool(*v.is_averaged);
+    if (v.observation_shift)
+        r.ObservationShift = make_bool(*v.observation_shift);
+    return r;
+}
+
 inflationswapType reverse_inflation_swap(const refdata::domain::inflation_swap_convention& v) {
     inflationswapType r;
     static_cast<std::string&>(r.Id) = v.id;
@@ -1414,6 +1450,53 @@ refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const 
     return r;
 }
 
+refdata::domain::cross_currency_fix_float_convention
+conventions_mapper::map_cross_currency_fix_float(const crossCurrencyFixFloatType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency fix-float convention: "
+                               << std::string(v.Id);
+
+    refdata::domain::cross_currency_fix_float_convention r;
+    r.id = std::string(v.Id);
+    r.settlement_days = static_cast<int>(v.SettlementDays);
+    r.settlement_calendar = std::string(v.SettlementCalendar);
+    r.settlement_convention = normalize_bdc(v.SettlementConvention);
+    r.fixed_currency = to_string(v.FixedCurrency);
+    r.fixed_frequency = normalize_frequency(v.FixedFrequency);
+    r.fixed_convention = normalize_bdc(v.FixedConvention);
+    r.fixed_day_count_fraction = normalize_day_counter(v.FixedDayCounter);
+    r.index = std::string(v.Index);
+
+    if (v.EOM)
+        r.eom = parse_bool(*v.EOM);
+
+    if (v.IsResettable)
+        r.is_resettable = parse_bool(*v.IsResettable);
+
+    if (v.FloatIndexIsResettable)
+        r.float_index_is_resettable = parse_bool(*v.FloatIndexIsResettable);
+
+    if (v.IncludeSpread)
+        r.include_spread = parse_bool(*v.IncludeSpread);
+
+    if (v.Lookback)
+        r.lookback = std::string(*v.Lookback);
+
+    if (v.FixingDays)
+        r.fixing_days = static_cast<int>(*v.FixingDays);
+
+    if (v.RateCutoff)
+        r.rate_cutoff = static_cast<int>(*v.RateCutoff);
+
+    if (v.IsAveraged)
+        r.is_averaged = parse_bool(*v.IsAveraged);
+
+    if (v.ObservationShift)
+        r.observation_shift = parse_bool(*v.ObservationShift);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::inflation_swap_convention
 conventions_mapper::map_inflation_swap(const inflationswapType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping inflation swap convention: " << std::string(v.Id);
@@ -1644,6 +1727,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_ibor_index(x);
     });
 
+    r.cross_currency_fix_float.reserve(v.CrossCurrencyFixFloat.size());
+    std::ranges::transform(v.CrossCurrencyFixFloat,
+                           std::back_inserter(r.cross_currency_fix_float),
+                           [](const auto& x) { return map_cross_currency_fix_float(x); });
+
     r.inflation_swap.reserve(v.InflationSwap.size());
     std::ranges::transform(v.InflationSwap,
                            std::back_inserter(r.inflation_swap),
@@ -1714,7 +1802,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
     count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
     count_unmodelled("CommodityForward", v.CommodityForward.size());
     count_unmodelled("CommodityFuture", v.CommodityFuture.size());
@@ -1787,6 +1874,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.IborIndex.reserve(v.ibor_index.size());
     for (const auto& x : v.ibor_index)
         r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.CrossCurrencyFixFloat.reserve(v.cross_currency_fix_float.size());
+    for (const auto& x : v.cross_currency_fix_float)
+        r.CrossCurrencyFixFloat.push_back(reverse_cross_currency_fix_float(x));
 
     r.InflationSwap.reserve(v.inflation_swap.size());
     for (const auto& x : v.inflation_swap)

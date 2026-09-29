@@ -32,8 +32,7 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * nineteen. The files that use only those nineteen round trip. The rest do
- * not,
+ * twenty. The files that use only those twenty round trip. The rest do not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -252,6 +251,112 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     // Forty-nine of the seventy-two at the commit this was written at. It is the
     // largest category in the document, and three files carried nothing else.
     CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
+    int files_with_fix_float = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CrossCurrencyFixFloat.empty())
+            continue;
+
+        ++files_with_fix_float;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.cross_currency_fix_float.size() == document.CrossCurrencyFixFloat.size());
+
+        for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
+            const auto& in = document.CrossCurrencyFixFloat[i];
+            const auto& out = mapped.cross_currency_fix_float[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
+            CHECK(out.settlement_calendar == std::string(in.SettlementCalendar));
+            CHECK(out.fixed_currency == to_string(in.FixedCurrency));
+            CHECK(out.index == std::string(in.Index));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CrossCurrencyFixFloat");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CrossCurrencyFixFloat.size()) +
+             " CrossCurrencyFixFloat element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CrossCurrencyFixFloat.size()));
+
+        // The mapper stores canonical spellings of the frequency, the two
+        // conventions and the day count, so the export may differ from the
+        // document in those. What has to survive is the value: read the export
+        // back, map it again, and require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CrossCurrencyFixFloat.size() == document.CrossCurrencyFixFloat.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
+            INFO(path.string() + ": CrossCurrencyFixFloat element " + std::to_string(i));
+            CHECK(remapped.cross_currency_fix_float[i] == mapped.cross_currency_fix_float[i]);
+        }
+    }
+
+    // Eighteen of the seventy-two files carry it, and six of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_fix_float == 18);
+}
+
+// The corpus sets none of the element's nine optional fields, so the walk above
+// cannot reach the half of the mapping that reads them. This document sets all
+// nine, including a zero-valued fixing days and a false resettable flag, which
+// are the two cases a mapper that tested the value rather than the presence
+// would drop.
+TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) {
+    const std::string text = R"(<Conventions>
+  <CrossCurrencyFixFloat>
+    <Id>USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS</Id>
+    <SettlementDays>2</SettlementDays>
+    <SettlementCalendar>US,UK,TRY</SettlementCalendar>
+    <SettlementConvention>F</SettlementConvention>
+    <FixedCurrency>TRY</FixedCurrency>
+    <FixedFrequency>Semiannual</FixedFrequency>
+    <FixedConvention>MF</FixedConvention>
+    <FixedDayCounter>A360</FixedDayCounter>
+    <Index>USD-LIBOR-3M</Index>
+    <EOM>true</EOM>
+    <IsResettable>true</IsResettable>
+    <FloatIndexIsResettable>false</FloatIndexIsResettable>
+    <IncludeSpread>true</IncludeSpread>
+    <Lookback>1D</Lookback>
+    <FixingDays>0</FixingDays>
+    <RateCutoff>2</RateCutoff>
+    <IsAveraged>true</IsAveraged>
+    <ObservationShift>true</ObservationShift>
+  </CrossCurrencyFixFloat>
+</Conventions>)";
+
+    conventions document;
+    load_data(text, document);
+    REQUIRE(document.CrossCurrencyFixFloat.size() == 1);
+
+    const auto mapped = conventions_mapper::map(document);
+    REQUIRE(mapped.cross_currency_fix_float.size() == 1);
+    const auto& out = mapped.cross_currency_fix_float[0];
+    CHECK(out.eom.has_value());
+    CHECK(out.is_resettable.has_value());
+    CHECK(out.float_index_is_resettable.has_value());
+    CHECK(out.include_spread.has_value());
+    REQUIRE(out.lookback.has_value());
+    CHECK(*out.lookback == "1D");
+    REQUIRE(out.fixing_days.has_value());
+    CHECK(*out.fixing_days == 0);
+    REQUIRE(out.rate_cutoff.has_value());
+    CHECK(*out.rate_cutoff == 2);
+    CHECK(out.is_averaged.has_value());
+    CHECK(out.observation_shift.has_value());
+
+    const std::string exported = save_data(conventions_mapper::reverse(mapped));
+    conventions reparsed;
+    load_data(exported, reparsed);
+    const auto remapped = conventions_mapper::map(reparsed);
+    REQUIRE(remapped.cross_currency_fix_float.size() == 1);
+    CHECK(remapped.cross_currency_fix_float[0] == out);
 }
 
 TEST_CASE("conventions_inflation_swap_round_trips", tags) {
@@ -561,10 +666,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Fifty of the seventy-two once InflationSwap landed: the three files it
-    // cleared on its own on top of the forty-seven already clean. The count is
-    // asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 50);
+    // Fifty-six of the seventy-two once CrossCurrencyFixFloat landed: the six
+    // files it cleared on its own on top of the fifty already clean. The count
+    // is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 56);
 }
 
 // Hidden by default, and run on demand:

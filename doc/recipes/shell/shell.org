@@ -1055,3 +1055,7 @@ tangled into the runnable script library
 * Inflation Swap Conventions
 
 - [[id:52E34F2C-24D6-5926-AB27-39D8C0CB03DC][How do I run the inflation_swap_conventions commands from the shell?]]
+
+* Cross Currency Fix Float Conventions
+
+- [[id:1364CBFE-B388-54EF-ACA4-1FB984009E0A][How do I run the cross_currency_fix_float_conventions commands from the shell?]]

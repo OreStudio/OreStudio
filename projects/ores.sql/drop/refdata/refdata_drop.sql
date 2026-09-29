@@ -71,6 +71,8 @@
 \ir ./refdata_bma_basis_swap_conventions_drop.sql
 \ir ./refdata_inflation_swap_conventions_notify_trigger_drop.sql
 \ir ./refdata_inflation_swap_conventions_drop.sql
+\ir ./refdata_cross_currency_fix_float_conventions_notify_trigger_drop.sql
+\ir ./refdata_cross_currency_fix_float_conventions_drop.sql
 \ir ./refdata_fra_conventions_notify_trigger_drop.sql
 \ir ./refdata_fra_conventions_drop.sql
 \ir ./refdata_ois_conventions_notify_trigger_drop.sql

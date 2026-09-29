@@ -46,6 +46,7 @@ set(files
     "crm_enabled_derived_pair_commands_tests.cpp"
     "crm_topology_config_commands_tests.cpp"
     "cross_currency_basis_convention_commands_tests.cpp"
+    "cross_currency_fix_float_convention_commands_tests.cpp"
     "currency_calendar_commands_tests.cpp"
     "currency_commands_tests.cpp"
     "currency_country_commands_tests.cpp"

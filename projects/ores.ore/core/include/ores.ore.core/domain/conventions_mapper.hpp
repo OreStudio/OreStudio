@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
@@ -86,6 +87,7 @@ struct mapped_conventions {
     std::vector<refdata::domain::average_ois_convention> average_ois;
     std::vector<refdata::domain::bma_basis_swap_convention> bma_basis_swap;
     std::vector<refdata::domain::cross_currency_basis_convention> cross_currency_basis;
+    std::vector<refdata::domain::cross_currency_fix_float_convention> cross_currency_fix_float;
     std::vector<refdata::domain::tenor_basis_swap_convention> tenor_basis_swap;
     std::vector<refdata::domain::tenor_basis_two_swap_convention> tenor_basis_two_swap;
     std::vector<refdata::domain::deposit_convention> deposit;
@@ -163,6 +165,9 @@ public:
 
     static refdata::domain::cross_currency_basis_convention
     map_cross_currency_basis(const crossCurrencyBasisType& v);
+
+    static refdata::domain::cross_currency_fix_float_convention
+    map_cross_currency_fix_float(const crossCurrencyFixFloatType& v);
 
     static refdata::domain::tenor_basis_swap_convention
     map_tenor_basis_swap(const tenorBasisSwapType& v);

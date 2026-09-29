@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T14:14:09.004699Z
+' Generated: 2026-09-29T14:17:23.961896Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1771,6 +1771,52 @@ package "refdata" #FFF3E0 {
     key (ORE <Id> element).
     end note
 
+    entity ores_refdata_cross_currency_fix_float_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+        * fixed_currency : text
+        * fixed_frequency : text
+        * fixed_convention : text
+        * fixed_day_count_fraction : text
+        * index : text
+          eom : boolean
+          is_resettable : boolean
+          float_index_is_resettable : boolean
+          include_spread : boolean
+          lookback : text
+          fixing_days : integer
+          rate_cutoff : integer
+          is_averaged : boolean
+          observation_shift : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_fix_float_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross-Currency Fix-Float Convention Table
+    Describes how ORE builds a cross-currency swap whose fixed leg pays one
+    currency and whose floating leg pays an index in another. Corresponds to the
+    <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    Nine fields are required and nine are optional. The corpus sets all nine
+    required in all forty-one elements and sets none of the optional ones, so the
+    optional half of the mapping is proven by a case that builds the element rather
+    than by the corpus walk.
+    end note
+
     entity ores_refdata_currencies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * iso_code : text <<PK>>
@@ -2401,6 +2447,54 @@ package "refdata" #FFF3E0 {
     Defines the fixing calendar, day count, settlement lag, and business day
     convention for a term IBOR index such as EURIBOR or USD LIBOR.
     Corresponds to the <IborIndex> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_inflation_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * fix_calendar : text
+        * fix_convention : text
+        * day_count_fraction : text
+        * index : text
+        * interpolated : boolean
+        * observation_lag : text
+        * adjust_inflation_observation_dates : boolean
+        * inflation_calendar : text
+        * inflation_convention : text
+          publication_roll : text
+          start_delay : text
+          start_delay_convention : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Swap Convention Table
+    Describes how ORE builds an inflation swap: the calendars and conventions its
+    legs roll on, the day count it accrues on, the zero-coupon inflation index it
+    references, and how the index's observations are lagged and adjusted.
+    Corresponds to the <InflationSwap> element in ORE conventions.xml. The id field
+    is the natural key (ORE <Id> element).
+    Ten fields are required and the rest are optional. The corpus sets all ten in
+    all one hundred and one elements. Of the optional fields it sets only
+    PublicationRoll, in two elements.
+    The element carries one field this table does not model, PublicationSchedule,
+    which ORE types as a schedule of rules, dates and derived schedule groups. No
+    column can hold it. Two shipped files set it, and both carry other unmodelled
+    categories as well. The mapper counts every element that carries one into
+    mapped_conventions::unmodelled under InflationSwap.PublicationSchedule, so
+    the file stays out of the round-trip set and the measurement names the field
+    rather than dropping it.
     end note
 
     entity ores_refdata_instrument_codes_tbl <<temporal>> #C6F0D8 {

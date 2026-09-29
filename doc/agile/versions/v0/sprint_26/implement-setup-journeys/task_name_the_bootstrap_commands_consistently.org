@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 39AE2A8D-9680-4395-A9E9-596217C13593
+:END:
+#+title: Task: Name the bootstrap commands consistently
+#+description: The bootstrap menu repeats its own name in one of its verbs: a caller types bootstrap bootstrap-status. The generated command verb comes from the message name, and the message is named bootstrap_status_request, so the model needs a way to state the verb it wants.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/name-the-bootstrap-commands-consistently
+#+pr: 2393
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person setting an installation up types =bootstrap status=, =bootstrap
+create-initial-admin= and =bootstrap setup=: one menu whose verbs never repeat
+it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- =bootstrap status= is the command a caller types; the other two verbs are
+  unchanged.
+- The model can state a command verb, and a verb that is not one is refused
+  when the model is read.
+- The generated unit, the recipe it documents and the tangled script agree,
+  and every gate is green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2393][#2393]] | [codegen] Let a model state its command verb |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The generated command for =iam.v1.bootstrap.status= was =bootstrap-status=,
+because a message named =bootstrap_status_request= becomes the command
+=bootstrap-status= and the menu is already =bootstrap=. A caller therefore typed
+=bootstrap bootstrap-status=, which is the menu twice, next to =bootstrap setup=
+and =bootstrap create-initial-admin=, which read properly.
+
+The generator now reads a =:shell_command:= property on a message, so a model
+that names a message after the artefact and the action both can state the verb
+a person types. The bootstrap status read states =status=, and a verb that is
+not lowercase words joined by hyphens is refused where the model is read, so a
+typo fails the model rather than producing a command no one can type.
+
+The command name is also what the generated recipe documents and what the
+tangled script runs, so both follow: the script library holds
+=bootstrap-status.ores= containing =bootstrap status=, and the stale
+script the tangle left behind is removed.
+
+The codegen suite grew five cases for the new property, including one measured
+on the real bootstrap model rather than restated, and every gate is green.

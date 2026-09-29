@@ -61,7 +61,7 @@ TEST_CASE("bootstrap_operations_registers_every_declared_command", tags) {
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("bootstrap ");
     for (const auto& verb : {
-             std::string{"bootstrap bootstrap-status"},
+             std::string{"bootstrap status"},
              std::string{"bootstrap create-initial-admin"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
@@ -69,7 +69,7 @@ TEST_CASE("bootstrap_operations_registers_every_declared_command", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 2 command(s).";
 }
 
-TEST_CASE("bootstrap_operations_process_bootstrap_status_reaches_the_transport", tags) {
+TEST_CASE("bootstrap_operations_process_status_reaches_the_transport", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -80,8 +80,7 @@ TEST_CASE("bootstrap_operations_process_bootstrap_status_reaches_the_transport",
     std::ostringstream out;
 
     command_feedback::reset();
-    bootstrap_operations_commands::process_bootstrap_status(
-        out, session, std::vector<std::string>{});
+    bootstrap_operations_commands::process_status(out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

@@ -12,9 +12,9 @@ This file documents declared operations at the shell, one section per command. E
 
 * Commands
 
-** =bootstrap-status=
+** =status=
 :PROPERTIES:
-:ID: 490E8311-CD27-539E-AB73-84F34E258FB2
+:ID: 6DC02393-F343-5656-AAEA-DBF8AFD2E2DF
 :END:
 
 Sends =bootstrap_status_request= and prints =bootstrap_status_response=, so the shape is the protocol's and the meaning is the service's. A caller runs it before it has a session, so the command presents no token and refuses none.
@@ -23,14 +23,14 @@ Sends =bootstrap_status_request= and prints =bootstrap_status_response=, so the 
 The command is shaped like this:
 
 #+begin_example
-bootstrap bootstrap-status
+bootstrap status
 #+end_example
 
 It is addressed at =iam.v1.bootstrap.status=.
 
-#+name: bootstrap-bootstrap-status
-#+begin_src ores-shell :tangle bootstrap-bootstrap-status.ores :exports none
-bootstrap bootstrap-status
+#+name: bootstrap-status
+#+begin_src ores-shell :tangle bootstrap-status.ores :exports none
+bootstrap status
 #+end_src
 
 ** =create-initial-admin=

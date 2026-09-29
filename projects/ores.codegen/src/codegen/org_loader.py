@@ -3710,6 +3710,22 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     "'true', 'yes' and '1'"
                 )
             entry["http_route"] = True
+        # The verb a generated shell command answers to, when the message's own
+        # name is not the word a caller would type. A message is named for the
+        # artefact and the action both -- bootstrap_status_request -- while the
+        # menu already says bootstrap, so the command a caller types would
+        # otherwise repeat it: `bootstrap bootstrap-status`. The model states
+        # the verb it wants; with no property, the name decides as it always
+        # did.
+        verb = str(props.get("shell_command", "")).strip()
+        if verb:
+            if not _SHELL_COMMAND_RE.fullmatch(verb):
+                raise ValueError(
+                    f"message {node.title} states :shell_command: {verb!r}; a "
+                    "command verb is lowercase words joined by hyphens, as in "
+                    "'status' or 'create-initial-admin'"
+                )
+            entry["shell_command"] = verb
         # How long the answer takes. A command whose work outlives the
         # transport's default request timeout states its own budget, because
         # otherwise the caller gives up first and the failure reads as a slow
@@ -3971,6 +3987,11 @@ _SHELL_LIST_TYPE = "std::vector<std::string>"
 # The trailing words a message name carries that are not part of the action.
 _SHELL_NAME_NOISE = frozenset({"request", "command", "typed"})
 
+# What a command verb may be: lowercase words joined by hyphens. It is the
+# shape every generated command already has, and a verb a model states has to
+# be one a caller can type.
+_SHELL_COMMAND_RE = re.compile(r"[a-z][a-z0-9]*(-[a-z0-9]+)*")
+
 
 def shell_command_name(message_name: str) -> str:
     """The REPL command a declared message becomes.
@@ -4080,10 +4101,17 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
         fields = [_shell_field(field) for field in message.get("fields") or []]
         positionals = [field for field in fields if not field["is_optional"]]
         flags = [field for field in fields if field["is_optional"]]
-        command = shell_command_name(message["name"])
+        derived = shell_command_name(message["name"])
+        command = message.get("shell_command") or derived
         commands.append({
             "command": command,
             "identifier": command.replace("-", "_"),
+            # The operation's own name, taken from the message and not from the
+            # menu. A verb a model states for the shell renames the command a
+            # person types; it must not rename the operation, because an HTTP
+            # route and the summary a caller reads are named after the message.
+            "operation": derived,
+            "operation_identifier": derived.replace("-", "_"),
             "request": message["name"],
             "response_type": response,
             "subject": subject,
@@ -4925,10 +4953,12 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
         pattern = f"/api/{version}/{component}/{resource}"
         if action:
             pattern = f"{pattern}/{action}"
-        command_name = command["command"]
+        # A projection built by a caller that predates the operation key names
+        # the operation the same way the command is named.
+        command_name = command.get("operation") or command["command"]
         routes.append({
             "command": command_name,
-            "identifier": command["identifier"],
+            "identifier": command.get("operation_identifier") or command_name.replace("-", "_"),
             # A declared operation states no verb, so the method is the one
             # that carries a body: the canonical request.
             "method": "post",

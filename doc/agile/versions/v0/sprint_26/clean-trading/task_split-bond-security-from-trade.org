@@ -38,11 +38,11 @@ model, and carries defect 15 from the owner's ruling of 2026-09-28.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance
@@ -480,6 +480,24 @@ review checklist, before the PR was raised. Findings and their decisions:
 | 11 | Confirm the component migrates by recreation and no environment holds real data | task | Accepted, recorded | =compass db recreate= is the upgrade path, and the pilot's notes now say so |
 
 * Result
+
+Merged as [[https://github.com/OreStudio/OreStudio/pull/2386][#2386]] on
+2026-09-30, with fifteen checks green, and the branch deleted. The
+security owns its own data: =bond_issue= is keyed by the reference datum
+and carries the six fields ORE states beside it, the coupon leg family
+and the schedules it states hang off the issue, the trade-keyed leg
+family keeps the three product legs, and the coupon terms are held once.
+Two BondTRS trades on one ISIN now share the security's legs instead of
+writing a copy each, which is what D19 exists to achieve. Defect 15 is
+decided as D21 and its build moves to the bond pilot.
+
+Rebased three times while the PR was open; conflicts were the generated
+ER diagram alone each time.
+
+One gate stayed unrun and is recorded on the bond pilot: the ORE round
+trip fails at =trades.put_many= before any bond code, on the import's
+empty audit name. The task's own note allows stopping at a green tree
+with the rest recorded, and the pilot reworks the add and delete paths.
 
 ** Unit 1 delivered (2026-09-29)
 

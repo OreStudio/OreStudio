@@ -28,9 +28,9 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Eight of the sixteen categories are modelled, so forty-four of the seventy-two files round trip outright. |
+| Now          | Nine of the sixteen categories are modelled, so forty-seven of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =BMABasisSwap= and =InflationSwap=, which clear three files each, then =CmsSpreadOption= and =CommodityFuture=, which clear one each. |
+| Next         | Model =InflationSwap=, which clears three files, then =CmsSpreadOption= and =CommodityFuture=, which clear one each. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -57,10 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 8 after eight | =ores.ore.core.tests "[.][conventions]" -s= | =552d66b646= |
-| Files carrying an unmodelled category | 63 at the start, 28 after eight | the same | =552d66b646= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 44 after eight | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =552d66b646= |
-| Files a single category would clear, now | BMABasisSwap 3 and InflationSwap 3, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =552d66b646= |
+| Categories the mapper does not model | 16 at the start, 7 after nine | =ores.ore.core.tests "[.][conventions]" -s= | =28572d25cf= |
+| Files carrying an unmodelled category | 63 at the start, 25 after nine | the same | =28572d25cf= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 47 after nine | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =28572d25cf= |
+| Files a single category would clear, now | InflationSwap 3, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =28572d25cf= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -109,11 +109,16 @@ task and name that file in the Command column.
   cannot reach it. That is the rule the story settled on: a skip that is counted
   keeps the file out of the round-trip set, and a skip that is silent loses
   content.
+- =BMABasisSwap= is modelled: twelve fields across sixteen files. Three are
+  required and the corpus exercises the optional half lightly, so most of the
+  mapping is read-when-present rather than normalised. It is the first category
+  of the second half of the task, which continues on a new branch because the
+  first eight merged with [[https://github.com/OreStudio/OreStudio/pull/2357][#2357]].
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Sixteen were unmodelled and eight have landed, so
-  eight remain. The expensive one left is =CommodityFuture= at thirty-four fields
-  across five files. The next-best win is =BMABasisSwap=, which clears three
+  mapper in both directions. Sixteen were unmodelled and nine have landed, so
+  seven remain. The expensive one left is =CommodityFuture= at thirty-four fields
+  across five files. The next-best win is =InflationSwap=, which clears three
   files on its own.
 
 * Test Scenarios

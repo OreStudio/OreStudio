@@ -206,6 +206,11 @@ coordinate, which is the slot the corpus's =1D= fills: the series' key is
 the =DISCOUNT= family appears in the defect below -- the projection has to drop a
 maturity the identifier holds in =tenor= -- rather than because the shape is wrong.
 
+Both shapes are pinned by a case -- the spot-starting pillar, a dated pillar and the
+curve -- so the grammar is proved before the feed and the seed are written against it.
+The case also pins the negative: two pillars are two series, and the curve's maturities
+are one.
+
 **The two configs still disagree on the roles, and identity is no longer what exposes
 it.** The synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the
 bootstrap config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Because the shape
@@ -272,6 +277,8 @@ plan itself stays — it is the historical record of what we did.)
 | Families whose projection dropped the coordinate, and now do not | 36 =DISCOUNT= series and 70 in =MM_FUTURE=/=OI_FUTURE=; the 232 no-index series were never affected | =count(*) filter (where series_type = 'DISCOUNT')= and =... in ('MM_FUTURE','OI_FUTURE')= over =ores_marketdata_market_series_tbl= | =94e2d8645d=, the merge of #2363 |
 | Families the case walks, two points each | eight: =MM=, =FRA=, =IR_SWAP=, =SWAPTION=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= and =OI_FUTURE=, plus three pairs that must stay apart | =ores.marketdata.core.tests "every_family_that_carries_a_point_projects_one_series_identity"= | =0819a6d9b6= |
 | =ores.marketdata.core= suite, with the family survey | 1839 assertions in 403 cases | =ores.marketdata.core.tests= | =0819a6d9b6= |
+| FOMC shapes the seed and the feed will write, pinned ahead of them | three: the spot-starting pillar, a dated pillar, and the curve | =ores.marketdata.core.tests "the_fomc_segments_shapes_name_one_series_per_pillar"= | =960a6d81c0= |
+| =ores.marketdata.core= suite, with the FOMC shapes | 1851 assertions in 404 cases | =ores.marketdata.core.tests= | =960a6d81c0= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,

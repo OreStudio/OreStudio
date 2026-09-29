@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | A series-level inverse projection: the families whose coordinate is the tenor (=MM=, =FRA=, =DISCOUNT=) still store one point's identity, and the FOMC curve is a =DISCOUNT= series, so it has to land before the re-key. Nothing outside the task holds it up. |
-| Next         | Give the projections a series-level inverse beside =from_ore_key()= and move both writers onto it, so every family's series identity is the series key's projection. Then re-key the FOMC segment onto the shapes recorded above -- the feed publishing per pillar, the bootstrap reading from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
+| Next         | Give the projections a series-level inverse beside =from_ore_key()= and move both writers onto it, so every family's series identity is the series key's projection; that unit carries the shapes' tests. Then re-key the FOMC segment onto the shapes recorded above -- the feed publishing per pillar, the bootstrap reading from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -188,16 +188,23 @@ reader who asks why they were not taken:
 
 **The shape decides the identity, and it closes the deposit pillar's open question.**
 Every pillar's quote is an ORE swap key: =IR_SWAP/RATE/CCY/<start>/1D/<end>=, which the
-corpus spells for the same instrument class as =IR_SWAP/RATE/GBP/20220922/1D/20221103=.
-The start slot holds =0D= for the pillar that starts at spot and a meeting date for the
-rest, =1D= is the overnight index tenor every dated OIS quote in the corpus carries,
-and the end date is last. One series per pillar -- the key without its end date -- and
-the end date is the observation's point. ORE's money-market family has no dated point,
-so the spot-starting pillar is spelled as the swap it is rather than as a deposit; the
-dated spelling the unit left open is therefore closed, and no pillar needs a new
-spelling. The curve the republish service writes keeps the corpus's discount shape,
-=DISCOUNT/RATE/CCY/CURVE/TENOR=, with the system's curve name =USD-SOFR-FOMC= and the
-pillar as the point.
+corpus spells for the same instrument class as =IR_SWAP/RATE/GBP/20220922/1D/20221103=
+(=external/ore/examples=, 58 series in the live table whose settle segment is
+=20220922=). The start slot holds =0D= for the pillar that starts at spot and a meeting
+date for the rest, =1D= is the overnight index tenor every dated OIS quote in the corpus
+carries, and the end date is last. One series per pillar -- the key without its end date
+-- and the end date is the observation's point. ORE's money-market family has no dated
+point, so the spot-starting pillar is spelled as the swap it is rather than as a
+deposit; the dated spelling the unit left open is therefore closed, and no pillar needs
+a new spelling.
+
+The curve the republish service writes keeps the corpus's discount shape,
+=DISCOUNT/RATE/CCY/CURVE/TENOR= (=DISCOUNT/RATE/USD/USD-DUMMY/1D= in
+=external/ore/examples=). There the curve is the series and the =TENOR= is the
+coordinate, which is the slot the corpus's =1D= fills: the series' key is
+=DISCOUNT/RATE/CCY/CURVE= and the maturity is the observation's point. That is also why
+the =DISCOUNT= family appears in the defect below -- the projection has to drop a
+maturity the identifier holds in =tenor= -- rather than because the shape is wrong.
 
 **The two configs still disagree on the roles, and identity is no longer what exposes
 it.** The synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the
@@ -252,7 +259,8 @@ plan itself stays — it is the historical record of what we did.)
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
 | =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
-| Series in the families whose series key drops the tenor | 232 of 6,260: =MM=, =FRA=, =IMM_FRA= and =BMA_SWAP=, plus 36 =DISCOUNT= rows | =count(*) filter (where series_type in ('MM','FRA','IMM_FRA','BMA_SWAP'))= over =ores_marketdata_market_series_tbl= | =5e48f41fea= |
+| Series in the families whose series key drops the tenor | 232 of 6,260: =MM=, =FRA=, =IMM_FRA= and =BMA_SWAP= | =count(*) filter (where series_type in ('MM','FRA','IMM_FRA','BMA_SWAP'))= over =ores_marketdata_market_series_tbl= | =5e48f41fea=, the merge of #2362 |
+| =DISCOUNT= series, whose key drops the maturity the same way | 36 | the same query with =series_type = 'DISCOUNT'= | =5e48f41fea=, the merge of #2362 |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -308,6 +316,11 @@ via its "Verifies task" field.
 | 13 | Rows the import wrote earlier hold a datum identity, which the series lookup will not find | =import_service.cpp= | answered | The import asks by identity and falls back to the triple, the same order the ingest loop uses, so an older row is still reachable; it keeps the identity it has. The schema is applied by recreation, so a rebuilt database holds no such row, and a backfill is a recorded prerequisite of the not-null unit rather than of this one. |
 | 14 | The import case's qualifier assertion depends on the first point | =service_import_service_tests.cpp= | answered | The qualifier is the registry's decomposition of the canonical key, and the unit changes only the identity the series stores. The assertion pins that both points land in one row under the series' own qualifier, which is what the case is for. |
 | 15 | The key is concatenated on every tick | =feed_ingest_loop.cpp= | recorded, no change | Negligible beside the database round trips the same function makes, as the reviewer notes. |
+| 16 | The measurement cites =5e48f41fea= without saying it is a merge | the measurements table | accepted | Both new rows say it is the merge of #2362. |
+| 17 | The =DISCOUNT= count is not covered by the row's command | the measurements table | accepted | It has its own row and its own command. |
+| 18 | The corpus claims carry no path | the FOMC shapes | accepted | Both spellings name =external/ore/examples=, and the dated-OIS count is given. |
+| 19 | The =DISCOUNT= shape could read as the tenor-in-identifier defect | the FOMC shapes | accepted | A sentence says the curve is the series and the =TENOR= is the coordinate, which is why the family is in the defect list rather than the shape being wrong. |
+| 20 | Which unit adds the shapes' tests is not stated | Status | accepted | =Next= says the series-inverse unit carries them. |
 
 * Result
 

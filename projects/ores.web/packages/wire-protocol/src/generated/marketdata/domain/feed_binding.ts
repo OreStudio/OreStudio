@@ -36,7 +36,7 @@ export interface FeedBinding {
     workspace_id: string;
     id: string;
     party_id: string;
-    ore_key: string;
+    oresmd_uri: string;
     source_name: string;
     asset_class: string;
     enabled: boolean;

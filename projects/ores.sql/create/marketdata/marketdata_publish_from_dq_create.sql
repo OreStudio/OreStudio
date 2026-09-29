@@ -60,6 +60,7 @@ declare
     v_deleted bigint := 0;
     r record;
     v_series_id uuid;
+    v_oresmd_uri text;
     v_asset_class text;
     v_series_subclass text;
     v_exists boolean;
@@ -149,14 +150,29 @@ begin
             -- never a derived series -- see the check constraint on
             -- ores_marketdata_market_series_tbl (OBSERVED <-> nil-uuid/0,
             -- else both required).
+            --
+            -- The series carries an identity, which the column requires. A DQ
+            -- dataset's key is not an ORE market-data key -- RATES/YIELD is the
+            -- deposit grid the vintage path reads, and no oresmd class names it --
+            -- and the projection from a key to its identity is the C++ grammar's
+            -- rather than SQL's, so the identity here is the generic one: a name
+            -- that is unique per key and nothing more. The unit that migrates the
+            -- vintage lookup decides whether the dataset should carry the ORE key
+            -- its own source names (MM/RATE/USD/2D for the deposit grid) instead.
+            v_oresmd_uri :=
+                'oresmd://generic/dq-' ||
+                lower(replace(replace(r.series_type || '~' || r.metric || '~' || r.qualifier,
+                                      '/', '~'), ' ', '-')) ||
+                '?type=fixing';
+
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
-                series_type, metric, qualifier, series_subclass,
+                series_type, metric, qualifier, oresmd_uri, series_subclass,
                 derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
-                r.series_type, r.metric, r.qualifier, v_series_subclass,
+                r.series_type, r.metric, r.qualifier, v_oresmd_uri, v_series_subclass,
                 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name

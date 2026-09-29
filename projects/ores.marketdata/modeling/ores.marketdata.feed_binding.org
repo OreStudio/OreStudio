@@ -9,7 +9,7 @@
 #+entity_singular: feed_binding
 #+entity_plural: feed_bindings
 #+entity_title: Feed Binding
-#+brief: Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
+#+brief: Persisted mapping that binds an official ORE market series, by its oresmd identity, to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
 #+created: 2026-06-30
 #+updated: 2026-09-04
 
@@ -19,7 +19,8 @@ at startup, subscribes to =synthetic.v1.tick.fx_spot.<source_name>= once per
 (tenant, party, workspace), persists each arriving tick as a
 =market_observation= under the binding's party, and republishes on the
 per-party realtime stream
-=marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>=.
+=marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>=, whose key the
+binding's identity projects back to.
 
 =workspace_id= defaults to the Live sentinel (=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa=),
 which resolves in every tenant. It is the seam where the future workspaces
@@ -85,14 +86,19 @@ Set server-side from the authenticated session. Enforced by RLS.
 ctx.generate_uuid()
 #+end_src
 
-** ore_key
+** oresmd_uri
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
 :END:
 
-Official ORE market data key for the series being bound (e.g. =FX/RATE/EUR/USD=).
+The oresmd identity of the series being bound: the same identity the tick's
+key projects to and the =market_series= row the ticks land under carries, so
+a binding names a series by what it is rather than by a spelling the ingest
+loop then has to decompose. The loop projects it back to the ORE key for the
+subject it republishes under, which is why the binding can carry the identity
+alone.
 
 ** source_name
 :PROPERTIES:
@@ -157,7 +163,7 @@ binding. Setting to false suspends ingestion without removing the binding record
 
 | expression       |
 |------------------|
-| "ore_key" <> ''  |
+| "oresmd_uri" <> '' |
 | "source_name" <> '' |
 | "asset_class" <> '' |
 
@@ -238,7 +244,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :domain_class:            ores::marketdata::domain::feed_binding
 :protocol_include:        ores.marketdata.api/messaging/feed_binding_protocol.hpp
 :collection_name:         feed_bindings
-:key_field:               ore_key
+:key_field:               oresmd_uri
 :has_uuid_primary_key:    true
 :has_change_reason_cache: true
 :END:
@@ -247,7 +253,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 
 | field       | label       | widget      | type      | is_key | is_required | placeholder       |
 |-------------+-------------+-------------+-----------+--------+-------------+-------------------|
-| ore_key     | ORE Key     | oreKeyEdit  | line_edit | true   | true        | Enter ORE key     |
+| oresmd_uri  | Oresmd Uri  | oresmdUriEdit | line_edit | true | true        | Enter ORE key     |
 | source_name | Source Name | sourceEdit  | line_edit |        | true        | Enter source name |
 | enabled     | Enabled     | enabledEdit | check_box |        |             |                   |
 
@@ -255,7 +261,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 
 | enum_name  | field       | header      | type    | width |
 |------------+-------------+-------------+---------+-------|
-| OreKey     | ore_key     | ORE Key     | string  | 200   |
+| OresmdUri  | oresmd_uri  | Oresmd Uri  | string  | 500   |
 | SourceName | source_name | Source Name | string  | 200   |
 | Enabled    | enabled     | Enabled     | boolean | 80    |
 | Version    | version     | Version     | int     | 80    |

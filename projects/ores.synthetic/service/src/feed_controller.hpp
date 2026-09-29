@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
@@ -487,6 +488,19 @@ private:
         if (caller_bearer_token.empty())
             return;
 
+        // The binding names the series by its identity, and the caller supplies the
+        // ORE key, so the key is projected here -- the same projection the tick's own
+        // key goes through in the ingest loop. A key the grammar cannot name has no
+        // series for a binding to name.
+        const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(ore_key);
+        if (!identifier) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Not binding " << ore_key << ": oresmd names no series for it";
+            return;
+        }
+        const auto oresmd_uri =
+            ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value;
+
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
 
@@ -498,13 +512,13 @@ private:
             return;
         }
         for (const auto& b : *existing)
-            if (b.ore_key == ore_key && b.source_name == source_name)
+            if (b.oresmd_uri == oresmd_uri && b.source_name == source_name)
                 return; // already bound
 
         ores::marketdata::domain::feed_binding b;
         boost::uuids::random_generator uuid_gen;
         b.id = uuid_gen();
-        b.ore_key = ore_key;
+        b.oresmd_uri = oresmd_uri;
         b.source_name = source_name;
         b.enabled = true;
         b.change_reason_code = "system.new_record";
@@ -516,7 +530,7 @@ private:
             return;
         }
         BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "Auto-created feed binding: " << ore_key << " <- " << source_name;
+            << "Auto-created feed binding: " << oresmd_uri << " <- " << source_name;
     }
 
     // Core vintage-availability check shared by start() and validate(). Uses a

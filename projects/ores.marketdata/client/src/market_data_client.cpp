@@ -260,7 +260,7 @@ market_data_client::save_feed_binding(const domain::feed_binding& binding) {
     messaging::put_feed_binding_request req;
     req.change.write.id = binding.id;
     req.change.write.party_id = binding.party_id;
-    req.change.write.ore_key = binding.ore_key;
+    req.change.write.oresmd_uri = binding.oresmd_uri;
     req.change.write.source_name = binding.source_name;
     req.change.write.asset_class = binding.asset_class;
     req.change.write.enabled = binding.enabled;

@@ -30,7 +30,8 @@
  * (tenant, party, workspace), persists each arriving tick as a
  * market_observation under the binding's party, and republishes on the
  * per-party realtime stream
- * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>.
+ * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, whose key the
+ * binding's identity projects back to.
  *
  * workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
  * which resolves in every tenant. It is the seam where the future workspaces
@@ -67,7 +68,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "ore_key" text not null,
+    "oresmd_uri" text not null,
     "source_name" text not null,
     "asset_class" text not null,
     "enabled" boolean not null,
@@ -86,14 +87,14 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("ore_key" <> ''),
+    check ("oresmd_uri" <> ''),
     check ("source_name" <> ''),
     check ("asset_class" <> '')
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists feed_bindings_party_id_ore_key_source_name_uniq_idx
-on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, ore_key, source_name)
+create unique index if not exists feed_bindings_party_id_oresmd_uri_source_name_uniq_idx
+on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, oresmd_uri, source_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

@@ -36,13 +36,13 @@
 namespace ores::marketdata::messaging {
 
 struct feed_binding_key {
-    std::string ore_key;
+    std::string oresmd_uri;
 };
 
 struct feed_binding_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
-    std::string ore_key;
+    std::string oresmd_uri;
     std::string source_name;
     std::string asset_class;
     bool enabled;

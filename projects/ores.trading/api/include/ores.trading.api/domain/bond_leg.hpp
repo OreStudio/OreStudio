@@ -35,16 +35,15 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One leg of a bond instrument, keyed to the trade and the leg's ordinal.
+ * @brief One leg a trade's product states, keyed to the trade, the leg's role and its ordinal.
  *
- * One row per leg an instrument states, keyed to the trade, the list
+ * One row per leg a trade's product states, keyed to the trade, the list
  * the leg belongs to and the leg's ordinal within that list.
  *
- * The ORE schema declares the bond's leg list unbounded and a bond states
- * one leg per coupon. The total return swap, the repo and the ascot each
- * state at most one leg of their own, and all four are the same leg
- * shape. One table holds them and leg_role says which list the row
- * belongs to.
+ * The total return swap, the repo and the ascot each state at most one
+ * leg of their own, and all three are the same leg shape. One table holds
+ * them and leg_role says which list the row belongs to. The bond's own
+ * legs belong to the security and are held by bond_issue_leg.
  *
  * The row carries the leg's payment terms, its day counters, its
  * settlement block and the two flags the schema states on the leg itself.
@@ -52,11 +51,6 @@ namespace ores::trading::domain {
  * schedules in instrument_schedule, the amortizations, the named
  * amounts and the rate group below. Those tables key on leg_role as
  * well, so a schedule or an amount reaches the leg that stated it.
- *
- * The leg's currency and day counter also reach the issue row, because
- * the issue is where a reader looks for the coupon terms. The row here
- * is the document's own statement and wins on export, so a leg whose
- * terms differ from the issue's still round trips.
  *
  * Every member the schema declares optional is nullable here and an
  * std::optional in C++, so a member the document states and the row
@@ -82,22 +76,22 @@ struct bond_leg final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which leg list of the trade this row belongs to: bond for a leg of the bond itself, or
-     * trs_funding, repo or ascot_swap for the single leg of a total return swap, a repo or an
-     * ascot.
+     * @brief Which leg list of the trade this row belongs to: trs_funding, repo or ascot_swap, the
+single leg of a total return swap, a repo or an ascot.
      *
-     * A document states the bond's legs as a list and each of the other three as at most one leg.
-     * The four are the same leg shape, so one table holds them and the role says which member of
-     * the document a reader rebuilds. Without the role a leg numbered one would be ambiguous
-     * between them.
+     * A document states each of the three as at most one leg. They are the same leg shape, so one
+table holds them and the role says which member of the document a reader rebuilds. Without the role
+a leg numbered one would be ambiguous between them.
+
+The bond's own legs are stated by the security rather than the trade, so they live in bond_issue_leg
+and never carry a role here.
      */
     std::string leg_role;
 
     /**
      * @brief Ordinal of the leg within its list, counting from one.
      *
-     * The bond's leg list is unbounded and the other three roles carry one leg, which is always
-     * number one.
+     * Each of the three roles carries one leg, which is always number one.
      */
     int leg_number;
 

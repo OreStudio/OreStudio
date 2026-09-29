@@ -116,6 +116,20 @@ instrument row's own validity.
 ctx.generate_uuid()
 #+end_src
 
+** notional
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable:      true
+:END:
+
+The trade's own amount for its bond, which ORE holds on =bondData= and
+we keep on the bond instrument.
+
+#+begin_src cpp :name generator
+std::make_optional(ores::utility::decimal::decimal::from_string("1000000").value())
+#+end_src
+
 * Foreign keys
 
 ** trade_id
@@ -183,6 +197,7 @@ annotations; domain and repository profiles regenerate correctly.
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions

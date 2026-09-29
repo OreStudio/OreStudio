@@ -25,6 +25,12 @@
 #include "ores.trading.core/messaging/bond_issue_call_date_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_conversion_target_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_amortization_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_amount_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_rate_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_schedule_date_registrar.hpp"
+#include "ores.trading.core/messaging/bond_issue_leg_schedule_registrar.hpp"
 #include "ores.trading.core/messaging/bond_leg_amortization_registrar.hpp"
 #include "ores.trading.core/messaging/bond_leg_amount_registrar.hpp"
 #include "ores.trading.core/messaging/bond_leg_rate_registrar.hpp"
@@ -70,11 +76,44 @@ register_bond_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(bond_issue_conversion_target_subs.begin()),
                 std::make_move_iterator(bond_issue_conversion_target_subs.end()));
 
+    auto bond_issue_leg_subs = register_bond_issue_leg_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(bond_issue_leg_subs.begin()),
+                std::make_move_iterator(bond_issue_leg_subs.end()));
+
+    auto bond_issue_leg_amount_subs =
+        register_bond_issue_leg_amount_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(bond_issue_leg_amount_subs.begin()),
+                std::make_move_iterator(bond_issue_leg_amount_subs.end()));
+
+    auto bond_issue_leg_rate_subs = register_bond_issue_leg_rate_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(bond_issue_leg_rate_subs.begin()),
+                std::make_move_iterator(bond_issue_leg_rate_subs.end()));
+
+    auto bond_issue_leg_amortization_subs =
+        register_bond_issue_leg_amortization_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(bond_issue_leg_amortization_subs.begin()),
+                std::make_move_iterator(bond_issue_leg_amortization_subs.end()));
+
+    auto bond_issue_leg_schedule_subs =
+        register_bond_issue_leg_schedule_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(bond_issue_leg_schedule_subs.begin()),
+                std::make_move_iterator(bond_issue_leg_schedule_subs.end()));
+
+    auto bond_issue_leg_schedule_date_subs =
+        register_bond_issue_leg_schedule_date_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(bond_issue_leg_schedule_date_subs.begin()),
+                std::make_move_iterator(bond_issue_leg_schedule_date_subs.end()));
+
     auto bond_leg_subs = register_bond_leg_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(bond_leg_subs.begin()),
                 std::make_move_iterator(bond_leg_subs.end()));
-
     auto bond_leg_amount_subs = register_bond_leg_amount_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(bond_leg_amount_subs.begin()),

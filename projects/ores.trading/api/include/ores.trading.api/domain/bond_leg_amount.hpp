@@ -38,7 +38,7 @@ namespace ores::trading::domain {
  * @brief One numbered amount of a bond leg: a notional, a rate, a spread, a cap, a floor or a
  * gearing, keyed to the leg and the role it plays.
  *
- * One row per numbered amount a bond leg states, keyed to the leg, the
+ * One row per numbered amount a leg states, keyed to the leg, the
  * role the amount plays and its ordinal in the document's list.
  *
  * The ORE schema spells the same pair of members six times: a value and
@@ -69,8 +69,8 @@ struct bond_leg_amount final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which leg list of the instrument the leg holding this amount belongs to: bond,
-     * trs_funding, repo or ascot_swap.
+     * @brief Which leg list of the trade the leg holding this amount belongs to: trs_funding, repo
+     * or ascot_swap.
      */
     std::string leg_role;
 

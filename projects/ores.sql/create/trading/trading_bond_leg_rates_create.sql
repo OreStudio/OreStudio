@@ -24,11 +24,11 @@
  *
  * Bond Leg Rate Table
  *
- * One row per bond leg, carrying the arm of the rate group the document
+ * One row per leg, carrying the arm of the rate group the document
  * chose and the members that arm states.
  *
  * The ORE schema states the group as a choice of eighteen alternatives.
- * A bond leg carries a coupon, and the corpus states three of them:
+ * A leg carries a rate, and the corpus states three of them:
  * fixed, floating and formula-based. The other fifteen are a recorded
  * boundary, and a document that states one of them has no row here. The
  * rate_kind column records which arm the document engaged.
@@ -104,7 +104,7 @@ create table if not exists "ores_trading_bond_leg_rates_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_role" <> ''),
     check ("rate_kind" in ('fixed', 'floating', 'formula_based')),
-    check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
+    check ("leg_role" in ('trs_funding', 'repo', 'ascot_swap')),
     check ("leg_number" > 0)
 );
 

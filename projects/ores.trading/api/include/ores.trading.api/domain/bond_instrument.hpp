@@ -27,6 +27,7 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
@@ -74,6 +75,12 @@ struct bond_instrument final {
      * reads as of the instrument row's own validity.
      */
     boost::uuids::uuid issue_id;
+
+    /**
+     * @brief The trade's own amount for its bond, which ORE holds on bondData and we keep on the
+     * bond instrument.
+     */
+    std::optional<ores::utility::decimal::decimal> notional;
 
     ores::dq::domain::audit_record audit;
     /**

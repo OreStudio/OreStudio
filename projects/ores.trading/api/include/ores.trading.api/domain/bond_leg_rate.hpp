@@ -37,11 +37,11 @@ namespace ores::trading::domain {
 /**
  * @brief The rate terms of a bond leg, one arm of the schema's leg-data choice per row.
  *
- * One row per bond leg, carrying the arm of the rate group the document
+ * One row per leg, carrying the arm of the rate group the document
  * chose and the members that arm states.
  *
  * The ORE schema states the group as a choice of eighteen alternatives.
- * A bond leg carries a coupon, and the corpus states three of them:
+ * A leg carries a rate, and the corpus states three of them:
  * fixed, floating and formula-based. The other fifteen are a recorded
  * boundary, and a document that states one of them has no row here. The
  * rate_kind column records which arm the document engaged.
@@ -84,8 +84,8 @@ struct bond_leg_rate final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which leg list of the instrument the leg holding this rate block belongs to: bond,
-     * trs_funding, repo or ascot_swap.
+     * @brief Which leg list of the trade the leg holding this rate block belongs to: trs_funding,
+     * repo or ascot_swap.
      */
     std::string leg_role;
 

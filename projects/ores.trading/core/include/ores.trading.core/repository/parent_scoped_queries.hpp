@@ -25,6 +25,12 @@
 #include "ores.trading.api/domain/bond_future_delivery_basket.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.api/domain/bond_leg.hpp"
 #include "ores.trading.api/domain/bond_leg_amortization.hpp"
 #include "ores.trading.api/domain/bond_leg_amount.hpp"
@@ -153,6 +159,64 @@ read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_amortization>
 read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+
+/**
+ * @brief Reads the legs of a set of bond issues.
+ *
+ * A bond's own legs belong to the security, so they key on the issue
+ * rather than on the trade. The three product legs keep the trade-keyed
+ * read above.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose legs to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg>
+read_issue_legs_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the named amounts of a set of bond issues' legs.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose leg amounts to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_amount>
+read_issue_leg_amounts_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the rate group rows of a set of bond issues' legs.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose leg rates to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_rate>
+read_issue_leg_rates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the amortizations of a set of bond issues' legs.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose leg amortizations to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_amortization>
+read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the schedules of a set of bond issues' legs.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose leg schedules to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_schedule>
+read_issue_schedules_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the dates of a set of bond issues' leg schedules.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose leg schedule dates to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_schedule_date>
+read_issue_schedule_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the schedules of a set of instruments, whichever owner stated them.

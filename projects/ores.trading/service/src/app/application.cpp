@@ -39,6 +39,12 @@
 #include "ores.trading.service/messaging/bond_issue_call_date_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_issue_conversion_target_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_issue_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_leg_amortization_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_leg_amount_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_leg_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_leg_rate_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_leg_schedule_date_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_issue_leg_schedule_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_leg_amortization_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_leg_amount_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_leg_event_registrar.hpp"
@@ -290,6 +296,24 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto bond_issue_sub = ores::trading::service::messaging::register_bond_issue_event_mapping(
         event_source, event_bus, nats);
+    auto bond_issue_leg_sub =
+        ores::trading::service::messaging::register_bond_issue_leg_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_leg_amount_sub =
+        ores::trading::service::messaging::register_bond_issue_leg_amount_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_leg_rate_sub =
+        ores::trading::service::messaging::register_bond_issue_leg_rate_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_leg_amortization_sub =
+        ores::trading::service::messaging::register_bond_issue_leg_amortization_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_leg_schedule_sub =
+        ores::trading::service::messaging::register_bond_issue_leg_schedule_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_issue_leg_schedule_date_sub =
+        ores::trading::service::messaging::register_bond_issue_leg_schedule_date_event_mapping(
+            event_source, event_bus, nats);
     auto bond_leg_amortization_sub =
         ores::trading::service::messaging::register_bond_leg_amortization_event_mapping(
             event_source, event_bus, nats);

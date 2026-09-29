@@ -24,14 +24,13 @@
  *
  * Bond Leg Table
  *
- * One row per leg an instrument states, keyed to the trade, the list
+ * One row per leg a trade's product states, keyed to the trade, the list
  * the leg belongs to and the leg's ordinal within that list.
  *
- * The ORE schema declares the bond's leg list unbounded and a bond states
- * one leg per coupon. The total return swap, the repo and the ascot each
- * state at most one leg of their own, and all four are the same leg
- * shape. One table holds them and leg_role says which list the row
- * belongs to.
+ * The total return swap, the repo and the ascot each state at most one
+ * leg of their own, and all three are the same leg shape. One table holds
+ * them and leg_role says which list the row belongs to. The bond's own
+ * legs belong to the security and are held by bond_issue_leg.
  *
  * The row carries the leg's payment terms, its day counters, its
  * settlement block and the two flags the schema states on the leg itself.
@@ -39,11 +38,6 @@
  * schedules in instrument_schedule, the amortizations, the named
  * amounts and the rate group below. Those tables key on leg_role as
  * well, so a schedule or an amount reaches the leg that stated it.
- *
- * The leg's currency and day counter also reach the issue row, because
- * the issue is where a reader looks for the coupon terms. The row here
- * is the document's own statement and wins on export, so a leg whose
- * terms differ from the issue's still round trips.
  *
  * Every member the schema declares optional is nullable here and an
  * std::optional in C++, so a member the document states and the row
@@ -86,7 +80,7 @@ create table if not exists "ores_trading_bond_legs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_role" <> ''),
-    check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
+    check ("leg_role" in ('trs_funding', 'repo', 'ascot_swap')),
     check ("leg_number" > 0)
 );
 

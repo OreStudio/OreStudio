@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_instrument_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -44,6 +45,10 @@ domain::bond_instrument bond_instrument_mapper::map(const bond_instrument_entity
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id);
+    r.notional =
+        v.notional.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.notional).value()) :
+            std::nullopt;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -65,6 +70,7 @@ bond_instrument_entity bond_instrument_mapper::map(const domain::bond_instrument
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.issue_id = boost::uuids::to_string(v.issue_id);
+    r.notional = v.notional.has_value() ? std::optional(v.notional->to_string()) : std::nullopt;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

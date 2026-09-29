@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: e53f4ad2-1462-41c3-9f76-2d107bd70c50
+:END:
+#+title: ores.trading.bond_issue_leg_schedule_date
+#+description: Codegen entity model for the trading =bond_issue_leg_schedule_date= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One date of a bond issue leg schedule's date list, keyed to the schedule entry that holds it.
+#+entity_singular: bond_issue_leg_schedule_date
+#+entity_plural: bond_issue_leg_schedule_dates
+#+entity_title: Bond Issue Leg Schedule Date
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One row per date of a bond issue leg schedule's date list, family-owned
+by the schedule row that holds it.
+
+The ORE schema states a schedule as a choice, and this table holds the
+date arm: the explicit list a document writes out. The rule arm writes
+no row here, because a calendar expands its dates at read time rather
+than the document stating them.
+
+The owning schedule's key reaches this table whole. A schedule entry
+is keyed by the issue, the leg, the entry's role and its ordinal, so
+those four columns lead the key here and the date's own ordinal follows
+them.
+
+A leg states four schedules, and one of them, the payment dates of a
+leg, is a bare date list with no rule arm at all. Such a list is a
+schedule of kind =dates= whose scalars stay unset, so it writes here
+without a table of its own.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** issue_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:END:
+
+The bond issue whose leg states the owning schedule.
+
+The issue row carries the workspace and the party. The date rows are
+family-owned and ride the issue's scope, so no workspace column rides
+them.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within the issue's leg list, counting from one.
+
+** schedule_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which of the leg's schedules the owning row is.
+
+** schedule_sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the owning schedule entry within its leg's list for that
+role, counting from one.
+
+The parent's =sequence_number= reaches this table under this name, so
+a date stays bound to the entry that holds it when one leg states
+several entries under one role.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this date within the schedule's list.
+
+The schema declares the list unbounded, and a document's order is the
+order it stated. The ordinal preserves that order, so export re-emits
+the dates as the document held them.
+
+** schedule_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+The date (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2029}/1/15}
+#+end_src
+
+* Foreign keys
+
+** issue_id
+:PROPERTIES:
+:table:         ores_trading_bond_issues_tbl
+:target_column: issue_id
+:nullable:      false
+:error_message: Invalid issue_id: %. Bond issue must exist for tenant.
+:END:
+
+The bond issue this row belongs to. A bond's legs belong to the
+security, so a date of a schedule the leg states names the issue its
+document states and the insert trigger checks it there.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_issue_leg_schedule_dates_tbl
+:END:
+
+** Checks
+
+| expression                            |
+|---------------------------------------|
+| "leg_number" > 0                      |
+| "schedule_sequence_number" > 0        |
+| "sequence_number" > 0                 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_issue_leg_schedule_date
+:entity_plural_short:   bond_issue_leg_schedule_dates
+:entity_singular_words: bond issue leg schedule date
+:entity_plural_words:   bond issue leg schedule dates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sched_date
+:END:
+
+** Table display
+
+| column                   | header            |
+|--------------------------+-------------------|
+| leg_number               | Leg               |
+| schedule_role            | Role              |
+| schedule_sequence_number | Schedule Sequence |
+| sequence_number          | Sequence          |
+| schedule_date            | Date              |
+| modified_by              | Modified By       |
+| version                  | Version           |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:fb11c91a-929c-42c9-9442-9d226d606db6][ores.trading.bond_issue_leg]] — the leg whose schedule holds the date.

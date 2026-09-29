@@ -55,12 +55,17 @@ namespace ores::trading::domain {
  * entry's ordinal within its owner's list for that role, counting from
  * one, and it preserves the order the document stated.
  *
- * A bond leg states four schedules: its own schedule, its payment
+ * A product leg states four schedules: its own schedule, its payment
  * schedule, and, when the leg is floating, the fixing and reset
  * schedules. The role column names which one, so one table holds all
  * four. The column also carries the schedules that hang off an option
  * block and off a total return swap, so the table is keyed by owner
  * rather than by leg.
+ *
+ * The bond's own legs are stated by the security, so the schedules they
+ * state live in bond_issue_leg_schedule, keyed by the issue. This
+ * table holds the schedules of the trade's own owners: the three product
+ * legs, the option block and the return block.
  *
  * The nine bond tables carry no schedule column, and the org models of
  * the family record this table as the destination. It is keyed by the
@@ -91,8 +96,8 @@ struct instrument_schedule final {
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which list of the instrument states this schedule: bond, trs_funding, repo,
-     * ascot_swap, option or trs.
+     * @brief Which list of the instrument states this schedule: trs_funding, repo, ascot_swap,
+     * option or trs.
      *
      * The first four name a leg list. option is the exercise schedule an option block states, and
      * trs is the return schedule a total return swap states. Neither is a leg, so the column names

@@ -353,6 +353,22 @@ Verified again on the fixed tree: the whole-tree build exits 0 with zero
 recreated database; the codegen suite is 995 passed; component drift and
 the sweep are clean; =validate_docs.sh= reports 40 components.
 
+** PR 4 merged (2026-09-29)
+
+Merged as =cd00344ddb=, fifteen checks green. The independent review
+round found five issues; four were defects, all fixed at their source and
+re-verified, and the table above records each decision.
+
+One tooling defect to fix elsewhere: =compass pr merge= refused the merge
+with "task * Result section is empty" although the section holds this
+record. The guard's regex =
+=r"^\* Result\s*$(.*?)(?=^\* |\Z)"= lets the greedy =\s*$= consume
+the newlines and the lazy group match empty, so the captured body is "" for
+any Result section whose text starts on the following line. The merge went
+through with =--force= after CI was green; the regex wants
+=r"^\* Result[ \t]*$\n?(.*?)(?=^\* |\Z)"= and a case that fails
+without it.
+
 ** PR 4 (raised 2026-09-28)
 
 The collapse only. Decision D17 moves the bond security split to

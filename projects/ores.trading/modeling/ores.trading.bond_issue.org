@@ -14,17 +14,23 @@
 #+updated: 2026-09-12
 
 One row per bond issue (ISIN), the stable row every instrument of the
-family references. The columns map one to one from =bondData=
-(instruments.xsd lines 382-403): security_id, issuer, currency,
-face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
-issue_date and settlement_days. Only =SecurityId= is required by that
-schema; every other element is optional, so every other column is
-nullable and an absent element is stored as NULL rather than as an
-empty string or a zero.
+family references. The columns map from =bondReferenceDatum=
+(referencedata.xsd lines 97-113): security_id, issuer, the three curve
+identifiers, the six fields beside them, issue date, settlement days and
+calendar. Only =IssuerId= is required by that schema; every other
+element is optional, so every other column is nullable and an absent
+element is stored as NULL rather than as an empty string or a zero.
 
-The coupon terms denormalise the first leg of the issue's =LegData=,
-which is itself optional: a document may identify a bond by its ISIN
-alone.
+The bond's coupon terms are not here. ORE states them on =legData=
+alone -- =bondReferenceDatum= carries no coupon rate, coupon frequency,
+day counter or currency -- and the security's legs are
+=bond_issue_leg= and its children, so the leg holds them once and this
+row is not a second copy.
+
+=face_value= is the issue's per-unit value and repeats the first leg's
+notional. It stays because a row set that holds an issue and no legs
+still has to export a leg, and it is what that leg's notional is built
+from.
 
 * Flags
 :PROPERTIES:
@@ -80,21 +86,6 @@ Issuer of the bond.
 std::string("US Treasury")
 #+end_src
 
-** currency
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-ISO 4217 currency code of the bond.
-
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
-
-#+begin_src cpp :name generator
-std::string("USD")
-#+end_src
-
 ** face_value
 :PROPERTIES:
 :type:          numeric(28, 10)
@@ -106,53 +97,6 @@ Face value per unit of the bond.
 
 #+begin_src cpp :name generator
 ores::utility::decimal::decimal::from_string("1000").value()
-#+end_src
-
-** coupon_rate
-:PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      double
-:nullable:      true
-:default_value: 0.0
-:END:
-
-Coupon rate of the bond, as a decimal.
-
-#+begin_src cpp :name generator
-0.0425
-#+end_src
-
-** coupon_frequency_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Coupon payment frequency (Annual, SemiAnnual, Quarterly).
-
-Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. The stored spelling is SemiAnnual; the reference table keys on Semiannual, so PR 4 needs the same conversion helper payment_frequency_conversion.hpp provides. PR 4 tightens the soft reference into a real foreign key.
-
-#+begin_src cpp :name generator
-std::string("SemiAnnual")
-#+end_src
-
-** day_count_fraction_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Day count convention of the bond (30/360, Actual/360, Actual/Actual).
-
-Soft FK to ores_refdata_day_count_fraction_types_tbl: day count conventions
-belong to ores.refdata, so the dependency is recorded rather than copied. The
-values are ORE's dayCounter spellings. PR 4 tightens the soft reference into a
-real foreign key.
-
-#+begin_src cpp :name generator
-std::string("30/360")
 #+end_src
 
 ** issue_date
@@ -219,18 +163,61 @@ Reference curve the document names for the issue.
 
 Income curve the document names for the issue.
 
-** bond_notional
+** credit_group
 :PROPERTIES:
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-Notional the document states at the bond level, as the document spells
-it.
+Credit group the document names for the issue.
 
-The column is text so that export re-emits the document's own spelling
-rather than a reformatted number.
+** volatility_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Volatility curve the document names for the issue.
+
+** price_quote_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Price quote method the document states for the issue.
+
+** price_quote_base_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Price quote base value the document states for the issue.
+
+** sub_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Bond sub-type the document states for the issue.
+
+** price_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The price type the document states.
+
+Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
 
 * SQL
 
@@ -242,15 +229,15 @@ rather than a reformatted number.
 ** Checks
 
 Each check holds only for a value the document stated. An absent value
-is NULL, and a NULL comparison passes, so an issue that carries no
-notional is admitted while a stated non-positive one is not. The
+is NULL, and a NULL comparison passes, so an issue that states no face
+value is admitted while a stated non-positive one is not. The
 empty-string checks went with the columns that needed them: absence is
 now NULL, not an empty string.
 
 | expression                            |
 |---------------------------------------|
 | "face_value" > 0                      |
-| "coupon_rate" >= 0                    |
+| "price_type" is null or "price_type" in ('Clean', 'Dirty') |
 
 ** Indexes
 
@@ -295,8 +282,6 @@ now NULL, not an empty string.
 |--------------+--------------|
 | security_id  | ISIN         |
 | issuer       | Issuer       |
-| currency     | Currency     |
-| coupon_rate  | Coupon Rate  |
 | modified_by  | Modified By  |
 | version      | Version      |
 

@@ -88,14 +88,19 @@ TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     CHECK(instr.instrument.issue_id == instr.issue.issue_id);
     CHECK(instr.issue.issuer == "CPTY_C");
     CHECK(ore_iso(instr.issue.issue_date) == "2025-02-03");
-    CHECK(instr.issue.currency == "EUR");
     CHECK(instr.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() ==
           Approx(10000000.0).epsilon(0.001));
-    CHECK(instr.issue.coupon_rate == Approx(0.05).epsilon(0.0001));
-    CHECK(instr.issue.coupon_frequency_code == "1Y");
+    // The coupon terms are the leg's, not the issue's.
     REQUIRE(!instr.bond_legs.empty());
-    REQUIRE(!instr.bond_legs.front().schedule.rules.empty());
-    CHECK(instr.bond_legs.front().schedule.rules.front().end_date == "2035-02-03");
+    const auto& leg = instr.bond_legs.front();
+    CHECK(leg.currency == "EUR");
+    REQUIRE(leg.rate.has_value());
+    REQUIRE(leg.rate->fixed.has_value());
+    REQUIRE(!leg.rate->fixed->rates.empty());
+    CHECK(leg.rate->fixed->rates.front().value == Approx(0.05).epsilon(0.0001));
+    REQUIRE(!leg.schedule.rules.empty());
+    CHECK(leg.schedule.rules.front().tenor == "1Y");
+    CHECK(leg.schedule.rules.front().end_date == "2035-02-03");
     BOOST_LOG_SEV(lg, info) << "Bond forward-mapper test passed";
 }
 
@@ -152,7 +157,6 @@ TEST_CASE("mapper_roundtrip_forward_bond_forward", tags) {
     CHECK(instr.instrument.identity.trade_type_code == "ForwardBond");
     CHECK(instr.instrument.issue_id == instr.issue.issue_id);
     CHECK(instr.issue.issuer == "CPTY_C");
-    CHECK(instr.issue.currency == "EUR");
     CHECK(instr.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() ==
           Approx(10000000.0).epsilon(0.001));
     BOOST_LOG_SEV(lg, info) << "ForwardBond forward-mapper test passed";
@@ -185,8 +189,7 @@ TEST_CASE("mapper_roundtrip_convertible_bond_forward", tags) {
 
     CHECK(instr.instrument.identity.trade_type_code == "ConvertibleBond");
     BOOST_LOG_SEV(lg, info) << "ConvertibleBond forward-mapper test passed, "
-                            << "issuer=" << instr.issue.issuer
-                            << " currency=" << instr.issue.currency;
+                            << "issuer=" << instr.issue.issuer;
 }
 
 TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
@@ -206,7 +209,6 @@ TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
     CHECK(!cbd.BondData.IssueDate);
 
     // The issue fields round-trip consistently with the forward pass
-    CHECK(instr.issue.currency.empty());
     CHECK(instr.issue.issuer.empty());
     CHECK(instr.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() ==
           Approx(0.0).epsilon(0.001));

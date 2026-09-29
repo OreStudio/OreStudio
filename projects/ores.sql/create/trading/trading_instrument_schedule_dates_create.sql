@@ -74,7 +74,7 @@ create table if not exists "ores_trading_instrument_schedule_dates_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("owner_role" <> ''),
     check ("schedule_role" <> ''),
-    check ("owner_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap', 'option', 'trs')),
+    check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs')),
     check ("owner_number" > 0),
     check ("schedule_sequence_number" > 0),
     check ("sequence_number" > 0)

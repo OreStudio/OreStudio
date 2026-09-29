@@ -62,8 +62,8 @@ workspace column rides them.
 :primary_key: true
 :END:
 
-Which list of the instrument states the owning schedule: =bond=,
-=trs_funding=, =repo=, =ascot_swap=, =option= or =trs=.
+Which list of the instrument states the owning schedule: =trs_funding=,
+=repo=, =ascot_swap=, =option= or =trs=.
 
 ** owner_number
 :PROPERTIES:
@@ -148,7 +148,7 @@ trigger checks it there.
 
 | expression                                                                     |
 |--------------------------------------------------------------------------------|
-| "owner_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap', 'option', 'trs') |
+| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs') |
 | "owner_number" > 0                                                             |
 | "schedule_sequence_number" > 0                                                 |
 | "sequence_number" > 0                                                          |

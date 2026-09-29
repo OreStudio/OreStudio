@@ -88,10 +88,14 @@ std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-std::string first_tenor(const xsd::optional<scheduleData>& sd) {
-    if (!sd || sd->Rules.empty())
-        return {};
-    return std::string(sd->Rules.front().Tenor);
+// Only the rendering of bondPriceType is public, so its two spellings are
+// read back here rather than through a generated parser.
+std::optional<domain::bondPriceType> parse_price_type(const std::string& text) {
+    if (text == "Clean")
+        return domain::bondPriceType::Clean;
+    if (text == "Dirty")
+        return domain::bondPriceType::Dirty;
+    return std::nullopt;
 }
 
 // The instrument header, the issue and the fact rows each carry the audit
@@ -184,6 +188,20 @@ int count_of(const std::string& text, int fallback) {
     }
 }
 
+// The schema states the notional as a string while the column holds a
+// decimal. A value the parser cannot read leaves the column absent rather
+// than failing the whole import.
+std::optional<ores::utility::decimal::decimal> to_optional_decimal(const std::string& text) {
+    if (text.empty())
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(text);
+    if (!parsed) {
+        BOOST_LOG_SEV(lg(), warn) << "Unreadable decimal '" << text << "', dropping it";
+        return std::nullopt;
+    }
+    return std::move(*parsed);
+}
+
 // A generated wrapper derives from the string type it carries, and a
 // std::string does not convert to a derived type, so the reverse
 // direction writes through the base reference.
@@ -209,6 +227,18 @@ void set_present_text(xsd::optional<Field>& field, const std::optional<std::stri
         return;
     Field wrapper;
     static_cast<std::string&>(wrapper) = *value;
+    field = std::move(wrapper);
+}
+
+// The decimal's own plain rendering, so the round trip re-emits the
+// number the document stated rather than a reformatted one.
+template <typename Field>
+void set_present_decimal(xsd::optional<Field>& field,
+                         const std::optional<ores::utility::decimal::decimal>& value) {
+    if (!value)
+        return;
+    Field wrapper;
+    static_cast<std::string&>(wrapper) = value->to_string();
     field = std::move(wrapper);
 }
 
@@ -1085,32 +1115,34 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
         issue.reference_curve_id = std::string(*bd.ReferenceCurveId);
     if (bd.IncomeCurveId)
         issue.income_curve_id = std::string(*bd.IncomeCurveId);
+    if (bd.CreditGroup)
+        issue.credit_group = std::string(*bd.CreditGroup);
+    if (bd.VolatilityCurveId)
+        issue.volatility_curve_id = std::string(*bd.VolatilityCurveId);
+    if (bd.PriceQuoteMethod)
+        issue.price_quote_method = std::string(*bd.PriceQuoteMethod);
+    if (bd.PriceQuoteBaseValue)
+        issue.price_quote_base_value = std::string(*bd.PriceQuoteBaseValue);
+    if (bd.SubType)
+        issue.sub_type = std::string(*bd.SubType);
+    if (bd.PriceType)
+        issue.price_type = to_string(*bd.PriceType);
     if (bd.BondNotional)
-        issue.bond_notional = std::string(*bd.BondNotional);
+        data.instrument.notional = to_optional_decimal(std::string(*bd.BondNotional));
 
     // Every leg the document states is carried, in document order.
     for (const auto& ld : bd.LegData)
         data.bond_legs.push_back(map_leg(ld));
 
-    // The issue row mirrors the first leg: one row cannot hold two
-    // coupons, and the row is the fallback for a payload that came from a
-    // row set rather than from the document's own statement.
+    // The coupon terms stay on the leg, which is where ORE states them:
+    // bondReferenceDatum carries no coupon rate, frequency, day counter
+    // or currency, so the issue row holds none of them.
     if (!bd.LegData.empty()) {
         const auto& ld = bd.LegData.front();
-        if (ld.Currency)
-            issue.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
             issue.face_value = ores::utility::decimal::decimal::from_double(
                                    static_cast<double>(ld.Notionals->Notional.front()))
                                    .value();
-        if (ld.DayCounter)
-            issue.day_count_fraction_code = to_string(*ld.DayCounter);
-        issue.coupon_frequency_code = first_tenor(ld.ScheduleData);
-
-        if (ld.legDataType && ld.legDataType->FixedLegData &&
-            !ld.legDataType->FixedLegData->Rates.Rate.empty())
-            issue.coupon_rate =
-                static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
     }
 }
 
@@ -1139,14 +1171,21 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     set_present_text(bd.CreditCurveId, issue.credit_curve_id);
     set_present_text(bd.ReferenceCurveId, issue.reference_curve_id);
     set_present_text(bd.IncomeCurveId, issue.income_curve_id);
-    set_present_text(bd.BondNotional, issue.bond_notional);
+    set_present_text(bd.CreditGroup, issue.credit_group);
+    set_present_text(bd.VolatilityCurveId, issue.volatility_curve_id);
+    set_present_text(bd.PriceQuoteMethod, issue.price_quote_method);
+    set_present_text(bd.PriceQuoteBaseValue, issue.price_quote_base_value);
+    set_present_text(bd.SubType, issue.sub_type);
+    if (issue.price_type) {
+        if (const auto parsed = parse_price_type(*issue.price_type))
+            bd.PriceType = *parsed;
+    }
+    set_present_decimal(bd.BondNotional, data.instrument.notional);
 
-    // The legs are emitted when the document held any, whether or not the
-    // columns that mirror the first hold a value: Currency and Notionals
-    // are optional in the schema, so a leg the document carries with
-    // neither still has to come back out.
-    if (!data.bond_legs.empty() || !issue.currency.empty() ||
-        (issue.face_value && !issue.face_value->is_zero())) {
+    // The legs are emitted when the document held any, or when the issue
+    // states a face value and carries none. The coupon terms are the
+    // leg's own: the issue row keeps no copy of them.
+    if (!data.bond_legs.empty() || (issue.face_value && !issue.face_value->is_zero())) {
         const std::size_t leg_count = data.bond_legs.empty() ? 1 : data.bond_legs.size();
         for (std::size_t i = 0; i < leg_count; ++i) {
             const bond_leg_data absent;
@@ -1154,50 +1193,15 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
             legData ld;
             reverse_leg(source, ld);
 
-            // The issue row mirrors the first leg's currency, day counter,
-            // notional, rate and schedule, so it supplies them only when the
-            // container came from a row set. A document's own statement is
-            // already on the leg, and a later leg has no row at all.
-            if (i == 0) {
-                if (!ld.Currency && !issue.currency.empty())
-                    ld.Currency = issue.currency;
-                if (!ld.DayCounter && !issue.day_count_fraction_code.empty())
-                    ld.DayCounter = parse_code(
-                        issue.day_count_fraction_code, day_counter_count, dayCounter::A360);
-
-                if (!ld.Notionals && issue.face_value && !issue.face_value->is_zero()) {
-                    legData_Notionals_t n;
-                    legData_Notionals_t_Notional_t nv;
-                    static_cast<float&>(nv) = static_cast<float>(issue.face_value->to_double());
-                    n.Notional.push_back(nv);
-                    ld.Notionals = std::move(n);
-                }
-
-                // A container that came from a document carries the leg
-                // whole, so this rebuild runs only for a row set with no
-                // remainder: the issue terms are then the whole of what is
-                // known. The schedule's end date is not among them, because
-                // the issue row does not hold it; it lives in the schedule
-                // table and is read from there.
-                if (!ld.ScheduleData && !issue.coupon_frequency_code.empty()) {
-                    scheduleData_Rules_t rule;
-                    static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
-                    if (issue.issue_date)
-                        rule.StartDate = to_ore_date(issue.issue_date);
-                    scheduleData sched;
-                    sched.Rules.push_back(std::move(rule));
-                    ld.ScheduleData = std::move(sched);
-                }
-
-                if (!ld.legDataType && issue.coupon_rate != 0.0) {
-                    _FixedLegData_t fld;
-                    _FixedLegData_t_Rates_t_Rate_t rate;
-                    static_cast<float&>(rate) = static_cast<float>(issue.coupon_rate);
-                    fld.Rates.Rate.push_back(rate);
-                    legDataType_group_t ldt;
-                    ldt.FixedLegData = std::move(fld);
-                    ld.legDataType = std::move(ldt);
-                }
+            // The issue row states the face value, which repeats the
+            // first leg's notional. It supplies it only when the
+            // container came from a row set with no legs at all.
+            if (i == 0 && !ld.Notionals && issue.face_value && !issue.face_value->is_zero()) {
+                legData_Notionals_t n;
+                legData_Notionals_t_Notional_t nv;
+                static_cast<float&>(nv) = static_cast<float>(issue.face_value->to_double());
+                n.Notional.push_back(nv);
+                ld.Notionals = std::move(n);
             }
 
             bd.LegData.push_back(std::move(ld));

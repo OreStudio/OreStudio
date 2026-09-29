@@ -24,7 +24,7 @@
  *
  * Bond Leg Amount Table
  *
- * One row per numbered amount a bond leg states, keyed to the leg, the
+ * One row per numbered amount a leg states, keyed to the leg, the
  * role the amount plays and its ordinal in the document's list.
  *
  * The ORE schema spells the same pair of members six times: a value and
@@ -69,7 +69,7 @@ create table if not exists "ores_trading_bond_leg_amounts_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_role" <> ''),
     check ("amount_role" <> ''),
-    check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
+    check ("leg_role" in ('trs_funding', 'repo', 'ascot_swap')),
     check ("leg_number" > 0),
     check ("sequence_number" > 0)
 );

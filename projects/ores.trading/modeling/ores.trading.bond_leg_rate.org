@@ -13,11 +13,11 @@
 #+created: 2026-09-11
 #+updated: 2026-09-11
 
-One row per bond leg, carrying the arm of the rate group the document
+One row per leg, carrying the arm of the rate group the document
 chose and the members that arm states.
 
 The ORE schema states the group as a choice of eighteen alternatives.
-A bond leg carries a coupon, and the corpus states three of them:
+A leg carries a rate, and the corpus states three of them:
 fixed, floating and formula-based. The other fifteen are a recorded
 boundary, and a document that states one of them has no row here. The
 =rate_kind= column records which arm the document engaged.
@@ -70,8 +70,8 @@ The trade this rate block belongs to.
 :primary_key: true
 :END:
 
-Which leg list of the instrument the leg holding this rate block
-belongs to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+Which leg list of the trade the leg holding this rate block
+belongs to: =trs_funding=, =repo= or =ascot_swap=.
 
 ** leg_number
 :PROPERTIES:
@@ -355,7 +355,7 @@ trigger checks it there.
 | expression                                                  |
 |-------------------------------------------------------------|
 | "rate_kind" in ('fixed', 'floating', 'formula_based')       |
-| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_role" in ('trs_funding', 'repo', 'ascot_swap') |
 | "leg_number" > 0                                            |
 
 * C++

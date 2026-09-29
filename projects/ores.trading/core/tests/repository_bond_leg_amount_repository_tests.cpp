@@ -75,7 +75,9 @@ bond_leg_amount make_amount(database_helper& h,
                             const char* text) {
     bond_leg_amount r;
     r.trade_id = trade_id;
-    r.leg_role = "bond";
+    // The trade-keyed leg family holds the three product legs; a bond's
+    // own legs belong to the security and key on the issue.
+    r.leg_role = "trs_funding";
     r.leg_number = 1;
     r.amount_role = "notional";
     r.sequence_number = sequence_number;
@@ -134,7 +136,7 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", tags) {
 
     for (int i = 0; i < probe_count; ++i) {
         const auto read =
-            repo.read_latest(ctx, id_str, "bond", "1", "notional", std::to_string(i + 1));
+            repo.read_latest(ctx, id_str, "trs_funding", "1", "notional", std::to_string(i + 1));
         REQUIRE(read.size() == 1);
         BOOST_LOG_SEV(lg, debug) << "Read back: " << read[0].value.to_string();
         CHECK(read[0].value.to_string() == probes[i].canonical);
@@ -148,7 +150,7 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", tags) {
     }
 
     for (int i = 0; i < probe_count; ++i)
-        repo.remove(ctx, id_str, "bond", "1", "notional", std::to_string(i + 1));
+        repo.remove(ctx, id_str, "trs_funding", "1", "notional", std::to_string(i + 1));
 }
 
 TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", tags) {
@@ -165,14 +167,14 @@ TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", tags) {
     bond_leg_amount_repository repo;
     REQUIRE_NOTHROW(repo.write(ctx, make_amount(h, trade_id, 1, exact.c_str())));
 
-    const auto read = repo.read_latest(ctx, id_str, "bond", "1", "notional", "1");
+    const auto read = repo.read_latest(ctx, id_str, "trs_funding", "1", "notional", "1");
     REQUIRE(read.size() == 1);
     CHECK(read[0].value.to_string() == exact);
 
     const double rounded = 999999999999999999.9999999999;
     CHECK(decimal::from_double(rounded).value().to_string() != exact);
 
-    repo.remove(ctx, id_str, "bond", "1", "notional", "1");
+    repo.remove(ctx, id_str, "trs_funding", "1", "notional", "1");
 }
 
 TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", tags) {

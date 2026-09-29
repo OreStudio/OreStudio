@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-bond-security-from-trade
+#+pr: 2386
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
 #+updated: 2026-09-28
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,7 +38,7 @@ model, and carries defect 15 from the owner's ruling of 2026-09-28.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -118,6 +118,281 @@ mapper and tests move together; no commit removes a column before its
 replacement exists. The corpus round trip runs before the task closes,
 as it did for the collapse.
 
+** Unit 1: the issue fields, inventoried (2026-09-29)
+
+The first slice, measured on the branch cut from =cd00344ddb=. It is the
+smallest green unit: =bond_issue= is already shared and keyed by
+=security_id=, so the six fields are additive and independent of the datum
+keying and of the leg move.
+
+| Field | ORE type | Our shape |
+|-------+----------+-----------|
+| =CreditGroup= | xs:string optional | text, optional string, nullable |
+| =VolatilityCurveId= | xs:string optional | same |
+| =PriceQuoteMethod= | xs:string optional | same |
+| =PriceQuoteBaseValue= | xs:string optional | same |
+| =SubType= | xs:string optional | same |
+| =PriceType= | =bondPriceType= {Clean, Dirty} | text code, checked, soft FK to =ores_trading_price_types_tbl=, following =bond_option= |
+
+ORE carries all six on =bondData= (instruments.xsd: 392, 396, 400, 401,
+403, 407) and on =bondReferenceDatum= (referencedata.xsd: 101, 104, 108,
+109, 111, 112). No =ores.ore= code maps =BondReferenceData=, so only the
+=bondData= path matters. Five are =xsd::string=; =PriceType= is the
+exception: the reverse needs a local string-to-enum parse, since only
+=to_string= is public.
+
+No template needs a new capability: nullable text, a checked code and a
+soft FK all have precedents in =bond_option=, and none of the six is a
+decimal.
+
+=Decision (D18): the notional's home.= =bond_notional= leaves =bond_issue=
+and lands on =bond_instrument=, as an optional decimal. ORE holds
+=BondNotional= on =bondData=, which is the trade's own bond data: which
+security, how much, which side. The generic trade envelope carries every
+product, so a bond-only amount belongs on the bond instrument row, next to
+=issue_id=, not on =trade=. =bond_future.contract_notional= is the same
+shape for the future.
+
+Consumers to retarget with it, all measured:
+
+| Where | What |
+|-------+------|
+| =bond_instrument_mapper.cpp=:1088-1089, :1142 | reads =bd.BondNotional= into the issue, writes it back |
+| =ore_import_execute_handler.cpp=:965 | copies it into the bond issue request |
+| =xml_bond_fact_mapper_roundtrip_tests.cpp=:1714, :1726-1727, :1738-1739 | the only test that pins it |
+| =bond_instrument_data.hpp= | the hand-written container that holds the issue |
+| =bond_issue.org=:222, :229-233, :246 | the column, its prose and the stale notional Checks prose |
+
+The generated surfacing is mechanical (domain, protocol, entity, mapper,
+service, history mapper, create SQL, ER diagram); the drop SQL, notify
+trigger, json, table, event, handler, registrar and generator are stable.
+The generated TypeScript twins are declared but absent, so nothing to
+regenerate there.
+
+** Unit 2: the legs' parents, inventoried and decided (2026-09-29)
+
+The four leg tables -- =bond_leg=, =bond_leg_rate=, =bond_leg_amount=,
+=bond_leg_amortization= -- key on =trade_id= today, with =leg_role=
+separating the bond's own legs from =trs_funding=, =repo= and
+=ascot_swap=.
+
+ORE says the two are different parents. The bond's legs are
+=bondData.LegData= inside =bondReferenceDatum=, the security; the funding,
+repo and ascot legs are =FundingData=, =RepoData= and
+=ReferenceSwapData= inside =trsData=, =repoData= and =ascotData=, the
+trade's product. Our own container agrees: it holds those three as one leg
+each, not as lists. A blind =trade_id= to =issue_id= swap would key two
+BondTRS trades on one ISIN identically and merge their funding terms --
+=service_bond_instrument_reader_tests.cpp=:647-691 already builds exactly
+that collision.
+
+=Decision (D19): split by parent.= The bond's leg family is keyed by
+=issue_id=, the ORE reference datum id, and holds =leg_role= 'bond' only.
+The three single product legs stay trade-keyed, with their roles narrowed
+to the three they own. Each parent owns its rows and no table alternates
+between two parents, which is the shape the collapse removed from the
+instrument. The cost is that the leg, rate, amount and amortization shape
+exists once per parent rather than once in total.
+
+Two couplings the spec did not name, both measured:
+
+- =instrument_schedule= holds the bond leg's schedules keyed by
+  =trade_id= + =owner_role= (=bond_instrument_reader.cpp=:343-356), so the
+  bond leg's schedules move with the leg or the round trip loses them.
+- =bond_instrument.issue_id= has no foreign-key block, so nothing validates
+  it today; the new leg foreign key will be the first to the issue table.
+  The generic mechanism already supports a non-=id= target column, so no
+  generator capability is needed.
+
+Consumers to retarget: the reader's =read_family_rows= (:100-142) and the
+four =read_leg*_by_trade_ids= (=parent_scoped_queries.cpp=:176-250), which
+read many parents at once and now read two; the import handler's =save_leg=,
+=save_leg_amounts=, rate and amortization writers (:411-605), one trade per
+call, with the issue already written first; and
+=repository_bond_leg_amount_repository_tests.cpp=, whose parent seed writes
+a trade but no instrument or issue.
+
+Early detection, in this order: a reader test holding two BondTRS trades on
+one ISIN and asserting each container keeps its own funding leg; the bond
+leg's schedules surviving the move; then the corpus round trip.
+
+** Decision (D20): the bond leg's schedules get their own table
+   (2026-09-29)
+
+Unit 2's inventory recorded that the bond leg's schedules must move with
+the leg or the round trip loses them. The existing =instrument_schedule=
+keys on the trade: its primary key is =(tenant_id, trade_id, owner_role,
+owner_number, schedule_role, sequence_number, valid_from, valid_to)=, and
+a bitemporal primary key admits no null. An either/or parent would
+therefore need a surrogate key and a check constraint, which is the shape
+D19 rejected for the legs.
+
+So the schedules split the way the legs did. =bond_issue_leg_schedule=
+and =bond_issue_leg_schedule_date= key on the issue, drop =owner_role=
+(the issue owns the row, so its role is always the bond) and rename
+=owner_number= to =leg_number=. =instrument_schedule= keeps the
+schedules of the trade's own owners -- the three product legs, the option
+block and the return block -- and its =owner_role= check narrows to
+=trs_funding=, =repo=, =ascot_swap=, =option= and =trs=.
+
+The cost is the one D19 already accepted: the schedule shape exists once
+per parent rather than once in total.
+
+** Unit 2a delivered (2026-09-29)
+
+The security-keyed leg family exists: =bond_issue_leg=, =bond_issue_leg_rate=,
+=bond_issue_leg_amount= and =bond_issue_leg_amortization=, keyed by
+=issue_id= with a real foreign key to =ores_trading_bond_issues_tbl= and
+with =leg_role= gone. The existing =bond_leg*= family and its callers are
+untouched, so the replacement exists before the move that removes it.
+
+Measured: drift no drift; whole-tree build exit 0 with zero =error:=;
+=compass db recreate -y -k= exit 0 with the four tables, their triggers and
+their policies; =ctest= 89 of 89; =pytest= 997 passed;
+=check_sql_hygiene.py= 1693 files, 0 problems. Committed as =e85b7903ff=,
+with the ER diagram in =3bbbd544c3=.
+
+Two tooling facts to carry into every later entity addition: the drift
+command does not regenerate the per-directory CMake file lists -- a
+separate script does, and without it new sources never compile -- and the
+create and drop aggregates and the RLS policy file are hand-maintained, so
+a new table is invisible to =db recreate= and un-policed until wired.
+
+** Unit 2b delivered (2026-09-29)
+
+The move. Every caller now reads and writes the security-keyed family.
+The trade-keyed =leg_role= and =owner_role= checks narrow to
+=trs_funding=, =repo= and =ascot_swap= (=option= and =trs= for the
+schedule), and the bond role is gone from both, so no table alternates
+between two parents.
+
+The bond leg's schedules could not stay in =instrument_schedule=: its
+primary key leads with =trade_id= and a bitemporal primary key admits no
+null, so an either/or parent would need a surrogate key and a check --
+the shape D19 rejected. Decision D20 gives them their own issue-keyed
+pair, =bond_issue_leg_schedule= and =bond_issue_leg_schedule_date=.
+
+The reader reads the issue's rows once per ISIN and every instrument of
+that security copies them, so two BondTRS trades on one ISIN share the
+security's legs instead of writing a copy each. One =build_leg= serves
+both families, templated on the row set, with =leg_role_of= and
+=owner_matches= supplying the two differences: the trade-keyed family
+states its role and its owner on every row, the issue-keyed family's
+tables already say whose rows these are.
+
+The import handler writes the new family through =save_issue_leg=,
+=save_issue_leg_amounts= and =save_issue_schedule=, with the issue
+already written first.
+
+Wiring the replacement exposed what unit 2a left unregistered: the new
+entities had no NATS handlers, no event mapping and no history provider,
+so nothing would have answered a put. All three sites are wired here.
+
+Tests: the collision test holds two BondTRS trades on one ISIN and
+asserts each keeps its own funding leg while both read the security's
+two; the fixed and floating leg tests pin the schedules surviving the
+move; the decimal repository test uses a product role, which is what its
+table now holds.
+
+Measured on =447e85f592=: build exit 0 with zero =error:=;
+=check_component_drift.py --all --dry-run= no drift; =compass db
+recreate -y -k= exit 0 with the two new tables, their triggers and their
+policies; the fleet restarts to 25 of 25; =ctest -j 1= 89 of 89 on the
+recreated database; =pytest projects/ores.codegen/tests -q= 997 passed;
+=check_sql_hygiene.py= 1733 files, 0 problems; =validate_docs.sh= 40
+components; the protocol-twin, handler-permission, registry-exception,
+test-reachability, shell-recipe and populate-reference checks clean.
+Committed as =447e85f592=, with the ER diagram in =413f377c6d=.
+
+One measurement defect worth recording: =ores.iam.core.tests= and
+=ores.reporting.core.tests= pass on a fresh database and fail on a
+re-run of the same database, on leftover rows of their own. A green
+suite therefore needs the recreation as part of the run, which is how
+every earlier gate measured it.
+
+** Unit 3 delivered (2026-09-29): the coupon terms held once
+
+=bond_issue= carried =currency=, =coupon_rate=, =coupon_frequency_code=
+and =day_count_fraction_code= as a denormalised copy of the first leg.
+The XSD is decisive: =bondReferenceDatum= (referencedata.xsd lines
+97-113) states none of the four. They are =legData= members alone, and
+the security's legs are now =bond_issue_leg= and its children, so the
+issue row was holding a second copy of what the leg already states.
+
+The four columns leave =bond_issue=, and with them the forward mapper's
+"the issue mirrors the first leg" block and the reverse mapper's use of
+the issue as the fallback when a leg stated none. That fallback could
+only fire for a payload built from a row set holding an issue and no leg
+rows; after unit 2b a stored bond's legs are written with its issue, so
+no such row set exists.
+
+=face_value= stays, and its prose now says why: a row set with no legs
+still has to export a leg, and the face value is what that leg's
+notional is built from.
+
+Tests moved with it. The two ORE round-trip suites assert the coupon
+terms on the leg rather than on the issue, and
+=xml_bond_fact_mapper_roundtrip_tests.cpp='s case that proved the
+removed fallback becomes the case that proves its absence: a leg-less
+row set exports no leg at all, and the issue's face value alone stands
+in for the notional.
+
+Measured on =ecc39aa3f7=: whole-tree build exit 0 with zero =error:=;
+=check_component_drift.py --all --dry-run= no drift; =compass db
+recreate -y -k= exit 0; =ctest -j 1= 89 of 89 on the recreated
+database; =pytest projects/ores.codegen/tests -q= 997 passed;
+=check_sql_hygiene.py= 1733 files, 0 problems; =validate_docs.sh= 40
+components. Committed as =ecc39aa3f7=, with the ER diagram in
+=01555cc2fa=.
+
+** Decision (D21): the underlyings are decided here and built in the
+   pilot (2026-09-29)
+
+Defect 15, "an underlying is an unqualified name", is owned by this
+task by the story's table. Its fix is the shared underlyings table of
+the sprint 25 design, and that reshape is not a bond one: it takes
+=underlying_name= out of nine equity tables, =commodity_code= and
+=basket_json= out of commodity and the basket products, and it reworks
+the hand-written mapper across about sixteen trade types. By the owner's
+ruling of 2026-09-29 the table is built in the bond pilot, which already
+carries it in its acceptance; this task settles the shape and records
+the evidence, so the defect is decided rather than left open.
+
+*What ORE states.* =underlyingTypes= is a substitution group
+(=instruments.xsd=:2163-2166): a bare =Name= (an =xs:string=), a
+structured =Underlying=, or an =Underlyings= list. Nine instrument types
+carry it: =varianceSwapData=, =cliquetOptionData=, =equityOptionData=,
+=eqBarrierOptionData=, =equityFutureOptionData=, =eqDigitalOptionData=,
+=eqTouchOptionData=, =equityForwardData= and =genericBarrierOptionData=.
+
+*What the corpus does.* Forty example documents hold 241 structured
+=Underlying= elements, and seven hold an =Underlyings= list. Their
+=Type= is Equity 51, FX 40, Commodity 6 and Bond 4; 132 state no type at
+all. The names are sometimes scheme-bearing already (=RIC:.ABCD=) and
+sometimes bare (=.SPX=, =ECB-EUR-USD=), which is the defect in one line:
+nothing says which scheme a name is in.
+
+*The shape decided.* The design's table, keyed by the trade after the
+collapse rather than by an instrument id: =(tenant_id, trade_id,
+sequence_number)=, holding =underlying_uri= (text, an oresmd URI,
+validated at the write boundary) and an optional =weight=. An oresmd URI
+carries exactly what the defect says is missing -- the authority is the
+asset class, the path the name and the currency a query parameter -- so
+the same column serves equity, commodity and fx. A resolved identifier
+is not registered in a table: the URI is the identity, and a registry
+would add a second name for the same thing.
+
+*What the evidence adds, and what stays open.* The 132 untertyped
+underlyings are not quoted names at all: their =Underlying= block
+carries =OptionData= or =LegData=, so the underlying is itself a
+product. An oresmd URI addresses market data and cannot address a nested
+product, so the row needs a second arm -- an enumerated kind that says
+whether it holds a URI or a product reference. Which arm and how the
+product is named is the pilot's to settle against the mapper; recording
+it here is the point of deciding rather than deferring.
+
+
+
 ** Branch
 
 Cut from =main= after PR 4 merges, so the split reshapes the collapsed
@@ -151,6 +426,23 @@ task and name that file in the Command column.
   work. If the split cannot land whole, stop at a green tree with the
   shared entities in place and record the rest rather than leaving the
   family half-reshaped.
+- The round-trip gate is blocked before it reaches any bond code, on
+  =trades.put_many=. The run: recreate the database, provision the Acme
+  Corporation tenant with =provision tenant --source acme=, stage
+  =external/ore/examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml=
+  as =portfolio_roundtrip.xml=, then run the recipe's three shell verbs.
+  The import fails at its first step with =All 4 trade save(s) failed=,
+  and the trading service's own log gives the cause:
+  =ores.trading.repository.trade_repository= reports =modified_by cannot
+  be null or empty= from =ores_iam_validate_account_username_fn=, raised
+  by =ores_trading_trades_insert_fn=. Every later failure --
+  =Invalid trade_id= on the bond instrument -- is a consequence of the
+  trade never landing. The empty =modified_by= arrives on the
+  =trades.put_many= request, which carries no audit field, so the
+  exporter's caller context and not the split decides it. Nothing in this
+  task touches the trade write path, and the four suites pass without it.
+  The gate stays unrun, not passed; fixing the import's audit context is
+  the bond pilot's, whose plan already owns the add and delete paths.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -166,12 +458,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2386][#2386]] | [trading] Split the bond security from the trade |
 
 * Review
 
+The branch was reviewed as a delta against =origin/main= with the code
+review checklist, before the PR was raised. Findings and their decisions:
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The six bond_issue fields unit 1 added are never mapped or written, so an imported document's values are discarded | =bond_instrument_mapper.cpp=, =ore_import_execute_handler.cpp= | Accepted, fixed | mapped both ways, written on the issue request, and pinned by a new round-trip case; =PriceType= needed a local parse because only its rendering is public |
+| 2 | The security's legs are written once per trade, so a second trade on one ISIN collides on the leg's primary key | =ore_import_execute_handler.cpp= | Accepted, fixed | the security-owned family is written once, when the issue row is minted; the three product legs stay per trade |
+| 3 | Nothing reconciles a security whose document states fewer legs than the stored rows | =ore_import_execute_handler.cpp= | Declined, recorded | a security is written once per import and is immutable within it; reconciling an amended security needs the delete path, which the bond pilot owns |
+| 4 | No coverage for the new wiring: the six fields, the shared-security path, the notional through the database | tests | Partly accepted | the six fields now have a round-trip case; the import path has no test harness in =ores.ore/service/tests=, and building one is the pilot's |
+| 5 | Four =leg_role_of= overloads return a bare ="bond"= literal | =bond_instrument_reader.cpp= | Accepted, fixed | a named constant now holds it |
+| 6 | Issue-leg child rows name the issue, not the leg, so an orphan is possible | the leg family models | Declined, recorded | a bi-temporal parent admits no DDL foreign key against it (D15), and the reader already filters by leg |
+| 7 | The =bond_issue_leg= prose still says the leg's currency and day counter reach the issue row, which the dedupe removed | =bond_issue_leg.org= | Accepted, fixed | the prose now says the leg holds them and the issue keeps no copy; the model was regenerated, so the SQL, the header and the diagram follow |
+| 8 | The import writer has no end-to-end evidence | =ore_import_execute_handler.cpp= | Declined, recorded | the round trip is blocked ahead of any bond code and the service has no test harness; both are recorded on the bond pilot, which reworks the add and delete paths |
+| 9 | The =modified_by= failure must be tracked explicitly | =task_finish-bond-pilot.org= | Accepted, recorded | the diagnosis and the recipe are now on the pilot's notes |
+| 10 | Confirm two instruments on one ISIN cannot write conflicting issue rows | handler | Accepted, confirmed | the handler reuses the issue through =issue_ids_by_security= and only mints one when the security is new; the unique index on =(tenant_id, security_id)= refuses a second live row |
+| 11 | Confirm the component migrates by recreation and no environment holds real data | task | Accepted, recorded | =compass db recreate= is the upgrade path, and the pilot's notes now say so |
 
 * Result
+
+** Unit 1 delivered (2026-09-29)
+
+The six fields ORE has and we lacked are on =bond_issue= -- =credit_group=,
+=volatility_curve_id=, =price_quote_method=, =price_quote_base_value=,
+=sub_type= and =price_type=, the last a checked {Clean, Dirty} code with a
+soft foreign key to the price-type reference table -- and
+=bond_notional= moved to =bond_instrument.notional= by decision D18.
+
+Measured on the rebase onto =0d9d99cb7e=: the whole-tree build exits 0 with
+zero =error:=; =check_component_drift.py --component trading-cpp= reports
+no drift; =compass db recreate -y -k= exits 0 with =price_type= and
+=notional= live and =bond_notional= gone; =ctest= is 89 of 89 on the
+recreated database; =pytest projects/ores.codegen/tests= is 997 passed. No
+generator capability was needed.
+
+Committed as =ab15b141e3= with the ER diagram in =bbaf77d3c8=, on
+=feature/split-bond-security-from-trade=.

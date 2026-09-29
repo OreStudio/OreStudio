@@ -85,18 +85,19 @@ domain::bond_issue to_domain(const messaging::bond_issue_write& write) {
     v.issue_id = write.issue_id;
     v.security_id = write.security_id;
     v.issuer = write.issuer;
-    v.currency = write.currency;
     v.face_value = write.face_value;
-    v.coupon_rate = write.coupon_rate;
-    v.coupon_frequency_code = write.coupon_frequency_code;
-    v.day_count_fraction_code = write.day_count_fraction_code;
     v.issue_date = write.issue_date;
     v.settlement_days = write.settlement_days;
     v.calendar = write.calendar;
     v.credit_curve_id = write.credit_curve_id;
     v.reference_curve_id = write.reference_curve_id;
     v.income_curve_id = write.income_curve_id;
-    v.bond_notional = write.bond_notional;
+    v.credit_group = write.credit_group;
+    v.volatility_curve_id = write.volatility_curve_id;
+    v.price_quote_method = write.price_quote_method;
+    v.price_quote_base_value = write.price_quote_base_value;
+    v.sub_type = write.sub_type;
+    v.price_type = write.price_type;
     return v;
 }
 

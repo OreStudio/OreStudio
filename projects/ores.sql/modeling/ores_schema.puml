@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T21:18:40.744880Z
+' Generated: 2026-09-29T22:54:28.448682Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -6204,20 +6204,21 @@ package "trading" #E8F5E9 {
     (recorded scope limit, task D7943D7E wave 1.3).
     end note
 
-    entity ores_trading_bond_instruments_tbl <<junction>> #ECECEC {
+    entity ores_trading_bond_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
         * issue_id : uuid <<FK>>
+          notional : numeric(28, 10)
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -6311,6 +6312,306 @@ package "trading" #E8F5E9 {
     mandatory, contingent and exchangeable conversion variants.
     end note
 
+    entity ores_trading_bond_issue_leg_amortizations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * issue_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * amortization_type : text
+          value : numeric(28, 10)
+          start_date : text
+          end_date : text
+          frequency : text
+          underflow : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bond_issue_leg_amortizations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Issue Leg Amortization Table
+    One row per step of a bond issue leg's amortization schedule, keyed to
+    the leg and the step's ordinal.
+    A step is not a bare amount. The schema states a type that says how
+    the step amortizes, a value, the window it applies over, a frequency
+    and an underflow flag, and the container mirrors all six. The step
+    therefore has a table of its own rather than a role in the leg's
+    number list.
+    The type is required and the other five members are optional, so the
+    type is not null here and the rest are nullable.
+    end note
+
+    entity ores_trading_bond_issue_leg_amounts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * issue_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * amount_role : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * value : numeric(28, 10)
+          start_date : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bond_issue_leg_amounts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Issue Leg Amount Table
+    One row per numbered amount a bond issue leg states, keyed to the leg,
+    the role the amount plays and its ordinal in the document's list.
+    The ORE schema spells the same pair of members six times: a value and
+    the date it starts. A notional is one, and so are a fixed leg's rate,
+    and a floating leg's spread, cap, floor and gearing. The rows differ
+    only in the role they play, so one table holds all six lists and the
+    role column names which one.
+    The value is required on every one of the six, so the column is not
+    null. The start date is optional on all of them and is nullable here.
+    Both are an std::optional question in C++ only for the date, because
+    the schema states the value unconditionally.
+    end note
+
+    entity ores_trading_bond_issue_leg_rates_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * issue_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        --
+        * version : integer
+        * rate_kind : text
+          index : text
+          is_in_arrears : boolean
+          fixing_days : bigint
+          fixing_calendar : text
+          last_recent_period : text
+          last_recent_period_calendar : text
+          lookback : text
+          rate_cutoff : bigint
+          is_averaged : boolean
+          has_sub_periods : boolean
+          include_spread : boolean
+          is_not_resetting_xccy : boolean
+          naked_option : boolean
+          local_cap_floor : boolean
+          stub_use_original_curve : boolean
+          observation_shift : boolean
+          front_stub_short_index : text
+          front_stub_long_index : text
+          front_stub_rounding_type : text
+          front_stub_rounding_precision : bigint
+          back_stub_short_index : text
+          back_stub_long_index : text
+          back_stub_rounding_type : text
+          back_stub_rounding_precision : bigint
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bond_issue_leg_rates_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Issue Leg Rate Table
+    One row per bond issue leg, carrying the arm of the rate group the
+    document chose and the members that arm states.
+    The ORE schema states the group as a choice of eighteen alternatives.
+    A bond issue leg carries a coupon, and the corpus states three of them:
+    fixed, floating and formula-based. The other fifteen are a recorded
+    boundary, and a document that states one of them has no row here. The
+    rate_kind column records which arm the document engaged.
+    The three arms share members. All three lead with an index and all
+    three state an arrears flag, and the floating and formula arms both
+    state a fixing-days count. Those three members have one column each
+    and the arm decides how a reader takes them, so a fixed leg's row
+    leaves them unset.
+    Each arm also has members the others lack, and they sit here as
+    nullable columns rather than in a table per arm. The floating arm's
+    sixteen members and the formula arm's fixing calendar are what remain
+    after the shared three and the lists below are taken out.
+    The three lists the floating arm states, its spreads, caps, floors and
+    gearings, are not here: each is a numbered amount and lives in
+    bond_issue_leg_amount under its own role. Its two schedules live in
+    bond_issue_leg_schedule, under the fixing_schedule and
+    reset_schedule roles.
+    The two stub interpolation blocks are folded into columns here. Each
+    is a pair of indices with an optional rounding, and the schema states
+    the block at most once at each end of the leg.
+    end note
+
+    entity ores_trading_bond_issue_leg_schedule_dates_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * issue_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * schedule_role : text <<PK>>
+        * schedule_sequence_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * schedule_date : date
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bond_issue_leg_schedule_dates_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Issue Leg Schedule Date Table
+    One row per date of a bond issue leg schedule's date list, family-owned
+    by the schedule row that holds it.
+    The ORE schema states a schedule as a choice, and this table holds the
+    date arm: the explicit list a document writes out. The rule arm writes
+    no row here, because a calendar expands its dates at read time rather
+    than the document stating them.
+    The owning schedule's key reaches this table whole. A schedule entry
+    is keyed by the issue, the leg, the entry's role and its ordinal, so
+    those four columns lead the key here and the date's own ordinal follows
+    them.
+    A leg states four schedules, and one of them, the payment dates of a
+    leg, is a bare date list with no rule arm at all. Such a list is a
+    schedule of kind dates whose scalars stay unset, so it writes here
+    without a table of its own.
+    end note
+
+    entity ores_trading_bond_issue_leg_schedules_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * issue_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * schedule_role : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * schedule_kind : text
+          start_date : date
+          end_date : date
+          adjust_end_date_to_previous_month_end : text
+          tenor : text
+          calendar : text
+          convention : text
+          term_convention : text
+          rule : text
+          end_of_month : text
+          end_of_month_convention : text
+          first_date : date
+          last_date : date
+          remove_first_date : boolean
+          remove_last_date : boolean
+          include_duplicate_dates : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bond_issue_leg_schedules_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Issue Leg Schedule Table
+    One row per schedule entry a bond issue's leg states, keyed to the
+    issue, the leg that states it, the schedule's role and the entry's
+    ordinal within that role.
+    The ORE schema states a schedule as a choice: a rule block that a
+    calendar expands, or an explicit list of dates. The generated code
+    mirrors the choice as two lists on bond_schedule_data, and the
+    mapping container carries both. This table holds the rule arm's
+    scalars and the schedule_kind column records which arm the document
+    chose, so a reader rebuilds the arm it read rather than guessing. The
+    date arm's rows land in the keyed child table.
+    Both lists are unbounded and a document interleaves their entries, so
+    the role alone does not identify a row. sequence_number is the
+    entry's ordinal within its leg's list for that role, counting from
+    one, and it preserves the order the document stated.
+    A bond leg states four schedules: its own schedule, its payment
+    schedule, and, when the leg is floating, the fixing and reset
+    schedules. The role column names which one, so one table holds all
+    four.
+    The security owns the leg, so it owns the schedules the leg states:
+    one schedule serves every instrument of that ISIN. The trade-keyed
+    instrument_schedule holds the schedules of the three product legs
+    and of the option and return blocks, whose owners are the trade's own.
+    Every scalar the schema declares optional is nullable here and an
+    std::optional in C++, so a member the document states and the row
+    cannot hold stays distinguishable from one the document omits.
+    end note
+
+    entity ores_trading_bond_issue_legs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * issue_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        --
+        * version : integer
+          payer : boolean
+          leg_type : text
+          currency : text
+          payment_convention : text
+          payment_lag : text
+          payment_calendar : text
+          day_counter : text
+          last_period_day_counter : text
+          notional_payment_lag : bigint
+          strict_notional_dates : boolean
+          indexings_from_asset_leg : boolean
+          settlement_fx_index : text
+          settlement_fixing_date : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_bond_issue_legs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Issue Leg Table
+    One row per leg a bond issue states, keyed to the issue and the leg's
+    ordinal within the issue's leg list.
+    The ORE schema declares the bond's leg list unbounded, and a bond states
+    one leg per coupon. The legs are LegData inside bondReferenceDatum,
+    the security, so the issue owns them: one schedule serves every
+    instrument of that ISIN. The funding, repo and ascot legs are the
+    product's own and stay with their trade-keyed tables.
+    The row carries the leg's payment terms, its day counters, its
+    settlement block and the two flags the schema states on the leg itself.
+    Everything else the leg states lives in a table of its own: the
+    schedules in bond_issue_leg_schedule, the amortizations, the named
+    amounts and the rate group below. Those tables key on issue_id as
+    well, so a schedule or an amount reaches the leg that stated it.
+    The leg's currency and day counter live here and nowhere else. The issue
+    row keeps no copy of the coupon terms: bondReferenceDatum states them
+    on legData alone, so a leg whose terms differ from its neighbour's
+    still round trips.
+    Every member the schema declares optional is nullable here and an
+    std::optional in C++, so a member the document states and the row
+    cannot hold stays distinguishable from one the document omits.
+    end note
+
     entity ores_trading_bond_issues_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * issue_id : uuid <<PK, FK>>
@@ -6318,18 +6619,19 @@ package "trading" #E8F5E9 {
         * version : integer
         * security_id : text <<FK>>
           issuer : text
-          currency : text
           face_value : numeric(28, 10)
-          coupon_rate : numeric(28, 10)
-          coupon_frequency_code : text
-          day_count_fraction_code : text
           issue_date : date
           settlement_days : integer
           calendar : text
           credit_curve_id : text <<FK>>
           reference_curve_id : text <<FK>>
           income_curve_id : text <<FK>>
-          bond_notional : text
+          credit_group : text
+          volatility_curve_id : text <<FK>>
+          price_quote_method : text
+          price_quote_base_value : text
+          sub_type : text
+          price_type : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -6345,16 +6647,21 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Bond Issue Table
     One row per bond issue (ISIN), the stable row every instrument of the
-    family references. The columns map one to one from bondData
-    (instruments.xsd lines 382-403): security_id, issuer, currency,
-    face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
-    issue_date and settlement_days. Only SecurityId is required by that
-    schema; every other element is optional, so every other column is
-    nullable and an absent element is stored as NULL rather than as an
-    empty string or a zero.
-    The coupon terms denormalise the first leg of the issue's LegData,
-    which is itself optional: a document may identify a bond by its ISIN
-    alone.
+    family references. The columns map from bondReferenceDatum
+    (referencedata.xsd lines 97-113): security_id, issuer, the three curve
+    identifiers, the six fields beside them, issue date, settlement days and
+    calendar. Only IssuerId is required by that schema; every other
+    element is optional, so every other column is nullable and an absent
+    element is stored as NULL rather than as an empty string or a zero.
+    The bond's coupon terms are not here. ORE states them on legData
+    alone -- bondReferenceDatum carries no coupon rate, coupon frequency,
+    day counter or currency -- and the security's legs are
+    bond_issue_leg and its children, so the leg holds them once and this
+    row is not a second copy.
+    face_value is the issue's per-unit value and repeats the first leg's
+    notional. It stays because a row set that holds an issue and no legs
+    still has to export a leg, and it is what that leg's notional is built
+    from.
     end note
 
     entity ores_trading_bond_leg_amortizations_tbl <<temporal>> #C6F0D8 {
@@ -6384,7 +6691,7 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Leg Amortization Table
-    One row per step of a bond leg's amortization schedule, keyed to the
+    One row per step of a leg's amortization schedule, keyed to the
     leg and the step's ordinal.
     A step is not a bare amount. The schema states a type that says how
     the step amortizes, a value, the window it applies over, a frequency
@@ -6419,7 +6726,7 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Leg Amount Table
-    One row per numbered amount a bond leg states, keyed to the leg, the
+    One row per numbered amount a leg states, keyed to the leg, the
     role the amount plays and its ordinal in the document's list.
     The ORE schema spells the same pair of members six times: a value and
     the date it starts. A notional is one, and so are a fixed leg's rate,
@@ -6477,10 +6784,10 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Leg Rate Table
-    One row per bond leg, carrying the arm of the rate group the document
+    One row per leg, carrying the arm of the rate group the document
     chose and the members that arm states.
     The ORE schema states the group as a choice of eighteen alternatives.
-    A bond leg carries a coupon, and the corpus states three of them:
+    A leg carries a rate, and the corpus states three of them:
     fixed, floating and formula-based. The other fifteen are a recorded
     boundary, and a document that states one of them has no row here. The
     rate_kind column records which arm the document engaged.
@@ -6536,23 +6843,18 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Leg Table
-    One row per leg an instrument states, keyed to the trade, the list
+    One row per leg a trade's product states, keyed to the trade, the list
     the leg belongs to and the leg's ordinal within that list.
-    The ORE schema declares the bond's leg list unbounded and a bond states
-    one leg per coupon. The total return swap, the repo and the ascot each
-    state at most one leg of their own, and all four are the same leg
-    shape. One table holds them and leg_role says which list the row
-    belongs to.
+    The total return swap, the repo and the ascot each state at most one
+    leg of their own, and all three are the same leg shape. One table holds
+    them and leg_role says which list the row belongs to. The bond's own
+    legs belong to the security and are held by bond_issue_leg.
     The row carries the leg's payment terms, its day counters, its
     settlement block and the two flags the schema states on the leg itself.
     Everything else the leg states lives in a table of its own: the
     schedules in instrument_schedule, the amortizations, the named
     amounts and the rate group below. Those tables key on leg_role as
     well, so a schedule or an amount reaches the leg that stated it.
-    The leg's currency and day counter also reach the issue row, because
-    the issue is where a reader looks for the coupon terms. The row here
-    is the document's own statement and wins on export, so a leg whose
-    terms differ from the issue's still round trips.
     Every member the schema declares optional is nullable here and an
     std::optional in C++, so a member the document states and the row
     cannot hold stays distinguishable from one the document omits.
@@ -8030,12 +8332,16 @@ package "trading" #E8F5E9 {
     the role alone does not identify a row. sequence_number is the
     entry's ordinal within its owner's list for that role, counting from
     one, and it preserves the order the document stated.
-    A bond leg states four schedules: its own schedule, its payment
+    A product leg states four schedules: its own schedule, its payment
     schedule, and, when the leg is floating, the fixing and reset
     schedules. The role column names which one, so one table holds all
     four. The column also carries the schedules that hang off an option
     block and off a total return swap, so the table is keyed by owner
     rather than by leg.
+    The bond's own legs are stated by the security, so the schedules they
+    state live in bond_issue_leg_schedule, keyed by the issue. This
+    table holds the schedules of the trade's own owners: the three product
+    legs, the option block and the return block.
     The nine bond tables carry no schedule column, and the org models of
     the family record this table as the destination. It is keyed by the
     instrument rather than by a bond row, so any family whose product

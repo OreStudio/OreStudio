@@ -219,6 +219,57 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A reference that names two parties is resolved twice and the two resolutions can disagree | =tenant_provisioning_handler.hpp= | Fixed | The reference is refused when it matches more than one party, and the identifier resolved travels into the step's arguments, so the run acts on the party the answer names. |
+| 2 | The handler compares an identifier as text while the step parses it, so the two accept different spellings | =tenant_provisioning_handler.hpp= | Fixed | The handler parses the reference first and matches an identifier as one; the SQL no longer compares the column's text. |
+| 3 | The party stage checks =iam::tenants:create=, which may not be the capability a tenant administrator holds | =tenant_provisioning_handler.hpp= | Fixed | It checks =iam::parties:provision=, seeded beside the tenant permissions: a party stage should not make every caller who may provision a party into a caller who may create a tenant. |
+| 4 | The parameter-substitution tests should cover two references and a brace that is not one | =messaging_provision_step_arguments_tests.cpp= | Fixed | Both cases added; a brace naming nothing is refused, because such a dataset code never publishes anything. |
+| 5 | The step's all-parties read and the reference's lookup duplicate the paging loop | =tenant_provisioning_handler.hpp= | Fixed | One =list_all_parties= helper serves both. |
+| 6 | Three separate control-plane reads | =tenant_provisioning_handler.hpp= | No change | The reviewer agreed it is fine for a control-plane call. |
+| 7 | The recipes had not been run | Evidence | Fixed | All three ran from their own empty installation; the runs found and fixed the completing step writing a tenant's flags under the administrator's party. |
+| 8 | The generated eventing test that leaves its parent active should stay visible | Capture | Recorded | [[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][the capture]] links back from the Notes. |
 
 * Result
+
+The three porcelain provisioning commands are thin callers of the same
+subjects the browser's journeys call. =provision system= reads the
+deployment's bootstrap answer, creates the administrator, signs in as it
+and sends one provision request; =provision tenant= sends the same request
+for every tenant after the first; =provision party= sends one party-stage
+request for a named party. Each follows the run through the same progress
+read the journey's rail renders. The 696 lines of client-side
+orchestration are gone from the file, which is 407 lines and holds no
+sequence of its own.
+
+The orchestration they did moved rather than vanished. Publishing bundles,
+importing the hierarchy, activating parties, joining the administrator to
+them and completing the tenant are the step kinds the run dispatches; the
+counterparty set is a starting point's parameter, which nothing read
+before, so a browser-provisioned tenant held none; and the synthetic
+generator stays a shell tool, which the seed profile contract decided. The
+inventory of plan steps 1 and 2 records every piece and every flag that is
+gone with its reason.
+
+Two verbs retired with their last caller,
+=iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme=,
+and the generated recipes, shell units and scripts that named them
+regenerated. The generic request declares the request budget creating a
+tenant needs, which is the budget the bootstrap verb it replaced used.
+
+The proof is the three end-to-end recipes, run one recreate each from an
+empty installation to a working tenant, recorded in
+=evidence/three_recipes_from_empty_installations.txt=. The runs found a
+defect on the browser's path as well as the shell's: the completing step
+wrote a tenant's flags under the administrator's party rather than the
+tenant's system party, so a demonstration or GLEIF tenant was left
+reporting bootstrap mode with its onboarding incomplete. The step acts as
+the system party now, and both paths end with the flags right and one row
+each. The GLEIF tenant holds the 12,959 counterparties its =small=
+parameter names.
+
+What is left is the story's own last step and not this task's: the browser
+half of proving the three journeys on a fresh database, and the journey
+documents' "what is missing" lists, which still describe the state before
+the story. One defect the work found is captured rather than fixed,
+because its fix is a codegen template and 53 files across five
+components: [[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][a generated eventing
+integration test leaves the parent row it seeds active]].

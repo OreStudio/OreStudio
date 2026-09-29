@@ -48,9 +48,9 @@ both clients become callers of one contract.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The three commands are thin callers and the orchestration is the server's. =provision system= reads the deployment's bootstrap answer, creates the administrator, signs in as it and provisions the first tenant; =provision tenant= creates every tenant after the first with the same request; =provision party= runs the party stage against one named party. The two verbs the shell was the last caller of — =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= — retire with it, and the generated recipes and scripts that named them are regenerated. |
+| Now          | The three commands are thin callers and the orchestration is the server's. =provision system= reads the deployment's bootstrap answer, creates the administrator, signs in as it and provisions the first tenant; =provision tenant= creates every tenant after the first with the same request; =provision party= runs the party stage against one named party. The two verbs the shell was the last caller of — =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= — retire with it, and the generated recipes and scripts that named them are regenerated. All three end-to-end recipes ran from their own empty installation to a working tenant: the evidence is =evidence/three_recipes_from_empty_installations.txt=, and the runs found and fixed the completing step writing a tenant's flags under the administrator's party rather than the tenant's. |
 | Waiting on   | Nothing. |
-| Next          | Run the three recipes against a fresh database and record the output; that is the story's own last plan step and it needs a recreate the product owner has not yet allowed. |
+| Next          | Nothing. The story's last plan step, proving both clients on a fresh database, is partly done here: the shell's half is proven for all three recipes, and the browser's half runs when the browser journeys are walked again. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -181,6 +181,14 @@ request that named it would be a second starting point), =--bundle= and
 now: =--param root_lei=), =--dataset-size= (the counterparty set belongs
 to the tenant's starting point, not to one party), and the synthetic
 generator's knobs (that tool's own, and it is not provisioning's).
+
+The recipes' own runs found one defect this task did own and fixed: the
+completing step of a run wrote the tenant's flags as the run's administrator,
+whose party is one the provisioning created, while a tenant's flags live under
+the tenant's system party, so the write was refused as a duplicate create and
+the tenant was left reporting bootstrap mode with its onboarding incomplete. It
+acted as the system party after that, and the browser's path had the same
+defect: the demonstration and GLEIF cards both left a tenant that way.
 
 The work also found a defect it did not own: =ores.iam.core.tests= fails
 on a second run against one database, because the generated eventing

@@ -48,11 +48,11 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.series_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.metric = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.qualifier = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.oresmd_uri = std::string("oresmd://generic/") + std::string(faker::word::noun()) + "-" +
-                   std::to_string(idx) + "?type=fixing";
+                   std::to_string(idx) + "?type=fixing" + "-" + std::to_string(idx);
+    r.series_type = std::string(faker::word::noun());
+    r.metric = std::string(faker::word::noun());
+    r.qualifier = std::string(faker::word::noun());
     r.series_subclass = [idx] {
         static constexpr std::string_view subclasses[] = {"spot",
                                                           "forward",

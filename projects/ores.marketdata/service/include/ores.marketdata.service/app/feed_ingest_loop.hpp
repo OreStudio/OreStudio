@@ -170,6 +170,9 @@ private:
     /// wire, not from any binding.
     std::map<std::pair<std::string, std::string>, std::shared_ptr<feed_stats>> ir_stats_;
     std::set<std::string> unbound_warned_;
+    /// Keys whose ticks were dropped for having no identity, so the drop is
+    /// reported once per key rather than once per tick. Guarded by mu_.
+    std::set<std::string> unnameable_warned_;
 
     static constexpr std::chrono::minutes status_interval_{1};
     std::atomic<bool> stop_flag_{false};

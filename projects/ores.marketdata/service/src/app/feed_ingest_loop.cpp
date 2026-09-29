@@ -369,19 +369,29 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         // projection with the point dropped: every point of one series resolves to
         // one identity. A tick that names no point, or a class whose key carries
         // none, is named by the series key alone. A tick whose key the grammar cannot
-        // name carries none, and a series created before the identity column existed
-        // carries none, so the triple is asked as the fallback either way.
+        // name is dropped here, before any lookup, and reported once per key: the
+        // series is keyed by its identity, so a tick with none has nothing to be filed
+        // under, and a row that predates the identities cannot rescue it because that
+        // row has none either.
         std::optional<domain::market_data_identifier> identity;
         if (!point_id.empty())
             identity = core::oresmd_projections::from_ore_key(ore_key + "/" + point_id);
         if (!identity)
             identity = core::oresmd_projections::from_ore_key(ore_key);
-        const auto oresmd_uri =
-            identity ? core::oresmd_parser::to_series_uri(*identity).value : std::string{};
-        auto existing = oresmd_uri.empty() ?
-                            std::vector<domain::market_series>{} :
-                            series_repo.read_latest_by_uri(
-                                tenant_ctx, oresmd_uri, boost::uuids::to_string(party_id));
+        if (!identity) {
+            {
+                std::lock_guard lock(mu_);
+                if (!unnameable_warned_.insert(ore_key).second)
+                    return false;
+            }
+            BOOST_LOG_SEV(lg(), warn)
+                << "Dropping ticks for " << ore_key
+                << ": oresmd names no series for this key, and its series is keyed by one.";
+            return false;
+        }
+        const auto oresmd_uri = core::oresmd_parser::to_series_uri(*identity).value;
+        auto existing = series_repo.read_latest_by_uri(
+            tenant_ctx, oresmd_uri, boost::uuids::to_string(party_id));
         if (existing.empty())
             existing = series_repo.read_latest_by_type(
                 tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));

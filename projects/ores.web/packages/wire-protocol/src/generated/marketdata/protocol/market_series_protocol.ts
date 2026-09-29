@@ -35,10 +35,10 @@ export interface MarketSeriesKey {
 export interface MarketSeriesWrite {
     id: string;
     party_id: string;
+    oresmd_uri: string;
     series_type: string;
     metric: string;
     qualifier: string;
-    oresmd_uri: string;
     series_subclass: string;
     derivation_kind: string;
     derivation_config_id: string;

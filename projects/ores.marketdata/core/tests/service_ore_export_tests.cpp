@@ -35,6 +35,7 @@
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -264,6 +265,12 @@ TEST_CASE("export_drops_the_point_the_store_invented_for_a_point_free_series", t
             s.series_type = type;
             s.metric = metric;
             s.qualifier = qualifier;
+            // The identity is the series' natural key, and this case builds rows
+            // rather than importing them, so it names each one after its own id:
+            // the case is about the export's key building, not about which URI a
+            // row would arrive under.
+            s.oresmd_uri =
+                "oresmd://generic/ore-export-" + boost::uuids::to_string(s.id) + "?type=fixing";
             // The insert trigger validates this against ores.refdata's codes, so
             // it has to be a real one rather than the empty default. Which
             // subclass a series belongs to is the classifier's business and not

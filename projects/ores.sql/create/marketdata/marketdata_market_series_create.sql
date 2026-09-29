@@ -29,7 +29,10 @@
  * temporal reference data; changes infrequently so a regular table with GIST
  * exclusion is appropriate.
  *
- * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
+ * The series is identified by oresmd_uri, the oresmd identifier its ORE key or
+ * index name projects to. Every ORE market data key follows the skeleton
+ * TYPE / METRIC / QUALIFIER, and those three columns carry the registry's
+ * decomposition of the same key for the readers that still ask by it;
  * series_subclass carries the coarse taxonomy for filtering, and the asset
  * classes the series belongs to live in
  * market_series_asset_classes -- a set rather than a column, because a
@@ -50,10 +53,10 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
+    "oresmd_uri" text not null,
     "series_type" text not null,
     "metric" text not null,
     "qualifier" text not null,
-    "oresmd_uri" text null,
     "series_subclass" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
@@ -72,6 +75,7 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("oresmd_uri" <> ''),
     check ("series_type" <> ''),
     check ("metric" <> ''),
     check ("qualifier" <> ''),
@@ -80,8 +84,8 @@ create table if not exists "ores_marketdata_market_series_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists market_series_party_id_series_type_metric_qualifier_uniq_idx
-on "ores_marketdata_market_series_tbl" (tenant_id, party_id, series_type, metric, qualifier)
+create unique index if not exists market_series_party_id_oresmd_uri_uniq_idx
+on "ores_marketdata_market_series_tbl" (tenant_id, party_id, oresmd_uri)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

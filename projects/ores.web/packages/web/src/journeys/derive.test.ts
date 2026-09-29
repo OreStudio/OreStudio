@@ -25,6 +25,7 @@ import {
     codeFromName,
     emailFromPrincipal,
     hostnameFromCode,
+    hostnameFromName,
     isTenantCode,
 } from './derive.js';
 
@@ -95,9 +96,17 @@ describe('the hostname and the address a tenant proposes', () => {
         expect(hostnameFromCode('barclays_bank_plc')).toBe('barclays_bank_plc');
     });
 
+    it('serves a tenant built around an entity at the entity\u2019s own name', () => {
+        expect(hostnameFromName('BARCLAYS PLC')).toBe('barclaysplc.com');
+        expect(hostnameFromName('Banco Santander - S.A.')).toBe('bancosantandersa.com');
+        expect(hostnameFromName('  Acme  Corporation  ')).toBe('acmecorporation.com');
+        expect(hostnameFromName('123')).toBe('123.com');
+        expect(hostnameFromName('---')).toBe('');
+    });
+
     it('addresses the administrator at the tenant it administers', () => {
-        expect(emailFromPrincipal('tenant_admin', 'barclays_bank_plc')).toBe(
-            'tenant_admin@barclays_bank_plc',
+        expect(emailFromPrincipal('tenant_admin', 'barclaysplc.com')).toBe(
+            'tenant_admin@barclaysplc.com',
         );
         expect(emailFromPrincipal('', 'barclays_bank_plc')).toBe('');
         expect(emailFromPrincipal('tenant_admin', '')).toBe('');

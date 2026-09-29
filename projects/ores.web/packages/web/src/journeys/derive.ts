@@ -60,6 +60,23 @@ export function hostnameFromCode(code: string): string {
     return code;
 }
 
+/**
+ * The hostname a legal entity's name proposes.
+ *
+ * A tenant built around an entity is served somewhere, and the name it is
+ * known by is the best guess available: lowercased, with everything that is
+ * not a letter or a digit dropped, and the public suffix of the world the
+ * entity came from appended. It is a placeholder that a person replaces with
+ * the hostname their deployment actually serves.
+ */
+export function hostnameFromName(name: string): string {
+    const host = name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
+    return host === '' ? '' : `${host}.com`;
+}
+
 /** The administrator's address, from the name it signs in with and the tenant. */
 export function emailFromPrincipal(principal: string, hostname: string): string {
     if (principal === '' || hostname === '') {

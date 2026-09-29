@@ -31,7 +31,7 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { profileLogo } from '../assets/profiles.js';
-import { codeFromName, emailFromPrincipal, hostnameFromCode } from './derive.js';
+import { codeFromName, emailFromPrincipal, hostnameFromName } from './derive.js';
 import { LegalEntitySearch } from './LegalEntitySearch.js';
 import { Button, Field, Input, Notice, Select, cx } from '../ui/Primitives.js';
 import { NewPasswordField } from '../ui/PasswordField.js';
@@ -170,7 +170,7 @@ export function TenantForm({
      */
     const chooseEntity = (parameter: string, legalName: string, lei: string): void => {
         const code = touched.has('code') ? details.code : codeFromName(legalName);
-        const hostname = touched.has('hostname') ? details.hostname : hostnameFromCode(code);
+        const hostname = touched.has('hostname') ? details.hostname : hostnameFromName(legalName);
         onChange({
             ...details,
             name: touched.has('name') ? details.name : legalName,

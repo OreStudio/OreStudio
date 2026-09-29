@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2364
+#+pr: 2365
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -309,6 +309,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2365][#2365]] | [marketdata,codegen] Pin the FOMC shapes before the feed writes them |
 | [[https://github.com/OreStudio/OreStudio/pull/2364][#2364]] | [marketdata,codegen] Walk every family that carries a point |
 | [[https://github.com/OreStudio/OreStudio/pull/2363][#2363]] | [agile] Pin the FOMC shapes and the series inverse |
 | [[https://github.com/OreStudio/OreStudio/pull/2362][#2362]] | [marketdata,codegen] Name a series, not one of its points |

@@ -89,6 +89,7 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     "version" integer not null,
     "output_series_id" uuid not null,
     "party_id" uuid not null,
+    "currency_code" text not null,
     "source_series_id" uuid not null,
     "curve_family_role" text not null,
     "discount_curve_config_id" uuid not null,

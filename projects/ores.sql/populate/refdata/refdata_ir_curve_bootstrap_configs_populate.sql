@@ -56,7 +56,8 @@
 \echo '--- IR Curve Bootstrap Configs ---'
 
 insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
-    id, tenant_id, version, output_series_id, party_id, source_series_id,
+    id, tenant_id, version, output_series_id, party_id, currency_code,
+    source_series_id,
     curve_family_role, discount_curve_config_id, interpolation_method,
     day_count_convention, tenor_convention_code, split_tenor_code,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -67,6 +68,7 @@ values (
     0,
     'f2d3e4a5-6c7d-4e8f-8a9b-1c2d3e4f5061',
     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+    'USD',
     'e1c2d3f4-5b6c-4d7e-9f8a-0b1c2d3e4f50',
     'FUNDING', ores_utility_nil_uuid_fn(), 'FLAT_FORWARD_THEN_LOG_LINEAR',
     'A360', 'RATES_SPOT_FOMC', '1Y',
@@ -78,6 +80,7 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 do update set
     output_series_id = excluded.output_series_id,
     party_id = excluded.party_id,
+    currency_code = excluded.currency_code,
     source_series_id = excluded.source_series_id,
     curve_family_role = excluded.curve_family_role,
     discount_curve_config_id = excluded.discount_curve_config_id,

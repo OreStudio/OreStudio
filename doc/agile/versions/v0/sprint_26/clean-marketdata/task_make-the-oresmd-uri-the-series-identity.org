@@ -354,6 +354,7 @@ which is the same reason the identity lookups fall back to the triple.
 | Where the bootstrap's tenor convention comes from | the source series' qualifier, through =tenor_convention_code_for()= | =grep -n "tenor_convention_code_for" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =07d9052523= |
 | Pillars the feed keys | nine per FOMC config, one series each: =IR_SWAP/RATE/<CCY>/<start>/1D= | =ores.synthetic.api.tests "a_pillar_key_names_the_instrument_the_feed_simulates"= | =ff3b5a9e2c= |
 | Where the reader would get the pillar's currency | nowhere: the config has no currency column and a pillar carries none | =grep -in currency projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_config.org= | =3767255a5b= |
+| Bootstrap configs that name their currency | 1 of 1: =USD=, the only curve seeded | =select id, currency_code from ores_refdata_ir_curve_bootstrap_configs_tbl= | =dbaa00c52b= |
 | =ores.synthetic.api= suite, with the pillar key | 109 assertions in 30 cases | =ores.synthetic.api.tests= | =ff3b5a9e2c= |
 | Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |

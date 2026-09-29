@@ -108,6 +108,22 @@ claiming the same output series.
 ctx.generate_uuid()
 #+end_src
 
+** currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+References =currency.iso_code= -- the currency this curve's pillars are quoted in, and
+the one segment of a pillar's ORE key the pillar itself cannot supply: a pillar carries
+tenor codes and a role, so a reader resolving a pillar to its series has to be told the
+currency the key is written in.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
 ** source_series_id
 :PROPERTIES:
 :type:     uuid

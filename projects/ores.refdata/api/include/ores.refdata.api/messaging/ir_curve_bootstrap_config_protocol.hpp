@@ -42,6 +42,7 @@ struct ir_curve_bootstrap_config_key {
 struct ir_curve_bootstrap_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid output_series_id;
+    std::string currency_code;
     boost::uuids::uuid source_series_id;
     std::string curve_family_role;
     boost::uuids::uuid discount_curve_config_id;

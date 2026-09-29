@@ -30,11 +30,12 @@ Corporation holding-group data?
 
 * Answer
 
-Bootstrap =super_admin=, install an =Acme Corporation= tenant, then
-provision it with =--source acme=, which server-side orchestrates
-importing the Acme LEI hierarchy (all four legal entities) and
-publishing each party's business units/portfolios/books plus the
-group-wide accounts dataset — no repeated per-party logins, no
+Bootstrap =super_admin=, install an =Acme Corporation= tenant from the
+demonstration starting point, and let that starting point's steps do
+the work server-side: importing the Acme LEI hierarchy (all four legal
+entities), publishing each party's business units, portfolios, books
+and the group-wide accounts dataset, attaching the staff photographs,
+and starting the market feeds. No repeated per-party logins, no
 client-side orchestration.
 
 Expectations: the services are up (=compass services start=) and the
@@ -75,14 +76,9 @@ same way =$ORES_NATS_URL= already does above, from whatever preset
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_demo
 compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
 compute publish-package ORE 1.8.17.0 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.17.0-x64-linux.tar.gz
-logout
-
-login tenant_admin@acme_corporation Secure-Password-123
-provision tenant --source acme
-bundles publish risk_management --wait
 logout
 
 exit

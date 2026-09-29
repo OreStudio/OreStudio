@@ -5,6 +5,6 @@
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 connect $ORES_NATS_URL
-login tenant_admin@barclays Secure-Password-123
-provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
+login super_admin Secure-Password-123
+provision tenant --tenant-code example --tenant-name "Example Corp" --tenant-hostname example --tenant-admin-password Secure-Password-123 --profile empty_operational --param counterparty_size=small
 logout

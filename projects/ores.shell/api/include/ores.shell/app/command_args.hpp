@@ -45,6 +45,15 @@ struct flag_spec {
     bool requires_value = false;
     /// Value used when the flag is not supplied. Switches use "false".
     std::string default_value;
+    /**
+     * @brief True when the command accepts the flag more than once and keeps
+     * every value it is given.
+     *
+     * A flag that is not repeatable keeps the last value it was given, which is
+     * what every flag that states one thing wants. A flag that is repeatable
+     * -- a list of settings, say -- keeps them all in the order they appeared.
+     */
+    bool repeatable = false;
 };
 
 /**
@@ -55,6 +64,10 @@ struct parsed_args {
     std::vector<std::string> positionals;
     /// Flag name to effective value; switches hold "true"/"false".
     std::map<std::string, std::string> flags;
+    /// Every value a repeatable flag was given, in order of appearance. A
+    /// repeatable flag also holds its last value in @c flags, so a reader that
+    /// wants one value still finds a sensible one.
+    std::map<std::string, std::vector<std::string>> repeated_flags;
 
     /** @brief True when a boolean switch was supplied. */
     bool flag_set(const std::string& name) const {
@@ -65,6 +78,13 @@ struct parsed_args {
     /** @brief Effective value of a flag (supplied or default). */
     const std::string& flag(const std::string& name) const {
         return flags.at(name);
+    }
+
+    /** @brief Every value a repeatable flag was given, in order. */
+    const std::vector<std::string>& values(const std::string& name) const {
+        static const std::vector<std::string> none;
+        auto i = repeated_flags.find(name);
+        return i == repeated_flags.end() ? none : i->second;
     }
 };
 

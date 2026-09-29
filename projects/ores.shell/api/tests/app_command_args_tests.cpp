@@ -184,3 +184,40 @@ TEST_CASE("parse_uint64_accepts_large_values_and_rejects_bad_input", tags) {
     CHECK_FALSE(parse_uint64("seed").has_value());
     CHECK_FALSE(parse_uint64("").has_value());
 }
+
+TEST_CASE("parse_args_keeps_every_value_of_a_repeatable_flag_in_order", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto r = parse_args({"tenant",
+                         "--param",
+                         "root_lei=213800LBQA1Y9L22JB70",
+                         "--param",
+                         "counterparty_size=small"},
+                        {{.name = "param", .requires_value = true, .repeatable = true}});
+    REQUIRE(r.has_value());
+    CHECK(r->values("param") ==
+          std::vector<std::string>{"root_lei=213800LBQA1Y9L22JB70", "counterparty_size=small"});
+    // The last value stays readable through the single-value accessor too.
+    CHECK(r->flag("param") == "counterparty_size=small");
+}
+
+TEST_CASE("parse_args_keeps_the_last_value_of_a_flag_that_is_not_repeatable", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto r = parse_args(
+        {"--tenant-code", "first", "--tenant-code", "second"},
+        {{.name = "tenant-code", .requires_value = true, .default_value = ""}});
+    REQUIRE(r.has_value());
+    CHECK(r->flag("tenant-code") == "second");
+    CHECK(r->values("tenant-code").empty());
+}
+
+TEST_CASE("parse_args_reads_a_repeatable_flag_written_with_its_value_inline", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto r = parse_args({"--param=root_lei=213800LBQA1Y9L22JB70"},
+                        {{.name = "param", .requires_value = true, .repeatable = true}});
+    REQUIRE(r.has_value());
+    CHECK(r->values("param") == std::vector<std::string>{"root_lei=213800LBQA1Y9L22JB70"});
+    CHECK(r->values("declared_nowhere").empty());
+}

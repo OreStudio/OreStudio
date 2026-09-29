@@ -6,11 +6,11 @@
 #
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme --tenant-name "Acme Corp" --tenant-hostname acme
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme --tenant-name "Acme Corp" --tenant-hostname acme --profile empty_operational
 logout
 
 login tenant_admin@acme Secure-Password-123
-provision tenant --source synthetic --seed 42
+synthetic generate --seed 42
 logout
 
 login tenant_admin@acme Secure-Password-123

@@ -65,12 +65,16 @@ std::expected<parsed_args, std::string> parse_args(const std::vector<std::string
 
         if (has_inline_value) {
             r.flags[body] = inline_value;
+            if (spec->repeatable)
+                r.repeated_flags[body].push_back(inline_value);
             continue;
         }
 
         if (i + 1 >= tokens.size() || tokens[i + 1].starts_with("--"))
             return std::unexpected("Flag --" + body + " requires a value");
         r.flags[body] = tokens[++i];
+        if (spec->repeatable)
+            r.repeated_flags[body].push_back(r.flags[body]);
     }
     return r;
 }

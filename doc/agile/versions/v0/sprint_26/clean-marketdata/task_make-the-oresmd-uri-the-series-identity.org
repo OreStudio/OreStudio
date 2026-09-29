@@ -444,6 +444,11 @@ via its "Verifies task" field.
 | 35 | The convention code is free text | the model | recorded | Validation belongs with the refdata convention lookups; the republish path already fails loudly on an unknown convention, and a key or a check is the refdata component's call. |
 | 36 | No case covers a config that takes the forward convention | the service tests | recorded | A second config or a fixture is the re-key unit's work; the record's limitation says the same. |
 | 37 | A generated config's default convention must exist if a test republishes one | the model's generator | recorded | No test republishes a generated config today, and the default matches the ordinary case. |
+| 38 | The currency is derived from the qualifier on every tick | =ir_curve_feed.cpp= | recorded | The substring runs once per tick beside a priced valuation and a publish; hoisting it is a one-line change the next time the feed is touched. |
+| 39 | =SPOT= is a magic string in the builder | =ir_curve_template_resolver.cpp= | recorded | The config's own spelling is =SPOT= and the resolver reads the same code; a shared constant belongs with the reader step that calls the builder from the other side. |
+| 40 | =std::format= with a chrono calendar needs C++20 chrono formatting | =ir_curve_template_resolver.cpp= | answered | The same call is already in =ir_curve_feed.cpp= for its schedule, so the toolchain's support is what the component already builds on. |
+| 41 | The new case's name does not match the file's own style | =feed_factory_tests.cpp= | recorded | The case reads as a sentence because it asserts a rule rather than a factory dispatch; renaming it is cosmetic and belongs with the next touch. |
+| 42 | Nothing tests the whole feed path, so no tick is shown landing in a per-pillar series | the feed | recorded | The reader step is where that path is exercised end to end, and the record says so in the plan. |
 
 * Result
 

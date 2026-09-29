@@ -36,6 +36,7 @@ set(files
     "calendar_rule_eventing_integration_tests.cpp"
     "calendar_type_eventing_integration_tests.cpp"
     "cds_convention_eventing_integration_tests.cpp"
+    "cms_spread_option_convention_eventing_integration_tests.cpp"
     "contact_type_eventing_integration_tests.cpp"
     "counterparty_contact_information_eventing_integration_tests.cpp"
     "counterparty_eventing_integration_tests.cpp"

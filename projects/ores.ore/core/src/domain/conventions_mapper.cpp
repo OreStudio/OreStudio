@@ -402,6 +402,19 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
+cmsSpreadOptionType reverse_cms_spread_option(const refdata::domain::cms_spread_option_convention& v) {
+    cmsSpreadOptionType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.ForwardStart) = v.forward_start;
+    static_cast<std::string&>(r.SpotDays) = v.spot_days;
+    static_cast<std::string&>(r.SwapTenor) = v.swap_tenor;
+    r.FixingDays = static_cast<int64_t>(v.fixing_days);
+    static_cast<std::string&>(r.Calendar) = v.calendar;
+    r.DayCounter = parse_day_counter(v.day_count_fraction);
+    r.RollConvention = parse_bdc(v.roll_convention);
+    return r;
+}
+
 crossCurrencyFixFloatType
 reverse_cross_currency_fix_float(const refdata::domain::cross_currency_fix_float_convention& v) {
     crossCurrencyFixFloatType r;
@@ -1450,6 +1463,24 @@ refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const 
     return r;
 }
 
+refdata::domain::cms_spread_option_convention
+conventions_mapper::map_cms_spread_option(const cmsSpreadOptionType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping CMS spread option convention: " << std::string(v.Id);
+
+    refdata::domain::cms_spread_option_convention r;
+    r.id = std::string(v.Id);
+    r.forward_start = std::string(v.ForwardStart);
+    r.spot_days = std::string(v.SpotDays);
+    r.swap_tenor = std::string(v.SwapTenor);
+    r.fixing_days = static_cast<int>(v.FixingDays);
+    r.calendar = std::string(v.Calendar);
+    r.day_count_fraction = normalize_day_counter(v.DayCounter);
+    r.roll_convention = normalize_bdc(v.RollConvention);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::cross_currency_fix_float_convention
 conventions_mapper::map_cross_currency_fix_float(const crossCurrencyFixFloatType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency fix-float convention: "
@@ -1727,6 +1758,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_ibor_index(x);
     });
 
+    r.cms_spread_option.reserve(v.CmsSpreadOption.size());
+    std::ranges::transform(v.CmsSpreadOption,
+                           std::back_inserter(r.cms_spread_option),
+                           [](const auto& x) { return map_cms_spread_option(x); });
+
     r.cross_currency_fix_float.reserve(v.CrossCurrencyFixFloat.size());
     std::ranges::transform(v.CrossCurrencyFixFloat,
                            std::back_inserter(r.cross_currency_fix_float),
@@ -1802,7 +1838,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
     count_unmodelled("CommodityForward", v.CommodityForward.size());
     count_unmodelled("CommodityFuture", v.CommodityFuture.size());
     count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
@@ -1874,6 +1909,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.IborIndex.reserve(v.ibor_index.size());
     for (const auto& x : v.ibor_index)
         r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.CmsSpreadOption.reserve(v.cms_spread_option.size());
+    for (const auto& x : v.cms_spread_option)
+        r.CmsSpreadOption.push_back(reverse_cms_spread_option(x));
 
     r.CrossCurrencyFixFloat.reserve(v.cross_currency_fix_float.size());
     for (const auto& x : v.cross_currency_fix_float)

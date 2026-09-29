@@ -32,7 +32,8 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * twenty. The files that use only those twenty round trip. The rest do not,
+ * twenty-one. The files that use only those twenty-one round trip. The rest do
+ * not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -251,6 +252,56 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     // Forty-nine of the seventy-two at the commit this was written at. It is the
     // largest category in the document, and three files carried nothing else.
     CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
+    int files_with_cms = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CmsSpreadOption.empty())
+            continue;
+
+        ++files_with_cms;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.cms_spread_option.size() == document.CmsSpreadOption.size());
+
+        for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
+            const auto& in = document.CmsSpreadOption[i];
+            const auto& out = mapped.cms_spread_option[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.forward_start == std::string(in.ForwardStart));
+            CHECK(out.spot_days == std::string(in.SpotDays));
+            CHECK(out.swap_tenor == std::string(in.SwapTenor));
+            CHECK(out.fixing_days == static_cast<int>(in.FixingDays));
+            CHECK(out.calendar == std::string(in.Calendar));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CmsSpreadOption");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CmsSpreadOption.size()) +
+             " CmsSpreadOption element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CmsSpreadOption.size()));
+
+        // The mapper stores canonical spellings of the day count and the roll
+        // convention, so the export may differ from the document in those. What
+        // has to survive is the value: read the export back, map it again, and
+        // require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CmsSpreadOption.size() == document.CmsSpreadOption.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
+            INFO(path.string() + ": CmsSpreadOption element " + std::to_string(i));
+            CHECK(remapped.cms_spread_option[i] == mapped.cms_spread_option[i]);
+        }
+    }
+
+    // Twelve of the seventy-two files carry it, and eleven of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_cms == 12);
 }
 
 TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
@@ -666,10 +717,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Fifty-six of the seventy-two once CrossCurrencyFixFloat landed: the six
-    // files it cleared on its own on top of the fifty already clean. The count
-    // is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 56);
+    // Sixty-seven of the seventy-two once CmsSpreadOption landed: the eleven
+    // files it cleared on its own on top of the fifty-six already clean. The
+    // count is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 67);
 }
 
 // Hidden by default, and run on demand:

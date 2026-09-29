@@ -37,6 +37,7 @@ set(files
     "calendar_rule_commands_tests.cpp"
     "calendar_type_commands_tests.cpp"
     "cds_convention_commands_tests.cpp"
+    "cms_spread_option_convention_commands_tests.cpp"
     "contact_type_commands_tests.cpp"
     "counterparty_commands_tests.cpp"
     "counterparty_contact_information_commands_tests.cpp"

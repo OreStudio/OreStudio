@@ -1059,3 +1059,7 @@ tangled into the runnable script library
 * Cross Currency Fix Float Conventions
 
 - [[id:1364CBFE-B388-54EF-ACA4-1FB984009E0A][How do I run the cross_currency_fix_float_conventions commands from the shell?]]
+
+* Cms Spread Option Conventions
+
+- [[id:55FFB4C3-FE61-5C22-B71A-1C823D96BF65][How do I run the cms_spread_option_conventions commands from the shell?]]

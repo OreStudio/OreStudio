@@ -65,12 +65,12 @@ struct credit_simulation_matrix_config final {
     /**
      * @brief The lower bound ORE writes on the matrix Data element, 0.0 in every shipped example.
      */
-    double t0;
+    double t0 = 0.0;
 
     /**
      * @brief The upper bound ORE writes on the matrix Data element, 1.0 in every shipped example.
      */
-    double t1;
+    double t1 = 0.0;
 
     /**
      * @brief Username of the person who last modified this transition matrix.

@@ -81,6 +81,7 @@ The credit risk mode the run uses.
 :type:     boolean
 :cpp_type: bool
 :nullable: true
+:default_value: false
 :END:
 
 Whether the market profit and loss is zeroed.
@@ -99,6 +100,7 @@ The evaluation date or rule the run uses.
 :type:     boolean
 :cpp_type: bool
 :nullable: true
+:default_value: false
 :END:
 
 Whether double default is modelled.
@@ -108,6 +110,7 @@ Whether double default is modelled.
 :type:     integer
 :cpp_type: int
 :nullable: true
+:default_value: 0
 :END:
 
 The Monte Carlo seed.
@@ -117,6 +120,7 @@ The Monte Carlo seed.
 :type:     integer
 :cpp_type: int
 :nullable: true
+:default_value: 0
 :END:
 
 The number of Monte Carlo paths.

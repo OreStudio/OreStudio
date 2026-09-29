@@ -7,14 +7,14 @@
 #+level: s1
 #+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
-+#+branch: feature/implement-entry-journeys
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-09-29
-+#+updated: 2026-09-29
-+#+environment: swift_curie
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 

@@ -342,6 +342,7 @@ public:
                 resp.token = token;
                 resp.account_id = boost::uuids::to_string(acct.id);
                 resp.tenant_id = acct.tenant_id.to_string();
+                resp.tenant_name = auth_lookup_tenant_name(login_ctx, acct.tenant_id.to_uuid());
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
@@ -406,6 +407,7 @@ public:
                 resp.token = token;
                 resp.account_id = boost::uuids::to_string(acct.id);
                 resp.tenant_id = acct.tenant_id.to_string();
+                resp.tenant_name = auth_lookup_tenant_name(login_ctx, acct.tenant_id.to_uuid());
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;

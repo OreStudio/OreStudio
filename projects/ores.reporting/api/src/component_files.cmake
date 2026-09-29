@@ -20,6 +20,9 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain/analytic_type_json_io.cpp"
+    "domain/analytic_type_table.cpp"
+    "domain/analytic_type_table_io.cpp"
     "domain/concurrency_policy_json_io.cpp"
     "domain/concurrency_policy_table.cpp"
     "domain/concurrency_policy_table_io.cpp"
@@ -54,6 +57,7 @@ set(files
     "domain/risk_report_config_json_io.cpp"
     "domain/risk_report_config_table.cpp"
     "domain/risk_report_config_table_io.cpp"
+    "generators/analytic_type_generator.cpp"
     "generators/concurrency_policy_generator.cpp"
     "generators/configuration_generator.cpp"
     "generators/configuration_parameter_generator.cpp"
@@ -69,6 +73,10 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/analytic_type.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/analytic_type_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/analytic_type_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/analytic_type_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/concurrency_policy.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/concurrency_policy_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/concurrency_policy_table.hpp"
@@ -115,6 +123,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/analytic_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/configuration_event.hpp"
@@ -130,6 +139,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/report_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/analytic_type_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/concurrency_policy_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/configuration_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/configuration_parameter_generator.hpp"
@@ -141,6 +151,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/report_instance_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/report_type_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/generators/risk_report_config_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/analytic_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/configuration_parameter_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/configuration_protocol.hpp"

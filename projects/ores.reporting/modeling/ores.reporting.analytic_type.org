@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: F92E7855-D5F5-41AE-AD3E-9F61BCC3830F
+:END:
+#+title: ores.reporting.analytic_type
+#+description: Codegen entity model for the reporting =analytic_type= table. The analytics an ORE run document can ask for.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: An analytic an ORE run document can ask for.
+#+entity_singular: analytic_type
+#+entity_plural: analytic_types
+#+entity_title: Analytic Type
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Reference data naming the analytics ORE's run document can ask for: NPV,
+cashflows, curves, simulation, XVA, initial margin, sensitivity, stress, SIMM
+and the rest. The element's =type= attribute is a free string in ORE's schema;
+this is the vocabulary the shipped run documents actually use, and it is what
+makes the attribute a foreign key rather than free text.
+
+Thirty-five types are in use across the corpus, and their parameter sets barely
+overlap: xva takes around seventy parameters, simulation sixty, sensitivity
+thirty, and several types one flag. That is why each type owns a table for its
+parameters and this table names it, in =parameter_entity=, rather than every
+type sharing one wide row.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_analytic_types_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The stable code for the analytic, which is the value ORE writes in its type attribute, for example npv or initialMargin.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the analytic.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the analytic calculates, in one line.
+
+** parameter_entity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The entity that holds this analytic's parameters, or nothing when the analytic takes none.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the analytic appears in a list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_analytic_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: analytic type
+:entity_plural_words:   analytic types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| code             | Code             |
+| name             | Name             |
+| parameter_entity | Parameter Entity |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/analytic_type.hpp
+:domain_class:           reporting::domain::analytic_type
+:protocol_include:       ores.reporting.api/messaging/analytic_type_protocol.hpp
+:collection_name:        analytic_types
+:key_field:              code
+:get_request_class:      reporting::messaging::get_analytic_types_request
+:get_response_class:     reporting::messaging::get_analytic_types_response
+:get_message_type:       get_analytic_types_request
+:save_request_class:     reporting::messaging::save_analytic_type_request
+:save_response_class:    reporting::messaging::save_analytic_type_response
+:save_message_type:      save_analytic_type_request
+:delete_request_class:   reporting::messaging::delete_analytic_type_request
+:delete_response_class:  reporting::messaging::delete_analytic_type_response
+:delete_message_type:    delete_analytic_type_request
+:END:
+
+*** Detail fields
+
+| field            | label            | type      | is_key | is_required | placeholder |
+|------------------+------------------+-----------+--------+-------------+-------------|
+| code             | Code             | line_edit | true   | true        | Enter analytic code |
+| name             | Name             | line_edit |        | true        | Enter display name |
+| description      | Description      | line_edit |        | true        | Enter description |
+| parameter_entity | Parameter Entity | line_edit |        |             | e.g. report_npv_parameter |
+| display_order    | Order            | spin_edit |        | true        | Enter order |
+
+*** Columns
+
+| enum_name    | field            | header           | type   | width |
+|--------------+------------------+------------------+--------+-------|
+| Code         | code             | Code             | string | 160   |
+| Name         | name             | Name             | string | 200   |
+| Description  | description      | Description      | string | 320   |
+| ParameterEntity | parameter_entity | Parameter Entity | string | 220 |
+| DisplayOrder | display_order    | Order            | int    | 80    |
+| Version      | version          | Version          | int    | 80    |
+| ModifiedBy   | modified_by      | Modified By      | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

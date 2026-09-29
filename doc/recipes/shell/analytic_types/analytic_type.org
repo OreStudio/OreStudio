@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D74D4948-6B4D-5495-B833-2656AE06D375
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the analytic_types commands from the shell?
+#+description: Every command the analytic_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:analytic_types:
+
+This file documents the analytic_types resource at the shell, one section per command. Every command is a subcommand of =analytic_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A971156D-BF8E-5BE0-AD8D-9FE84F7F723F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.list=.
+
+#+name: analytic_types-list
+#+begin_src ores-shell :tangle analytic_types-list.ores :exports none
+analytic_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: FEC79FB4-D90D-522D-8884-839FA4065A24
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types get <code>
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.get=.
+
+#+name: analytic_types-get
+#+begin_src ores-shell :tangle analytic_types-get.ores :exports none
+analytic_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BBCB877B-CA88-551B-8FA0-694827186A78
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.get_many=.
+
+#+name: analytic_types-get-many
+#+begin_src ores-shell :tangle analytic_types-get-many.ores :exports none
+analytic_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D5447AC3-1FA6-5EB6-AACF-558A0BECB086
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types add <code> <name> <description> <parameter_entity> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.put=.
+
+#+name: analytic_types-add
+#+begin_src ores-shell :tangle analytic_types-add.ores :exports none
+analytic_types add __none__ __none__ __none__ - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 337F0AD9-4B5F-5EDB-AE91-0CFD2360F7CC
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types set <code> <name> <description> <parameter_entity> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.put=.
+
+#+name: analytic_types-set
+#+begin_src ores-shell :tangle analytic_types-set.ores :exports none
+analytic_types set __none__ __none__ __none__ - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 31264E55-1708-5CEF-B5ED-8D30EE38E963
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types put-many --count <n> <code> <name> <description> <parameter_entity> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.put_many=.
+
+#+name: analytic_types-put-many
+#+begin_src ores-shell :tangle analytic_types-put-many.ores :exports none
+analytic_types put-many --count 1 __none__ __none__ __none__ - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0A64973B-7197-5EE4-B867-CC76DEC55486
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.delete=.
+
+#+name: analytic_types-delete
+#+begin_src ores-shell :tangle analytic_types-delete.ores :exports none
+analytic_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F8B6451D-42F8-5039-B613-2F3FCE38CE95
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types.delete_many=.
+
+#+name: analytic_types-delete-many
+#+begin_src ores-shell :tangle analytic_types-delete-many.ores :exports none
+analytic_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 351509D9-840B-5E92-BE57-D5C7F0842469
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types_versions.list=.
+
+#+name: analytic_types-versions
+#+begin_src ores-shell :tangle analytic_types-versions.ores :exports none
+analytic_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6D92636A-1CB6-5D1D-A579-AE6AE1ABBF33
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+analytic_types version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.analytic_types_versions.get=.
+
+#+name: analytic_types-version
+#+begin_src ores-shell :tangle analytic_types-version.ores :exports none
+analytic_types version __none__ --version 1
+#+end_src
+

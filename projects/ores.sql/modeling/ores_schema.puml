@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T23:42:45.450029Z
+' Generated: 2026-09-30T10:27:20.799307Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9286,6 +9286,40 @@ package "scheduler" #F1F8E9 {
 ' ==================== reporting (Reporting & Analytics) ====================
 '
 package "reporting" #E0F7FA {
+    entity ores_reporting_analytic_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+          parameter_entity : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_analytic_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Analytic Type Table
+    Reference data naming the analytics ORE's run document can ask for: NPV,
+    cashflows, curves, simulation, XVA, initial margin, sensitivity, stress, SIMM
+    and the rest. The element's type attribute is a free string in ORE's schema;
+    this is the vocabulary the shipped run documents actually use, and it is what
+    makes the attribute a foreign key rather than free text.
+    Thirty-five types are in use across the corpus, and their parameter sets barely
+    overlap: xva takes around seventy parameters, simulation sixty, sensitivity
+    thirty, and several types one flag. That is why each type owns a table for its
+    parameters and this table names it, in parameter_entity, rather than every
+    type sharing one wide row.
+    end note
+
     entity ores_reporting_concurrency_policies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>

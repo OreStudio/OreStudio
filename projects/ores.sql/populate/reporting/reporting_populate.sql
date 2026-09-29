@@ -30,6 +30,7 @@
 
 \echo '--- Enum Tables ---'
 \ir ./reporting_report_types_populate.sql
+\ir ./reporting_analytic_types_populate.sql
 \ir ./reporting_concurrency_policies_populate.sql
 
 \echo ''

@@ -290,26 +290,36 @@ grid's own identity and then the cutover the task takes its name from.
 
 1. *The feed keys each pillar.* =ir_curve_resolved_entry= gains the entry's
    =start_date= and =end_date= strings, which =resolve()= already computes for the
-   year fraction. =ir_curve_feed= publishes one tick per entry with
-   =series_type="IR_SWAP"=, =metric="RATE"=, =qualifier= =<CCY>/<start>= (the start
-   slot holding =0D= for the pillar that starts at spot and the start date for the
-   rest), =1D= as the index tenor, and =point_id= the entry's end date. The ingest
-   loop already derives the series identity from a tick's full key, so the series
-   appear with their ORE identities and nothing else in the pipeline moves.
+   year fraction. A pillar is spot-starting when its =start_tenor_code= is =SPOT= --
+   the config's own first entry -- and meeting-dated otherwise, and that one rule
+   lives in a single builder both sides call rather than being written twice.
+   =ir_curve_feed= publishes one tick per entry with =series_type="IR_SWAP"=,
+   =metric="RATE"=, =qualifier= =<CCY>/<start>= (the start slot holding =0D= for the
+   spot-starting pillar and the start date for the rest), =1D= as the index tenor, and
+   =point_id= the entry's end date. The ingest loop already derives the series identity
+   from a tick's full key, so the series appear with their ORE identities and nothing
+   else in the pipeline moves. =ores.synthetic= is where this step's test belongs: a
+   tick per pillar carrying the shape above.
 2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
    =source_series_id= and reads, per pillar, the series the key above projects to:
-   resolve the pillar's start and end tenor codes to dates through =refctx=, build
-   the same key the feed builds, find the series by identity, and take its
-   observation. The rate map is keyed by the pillar's =end_tenor_code=, which is what
-   =resolve_bootstrap_pillars()= already matches on, so its contract does not change.
-   The grid series stays readable as a fallback for a database whose ticks landed
-   there, the same shape as the triple fallback the readers already carry, and it goes
-   with the column below; the lineage lists the nine series it read rather than the
-   grid.
+   resolve the pillar's start and end tenor codes to dates through =refctx=, call the
+   same builder, find the series by identity, and take its observation. The rate map is
+   keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
+   already matches on, so its contract does not change. The grid series stays readable
+   as a fallback, and the reader prefers the pillar's series wherever it exists: a
+   database with some pillars written under the new keys and some under the grid
+   resolves each pillar from whichever holds it. That is the same shape as the triple
+   fallback the readers already carry, and it goes with the column below. The lineage
+   lists the nine series the reader took rather than the grid, and its own
+   =source_series_id= column is untouched -- the column step three drops is the
+   config's. =curve_republish_resolver_fomc_tests= is this step's proof.
 3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
    drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
-   the bootstrap config's =source_series_id= loses its reader. The refdata column is
-   dropped with it, and the populate that writes it follows.
+   the bootstrap config's =source_series_id= loses its reader. Dropping the config's
+   column is a refdata change, not one file: the model, the regenerated domain,
+   protocol, entity, mapper, history field mapper, service and shell command, the
+   generate artefact's TypeScript twin, the populate and a migration. The lineage's
+   column of the same name stays.
 4. *The constraints and the deletion.* With every writer supplying an identity and no
    row without one, =oresmd_uri= becomes not-null and unique, the natural key moves
    onto it, and then =series_type=, =metric=, =qualifier=, =ore_key= and the import

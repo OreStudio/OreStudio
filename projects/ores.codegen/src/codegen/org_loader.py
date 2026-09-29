@@ -1922,6 +1922,54 @@ def validate_model(model: dict[str, Any]) -> list[str]:
                 "ores.marketdata.feed_binding.org's asset_class for the pattern)."
             )
 
+    # A nullable column whose :cpp_type: is a bare value type cannot carry
+    # NULL. The estate's convention for that shape is that the type's zero
+    # value is the absent one: the generated entity wraps the member in
+    # std::optional and the generated mapper maps zero to nullopt. Only
+    # :default_value: reaches the domain struct's member initializer, so a
+    # column that omits it leaves a default-constructed domain object with an
+    # indeterminate member, which is undefined behaviour on the first read.
+    # The 2026-09-29 nightly reported 214 such reads in
+    # ores.analytics.core.tests and 99 in ores.ore.core.tests, from
+    # credit_simulation_config.seed and bond_trs.funding_rate among others.
+    _nullable_bare_value_types = {
+        "bool",
+        "int",
+        "std::int16_t",
+        "std::int32_t",
+        "std::int64_t",
+        "std::uint16_t",
+        "std::uint32_t",
+        "std::uint64_t",
+        "float",
+        "double",
+        "std::chrono::year_month_day",
+        "std::chrono::system_clock::time_point",
+    }
+    _nullable_bare_check_fields = (
+        de.get("columns", [])
+        + de.get("natural_keys", [])
+        + de.get("primary_key", {}).get("columns", [])
+    )
+    for col in _nullable_bare_check_fields:
+        cpp_type = col.get("cpp_type", "")
+        if (
+            col.get("nullable")
+            and cpp_type in _nullable_bare_value_types
+            and "default_value" not in col
+        ):
+            errors.append(
+                f"Column '{col.get('name') or col.get('column')}' has no "
+                ":default_value: -- a nullable column whose :cpp_type: is a bare "
+                f"'{cpp_type}' cannot carry NULL, so the type's zero value is how "
+                "it states the absence, and without :default_value: a "
+                "default-constructed domain object holds an indeterminate member. "
+                "Add :default_value: 0 (or 0.0, false, {}), or make the type "
+                "std::optional -- see ores.trading.bond_forward.org's lock_rate "
+                "for the optional form and ores.trading.bond_trs.org's "
+                "funding_rate for the zero form."
+            )
+
     return errors
 
 

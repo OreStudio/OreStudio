@@ -219,18 +219,61 @@ Reference curve the document names for the issue.
 
 Income curve the document names for the issue.
 
-** bond_notional
+** credit_group
 :PROPERTIES:
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-Notional the document states at the bond level, as the document spells
-it.
+Credit group the document names for the issue.
 
-The column is text so that export re-emits the document's own spelling
-rather than a reformatted number.
+** volatility_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Volatility curve the document names for the issue.
+
+** price_quote_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Price quote method the document states for the issue.
+
+** price_quote_base_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Price quote base value the document states for the issue.
+
+** sub_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Bond sub-type the document states for the issue.
+
+** price_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The price type the document states.
+
+Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
 
 * SQL
 
@@ -242,8 +285,8 @@ rather than a reformatted number.
 ** Checks
 
 Each check holds only for a value the document stated. An absent value
-is NULL, and a NULL comparison passes, so an issue that carries no
-notional is admitted while a stated non-positive one is not. The
+is NULL, and a NULL comparison passes, so an issue that states no face
+value is admitted while a stated non-positive one is not. The
 empty-string checks went with the columns that needed them: absence is
 now NULL, not an empty string.
 
@@ -251,6 +294,7 @@ now NULL, not an empty string.
 |---------------------------------------|
 | "face_value" > 0                      |
 | "coupon_rate" >= 0                    |
+| "price_type" is null or "price_type" in ('Clean', 'Dirty') |
 
 ** Indexes
 

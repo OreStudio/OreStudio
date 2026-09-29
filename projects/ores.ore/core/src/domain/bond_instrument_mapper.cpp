@@ -184,6 +184,20 @@ int count_of(const std::string& text, int fallback) {
     }
 }
 
+// The schema states the notional as a string while the column holds a
+// decimal. A value the parser cannot read leaves the column absent rather
+// than failing the whole import.
+std::optional<ores::utility::decimal::decimal> to_optional_decimal(const std::string& text) {
+    if (text.empty())
+        return std::nullopt;
+    auto parsed = ores::utility::decimal::decimal::from_string(text);
+    if (!parsed) {
+        BOOST_LOG_SEV(lg(), warn) << "Unreadable decimal '" << text << "', dropping it";
+        return std::nullopt;
+    }
+    return std::move(*parsed);
+}
+
 // A generated wrapper derives from the string type it carries, and a
 // std::string does not convert to a derived type, so the reverse
 // direction writes through the base reference.
@@ -209,6 +223,18 @@ void set_present_text(xsd::optional<Field>& field, const std::optional<std::stri
         return;
     Field wrapper;
     static_cast<std::string&>(wrapper) = *value;
+    field = std::move(wrapper);
+}
+
+// The decimal's own plain rendering, so the round trip re-emits the
+// number the document stated rather than a reformatted one.
+template <typename Field>
+void set_present_decimal(xsd::optional<Field>& field,
+                         const std::optional<ores::utility::decimal::decimal>& value) {
+    if (!value)
+        return;
+    Field wrapper;
+    static_cast<std::string&>(wrapper) = value->to_string();
     field = std::move(wrapper);
 }
 
@@ -1086,7 +1112,7 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
     if (bd.IncomeCurveId)
         issue.income_curve_id = std::string(*bd.IncomeCurveId);
     if (bd.BondNotional)
-        issue.bond_notional = std::string(*bd.BondNotional);
+        data.instrument.notional = to_optional_decimal(std::string(*bd.BondNotional));
 
     // Every leg the document states is carried, in document order.
     for (const auto& ld : bd.LegData)
@@ -1139,7 +1165,7 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     set_present_text(bd.CreditCurveId, issue.credit_curve_id);
     set_present_text(bd.ReferenceCurveId, issue.reference_curve_id);
     set_present_text(bd.IncomeCurveId, issue.income_curve_id);
-    set_present_text(bd.BondNotional, issue.bond_notional);
+    set_present_decimal(bd.BondNotional, data.instrument.notional);
 
     // The legs are emitted when the document held any, whether or not the
     // columns that mirror the first hold a value: Currency and Notionals

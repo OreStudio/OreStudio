@@ -54,7 +54,12 @@ struct bond_issue_write {
     std::optional<std::string> credit_curve_id;
     std::optional<std::string> reference_curve_id;
     std::optional<std::string> income_curve_id;
-    std::optional<std::string> bond_notional;
+    std::optional<std::string> credit_group;
+    std::optional<std::string> volatility_curve_id;
+    std::optional<std::string> price_quote_method;
+    std::optional<std::string> price_quote_base_value;
+    std::optional<std::string> sub_type;
+    std::optional<std::string> price_type;
 };
 
 struct bond_issue_change {

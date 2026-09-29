@@ -54,7 +54,15 @@ std::vector<ores::diff::domain::field_value> render_bond_issue_fields(const doma
         {.name = "Reference Curve ID", .value = v.reference_curve_id.value_or(std::string{})});
     fields.push_back(
         {.name = "Income Curve ID", .value = v.income_curve_id.value_or(std::string{})});
-    fields.push_back({.name = "Bond Notional", .value = v.bond_notional.value_or(std::string{})});
+    fields.push_back({.name = "Credit Group", .value = v.credit_group.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Volatility Curve ID", .value = v.volatility_curve_id.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Price Quote Method", .value = v.price_quote_method.value_or(std::string{})});
+    fields.push_back({.name = "Price Quote Base Value",
+                      .value = v.price_quote_base_value.value_or(std::string{})});
+    fields.push_back({.name = "Sub Type", .value = v.sub_type.value_or(std::string{})});
+    fields.push_back({.name = "Price Type", .value = v.price_type.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

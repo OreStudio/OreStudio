@@ -949,7 +949,6 @@ save_bond_instrument(Nats& nats,
         issue_req.change.write.credit_curve_id = issue.credit_curve_id;
         issue_req.change.write.reference_curve_id = issue.reference_curve_id;
         issue_req.change.write.income_curve_id = issue.income_curve_id;
-        issue_req.change.write.bond_notional = issue.bond_notional;
         auto resp = nats_call(nats, issue_req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue failed" : error;
@@ -960,6 +959,7 @@ save_bond_instrument(Nats& nats,
     instrument_req.change.write.trade_id = instrument.identity.trade_id;
     instrument_req.change.write.trade_type_code = instrument.identity.trade_type_code;
     instrument_req.change.write.issue_id = instrument.issue_id;
+    instrument_req.change.write.notional = instrument.notional;
     auto resp = nats_call(nats, instrument_req, error);
     if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_instrument failed" : error;

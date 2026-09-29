@@ -96,7 +96,12 @@ domain::bond_issue to_domain(const messaging::bond_issue_write& write) {
     v.credit_curve_id = write.credit_curve_id;
     v.reference_curve_id = write.reference_curve_id;
     v.income_curve_id = write.income_curve_id;
-    v.bond_notional = write.bond_notional;
+    v.credit_group = write.credit_group;
+    v.volatility_curve_id = write.volatility_curve_id;
+    v.price_quote_method = write.price_quote_method;
+    v.price_quote_base_value = write.price_quote_base_value;
+    v.sub_type = write.sub_type;
+    v.price_type = write.price_type;
     return v;
 }
 

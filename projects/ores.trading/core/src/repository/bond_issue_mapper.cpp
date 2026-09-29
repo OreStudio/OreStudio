@@ -63,7 +63,12 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.credit_curve_id = v.credit_curve_id;
     r.reference_curve_id = v.reference_curve_id;
     r.income_curve_id = v.income_curve_id;
-    r.bond_notional = v.bond_notional;
+    r.credit_group = v.credit_group;
+    r.volatility_curve_id = v.volatility_curve_id;
+    r.price_quote_method = v.price_quote_method;
+    r.price_quote_base_value = v.price_quote_base_value;
+    r.sub_type = v.sub_type;
+    r.price_type = v.price_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -101,7 +106,12 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.credit_curve_id = v.credit_curve_id;
     r.reference_curve_id = v.reference_curve_id;
     r.income_curve_id = v.income_curve_id;
-    r.bond_notional = v.bond_notional;
+    r.credit_group = v.credit_group;
+    r.volatility_curve_id = v.volatility_curve_id;
+    r.price_quote_method = v.price_quote_method;
+    r.price_quote_base_value = v.price_quote_base_value;
+    r.sub_type = v.sub_type;
+    r.price_type = v.price_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -57,6 +57,7 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
     "trade_type_code" text not null,
     "party_id" uuid not null,
     "issue_id" uuid not null,
+    "notional" numeric(28, 10) null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,

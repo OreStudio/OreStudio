@@ -1700,7 +1700,8 @@ TEST_CASE("convertible_conversion_ratios_become_rows", tags) {
 TEST_CASE("a_bonds_calendar_curves_and_notional_survive_the_round_trip", tags) {
     auto lg(make_logger(test_suite));
 
-    // The corpus states all four on every bond. They land on the issue
+    // The corpus states all four on every bond. The calendar and the two
+    // curves land on the issue row and the notional on the instrument
     // row, which is what the database path persists and rebuilds them
     // from.
     const std::string xml = R"(
@@ -1724,8 +1725,8 @@ TEST_CASE("a_bonds_calendar_curves_and_notional_survive_the_round_trip", tags) {
     CHECK(*r.issue.credit_curve_id == "CRV_EUR_ISSUER");
     REQUIRE(r.issue.reference_curve_id);
     CHECK(*r.issue.reference_curve_id == "BENCHMARK_EUR");
-    REQUIRE(r.issue.bond_notional);
-    CHECK(*r.issue.bond_notional == "8000000");
+    REQUIRE(r.instrument.notional);
+    CHECK(r.instrument.notional->to_string() == "8000000");
     CHECK(!r.issue.income_curve_id);
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);

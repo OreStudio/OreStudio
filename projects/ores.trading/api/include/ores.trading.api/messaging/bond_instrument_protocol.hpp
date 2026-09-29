@@ -43,6 +43,7 @@ struct bond_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
     boost::uuids::uuid issue_id;
+    std::optional<ores::utility::decimal::decimal> notional;
 };
 
 struct bond_instrument_change {

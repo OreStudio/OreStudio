@@ -55,7 +55,12 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "credit_curve_id" text null,
     "reference_curve_id" text null,
     "income_curve_id" text null,
-    "bond_notional" text null,
+    "credit_group" text null,
+    "volatility_curve_id" text null,
+    "price_quote_method" text null,
+    "price_quote_base_value" text null,
+    "sub_type" text null,
+    "price_type" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -72,7 +77,8 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     check ("valid_from" < "valid_to"),
     check ("issue_id" <> ores_utility_nil_uuid_fn()),
     check ("face_value" > 0),
-    check ("coupon_rate" >= 0)
+    check ("coupon_rate" >= 0),
+    check ("price_type" is null or "price_type" in ('Clean', 'Dirty'))
 );
 
 -- Version uniqueness for optimistic concurrency

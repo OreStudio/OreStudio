@@ -162,12 +162,37 @@ struct bond_issue final {
     std::optional<std::string> income_curve_id;
 
     /**
-     * @brief Notional the document states at the bond level, as the document spells it.
-     *
-     * The column is text so that export re-emits the document's own spelling rather than a
-     * reformatted number.
+     * @brief Credit group the document names for the issue.
      */
-    std::optional<std::string> bond_notional;
+    std::optional<std::string> credit_group;
+
+    /**
+     * @brief Volatility curve the document names for the issue.
+     */
+    std::optional<std::string> volatility_curve_id;
+
+    /**
+     * @brief Price quote method the document states for the issue.
+     */
+    std::optional<std::string> price_quote_method;
+
+    /**
+     * @brief Price quote base value the document states for the issue.
+     */
+    std::optional<std::string> price_quote_base_value;
+
+    /**
+     * @brief Bond sub-type the document states for the issue.
+     */
+    std::optional<std::string> sub_type;
+
+    /**
+     * @brief The price type the document states.
+     *
+     * Soft FK to ores_trading_price_types_tbl: the values are the closed ORE bondPriceType set
+     * (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
+     */
+    std::optional<std::string> price_type;
 
     /**
      * @brief Username of the person who last modified this bond issue.

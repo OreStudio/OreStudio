@@ -49,6 +49,7 @@ struct bond_instrument_entity {
     std::string trade_type_code;
     std::string party_id;
     std::string issue_id;
+    std::optional<std::string> notional;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

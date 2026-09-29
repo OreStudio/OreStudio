@@ -29,8 +29,8 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
-| Waiting on   | The re-keying unit's own first step: the roles the two configs give the FOMC instruments must be reconciled before a key can be derived from a pillar. Nothing outside the task holds it up. |
-| Next         | Reconcile the two role vocabularies, then re-key the FOMC segment: the synthetic feed publishes the grid under the instruments' ORE keys, the bootstrap reads them from its own pillars, and the seed and its tests follow. Then the not-null and unique constraints, then the deletion against the census, which is the fourth acceptance and is not done. |
+| Waiting on   | A series-level inverse projection: the families whose coordinate is the tenor (=MM=, =FRA=, =DISCOUNT=) still store one point's identity, and the FOMC curve is a =DISCOUNT= series, so it has to land before the re-key. Nothing outside the task holds it up. |
+| Next         | Give the projections a series-level inverse beside =from_ore_key()= and move both writers onto it, so every family's series identity is the series key's projection. Then re-key the FOMC segment onto the shapes recorded above -- the feed publishing per pillar, the bootstrap reading from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 - import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
 - The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
 - series_type, metric, qualifier, ore_key and the import classification table are deleted, and every consumer reads the URI.
-- The FOMC segment's instruments carry ORE identities: the raw grid is one series per instrument, named by the key of the instrument the feed simulates -- the deposit pillar's dated spelling settled against the corpus -- and the republish curve carries ORE's DISCOUNT key.
+- The FOMC segment's instruments carry ORE identities: the raw grid is one series per pillar, named by the shape of the instrument the feed simulates -- the spot-starting pillar spelled as the swap it is, so no pillar needs a new spelling -- and the republish curve carries ORE's DISCOUNT key.
 
 * Scope, measured before the column
 
@@ -186,21 +186,48 @@ reader who asks why they were not taken:
 - the derived series keep the triple and the URI stays the key for observed rows
   only. Rejected: two keys in one table, which defeats the point of the cutover.
 
-The deposit pillar, =SPOT= to the first meeting, is a money-market quote rather than a
-swap: the corpus spells that family =MM/RATE/CCY/SETTLE/TENOR= with tenors rather
-than dates, so its dated spelling is the one open question the implementing unit
-settles against the corpus.
+**The shape decides the identity, and it closes the deposit pillar's open question.**
+Every pillar's quote is an ORE swap key: =IR_SWAP/RATE/CCY/<start>/1D/<end>=, which the
+corpus spells for the same instrument class as =IR_SWAP/RATE/GBP/20220922/1D/20221103=.
+The start slot holds =0D= for the pillar that starts at spot and a meeting date for the
+rest, =1D= is the overnight index tenor every dated OIS quote in the corpus carries,
+and the end date is last. One series per pillar -- the key without its end date -- and
+the end date is the observation's point. ORE's money-market family has no dated point,
+so the spot-starting pillar is spelled as the swap it is rather than as a deposit; the
+dated spelling the unit left open is therefore closed, and no pillar needs a new
+spelling. The curve the republish service writes keeps the corpus's discount shape,
+=DISCOUNT/RATE/CCY/CURVE/TENOR=, with the system's curve name =USD-SOFR-FOMC= and the
+pillar as the point.
 
-**The two configs disagree on the roles, and deriving a key is what exposes it.** The
-synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the bootstrap
-config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Nothing notices today,
-because the feed writes each tick under the end tenor's point id and the bootstrap
-reads by that point id alone, so the families never meet. A key derived from the
-pillar would pick a different family on the two sides, so the unit reconciles the
-vocabularies before it derives anything. The column stays nullable until the feed and
-the seed agree, and the identity is what a row gets *if it has one*: the constraint
+**The two configs still disagree on the roles, and identity is no longer what exposes
+it.** The synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the
+bootstrap config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Because the shape
+decides the key, a pillar's role no longer reaches its identity and the vocabularies do
+not need reconciling for one. The disagreement is a pricing question -- whether the
+feed's FRA path and the bootstrap's single-period swap path agree on the same pillar --
+and the FOMC unit answers it on its own terms. The column stays nullable until the feed
+and the seed agree, and the identity is what a row gets *if it has one*: the constraint
 would not catch the generator output anyway, since random text satisfies a not null
 column.
+
+**The series projection is too fine for the families whose coordinate is the tenor.**
+The decomposition gives the coordinate of an =MM= or =FRA= key to the point while the
+identifier holds it in =tenor=: the FRA series =EUR/3M= carries points =1M= through
+=12M=, and the MM series =CHF/2D= carries =1D= through =1M=. =to_series_uri()= drops
+the identifier's point and its surface but not its tenor, so those families' identities
+still carry one observation's tenor -- the defect the last unit closed for the swap
+family, one family group over. The triple fallback keeps a row reachable and stops
+duplicates, so nothing breaks today; what is wrong is the value stored. At =5e48f41fea=
+the live table held 232 series in the no-index families (=MM=, =FRA=, =IMM_FRA=,
+=BMA_SWAP=) and 36 =DISCOUNT= rows.
+
+The fix belongs with the rule rather than with its callers: the series identity is the
+projection of the *series key*, which is the ORE key without the segments the
+decomposition calls the point. That wants a series-level inverse generated per class
+beside =from_ore_key()=, from the same tables that drive it, and both writers hold the
+decomposition already. A shortcut that clears whichever identifier field spells the
+point was considered and refused: it guesses which field holds the coordinate, and it
+can clear a series field that happens to carry the point's spelling.
 
 * Plan
 
@@ -225,6 +252,7 @@ plan itself stays — it is the historical record of what we did.)
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
 | =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
+| Series in the families whose series key drops the tenor | 232 of 6,260: =MM=, =FRA=, =IMM_FRA= and =BMA_SWAP=, plus 36 =DISCOUNT= rows | =count(*) filter (where series_type in ('MM','FRA','IMM_FRA','BMA_SWAP'))= over =ores_marketdata_market_series_tbl= | =5e48f41fea= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,

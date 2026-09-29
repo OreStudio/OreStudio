@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T19:49:42.526019Z
+' Generated: 2026-09-29T20:12:05.343739Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10040,10 +10040,10 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * party_id : uuid <<FK>>
+        * oresmd_uri : text
         * series_type : text
         * metric : text
         * qualifier : text
-          oresmd_uri : text
         * series_subclass : text
         * derivation_kind : text
         * derivation_config_id : uuid <<FK>>
@@ -10065,7 +10065,10 @@ package "marketdata" #E3F2FD {
     a yield curve, vol surface, spot rate, fixing index, or similar. Standard
     temporal reference data; changes infrequently so a regular table with GIST
     exclusion is appropriate.
-    Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
+    The series is identified by oresmd_uri, the oresmd identifier its ORE key or
+    index name projects to. Every ORE market data key follows the skeleton
+    TYPE / METRIC / QUALIFIER, and those three columns carry the registry's
+    decomposition of the same key for the readers that still ask by it;
     series_subclass carries the coarse taxonomy for filtering, and the asset
     classes the series belongs to live in
     market_series_asset_classes -- a set rather than a column, because a

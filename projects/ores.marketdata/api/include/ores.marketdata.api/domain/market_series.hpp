@@ -35,15 +35,18 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Catalog entry identifying what is being observed (series type, metric, qualifier,
- * subclass).
+ * @brief Catalog entry identifying what is being observed, by its oresmd URI (with series type,
+ * metric, qualifier and subclass).
  *
  * A catalog entry for a market data series — it records what is being observed:
  * a yield curve, vol surface, spot rate, fixing index, or similar. Standard
  * temporal reference data; changes infrequently so a regular table with GIST
  * exclusion is appropriate.
  *
- * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
+ * The series is identified by oresmd_uri, the oresmd identifier its ORE key or
+ * index name projects to. Every ORE market data key follows the skeleton
+ * TYPE / METRIC / QUALIFIER, and those three columns carry the registry's
+ * decomposition of the same key for the readers that still ask by it;
  * series_subclass carries the coarse taxonomy for filtering, and the asset
  * classes the series belongs to live in
  * market_series_asset_classes -- a set rather than a column, because a
@@ -82,6 +85,27 @@ struct market_series final {
     boost::uuids::uuid party_id;
 
     /**
+     * @brief The oresmd identifier this series is, written as a URI: the canonical form of the
+key's series part -- the key without the point the observation at hand carries -- or the index name
+the row arrived under, and the identity the series is read by. The point belongs to the observation
+rows beneath this one, so a series with two points carries one identity rather than the identity of
+whichever point arrived first.
+     *
+     * The natural key with party_id, and unique per party: one party holds one series per identity.
+The series_type, metric and qualifier columns beside it are the registry's decomposition of the same
+key, kept while the readers that ask by the triple are migrated; they do not key the row.
+
+Every writer supplies one. A caller that leaves it empty stores nothing, because the column is not
+null and the generated service copies the write's fields straight through -- so an update carries
+the identity it read rather than clearing it.
+
+The test-data generator writes a generic index name, the one oresmd URI that names a series with
+nothing but a name. Its rows cannot collide on the identity: the party is freshly generated per row,
+and the party is part of the key.
+     */
+    std::string oresmd_uri;
+
+    /**
      * @brief ORE market data type token (e.g. FXSpot, YieldCurve, FXVolatility).
      */
     std::string series_type;
@@ -96,30 +120,6 @@ struct market_series final {
      * EUR-EURIBOR-3M).
      */
     std::string qualifier;
-
-    /**
-     * @brief The oresmd identifier this series is, written as a URI: the canonical form of the
-     * key's series part -- the key without the point the observation at hand carries -- or the
-     * index name the row arrived under, and the identity the series is meant to be read by. The
-     * point belongs to the observation rows beneath this one, so a series with two points carries
-     * one identity rather than the identity of whichever point arrived first.
-     *
-     * Nullable, and not yet the natural key, because the triple above still keys the row: the
-     * cutover that deletes series_type, metric and qualifier is what makes this not null and
-     * unique. Every row the corpus import writes carries one, and a row whose key the grammar
-     * cannot name carries none rather than a guessed identity.
-     *
-     * A write that leaves this empty **clears** it rather than keeping it: the generated service
-     * copies the write's fields straight through, so a caller that omits the identity stores a
-     * version without one. Until the column is not null, which is what forces every writer to
-     * supply it, a caller updating a series has to carry the identity it read.
-     *
-     * The test-data generator writes a generic index name, the one oresmd URI that names a series
-     * with nothing but a name, so a generated row carries an identity the grammar reads. The
-     * generator sets it explicitly, so the not-null the cutover adds is met by design rather than
-     * by a default value.
-     */
-    std::string oresmd_uri;
 
     /**
      * @brief Subclass within the asset class, as a code from refdata.series_subclass_code

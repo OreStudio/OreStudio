@@ -25,6 +25,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -40,6 +41,33 @@ using namespace ores::marketdata::generators;
 
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
+
+// A series built for the identity cases rather than generated: they need two rows
+// that share an identity and nothing else, and a generated triple can collide with
+// another case's row.
+ores::marketdata::domain::market_series make_identity_test_series(database_helper& h,
+                                                                  const boost::uuids::uuid& party) {
+    ores::marketdata::domain::market_series s;
+    s.id = boost::uuids::random_generator{}();
+    s.version = 0;
+    s.tenant_id = h.tenant_id();
+    s.party_id = party;
+    s.series_type = "IDENTITY_TEST";
+    s.metric = "RATE";
+    s.qualifier = "USD/TEST";
+    s.oresmd_uri = std::string("oresmd://generic/identity-test-") + boost::uuids::to_string(s.id) +
+                   "?type=fixing";
+    s.series_subclass = "yield";
+    s.derivation_kind = "OBSERVED";
+    s.derivation_config_id = boost::uuids::nil_uuid();
+    s.derivation_config_version = 0;
+    s.modified_by = h.db_user();
+    s.performed_by = h.db_user();
+    s.change_reason_code = "system.test";
+    s.change_commentary = "repository identity test";
+    return s;
+}
+
 
 TEST_CASE("write_single_market_series", tags) {
     auto lg(make_logger(test_suite));
@@ -114,7 +142,13 @@ TEST_CASE("read_latest_market_series_by_type", tags) {
     auto s = generate_synthetic_market_series(ctx);
     repo.write(h.context(), s);
 
-    auto read = repo.read_latest_by_type(h.context(), s.series_type, s.metric, s.qualifier);
+    // Scoped to the row's own party: the identity is unique per party, so the
+    // triple can name one series in each of several parties.
+    auto read = repo.read_latest_by_type(h.context(),
+                                         s.series_type,
+                                         s.metric,
+                                         s.qualifier,
+                                         boost::uuids::to_string(s.party_id));
     BOOST_LOG_SEV(lg, debug) << "Read by type: " << read;
 
     REQUIRE(read.size() == 1);
@@ -158,4 +192,44 @@ TEST_CASE("remove_market_series", tags) {
     auto after = repo.read_latest(h.context(), boost::uuids::to_string(s.id));
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.empty());
+}
+
+TEST_CASE("two_series_in_one_party_cannot_share_an_identity", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+
+    market_series_repository repo;
+    const auto first = make_identity_test_series(h, party);
+    repo.write(h.context(), first);
+
+    // The same party and the same identity, with a different decomposition and a
+    // different id: the identity is what the row is keyed by, so it is refused.
+    auto second = first;
+    second.id = boost::uuids::random_generator{}();
+    second.series_type = first.series_type + "-other";
+    second.metric = first.metric + "-other";
+    second.qualifier = first.qualifier + "-other";
+
+    CHECK_THROWS(repo.write(h.context(), second));
+}
+
+TEST_CASE("two_parties_may_each_hold_one_identity", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+
+    market_series_repository repo;
+    const auto first = make_identity_test_series(h, party);
+    repo.write(h.context(), first);
+
+    // The identity is unique per party, and a market series belongs to one party,
+    // so a second party's row of the same identity is a series of its own.
+    auto second = first;
+    second.id = boost::uuids::random_generator{}();
+    second.party_id = boost::uuids::random_generator{}();
+
+    CHECK_NOTHROW(repo.write(h.context(), second));
 }

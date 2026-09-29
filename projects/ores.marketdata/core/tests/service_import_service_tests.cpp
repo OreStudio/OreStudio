@@ -117,35 +117,31 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
     CHECK(observations.front().point_id == "SPOT");
 }
 
-TEST_CASE("import_leaves_point_id_empty_for_series_with_short_key", tags) {
+TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
-    ores::marketdata::repository::market_series_repository series_repo;
-    ores::marketdata::repository::market_observations_repository obs_repo;
 
     ores::marketdata::messaging::import_market_data_request req;
-    // IR_SWAP has qualifier_depth 3 (currency/index_tenor/fixed_freq), so a
-    // key with only 2 qualifier segments is short: the registry folds the
-    // whole remainder into the qualifier and returns no point_id, and the
-    // import must not mislabel it as "SPOT".
+    // IR_SWAP has qualifier_depth 3 (currency/index_tenor/fixed_freq), so a key
+    // with only 2 qualifier segments is short: the registry folds the whole
+    // remainder into the qualifier and returns no point_id. The oresmd grammar
+    // has no class for a five-segment swap key either, so the row has no identity
+    // to be filed under and the import reports it and drops it -- rather than
+    // storing a series nothing can read, which is what keeping the row would
+    // have meant once the identity keys the catalog.
     req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/1D 0.01\n";
     req.source = "test.import_service";
 
     const auto resp = svc.import(req);
 
-    REQUIRE(resp.success);
-    REQUIRE(resp.observation_count == 1);
-
-    const auto series =
-        series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "EUR/2D/1D");
-    REQUIRE(series.size() == 1);
-
-    const auto observations = obs_repo.read_latest(h.context(), series.front().id);
-    REQUIRE(observations.size() == 1);
-    CHECK(observations.front().point_id.empty());
+    CHECK(resp.success);
+    CHECK(resp.observation_count == 0);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].find("IR_SWAP/RATE/EUR/2D/1D") != std::string::npos);
+    CHECK(resp.warnings[0].find("skipped") != std::string::npos);
 }
 
 TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
@@ -359,4 +355,47 @@ TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tag
         h.context(), "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
     REQUIRE(by_identity.size() == 1);
     CHECK(by_identity.front().qualifier == "USD/0D/1D");
+}
+
+TEST_CASE("import_skips_a_market_data_key_oresmd_cannot_name", tags) {
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 NOSUCHTYPE/RATE/USD 1.0\n"
+                              "20160205 FX/RATE/EUR/USD 1.132337\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    CHECK(resp.success);
+    // The nameable key is imported; the other has no identity to be filed under.
+    CHECK(resp.observation_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].find("NOSUCHTYPE/RATE/USD") != std::string::npos);
+    CHECK(resp.warnings[0].find("skipped") != std::string::npos);
+    CHECK(series_repo.read_latest_by_type(h.context(), "NOSUCHTYPE", "RATE", "USD").empty());
+}
+
+TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", tags) {
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.fixings_content = "2016-02-05 NOSUCHINDEX 0.001\n"
+                          "2016-02-05 EUR-EONIA 0.001\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    CHECK(resp.success);
+    CHECK(resp.fixing_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].find("NOSUCHINDEX") != std::string::npos);
+    CHECK(resp.warnings[0].find("skipped") != std::string::npos);
+    CHECK(series_repo.read_latest_by_type(h.context(), "FIXING", "RATE", "NOSUCHINDEX").empty());
 }

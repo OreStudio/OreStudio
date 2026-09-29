@@ -86,7 +86,7 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-market_series add <party_id> <series_type> <metric> <qualifier> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
+market_series add <party_id> <oresmd_uri> <series_type> <metric> <qualifier> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.market_series.put=.
@@ -107,7 +107,7 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-market_series set <id> <party_id> <series_type> <metric> <qualifier> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]
+market_series set <id> <party_id> <oresmd_uri> <series_type> <metric> <qualifier> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.market_series.put=.
@@ -128,7 +128,7 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-market_series put-many --count <n> <id> <party_id> <series_type> <metric> <qualifier> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
+market_series put-many --count <n> <id> <party_id> <oresmd_uri> <series_type> <metric> <qualifier> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.market_series.put_many=.

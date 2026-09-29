@@ -1450,6 +1450,53 @@ TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags
     }
 }
 
+TEST_CASE("a_series_identity_and_a_point_project_back_to_the_datum_key", tags) {
+    // The drop above read backwards, and the projection a writer needs when what it
+    // holds is a series identity and one observation's point rather than the
+    // producer's key: the point goes back into the field its family keeps it in, and
+    // the key projects again. The point column is the decomposition's own `point_id`
+    // -- the key's remaining segments joined with `/` -- so a future's coordinate
+    // arrives whole and splits into its contract fields.
+    const std::pair<const char*, const char*> points[] = {
+        {"MM/RATE/CHF/2D/1M", "1M"},
+        {"FRA/RATE/EUR/3M/6M", "6M"},
+        {"IR_SWAP/RATE/USD/0D/1D/5Y", "5Y"},
+        {"COMMODITY_FWD/PRICE/GOLD/USD/2016-02-29", "2016-02-29"},
+        {"DISCOUNT/RATE/EUR/EUR/1D", "1D"},
+        {"MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M", "XICE:FEI/3M"},
+        {"OI_FUTURE/PRICE/USD/2025-11/XCME:SRA/3M", "2025-11/XCME:SRA/3M"},
+    };
+    for (const auto& [key, point] : points) {
+        const auto datum = oresmd_projections::from_ore_key(key);
+        REQUIRE(datum);
+        const auto series = oresmd_parser::parse(oresmd_parser::to_series_uri(*datum));
+        const auto rebuilt = oresmd_parser::with_point(series, point);
+        REQUIRE(rebuilt);
+        CHECK(oresmd_projections::to_quote_key(*rebuilt) == key);
+    }
+
+    // A surface's coordinate is its vol point rather than one string, and the drop
+    // above removes that point rather than leaving a field to refill, so a surface is
+    // refused rather than half-restored.
+    const auto swaption = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
+    REQUIRE(swaption);
+    CHECK_FALSE(oresmd_parser::with_point(*swaption, "5Y/2Y/ATM"));
+
+    // A fixing's key is an index name, not a series and a point.
+    const auto fixing = oresmd_parser::parse(
+        oresmd_uri{"oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=fixing"});
+    CHECK_FALSE(oresmd_parser::with_point(fixing, "1D"));
+
+    // The point is placed where the family keeps it and the family's own projection
+    // decides whether to emit it: an FX spot's key is its series key, so the SPOT the
+    // column carries is not written back as a segment no producer writes.
+    const auto spot = oresmd_projections::from_ore_key("FX/RATE/EUR/USD");
+    REQUIRE(spot);
+    const auto placed = oresmd_parser::with_point(*spot, "SPOT");
+    REQUIRE(placed);
+    CHECK(oresmd_projections::to_quote_key(*placed) == "FX/RATE/EUR/USD");
+}
+
 TEST_CASE("the_fomc_segments_shapes_name_their_series", tags) {
     // The FOMC segment's raw grid is a set of meeting-dated OIS quotes, and the record
     // decides their spelling: an ORE swap whose start slot holds 0D for the pillar that

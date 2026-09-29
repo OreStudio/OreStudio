@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/market_data_identifier.hpp"
 #include "ores.marketdata.api/domain/oresmd_uri.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <optional>
 #include <set>
 #include <string>
 
@@ -84,6 +85,29 @@ public:
      */
     [[nodiscard]] static domain::oresmd_uri
     to_series_uri(const domain::market_data_identifier& identifier);
+
+    /**
+     * @brief The series @p identifier with one observation's coordinate put back,
+     * the inverse of to_series_uri() for the families whose coordinate is a point.
+     *
+     * A writer that holds a series identity and one observation's point -- the
+     * decomposition's own `point_id`, which is the key's remaining segments joined
+     * with `/` -- needs the datum's identifier before it can project a quote key,
+     * and which field the point belongs in is a fact about each family. This is
+     * the one place that fact is read back: a discount curve's maturity goes to
+     * its tenor, a money-market future's coordinate splits into its contract code
+     * and underlying tenor, an overnight-index future's into its contract month,
+     * contract code and underlying tenor, and every other indexed family takes the
+     * point as the point.
+     *
+     * A surface is refused, because its coordinate is the identifier's vol point
+     * rather than one string, and to_series_uri() drops that point rather than
+     * leaving a field to put back. A fixing is refused, because its key is an
+     * index name rather than a series and a point, and a class with no point at
+     * all is refused by the same rule. A refused call returns nullopt.
+     */
+    [[nodiscard]] static std::optional<domain::market_data_identifier>
+    with_point(const domain::market_data_identifier& identifier, const std::string& point);
 
     /**
      * @brief Serialises @p identifier, matching its tenor and point values against

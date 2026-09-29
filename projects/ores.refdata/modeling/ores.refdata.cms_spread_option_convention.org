@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: 8A064230-CC5F-4671-86D1-002231BF880E
+:END:
+#+title: ores.refdata.cms_spread_option_convention
+#+description: Codegen entity model for the refdata =cms_spread_option_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a constant-maturity-swap spread option, whose underlying is the spread between two swap rates.
+#+entity_singular: cms_spread_option_convention
+#+entity_plural: cms_spread_option_conventions
+#+entity_title: CMS Spread Option Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds a constant-maturity-swap spread option: where its
+forward starts, how long its underlying swap runs, when it fixes, and the
+calendar and conventions its schedule rolls on. Corresponds to the
+<CmsSpreadOption> element in ORE conventions.xml. The id field is the natural
+key (ORE <Id> element).
+
+All eight fields are required and the corpus sets all eight in all twelve
+elements, which are otherwise identical: one convention shared by twelve files.
+The two period fields and the spot days stay in ORE's spelling, because they
+are tenors rather than frequency enumerations; the day count and the roll
+convention are normalised to the canonical codes the other tables hold.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique CMS spread option identifier.
+
+#+begin_src cpp :name generator
+std::string("EUR-CMS-10Y-2Y-CONVENTIONS")
+#+end_src
+
+** forward_start
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Period between the trade date and the swap's forward start, in ORE's period form.
+
+#+begin_src cpp :name generator
+std::string("0M")
+#+end_src
+
+** spot_days
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Period between the trade date and the spot date, in ORE's period form.
+
+#+begin_src cpp :name generator
+std::string("2D")
+#+end_src
+
+** swap_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Tenor of the underlying swap, in ORE's period form.
+
+#+begin_src cpp :name generator
+std::string("3M")
+#+end_src
+
+** fixing_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:END:
+
+Number of days between a fixing and the coupon it feeds.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar the schedule rolls on.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** day_count_fraction
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Day count fraction the underlying swap accrues on.
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** roll_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention the schedule rolls on, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cms_spread_option_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cms_spread_option_convention
+:entity_plural_short:   cms_spread_option_conventions
+:entity_singular_words: CMS spread option convention
+:entity_plural_words:   CMS spread option conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cso
+:END:
+
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| id              | Id              |
+| swap_tenor      | Swap Tenor      |
+| forward_start   | Forward Start   |
+| modified_by     | Modified By     |
+| version         | Version         |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           cms_spread_option_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   cms_spread_option_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter CMS spread option id |
+| forward_start | Forward Start | forwardStartEdit | line_edit |  | true | e.g. 0M |
+| spot_days | Spot Days | spotDaysEdit | line_edit |  | true | e.g. 2D |
+| swap_tenor | Swap Tenor | swapTenorEdit | line_edit |  | true | e.g. 3M |
+| fixing_days | Fixing Days | fixingDaysEdit | line_edit |  | true | e.g. 2 |
+| calendar | Calendar | calendarEdit | line_edit |  | true | e.g. TARGET |
+| day_count_fraction | DCF | dayCountFractionEdit | line_edit |  | true | e.g. ACT/360 |
+| roll_convention | Roll Convention | rollConventionEdit | line_edit |  | true | e.g. ModifiedFollowing |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 220 |
+| ForwardStart | forward_start | Forward Start | string | 130 |
+| SpotDays | spot_days | Spot Days | string | 110 |
+| SwapTenor | swap_tenor | Swap Tenor | string | 120 |
+| FixingDays | fixing_days | Fixing Days | int | 110 |
+| Calendar | calendar | Calendar | string | 130 |
+| DayCounter | day_count_fraction | DCF | string | 120 |
+| RollConvention | roll_convention | Roll Convention | string | 150 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

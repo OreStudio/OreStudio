@@ -32,8 +32,8 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * seventeen. The files that use only those seventeen round trip. The rest do
- * not,
+ * twenty-five. The files that use only those twenty-five round trip, and all
+ * seventy-two of them do.
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -254,6 +254,493 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     CHECK(files_with_basis == 49);
 }
 
+TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
+    int files_with_intraday_power = 0;
+    std::size_t elements_with_intraday_power = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.IntradayPowerLoad.empty())
+            continue;
+
+        ++files_with_intraday_power;
+        elements_with_intraday_power += document.IntradayPowerLoad.size();
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.intraday_power_load.size() == document.IntradayPowerLoad.size());
+
+        for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
+            const auto& in = document.IntradayPowerLoad[i];
+            const auto& out = mapped.intraday_power_load[i];
+            CHECK(out.id == std::string(in.Id));
+            if (in.PowerLoadProfileData) {
+                const auto& profile = *in.PowerLoadProfileData;
+                if (profile.ExplicitDates)
+                    CHECK(out.explicit_load_profile.has_value());
+                if (profile.BusinessDayRules)
+                    CHECK(out.business_day_load_rules.has_value());
+            }
+        }
+
+        // The two load profiles are written as text columns, so the mapper must
+        // not report the category as skipped.
+        CHECK(mapped.unmodelled.empty());
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "IntradayPowerLoad");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.IntradayPowerLoad.size()) +
+             " IntradayPowerLoad element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.IntradayPowerLoad.size()));
+
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.IntradayPowerLoad.size() == document.IntradayPowerLoad.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
+            INFO(path.string() + ": IntradayPowerLoad element " + std::to_string(i));
+            CHECK(remapped.intraday_power_load[i] == mapped.intraday_power_load[i]);
+        }
+    }
+
+    // One of the seventy-two files carries it, in two elements, one of each form.
+    CHECK(files_with_intraday_power == 1);
+    CHECK(elements_with_intraday_power == 2);
+}
+
+TEST_CASE("conventions_commodity_forward_round_trips", tags) {
+    int files_with_commodity_forward = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CommodityForward.empty())
+            continue;
+
+        ++files_with_commodity_forward;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.commodity_forward.size() == document.CommodityForward.size());
+
+        for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
+            const auto& in = document.CommodityForward[i];
+            const auto& out = mapped.commodity_forward[i];
+            CHECK(out.id == std::string(in.Id));
+            if (in.SpotDays)
+                CHECK(out.spot_days == static_cast<int>(*in.SpotDays));
+            if (in.PointsFactor)
+                CHECK(out.points_factor == static_cast<double>(*in.PointsFactor));
+            if (in.AdvanceCalendar)
+                CHECK(out.advance_calendar == std::string(*in.AdvanceCalendar));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CommodityForward");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CommodityForward.size()) +
+             " CommodityForward element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CommodityForward.size()));
+
+        // The mapper stores a canonical spelling of the business day convention,
+        // so the export may differ from the document in that. What has to
+        // survive is the value: read the export back, map it again, and require
+        // the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CommodityForward.size() == document.CommodityForward.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
+            INFO(path.string() + ": CommodityForward element " + std::to_string(i));
+            CHECK(remapped.commodity_forward[i] == mapped.commodity_forward[i]);
+        }
+    }
+
+    // Two of the seventy-two files carry it, in five elements between them.
+    CHECK(files_with_commodity_forward == 2);
+}
+
+TEST_CASE("conventions_bond_yield_round_trips", tags) {
+    int files_with_bond_yield = 0;
+    std::size_t elements_with_bond_yield = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.BondYield.empty())
+            continue;
+
+        ++files_with_bond_yield;
+        elements_with_bond_yield += document.BondYield.size();
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.bond_yield.size() == document.BondYield.size());
+
+        for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
+            const auto& in = document.BondYield[i];
+            const auto& out = mapped.bond_yield[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.compounding == std::string(in.Compounding));
+            if (in.PriceType)
+                CHECK(out.price_type == std::string(*in.PriceType));
+            if (in.Accuracy)
+                CHECK(out.accuracy == static_cast<double>(*in.Accuracy));
+            if (in.Guess)
+                CHECK(out.guess == static_cast<double>(*in.Guess));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "BondYield");
+        INFO(path.string() + ": the document has " + std::to_string(document.BondYield.size()) +
+             " BondYield element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.BondYield.size()));
+
+        // The frequency is normalised to the canonical code the other tables
+        // hold, so the export may differ from the document there. What has to
+        // survive is the value: read the export back, map it again, and require
+        // the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.BondYield.size() == document.BondYield.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
+            INFO(path.string() + ": BondYield element " + std::to_string(i));
+            CHECK(remapped.bond_yield[i] == mapped.bond_yield[i]);
+        }
+    }
+
+    // One of the seventy-two files carries it, in five elements.
+    CHECK(files_with_bond_yield == 1);
+    CHECK(elements_with_bond_yield == 5);
+}
+
+TEST_CASE("conventions_commodity_future_round_trips", tags) {
+    int files_with_commodity_future = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CommodityFuture.empty())
+            continue;
+
+        ++files_with_commodity_future;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.commodity_future.size() == document.CommodityFuture.size());
+
+        for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
+            const auto& in = document.CommodityFuture[i];
+            const auto& out = mapped.commodity_future[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.contract_frequency == to_string(in.ContractFrequency));
+            CHECK(out.calendar == std::string(in.Calendar));
+            if (in.AveragingData)
+                CHECK(out.averaging_commodity_name ==
+                      std::string(in.AveragingData->CommodityName));
+            if (in.ProhibitedExpiries)
+                CHECK(out.prohibited_expiries.has_value());
+            if (in.FutureContinuationMappings)
+                CHECK(out.future_continuation_mappings.has_value());
+            if (in.OptionContinuationMappings)
+                CHECK(out.option_continuation_mappings.has_value());
+        }
+
+        // The four list-bearing fields are written as text columns now, so the
+        // mapper must not report any of them as skipped.
+        for (const auto& [name, count] : mapped.unmodelled) {
+            INFO(path.string() + ": unexpected skip " + name);
+            CHECK(name.rfind("CommodityFuture.", 0) != 0);
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CommodityFuture");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CommodityFuture.size()) +
+             " CommodityFuture element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CommodityFuture.size()));
+
+        // The mapper stores canonical spellings of the frequency and the
+        // business day conventions, so the export may differ from the document
+        // in those. What has to survive is the value: read the export back, map
+        // it again, and require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CommodityFuture.size() == document.CommodityFuture.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
+            INFO(path.string() + ": CommodityFuture element " + std::to_string(i));
+            CHECK(remapped.commodity_future[i] == mapped.commodity_future[i]);
+        }
+    }
+
+    // Five of the seventy-two files carry it, and two of them carried nothing
+    // else unmodelled when it went in.
+    CHECK(files_with_commodity_future == 5);
+}
+
+TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
+    int files_with_cms = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CmsSpreadOption.empty())
+            continue;
+
+        ++files_with_cms;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.cms_spread_option.size() == document.CmsSpreadOption.size());
+
+        for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
+            const auto& in = document.CmsSpreadOption[i];
+            const auto& out = mapped.cms_spread_option[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.forward_start == std::string(in.ForwardStart));
+            CHECK(out.spot_days == std::string(in.SpotDays));
+            CHECK(out.swap_tenor == std::string(in.SwapTenor));
+            CHECK(out.fixing_days == static_cast<int>(in.FixingDays));
+            CHECK(out.calendar == std::string(in.Calendar));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CmsSpreadOption");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CmsSpreadOption.size()) +
+             " CmsSpreadOption element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CmsSpreadOption.size()));
+
+        // The mapper stores canonical spellings of the day count and the roll
+        // convention, so the export may differ from the document in those. What
+        // has to survive is the value: read the export back, map it again, and
+        // require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CmsSpreadOption.size() == document.CmsSpreadOption.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
+            INFO(path.string() + ": CmsSpreadOption element " + std::to_string(i));
+            CHECK(remapped.cms_spread_option[i] == mapped.cms_spread_option[i]);
+        }
+    }
+
+    // Twelve of the seventy-two files carry it, and eleven of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_cms == 12);
+}
+
+TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
+    int files_with_fix_float = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CrossCurrencyFixFloat.empty())
+            continue;
+
+        ++files_with_fix_float;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.cross_currency_fix_float.size() == document.CrossCurrencyFixFloat.size());
+
+        for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
+            const auto& in = document.CrossCurrencyFixFloat[i];
+            const auto& out = mapped.cross_currency_fix_float[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
+            CHECK(out.settlement_calendar == std::string(in.SettlementCalendar));
+            CHECK(out.fixed_currency == to_string(in.FixedCurrency));
+            CHECK(out.index == std::string(in.Index));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CrossCurrencyFixFloat");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CrossCurrencyFixFloat.size()) +
+             " CrossCurrencyFixFloat element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CrossCurrencyFixFloat.size()));
+
+        // The mapper stores canonical spellings of the frequency, the two
+        // conventions and the day count, so the export may differ from the
+        // document in those. What has to survive is the value: read the export
+        // back, map it again, and require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CrossCurrencyFixFloat.size() == document.CrossCurrencyFixFloat.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
+            INFO(path.string() + ": CrossCurrencyFixFloat element " + std::to_string(i));
+            CHECK(remapped.cross_currency_fix_float[i] == mapped.cross_currency_fix_float[i]);
+        }
+    }
+
+    // Eighteen of the seventy-two files carry it, and six of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_fix_float == 18);
+}
+
+// The corpus sets none of the element's nine optional fields, so the walk above
+// cannot reach the half of the mapping that reads them. This document sets all
+// nine, including a zero-valued fixing days and a false resettable flag, which
+// are the two cases a mapper that tested the value rather than the presence
+// would drop.
+TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) {
+    const std::string text = R"(<Conventions>
+  <CrossCurrencyFixFloat>
+    <Id>USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS</Id>
+    <SettlementDays>2</SettlementDays>
+    <SettlementCalendar>US,UK,TRY</SettlementCalendar>
+    <SettlementConvention>F</SettlementConvention>
+    <FixedCurrency>TRY</FixedCurrency>
+    <FixedFrequency>Semiannual</FixedFrequency>
+    <FixedConvention>MF</FixedConvention>
+    <FixedDayCounter>A360</FixedDayCounter>
+    <Index>USD-LIBOR-3M</Index>
+    <EOM>true</EOM>
+    <IsResettable>true</IsResettable>
+    <FloatIndexIsResettable>false</FloatIndexIsResettable>
+    <IncludeSpread>true</IncludeSpread>
+    <Lookback>1D</Lookback>
+    <FixingDays>0</FixingDays>
+    <RateCutoff>2</RateCutoff>
+    <IsAveraged>true</IsAveraged>
+    <ObservationShift>true</ObservationShift>
+  </CrossCurrencyFixFloat>
+</Conventions>)";
+
+    conventions document;
+    load_data(text, document);
+    REQUIRE(document.CrossCurrencyFixFloat.size() == 1);
+
+    const auto mapped = conventions_mapper::map(document);
+    REQUIRE(mapped.cross_currency_fix_float.size() == 1);
+    const auto& out = mapped.cross_currency_fix_float[0];
+    CHECK(out.eom.has_value());
+    CHECK(out.is_resettable.has_value());
+    CHECK(out.float_index_is_resettable.has_value());
+    CHECK(out.include_spread.has_value());
+    REQUIRE(out.lookback.has_value());
+    CHECK(*out.lookback == "1D");
+    REQUIRE(out.fixing_days.has_value());
+    CHECK(*out.fixing_days == 0);
+    REQUIRE(out.rate_cutoff.has_value());
+    CHECK(*out.rate_cutoff == 2);
+    CHECK(out.is_averaged.has_value());
+    CHECK(out.observation_shift.has_value());
+
+    const std::string exported = save_data(conventions_mapper::reverse(mapped));
+    conventions reparsed;
+    load_data(exported, reparsed);
+    const auto remapped = conventions_mapper::map(reparsed);
+    REQUIRE(remapped.cross_currency_fix_float.size() == 1);
+    CHECK(remapped.cross_currency_fix_float[0] == out);
+}
+
+TEST_CASE("conventions_inflation_swap_round_trips", tags) {
+    int files_with_inflation_swap = 0;
+    int files_with_a_publication_schedule = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.InflationSwap.empty())
+            continue;
+
+        ++files_with_inflation_swap;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.inflation_swap.size() == document.InflationSwap.size());
+
+        bool carries_a_schedule = false;
+        for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
+            const auto& in = document.InflationSwap[i];
+            const auto& out = mapped.inflation_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.index == std::string(in.Index));
+            CHECK(out.fix_calendar == std::string(in.FixCalendar));
+            CHECK(out.inflation_calendar == std::string(in.InflationCalendar));
+            if (in.PublicationSchedule)
+                carries_a_schedule = true;
+        }
+
+        // A schedule of rules, dates and derived groups is written as text
+        // columns, so the mapper must not report it as skipped.
+        if (carries_a_schedule) {
+            ++files_with_a_publication_schedule;
+            CHECK(mapped.unmodelled.count("InflationSwap.PublicationSchedule") == 0);
+            for (const auto& out : mapped.inflation_swap) {
+                if (out.publication_schedule_rules)
+                    CHECK(!out.publication_schedule_rules->empty());
+            }
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "InflationSwap");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.InflationSwap.size()) +
+             " InflationSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.InflationSwap.size()));
+
+        // The mapper stores canonical spellings of the conventions and the day
+        // count, so the export may differ from the document in those. What has
+        // to survive is the value: read the export back, map it again, and
+        // require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.InflationSwap.size() == document.InflationSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
+            INFO(path.string() + ": InflationSwap element " + std::to_string(i));
+            CHECK(remapped.inflation_swap[i] == mapped.inflation_swap[i]);
+        }
+    }
+
+    // Twenty-two of the seventy-two files carry it, and three of them carried
+    // nothing else unmodelled when it went in. Two carry a publication
+    // schedule, and both carry other unmodelled categories as well.
+    CHECK(files_with_inflation_swap == 22);
+    CHECK(files_with_a_publication_schedule == 2);
+}
+
+TEST_CASE("conventions_bma_basis_swap_round_trips", tags) {
+    int files_with_bma = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.BMABasisSwap.empty())
+            continue;
+
+        ++files_with_bma;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.bma_basis_swap.size() == document.BMABasisSwap.size());
+
+        for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
+            const auto& in = document.BMABasisSwap[i];
+            const auto& out = mapped.bma_basis_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.index == std::string(in.Index));
+            CHECK(out.bma_index == std::string(in.BMAIndex));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "BMABasisSwap");
+        INFO(path.string() + ": the document has " + std::to_string(document.BMABasisSwap.size()) +
+             " BMABasisSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.BMABasisSwap.size()));
+
+        // The mapper stores a canonical spelling of the two payment
+        // conventions, so the export writes a spelling the document may not
+        // have used. What has to survive is the value: read the export back,
+        // map it again, and require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.BMABasisSwap.size() == document.BMABasisSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
+            INFO(path.string() + ": BMABasisSwap element " + std::to_string(i));
+            CHECK(remapped.bma_basis_swap[i] == mapped.bma_basis_swap[i]);
+        }
+    }
+
+    // Sixteen of the seventy-two files carry it, and three of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_bma == 16);
+}
+
 TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
     int files_with_inflation_index = 0;
 
@@ -453,10 +940,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Forty-four of the seventy-two once ZeroInflationIndex landed: the five
-    // files it cleared on its own on top of the thirty-nine already clean. The
-    // count is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 44);
+    // All seventy-two once the publication schedule and the intraday power load
+    // were written as text columns. The count is asserted so that a change in
+    // it is noticed rather than absorbed.
+    CHECK(walked == 72);
 }
 
 // Hidden by default, and run on demand:

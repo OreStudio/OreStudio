@@ -1,0 +1,328 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_protocol.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REFDATA_API_MESSAGING_COMMODITY_FUTURE_CONVENTION_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_COMMODITY_FUTURE_CONVENTION_PROTOCOL_HPP
+
+#include "ores.refdata.api/domain/commodity_future_convention.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace ores::refdata::messaging {
+
+struct commodity_future_convention_key {
+    std::string id;
+};
+
+struct commodity_future_convention_write {
+    std::string id;
+    std::string contract_frequency;
+    std::string calendar;
+    std::optional<std::string> expiry_calendar;
+    std::optional<int> expiry_month_lag;
+    std::optional<std::string> one_contract_month;
+    std::optional<int> offset_days;
+    std::optional<std::string> business_day_convention;
+    std::optional<bool> adjust_before_offset;
+    std::optional<bool> is_averaging;
+    std::optional<std::string> valid_contract_months;
+    std::optional<int> anchor_day_of_month;
+    std::optional<int> anchor_calendar_days_before;
+    std::optional<int> anchor_business_days_after;
+    std::optional<int> anchor_nth_nth;
+    std::optional<std::string> anchor_nth_weekday;
+    std::optional<std::string> anchor_last_weekday;
+    std::optional<std::string> anchor_weekly_day_of_the_week;
+    std::optional<int> option_expiry_month_lag;
+    std::optional<std::string> option_contract_frequency;
+    std::optional<int> option_expiry_offset;
+    std::optional<int> option_calendar_days_before;
+    std::optional<int> option_min_business_days_before;
+    std::optional<int> option_expiry_day;
+    std::optional<int> option_nth_nth;
+    std::optional<std::string> option_nth_weekday;
+    std::optional<std::string> option_expiry_last_weekday_of_month;
+    std::optional<std::string> option_expiry_weekly_day_of_the_week;
+    std::optional<std::string> option_business_day_convention;
+    std::optional<int> hours_per_day;
+    std::optional<std::string> off_peak_index;
+    std::optional<std::string> peak_index;
+    std::optional<double> off_peak_hours;
+    std::optional<std::string> peak_calendar;
+    std::optional<std::string> index_name;
+    std::optional<std::string> savings_time;
+    std::optional<std::string> delivery_location;
+    std::optional<bool> balance_of_the_month;
+    std::optional<std::string> balance_of_the_month_pricing_calendar;
+    std::optional<std::string> option_underlying_future_convention;
+    std::optional<std::string> averaging_commodity_name;
+    std::optional<std::string> averaging_period;
+    std::optional<std::string> averaging_pricing_calendar;
+    std::optional<std::string> averaging_conventions;
+    std::optional<bool> averaging_use_business_days;
+    std::optional<int> averaging_delivery_roll_days;
+    std::optional<int> averaging_future_month_offset;
+    std::optional<int> averaging_daily_expiry_offset;
+    std::optional<std::string> prohibited_expiries;
+    std::optional<std::string> future_continuation_mappings;
+    std::optional<std::string> option_continuation_mappings;
+};
+
+struct commodity_future_convention_change {
+    commodity_future_convention_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct commodity_future_convention_removal {
+    commodity_future_convention_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
+struct commodity_future_convention_lookup {
+    commodity_future_convention_key key;
+    std::optional<ores::refdata::domain::commodity_future_convention> commodity_future_convention;
+};
+
+struct commodity_future_convention_event {
+    boost::uuids::uuid event_id;
+    commodity_future_convention_key key;
+    std::string action;
+    std::uint32_t version;
+    std::chrono::system_clock::time_point occurred_at;
+    std::optional<std::string> correlation_id;
+};
+
+struct commodity_future_convention_version_key {
+    commodity_future_convention_key commodity_future_convention;
+    std::uint32_t version;
+};
+
+struct commodity_future_convention_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
+struct list_commodity_future_conventions_request {
+    using response_type = struct list_commodity_future_conventions_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.commodity_future_conventions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+};
+
+struct list_commodity_future_conventions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::commodity_future_convention> commodity_future_conventions;
+    std::uint64_t total;
+};
+
+struct get_commodity_future_convention_request {
+    using response_type = struct get_commodity_future_convention_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.commodity_future_conventions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    commodity_future_convention_key key;
+};
+
+struct get_commodity_future_convention_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::commodity_future_convention> commodity_future_convention;
+};
+
+struct get_many_commodity_future_conventions_request {
+    using response_type = struct get_many_commodity_future_conventions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.commodity_future_conventions.get_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<commodity_future_convention_key> keys;
+};
+
+struct get_many_commodity_future_conventions_response {
+    ores::utility::domain::result result;
+    std::vector<commodity_future_convention_lookup> entries;
+};
+
+struct put_commodity_future_convention_request {
+    using response_type = struct put_commodity_future_convention_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.commodity_future_conventions.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    commodity_future_convention_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_commodity_future_convention_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::commodity_future_convention> commodity_future_convention;
+};
+
+struct put_many_commodity_future_conventions_request {
+    using response_type = struct put_many_commodity_future_conventions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.commodity_future_conventions.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<commodity_future_convention_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_commodity_future_conventions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::commodity_future_convention> commodity_future_conventions;
+};
+
+struct delete_commodity_future_convention_request {
+    using response_type = struct delete_commodity_future_convention_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.commodity_future_conventions.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    commodity_future_convention_removal removal;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_commodity_future_convention_response {
+    ores::utility::domain::result result;
+};
+
+struct delete_many_commodity_future_conventions_request {
+    using response_type = struct delete_many_commodity_future_conventions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.commodity_future_conventions.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<commodity_future_convention_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_commodity_future_conventions_response {
+    ores::utility::domain::result result;
+};
+
+struct list_commodity_future_convention_versions_request {
+    using response_type = struct list_commodity_future_convention_versions_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.commodity_future_conventions_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    commodity_future_convention_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<commodity_future_convention_versions_filter> filter;
+};
+
+struct list_commodity_future_convention_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::commodity_future_convention> versions;
+    std::uint64_t total;
+};
+
+struct get_commodity_future_convention_version_request {
+    using response_type = struct get_commodity_future_convention_version_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.commodity_future_conventions_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    commodity_future_convention_version_key key;
+};
+
+struct get_commodity_future_convention_version_response {
+    ores::utility::domain::result result;
+    std::optional<ores::refdata::domain::commodity_future_convention> version;
+};
+
+/**
+ * @brief The subjects this resource's changes are announced on.
+ *
+ * An event reports what happened and no caller asked for it, so its last
+ * segment is the action rather than a verb. One payload is therefore addressed
+ * by three subjects, and a subscriber that wants one action subscribes to one
+ * of them.
+ */
+namespace commodity_future_convention_event_subjects {
+inline constexpr std::string_view created =
+    "refdata.v1.commodity_future_conventions_events.created";
+inline constexpr std::string_view updated =
+    "refdata.v1.commodity_future_conventions_events.updated";
+inline constexpr std::string_view deleted =
+    "refdata.v1.commodity_future_conventions_events.deleted";
+}
+
+}
+
+#endif

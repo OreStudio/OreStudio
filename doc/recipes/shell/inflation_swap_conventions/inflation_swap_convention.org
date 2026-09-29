@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 52E34F2C-24D6-5926-AB27-39D8C0CB03DC
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the inflation_swap_conventions commands from the shell?
+#+description: Every command the inflation_swap_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:inflation_swap_conventions:
+
+This file documents the inflation_swap_conventions resource at the shell, one section per command. Every command is a subcommand of =inflation_swap_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F9194D57-CB65-5255-8B33-C15FF6D89A89
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.list=.
+
+#+name: inflation_swap_conventions-list
+#+begin_src ores-shell :tangle inflation_swap_conventions-list.ores :exports none
+inflation_swap_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F59FD5E5-D5B4-50BE-BF14-DBFD4E881C54
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.get=.
+
+#+name: inflation_swap_conventions-get
+#+begin_src ores-shell :tangle inflation_swap_conventions-get.ores :exports none
+inflation_swap_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B8C15D39-E0BC-570A-829C-E5C861F75844
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.get_many=.
+
+#+name: inflation_swap_conventions-get-many
+#+begin_src ores-shell :tangle inflation_swap_conventions-get-many.ores :exports none
+inflation_swap_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3685D0B9-E3E1-5655-BBDE-1D8708227D0A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions add <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.put=.
+
+#+name: inflation_swap_conventions-add
+#+begin_src ores-shell :tangle inflation_swap_conventions-add.ores :exports none
+inflation_swap_conventions add __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5F4BC052-BB91-5833-B1F5-C4283B6D761A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions set <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.put=.
+
+#+name: inflation_swap_conventions-set
+#+begin_src ores-shell :tangle inflation_swap_conventions-set.ores :exports none
+inflation_swap_conventions set __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4CC78496-6F08-5DA5-8370-103A4FD3EA1C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions put-many --count <n> <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.put_many=.
+
+#+name: inflation_swap_conventions-put-many
+#+begin_src ores-shell :tangle inflation_swap_conventions-put-many.ores :exports none
+inflation_swap_conventions put-many --count 1 __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0E0023E8-820A-5C04-BD20-3B68F30A5D93
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.delete=.
+
+#+name: inflation_swap_conventions-delete
+#+begin_src ores-shell :tangle inflation_swap_conventions-delete.ores :exports none
+inflation_swap_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 69D2BF0E-E848-5792-8574-786BC48A608B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions.delete_many=.
+
+#+name: inflation_swap_conventions-delete-many
+#+begin_src ores-shell :tangle inflation_swap_conventions-delete-many.ores :exports none
+inflation_swap_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A945CAC9-A613-5570-A435-A8E02A615CD3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions_versions.list=.
+
+#+name: inflation_swap_conventions-versions
+#+begin_src ores-shell :tangle inflation_swap_conventions-versions.ores :exports none
+inflation_swap_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4858EFC1-098D-5321-963D-FBFFEC4C37E6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_swap_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_swap_conventions_versions.get=.
+
+#+name: inflation_swap_conventions-version
+#+begin_src ores-shell :tangle inflation_swap_conventions-version.ores :exports none
+inflation_swap_conventions version __none__ --version 1
+#+end_src
+

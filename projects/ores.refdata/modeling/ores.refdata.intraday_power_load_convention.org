@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: AAB876A9-5DB7-438C-8628-5F296F919894
+:END:
+#+title: ores.refdata.intraday_power_load_convention
+#+description: Codegen entity model for the refdata =intraday_power_load_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Load profiles for intraday power, given either as explicit dates or as business day rules.
+#+entity_singular: intraday_power_load_convention
+#+entity_plural: intraday_power_load_conventions
+#+entity_title: Intraday Power Load Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds an intraday power load profile, either as a list of
+dates each carrying its own load factors or as a list of business day rules
+that generate them. Corresponds to the <IntradayPowerLoad> element in ORE
+conventions.xml. The id field is the natural key (ORE <Id> element).
+
+The element's one data field is a choice between two nested lists, and each
+list is written as one text column in a stated form rather than given a table
+of its own. Records are separated by semicolons and a record's fields by pipes;
+load factors are separated by commas and a factor's own fields by colons, so a
+factor reads =from:to:unit:dst:value=. One file carries two elements, one of
+each form, and between them they hold every shape the element can take.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique intraday power load profile identifier.
+
+#+begin_src cpp :name generator
+std::string("LOAD_PROFILE_1_EXPLICIT")
+#+end_src
+
+** explicit_load_profile
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Dated load profiles, one date per semicolon, each a pipe-separated date and a comma-separated list of load factors.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** business_day_load_rules
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Load profiles generated from business day rules, one rule per semicolon, each a pipe-separated date, calendar and two comma-separated factor lists.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_intraday_power_load_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: intraday_power_load_convention
+:entity_plural_short:   intraday_power_load_conventions
+:entity_singular_words: intraday power load convention
+:entity_plural_words:   intraday power load conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ipl
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | Id           |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           intraday_power_load_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   intraday_power_load_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter load profile id |
+| explicit_load_profile | Explicit Dates | explicitLoadProfileEdit | line_edit |  |  |  |
+| business_day_load_rules | Business Day Rules | businessDayLoadRulesEdit | line_edit |  |  |  |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 220 |
+| ExplicitLoadProfile | explicit_load_profile | Explicit Dates | string | 200 |
+| BusinessDayLoadRules | business_day_load_rules | Business Day Rules | string | 200 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

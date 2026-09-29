@@ -306,6 +306,133 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- BMA Basis Swap Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_bma_basis_swap_conventions_tbl enable row level security;
+
+drop policy if exists bma_basis_swap_conventions_tenant_isolation_policy
+    on ores_refdata_bma_basis_swap_conventions_tbl;
+
+create policy bma_basis_swap_conventions_tenant_isolation_policy on ores_refdata_bma_basis_swap_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Inflation Swap Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_inflation_swap_conventions_tbl enable row level security;
+
+drop policy if exists inflation_swap_conventions_tenant_isolation_policy
+    on ores_refdata_inflation_swap_conventions_tbl;
+
+create policy inflation_swap_conventions_tenant_isolation_policy on ores_refdata_inflation_swap_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Cross-Currency Fix-Float Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_cross_currency_fix_float_conventions_tbl enable row level security;
+
+drop policy if exists cross_currency_fix_float_conventions_tenant_isolation_policy
+    on ores_refdata_cross_currency_fix_float_conventions_tbl;
+
+create policy cross_currency_fix_float_conventions_tenant_isolation_policy on ores_refdata_cross_currency_fix_float_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- CMS Spread Option Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_cms_spread_option_conventions_tbl enable row level security;
+
+drop policy if exists cms_spread_option_conventions_tenant_isolation_policy
+    on ores_refdata_cms_spread_option_conventions_tbl;
+
+create policy cms_spread_option_conventions_tenant_isolation_policy on ores_refdata_cms_spread_option_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Commodity Future Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_commodity_future_conventions_tbl enable row level security;
+
+drop policy if exists commodity_future_conventions_tenant_isolation_policy
+    on ores_refdata_commodity_future_conventions_tbl;
+
+create policy commodity_future_conventions_tenant_isolation_policy on ores_refdata_commodity_future_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Commodity Forward Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_commodity_forward_conventions_tbl enable row level security;
+
+drop policy if exists commodity_forward_conventions_tenant_isolation_policy
+    on ores_refdata_commodity_forward_conventions_tbl;
+
+create policy commodity_forward_conventions_tenant_isolation_policy on ores_refdata_commodity_forward_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Intraday Power Load Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_intraday_power_load_conventions_tbl enable row level security;
+
+drop policy if exists intraday_power_load_conventions_tenant_isolation_policy
+    on ores_refdata_intraday_power_load_conventions_tbl;
+
+create policy intraday_power_load_conventions_tenant_isolation_policy on ores_refdata_intraday_power_load_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Bond Yield Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_bond_yield_conventions_tbl enable row level security;
+
+drop policy if exists bond_yield_conventions_tenant_isolation_policy on ores_refdata_bond_yield_conventions_tbl;
+
+create policy bond_yield_conventions_tenant_isolation_policy on ores_refdata_bond_yield_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currency Pair Classifications
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_pair_classifications_tbl enable row level security;

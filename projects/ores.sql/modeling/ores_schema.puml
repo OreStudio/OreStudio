@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T13:51:17.213352Z
+' Generated: 2026-09-29T16:38:42.501997Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -915,6 +915,81 @@ package "refdata" #FFF3E0 {
     FpML Benchmark rates
     end note
 
+    entity ores_refdata_bma_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * index : text
+        * bma_index : text
+          bma_payment_calendar : text
+          bma_payment_convention : text
+          bma_payment_lag : integer
+          index_payment_calendar : text
+          index_payment_convention : text
+          index_payment_lag : integer
+          index_settlement_days : integer
+          index_payment_period : text
+          overnight_lockout_days : integer
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bma_basis_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    BMA Basis Swap Convention Table
+    Describes how ORE builds a basis swap whose two legs reference a BMA municipal
+    index and an IBOR or overnight index, and how each leg's payments are
+    scheduled. Corresponds to the <BMABasisSwap> element in ORE conventions.xml.
+    The id field is the natural key (ORE <Id> element).
+    Three fields are required and the rest are optional. The corpus sets the two
+    payment lags, the settlement days, the index payment period and the overnight
+    lockout days in one element each, and never sets either payment calendar or
+    either payment convention.
+    end note
+
+    entity ores_refdata_bond_yield_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * compounding : text
+          frequency : text
+          price_type : text
+          accuracy : double
+          max_evaluations : integer
+          guess : double
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bond_yield_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Yield Convention Table
+    Describes how ORE builds a bond yield: the compounding it is quoted on, the
+    frequency it pays at, whether the price is clean or dirty, and the tolerances
+    its solver runs to. Corresponds to the <BondYield> element in ORE conventions.xml.
+    The id field is the natural key (ORE <Id> element).
+    One field is required and six are optional. One file carries five elements and
+    sets all six optional fields. The accuracy and the guess are floats in ORE and
+    travel through a double column, because the refdata schema has no float type;
+    a float widens to a double and narrows back with no loss.
+    end note
+
     entity ores_refdata_book_purpose_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1438,6 +1513,170 @@ package "refdata" #FFF3E0 {
     The rule field governs IMM dates and standard CDS roll dates.
     end note
 
+    entity ores_refdata_cms_spread_option_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * forward_start : text
+        * spot_days : text
+        * swap_tenor : text
+        * fixing_days : integer
+        * calendar : text
+        * day_count_fraction : text
+        * roll_convention : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cms_spread_option_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CMS Spread Option Convention Table
+    Describes how ORE builds a constant-maturity-swap spread option: where its
+    forward starts, how long its underlying swap runs, when it fixes, and the
+    calendar and conventions its schedule rolls on. Corresponds to the
+    <CmsSpreadOption> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    All eight fields are required and the corpus sets all eight in all twelve
+    elements, which are otherwise identical: one convention shared by twelve files.
+    The two period fields and the spot days stay in ORE's spelling, because they
+    are tenors rather than frequency enumerations; the day count and the roll
+    convention are normalised to the canonical codes the other tables hold.
+    end note
+
+    entity ores_refdata_commodity_forward_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          spot_days : integer
+          points_factor : double
+          advance_calendar : text
+          spot_relative : boolean
+          delivery_location : text
+          business_day_convention : text
+          outright : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_forward_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Forward Convention Table
+    Describes how ORE builds a commodity forward: how many days after the trade it
+    starts, how its points are scaled, the calendar it advances on, and whether it
+    is quoted outright or as a spread to spot. Corresponds to the
+    <CommodityForward> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    One field is required and seven are optional. Two files carry five elements
+    between them, and every one sets all seven optional fields except the delivery
+    location, which none sets.
+    end note
+
+    entity ores_refdata_commodity_future_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * contract_frequency : text
+        * calendar : text
+          expiry_calendar : text
+          expiry_month_lag : integer
+          one_contract_month : text
+          offset_days : integer
+          business_day_convention : text
+          adjust_before_offset : boolean
+          is_averaging : boolean
+          valid_contract_months : text
+          anchor_day_of_month : integer
+          anchor_calendar_days_before : integer
+          anchor_business_days_after : integer
+          anchor_nth_nth : integer
+          anchor_nth_weekday : text
+          anchor_last_weekday : text
+          anchor_weekly_day_of_the_week : text
+          option_expiry_month_lag : integer
+          option_contract_frequency : text
+          option_expiry_offset : integer
+          option_calendar_days_before : integer
+          option_min_business_days_before : integer
+          option_expiry_day : integer
+          option_nth_nth : integer
+          option_nth_weekday : text
+          option_expiry_last_weekday_of_month : text
+          option_expiry_weekly_day_of_the_week : text
+          option_business_day_convention : text
+          hours_per_day : integer
+          off_peak_index : text
+          peak_index : text
+          off_peak_hours : double
+          peak_calendar : text
+          index_name : text
+          savings_time : text
+          delivery_location : text
+          balance_of_the_month : boolean
+          balance_of_the_month_pricing_calendar : text
+          option_underlying_future_convention : text
+          averaging_commodity_name : text
+          averaging_period : text
+          averaging_pricing_calendar : text
+          averaging_conventions : text
+          averaging_use_business_days : boolean
+          averaging_delivery_roll_days : integer
+          averaging_future_month_offset : integer
+          averaging_daily_expiry_offset : integer
+          prohibited_expiries : text
+          future_continuation_mappings : text
+          option_continuation_mappings : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Convention Table
+    Describes how ORE builds a commodity future: when it expires, which contract
+    months it lists, how its expiry anchors to a day of the month or a weekday, and
+    the schedule of the options written on it. Corresponds to the
+    <CommodityFuture> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    Thirty of the element's thirty-four fields are modelled here, as forty columns,
+    because the element's nested structs are flattened rather than given tables of
+    their own.
+    AnchorDay becomes seven columns, OptionNthWeekday two more, and
+    OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants,
+    so flattening it is what lets a commodity future round trip at all.
+    Five files carry the element, in eight hundred and eight elements, and two of
+    them carried nothing else unmodelled when it landed.
+    Four more fields hold lists, and each is written as a text column rather than
+    counted: AveragingData becomes eight columns, and ProhibitedExpiries,
+    FutureContinuationMappings and OptionContinuationMappings become one text
+    column each, holding comma-separated dates and from:to pairs. A column is a
+    weaker home than a table, and it is what keeps the field in the element's
+    round trip rather than excluding the file from it.
+    end note
+
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1729,6 +1968,52 @@ package "refdata" #FFF3E0 {
     whether the spread is included in a leg's coupons. Corresponds to the
     <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
     key (ORE <Id> element).
+    end note
+
+    entity ores_refdata_cross_currency_fix_float_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * settlement_days : integer
+        * settlement_calendar : text
+        * settlement_convention : text
+        * fixed_currency : text
+        * fixed_frequency : text
+        * fixed_convention : text
+        * fixed_day_count_fraction : text
+        * index : text
+          eom : boolean
+          is_resettable : boolean
+          float_index_is_resettable : boolean
+          include_spread : boolean
+          lookback : text
+          fixing_days : integer
+          rate_cutoff : integer
+          is_averaged : boolean
+          observation_shift : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_fix_float_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross-Currency Fix-Float Convention Table
+    Describes how ORE builds a cross-currency swap whose fixed leg pays one
+    currency and whose floating leg pays an index in another. Corresponds to the
+    <CrossCurrencyFixFloat> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    Nine fields are required and nine are optional. The corpus sets all nine
+    required in all forty-one elements and sets none of the optional ones, so the
+    optional half of the mapping is proven by a case that builds the element rather
+    than by the corpus walk.
     end note
 
     entity ores_refdata_currencies_tbl <<temporal>> #C6F0D8 {
@@ -2363,6 +2648,56 @@ package "refdata" #FFF3E0 {
     Corresponds to the <IborIndex> element in ORE conventions.xml.
     end note
 
+    entity ores_refdata_inflation_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * fix_calendar : text
+        * fix_convention : text
+        * day_count_fraction : text
+        * index : text
+        * interpolated : boolean
+        * observation_lag : text
+        * adjust_inflation_observation_dates : boolean
+        * inflation_calendar : text
+        * inflation_convention : text
+          publication_roll : text
+          start_delay : text
+          start_delay_convention : text
+          publication_schedule_name : text
+          publication_schedule_rules : text
+          publication_schedule_dates : text
+          publication_schedule_derived_groups : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Swap Convention Table
+    Describes how ORE builds an inflation swap: the calendars and conventions its
+    legs roll on, the day count it accrues on, the zero-coupon inflation index it
+    references, and how the index's observations are lagged and adjusted.
+    Corresponds to the <InflationSwap> element in ORE conventions.xml. The id field
+    is the natural key (ORE <Id> element).
+    Ten fields are required and the rest are optional. The corpus sets all ten in
+    all one hundred and one elements. Of the optional fields it sets only
+    PublicationRoll, in two elements.
+    The element also carries PublicationSchedule, which ORE types as a schedule
+    of rule blocks, date blocks and derived schedule groups. Each block is written
+    as one text column in a stated form: blocks are separated by semicolons and a
+    block's fields by pipes, which is enough to keep every value the binding holds
+    without a table of its own. Two shipped files set a schedule.
+    end note
+
     entity ores_refdata_instrument_codes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -2412,6 +2747,39 @@ package "refdata" #FFF3E0 {
     independently for any future feature needing to classify or enumerate
     the instrument types the system supports. Managed by the system
     tenant, like other shared code tables.
+    end note
+
+    entity ores_refdata_intraday_power_load_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          explicit_load_profile : text
+          business_day_load_rules : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_intraday_power_load_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Intraday Power Load Convention Table
+    Describes how ORE builds an intraday power load profile, either as a list of
+    dates each carrying its own load factors or as a list of business day rules
+    that generate them. Corresponds to the <IntradayPowerLoad> element in ORE
+    conventions.xml. The id field is the natural key (ORE <Id> element).
+    The element's one data field is a choice between two nested lists, and each
+    list is written as one text column in a stated form rather than given a table
+    of its own. Records are separated by semicolons and a record's fields by pipes;
+    load factors are separated by commas and a factor's own fields by colons, so a
+    factor reads from:to:unit:dst:value. One file carries two elements, one of
+    each form, and between them they hold every shape the element can take.
     end note
 
     entity ores_refdata_ir_curve_bootstrap_configs_tbl <<temporal>> #C6F0D8 {

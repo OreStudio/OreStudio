@@ -24,15 +24,23 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
+#include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/bond_yield_convention.hpp"
+#include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
+#include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
 #include "ores.refdata.api/domain/future_convention.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
+#include "ores.refdata.api/domain/inflation_swap_convention.hpp"
+#include "ores.refdata.api/domain/intraday_power_load_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
@@ -82,7 +90,9 @@ struct mapped_fx {
 struct mapped_conventions {
     std::vector<refdata::domain::zero_convention> zero;
     std::vector<refdata::domain::average_ois_convention> average_ois;
+    std::vector<refdata::domain::bma_basis_swap_convention> bma_basis_swap;
     std::vector<refdata::domain::cross_currency_basis_convention> cross_currency_basis;
+    std::vector<refdata::domain::cross_currency_fix_float_convention> cross_currency_fix_float;
     std::vector<refdata::domain::tenor_basis_swap_convention> tenor_basis_swap;
     std::vector<refdata::domain::tenor_basis_two_swap_convention> tenor_basis_two_swap;
     std::vector<refdata::domain::deposit_convention> deposit;
@@ -90,6 +100,8 @@ struct mapped_conventions {
     std::vector<refdata::domain::swap_index_convention> swap_index;
     std::vector<refdata::domain::future_convention> future;
     std::vector<refdata::domain::fx_option_convention> fx_option;
+    std::vector<refdata::domain::inflation_swap_convention> inflation_swap;
+    std::vector<refdata::domain::intraday_power_load_convention> intraday_power_load;
     std::vector<refdata::domain::ois_convention> ois;
     std::vector<refdata::domain::fra_convention> fra;
     std::vector<refdata::domain::ibor_index_convention> ibor_index;
@@ -97,6 +109,10 @@ struct mapped_conventions {
     std::vector<refdata::domain::zero_inflation_index_convention> zero_inflation_index;
     std::vector<mapped_fx> fx;
     std::vector<refdata::domain::cds_convention> cds;
+    std::vector<refdata::domain::cms_spread_option_convention> cms_spread_option;
+    std::vector<refdata::domain::commodity_future_convention> commodity_future;
+    std::vector<refdata::domain::commodity_forward_convention> commodity_forward;
+    std::vector<refdata::domain::bond_yield_convention> bond_yield;
 
     /**
      * @brief The categories the mapper read but does not model, and how many
@@ -135,6 +151,7 @@ private:
     static std::string normalize_frequency(domain::frequencyType v);
     static std::string normalize_compounding(domain::compounding v);
     static std::string normalize_date_rule(domain::dateRule v);
+
     static bool parse_bool(domain::bool_ v);
 
 public:
@@ -160,6 +177,9 @@ public:
     static refdata::domain::cross_currency_basis_convention
     map_cross_currency_basis(const crossCurrencyBasisType& v);
 
+    static refdata::domain::cross_currency_fix_float_convention
+    map_cross_currency_fix_float(const crossCurrencyFixFloatType& v);
+
     static refdata::domain::tenor_basis_swap_convention
     map_tenor_basis_swap(const tenorBasisSwapType& v);
 
@@ -172,15 +192,35 @@ public:
 
     static refdata::domain::ibor_index_convention map_ibor_index(const iborIndexType& v);
 
+    static refdata::domain::inflation_swap_convention
+    map_inflation_swap(const inflationswapType& v);
+
+    static refdata::domain::intraday_power_load_convention
+    map_intraday_power_load(const intradayPowerLoad& v);
+
     static refdata::domain::overnight_index_convention
     map_overnight_index(const overnightIndexType& v);
 
     static refdata::domain::zero_inflation_index_convention
     map_zero_inflation_index(const zeroInflationIndexType& v);
 
+    static refdata::domain::bma_basis_swap_convention
+    map_bma_basis_swap(const bmaBasisSwapType& v);
+
     static mapped_fx map_fx(const fxType& v);
 
     static refdata::domain::cds_convention map_cds(const cdsConventionsType& v);
+
+    static refdata::domain::cms_spread_option_convention
+    map_cms_spread_option(const cmsSpreadOptionType& v);
+
+    static refdata::domain::commodity_future_convention
+    map_commodity_future(const commodityFutureType& v);
+
+    static refdata::domain::commodity_forward_convention
+    map_commodity_forward(const commodityForwardType& v);
+
+    static refdata::domain::bond_yield_convention map_bond_yield(const bondYield& v);
 
     /**
      * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.

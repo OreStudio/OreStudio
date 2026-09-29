@@ -1,0 +1,6 @@
+# =delete-many=
+#
+# GENERATED from doc/recipes/shell/cross_currency_fix_float_conventions/cross_currency_fix_float_convention.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+cross_currency_fix_float_conventions delete-many __none__ system.new_record generated_script

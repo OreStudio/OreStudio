@@ -1047,3 +1047,35 @@ tangled into the runnable script library
 * Zero Inflation Index Conventions
 
 - [[id:2185C4AF-356E-5FA0-B5E3-40720A53EFE5][How do I run the zero_inflation_index_conventions commands from the shell?]]
+
+* Bma Basis Swap Conventions
+
+- [[id:D6E604E5-7090-541E-9BC5-017EC2C8485D][How do I run the bma_basis_swap_conventions commands from the shell?]]
+
+* Inflation Swap Conventions
+
+- [[id:52E34F2C-24D6-5926-AB27-39D8C0CB03DC][How do I run the inflation_swap_conventions commands from the shell?]]
+
+* Cross Currency Fix Float Conventions
+
+- [[id:1364CBFE-B388-54EF-ACA4-1FB984009E0A][How do I run the cross_currency_fix_float_conventions commands from the shell?]]
+
+* Cms Spread Option Conventions
+
+- [[id:55FFB4C3-FE61-5C22-B71A-1C823D96BF65][How do I run the cms_spread_option_conventions commands from the shell?]]
+
+* Commodity Future Conventions
+
+- [[id:8C685BAC-85D1-548F-B146-098C60CA78BF][How do I run the commodity_future_conventions commands from the shell?]]
+
+* Bond Yield Conventions
+
+- [[id:B973BF1A-336E-5EE6-B8CF-6010AF70C38D][How do I run the bond_yield_conventions commands from the shell?]]
+
+* Commodity Forward Conventions
+
+- [[id:91F7757D-D3E0-553C-A4F5-BFE8484E8A43][How do I run the commodity_forward_conventions commands from the shell?]]
+
+* Intraday Power Load Conventions
+
+- [[id:9E9A7855-DC09-5B10-B1C5-131EA13ACDC6][How do I run the intraday_power_load_conventions commands from the shell?]]

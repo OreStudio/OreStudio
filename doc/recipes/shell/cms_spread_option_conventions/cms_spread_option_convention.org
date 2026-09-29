@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 55FFB4C3-FE61-5C22-B71A-1C823D96BF65
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cms_spread_option_conventions commands from the shell?
+#+description: Every command the cms_spread_option_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cms_spread_option_conventions:
+
+This file documents the cms_spread_option_conventions resource at the shell, one section per command. Every command is a subcommand of =cms_spread_option_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F37F0657-4556-5901-A655-44BC9DD26A73
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.list=.
+
+#+name: cms_spread_option_conventions-list
+#+begin_src ores-shell :tangle cms_spread_option_conventions-list.ores :exports none
+cms_spread_option_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 1C31BA15-EFC5-543C-B381-9C3A6ADFCCBF
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.get=.
+
+#+name: cms_spread_option_conventions-get
+#+begin_src ores-shell :tangle cms_spread_option_conventions-get.ores :exports none
+cms_spread_option_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 056485C6-0850-573A-BE5B-2377DD4D2057
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.get_many=.
+
+#+name: cms_spread_option_conventions-get-many
+#+begin_src ores-shell :tangle cms_spread_option_conventions-get-many.ores :exports none
+cms_spread_option_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7FDAF190-75D4-52C7-BCE2-BC5D66030174
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions add <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.put=.
+
+#+name: cms_spread_option_conventions-add
+#+begin_src ores-shell :tangle cms_spread_option_conventions-add.ores :exports none
+cms_spread_option_conventions add __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FE530A04-A356-571C-BA05-6C0BAE34B005
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions set <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.put=.
+
+#+name: cms_spread_option_conventions-set
+#+begin_src ores-shell :tangle cms_spread_option_conventions-set.ores :exports none
+cms_spread_option_conventions set __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D7A49BD7-FA59-5839-AA6E-54587EFB1091
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions put-many --count <n> <id> <forward_start> <spot_days> <swap_tenor> <fixing_days> <calendar> <day_count_fraction> <roll_convention> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.put_many=.
+
+#+name: cms_spread_option_conventions-put-many
+#+begin_src ores-shell :tangle cms_spread_option_conventions-put-many.ores :exports none
+cms_spread_option_conventions put-many --count 1 __none__ __none__ __none__ __none__ 0 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C454E017-4D29-5047-89B1-F754C43C473E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.delete=.
+
+#+name: cms_spread_option_conventions-delete
+#+begin_src ores-shell :tangle cms_spread_option_conventions-delete.ores :exports none
+cms_spread_option_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 551EBE91-86C2-5577-9696-E2C79B7965FE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions.delete_many=.
+
+#+name: cms_spread_option_conventions-delete-many
+#+begin_src ores-shell :tangle cms_spread_option_conventions-delete-many.ores :exports none
+cms_spread_option_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DDE20874-E2D5-5B01-A8E9-062C9856D2F3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions_versions.list=.
+
+#+name: cms_spread_option_conventions-versions
+#+begin_src ores-shell :tangle cms_spread_option_conventions-versions.ores :exports none
+cms_spread_option_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B809DB2E-D3AF-5DF0-8F2B-78B5BCE2189E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cms_spread_option_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cms_spread_option_conventions_versions.get=.
+
+#+name: cms_spread_option_conventions-version
+#+begin_src ores-shell :tangle cms_spread_option_conventions-version.ores :exports none
+cms_spread_option_conventions version __none__ --version 1
+#+end_src
+

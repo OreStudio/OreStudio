@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: B973BF1A-336E-5EE6-B8CF-6010AF70C38D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the bond_yield_conventions commands from the shell?
+#+description: Every command the bond_yield_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:bond_yield_conventions:
+
+This file documents the bond_yield_conventions resource at the shell, one section per command. Every command is a subcommand of =bond_yield_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4E5F36A5-ED04-5F79-B8A0-69F91C1B86F0
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.list=.
+
+#+name: bond_yield_conventions-list
+#+begin_src ores-shell :tangle bond_yield_conventions-list.ores :exports none
+bond_yield_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3920BB91-1840-581D-B407-87E90705093C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.get=.
+
+#+name: bond_yield_conventions-get
+#+begin_src ores-shell :tangle bond_yield_conventions-get.ores :exports none
+bond_yield_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 2440391F-A3E1-5CBB-8834-A722A63234F9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.get_many=.
+
+#+name: bond_yield_conventions-get-many
+#+begin_src ores-shell :tangle bond_yield_conventions-get-many.ores :exports none
+bond_yield_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: AD46C7A7-3342-5E52-A9E0-F00FD6554117
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions add <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.put=.
+
+#+name: bond_yield_conventions-add
+#+begin_src ores-shell :tangle bond_yield_conventions-add.ores :exports none
+bond_yield_conventions add __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AA3E4715-C4CA-568C-96BF-EF3B7FFAD551
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions set <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.put=.
+
+#+name: bond_yield_conventions-set
+#+begin_src ores-shell :tangle bond_yield_conventions-set.ores :exports none
+bond_yield_conventions set __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: DAD05A06-0D83-5DE0-81AF-A1F83FBF3A36
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions put-many --count <n> <id> <compounding> <frequency> <price_type> <accuracy> <max_evaluations> <guess> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.put_many=.
+
+#+name: bond_yield_conventions-put-many
+#+begin_src ores-shell :tangle bond_yield_conventions-put-many.ores :exports none
+bond_yield_conventions put-many --count 1 __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D3EAA315-5516-5527-A810-F462C816A528
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.delete=.
+
+#+name: bond_yield_conventions-delete
+#+begin_src ores-shell :tangle bond_yield_conventions-delete.ores :exports none
+bond_yield_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D7774A60-B436-5869-B4E0-42DCAD16F175
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions.delete_many=.
+
+#+name: bond_yield_conventions-delete-many
+#+begin_src ores-shell :tangle bond_yield_conventions-delete-many.ores :exports none
+bond_yield_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 066E0DDB-49D2-559E-8991-D6C27070E12D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions_versions.list=.
+
+#+name: bond_yield_conventions-versions
+#+begin_src ores-shell :tangle bond_yield_conventions-versions.ores :exports none
+bond_yield_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9D58770C-1262-595E-A5B2-D3E3CA8429DF
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_yield_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.bond_yield_conventions_versions.get=.
+
+#+name: bond_yield_conventions-version
+#+begin_src ores-shell :tangle bond_yield_conventions-version.ores :exports none
+bond_yield_conventions version __none__ --version 1
+#+end_src
+

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 1364CBFE-B388-54EF-ACA4-1FB984009E0A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cross_currency_fix_float_conventions commands from the shell?
+#+description: Every command the cross_currency_fix_float_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cross_currency_fix_float_conventions:
+
+This file documents the cross_currency_fix_float_conventions resource at the shell, one section per command. Every command is a subcommand of =cross_currency_fix_float_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B1A91C09-4A5E-58AF-8B07-5BC0970FACB7
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.list=.
+
+#+name: cross_currency_fix_float_conventions-list
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-list.ores :exports none
+cross_currency_fix_float_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 41E0EB8E-BFB6-5240-BEB5-330B18AA7C12
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.get=.
+
+#+name: cross_currency_fix_float_conventions-get
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-get.ores :exports none
+cross_currency_fix_float_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4B3E4FBB-301E-583E-9B33-F1DFC3D7121A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.get_many=.
+
+#+name: cross_currency_fix_float_conventions-get-many
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-get-many.ores :exports none
+cross_currency_fix_float_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 101C3361-042B-5232-82AE-A6B0D6FE7A0A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions add <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.put=.
+
+#+name: cross_currency_fix_float_conventions-add
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-add.ores :exports none
+cross_currency_fix_float_conventions add __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8A2E6A16-3217-5696-989A-1720DC9F3204
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions set <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.put=.
+
+#+name: cross_currency_fix_float_conventions-set
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-set.ores :exports none
+cross_currency_fix_float_conventions set __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 778933C4-6841-57C9-A1E7-CB1F584C667B
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions put-many --count <n> <id> <settlement_days> <settlement_calendar> <settlement_convention> <fixed_currency> <fixed_frequency> <fixed_convention> <fixed_day_count_fraction> <index> <eom> <is_resettable> <float_index_is_resettable> <include_spread> <lookback> <fixing_days> <rate_cutoff> <is_averaged> <observation_shift> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.put_many=.
+
+#+name: cross_currency_fix_float_conventions-put-many
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-put-many.ores :exports none
+cross_currency_fix_float_conventions put-many --count 1 __none__ 0 __none__ __none__ __none__ __none__ __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1921D9C7-D90D-56F0-88A9-7FAB79BFE567
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.delete=.
+
+#+name: cross_currency_fix_float_conventions-delete
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-delete.ores :exports none
+cross_currency_fix_float_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 25A4BE2B-801D-566C-BA64-8F0447568254
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions.delete_many=.
+
+#+name: cross_currency_fix_float_conventions-delete-many
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-delete-many.ores :exports none
+cross_currency_fix_float_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 14B73D66-0027-5B79-A09D-1ADF90681EA5
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions_versions.list=.
+
+#+name: cross_currency_fix_float_conventions-versions
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-versions.ores :exports none
+cross_currency_fix_float_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 76238590-750D-5337-9C6B-6F5FF2550465
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_fix_float_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_fix_float_conventions_versions.get=.
+
+#+name: cross_currency_fix_float_conventions-version
+#+begin_src ores-shell :tangle cross_currency_fix_float_conventions-version.ores :exports none
+cross_currency_fix_float_conventions version __none__ --version 1
+#+end_src
+

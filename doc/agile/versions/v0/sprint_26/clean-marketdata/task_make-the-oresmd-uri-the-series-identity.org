@@ -326,13 +326,12 @@ grid's own identity and then the cutover the task takes its name from.
 **Step two, in detail, for whoever takes it next.** The reader stands on four things,
 and only two of them exist today.
 
-- The key builder has to sit where both the feed and the service can reach it.
-  =ores.marketdata.core= is the natural home, added as a hand-written source and
+- The key builder sits in =ores.marketdata.core=, added as a hand-written source and
   registered with =regenerate_cmake_component_files.py --component ores.marketdata.core=.
-  Whether =ores.synthetic.api= may depend on it is the =reachability= gate's call, and
-  settling that is the first thing this step does; if it may not, the builder belongs in
-  the lowest component both already reach. The rule itself is the one the feed's copy
-  carries today, and the feed's copy goes when the shared one arrives.
+  That home is reachable from both sides, which the answer to the question this note
+  first left open settles: =ores.synthetic.api= already links =ores.marketdata.core.lib=
+  (=projects/ores.synthetic/api/src/CMakeLists.txt=), so the feed can call the shared
+  builder and its own copy goes when the shared one arrives.
 - The currency exists now: the config names it (#2375).
 - The dates exist now: =refctx= resolves a tenor code to a calendar date, which is the
   path the discount curve's own points already take.

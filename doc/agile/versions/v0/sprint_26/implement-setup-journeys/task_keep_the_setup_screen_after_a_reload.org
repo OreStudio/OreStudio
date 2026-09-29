@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:setup:iam:v0:sprint_26:implement-setup-journeys:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2381
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2381][#2381]] | [agile] Close the task that keeps the setup screen after a reload |
 
 * Review
 

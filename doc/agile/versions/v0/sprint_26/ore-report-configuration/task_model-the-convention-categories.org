@@ -28,9 +28,9 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Six of the sixteen categories are modelled, so thirty-four of the seventy-two files round trip outright. |
+| Now          | Seven of the sixteen categories are modelled, so thirty-nine of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =TenorBasisSwap=, which clears five files on its own, then =ZeroInflationIndex=, which clears five. |
+| Next         | Model =ZeroInflationIndex=, which clears five files on its own, then =BMABasisSwap= and =InflationSwap=, which clear three each. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -57,10 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 10 after six | =ores.ore.core.tests "[.][conventions]" -s= | =06353affc7= |
-| Files carrying an unmodelled category | 63 at the start, 38 after six | the same | =06353affc7= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 34 after six | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =06353affc7= |
-| Files a single category would clear, now | TenorBasisSwap 5 and ZeroInflationIndex 5, then one each for CmsSpreadOption, CommodityFuture and InflationSwap | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =06353affc7= |
+| Categories the mapper does not model | 16 at the start, 9 after seven | =ores.ore.core.tests "[.][conventions]" -s= | =fa8eadc1ec= |
+| Files carrying an unmodelled category | 63 at the start, 33 after seven | the same | =fa8eadc1ec= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 39 after seven | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =fa8eadc1ec= |
+| Files a single category would clear, now | ZeroInflationIndex 5, then BMABasisSwap 3 and InflationSwap 3, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =fa8eadc1ec= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -93,12 +93,19 @@ task and name that file in the Command column.
   normalises three enumerations per leg. Twelve files carried it and nothing
   else unmodelled, more than the rest of the corpus put together, which is why
   it took the round-trip count from twenty-two to thirty-four in one category.
+- =TenorBasisSwap= is modelled: fifteen fields across twenty-nine files, and the
+  only convention the corpus writes in two alternative forms. The paying and
+  receiving form names =PayIndex= and =ReceiveIndex=; the long and short form
+  names =LongIndex= and =ShortIndex=. The forms share no field, so the table
+  carries both sets and each row fills one. The periods stay in ORE's spelling
+  because they are tenors rather than frequency enumerations, and =12M= and =1Y=
+  are distinct tokens an export has to write back exactly.
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Sixteen were unmodelled and six have landed, so ten
-  remain. The expensive one left is =CommodityFuture= at thirty-four fields
-  across five files; =TenorBasisSwap= at fifteen fields across twenty-nine files
-  is the next-best win, because it clears five files on its own.
+  mapper in both directions. Sixteen were unmodelled and seven have landed, so
+  nine remain. The expensive one left is =CommodityFuture= at thirty-four fields
+  across five files. The next-best win is =ZeroInflationIndex=, which clears five
+  files on its own.
 
 * Test Scenarios
 

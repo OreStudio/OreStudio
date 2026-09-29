@@ -12,6 +12,14 @@ name: C++ verification
 # requests, so a change to the shared steps cannot break the scheduled runs
 # while it is being brought up.
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  # The compiler cache Continuous Linux fills. The preset names it there --
+  # linux-clang-debug-ninja is the matrix's family, compiler and build type --
+  # so the same key restores the scheduled build's cache and a pull request
+  # compiles only what its change touched, rather than from cold.
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
+
 on:
   workflow_call:
     inputs:
@@ -93,6 +101,22 @@ jobs:
         with:
           version: "19"
           arch: x64
+
+      - name: Restore sccache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{ inputs.preset }}
+          restore-keys: |
+            sccache-${{ inputs.preset }}-
+
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          variant: sccache
+          key: ${{ inputs.preset }}
+          max-size: 2500M
+          save: false
 
       - name: Install dev packages
         run: ./projects/ores.compass/compass.sh env install-packages
@@ -201,3 +225,14 @@ jobs:
       - name: Stop the services
         if: ${{ always() && inputs.services }}
         run: ./projects/ores.compass/compass.sh services stop || true
+
+      - name: Show sccache statistics
+        if: always()
+        run: sccache --show-stats || true
+
+      - name: Save sccache
+        if: ${{ always() }}
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-verify-${{ inputs.preset }}

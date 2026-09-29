@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 7B32CA43-239F-4553-8849-3FA3F499B254
+:END:
+#+title: Task: Give every Entry screen the ORE Studio banner
+#+description: Carry the project's banner on the sign-in and sign-up dialogs, as the setup screen already does, so every door into the deployment looks like the same product.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:entry:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
++#+blocked_since:
++#+created: 2026-09-29
++#+updated: 2026-09-29
++#+environment: swift_curie
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every door into a deployment carries the same banner. The setup screen already leads with the project's artwork; the sign-in dialog does not, and the registration door the Entry story adds must. A person arriving at a deployment for the first time sees the same product whether they are being set up, signing in or registering.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Not yet started. The prototype shows where the banner sits on all three variants. |
+| Waiting on   | Nothing.                               |
+| Next         | Put the banner on the sign-in dialog, then on the registration door as it is built. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- The sign-in dialog carries the banner.
+- The registration door carries it on every step, not only the first.
+- The banner is the artwork the setup screen and the main site already use, reached through =assets/brand.ts= rather than a second copy of the file.
+- The banner does not crowd the party picker, the forced password change panel, or the refusal notices: it is above the work, and the work still reads.
+- A test asserts the banner renders on both dialogs, so a future layout change cannot drop it silently.
+
+* Plan
+
+1. Decide where the banner belongs. The setup screen draws it per screen; a shell that draws it for every visitor is the smaller change and the one that makes "every dialog" true by construction, so try the shell first and fall back to the page if the shell cannot tell a door from a form.
+2. Put it on the sign-in dialog, above the credentials form and above the party picker, because the picker replaces the form rather than following it.
+3. Put it on the registration door's rail, above the step, so it stays put while the step changes.
+4. Assert it in the shell's or the page's test, whichever ends up owning it.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Screens that need the banner | 2, sign in and sign up | =grep -rn "heroSplash" projects/ores.web/packages/web/src= | =69d002553c= |
+| Screens that already carry it | 1, the setup screen | =grep -rn "heroSplash" projects/ores.web/packages/web/src/journeys/FirstRunJourney.tsx= | =69d002553c= |
+
+* Notes
+
+- The artwork is =heroSplash= in =projects/ores.web/packages/web/src/assets/brand.ts=, which the site publishes at =/OreStudio/projects/ores.web/packages/web/src/assets/ore-studio-splash.png=; the prototype uses that URL so what a reviewer sees is the real banner and not a drawing of one.
+- =PublicShell= already draws the header mark and the application name for a visitor. The banner is the larger artwork above the work, so it is a second element rather than a replacement for the header.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

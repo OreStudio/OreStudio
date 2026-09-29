@@ -158,6 +158,11 @@ failure mode, because a flag cannot misspell a role that does not exist.
 A tenant that nominates no role is told so by the policy read, and registration
 is closed with that reason rather than creating an account that holds nothing.
 
+A default role is a floor and not a ceiling. A person who needs more than it
+grants asks for it, and that request is its own journey rather than part of the
+door: it happens after registration, it may be refused, and somebody else answers
+it. [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] owns that document.
+
 * The waiting state
 
 An account that exists but has not been given a place to work is *pending*. This
@@ -333,7 +338,7 @@ administrator can, which does not make the other two theirs.
 | Variability | A settings read and a settings write, permission-gated |
 | BFF | A registration-policy route, a registration route under the limiter, and the hostname forwarded |
 | Wire protocol | The browser-safe exports and the operation entries the two subjects need |
-| Clients | The sign-up screen and the sign-in screen changes, on the same subjects from the shell |
+| Clients | The sign-up screen and the sign-in screen changes, on the same subjects from the shell. Every dialog carries the ORE Studio banner, the sign-in screen included |
 | Journeys | [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] gains the registration step and nominates the tenant administrator's defaults; [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions when they create a tenant or a party |
 
 * Out of scope

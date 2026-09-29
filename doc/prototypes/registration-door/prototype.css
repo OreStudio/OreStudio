@@ -184,14 +184,40 @@ h2 { font-size: 15px; margin: 0 0 12px; }
 .status-banner.warn .head { color: var(--warn); }
 .status-banner p { margin: 6px 0 0; color: var(--ink-dim); font-size: 13px; }
 
-/* Variant C: the rail. */
-.railwrap { display: grid; grid-template-columns: 230px 1fr; gap: 30px; align-items: start; }
-@media (max-width: 800px) { .railwrap { grid-template-columns: 1fr; } }
-.rail { list-style: none; margin: 0; padding: 0; }
-.rail li { display: flex; gap: 10px; align-items: baseline; padding: 10px 0; color: var(--ink-faint); border-left: 2px solid var(--line); padding-left: 14px; }
-.rail li .n { font-size: 11px; color: var(--ink-faint); min-width: 14px; }
-.rail li.done { color: var(--ink-dim); border-left-color: var(--ok); }
-.rail li.current { color: var(--ink); border-left-color: var(--accent); font-weight: 600; }
+/* Variant C: the journey page, in the shape the provisioning journeys use.
+   The rail is the house rail: a 14rem column, one entry per step, a circled
+   mark that carries a tick once the step is behind the person, and the step
+   itself in a card with its action in a footer under a rule. */
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 32px; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.railentry { display: flex; align-items: center; gap: 12px; border-radius: var(--radius); padding: 8px 12px; font-size: 13px; }
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 600; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 11px;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.card h2 { font-size: 16px; margin: 0 0 4px; }
+.card .lead { margin: 0 0 20px; color: var(--ink-dim); font-size: 13px; }
+.stepfoot { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px; display: flex; align-items: center; gap: 12px; }
+.ml-auto { margin-left: auto; }
+
+/* The banner every dialog carries: the project's own artwork. */
+.banner { margin-bottom: 20px; }
+.banner img { display: block; width: 100%; max-height: 140px; object-fit: cover; border-radius: var(--radius); }
 
 .outcome { text-align: center; padding: 10px 0 4px; }
 .outcome .mark { font-size: 34px; line-height: 1; }

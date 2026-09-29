@@ -23,9 +23,9 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The survey and the target state are written, and the registration door prototype is published for a verdict. The setup journeys now carry the registration defaults: First run states the switch and confirms the default tenant, and its first sign-in nominates the party and role. No registration code has changed. |
-| Waiting on    | The product owner's choice of prototype variant. |
-| Next          | Take the verdict, then schedule the implementation from the target state's change table, beginning with the flag enforcement that closes the open registration door. |
+| Now           | The survey, the target state and the prototype are done, and the door is accepted as a step rail drawn in the shape of the provisioning journeys. Two requirements came out of the review: the ORE Studio banner on every Entry dialog, and the role-request journey as its own document. The setup journeys carry the registration defaults. No registration code has changed. |
+| Waiting on    | Nothing.                               |
+| Next          | Schedule the implementation from the target state's change table, beginning with the flag enforcement that closes the open registration door. |
 | Last touched  | 2026-09-29                               |
 
 * Acceptance
@@ -43,8 +43,10 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 |------+-------+-------+-----+-------------|
 | [[id:8F35000B-95D7-4FA6-92DF-915981CD17FA][Analyse the sign-up process end to end]] | DONE | 2026-09-29 | 2026-09-29 | Record what self-registration does today, where a new account lands, and every decision the sign-up journey waits on, so the target state can be written before any code changes. |
 | [[id:70FF2285-2801-42FA-9BC8-9AEFB05DEDF1][Define the registration target state]] | DONE | | 2026-09-29 | Write the knowledge document that settles where a self-registered account lands: the default tenant, party and role flags, the pending state, the policy read and the settings write path. |
-| [[id:97B54096-7FB5-42A7-BCDA-CA523C145E9C][Prototype the registration door]] | STARTED | 2026-09-29 | | Build the throwaway static prototype that argues the registration door's layout: the closed notice, the form, the refusals, and the usable and pending confirmations, in three structural variants. |
+| [[id:97B54096-7FB5-42A7-BCDA-CA523C145E9C][Prototype the registration door]] | DONE | 2026-09-29 | 2026-09-29 | Build the throwaway static prototype that argues the registration door's layout: the closed notice, the form, the refusals, and the usable and pending confirmations, in three structural variants. |
 | [[id:54E60E3F-797A-4DF1-AD5A-0A30A35163D9][Take the registration defaults into the setup journeys]] | DONE | | 2026-09-29 | Record that the Setup journeys own the registration defaults: First run states the switch and confirms the default tenant, its first sign-in nominates the party and role, and New tenant and New party ask the same questions. |
+| [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Give every Entry screen the ORE Studio banner]] | BACKLOG | | | Carry the project's banner on the sign-in and sign-up dialogs, as the setup screen already does, so every door into the deployment looks like the same product. |
+| [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] | BACKLOG | | | Document how a person asks for roles beyond the default one registration gives them, as its own journey in the Access group, separate from sign up. |
 
 * Decisions
 
@@ -57,6 +59,9 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 - *The authorisation flag closes the door honestly.* Until the approval workflow exists, =system.signup_requires_authorization= closes registration and the policy read states why. It must not claim an approval that nothing performs.
 - *The setup journeys own the defaults, not the sign-up screen.* The person who opens the door is not the person who decides what it opens onto, so [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] confirms the first tenant as the default tenant and states whether the installation accepts self-registration, and its first sign-in lets the tenant administrator nominate the party and the role. [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions when they create a tenant or a party later. The three Setup journey documents now carry those steps. The screen work belongs to [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][the setup story]], which owns the setup screens; this story supplies the model, the policy read and the write paths they call.
 - *The switch is the deployment's, and it is read at system scope.* =system.user_signups= is seeded on the system tenant and defaults to =false=, so a deployment nobody has asked refuses registration. A tenant override is possible but nothing sets one, and the door reports the deployment's answer rather than inventing a per-tenant one.
+- *The door is a step rail, and it is the provisioning rail.* The registration screen uses the same flat rail the setup journeys use: one step at a time, a circled mark per step, the step in a card, the action in a footer under a rule, and the write deferred to a review step. The design was accepted as a prototype and reworked to that shape; the losing variants stay on the prototype page as the record.
+- *Every Entry dialog carries the ORE Studio banner.* The setup screen already leads with the project's artwork, so the sign-in and sign-up dialogs carry it too. Because this is about every door and not about one screen, it is a task of its own rather than a line in the screen work.
+- *Asking for more roles is its own journey.* Registration grants one default role. A person who needs more than that asks for it, after registration, and somebody else answers, which is two actors and two endings: it is not a step of the door. The journey document is a task here; its screens belong to the Access group.
 - *The target state lands with the fix, by the product owner's choice.* The open registration door stays open until the implementation lands. That is a known and accepted risk for the duration of the work, and it is the reason the flag enforcement is the first implementation task rather than the last.
 
 * Documents

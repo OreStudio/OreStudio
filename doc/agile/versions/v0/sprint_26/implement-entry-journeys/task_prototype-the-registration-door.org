@@ -26,11 +26,11 @@ A clickable prototype of the registration door that the design can be judged aga
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | The prototype is built and published on the site: three variants, five states, and a nomination toggle that turns the same form into a usable account or a waiting one. Awaiting the product owner's verdict. |
-| Waiting on   | The product owner's choice of variant. |
-| Next         | Record the accepted variant, fold it into the implementation plan, and keep the losing variants on the prototype page as the record. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -89,6 +89,13 @@ via its "Verifies task" field.
 
 The prototype is [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door prototype]], at =doc/prototypes/registration-door/= and published on the site.
 
-Three variants: *A* one panel, with the destination below the form and the outcome replacing it; *B* the form beside a live status column that states the tenant, the party, the role and whether the account will work at once; *C* the step rail the bootstrap screens use, with the write deferred to a review step. Five states: closed, the form, a refusal, a usable account and a waiting one, with a nomination toggle that turns the same submission into either outcome.
+Three variants: *A* one panel, with the destination below the form and the outcome replacing it; *B* the form beside a live status column that states the tenant, the party, the role and whether the account will work at once; *C* the step rail, with the write deferred to a review step. Five states: closed, the form, a refusal, a usable account and a waiting one, with a nomination toggle that turns the same submission into either outcome.
 
-The verdict is not in yet. Until it is, the task stays open and no variant is treated as chosen.
+*The verdict.* The product owner chose *C, the step rail*, and asked for it to look like the new-system provisioning journeys. C was reworked to the house rail: a 14rem rail column, one entry per step with a circled mark that carries a tick once the step is behind you, the step in a card with its title, its lead and its body, and the action in a footer under a rule. The banner was added to every variant while there.
+
+Two requirements came out of the review and are their own tasks:
+
+- [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Give every Entry screen the ORE Studio banner]] — the sign-in dialog and the registration door carry the artwork the setup screen already leads with.
+- [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] — registration grants one default role, and the journey that answers "how do I ask for more" is documented separately from the door.
+
+Do not read A or B as rejected designs: they stay on the page as the record, and either may contribute a panel. C is what gets built.

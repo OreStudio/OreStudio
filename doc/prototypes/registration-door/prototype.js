@@ -32,15 +32,18 @@ const deployment = {
 
 const STATES = ['closed', 'register', 'refused', 'created', 'waiting'];
 
-const VARIANT_NAMES = { A: 'One panel', B: 'Form and status', C: 'Step rail' };
+const VARIANT_NAMES = { A: 'One panel', B: 'Form and status', C: 'Step rail, as provisioning' };
 
 const ui = {
-    variant: 'A',
+    variant: 'C',
     state: 'register',
     nominated: true,
     step: 0,
     form: { username: 'jane.doe', email: 'jane.doe@acme.example.com' },
 };
+
+/** The banner artwork the real screens carry, as the site publishes it. */
+const SPLASH = '/OreStudio/projects/ores.web/packages/web/src/assets/ore-studio-splash.png';
 
 /* ---------------------------------------------------------------- */
 /* Small pieces                                                     */
@@ -50,7 +53,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 function header() {
     return `
-        <div class="brand">${esc(deployment.appName)}</div>
+        <div class="banner"><img src="${SPLASH}" alt="ORE Studio"></div>
         <div class="tenant">You are at <b>${esc(deployment.tenant.name)}</b> &middot; ${esc(deployment.tenant.hostname)}</div>`;
 }
 
@@ -257,11 +260,18 @@ function renderB() {
 
 const RAIL = ['Your details', 'Your password', 'Review', 'Done'];
 
-function rail(current) {
-    return `<ol class="rail">${RAIL.map((label, i) => {
-        const cls = i < current ? 'done' : i === current ? 'current' : '';
-        return `<li class="${cls}"><span class="n">${i + 1}</span><span>${esc(label)}</span></li>`;
-    }).join('')}</ol>`;
+const RAIL_LEAD = [
+    'Choose the name you sign in with, and the address the deployment reaches you at.',
+    'These are the rules this deployment enforces, read from the server rather than kept here.',
+    'This is what your account receives. Nothing is created until you confirm.',
+    'Your account exists. This is what it holds, and what it still waits for.',
+];
+
+/** One rail entry, in the shape the provisioning journeys render. */
+function railEntry(label, index, current) {
+    const state = index < current ? 'done' : index === current ? 'current' : 'ahead';
+    const mark = state === 'done' ? '&#10003;' : String(index + 1);
+    return `<li class="railentry ${state}"><span class="railmark ${state}">${mark}</span>${esc(label)}</li>`;
 }
 
 function renderC() {
@@ -270,47 +280,53 @@ function renderC() {
     }
 
     const step = ui.state === 'created' || ui.state === 'waiting' ? 3 : ui.state === 'refused' ? 2 : ui.step;
+    const pending = ui.state === 'waiting';
     let body = '';
+    let foot = '';
     if (step === 0) {
-        body = `<form data-act="form">
-                    <h2>Who are you?</h2>
-                    ${fields('identity')}
-                    <div class="actions">
-                        <button class="btn primary" type="button" data-act="next">Continue</button>
-                        <button class="btn ghost" type="button" data-act="to-door">Back to sign in</button>
-                    </div>
-                </form>`;
+        body = `<form data-act="form" id="step-form">${fields('identity')}</form>`;
+        foot = `<button class="btn ghost" type="button" data-act="to-door">Back to sign in</button>
+                <button class="btn primary ml-auto" type="button" data-act="next">Continue</button>`;
     } else if (step === 1) {
-        body = `<form data-act="form">
-                    <h2>Choose a password</h2>
-                    ${fields('password')}
-                    <div class="actions">
-                        <button class="btn primary" type="button" data-act="next">Continue</button>
-                        <button class="btn" type="button" data-act="back">Back</button>
-                    </div>
-                </form>`;
+        body = `<form data-act="form" id="step-form">${fields('password')}</form>`;
+        foot = `<button class="btn ghost" type="button" data-act="back">Back</button>
+                <button class="btn primary ml-auto" type="button" data-act="next">Continue</button>`;
     } else if (step === 2) {
-        body = `<form data-act="form">
-                    <h2>What you are about to create</h2>
+        body = `<form data-act="form" id="step-form">
                     ${ui.state === 'refused' ? refusalNotice() : ''}
                     ${destinationRows()}
                     ${statusBanner()}
-                    <div class="actions">
-                        <button class="btn primary" type="submit">Create account</button>
-                        <button class="btn" type="button" data-act="back">Back</button>
-                    </div>
                 </form>`;
+        foot = `<button class="btn ghost" type="button" data-act="back">Back</button>
+                <button class="btn primary ml-auto" type="submit" form="step-form">Create account</button>`;
     } else {
-        body = outcomePanel(true);
+        body = `<div class="outcome">
+                    <div class="mark ${pending ? 'warn' : 'ok'}">${pending ? '&#9203;' : '&#10003;'}</div>
+                    <p class="lead" style="margin:12px 0 18px">
+                        ${pending
+                            ? 'An administrator must add you to a party before you can sign in.'
+                            : 'Sign in with the username and password you just chose.'}
+                    </p>
+                    ${pending ? '<span class="code">account_pending</span>' : ''}
+                </div>
+                ${destinationRows()}`;
+        foot = `<button class="btn primary ml-auto" type="button" data-act="to-door">Go to sign in</button>`;
     }
 
     return `
         <div class="page">
             ${header()}
             <h1>Create your account</h1>
-            <div class="railwrap">
-                ${rail(step)}
-                <div class="panel">${body}</div>
+            <div class="journey">
+                <nav aria-label="Steps" class="railnav">
+                    <ol>${RAIL.map((label, i) => railEntry(label, i, step)).join('')}</ol>
+                </nav>
+                <section class="card">
+                    <h2>${esc(RAIL[step])}</h2>
+                    <p class="lead">${esc(RAIL_LEAD[step])}</p>
+                    ${body}
+                    <div class="stepfoot">${foot}</div>
+                </section>
             </div>
         </div>`;
 }
@@ -363,11 +379,11 @@ function wire() {
 
 function chrome() {
     document.getElementById('proto-note').textContent =
-        `Prototype — throwaway — variant ${ui.variant} of 3: ${VARIANT_NAMES[ui.variant]}. Mock data, no server.`;
+        `Prototype — throwaway — variant ${ui.variant} of 3: ${VARIANT_NAMES[ui.variant]}. C is accepted. Mock data, no server.`;
 
     document.getElementById('proto-bar').innerHTML = `
         <button data-move="-1" title="Previous variant (left arrow)">&lsaquo;</button>
-        <span class="label"><b>${ui.variant}</b> (${esc(VARIANT_NAMES[ui.variant])})</span>
+        <span class="label"><b>${ui.variant}</b> (${esc(VARIANT_NAMES[ui.variant])})${ui.variant === 'C' ? ' — accepted' : ''}</span>
         <button data-move="1" title="Next variant (right arrow)">&rsaquo;</button>`;
 
     document.getElementById('proto-bar').querySelectorAll('button[data-move]').forEach((b) =>

@@ -20,6 +20,10 @@ It is throwaway. It is not production code, it reads no service, and every value
 on it is mock data. It exists because the [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][target state]] settles what a
 registration *does*; nothing yet settles what the person *sees* while it does it.
 
+The step rail, variant *C*, is accepted. It is drawn in the shape the new-system
+provisioning journeys use, so it is the same rail a person meets when they stand
+up a tenant.
+
 Open the [[file:registration-door/][door]].
 
 * Detail
@@ -82,11 +86,26 @@ is no policy read, no server, no account, and nothing is stored.
 JavaScript, no framework and no build step. The site build copies the directory
 through =ores-deploy-web-app=, beside the trade entry prototype.
 
+** The verdict
+
+The step rail, variant *C*, is accepted, with one change: it is drawn in the
+shape the new-system provisioning journeys use, so the rail is the same rail a
+person meets when they stand up a tenant. *A* and *B* stay on the page as the
+record, and a panel from either may still be borrowed.
+
+Every variant now carries the ORE Studio banner, which is a requirement of its
+own: [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Give every Entry screen the ORE Studio banner]] covers the sign-in
+dialog and the door alike.
+
+Registration grants one default role, and the question that raises — how a person
+asks for more — is its own journey,
+[[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]], deliberately separate from this door.
+
 ** What it does not settle
 
-Which variant wins, and what is stolen from the others. The target state fixes
-the policy the door reads; this page only argues how that policy is shown. The
-implementation is scheduled from the target state's change table, not from here.
+The policy. [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] fixes what the door reads;
+this page only argues how it is shown, and the implementation is scheduled from
+that document's change table rather than from here.
 
 * See also
 

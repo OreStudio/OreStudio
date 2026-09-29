@@ -34,7 +34,7 @@ identity keys and the security split, because those touch every family.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | PR 4 merged, so the security keys are stable. |

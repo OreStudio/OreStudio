@@ -67,6 +67,55 @@ inline constexpr std::string_view provision_step_kinds[] = {"publish_bundle",
                                                             "attach_photos",
                                                             "start_market_feeds"};
 
+/**
+ * @brief What a person is shown for one step kind, and what it does.
+ *
+ * The catalogue above states the notation; these are the words a screen shows
+ * for it. They live beside the kinds because a kind is code: a new kind cannot
+ * be added without saying what it is in a person's terms. The words travel
+ * with the run rather than being written where they are read, so the browser,
+ * the shell and a log all state one thing about a step.
+ */
+struct step_kind_words {
+    std::string_view label;
+    std::string_view description;
+};
+
+/**
+ * @brief The words for a kind, or the kind itself when this build has none.
+ *
+ * An unknown kind is one the executor refuses, so its identity is the most a
+ * screen can honestly say about it.
+ */
+[[nodiscard]] inline step_kind_words words_for_step_kind(std::string_view kind) {
+    if (kind == "publish_bundle")
+        return {"Publish the reference data",
+                "Publishes the reference data the tenant works from: the bundles the starting "
+                "point orders, and the datasets those bundles name."};
+    if (kind == "import_lei_hierarchy")
+        return {"Import the legal entities",
+                "Reads the legal entity the starting point names by its LEI and the entities it "
+                "consolidates, and publishes them as the tenant's parties."};
+    if (kind == "provision_party")
+        return {"Create the tenant's parties",
+                "Creates the party that represents the tenant itself, with the reference data a "
+                "party needs."};
+    if (kind == "load_staff")
+        return {"Load the staff",
+                "Creates an account for each person the starting point lists, each in its own "
+                "party."};
+    if (kind == "attach_photos")
+        return {"Attach the photographs",
+                "Gives the accounts their photographs, and the tenant's party its logo."};
+    if (kind == "start_market_feeds")
+        return {"Start the market feeds",
+                "Starts the synthetic market data the tenant's curves and prices are built from."};
+    if (kind == complete_provisioning_step_kind)
+        return {"Finish",
+                "Marks the tenant ready: it stops bootstrapping and becomes active."};
+    return {kind, {}};
+}
+
 /// Whether the catalogue knows the kind.
 [[nodiscard]] inline bool is_declared_step_kind(std::string_view kind) {
     return std::any_of(std::begin(provision_step_kinds),
@@ -224,9 +273,12 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
         std::unordered_map<std::string, int> seen;
 
         const auto add_step = [&](const std::string& kind, const std::string& arguments_json) {
+            const auto words = words_for_step_kind(kind);
+
             workflow_step_def step;
             step.name = detail::unique_step_name(kind, seen);
-            step.description = "Provisioning step '" + kind + "'";
+            step.label = std::string(words.label);
+            step.description = std::string(words.description);
             step.command_subject = std::string(provision_tenant_step_subject);
             step.compensation_subject = "";
 

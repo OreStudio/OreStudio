@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/line-up-the-shell-provisioning
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -46,12 +46,12 @@ both clients become callers of one contract.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Not yet started. It follows the generic provision request. |
-| Waiting on   | The generic =iam.v1.tenants.provision=, because a thin caller needs something to call. |
-| Next          | Inventory what each command orchestrates, then move each piece to the server. |
-| Last touched | 2026-09-27                               |
+| Now          | The three commands are thin callers and the orchestration is the server's. =provision system= reads the deployment's bootstrap answer, creates the administrator, signs in as it and provisions the first tenant; =provision tenant= creates every tenant after the first with the same request; =provision party= runs the party stage against one named party. The two verbs the shell was the last caller of — =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= — retire with it, and the generated recipes and scripts that named them are regenerated. |
+| Waiting on   | Nothing. |
+| Next          | Run the three recipes against a fresh database and record the output; that is the story's own last plan step and it needs a recreate the product owner has not yet allowed. |
+| Last touched | 2026-09-29                               |
 
 * Acceptance
 
@@ -110,6 +110,10 @@ task and name that file in the Command column.
 | The porcelain provisioning command source | 696 lines | =wc -l projects/ores.shell/application/src/app/commands/provision_commands.cpp= | =ef8df25c61= |
 | The provisioning shell scripts | 8 files, 108 lines | =wc -l projects/ores.shell/scripts/library/provisioning/*.ores projects/ores.shell/scripts/library/tenant_provisioning/*.ores= | =ef8df25c61= |
 | The hand-written provisioning recipes | 6 files | =ls doc/recipes/shell/provisioning/*.org= | =ef8df25c61= |
+| The same command source, thin | 407 lines | =wc -l projects/ores.shell/application/src/app/commands/provision_commands.cpp= | =dc14694470= |
+| The provisioning handler, after the verb it served retired | 1824 lines | =wc -l projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp= | =dc14694470= |
+| The recipes' own scripts, thin | 6 files, 87 lines | =wc -l projects/ores.shell/scripts/library/provisioning/*.ores= | =dc14694470= |
+| The provisioning step kinds an executor serves | 6 of 6 | =grep -c . <(sed -n '/provision_executed_step_kinds\[\]/,/};/p' projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp)= | =d315592157= |
 
 * Notes
 
@@ -150,6 +154,41 @@ different thing: one generated recipe with a section per command in that
 submenu, including one that calls =tenant_provisioning
 provision-acme-tenant=. It is generated, so it regenerates when the
 command changes and is never edited by hand.
+
+* The orchestration, and where each piece went
+
+The inventory of plan steps 1 and 2, kept as the record of what the
+wizards did that the journeys replace. A piece is either a request now or
+it is stated as staying where it was.
+
+| Piece the shell did | What it is now |
+|---------------------+----------------|
+| Read the system's bootstrap answer | Kept: the first run reads it before it creates anything, exactly as the browser does. =iam.v1.bootstrap.status=. |
+| Create the initial administrator, then sign in as it | Kept: the order the browser's journey takes, because a provision request needs a session. =iam.v1.bootstrap.create-admin= and =iam.v1.auth.login=. |
+| Create the tenant row and its administrator | The server's, inside the provision request: =tenant_provisioning_service::provision=. |
+| Publish the base bundle and wait on its nested run | The server's, as the =publish_bundle= step kind. The wait is the run's. |
+| Publish the party-scoped bundles, per party, and wait | The server's, as the =provision_party= step kind, which now also activates the party, marks its onboarding complete and joins the administrator to it. |
+| Import the counterparties | The starting point's parameter: the =publish_bundle= row names the dataset and the parameter whose value completes it. Nothing read =counterparty_size= before this task, so a browser-provisioned tenant held no counterparties. |
+| Generate a synthetic organisation | Stays a shell tool, which the accepted seed profile contract decided: the =synthetic generate= command is a recipe's own step and not provisioning's. |
+| Associate the administrator with the operational parties | The server's, inside the =provision_party= step kind, so a tenant's own run and a party stage alone do the same thing. |
+| Complete provisioning: mark the tenant active, clear bootstrap mode | The server's, as the =complete_provisioning= step the tenant run appends. |
+| Resolve a party by name or identifier | The server's: the party request resolves it through the party read, and refuses a reference the tenant does not hold before it starts a run. |
+
+Flags the command offered and the request cannot carry, with the reason
+each is gone: =--tenant-type= (the starting point states it, and a
+request that named it would be a second starting point), =--bundle= and
+=--source= (both are the starting point's), =--root-lei= (a parameter
+now: =--param root_lei=), =--dataset-size= (the counterparty set belongs
+to the tenant's starting point, not to one party), and the synthetic
+generator's knobs (that tool's own, and it is not provisioning's).
+
+The work also found a defect it did not own: =ores.iam.core.tests= fails
+on a second run against one database, because the generated eventing
+integration tests seed a soft-FK parent row and close only the row under
+test. The fix is one codegen template and a regeneration of 53 files
+across five components, so it is captured rather than carried here:
+[[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][A generated eventing integration
+test leaves the parent row it seeds active]].
 
 * Test Scenarios
 

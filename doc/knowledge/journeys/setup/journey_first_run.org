@@ -161,16 +161,12 @@ tenant subjects need a session. =workflow.v1.instances.steps= is not in the
 generated web protocol: the generator emits no =workflow= package for the
 browser, so the BFF adds a route for it.
 
-=iam.v1.bootstrap.provision-tenant= still exists and needs no session, because
-bootstrap mode is still on. It takes no seed profile, runs synchronously and
-returns no instance id. The accepted contract retires it and replaces it with
-=iam.v1.tenants.provision= for every tenant, the first one included.
-
-=iam.v1.tenants.provision-acme= still exists and needs a session. It runs the
-whole provisioning server-side through internal actor impersonation. It is
-ACME-only, it takes no seed profile, and it returns all its steps at the end, so
-it streams no progress. The accepted contract retires it too. The generic
-profile-driven request =iam.v1.tenants.provision= does not exist yet.
+=iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= no
+longer exist. The generic profile-driven request =iam.v1.tenants.provision=
+replaced both, for every tenant the first one included, and the work
+=iam.v1.tenants.provision-acme= did server-side is now the steps a starting
+point orders: the run those steps are dispatched as is what streams the
+progress, so neither client waits on a reply that carries the work.
 
 * What is missing
 

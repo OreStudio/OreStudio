@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: AE38F3C4-BC68-4ACD-BB8D-FB53574F57BE
+:END:
+#+title: Task: Make the registration gate real
+#+description: Read the deployment's self-registration switch on the live sign-up path and give every refusal a code, so the door a deployment believes it has closed is actually closed.
+#+type: task
+#+level: s1
+#+filetags: :iam:web:journeys:entry:security:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The live sign-up path reads the deployment's switch. Today =iam.v1.auth.signup=
+serves through =account_setup_service=, which reads neither =system.user_signups=
+nor =system.signup_requires_authorization=; the service that does read them has no
+caller outside its own two files. A deployment that has turned self-registration
+off therefore still accepts registrations, over NATS and over the HTTP gateway,
+and the refusal a screen receives is a sentence with no code because the response
+has no field to carry one.
+
+This is the first implementation task of the story because it closes an open
+door. The rest of the change table in
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]]
+— the tenant resolution, the defaults, the waiting state — is built on a path
+that has stopped admitting people.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------+
+| State        | STARTED                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Started. The model change lands first, because the handler cannot answer with a code the response cannot carry. |
+| Waiting on   | Nothing.                               |
+| Next         | Add =error_code= to the sign-up response, regenerate every address of it, then gate the handler on the two flags. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- =signup_response= carries =error_code=, generated from the model rather than hand-written into a protocol header.
+- The live handler refuses with =signup_disabled= when the deployment's switch is off, before it creates anything, and the refusal is asserted by a test that turns the switch off.
+- It refuses with =signup_requires_authorization= when the authorisation flag is on, because nothing performs that approval yet, and the refusal says so.
+- The switch is read at system scope, and the registered default stays =false=, so a deployment nobody has asked refuses registration.
+- The HTTP gateway's answer carries the same code, since it forwards the same message.
+- Every address of the changed model is regenerated: the C++ protocol, the generated TypeScript, and the HTTP route and its OpenAPI entry.
+- The flags' seeded descriptions no longer say the behaviour is unimplemented, unless it still is.
+
+* Plan
+
+1. Model first: add =error_code= to =signup_response= in [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]], then regenerate, because a handler that answers with a code needs a field to answer with.
+2. Gate the handler: read =system.user_signups= and =system.signup_requires_authorization= in =auth_handler::signup= before the service is called, and answer with the code and a sentence.
+3. Decide the fate of the dead flag-aware service: either it becomes the live path, or it is deleted. Leaving it is what made the door look closed.
+4. Test the refusals in the IAM core suite: switch off, authorisation on, and the happy path with the switch on.
+5. Update the seeded descriptions, and the HTTP recipe that captures the refusal, so the record matches what the code does.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Callers of the flag-aware sign-up service | 0, outside its own header and source | =grep -rln signup_service projects/ --include=*.cpp --include=*.hpp= | =67493fae8e= |
+| Refusal codes the sign-up response carries | 0 | =projects/ores.iam/modeling/ores.iam.signup_messages.org= | =67493fae8e= |
+| Addresses of the sign-up response to regenerate | to be counted when the model changes | =grep -rln "signup_response" projects/ --include=*.hpp --include=*.ts --include=*.cpp= | =67493fae8e= |
+
+* Notes
+
+- Why the gate comes before the rest: every other change in the target state adds a refusal or a state to a path that is currently open to anyone. Closing it first means the later work is built on a path that refuses by default.
+- The authorisation flag is a deliberate dead end for now. Nothing performs the approval, so the honest behaviour is to close the door and say so, which is what the target state records; the workflow itself belongs to =ores.workflow=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

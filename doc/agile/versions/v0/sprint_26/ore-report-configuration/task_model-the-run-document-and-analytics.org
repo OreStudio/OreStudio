@@ -28,9 +28,9 @@ A report definition's run is configured by typed entities for its setup, its mar
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The Setup block, the ordered analytic list and the market bindings all round trip over the corpus; the database half follows. |
+| Now          | The Setup block, the analytic list and the market bindings round trip over the corpus and through the database. The analytic parameters' vocabulary is the remaining piece. |
 | Waiting on   | Nothing.                               |
-| Next         | Resolve the analytic parameter names to definitions and prove the entities round trip through the database. |
+| Next         | Seed the value domains and parameter definitions the analytics use, then prove the parameters round trip through the database. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -64,6 +64,7 @@ task and name that file in the Command column.
 | Run documents whose Setup block round trips | 416 of 416 | =ores.ore.core.tests "[run_document]"= | =17070aeae7= |
 | Analytics that round trip | 1874 of 1874, across the same 416 documents | the same | =64a9838858= |
 | Market bindings that round trip | 1915 of 1915, in 413 documents, across 8 roles | the same | =c75073ec27= |
+| Run document through the database | setup, analytics and market bindings written, read back and exported, agreeing with the original | =ores.ore.core.tests "[database][roundtrip]"= | =64f1377dcc= |
 
 * Notes
 

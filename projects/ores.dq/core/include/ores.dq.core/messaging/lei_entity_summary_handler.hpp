@@ -66,17 +66,17 @@ public:
 
     void summary(ores::nats::message msg) {
         BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        const auto parsed = rfl::json::read<get_lei_entities_summary_request>(data);
+        /*
+         * The payload is read with the deployment's own wire codec, not as
+         * JSON: a caller reaches this subject through the platform's transport,
+         * which encodes in the format the deployment states, and a handler that
+         * insisted on one format refused every caller that used another.
+         */
+        const auto parsed = ores::service::messaging::decode<get_lei_entities_summary_request>(msg);
         if (!parsed) {
-            const auto err = parsed.error().what();
-            BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
-                << "Failed to decode " << msg.subject << ": " << err << " (payload: " << data
-                << ")";
             get_lei_entities_summary_response err_resp;
             err_resp.success = false;
-            err_resp.error_message = std::string("Failed to decode request: ") + err;
+            err_resp.error_message = "The request could not be read.";
             reply(nats_, msg, err_resp);
             return;
         }

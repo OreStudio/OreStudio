@@ -24,6 +24,7 @@ import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { Button } from '../ui/Primitives.js';
+import { VersionFooter } from './VersionFooter.js';
 
 /**
  * The shell a signed-in person gets.
@@ -41,6 +42,8 @@ export interface AppShellProps {
     readonly tenantName: string;
     readonly partyName: string | undefined;
     readonly onSignOut: () => void;
+    /** The build the deployment answers with, or nothing before it answers. */
+    readonly serverVersion?: string;
     readonly children: ReactNode;
 }
 
@@ -49,6 +52,7 @@ export function AppShell({
     tenantName,
     partyName,
     onSignOut,
+    serverVersion,
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
@@ -80,6 +84,7 @@ export function AppShell({
                 </div>
             </header>
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">{children}</main>
+            <VersionFooter serverVersion={serverVersion} />
         </div>
     );
 }

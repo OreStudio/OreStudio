@@ -578,6 +578,12 @@ export const en: SourceCatalogue = {
         },
     },
 
+    version: {
+        client: 'client {version}',
+        server: 'server {version}',
+        serverUnknown: 'server version unknown',
+    },
+
     common: {
         loading: 'Loading...',
         all: 'All',

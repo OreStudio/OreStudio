@@ -47,6 +47,37 @@ describe('the public shell', () => {
         expect(html).toContain('ORE Studio');
         expect(html).toContain('the screen');
     });
+
+    it('states what the browser runs and what the deployment runs', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <MemoryRouter>
+                    <PublicShell serverVersion="v0.0.25 [x64-linux] (local abc1234-dirty)">
+                        <p>the screen</p>
+                    </PublicShell>
+                </MemoryRouter>
+            </TranslationProvider>,
+        );
+
+        // The client's own build is stamped into the bundle, so the test knows
+        // only that a version is stated, not which one this checkout produced.
+        expect(html).toContain('client v');
+        expect(html).toContain('server v0.0.25 [x64-linux] (local abc1234-dirty)');
+    });
+
+    it('says the deployment has not said which build it runs', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <MemoryRouter>
+                    <PublicShell>
+                        <p>the screen</p>
+                    </PublicShell>
+                </MemoryRouter>
+            </TranslationProvider>,
+        );
+
+        expect(html).toContain('server version unknown');
+    });
 });
 
 describe('the application shell', () => {

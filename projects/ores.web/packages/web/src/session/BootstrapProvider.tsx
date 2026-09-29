@@ -44,6 +44,8 @@ export type BootstrapState =
           readonly status: 'ready';
           readonly inBootstrapMode: boolean;
           readonly message: string;
+          /** The build the deployment answered with, which every shell states. */
+          readonly version: string;
       }
     | { readonly status: 'unreachable'; readonly reason: string };
 
@@ -99,6 +101,7 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                 status: 'ready',
                 inBootstrapMode: data.isInBootstrapMode,
                 message: data.message,
+                version: data.version,
             },
             recheck,
         };

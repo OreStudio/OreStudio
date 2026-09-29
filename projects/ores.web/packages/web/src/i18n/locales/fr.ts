@@ -578,6 +578,12 @@ const fr: SourceCatalogue = {
         },
     },
 
+    version: {
+        client: 'client {version}',
+        server: 'serveur {version}',
+        serverUnknown: 'version du serveur inconnue',
+    },
+
     common: {
         loading: 'Chargement...',
         all: 'Tous',

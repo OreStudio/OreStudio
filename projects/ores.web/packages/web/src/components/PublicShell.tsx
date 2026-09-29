@@ -22,6 +22,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PROJECT_SITE, headerMark } from '../assets/brand.js';
+import { VersionFooter } from './VersionFooter.js';
 
 /**
  * The shell a visitor gets.
@@ -34,6 +35,7 @@ import { PROJECT_SITE, headerMark } from '../assets/brand.js';
 export function PublicShell({
     children,
     wide = false,
+    serverVersion,
 }: {
     readonly children: ReactNode;
     /**
@@ -45,6 +47,8 @@ export function PublicShell({
      * hundred pixels and makes every line of it wrap.
      */
     readonly wide?: boolean;
+    /** The build the deployment answers with, or nothing before it answers. */
+    readonly serverVersion?: string;
 }): ReactNode {
     const { t } = useTranslation();
     const width = wide ? 'max-w-[1100px]' : 'max-w-[680px]';
@@ -63,6 +67,7 @@ export function PublicShell({
                 </div>
             </header>
             <main className={`mx-auto w-full flex-1 px-5 py-12 ${width}`}>{children}</main>
+            <VersionFooter serverVersion={serverVersion} />
         </div>
     );
 }

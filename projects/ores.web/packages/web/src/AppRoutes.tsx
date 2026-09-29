@@ -95,7 +95,14 @@ export function AppRoutes({
     if (gate.inBootstrapMode || journeyInProgress) {
         return (
             <Routes>
-                <Route path="*" element={<PublicShell wide>{journey}</PublicShell>} />
+                <Route
+                    path="*"
+                    element={
+                        <PublicShell wide serverVersion={gate.version}>
+                            {journey}
+                        </PublicShell>
+                    }
+                />
             </Routes>
         );
     }
@@ -108,7 +115,7 @@ export function AppRoutes({
                     session.status === 'authenticated' ? (
                         <Navigate to="/" replace />
                     ) : (
-                        <PublicShell>
+                        <PublicShell serverVersion={gate.version}>
                             <SignInPage onSignIn={onSignIn} onChooseParty={onChooseParty} />
                         </PublicShell>
                     )
@@ -116,7 +123,7 @@ export function AppRoutes({
             />
             <Route
                 path="/"
-                element={signedIn(session, onSignOut, (view) => (
+                element={signedIn(gate.version, session, onSignOut, (view) => (
                     <HomePage
                         username={view.username}
                         email={view.email}
@@ -168,6 +175,7 @@ export function ConnectedApp(): ReactNode {
  * they may not look: they may, once they have signed in.
  */
 function signedIn(
+    serverVersion: string,
     session: SessionState,
     onSignOut: () => void,
     screen: (session: SessionView) => ReactNode,
@@ -181,6 +189,7 @@ function signedIn(
             username={view.username}
             tenantName={view.tenantName}
             partyName={view.party.name}
+            serverVersion={serverVersion}
             onSignOut={onSignOut}
         >
             {screen(view)}

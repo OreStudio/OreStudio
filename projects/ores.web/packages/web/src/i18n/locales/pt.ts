@@ -582,6 +582,12 @@ const pt: SourceCatalogue = {
         },
     },
 
+    version: {
+        client: 'cliente {version}',
+        server: 'servidor {version}',
+        serverUnknown: 'versão do servidor desconhecida',
+    },
+
     common: {
         loading: 'A carregar...',
         all: 'Todos',

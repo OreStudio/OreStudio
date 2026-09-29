@@ -54,6 +54,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
@@ -355,10 +356,6 @@ public:
                 refuse("The field 'party' has no value.");
                 return;
             }
-            if (req->profile_code.empty()) {
-                refuse("The field 'profile_code' has no value.");
-                return;
-            }
 
             const auto tenant_id = ctx_expected->tenant_id().to_string();
 
@@ -377,33 +374,80 @@ public:
             // refuses to run outside the system tenant anyway, so the read and
             // the write share one context.
             auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-            const auto profiles =
-                ores::iam::service::seed_profile_service(sys_ctx).list_seed_profiles(0, 1000);
-            const auto profile =
-                std::find_if(profiles.begin(), profiles.end(), [&](const auto& candidate) {
-                    return candidate.code == req->profile_code;
-                });
-            if (profile == profiles.end()) {
-                refuse("The seed profile '" + req->profile_code + "' does not exist.");
-                return;
-            }
+            ores::iam::service::seed_profile_service profile_svc(sys_ctx);
+            ores::iam::service::seed_profile_step_service step_svc(sys_ctx);
+
+            const auto declared_steps_of =
+                [&](const ores::iam::domain::seed_profile& candidate) {
+                    return step_svc.list_seed_profile_steps_by_seed_profile_id(
+                        boost::uuids::to_string(candidate.id), 0, 1000);
+                };
+            const auto party_step_of =
+                [](const std::vector<ores::iam::domain::seed_profile_step>& declared) {
+                    return std::find_if(
+                        declared.begin(), declared.end(), [](const auto& candidate) {
+                            return candidate.step_kind ==
+                                   ores::iam::workflow::provision_party_step_kind;
+                        });
+                };
 
             // The party stage is the starting point's, so the row that orders it
             // is what says which bundles a party is published from. A starting
             // point that orders no party step has no party stage to run, and
             // saying so is better than running a run whose one step cannot read
             // its own arguments.
-            const auto declared_steps = ores::iam::service::seed_profile_step_service(sys_ctx)
-                                            .list_seed_profile_steps_by_seed_profile_id(
-                                                boost::uuids::to_string(profile->id), 0, 1000);
-            const auto party_step = std::find_if(
-                declared_steps.begin(), declared_steps.end(), [](const auto& declared) {
-                    return declared.step_kind == ores::iam::workflow::provision_party_step_kind;
-                });
-            if (party_step == declared_steps.end()) {
-                refuse("The seed profile '" + profile->code +
-                       "' orders no party step, so it has no party stage to run.");
-                return;
+            //
+            // A caller that names no starting point gets the deployment's own:
+            // the first one, in the order the deployment lists them, that
+            // orders a party step. A tenant administrator cannot name one --
+            // the profiles are the system tenant's rows and a tenant reads only
+            // its own -- so choosing here is what lets that caller add a party
+            // at all.
+            const auto profiles = profile_svc.list_seed_profiles(0, 1000);
+
+            std::optional<ores::iam::domain::seed_profile> profile;
+            std::optional<ores::iam::domain::seed_profile_step> party_step;
+            if (!req->profile_code.empty()) {
+                const auto named =
+                    std::find_if(profiles.begin(), profiles.end(), [&](const auto& candidate) {
+                        return candidate.code == req->profile_code;
+                    });
+                if (named == profiles.end()) {
+                    refuse("The seed profile '" + req->profile_code + "' does not exist.");
+                    return;
+                }
+                const auto declared = declared_steps_of(*named);
+                const auto declared_party_step = party_step_of(declared);
+                if (declared_party_step == declared.end()) {
+                    refuse("The seed profile '" + named->code +
+                           "' orders no party step, so it has no party stage to run.");
+                    return;
+                }
+                profile = *named;
+                party_step = *declared_party_step;
+            } else {
+                auto ordered = profiles;
+                std::sort(ordered.begin(),
+                          ordered.end(),
+                          [](const auto& left, const auto& right) {
+                              return left.display_order == right.display_order ?
+                                         left.code < right.code :
+                                         left.display_order < right.display_order;
+                          });
+                for (const auto& candidate : ordered) {
+                    const auto declared = declared_steps_of(candidate);
+                    const auto declared_party_step = party_step_of(declared);
+                    if (declared_party_step != declared.end()) {
+                        profile = candidate;
+                        party_step = *declared_party_step;
+                        break;
+                    }
+                }
+                if (!profile || !party_step) {
+                    refuse("This deployment orders no party step in any of its seed "
+                           "profiles, so it has no party stage to run.");
+                    return;
+                }
             }
 
             // The tenant every step acts on is the caller's own: a party is a
@@ -481,6 +525,14 @@ public:
             // second time and possibly reaching another row.
             auto arguments = detail::read_step_arguments(party_step->arguments_json);
             arguments["party"] = found.front();
+            /*
+             * The entity the person chose travels with the step, and the step
+             * records it against the party: a party identifier carries the
+             * party its writing session acts in, and this caller works in
+             * another one, so the run is the only client that can write it.
+             */
+            if (!req->lei.empty())
+                arguments["lei"] = req->lei;
             run.steps.push_back({party_step->step_kind, rfl::json::write(arguments)});
 
             boost::uuids::random_generator generate;
@@ -801,6 +853,16 @@ private:
             activate_party(client, party);
             complete_party_onboarding(client, party.id);
             associate_account_with_party(client, actor.account_id, party.id);
+
+            /*
+             * Last, because it is the one write here that touches the party
+             * itself: an identifier's insert bumps the version of the party it
+             * belongs to, and a party the step has already saved would then be
+             * refused as one that moved on.
+             */
+            if (!arguments.lei.empty())
+                record_party_lei(client, party, arguments.lei);
+
             provisioned.push_back(party_id);
         }
 
@@ -1610,6 +1672,41 @@ private:
         if (party.status == "Active")
             return;
         save_party(client, party, "Active", party.image_id, "Activated during provisioning");
+    }
+
+    /**
+     * Records the legal entity a party was built from, as the party's LEI.
+     *
+     * The party's own datum, written for the party: the caller's client acts in
+     * the party it named, which is what a party identifier is stamped with. A
+     * party that already carries an LEI is left alone, so a retried run meets
+     * the row it wrote and moves on rather than refusing itself.
+     */
+    static void record_party_lei(internal_request_client& client,
+                                 const ores::refdata::domain::party& party,
+                                 const std::string& lei) {
+        ores::refdata::messaging::list_by_party_id_party_identifiers_request list_req;
+        list_req.party_id = party.id;
+        list_req.limit = 1000;
+        const auto existing = client.request(list_req);
+        for (const auto& identifier : existing.party_identifiers)
+            if (identifier.id_scheme == "LEI")
+                return;
+
+        boost::uuids::random_generator generate;
+        ores::refdata::messaging::put_party_identifier_request req;
+        req.change.write.id = generate();
+        req.change.write.party_id = party.id;
+        req.change.write.id_scheme = "LEI";
+        req.change.write.id_value = lei;
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+        req.intent.reason_code = "system.external_data_import";
+        req.intent.commentary = "Recorded from the legal entity the party was built from";
+
+        const auto resp = client.request(req);
+        if (resp.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The LEI of '" + party.full_name +
+                                     "' was not recorded: " + resp.result.message);
     }
 
     /// Marks the party's onboarding wizard complete, which is what makes the

@@ -277,6 +277,7 @@ export const en: SourceCatalogue = {
         tenant: 'Tenant',
         party: 'Party',
         newTenant: 'New tenant',
+        newParty: 'New party',
     },
 
     component: {
@@ -595,6 +596,56 @@ export const en: SourceCatalogue = {
             lead: 'The installation is set up, and {principal} is signed in.',
             home: 'Go home',
         },
+
+        party: {
+            noLei: 'No LEI',
+            find: {
+                title: 'Find the legal entity',
+                lead: 'The party is a legal entity. Search the ones this deployment holds, or name one it does not.',
+                search: 'A legal entity we hold',
+                searchHint: 'Search by name or LEI.',
+                byHand: 'It is not one of them',
+                byHandHint: 'Name a party the deployment holds no legal entity for.',
+                name: 'Legal name',
+                nameHint: 'The name the party is registered under.',
+                lei: 'Legal entity',
+                leiHint: 'Choosing an entity names the party after it.',
+            },
+            describe: {
+                title: 'Describe the party',
+                lead: 'Give it the short code this tenant will know it by.',
+                shortCode: 'Short code',
+                shortCodeHint:
+                    'A mnemonic unique to this tenant, proposed from the legal name. It identifies the party in commands and reports.',
+            },
+            review: {
+                title: 'Review',
+                lead: 'Nothing is created until you confirm.',
+                legalName: 'Legal name',
+                lei: 'LEI',
+                shortCode: 'Short code',
+                data: "The party's data is the tenant's standard data, which the run publishes.",
+                bornInactive:
+                    'The party is created inactive. The run publishes its data, activates it and joins you to it.',
+                create: 'Add party',
+                noRun: 'The server created the party but named no run to follow.',
+            },
+            provisioning: {
+                title: 'Provisioning',
+                lead: 'This runs on the server. You can leave this page and come back.',
+            },
+            next: {
+                title: 'Next steps',
+                lead: '{code} is active.',
+                work: 'Work in it now',
+                workHint: 'Work as this party for the rest of this session.',
+                another: 'Add another party',
+                anotherHint: 'Start this journey again.',
+                done: 'Done',
+                doneHint: 'Go back to where you started.',
+                joined: 'You are joined to the party, so it is one of the ones you can work in.',
+            },
+        },
     },
 
     version: {
@@ -610,9 +661,9 @@ export const en: SourceCatalogue = {
         'Import the legal entities': 'Import the legal entities',
         "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
             "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.",
-        "Create the tenant's parties": "Create the tenant's parties",
-        'Creates the party that represents the tenant itself, with the reference data a party needs.':
-            'Creates the party that represents the tenant itself, with the reference data a party needs.',
+        'Provision the parties': 'Provision the parties',
+        "Publishes each party's reference data, records the legal entity it was built from, activates it, marks its onboarding complete and joins the caller to it.":
+            "Publishes each party's reference data, records the legal entity it was built from, activates it, marks its onboarding complete and joins the caller to it.",
         'Load the staff': 'Load the staff',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Creates an account for each person the starting point lists, each in its own party.',

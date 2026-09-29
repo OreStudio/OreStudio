@@ -269,6 +269,7 @@ const fr: SourceCatalogue = {
         tenant: 'Locataire',
         party: 'Partie',
         newTenant: 'Nouveau locataire',
+        newParty: 'Nouvelle partie',
     },
 
     component: {
@@ -595,6 +596,57 @@ const fr: SourceCatalogue = {
             lead: "L'installation est configurée et {principal} est connecté.",
             home: "Aller à l'accueil",
         },
+
+        party: {
+            noLei: 'Pas de LEI',
+            find: {
+                title: "Trouver l'entité légale",
+                lead: "La partie est une entité légale. Cherchez celles que ce déploiement détient, ou nommez-en une qu'il ne détient pas.",
+                search: 'Une entité légale que nous détenons',
+                searchHint: 'Cherchez par nom ou par LEI.',
+                byHand: "Ce n'est pas l'une d'elles",
+                byHandHint:
+                    'Nommez une partie pour laquelle le déploiement ne détient aucune entité légale.',
+                name: 'Dénomination légale',
+                nameHint: 'Le nom sous lequel la partie est enregistrée.',
+                lei: 'Entité légale',
+                leiHint: "Choisir une entité nomme la partie d'après elle.",
+            },
+            describe: {
+                title: 'Décrire la partie',
+                lead: 'Donnez-lui le code court par lequel ce locataire la connaîtra.',
+                shortCode: 'Code court',
+                shortCodeHint:
+                    'Un moyen mnémotechnique unique à ce locataire, proposé à partir de la dénomination légale. Il identifie la partie dans les commandes et les rapports.',
+            },
+            review: {
+                title: 'Vérification',
+                lead: "Rien n'est créé avant votre confirmation.",
+                legalName: 'Dénomination légale',
+                lei: 'LEI',
+                shortCode: 'Code court',
+                data: "Les données de la partie sont les données standard du locataire, que l'exécution publie.",
+                bornInactive:
+                    "La partie est créée inactive. L'exécution publie ses données, l'active et vous y rattache.",
+                create: 'Ajouter la partie',
+                noRun: "Le serveur a créé la partie mais n'a nommé aucune exécution à suivre.",
+            },
+            provisioning: {
+                title: 'Provisionnement',
+                lead: 'Cela tourne sur le serveur. Vous pouvez quitter cette page et revenir.',
+            },
+            next: {
+                title: 'Étapes suivantes',
+                lead: '{code} est active.',
+                work: 'Y travailler maintenant',
+                workHint: 'Travaillez en tant que cette partie pour le reste de cette session.',
+                another: 'Ajouter une autre partie',
+                anotherHint: 'Recommencez ce parcours.',
+                done: 'Terminé',
+                doneHint: "Revenez à l'écran d'où vous êtes parti.",
+                joined: 'Vous êtes rattaché à la partie, elle fait donc partie de celles où vous pouvez travailler.',
+            },
+        },
     },
 
     version: {
@@ -610,9 +662,9 @@ const fr: SourceCatalogue = {
         'Import the legal entities': 'Importer les entités juridiques',
         "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
             "Lit l'entité juridique que le point de départ nomme par son LEI et les entités qu'elle consolide, puis les publie comme entités du locataire.",
-        "Create the tenant's parties": 'Créer les entités du locataire',
-        'Creates the party that represents the tenant itself, with the reference data a party needs.':
-            "Crée l'entité qui représente le locataire lui-même, avec les données de référence dont une entité a besoin.",
+        'Provision the parties': 'Approvisionner les entités',
+        "Publishes each party's reference data, records the legal entity it was built from, activates it, marks its onboarding complete and joins the caller to it.":
+            "Publie les données de référence de chaque entité, enregistre l'entité juridique dont elle est issue, l'active, marque son intégration comme terminée et y rattache l'appelant.",
         'Load the staff': 'Charger le personnel',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Crée un compte pour chaque personne que le point de départ liste, chacune dans sa propre entité.',

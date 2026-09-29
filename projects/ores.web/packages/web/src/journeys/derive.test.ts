@@ -28,6 +28,7 @@ import {
     hostnameFromName,
     isTenantCode,
     codeAsTyped,
+    partyCodeFromName,
 } from './derive.js';
 
 /**
@@ -125,5 +126,42 @@ describe('the hostname and the address a tenant proposes', () => {
         );
         expect(emailFromPrincipal('', 'barclays_bank_plc')).toBe('');
         expect(emailFromPrincipal('tenant_admin', '')).toBe('');
+    });
+});
+
+/**
+ * The party code proposal, against the codes the deployment's own import gave
+ * the parties it holds: the rule is mirrored from the SQL function that made
+ * them, so a drift between the two shows up here as a name whose code no longer
+ * matches the one the deployment would have generated.
+ */
+describe('the code a legal name proposes for a party', () => {
+    it('spells a single word as its first letter and its consonants', () => {
+        expect(partyCodeFromName('BARCLAYS PLC')).toBe('BRCLYS');
+        expect(partyCodeFromName('Barclays')).toBe('BRCLYS');
+    });
+
+    it('spells two words as three letters each', () => {
+        expect(partyCodeFromName('NORTHWIND CAPITAL LTD')).toBe('NORCAP');
+    });
+
+    it('spells three or more words as two letters each', () => {
+        // The names below are parties the deployment holds, together with the
+        // codes the same rule gave them.
+        expect(partyCodeFromName('BARCLAYS BANK IRELAND PUBLIC LIMITED COMPANY')).toBe('BABAIR');
+        expect(partyCodeFromName('BARCLAYS BANK UK PLC')).toBe('BABAUK');
+        expect(partyCodeFromName('BARCLAYS ASSET MANAGEMENT LIMITED')).toBe('BAASMA');
+        expect(partyCodeFromName('BARCLAYS CAPITAL NOMINEES LIMITED')).toBe('BACANO');
+    });
+
+    it('answers a name with no letters in it rather than an empty code', () => {
+        expect(partyCodeFromName('---')).toBe('UNKNWN');
+        expect(partyCodeFromName('')).toBe('UNKNWN');
+    });
+
+    it('pads a code too short to identify anything', () => {
+        // The deployment's own rule, which drops the second letter here as
+        // well: "AB" contributes its first letter and then its consonants.
+        expect(partyCodeFromName('AB PLC')).toBe('AXX');
     });
 });

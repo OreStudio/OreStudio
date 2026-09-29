@@ -99,6 +99,20 @@ export interface SessionStore {
     get(id: string): LiveSession | undefined;
     /** Records the party chosen after a pending login. */
     activate(id: string, session: ActiveSession): LiveSession | undefined;
+    /**
+     * Records a re-scoped session.
+     *
+     * A party added after the session opened is not in the list the login
+     * answered with, so the party and the list are both written here: the
+     * bearer token has been re-issued for the new party, and the browser's
+     * session view states which parties the account may work in.
+     */
+    switchParty(
+        id: string,
+        party: PartySummary,
+        availableParties: readonly PartySummary[],
+        accessLifetimeSeconds: number,
+    ): LiveSession | undefined;
     /** Records a re-issued token and its new lifetime after a refresh. */
     refresh(id: string, accessLifetimeSeconds: number): void;
     /**
@@ -204,6 +218,18 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             record.version = session.version;
             record.accessLifetimeSeconds = session.accessLifetimeSeconds;
             record.passwordResetRequired = session.passwordResetRequired;
+            record.expiresAt = now() + ttlMs;
+            return toLive(id, record);
+        },
+
+        switchParty(id, party, availableParties, accessLifetimeSeconds) {
+            const record = sessions.get(hash(id));
+            if (record === undefined) {
+                return undefined;
+            }
+            record.party = party;
+            record.availableParties = availableParties;
+            record.accessLifetimeSeconds = accessLifetimeSeconds;
             record.expiresAt = now() + ttlMs;
             return toLive(id, record);
         },

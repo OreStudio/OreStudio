@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 252C3441-D862-4862-9A7A-EE548AC5A799
+:END:
+#+title: A run whose dependency is dead reports a timeout, not the cause
+#+description: The party stage waits on the bundle run it published for 1500s and then fails with 'timed out after 1500s; 1/3 steps completed; last step: marketdata.fx_driver_rates (in_progress)', while the real reason sits in another process's log: the marketdata service had exited on a schema error before the run started. Nothing ties a workflow step to the liveness of the service that owns its command subject.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

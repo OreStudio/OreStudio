@@ -93,6 +93,7 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
         recheckBootstrap: vi.fn(async () => undefined),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
         chooseParty: vi.fn(async () => undefined),
+        switchParty: vi.fn(async () => undefined),
         signOut: vi.fn(async () => undefined),
         passwordPolicy: vi.fn(async () => policy),
         seedProfiles: vi.fn(async () => [operational, demonstration]),
@@ -102,6 +103,12 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
             instanceId: '9c1f0f5a-6bd2-4f2a-9a4a-6f1a3a2b4c5d',
             tenantId: '',
             accountId: '',
+        })),
+        provisionParty: vi.fn(async () => ({
+            success: true,
+            message: '',
+            instanceId: '',
+            partyId: '',
         })),
         progress: vi.fn(async () => ({
             success: true,

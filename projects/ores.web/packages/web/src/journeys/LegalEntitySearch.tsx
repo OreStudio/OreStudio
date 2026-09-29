@@ -20,7 +20,7 @@
  */
 
 /**
- * Finding the legal entity a tenant is built around.
+ * Finding the legal entity a tenant or a party is built around.
  *
  * A person who has an LEI knows it; a person who does not cannot guess one, so
  * the field is a search over the entities the deployment holds rather than a
@@ -112,7 +112,14 @@ export function LegalEntitySearch({
     /** The LEI chosen so far, which is what the run will carry. */
     readonly value: string;
     readonly label: string;
-    readonly hint: string | undefined;
+    /**
+     * What the field says underneath itself, and the whole of it.
+     *
+     * The sentence a journey wants here is the journey's: what choosing an
+     * entity fills in is a tenant's name and a party's name, and a field that
+     * carried one of those sentences would say it in the other journey too.
+     */
+    readonly hint: string;
     readonly onChoose: (entity: LeiEntityChoice) => void;
 }): ReactNode {
     const { t, plural } = useTranslation();
@@ -214,10 +221,7 @@ export function LegalEntitySearch({
                     onChange={(event) => setQuery(event.target.value)}
                 />
             </label>
-            <span className="mt-1 block text-xs text-ink-faint">
-                {hint !== undefined && hint !== '' ? `${hint} ` : ''}
-                {t('journey.details.leiHowItWorks')}
-            </span>
+            {hint !== '' && <span className="mt-1 block text-xs text-ink-faint">{hint}</span>}
             {value !== '' && (
                 <div className="mt-2 flex justify-end">
                     <Button variant="ghost" size="sm" onClick={() => setChanging(false)}>

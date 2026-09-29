@@ -158,13 +158,13 @@ const retried = {
     stepName: 'provision_party',
 };
 
-describe('GET /api/provision-tenant/:instanceId', () => {
+describe('GET /api/workflow/:instanceId', () => {
     it('serves the run the browser asked about and passes its id on', async () => {
         const { server, sessionId, progressReads } = buildTestServer(progress, retried);
 
         const response = await server.inject({
             method: 'GET',
-            url: `/api/provision-tenant/${instanceId}`,
+            url: `/api/workflow/${instanceId}`,
             cookies: { ores_web_session: sessionId },
         });
 
@@ -180,7 +180,7 @@ describe('GET /api/provision-tenant/:instanceId', () => {
 
         const response = await server.inject({
             method: 'GET',
-            url: `/api/provision-tenant/${instanceId}`,
+            url: `/api/workflow/${instanceId}`,
         });
 
         expect(response.statusCode).toBe(401);
@@ -190,13 +190,13 @@ describe('GET /api/provision-tenant/:instanceId', () => {
     });
 });
 
-describe('POST /api/provision-tenant/:instanceId/retry', () => {
+describe('POST /api/workflow/:instanceId/retry', () => {
     it('resumes the run from the step the engine names, and serves which step it resumed', async () => {
         const { server, sessionId, retries } = buildTestServer(progress, retried);
 
         const response = await server.inject({
             method: 'POST',
-            url: `/api/provision-tenant/${instanceId}/retry`,
+            url: `/api/workflow/${instanceId}/retry`,
             cookies: { ores_web_session: sessionId },
             payload: {},
         });
@@ -213,7 +213,7 @@ describe('POST /api/provision-tenant/:instanceId/retry', () => {
 
         const response = await server.inject({
             method: 'POST',
-            url: `/api/provision-tenant/${instanceId}/retry`,
+            url: `/api/workflow/${instanceId}/retry`,
             cookies: { ores_web_session: sessionId },
             payload: { stepName: 'provision_party' },
         });
@@ -236,7 +236,7 @@ describe('POST /api/provision-tenant/:instanceId/retry', () => {
 
         const response = await server.inject({
             method: 'POST',
-            url: `/api/provision-tenant/${instanceId}/retry`,
+            url: `/api/workflow/${instanceId}/retry`,
             cookies: { ores_web_session: sessionId },
             payload: {},
         });
@@ -252,7 +252,7 @@ describe('POST /api/provision-tenant/:instanceId/retry', () => {
 
         const response = await server.inject({
             method: 'POST',
-            url: `/api/provision-tenant/${instanceId}/retry`,
+            url: `/api/workflow/${instanceId}/retry`,
             payload: {},
         });
 

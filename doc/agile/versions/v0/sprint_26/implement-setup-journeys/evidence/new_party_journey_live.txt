@@ -1,0 +1,191 @@
+# New party journey, walked live
+
+Environment: eager_maxwell (linux-clang-debug-make), web/BFF on 127.0.0.1:21402,
+NATS on 21405, against a database rebuilt from the models with
+`compass db recreate -y -k` and a fleet started with `compass services start`.
+
+The deployment the walk ran against was made in one command, as the shell:
+
+    bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com \
+        --tenant-admin-password Secure-Password-123 \
+        --tenant-code probe --tenant-name "Probe Plc" --tenant-hostname probe \
+        --profile empty_operational
+
+    [1/3] Creating initial admin account 'super_admin'...
+    [2/3] Logging in as 'super_admin'...
+    [3/3] Provisioning tenant 'probe' from 'empty_operational'...
+      Run started: 49a5db5d-706e-4feb-b51f-90a8e1255698
+      [1/4] publish_bundle: completed
+      [2/4] import_lei_hierarchy: completed_with_warnings
+          warn: The starting point names no legal entity, so there was nothing to import.
+      [3/4] provision_party: completed
+      [4/4] complete_provisioning: completed
+    ✓ System provisioned. Tenant 'Probe Plc'.
+
+That tenant holds no operational root party -- `empty_operational` imports no
+hierarchy -- so the walk also exercises the other branch of the placement rule:
+the party a person adds becomes the tenant's root.
+
+The browser was driven over the DevTools protocol by a throwaway script
+(`build/evidence/party_walk.py`, not committed), signed in through the BFF as
+`tenant_admin@probe`, and every screen below is what it printed.
+
+## Case 1: a party that is not one of the deployment's
+
+Step 1, the two ways to name a party, and *It is not one of them* chosen:
+
+    Find the legal entity
+    The party is a legal entity. Search the ones this deployment holds, or name one it does not.
+    A legal entity we hold
+    It is not one of them
+    Legal name
+    Continue
+
+with the header already reading `Northwind Capital PLC / No LEI`.
+
+Step 2, the short code proposed from the name a person typed:
+
+    Describe the party
+    Give it the short code this tenant will know it by.
+    Short code
+    Back / Continue
+
+Step 3, the review:
+
+    Review
+    Nothing is created until you confirm.
+    Legal name    Northwind Capital PLC
+    LEI           No LEI
+    Short code    NORCAP
+    The party's data is the tenant's standard data, which the run publishes.
+
+## Case 2: a party built from a legal entity the deployment holds
+
+Step 1, the register matched against what a person typed:
+
+    Legal entity
+    Choosing an entity names the party after it.
+    ENPROBE, s.r.o.   984500CF2EI670382198 · CZ   1 party in its hierarchy
+    Probek GbR        529900GP8WL0X41AQI95 · DE   1 party in its hierarchy
+
+and the chosen entity standing in the field's place, with *Change* beside it:
+
+    Legal entity
+    ENPROBE, s.r.o.
+    984500CF2EI670382198 · CZ
+    1 party in its hierarchy
+    Change
+
+Step 3, the review, with the entity's own LEI:
+
+    Legal name    ENPROBE, s.r.o.
+    LEI           984500CF2EI670382198
+    Short code    ENPSRO
+    The party's data is the tenant's standard data, which the run publishes.
+    The party is created inactive. The run publishes its data, activates it and joins you to it.
+
+Step 4, the run as the rail renders it, finishing:
+
+    Provisioning
+    ●  Provision the parties
+       Publishes each party's reference data, records the legal entity it was built
+       from, activates it, marks its onboarding complete and joins the caller to it.
+    Back / Continue
+
+Step 5, and the exit taken:
+
+    Next steps
+    ENPSRO is active.
+    Work in it now      Work as this party for the rest of this session.
+    Add another party   Start this journey again.
+    Done                Go back to where you started.
+    You are joined to the party, so it is one of the ones you can work in.
+
+*Work in it now* re-scoped the session, and the screen behind the journey came
+back as the new party:
+
+    Signed in
+    ACCOUNT  tenant_admin
+    TENANT   Probe Plc
+    PARTY    ENPROBE, s.r.o.
+
+## What the run left behind
+
+    select p.short_code, p.full_name, p.status, p.party_category, p.version, parent.full_name
+      from ores_refdata_parties_tbl p
+      left join ores_refdata_parties_tbl parent on parent.id = p.parent_party_id
+     where p.short_code = 'ENPSRO' and p.valid_to = ores_utility_infinity_timestamp_fn();
+
+     short_code |    full_name    | status | party_category | version | parent
+    -----------+-----------------+--------+----------------+---------+--------
+     ENPSRO     | ENPROBE, s.r.o. | Active | Operational    |       3 |
+
+    select pi.id_scheme, pi.id_value, pi.change_commentary
+      from ores_refdata_party_identifiers_tbl pi
+      join ores_refdata_parties_tbl p on p.id = pi.party_id
+     where p.short_code = 'ENPSRO' and pi.valid_to = ores_utility_infinity_timestamp_fn();
+
+     id_scheme |       id_value       |                 change_commentary
+    -----------+----------------------+-----------------------------------------------------
+     LEI       | 984500CF2EI670382198 | Recorded from the legal entity the party was built from
+
+    select a.username, p.short_code
+      from ores_iam_account_parties_tbl ap
+      join ores_iam_accounts_tbl a on a.id = ap.account_id
+      join ores_refdata_parties_tbl p on p.id = ap.party_id
+     where p.short_code = 'ENPSRO';
+
+     username     | short_code
+    --------------+------------
+     tenant_admin | ENPSRO
+
+    select s.name, s.value from ores_variability_system_settings_tbl s
+     where s.name like 'onboarding%'
+       and s.party_id = (select id from ores_refdata_parties_tbl
+                          where short_code = 'ENPSRO'
+                            and valid_to = ores_utility_infinity_timestamp_fn());
+
+     name             | value
+    ------------------+-------
+     onboarding.party | true
+
+The hand-described party, added through the same route with no LEI, ended in the
+same place and with no identifier -- which is what a party the register does not
+hold looks like:
+
+     short_code |       full_name       | status | version | identifiers
+    -----------+-----------------------+--------+---------+-------------
+     NORCAP     | Northwind Capital PLC | Active |       2 |           0
+
+## What this walk does not prove
+
+- *The accounts picker.* The prototype showed one and the built journey does not
+  carry it, because nothing writes the chosen associations: the run joins the
+  caller alone. The journey document says so under *What is missing*.
+- *A party added under a tenant that has a root.* The probe tenant holds no
+  operational root, so the walk proves the branch where the new party becomes
+  the root. The branch that places a party under an existing root is covered by
+  the BFF route's own test, not by this walk.
+- *The scripted end-to-end proof the task's last acceptance line asks for.* It is
+  still owed; this file is a manual walk, recorded.
+
+## A defect this walk found, and one it inherited
+
+The first attempt failed at the run's only step:
+
+    ✕ Create the tenant's parties
+      The party 'ENPROBE, s.r.o.' was not saved:
+
+The cause was this change's own: the run recorded the party's LEI before
+activating the party, and an identifier's insert bumps the version of the party
+it belongs to, so the activation that followed was refused as a party that had
+moved on. The party was left Active=false at version 2 with its LEI already
+written. The LEI is now recorded last, and the walk above is the run after that
+fix.
+
+The deployment this was first attempted against also had a marketdata service
+that had died on a stale schema (`column "oresmd_uri" does not exist`), which
+left the party stage waiting on a bundle step for 25 minutes and then failing
+with a timeout instead of the cause. Two captures record that: a service exits
+on one failed query, and a run whose dependency is dead reports a timeout.
+Neither is this journey's, and neither is fixed here.

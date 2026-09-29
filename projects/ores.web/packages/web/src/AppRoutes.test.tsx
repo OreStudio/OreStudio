@@ -74,6 +74,7 @@ const authenticated: SessionState = { status: 'authenticated', session };
  */
 const journey = <p>First run journey</p>;
 const newTenantJourney = <p>New tenant journey</p>;
+const newPartyJourney = <p>New party journey</p>;
 
 function render(
     path: string,
@@ -89,6 +90,7 @@ function render(
                     session={sessionState}
                     journey={journey}
                     newTenantJourney={newTenantJourney}
+                    newPartyJourney={newPartyJourney}
                     journeyInProgress={false}
                     onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                     onChooseParty={async () => undefined}
@@ -180,11 +182,26 @@ describe('the route table once the flag is clear', () => {
         expect(html).not.toContain('New tenant journey');
     });
 
+    it('offers the new party journey to a signed-in person', () => {
+        const html = render('/parties/new', ready, authenticated);
+
+        expect(html).toContain('New party journey');
+        expect(html).toContain('Sign out');
+    });
+
+    it('sends a visitor to sign in rather than to the party journey', () => {
+        const html = render('/parties/new', ready, anonymous);
+
+        expect(html).not.toContain('New party journey');
+    });
+
     it('offers the way into the journey from the home screen', () => {
         const html = render('/', ready, authenticated);
 
         expect(html).toContain('New tenant');
         expect(html).toContain('/tenants/new');
+        expect(html).toContain('New party');
+        expect(html).toContain('/parties/new');
     });
 });
 

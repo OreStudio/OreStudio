@@ -90,7 +90,9 @@ every step after the legal entity is chosen.
 * Prototype
 
 Accepted by the user on 2026-09-22. The prototype is on a throwaway branch and
-is not merged; the branch is kept as the record.
+is not merged; the branch is kept as the record. The built journey keeps its
+five steps, its two ways of naming a party and its three exits; what it does not
+carry is the accounts picker, which the prototype showed and nothing writes.
 
 - Branch :: =prototype/new-party-journey=
 - Route :: =/refdata/party/new=
@@ -127,13 +129,13 @@ accounts work in the party; the accounts themselves are created elsewhere.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Find the legal entity | Search the legal entities the deployment holds, by name or LEI | =dq.v1.lei-entities.search= | exists |
-| Find the legal entity | List the parties already in the tenant | =refdata.v1.parties.list= | exists |
 | Describe the party | List the accounts that may work in the party | =iam.v1.accounts.list= | exists |
 | Describe the party | Read the existing account-party associations | =iam.v1.account_parties.list= | exists |
-| Review | Start the provision-party workflow | =iam.v1.parties.provision= | exists |
-| Provisioning | Create the party | =refdata.v1.parties.put= | exists |
-| Provisioning | Activate the party | =refdata.v1.parties.put= | exists |
+| Review | Add the party and start its run | =iam.v1.parties.provision= | exists |
+| Review | Create the party row, under the tenant's own party | =refdata.v1.parties.put= | exists |
 | Provisioning | Publish the party's essential data | =iam.v1.parties.provision= | exists |
+| Provisioning | Record the legal entity it was built from | =refdata.v1.party_identifiers.put= | exists |
+| Provisioning | Activate the party | =refdata.v1.parties.put= | exists |
 | Provisioning | Mark the party provisioning complete | =iam.v1.parties.provision= | exists |
 | Provisioning | Join the caller to the party | =iam.v1.parties.provision= | exists |
 | Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
@@ -158,35 +160,46 @@ generated web protocol: the generator emits no =workflow= package for the
 browser, so the BFF adds a route for each and the wire client parses the reply.
 
 The party stage is one request, =iam.v1.parties.provision=. It takes a party,
-by its identifier or its exact full name, and a profile code; it resolves the
-party in the caller's own tenant, and answers at once with the id of a run that
-publishes the party's bundles, activates the party, marks its onboarding
-complete and joins the caller to it. The starting point states which bundles a
-party is published from, as the arguments of its =provision_party= step, and a
-profile that orders no party step is refused. A reference that matches more
-than one party is refused as well, because a run acts on one party.
+by its identifier or its exact full name, the starting point whose party stage
+runs, and the legal entity the party was built from; it resolves the party in
+the caller's own tenant, and answers at once with the id of a run that publishes
+the party's bundles, records that entity as the party's LEI, activates the
+party, marks its onboarding complete and joins the caller to it. The starting
+point states which bundles a party is published from, as the arguments of its
+=provision_party= step, and a profile that orders no party step is refused. A
+reference that matches more than one party is refused as well, because a run
+acts on one party.
+
+An empty starting point means the deployment's own party stage, which is the
+first profile that orders one. A tenant administrator cannot name a profile: the
+profiles are the system tenant's rows and a tenant reads only its own, so the
+service that holds both is the one that chooses. The shell's =provision party=
+therefore names none by default and the browser names none at all.
+
+The LEI travels with the run rather than being written by it. A party identifier
+is stamped with the party its writing session acts in, and the person who adds a
+party works in another one, so the run is the only client that can record it: it
+writes it with a client scoped to the party it is provisioning.
 
 Every subject in the table exists on the wire, and the shell's =provision party=
 sends =iam.v1.parties.provision= and follows the same progress read. The browser
-reaches the search, but it has no route to the request that starts a party's
-run, and no screen sends it.
+reaches the search and the request that starts a party's run through the BFF, and
+=POST /api/provision-party= is that request: it adds the party row, places it
+under the tenant's own party, and starts the run.
 
 * What is missing
 
-1. *No route of its own.* This journey is not built as a journey of its own. No
-   route renders it, the steps that find the legal entity, describe the party,
-   review it, watch the run and offer the next steps have no screen, and the BFF
-   adds no route to the request that starts a party's run. The server side the
-   journey needs exists. A task to build it is filed beside this change.
-2. *The chosen accounts are not written by the run.* The describe step picks the
-   accounts that work in the party, and the run joins the caller alone. Writing
-   the other chosen associations is =iam.v1.account_parties.put_many=, and the
+1. *The chosen accounts are not written.* The describe step would pick the
+   accounts that work in the party, and the screen does not offer the picker
+   yet, because nothing writes them: the run joins the caller alone. Writing the
+   other chosen associations is =iam.v1.account_parties.put_many=, and the
    request that provisions a party takes no account list, so no step of the
-   party's own run writes them.
-3. *No scripted end-to-end proof.* No scripted run proves this browser's path
+   party's own run writes them. A picker whose choices went nowhere would be
+   worse than no picker.
+2. *No scripted end-to-end proof.* No scripted run proves this browser's path
    the way =projects/ores.web/scripts/verify-login.ts= proves the sign-in, so
    the proof of the journey stays manual.
-4. *No completion signal the browser can read.* The engine publishes
+3. *No completion signal the browser can read.* The engine publishes
    =ores.workflow.workflow_instance_changed= on every state change, but the
    payload is an =entity_change_event= that carries =entity_ids=, and the schema
    the browser decodes reads =alpha2_codes= with every field defaulted, so the
@@ -194,6 +207,13 @@ run, and no screen sends it.
    =workflow.v1.instances.steps= and =workflow.v1.instances.retry= exist and are
    what a page follows a run with. That mismatch is owned by
    [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
+4. *A party hangs under the tenant's own party, and the person does not choose
+   where.* A party hangs under another and exactly one of a tenant's parties
+   sits at the top, so the row whose parent is unset is what a new party is
+   placed under; a tenant that has none gets the party it has just added as its
+   root. Choosing the parent, or moving a party afterwards, is the
+   [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] journey
+   and not this one.
 
 The rest of the journey is in place, and the list below is the record of what
 each part turned out to be.
@@ -212,12 +232,15 @@ each part turned out to be.
    resumes, so the human steps around it do not survive a reload. The retired
    =iam.v1.journeys.get-active= candidate is dropped.
 3. *The provision-party request is one stage.* =iam.v1.parties.provision= takes
-   a party, by its identifier or its exact full name, and a profile code,
-   resolves the party in the caller's tenant, and returns a workflow instance id
-   at once. The run publishes the bundles the starting point orders, activates
-   the party, marks its onboarding complete and joins the administrator who
-   asked to it, so the request carries the whole active, onboard and publish
-   stage.
+   a party, by its identifier or its exact full name, a starting point and the
+   entity the party was built from, resolves the party in the caller's tenant,
+   and returns a workflow instance id at once. The run publishes the bundles the
+   starting point orders, records the entity as the party's LEI, activates the
+   party, marks its onboarding complete and joins the administrator who asked to
+   it, so the request carries the whole active, onboard and publish stage. The
+   LEI is written last, because an identifier's insert bumps the version of the
+   party it belongs to and a party saved before it would then be refused as one
+   that moved on.
 4. *The party's bundles are the starting point's.* The =party_essentials= bundle
    is one of the bundles a =provision_party= step may order, as the step's own
    arguments, and every starting point that orders the kind orders it. A party's

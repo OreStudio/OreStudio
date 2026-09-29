@@ -273,6 +273,7 @@ const pt: SourceCatalogue = {
         tenant: 'Inquilino',
         party: 'Parte',
         newTenant: 'Novo inquilino',
+        newParty: 'Nova parte',
     },
 
     component: {
@@ -599,6 +600,57 @@ const pt: SourceCatalogue = {
             lead: 'A instalação está configurada e {principal} tem a sessão iniciada.',
             home: 'Ir para o início',
         },
+
+        party: {
+            noLei: 'Sem LEI',
+            find: {
+                title: 'Encontrar a entidade legal',
+                lead: 'A parte é uma entidade legal. Procure as que esta instalação detém, ou nomeie uma que ela não detém.',
+                search: 'Uma entidade legal que detemos',
+                searchHint: 'Procure por nome ou por LEI.',
+                byHand: 'Não é uma delas',
+                byHandHint:
+                    'Nomeie uma parte para a qual a instalação não detém nenhuma entidade legal.',
+                name: 'Designação legal',
+                nameHint: 'O nome pelo qual a parte está registada.',
+                lei: 'Entidade legal',
+                leiHint: 'Escolher uma entidade dá à parte o nome dela.',
+            },
+            describe: {
+                title: 'Descrever a parte',
+                lead: 'Dê-lhe o código curto pelo qual este inquilino a conhecerá.',
+                shortCode: 'Código curto',
+                shortCodeHint:
+                    'Um mnemónico único deste inquilino, proposto a partir da designação legal. Identifica a parte nos comandos e nos relatórios.',
+            },
+            review: {
+                title: 'Revisão',
+                lead: 'Nada é criado antes de confirmar.',
+                legalName: 'Designação legal',
+                lei: 'LEI',
+                shortCode: 'Código curto',
+                data: 'Os dados da parte são os dados padrão do inquilino, que a execução publica.',
+                bornInactive:
+                    'A parte é criada inativa. A execução publica os seus dados, ativa-a e liga-o a ela.',
+                create: 'Adicionar parte',
+                noRun: 'O servidor criou a parte mas não indicou nenhuma execução a seguir.',
+            },
+            provisioning: {
+                title: 'Aprovisionamento',
+                lead: 'Isto corre no servidor. Pode sair desta página e voltar.',
+            },
+            next: {
+                title: 'Passos seguintes',
+                lead: '{code} está ativa.',
+                work: 'Trabalhar nela agora',
+                workHint: 'Trabalhe como esta parte pelo resto desta sessão.',
+                another: 'Adicionar outra parte',
+                anotherHint: 'Comece este percurso de novo.',
+                done: 'Concluído',
+                doneHint: 'Volte ao ecrã de onde partiu.',
+                joined: 'Está ligado à parte, por isso é uma daquelas em que pode trabalhar.',
+            },
+        },
     },
 
     version: {
@@ -614,9 +666,9 @@ const pt: SourceCatalogue = {
         'Import the legal entities': 'Importar as entidades jurídicas',
         "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
             'Lê a entidade jurídica que o ponto de partida indica pelo seu LEI e as entidades que esta consolida, e publica-as como entidades do inquilino.',
-        "Create the tenant's parties": 'Criar as entidades do inquilino',
-        'Creates the party that represents the tenant itself, with the reference data a party needs.':
-            'Cria a entidade que representa o próprio inquilino, com os dados de referência de que uma entidade precisa.',
+        'Provision the parties': 'Aprovisionar as partes',
+        "Publishes each party's reference data, records the legal entity it was built from, activates it, marks its onboarding complete and joins the caller to it.":
+            'Publica os dados de referência de cada parte, registra a entidade legal de que foi criada, ativa-a, marca a sua integração como concluída e liga o chamador a ela.',
         'Load the staff': 'Carregar o pessoal',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Cria uma conta para cada pessoa que o ponto de partida lista, cada uma na sua própria entidade.',

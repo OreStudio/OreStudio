@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2372
+#+pr: 2373
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing. |
-| Next         | Give the bootstrap config its tenor convention (the column, its seed for every config, and the service reading it instead of the grid's qualifier), then re-key the FOMC segment onto the shapes recorded above -- the synthetic feed publishing one series per pillar, the bootstrap reading them from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
+| Next         | Read the FOMC pillars by identity: the feed keys each pillar now (see the plan's step one), so the bootstrap resolves each of its nine pillars to the series that key projects to, with the grid series as the fallback a database written before the change still holds, and then the seed drops the grid row and the config's =source_series_id= column goes with its last reader. Only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -347,6 +347,8 @@ which is the same reason the identity lookups fall back to the triple.
 | Series rows that do not | 1402: 1400 =CD-0= to =CD-25= generator rows plus the two FOMC rows | the same query, negated | =3632865c32= |
 | Production rows no projection can name | 1: the FOMC raw grid =RATES / YIELD / 'USD/SOFR-FOMC'=; the curve row now reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with its ORE identity | =marketdata_market_series_fomc_populate.sql= and a read of the live rows | =48ab31abc8= |
 | Where the bootstrap's tenor convention comes from | the source series' qualifier, through =tenor_convention_code_for()= | =grep -n "tenor_convention_code_for" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =07d9052523= |
+| Pillars the feed keys | nine per FOMC config, one series each: =IR_SWAP/RATE/<CCY>/<start>/1D= | =ores.synthetic.api.tests "a_pillar_key_names_the_instrument_the_feed_simulates"= | =ff3b5a9e2c= |
+| =ores.synthetic.api= suite, with the pillar key | 109 assertions in 30 cases | =ores.synthetic.api.tests= | =ff3b5a9e2c= |
 | Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
@@ -387,6 +389,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2373][#2373]] | [synthetic] Key every pillar as the OIS quote it simulates |
 | [[https://github.com/OreStudio/OreStudio/pull/2372][#2372]] | [agile] Write the re-key's plan |
 | [[https://github.com/OreStudio/OreStudio/pull/2370][#2370]] | [refdata,marketdata] Let the config name its tenor convention |
 | [[https://github.com/OreStudio/OreStudio/pull/2369][#2369]] | [agile] Record where the bootstrap gets its tenor convention |
@@ -441,6 +444,11 @@ via its "Verifies task" field.
 | 35 | The convention code is free text | the model | recorded | Validation belongs with the refdata convention lookups; the republish path already fails loudly on an unknown convention, and a key or a check is the refdata component's call. |
 | 36 | No case covers a config that takes the forward convention | the service tests | recorded | A second config or a fixture is the re-key unit's work; the record's limitation says the same. |
 | 37 | A generated config's default convention must exist if a test republishes one | the model's generator | recorded | No test republishes a generated config today, and the default matches the ordinary case. |
+| 38 | The currency is derived from the qualifier on every tick | =ir_curve_feed.cpp= | recorded | The substring runs once per tick beside a priced valuation and a publish; hoisting it is a one-line change the next time the feed is touched. |
+| 39 | =SPOT= is a magic string in the builder | =ir_curve_template_resolver.cpp= | recorded | The config's own spelling is =SPOT= and the resolver reads the same code; a shared constant belongs with the reader step that calls the builder from the other side. |
+| 40 | =std::format= with a chrono calendar needs C++20 chrono formatting | =ir_curve_template_resolver.cpp= | answered | The same call is already in =ir_curve_feed.cpp= for its schedule, so the toolchain's support is what the component already builds on. |
+| 41 | The new case's name does not match the file's own style | =feed_factory_tests.cpp= | recorded | The case reads as a sentence because it asserts a rule rather than a factory dispatch; renaming it is cosmetic and belongs with the next touch. |
+| 42 | Nothing tests the whole feed path, so no tick is shown landing in a per-pillar series | the feed | recorded | The reader step is where that path is exercised end to end, and the record says so in the plan. |
 
 * Result
 

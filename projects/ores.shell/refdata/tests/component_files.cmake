@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "asset_class_code_commands_tests.cpp"
+    "average_ois_convention_commands_tests.cpp"
     "book_commands_tests.cpp"
     "book_purpose_type_commands_tests.cpp"
     "book_status_commands_tests.cpp"

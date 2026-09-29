@@ -411,6 +411,29 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
+averageOISType reverse_average_ois(const refdata::domain::average_ois_convention& v) {
+    averageOISType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.SpotLag = static_cast<int64_t>(v.spot_lag);
+    static_cast<std::string&>(r.FixedTenor) = v.fixed_tenor;
+    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
+    if (v.fixed_calendar) {
+        averageOISType_FixedCalendar_t calendar;
+        static_cast<std::string&>(calendar) = *v.fixed_calendar;
+        r.FixedCalendar = calendar;
+    }
+    if (v.fixed_convention)
+        r.FixedConvention = parse_bdc(*v.fixed_convention);
+    if (v.fixed_payment_convention)
+        r.FixedPaymentConvention = parse_bdc(*v.fixed_payment_convention);
+    if (v.fixed_frequency)
+        r.FixedFrequency = parse_frequency(*v.fixed_frequency);
+    static_cast<std::string&>(r.Index) = v.index;
+    static_cast<std::string&>(r.OnTenor) = v.on_tenor;
+    static_cast<std::string&>(r.RateCutoff) = v.rate_cutoff;
+    return r;
+}
+
 fxOption reverse_fx_option(const refdata::domain::fx_option_convention& v) {
     fxOption r;
     static_cast<std::string&>(r.Id) = v.id;
@@ -925,6 +948,30 @@ refdata::domain::future_convention conventions_mapper::map_future(const futureTy
     return r;
 }
 
+refdata::domain::average_ois_convention
+conventions_mapper::map_average_ois(const averageOISType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping averaging OIS convention: " << std::string(v.Id);
+
+    refdata::domain::average_ois_convention r;
+    r.id = std::string(v.Id);
+    r.spot_lag = static_cast<int>(v.SpotLag);
+    r.fixed_tenor = std::string(v.FixedTenor);
+    r.fixed_day_count_fraction = normalize_day_counter(v.FixedDayCounter);
+    // ORE makes the first three of these required, so the binding holds them by
+    // value and every document in the corpus carries them. Only the frequency
+    // is optional, and the corpus never sets it.
+    r.fixed_calendar = std::string(v.FixedCalendar);
+    r.fixed_convention = normalize_bdc(v.FixedConvention);
+    r.fixed_payment_convention = normalize_bdc(v.FixedPaymentConvention);
+    if (v.FixedFrequency)
+        r.fixed_frequency = normalize_frequency(*v.FixedFrequency);
+    r.index = std::string(v.Index);
+    r.on_tenor = std::string(v.OnTenor);
+    r.rate_cutoff = std::string(v.RateCutoff);
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::fx_option_convention conventions_mapper::map_fx_option(const fxOption& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping FX option convention: " << std::string(v.Id);
 
@@ -1153,6 +1200,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.average_ois.reserve(v.AverageOIS.size());
+    std::ranges::transform(v.AverageOIS, std::back_inserter(r.average_ois), [](const auto& x) {
+        return map_average_ois(x);
+    });
+
     r.fx_option.reserve(v.FxOption.size());
     std::ranges::transform(v.FxOption, std::back_inserter(r.fx_option), [](const auto& x) {
         return map_fx_option(x);
@@ -1176,7 +1228,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("AverageOIS", v.AverageOIS.size());
     count_unmodelled("TenorBasisSwap", v.TenorBasisSwap.size());
     count_unmodelled("TenorBasisTwoSwap", v.TenorBasisTwoSwap.size());
     count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
@@ -1256,6 +1307,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.AverageOIS.reserve(v.average_ois.size());
+    for (const auto& x : v.average_ois)
+        r.AverageOIS.push_back(reverse_average_ois(x));
 
     r.FxOption.reserve(v.fx_option.size());
     for (const auto& x : v.fx_option)

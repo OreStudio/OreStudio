@@ -180,6 +180,38 @@ TEST_CASE("conventions_fx_option_round_trips", tags) {
     CHECK(files_with_fx_option == 36);
 }
 
+TEST_CASE("conventions_average_ois_round_trips", tags) {
+    int files_with_average_ois = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.AverageOIS.empty())
+            continue;
+
+        ++files_with_average_ois;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.average_ois.size() == document.AverageOIS.size());
+
+        for (std::size_t i = 0; i < document.AverageOIS.size(); ++i) {
+            CHECK(mapped.average_ois[i].id == std::string(document.AverageOIS[i].Id));
+            CHECK(mapped.average_ois[i].index == std::string(document.AverageOIS[i].Index));
+            CHECK(mapped.average_ois[i].spot_lag ==
+                  static_cast<int>(document.AverageOIS[i].SpotLag));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "AverageOIS");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.AverageOIS.size()) + " AverageOIS element(s), the export " +
+             std::to_string(written));
+        CHECK(written == static_cast<int>(document.AverageOIS.size()));
+    }
+
+    // Thirty-six of the seventy-two at the commit this was written at, and the
+    // seven that carried nothing else unmodelled are why it went in first.
+    CHECK(files_with_average_ois == 36);
+}
+
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
     const auto kind = conventions_kind();
     int walked = 0;
@@ -197,16 +229,44 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Twelve of the seventy-two once SwapIndex and Future were modelled, and
-    // nine before. The count is asserted so that a change in it is noticed
-    // rather than absorbed.
-    CHECK(walked == 12);
+    // Nineteen of the seventy-two once AverageOIS joined SwapIndex, Future and
+    // FxOption, twelve before it and nine before those. The count is asserted
+    // so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 19);
 }
 
 // Hidden by default, and run on demand:
 //   ores.ore.core.tests "[.][conventions]"
 // The categories below are the ones the corpus needs, ordered by how many files
 // use them. Modelling starts at the top of that list.
+// Which category, modelled next, would clear the most files outright. A file
+// round trips only when every one of its categories is modelled, so the
+// shortest path is the category that appears alone most often.
+TEST_CASE("conventions_files_cleared_by_each_category", "[.][conventions][measurement]") {
+    std::map<std::string, int> cleared_by;
+    std::map<int, int> files_by_category_count;
+    int files = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto mapped = conventions_mapper::map(load(path));
+        ++files;
+        ++files_by_category_count[static_cast<int>(mapped.unmodelled.size())];
+        if (mapped.unmodelled.size() == 1)
+            ++cleared_by[mapped.unmodelled.begin()->first];
+    }
+
+    WARN("conventions files=" + std::to_string(files));
+    for (const auto& [count, file_count] : files_by_category_count) {
+        WARN("  " + std::to_string(count) + " unmodelled category(ies) in " +
+             std::to_string(file_count) + " file(s)");
+    }
+    for (const auto& [name, file_count] : cleared_by) {
+        WARN("  " + name + " alone would clear " + std::to_string(file_count) + " file(s)");
+    }
+
+    CHECK(files == 72);
+}
+
 TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][measurement]") {
     std::map<std::string, int> files_by_category;
     std::map<std::string, int> elements_by_category;

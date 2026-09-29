@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D7E6C28D-4DD4-5CF8-9682-B19E2DFE97F9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the average_ois_conventions commands from the shell?
+#+description: Every command the average_ois_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:average_ois_conventions:
+
+This file documents the average_ois_conventions resource at the shell, one section per command. Every command is a subcommand of =average_ois_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C2378C5F-CE1C-50BD-AB00-DD58287975C4
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.list=.
+
+#+name: average_ois_conventions-list
+#+begin_src ores-shell :tangle average_ois_conventions-list.ores :exports none
+average_ois_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C80AD2D7-79E7-55B4-9099-E235FBEA4288
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.get=.
+
+#+name: average_ois_conventions-get
+#+begin_src ores-shell :tangle average_ois_conventions-get.ores :exports none
+average_ois_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 86AA3935-96CC-5CB5-8385-6903014E49FE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.get_many=.
+
+#+name: average_ois_conventions-get-many
+#+begin_src ores-shell :tangle average_ois_conventions-get-many.ores :exports none
+average_ois_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4B9FC3A0-27FB-50CD-9E53-99CD5317FF82
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions add <id> <spot_lag> <fixed_tenor> <fixed_day_count_fraction> <fixed_calendar> <fixed_convention> <fixed_payment_convention> <fixed_frequency> <index> <on_tenor> <rate_cutoff> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.put=.
+
+#+name: average_ois_conventions-add
+#+begin_src ores-shell :tangle average_ois_conventions-add.ores :exports none
+average_ois_conventions add __none__ 0 __none__ __none__ - - - - __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D8D750CB-8C2E-5A91-97C7-D514A58F48F2
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions set <id> <spot_lag> <fixed_tenor> <fixed_day_count_fraction> <fixed_calendar> <fixed_convention> <fixed_payment_convention> <fixed_frequency> <index> <on_tenor> <rate_cutoff> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.put=.
+
+#+name: average_ois_conventions-set
+#+begin_src ores-shell :tangle average_ois_conventions-set.ores :exports none
+average_ois_conventions set __none__ 0 __none__ __none__ - - - - __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2C284738-4B74-5525-9D69-C2BE74BB63EE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions put-many --count <n> <id> <spot_lag> <fixed_tenor> <fixed_day_count_fraction> <fixed_calendar> <fixed_convention> <fixed_payment_convention> <fixed_frequency> <index> <on_tenor> <rate_cutoff> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.put_many=.
+
+#+name: average_ois_conventions-put-many
+#+begin_src ores-shell :tangle average_ois_conventions-put-many.ores :exports none
+average_ois_conventions put-many --count 1 __none__ 0 __none__ __none__ - - - - __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B1F84366-3089-56A0-A978-567661F43F1B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.delete=.
+
+#+name: average_ois_conventions-delete
+#+begin_src ores-shell :tangle average_ois_conventions-delete.ores :exports none
+average_ois_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 054CD230-40EA-52BF-A836-C5574D6DAB60
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions.delete_many=.
+
+#+name: average_ois_conventions-delete-many
+#+begin_src ores-shell :tangle average_ois_conventions-delete-many.ores :exports none
+average_ois_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 2E30DDB0-9B56-5DA0-89E5-226F3D6663FD
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions_versions.list=.
+
+#+name: average_ois_conventions-versions
+#+begin_src ores-shell :tangle average_ois_conventions-versions.ores :exports none
+average_ois_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 617C0EE0-485A-5F92-8478-5FDAB2C4E7F6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+average_ois_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.average_ois_conventions_versions.get=.
+
+#+name: average_ois_conventions-version
+#+begin_src ores-shell :tangle average_ois_conventions-version.ores :exports none
+average_ois_conventions version __none__ --version 1
+#+end_src
+

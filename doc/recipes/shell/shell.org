@@ -1027,3 +1027,7 @@ tangled into the runnable script library
 * Fx Option Conventions
 
 - [[id:493D88F1-2E4F-558B-889C-A95760B9C1C3][How do I run the fx_option_conventions commands from the shell?]]
+
+* Average Ois Conventions
+
+- [[id:D7E6C28D-4DD4-5CF8-9682-B19E2DFE97F9][How do I run the average_ois_conventions commands from the shell?]]

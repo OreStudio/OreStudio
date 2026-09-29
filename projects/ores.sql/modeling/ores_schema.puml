@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T00:59:13.469701Z
+' Generated: 2026-09-29T10:33:07.339627Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -856,6 +856,41 @@ package "refdata" #FFF3E0 {
 
     note right of ores_refdata_asset_measures_tbl
     The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.
+    end note
+
+    entity ores_refdata_average_ois_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * spot_lag : integer
+        * fixed_tenor : text
+        * fixed_day_count_fraction : text
+          fixed_calendar : text
+          fixed_convention : text
+          fixed_payment_convention : text
+          fixed_frequency : text
+        * index : text
+        * on_tenor : text
+        * rate_cutoff : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_average_ois_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Averaging OIS Convention Table
+    Describes how ORE averages the floating leg of an overnight index swap over a
+    tenor, and how the fixed leg pays against it. Corresponds to the <AverageOIS>
+    element in ORE conventions.xml. The id field is the natural key (ORE <Id>
+    element).
     end note
 
     entity ores_refdata_benchmark_rates_tbl <<temporal>> #C6F0D8 {

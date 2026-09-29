@@ -1,0 +1,276 @@
+:PROPERTIES:
+:ID: CEF4B8A9-92BD-428B-A15D-916814BCC201
+:END:
+#+title: ores.refdata.average_ois_convention
+#+description: Codegen entity model for the refdata =average_ois_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for an averaging overnight index swap.
+#+entity_singular: average_ois_convention
+#+entity_plural: average_ois_conventions
+#+entity_title: Averaging OIS Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE averages the floating leg of an overnight index swap over a
+tenor, and how the fixed leg pays against it. Corresponds to the <AverageOIS>
+element in ORE conventions.xml. The id field is the natural key (ORE <Id>
+element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique averaging OIS identifier.
+
+Examples: 'EUR-AVERAGE-OIS', 'USD-SOFR-AVERAGE-OIS'.
+
+#+begin_src cpp :name generator
+std::string("EUR-AVERAGE-OIS")
+#+end_src
+
+** spot_lag
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:END:
+
+Business days from trade date to spot date.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** fixed_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Tenor the fixed leg averages over.
+
+#+begin_src cpp :name generator
+std::string("1M")
+#+end_src
+
+** fixed_day_count_fraction
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Day count fraction of the fixed leg, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** fixed_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Fixed-leg payment calendar (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** fixed_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention of the fixed leg.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** fixed_payment_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention of the fixed leg's payments.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** fixed_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Payment frequency of the fixed leg.
+
+#+begin_src cpp :name generator
+std::string("Annual")
+#+end_src
+
+** index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Overnight index the floating leg compounds.
+
+#+begin_src cpp :name generator
+std::string("EUR-EONIA")
+#+end_src
+
+** on_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Tenor the floating leg resets on.
+
+#+begin_src cpp :name generator
+std::string("1M")
+#+end_src
+
+** rate_cutoff
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business days before the period end at which the compounded rate is fixed.
+
+#+begin_src cpp :name generator
+std::string("0")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_average_ois_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: average_ois_convention
+:entity_plural_short:   average_ois_conventions
+:entity_singular_words: averaging OIS convention
+:entity_plural_words:   averaging OIS conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: aoc
+:END:
+
+** Table display
+
+| column                   | header          |
+|--------------------------+-----------------|
+| id                       | Id              |
+| fixed_tenor              | Fixed Tenor     |
+| index                    | Index           |
+| modified_by              | Modified By     |
+| version                  | Version         |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           average_ois_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   average_ois_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter averaging OIS id |
+| spot_lag | Spot Lag | spotLagEdit | integer | true | true | e.g. 2 |
+| fixed_tenor | Fixed Tenor | fixedTenorEdit | line_edit | true | true | e.g. 1M |
+| fixed_day_count_fraction | Fixed DCF | fixedDayCountFractionEdit | line_edit | true | true | e.g. ACT/360 |
+| fixed_calendar | Fixed Calendar | fixedCalendarEdit | line_edit |  |  | e.g. TARGET |
+| fixed_convention | Fixed Convention | fixedConventionEdit | line_edit |  |  | e.g. ModifiedFollowing |
+| fixed_payment_convention | Fixed Payment Convention | fixedPaymentConventionEdit | line_edit |  |  | e.g. ModifiedFollowing |
+| fixed_frequency | Fixed Frequency | fixedFrequencyEdit | line_edit |  |  | e.g. Annual |
+| index | Index | indexEdit | line_edit | true | true | e.g. EUR-EONIA |
+| on_tenor | On Tenor | onTenorEdit | line_edit | true | true | e.g. 1M |
+| rate_cutoff | Rate Cutoff | rateCutoffEdit | line_edit | true | true | e.g. 0 |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 140 |
+| SpotLag | spot_lag | Spot Lag | int | 100 |
+| FixedTenor | fixed_tenor | Fixed Tenor | string | 140 |
+| FixedDayCountFraction | fixed_day_count_fraction | Fixed DCF | string | 140 |
+| FixedCalendar | fixed_calendar | Fixed Calendar | string | 140 |
+| FixedConvention | fixed_convention | Fixed Convention | string | 140 |
+| FixedPaymentConvention | fixed_payment_convention | Fixed Payment Convention | string | 140 |
+| FixedFrequency | fixed_frequency | Fixed Frequency | string | 140 |
+| Index | index | Index | string | 140 |
+| OnTenor | on_tenor | On Tenor | string | 140 |
+| RateCutoff | rate_cutoff | Rate Cutoff | string | 140 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

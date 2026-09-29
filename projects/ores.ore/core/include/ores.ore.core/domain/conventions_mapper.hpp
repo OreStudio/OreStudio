@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
@@ -76,6 +77,7 @@ struct mapped_fx {
  */
 struct mapped_conventions {
     std::vector<refdata::domain::zero_convention> zero;
+    std::vector<refdata::domain::average_ois_convention> average_ois;
     std::vector<refdata::domain::deposit_convention> deposit;
     std::vector<refdata::domain::swap_convention> swap;
     std::vector<refdata::domain::swap_index_convention> swap_index;
@@ -144,6 +146,8 @@ public:
     static refdata::domain::future_convention map_future(const futureType& v);
 
     static refdata::domain::fx_option_convention map_fx_option(const fxOption& v);
+
+    static refdata::domain::average_ois_convention map_average_ois(const averageOISType& v);
 
     static refdata::domain::ois_convention map_ois(const oisType& v);
 

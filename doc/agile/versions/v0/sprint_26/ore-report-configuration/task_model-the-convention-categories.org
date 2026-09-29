@@ -57,15 +57,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 14 at the start, 12 after SwapIndex and Future | =ores.ore.core.tests "[.][conventions]" -s= | =70fc69007d= |
-| Files carrying an unmodelled category | 63 at the start, 60 after the two | the same | =70fc69007d= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 12 after the two | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =70fc69007d= |
+| Categories the mapper does not model | 16 at the start, 12 after four | =ores.ore.core.tests "[.][conventions]" -s= | =8632aaf543= |
+| Files carrying an unmodelled category | 63 at the start, 53 after four | the same | =8632aaf543= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 19 after four | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =8632aaf543= |
+| Files a single category would clear, before AverageOIS | AverageOIS 7, CrossCurrencyBasis 3, and one each for CommodityFuture, InflationSwap and TenorBasisTwoSwap | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =8632aaf543= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
 
 - =SwapIndex= is modelled: three fields, and it appears in forty-seven files.
   Its case asserts 1451 times over that corpus.
+- =AverageOIS= is modelled: eleven fields across thirty-six files. It went in
+  before the cheaper categories because it is the one that clears files: seven of
+  the thirteen files with exactly one unmodelled category name it, so modelling
+  it took the count of files that round trip outright from twelve to nineteen.
+  The corpus makes three of its fields required and never sets its frequency, so
+  the mapper reads the three unconditionally and the frequency only when present.
+- =FxOption= is modelled: nine text fields across thirty-six files.
 - =Future= is modelled: six fields, and it appears in thirty-nine files. Three of
   those carried no other unmodelled category, so the count of files that round
   trip outright went from nine to twelve. Its two enumerations are stored in

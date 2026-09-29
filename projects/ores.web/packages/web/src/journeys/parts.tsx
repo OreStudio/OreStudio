@@ -31,7 +31,7 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { profileLogo } from '../assets/profiles.js';
-import { codeFromName, emailFromPrincipal, hostnameFromName } from './derive.js';
+import { codeAsTyped, codeFromName, emailFromPrincipal, hostnameFromName } from './derive.js';
 import { LegalEntitySearch } from './LegalEntitySearch.js';
 import { Button, Field, Input, Notice, Select, cx } from '../ui/Primitives.js';
 import { NewPasswordField } from '../ui/PasswordField.js';
@@ -310,7 +310,7 @@ export function TenantForm({
                 <Field label={t('journey.details.code')} hint={t('journey.details.codeHint')}>
                     <Input
                         value={details.code}
-                        onChange={(event) => set('code', event.target.value)}
+                        onChange={(event) => set('code', codeAsTyped(event.target.value))}
                     />
                 </Field>
                 <Field label={t('journey.details.hostname')} className="sm:col-span-2">

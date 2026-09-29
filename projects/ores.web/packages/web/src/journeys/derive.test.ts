@@ -27,6 +27,7 @@ import {
     hostnameFromCode,
     hostnameFromName,
     isTenantCode,
+    codeAsTyped,
 } from './derive.js';
 
 /**
@@ -102,6 +103,20 @@ describe('the hostname and the address a tenant proposes', () => {
         expect(hostnameFromName('  Acme  Corporation  ')).toBe('acmecorporation.com');
         expect(hostnameFromName('123')).toBe('123.com');
         expect(hostnameFromName('---')).toBe('');
+    });
+
+    it('shapes a code to what the server accepts as somebody types it', () => {
+        expect(codeAsTyped('Barclays PLC')).toBe('barclaysplc');
+        expect(codeAsTyped('barclays-bank')).toBe('barclaysbank');
+        expect(codeAsTyped('barclays_bank_2')).toBe('barclays_bank_2');
+        // A code starts with a letter, so leading digits and underscores go.
+        expect(codeAsTyped('2barclays')).toBe('barclays');
+        expect(codeAsTyped('__barclays')).toBe('barclays');
+        expect(codeAsTyped('')).toBe('');
+        expect(codeAsTyped('123')).toBe('');
+        // Nothing the server would refuse survives, including its length.
+        expect(codeAsTyped('a'.repeat(80)).length).toBe(50);
+        expect(isTenantCode(codeAsTyped('Émile & Co. (2)'))).toBe(true);
     });
 
     it('addresses the administrator at the tenant it administers', () => {

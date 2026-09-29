@@ -120,6 +120,14 @@ synthetic generator produced codes like =CD_tenant-3=, and the test harness's
 suite tenant carried the suite's dots. See
 [[file:evidence/tenant_shape_rule.txt][the evidence file]].
 
+*The field applies the shape while the person types.* The code's shape is the
+server's, so the field applies it rather than judging it afterwards: the value
+is lowercased as it is typed, everything outside lowercase letters, digits and
+underscores is dropped, a leading digit or underscore goes because a code starts
+with a letter, and it stops at the length the server accepts. The hint states
+the same shape, so a screen never offers a value the server will refuse and
+somebody never learns the rule from a refusal.
+
 *Nothing to import is a step that says so.* The manual card declares the legal
 entity as optional, and the import step threw when a run supplied none, which
 stopped a run whose card promises a tenant built from the party it creates for

@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/split-bond-security-from-trade
-#+pr: 2386
+#+pr: 2404
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -458,6 +458,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2404][#2404]] | [agile] Record the bond split as merged |
 | [[https://github.com/OreStudio/OreStudio/pull/2386][#2386]] | [trading] Split the bond security from the trade |
 
 * Review

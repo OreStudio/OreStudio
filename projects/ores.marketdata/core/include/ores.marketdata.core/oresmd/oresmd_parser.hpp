@@ -65,6 +65,20 @@ public:
     to_uri(const domain::market_data_identifier& identifier);
 
     /**
+     * @brief Serialises @p identifier as the series it belongs to rather than as the
+     * datum it is: the same URI with the point, and a volatility surface, dropped.
+     *
+     * A series is what a market_series row holds, and its points are the observation
+     * rows beneath it (see the market_series model's oresmd_uri column). A datum's key
+     * carries its own point -- IR_SWAP/RATE/USD/2D/1D/10Y names the 10Y point of the
+     * USD swap series -- so projecting the datum would put one of the series' points
+     * into the series' own identity, and two databases built from the same files in a
+     * different order would disagree about the identity of one series.
+     */
+    [[nodiscard]] static domain::oresmd_uri
+    to_series_uri(const domain::market_data_identifier& identifier);
+
+    /**
      * @brief Serialises @p identifier, matching its tenor and point values against
      * @p canonical and rejecting unknown spellings with oresmd_exception.
      *

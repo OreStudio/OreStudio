@@ -170,7 +170,10 @@ canonical_key(const std::string& key,
     named_key result;
     result.decomposition = registry.decompose(*canonical);
     result.canonical = std::move(*canonical);
-    result.uri = core::oresmd_parser::to_uri(*identifier).value;
+    // The file's key names one datum, and the series is the datum's identity with
+    // its point dropped: the series is what the row above holds, and its points are
+    // the observations beneath it.
+    result.uri = core::oresmd_parser::to_series_uri(*identifier).value;
     // Only asked when there is a difference to explain, so the second projection
     // costs nothing on the keys that already read back as they arrived.
     result.fx_pair_reversed =

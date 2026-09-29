@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2361
+#+pr: 2362
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -28,7 +28,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
+| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | The re-keying unit's own first step: the roles the two configs give the FOMC instruments must be reconciled before a key can be derived from a pillar. Nothing outside the task holds it up. |
 | Next         | Reconcile the two role vocabularies, then re-key the FOMC segment: the synthetic feed publishes the grid under the instruments' ORE keys, the bootstrap reads them from its own pillars, and the seed and its tests follow. Then the not-null and unique constraints, then the deletion against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
@@ -100,6 +100,19 @@ generated shell command. So the binding's identity arrives with the unit that
 replaces =ore_key=, where the same code that supplies the key today supplies the URI;
 until then the column would be null in every row, which is worse than absent. The
 natural key stays =ore_key= and =source_name= meanwhile.
+
+**The identity the writers derived named a datum, not a series.** The column sits on
+the series row, and the value came from a key that names one datum: =IR_SWAP/RATE/
+USD/0D/1D/5Y= is the 5Y point of the =USD/0D/1D= series. The import projected the
+file's whole key, so a series row's identity carried whichever point arrived first,
+and two databases built from the same files in a different order would disagree about
+the identity of one series. The ingest loop projected the triple alone, which names no
+class whose key is longer than the triple, so a swap, curve or future series got no
+identity at all from a live tick. =oresmd_parser::to_series_uri()= projects the
+identifier with its point, and a volatility surface with it, dropped; both writers
+call it, and the ingest loop builds the datum's full key -- the triple plus the tick's
+point -- before falling back to the triple. No row changes shape: the series and its
+points were already separate rows.
 
 **The deletion needs no backfill, and the fallback is what says so.** The plan
 records a hard cutover with no backfill, which only works because this schema is
@@ -210,6 +223,8 @@ plan itself stays — it is the historical record of what we did.)
 | Production rows no projection can name | 2: =RATES / YIELD / 'USD/SOFR-FOMC'= and =YieldCurve / DISCOUNT / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =3632865c32= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
+| A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
+| =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -240,6 +255,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2362][#2362]] | [marketdata,codegen] Name a series, not one of its points |
 | [[https://github.com/OreStudio/OreStudio/pull/2361][#2361]] | [agile] Decide the FOMC segment's identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2359][#2359]] | [marketdata,agile] Settle the cutover's review record |
 | [[https://github.com/OreStudio/OreStudio/pull/2358][#2358]] | [marketdata] Write the market series' oresmd identity |
@@ -258,6 +274,11 @@ via its "Verifies task" field.
 | 8 | The census row cites =664cae095d= while the review rows cite =1cfba6cc49= and =d0d56cfc4e=, and the reviewer could not resolve them | the measurements and review tables | answered | All three resolve. =664cae095d= is the tip of the branch that merged as =0989e6f243=, and =1cfba6cc49= is on the trunk; =d0d56cfc4e= is the formatting commit on this branch, which the merge brings in. |
 | 9 | =#+pr:= names 2359 while =#+branch:= still names the branch of #2358 | this task | answered | The task spans two units and each has its own branch, so the field can only name one; it keeps the branch its first unit was built on, and the =* PRs= table carries both, newest first. |
 | 10 | The row about the model's doc sentence cannot be checked from this diff | the market series model | answered | The model is in the merged tree rather than in this diff. The sentence it names is the column's description, which qualifies "every row the corpus import writes" in the same breath. |
+| 11 | The ingest loop's key building is untested, so the format it builds must match the grammar for every class with a point | =feed_ingest_loop.cpp= | recorded, no change | The projection cases now carry both shapes the loop builds -- a six-segment swap key and a six-segment vol key -- and the corpus coverage test already names every per-class key the corpus carries. A helper would move four lines into one caller and would not exercise the loop, which has no harness; the loop's construction is recorded as a limit of the unit. |
+| 12 | Dropping the point and the surface may merge series that should stay apart | =oresmd_parser.cpp= | answered, pinned | The series row keeps the underlying and the point keeps the coordinates: the live table's CHF swaption series carries =10Y/10Y/ATM= as one of its points, and =Lufthansa/EUR= carries =10Y/11.47=. So dropping the surface merges nothing the registry keeps apart, and the case now pins that two swaption strikes project to one surface identity with no point in it. |
+| 13 | Rows the import wrote earlier hold a datum identity, which the series lookup will not find | =import_service.cpp= | answered | The import asks by identity and falls back to the triple, the same order the ingest loop uses, so an older row is still reachable; it keeps the identity it has. The schema is applied by recreation, so a rebuilt database holds no such row, and a backfill is a recorded prerequisite of the not-null unit rather than of this one. |
+| 14 | The import case's qualifier assertion depends on the first point | =service_import_service_tests.cpp= | answered | The qualifier is the registry's decomposition of the canonical key, and the unit changes only the identity the series stores. The assertion pins that both points land in one row under the series' own qualifier, which is what the case is for. |
+| 15 | The key is concatenated on every tick | =feed_ingest_loop.cpp= | recorded, no change | Negligible beside the database round trips the same function makes, as the reviewer notes. |
 
 * Result
 
@@ -277,13 +298,22 @@ from each space and reads the series back by its identity and by its triple, bot
 agreeing. Component drift is clean for =marketdata= at all eight addresses,
 including the entity that gained the column.
 
+**A second unit, on the same column, made the identity name a series rather than a
+datum.** The import projected the file's whole key and the ingest loop projected the
+triple alone, so a series' identity carried whichever of its points arrived first and
+a swap series got none from a live tick at all. =to_series_uri()= projects the
+identifier with its point dropped, both writers call it, and the ingest loop builds
+the datum's full key before falling back to the triple. Measured on the rebuilt tree:
+1798 assertions in 402 cases.
+
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:
 
 - the =feed_binding= column cannot be written, because its only writer is a generated
   service with no derivation hook and a model's generator block feeds test data;
 - the column cannot be made =not null= yet, because the FOMC bootstrap seeds a series
-  under the synthetic pipeline's own vocabulary, which no projection can name;
+  under the synthetic pipeline's own vocabulary, which no projection can name -- the
+  replacement is the instruments' own ORE keys, decided above;
 - =marketdata= is one modelling pass short of =COMPONENTS_UNDER_TEST=, because seven
   hand-written protocol headers carry no TypeScript twin and a twin is generated from
   an operation model. Listing the component was tried and reverted, and the modelling

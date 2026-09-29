@@ -1636,3 +1636,38 @@ TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", t
         CHECK_FALSE(oresmd_projections::is_scalar(id));
     }
 }
+
+TEST_CASE("a_keys_points_project_to_one_series_identity", tags) {
+    // A series is what the series row holds and its points are the observation rows
+    // beneath it. The file's key names one datum, so its point is the datum's own
+    // coordinate: the series' identity is the datum's identity with the point
+    // dropped, and the two points below are one series rather than two.
+    const auto five = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/5Y");
+    const auto ten = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/10Y");
+    REQUIRE(five);
+    REQUIRE(ten);
+
+    const auto five_series = oresmd_parser::to_series_uri(*five).value;
+    CHECK(five_series == oresmd_parser::to_series_uri(*ten).value);
+    CHECK(five_series == "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+
+    // The datum's own identity keeps its point, so the two keys differ as data.
+    CHECK(oresmd_parser::to_uri(*five).value != oresmd_parser::to_uri(*ten).value);
+
+    // The series identity is a URI this grammar reads back, which is what a row
+    // found by it needs.
+    CHECK(oresmd_parser::to_uri(oresmd_parser::parse(oresmd_uri{five_series})).value ==
+          five_series);
+
+    // A volatility surface is one series per underlying, and the coordinates it is
+    // sampled at are its points, so dropping them merges no surface with another:
+    // the corpus carries one CHF swaption series whose points are expiry/tenor/strike.
+    const auto atm = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
+    const auto strike = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/0.02");
+    REQUIRE(atm);
+    REQUIRE(strike);
+    const auto surface = oresmd_parser::to_series_uri(*atm).value;
+    CHECK(surface == oresmd_parser::to_series_uri(*strike).value);
+    CHECK(surface.find("point=") == std::string::npos);
+    CHECK(oresmd_parser::to_uri(*atm).value != oresmd_parser::to_uri(*strike).value);
+}

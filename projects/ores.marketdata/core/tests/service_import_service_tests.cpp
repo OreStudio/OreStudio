@@ -331,3 +331,32 @@ TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
     CHECK(by_identity.front().qualifier == "EUR/USD");
     CHECK(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD").size() == 1);
 }
+
+TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A file's key names one datum, and the payload below carries two points of one
+    // swap series. The series' identity drops the point, so the two points reach one
+    // row under the instrument's identity rather than two rows under the points.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 IR_SWAP/RATE/USD/0D/1D/5Y 0.0125\n"
+                              "20160205 IR_SWAP/RATE/USD/0D/1D/10Y 0.0150\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 2);
+    // Both points land in one series, which is what one identity buys.
+    CHECK(resp.series_count == 1);
+
+    const auto by_identity = series_repo.read_latest_by_uri(
+        h.context(), "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+    REQUIRE(by_identity.size() == 1);
+    CHECK(by_identity.front().qualifier == "USD/0D/1D");
+}

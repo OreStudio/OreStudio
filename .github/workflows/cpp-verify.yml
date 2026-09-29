@@ -102,21 +102,12 @@ jobs:
           version: "19"
           arch: x64
 
-      - name: Restore sccache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{ inputs.preset }}
-          restore-keys: |
-            sccache-${{ inputs.preset }}-
-
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.24
         with:
           variant: sccache
           key: ${{ inputs.preset }}
           max-size: 2500M
-          save: false
 
       - name: Install dev packages
         run: ./projects/ores.compass/compass.sh env install-packages
@@ -230,9 +221,3 @@ jobs:
         if: always()
         run: sccache --show-stats || true
 
-      - name: Save sccache
-        if: ${{ always() }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-verify-${{ inputs.preset }}

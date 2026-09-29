@@ -174,6 +174,54 @@ inline bool auth_is_party_onboarding_complete(const ores::database::context& ctx
     return false;
 }
 
+/**
+ * @brief The deployment's answer to a registration, given its two flags.
+ *
+ * Nothing when the door is open, and the code and the sentence when it is shut.
+ * Split from the read so the decision can be tested without a database, and so
+ * the handler asks in one place.
+ */
+inline std::optional<std::pair<std::string, std::string>>
+auth_registration_refusal(bool signups_enabled, bool authorization_required) {
+    if (!signups_enabled) {
+        return std::make_pair(std::string("signup_disabled"),
+                              std::string("User registration is currently disabled."));
+    }
+    if (authorization_required) {
+        return std::make_pair(
+            std::string("signup_requires_authorization"),
+            std::string("This deployment approves new accounts by hand, and the approval step "
+                        "does not exist yet. Ask an administrator to create your account."));
+    }
+    return std::nullopt;
+}
+
+/**
+ * @brief Reads the deployment's registration flags and answers with the decision.
+ *
+ * The switch is the deployment's answer rather than a tenant's, so it is read at
+ * system scope. A read that fails closes the door: a deployment that cannot say
+ * whether it accepts registrations does not accept them.
+ */
+inline std::optional<std::pair<std::string, std::string>>
+auth_registration_refusal(const ores::database::context& ctx) {
+    try {
+        variability::service::system_settings_service flags(
+            ctx, database::service::tenant_context::system_tenant_id);
+        flags.refresh();
+        return auth_registration_refusal(flags.is_user_signups_enabled(),
+                                         flags.is_signup_requires_authorization_enabled());
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), error)
+            << "Failed to read the registration flags, closing the door: " << e.what();
+        return std::make_pair(
+            std::string("signup_disabled"),
+            std::string("The deployment could not say whether it accepts registrations, so it "
+                        "does not."));
+    }
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -226,6 +274,28 @@ public:
             BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
+
+        /*
+         * The deployment's gate, read before anything is created. A deployment
+         * that has turned self-registration off refuses here, over NATS and over
+         * the HTTP gateway alike, and the refusal carries the code a screen
+         * branches on.
+         */
+        if (const auto refusal = auth_registration_refusal(ctx_)) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Signup refused for " << req->principal << ": " << refusal->first;
+            record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
+                ev_repo.record_signup_failure(
+                    std::chrono::system_clock::now(), "", req->principal, refusal->second);
+            });
+            reply(nats_,
+                  msg,
+                  signup_response{.success = false,
+                                  .message = refusal->second,
+                                  .error_code = refusal->first});
+            return;
+        }
+
         try {
             service::account_operations_service acct_svc(ctx_);
             auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
@@ -248,7 +318,11 @@ public:
                 ev_repo.record_signup_failure(
                     std::chrono::system_clock::now(), "", req->principal, e.what());
             });
-            reply(nats_, msg, signup_response{.success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  signup_response{.success = false,
+                                  .message = e.what(),
+                                  .error_code = "invalid_request"});
         }
     }
 

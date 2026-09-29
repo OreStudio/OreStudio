@@ -113,7 +113,7 @@ public:
      *
      * When @p party_id is non-empty the scan is restricted to that party's
      * series. Without it the first id-ordered match wins, which is arbitrary
-     * when the same natural key exists for several parties (e.g. FX spot
+     * when the same decomposition exists for several parties (e.g. FX spot
      * series are materialised per party).
      *
      * @return The matching series, std::nullopt if none found, or an error.

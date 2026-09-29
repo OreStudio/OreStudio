@@ -66,8 +66,9 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
                ", date=" + cfg.vintage_date + ", point_id=SPOT.";
     };
 
-    // The series is found by the identity its key projects to, which is the same
-    // projection the tick's key goes through in the ingest loop.
+    // The series is found by the identity its key projects to: the projection the
+    // marketdata service's ingest loop applies to a tick's key, so the vintage read
+    // and the tick that follows it name one series.
     const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(cfg.ore_key);
     if (!identifier)
         throw vintage_data_missing_error("oresmd names no series for ORE key '" + cfg.ore_key +

@@ -28,7 +28,6 @@
 #include "ores.refdata.core/repository/tenor_repository.hpp"
 #include <algorithm>
 #include <cctype>
-#include <format>
 #include <stdexcept>
 
 namespace ores::synthetic::feed {
@@ -135,24 +134,6 @@ std::string ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generatio
 std::string ir_curve_tenor_convention_code(const std::string& qualifier) {
     return qualifier.ends_with("-FOMC") ? std::string("RATES_SPOT_FOMC") :
                                           std::string("RATES_SPOT_FORWARD");
-}
-
-pillar_quote_key make_pillar_quote_key(const std::string& ccy,
-                                       const std::string& start_tenor_code,
-                                       std::chrono::year_month_day start_date,
-                                       std::chrono::year_month_day end_date) {
-    pillar_quote_key key;
-    key.series_type = "IR_SWAP";
-    key.metric = "RATE";
-    // The start slot holds the spot lag for a pillar that starts at spot and the
-    // date it starts on otherwise; 1D is the overnight index every dated OIS quote
-    // in the corpus carries, and the end date is the point.
-    key.qualifier =
-        ccy + "/" +
-        (start_tenor_code == "SPOT" ? std::string("0D") : std::format("{:%Y%m%d}", start_date)) +
-        "/1D";
-    key.point = std::format("{:%Y%m%d}", end_date);
-    return key;
 }
 
 std::vector<ir_curve_resolved_entry>

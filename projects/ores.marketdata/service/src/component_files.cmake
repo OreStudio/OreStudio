@@ -27,6 +27,7 @@ set(files
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
+    "curve_pillar_reader.cpp"
     "curve_republish_resolver.cpp"
     "main.cpp"
     "messaging/feed_binding_event_registrar.cpp"

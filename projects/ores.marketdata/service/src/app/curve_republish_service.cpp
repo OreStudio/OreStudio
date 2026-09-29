@@ -18,11 +18,13 @@
  *
  */
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
@@ -39,6 +41,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
+#include <optional>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -91,17 +94,6 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
         refctx.schedule_dates = fomc_meeting_dates(ctx);
 
     return refctx;
-}
-
-std::unordered_map<std::string, double>
-read_raw_rates(ores::database::context ctx,
-               const boost::uuids::uuid& source_series_id,
-               std::chrono::system_clock::time_point as_of) {
-    repository::market_observations_repository obs_repo;
-    std::unordered_map<std::string, double> out;
-    for (const auto& obs : obs_repo.read_as_of(ctx, source_series_id, as_of))
-        out.emplace(obs.point_id, std::stod(obs.value));
-    return out;
 }
 
 std::vector<ores::analytics::quant::service::bootstrapped_point>
@@ -176,24 +168,29 @@ void ensure_output_series_stamped(ores::database::context ctx,
     series_repo.write(ctx, s);
 }
 
-} // namespace
+// One republish's whole input and output: the config, the curve it bootstraps, and
+// the series its quotes were read from. republish() needs the last of those for the
+// lineage and compute() needs only the curve, so both call this rather than reading
+// the pillars twice.
+struct curve_computation final {
+    ores::refdata::domain::ir_curve_bootstrap_config config;
+    std::vector<ores::analytics::quant::service::bootstrapped_point> points;
+    std::vector<std::string> source_series_ids;
+};
 
-std::vector<ores::analytics::quant::service::bootstrapped_point>
-curve_republish_service::compute(context ctx,
-                                 const boost::uuids::uuid& bootstrap_config_id,
-                                 std::chrono::system_clock::time_point as_of) {
+curve_computation compute_curve(ores::database::context ctx,
+                                const boost::uuids::uuid& bootstrap_config_id,
+                                std::chrono::system_clock::time_point as_of) {
     namespace quant = ores::analytics::quant::service;
-
-    BOOST_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
-                              << as_of;
 
     const auto config = read_config(ctx, bootstrap_config_id);
     const auto pillars = read_pillars(ctx, bootstrap_config_id);
     const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
     const auto refctx = build_refdata_context(
         ctx, std::chrono::year_month_day{horizon}, config.tenor_convention_code);
-    const auto raw_rates = read_raw_rates(ctx, config.source_series_id, as_of);
-    const auto bootstrap_pillars = resolve_bootstrap_pillars(pillars, refctx, raw_rates);
+    const auto raw = read_pillar_rates(ctx, config, pillars, refctx, as_of);
+    const auto bootstrap_pillars =
+        resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
 
     const auto day_count_convention =
         quant::parse_day_count_convention_code(config.day_count_convention);
@@ -201,17 +198,55 @@ curve_republish_service::compute(context ctx,
         quant::parse_interpolation_method_code(config.interpolation_method);
 
     std::vector<quant::bootstrapped_point> discount_curve;
+    std::optional<ores::refdata::domain::ir_curve_bootstrap_config> discount_config;
     const bool is_projection = config.curve_family_role == "PROJECTION";
     if (is_projection) {
-        const auto discount_config = read_config(ctx, config.discount_curve_config_id);
-        discount_curve = read_discount_curve(ctx, discount_config.output_series_id, as_of, refctx);
+        discount_config = read_config(ctx, config.discount_curve_config_id);
+        discount_curve = read_discount_curve(ctx, discount_config->output_series_id, as_of, refctx);
     }
 
-    return quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
-                                                    bootstrap_pillars,
-                                                    day_count_convention,
-                                                    interpolation_method,
-                                                    is_projection ? &discount_curve : nullptr);
+    curve_computation out;
+    out.config = config;
+    out.source_series_ids = raw.series_ids;
+    if (discount_config)
+        out.source_series_ids.push_back(boost::uuids::to_string(discount_config->output_series_id));
+    // A pillar read from the grid names the same series as its neighbours, and a
+    // provenance list that repeats one id says less than one that names it once.
+    std::vector<std::string> distinct;
+    for (const auto& id : out.source_series_ids)
+        if (std::find(distinct.begin(), distinct.end(), id) == distinct.end())
+            distinct.push_back(id);
+    out.source_series_ids = std::move(distinct);
+
+    out.points =
+        quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
+                                                 bootstrap_pillars,
+                                                 day_count_convention,
+                                                 interpolation_method,
+                                                 is_projection ? &discount_curve : nullptr);
+    return out;
+}
+
+std::string source_series_ids_json(const std::vector<std::string>& ids) {
+    std::string out = "[";
+    for (std::size_t i = 0; i < ids.size(); ++i) {
+        if (i > 0)
+            out += ",";
+        out += "\"" + ids[i] + "\"";
+    }
+    return out + "]";
+}
+
+} // namespace
+
+std::vector<ores::analytics::quant::service::bootstrapped_point>
+curve_republish_service::compute(context ctx,
+                                 const boost::uuids::uuid& bootstrap_config_id,
+                                 std::chrono::system_clock::time_point as_of) {
+    BOOST_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
+                              << as_of;
+
+    return compute_curve(ctx, bootstrap_config_id, as_of).points;
 }
 
 void curve_republish_service::republish(context ctx,
@@ -220,17 +255,13 @@ void curve_republish_service::republish(context ctx,
     BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
                               << " as of " << as_of;
 
-    const auto bootstrapped = compute(ctx, bootstrap_config_id, as_of);
-    const auto config = read_config(ctx, bootstrap_config_id);
-    const bool is_projection = config.curve_family_role == "PROJECTION";
+    const auto computed = compute_curve(ctx, bootstrap_config_id, as_of);
+    const auto& config = computed.config;
+    const auto& bootstrapped = computed.points;
 
     ensure_output_series_stamped(ctx, config);
 
-    const std::string source_series_ids =
-        is_projection ? std::format("[\"{}\",\"{}\"]",
-                                    boost::uuids::to_string(config.source_series_id),
-                                    boost::uuids::to_string(config.discount_curve_config_id)) :
-                        std::format("[\"{}\"]", boost::uuids::to_string(config.source_series_id));
+    const std::string source_series_ids = source_series_ids_json(computed.source_series_ids);
 
     boost::uuids::random_generator uuid_gen;
     std::vector<domain::market_observation> observations;

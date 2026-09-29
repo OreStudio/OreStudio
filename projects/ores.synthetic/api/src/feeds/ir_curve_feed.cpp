@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -127,8 +128,8 @@ void ir_curve_feed::start() {
                 // dates, so the series the ingest loop writes carries the
                 // instrument's identity rather than the pipeline's own vocabulary.
                 const auto ccy = qualifier_.substr(0, qualifier_.find('/'));
-                const auto key =
-                    feed::make_pillar_quote_key(ccy, e.start_tenor_code, e.start_date, e.end_date);
+                const auto key = ores::marketdata::core::make_pillar_quote_key(
+                    ccy, e.start_tenor_code, e.start_date, e.end_date);
                 tick.series_type = key.series_type;
                 tick.metric = key.metric;
                 tick.qualifier = key.qualifier;

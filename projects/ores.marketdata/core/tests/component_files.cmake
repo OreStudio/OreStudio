@@ -27,6 +27,7 @@ set(files
     "oresmd_oresmd_parser_tests.cpp"
     "oresmd_oresmd_projections_tests.cpp"
     "oresmd_oresmd_resolver_tests.cpp"
+    "oresmd_pillar_quote_key_tests.cpp"
     "repository_market_fixings_repository_tests.cpp"
     "repository_market_observations_repository_tests.cpp"
     "repository_market_series_repository_tests.cpp"

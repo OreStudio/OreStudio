@@ -1449,4 +1449,37 @@ TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags
               oresmd_parser::to_series_uri(*second).value);
     }
 }
+
+TEST_CASE("the_fomc_segments_shapes_name_their_series", tags) {
+    // The FOMC segment's raw grid is a set of meeting-dated OIS quotes, and the record
+    // decides their spelling: an ORE swap whose start slot holds 0D for the pillar that
+    // starts at spot and a meeting date for the rest, the overnight index tenor beside
+    // it, and the end date last. The seed and the feed will write these, so the grammar
+    // is pinned here before either does: a pillar is one series, two pillars are two,
+    // and the curve keeps ORE's discount shape.
+    const auto spot = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/20260128");
+    const auto first = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/20260128/1D/20260319");
+    REQUIRE(spot);
+    REQUIRE(first);
+    CHECK(oresmd_projections::to_quote_key(*spot) == "IR_SWAP/RATE/USD/0D/1D/20260128");
+    CHECK(oresmd_projections::to_quote_key(*first) == "IR_SWAP/RATE/USD/20260128/1D/20260319");
+    CHECK(oresmd_parser::to_series_uri(*spot).value ==
+          "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+    CHECK(oresmd_parser::to_series_uri(*first).value ==
+          "oresmd://ir/usd?tenor=1d&settle=20260128&type=quote&metric=rate&quote=ir_swap");
+    // The two pillars are two series, which is what one series per pillar means.
+    CHECK(oresmd_parser::to_series_uri(*spot).value != oresmd_parser::to_series_uri(*first).value);
+
+    // The curve is one series per curve with the pillar as the point: the maturity
+    // leaves the identity, so the two pillars below reach one row.
+    const auto one_day = oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD-SOFR-FOMC/1D");
+    const auto ten_year = oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD-SOFR-FOMC/10Y");
+    REQUIRE(one_day);
+    REQUIRE(ten_year);
+    CHECK(oresmd_projections::to_quote_key(*one_day) == "DISCOUNT/RATE/USD/USD-SOFR-FOMC/1D");
+    CHECK(oresmd_projections::to_quote_key(*ten_year) == "DISCOUNT/RATE/USD/USD-SOFR-FOMC/10Y");
+    const auto curve = oresmd_parser::to_series_uri(*one_day).value;
+    CHECK(curve == oresmd_parser::to_series_uri(*ten_year).value);
+    CHECK(curve == "oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount");
+}
 #+end_src

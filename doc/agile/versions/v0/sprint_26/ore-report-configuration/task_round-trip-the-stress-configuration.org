@@ -28,9 +28,9 @@ Stress is the first file with the shift vocabulary, so it proves the family look
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The library and its named scenarios are modelled; the eighteen shift blocks follow. |
+| Now          | The library, its scenarios and their shifts are modelled; the mappers follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Model the shift blocks, starting with the ones the corpus uses most: DiscountCurves, IndexCurves, FxSpots and FxVolatilities. |
+| Next         | Map a stress document to the entities and back, then prove it over the corpus and through the database. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -59,7 +59,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Stress documents in the corpus | 20 | =find external/ore/examples -name "stress*.xml"= | =06719d57b0= |
 | Scenarios they hold | 46, in 26 distinct names | =python3= census over =external/ore/examples/= | =06719d57b0= |
-| Shift families a scenario can carry | 18 | the same census | =06719d57b0= |
+| Shift families a scenario can carry | 18 in the schema, 14 in use | the same census | =06719d57b0= |
+| Shift entries in the corpus | 348, in one table rather than fourteen | the same census | =02006fc04b= |
 
 * Notes
 

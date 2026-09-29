@@ -1027,6 +1027,9 @@ private:
     /// Marks the tenant active and clears bootstrap mode, the two operations
     /// the completing step performs. The tenant is active once it holds its
     /// data, so a flag that will not clear is a warning rather than a failure.
+    /// The step acts as the tenant's system party, because that is the scope
+    /// the flags it writes belong to and the scope the write reads them back
+    /// under; see the body.
     void
     complete_provisioning_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command) {
@@ -1041,8 +1044,21 @@ private:
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Tenant marked active: " << command.tenant_id;
 
-        auto client =
+        auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        // The flags this step writes belong to the tenant and live under its
+        // system party, so the step acts as that party and not as the
+        // administrator's own. The write reads the row it replaces back under
+        // the scope it writes in, and an administrator whose default party is
+        // one the provisioning created cannot see the system party's row from
+        // their own: the clear is then refused as a duplicate create, and the
+        // tenant is left reporting bootstrap mode.
+        const auto settings_party = find_system_party(discover);
+        if (!settings_party)
+            throw std::runtime_error("The tenant holds no system party to hold its own settings.");
+        auto client = make_step_client(
+            command.tenant_id, actor.account_id, settings_party->id, actor.username);
+
         const auto result = rfl::json::write(
             provision_step_result{.kind = command.kind, .tenant_id = command.tenant_id});
         const auto warn = [&](const std::string& message) {
@@ -1278,15 +1294,13 @@ private:
 
     // Finds the tenant's system party (party_category == "System", created
     // once per tenant by the IAM provisioner) -- the owner of the simulated
-    // market config in the consistent world.
+    // market config in the consistent world, and the scope a tenant's own
+    // settings live under.
     static std::optional<ores::refdata::domain::party>
     find_system_party(internal_request_client& client) {
-        ores::refdata::messaging::list_parties_request req;
-        req.limit = 1000;
-        auto resp = client.request(req);
-        for (auto& p : resp.parties)
-            if (p.party_category == "System")
-                return p;
+        for (const auto& party : list_all_parties(client))
+            if (party.party_category == "System")
+                return party;
         return std::nullopt;
     }
 

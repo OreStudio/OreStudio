@@ -390,11 +390,10 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
             return false;
         }
         const auto oresmd_uri = core::oresmd_parser::to_series_uri(*identity).value;
+        // Found by the identity, which is what the row is keyed by; there is no
+        // triple fallback, because every row carries an identity.
         auto existing = series_repo.read_latest_by_uri(
             tenant_ctx, oresmd_uri, boost::uuids::to_string(party_id));
-        if (existing.empty())
-            existing = series_repo.read_latest_by_type(
-                tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));
         if (existing.empty()) {
             BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << ore_key;
 

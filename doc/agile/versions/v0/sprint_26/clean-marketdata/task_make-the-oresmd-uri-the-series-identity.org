@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2388
+#+pr: 2389
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -320,13 +320,16 @@ is left is the cutover the task takes its name from.
    column with the check that kept it apart from =output_series_id=. The reader's grid
    fallback went with the column, because the config no longer names a grid to fall
    back to. The lineage's column of the same name stays.
-4. *The constraints and the deletion.* Started: =oresmd_uri= is not null and is the
-   natural key with =party_id=, and the triple no longer keys the row (see the
-   identity note below). What is left of this step is =series_type=, =metric=,
-   =qualifier=, =ore_key= and the import classification table going, with the
-   census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents
-   as the checklist. The triple readers and their fallbacks go last, because they are
-   what keeps a half-migrated database reachable in the meantime.
+4. *The constraints and the deletion.* Started, and the reading half is done:
+   =oresmd_uri= is not null and is the natural key with =party_id=, the triple no longer
+   keys the row, and the triple's readers and their fallbacks are gone -- the import and
+   the ingest loop read by identity alone, and the curve snapshot's requests carry the
+   identity where they carried the registry's decomposition (see the identity note
+   below). What is left of this step is =series_type=, =metric=, =qualifier=, =ore_key=
+   and the import classification table going, with the census's 21 + 32 C++ files, 4 SQL
+   files, 2 TypeScript twins and 80 org documents as the checklist. The generated
+   =read_latest_by_type= goes with the columns it reads, since nothing in production
+   calls it now.
 
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
@@ -341,6 +344,20 @@ find once the identity keys the catalog is a row that should not be written, and
 unit that pinned it now pins the drop. The generator's rows cannot collide on the
 identity, because the party is generated per row and the party is part of the key --
 which is the answer to the review question that asked whether its counter was enough.
+
+**The triple's readers went with it, and the fallback went too.** Each of the two
+writing paths used to look a series up by identity and fall back to the triple, for a
+row written before the identity column existed; every row carries one now, so both
+fallbacks are gone and the identity is the only lookup. That also answers the identity
+review's finding about the synthetic names: a row an earlier database named
+=oresmd://generic/migrated-<uuid>= is not the series a key names, and reusing it would
+have kept that name for good, so the import no longer finds it and writes the real
+identity instead, leaving the synthetic row inert the way the grid's row is. The curve
+snapshot's two lookups were the last readers on the triple alone, kept there because a
+request carrying only an identity could not reach the FOMC grid no projection could
+name; the grid is gone, so both requests carry the identity and the handler reads by
+it. Nothing in production calls the generated =read_latest_by_type= any more, which is
+what lets the deletion take it with the columns.
 
 **Step two, delivered.** The reader stands on four things, and all four exist now.
 
@@ -431,6 +448,10 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.marketdata.service= suite, with the tick drop | 176 assertions in 28 cases | =ores.marketdata.service.tests= | =ef74df0ccf= |
 | =ores.shell.marketdata= suite, with the reordered command | 144 assertions in 51 cases | =ores.shell.marketdata.tests= | =ef74df0ccf= |
 | =reachability=, with the identity cases | 7765 declared cases in 956 sources | =check_test_case_reachability.py= | =ef74df0ccf= |
+| Production readers left on the triple | 0: the import's and the ingest loop's fallbacks are gone, and the curve snapshot's two lookups read by identity | =grep -rn "read_latest_by_type" projects/ --include=*.cpp --include=*.hpp= less the repository and the tests | =ac4e03519b= |
+| Fields a curve snapshot request names a series by | 1: =oresmd_uri=, where it carried the registry's three | =grep -n "std::string" projects/ores.marketdata/api/include/ores.marketdata.api/messaging/curve_snapshot_protocol.hpp= | =ac4e03519b= |
+| =ores.marketdata.core=, =service= and =api= suites with the retirement | 1879 in 412, 176 in 28 and 71 in 14 assertions and cases | the three test binaries | =ac4e03519b= |
+| =reachability=, with the retirement | 7780 declared cases in 956 sources | =check_test_case_reachability.py= | =ac4e03519b= |
 | Grid readers left in the reader | 1, the fallback in =read_pillar_rates=; no case exercises it | =grep -n "read_grid_rates" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =e3e237ded1= |
 | Component file lists stale on the trunk this branch sits on | 2, =ores.iam/api/src= and =ores.workflow/api/src=, neither of them this change's | =regenerate_cmake_component_files.py --all --check= | =e3e237ded1= |
 
@@ -463,6 +484,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2389][#2389]] | [marketdata] Retire the triple's last readers |
 | [[https://github.com/OreStudio/OreStudio/pull/2388][#2388]] | [agile] Point the handover at the deletion |
 | [[https://github.com/OreStudio/OreStudio/pull/2387][#2387]] | [marketdata] Make the series identity the key |
 | [[https://github.com/OreStudio/OreStudio/pull/2385][#2385]] | [refdata,marketdata] Drop the grid the feed no longer writes |
@@ -555,6 +577,10 @@ via its "Verifies task" field.
 | 63 | The backfill touches closed history rows, so a temporal or update trigger could move their validity | the migration | confirmed | The table carries an insert trigger only, and the update ran against this environment's database over 6079 rows with no trigger error; versions of one id share the generated name, as the comment says. |
 | 64 | =find_or_create_series='s cache is keyed by the triple, not the identity | =import_service.cpp= | accepted, fixed | Keyed by the identity now, which is what the model keys the row by; an empty identity is no longer possible, so the key is never empty. |
 | 65 | The review did not re-run the C++ suites | the PR | confirmed | CI's =tests= job builds its database from the create scripts and passed, together with the other fifteen checks. |
+| 66 | Dropping the fallback means an old row with an empty identity no longer matches, so the import creates a second series beside it | the import and the ingest loop | answered | A row without an identity cannot exist: the column is =not null= with a non-empty check, the migration backfills what predated it, and a rebuilt database is created with both. The second series is the intended outcome rather than a risk -- it carries the real identity, which the synthetic row does not. |
+| 67 | The snapshot request's shape is a wire break, so an out-of-tree client must send the identity | the snapshot protocol | answered, recorded | True, and the request has no sender in the tree, so the compiler and the protocol gates are what verify it. An external client is a real dependency this change cannot see, and the hand-back for PR 6/V06 carries it. |
+| 68 | =series_type=, =metric= and =qualifier= may now be unused in the two writers | the import and the ingest loop | answered | The suite builds with the project's warnings as errors, which failed this task's build earlier for one unused variable; both names are still read where the series is created. |
+| 69 | The handler has no exercised path, so a URI lookup in it has no coverage | =curve_snapshot_handler.hpp= | recorded | No harness reaches the handler: it takes a live NATS client and a database context, and nothing in the tree sends the request. It is this unit's recorded limitation and a V06 hand-back item. |
 
 * Result
 
@@ -616,6 +642,16 @@ corpus names every key it carries, so no corpus row is dropped, and the one case
 pinned a short key's empty point now pins the drop instead. Measured on the rebuilt
 tree: 1879 assertions in 412 core cases, 176 in 28 service cases, 144 in 51
 shell-marketdata cases and 71 in 14 marketdata-api cases.
+
+**A sixth unit left the triple with no production reader.** The import and the ingest
+loop dropped their triple fallbacks, because every row carries an identity now and a row
+an earlier database named synthetically is not the series a key names -- which is also
+how the identity review's finding about those names resolves: the import writes the real
+identity instead of reusing the synthetic one. The curve snapshot's requests carry the
+identity where they carried the registry's decomposition, and the handler reads by it;
+the grid those requests were kept on has gone. Measured on the rebuilt tree: 1879 core
+assertions in 412 cases, 176 in 28 service cases and 71 in 14 marketdata-api cases, with
+the marketdata component drift clean.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

@@ -144,7 +144,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:AE36D21C-9E10-4037-ACF8-ED8F1465A652][Walk the first run journey in a browser]] | PENDING | The whole rail on an empty installation; adds the two steps the unit tests do not cover in a browser, the party choice and the password of the person's own. |
 
 * PRs
 
@@ -157,6 +157,11 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | The welcome screen reads as dense on a laptop, and the splash belongs to the panel rather than to one step's body. | =FirstRunJourney.tsx=, =PublicShell.tsx=, =JourneyPage.tsx= | Fixed | The public shell gives a journey its own width rather than a form's; the splash frames the step panel above every step, with the tenant being described beside it once a starting point is chosen; the lead names the rail, so the count in the copy matches the count on the page; and the three stage cards state what each stage leaves behind instead of repeating the step titles. |
+| 2 | The forced password change is a client flow; confirm the server refuses other calls while the account owes one. | =FirstSignIn.tsx=, =auth_handler.hpp= | Captured | It does not. The flag is set by the provisioner and reported by the login answer, and nothing in the request path reads it, so the rule is the screen's alone. Filed as [[id:3D6F5251-932A-490D-A8C7-0CE28AB83638][A forced password change is advisory]]. |
+| 3 | =tenantPrincipal= builds =username@hostname=; confirm the routing accepts a hostname that states a port. | =state.ts=, =auth_handler.hpp= | Fixed | It does not: =split_principal= takes everything after the @ as the hostname and =auth_lookup_tenant_by_hostname= matches it exactly, so a port produced a principal that resolved to no tenant and the tenant's own administrator could not sign in. =check_tenant_hostname= refuses a port when the tenant is created, with a unit test. |
+| 4 | The strength heuristic should not be presented as a password rule. | =ui/passwordPolicy.ts= | No change | The rules are listed by name from the server's policy and shown as met or unmet; strength is an adjective written under them, not a rule the deployment states. |
+| 5 | Add a browser walk of the party choice and the forced change before release. | — | Done | [[id:AE36D21C-9E10-4037-ACF8-ED8F1465A652][Walk the first run journey in a browser]], which walks the whole rail and photographs it. |
+| 6 | The Operational card's run stops on its LEI import on a fresh installation. | — | Withdrawn | The finding was wrong: the walk that found it sent a mistyped LEI. The import reads the hierarchy the deployment holds and completes, and the count it creates was measured against the publication. |
 
 * Result
 

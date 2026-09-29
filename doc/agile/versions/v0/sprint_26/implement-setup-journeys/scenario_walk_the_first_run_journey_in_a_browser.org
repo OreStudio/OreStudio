@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: AE36D21C-9E10-4037-ACF8-ED8F1465A652
+:END:
+#+title: Test Scenario: Walk the first run journey in a browser
+#+description: One person walks an empty installation from the welcome screen to Ready in a browser: creating the administrator, choosing a starting point, creating the tenant, choosing the party the tenant administrator starts in, setting a password of their own, and reaching Ready.
+#+type: test_scenario
+#+level: s1
+#+filetags: :web:ux:journeys:setup:iam:implement-setup-journeys:sprint_26:v0:
+#+target_dialog:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Build the First run journey]] in [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- The installation must be empty: no administrator and no tenant. Bring it
+  there yourself before handing this doc over, because the first step assumes
+  bootstrap mode and a page refresh that comes back to the setup screen.
+- =compass services stop=, wait until =pg_stat_activity= shows no connection to
+  the environment's database, =rm -rf build/nats/<env>/jetstream=, then
+  =compass db recreate -y -k= and =compass services start=. The recreate is what
+  puts the deployment back into bootstrap mode; the JetStream directory is
+  removed because the streams outlive the schema.
+- Confirm the state before the tester arrives: =curl -s
+  http://127.0.0.1:21402/api/bootstrap= answers ={"isInBootstrapMode":true,...}=.
+- The walk needs the demo data the deployment already holds (the GLEIF
+  families and the ACME bundle); a recreate seeds them.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Build the First run journey]] |
+| Parent story  | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]]   |
+| Target screen | =ores.web= first run journey (http://127.0.0.1:21402/) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Open the setup screen
+
+- Go to =http://127.0.0.1:21402/=.
+- The public shell states the client version and the version the deployment
+  answered with.
+- The welcome screen names the three stages, and the rail on the left lists
+  nine steps: Welcome, Create the administrator, Choose a starting point,
+  Describe the tenant, Review, Provisioning, Hand off, First sign-in, Ready.
+- No sign-in form is offered: the installation has nobody to sign in as yet.
+
+*** Result
+
+** Create the installation administrator
+
+- Press *Get started*.
+- The form proposes =super_admin= and =super_admin@system.ores=; the password
+  rules listed under the field are the deployment's, read from the server.
+- Type a password that satisfies every listed rule and press *Create
+  administrator*; the action stays disabled while a rule is unmet.
+- Expect the starting points next, which means the deployment left bootstrap
+  mode and the journey signed in as the account it just created.
+
+*** Result
+
+** Choose the prefilled demo
+
+- The screen lists the starting points the deployment holds, each stating its
+  own audience and counts.
+- Choose the demo card and press *Continue*.
+
+*** Result
+
+** Describe the tenant
+
+- The demo profile's tenant name, code, hostname and administrator are already
+  filled in; every field stays editable.
+- Change one derived field to confirm it can be edited, then change it back.
+- Press *Continue*.
+
+*** Result
+
+** Review and create the tenant
+
+- The review states the tenant, its hostname, its administrator and how many
+  workflow steps the run orders.
+- Press *Create tenant*.
+- The provisioning step lists one line per step the run materialised and
+  reaches its end without a failed step.
+- The rail does not offer a way back over the steps that wrote.
+
+*** Result
+
+** Hand over to the tenant administrator
+
+- Press *Continue as tenant admin*.
+- Expect the first sign-in step, with the tenant administrator's principal
+  stated.
+
+*** Result
+
+** Choose the party and set a password
+
+- The account works in more than one party: choose *Acme Corporation Plc* from
+  the list, which is the party choice the middle of the journey exists for.
+- The screen states that the account sets a password of its own; type one that
+  satisfies the listed rules, which come from the server's policy read.
+- Press *Continue* only once the action is offered; it stays disabled while a
+  party is unchosen or a rule is unmet.
+
+*** Result
+
+** Read the Ready screen
+
+- The screen states who is signed in and what to do next.
+- Press *Go home*.
+- Expect the application home screen, with the tenant and party in the shell
+  header, and not the setup journey.
+
+*** Result
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- The walk was last performed on 2026-09-29 against =eager_maxwell= with the
+  driver in =build/evidence/drive_journey.mjs=, which photographs every step
+  into =build/evidence/steps/=; the two steps this scenario adds over the
+  journey's own tests are the party choice and the password of the person's
+  own.
+- The card that is *not* the demo declares a parent legal entity, which the
+  search fills; its walk is
+  [[id:01CF4ADC-404E-4CEA-8594-C033245A7342][Start a tenant from a GLEIF entity]].

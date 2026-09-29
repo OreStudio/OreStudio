@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
@@ -93,78 +94,6 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
         refctx.schedule_dates = fomc_meeting_dates(ctx);
 
     return refctx;
-}
-
-// The one series the segment used to be, read whole and matched on point id. A
-// database written before the feed keyed its pillars individually holds it, so it
-// stays readable until the seed stops writing it.
-std::unordered_map<std::string, double>
-read_grid_rates(ores::database::context ctx,
-                const boost::uuids::uuid& source_series_id,
-                std::chrono::system_clock::time_point as_of) {
-    repository::market_observations_repository obs_repo;
-    std::unordered_map<std::string, double> out;
-    for (const auto& obs : obs_repo.read_as_of(ctx, source_series_id, as_of))
-        out.emplace(obs.point_id, std::stod(obs.value));
-    return out;
-}
-
-// Each pillar's observed rate, keyed by the pillar's own end tenor code -- the same
-// key resolve_bootstrap_pillars() matches on.
-struct pillar_read final {
-    std::unordered_map<std::string, double> rates_by_point_id;
-    std::vector<std::string> series_ids;
-};
-
-// Reads each pillar from the series the pillar's own ORE key projects to: the feed
-// publishes one instrument per pillar, so the reader derives the same key from the
-// config's currency and the pillar's resolved dates and asks for that series. Where a
-// pillar's series is absent -- a database the feed has not yet published into -- the
-// grid the config still points at supplies that pillar, matched on point id.
-pillar_read
-read_pillar_rates(ores::database::context ctx,
-                  const ores::refdata::domain::ir_curve_bootstrap_config& config,
-                  const std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>& pillars,
-                  const curve_republish_refdata_context& refctx,
-                  std::chrono::system_clock::time_point as_of) {
-    namespace core = ores::marketdata::core;
-
-    repository::market_series_repository series_repo;
-    repository::market_observations_repository obs_repo;
-
-    pillar_read out;
-    std::vector<const ores::refdata::domain::ir_curve_bootstrap_pillar*> unresolved;
-    for (const auto& p : pillars) {
-        const auto key = core::make_pillar_quote_key(config.currency_code,
-                                                     p.start_tenor_code,
-                                                     resolve_tenor_date(refctx, p.start_tenor_code),
-                                                     resolve_tenor_date(refctx, p.end_tenor_code));
-        // The config's own party, as the ingest loop scopes the series it writes:
-        // the curve is bootstrapped for that party, so its quotes come from it.
-        const auto series = series_repo.read_latest_by_uri(
-            ctx, core::pillar_series_uri(key), boost::uuids::to_string(config.party_id));
-        if (series.empty()) {
-            unresolved.push_back(&p);
-            continue;
-        }
-
-        for (const auto& obs : obs_repo.read_as_of(ctx, series.front().id, as_of))
-            if (obs.point_id == key.point)
-                out.rates_by_point_id.emplace(p.end_tenor_code, std::stod(obs.value));
-        out.series_ids.push_back(boost::uuids::to_string(series.front().id));
-    }
-
-    if (!unresolved.empty()) {
-        const auto grid = read_grid_rates(ctx, config.source_series_id, as_of);
-        const auto grid_id = boost::uuids::to_string(config.source_series_id);
-        for (const auto* p : unresolved) {
-            if (auto it = grid.find(p->end_tenor_code); it != grid.end())
-                out.rates_by_point_id.emplace(p->end_tenor_code, it->second);
-            out.series_ids.push_back(grid_id);
-        }
-    }
-
-    return out;
 }
 
 std::vector<ores::analytics::quant::service::bootstrapped_point>

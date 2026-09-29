@@ -52,7 +52,7 @@ struct pillar_quote_key final {
  * the pillar's end date is the observation's point.
  *
  * Both the feed that publishes the pillar and the bootstrap that reads it call this,
- * so the series the first writes the second finds.
+ * so the series one writes is the series the other looks for.
  */
 ORES_MARKETDATA_CORE_EXPORT pillar_quote_key
 make_pillar_quote_key(const std::string& ccy,

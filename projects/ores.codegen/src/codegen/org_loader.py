@@ -1932,14 +1932,15 @@ def validate_model(model: dict[str, Any]) -> list[str]:
     # The 2026-09-29 nightly reported 214 such reads in
     # ores.analytics.core.tests and 99 in ores.ore.core.tests, from
     # credit_simulation_config.seed and bond_trs.funding_rate among others.
+    # The set is the types the generated mapper actually maps zero to nullopt
+    # for -- see is_nullable_numeric in core.py -- plus the two chrono value
+    # types, whose absent value is the value-initialised one. A nullable column
+    # of some other bare type is a modelling question this rule cannot answer,
+    # because nothing in the generated code states how its NULL is spelled.
     _nullable_bare_value_types = {
         "bool",
         "int",
-        "std::int16_t",
-        "std::int32_t",
         "std::int64_t",
-        "std::uint16_t",
-        "std::uint32_t",
         "std::uint64_t",
         "float",
         "double",

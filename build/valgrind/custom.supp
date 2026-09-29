@@ -2160,13 +2160,24 @@
 #  option strings, the SASL negotiation buffers and the parameter status list --
 #  are still reachable at exit. They are the library's per-connection state, not
 #  a leak the caller can free without closing a connection the rest of the
-#  process may still use. Anchored on the entry point that creates the
-#  connection, so an allocation from anywhere else in libpq still surfaces.
+#  process may still use. The rule pins the allocator and the entry point that
+#  creates the connection, and matches reachable blocks only: a block that
+#  becomes unreachable is definitely lost, and no rule here suppresses that.
 #
 {
    libpq connection state held for the process lifetime
    Memcheck:Leak
    match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:PQconnectdb
+   ...
+}
+{
+   libpq connection options held for the process lifetime
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
    ...
    fun:PQconnectdb
    ...
@@ -2177,12 +2188,15 @@
 #  The connection state grows while a statement runs: the command queue entry,
 #  the parameter status list and the query's own string copies are allocated
 #  inside PQexec and released only when the connection closes. The pool keeps
-#  the connection, so they are still reachable at exit.
+#  the connection, so they are still reachable at exit. The rule pins the
+#  allocator and PQexec, and matches reachable blocks only, so a result the
+#  caller never clears and then loses still surfaces as definitely lost.
 #
 {
    libpq per-query state held for the process lifetime
    Memcheck:Leak
    match-leak-kinds: reachable
+   fun:malloc
    ...
    fun:PQexec
    ...

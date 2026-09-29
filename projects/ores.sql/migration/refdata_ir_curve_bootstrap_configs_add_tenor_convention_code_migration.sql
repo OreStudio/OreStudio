@@ -36,12 +36,16 @@
 alter table ores_refdata_ir_curve_bootstrap_configs_tbl
     add column if not exists tenor_convention_code text;
 
--- The one config seeded today is the FOMC short end, whose pillars step through
--- a schedule rather than by anchor offsets.
+-- Every row needs a convention before the constraint lands, history included:
+-- the FOMC short end is the only config that steps through a schedule, so every
+-- other config takes the forward default and the seeded one is corrected below.
+update ores_refdata_ir_curve_bootstrap_configs_tbl
+set tenor_convention_code = 'RATES_SPOT_FORWARD'
+where tenor_convention_code is null;
+
 update ores_refdata_ir_curve_bootstrap_configs_tbl
 set tenor_convention_code = 'RATES_SPOT_FOMC'
-where tenor_convention_code is null
-  and valid_to = ores_utility_infinity_timestamp_fn();
+where id = 'd0b1e2f3-4a5b-4c6d-8e7f-9a0b1c2d3e4f';
 
 alter table ores_refdata_ir_curve_bootstrap_configs_tbl
     alter column tenor_convention_code set not null;

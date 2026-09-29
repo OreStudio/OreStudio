@@ -92,6 +92,10 @@ struct list_workflow_instance_summaries_response {
 struct workflow_step_summary {
     std::string id;
     std::string name;
+    /// The step's name and description in a person's words, as its definition
+    /// declared them, and empty when it declared none.
+    std::string label;
+    std::string description;
     std::string status;
     int step_index = 0;
     std::string created_at;

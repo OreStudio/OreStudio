@@ -25,8 +25,12 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.workflow.api/service/workflow_definition.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include <rfl/json.hpp>
 
 namespace ores::workflow::messaging {
@@ -210,6 +214,23 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
     const auto raw_steps = step_repo_.read_latest_by_workflow_id(
         req_ctx, boost::uuids::to_string(instance_id), 0, 1000);
 
+    /*
+     * The run's own definition travels with it, materialised when it started,
+     * so the words a step is shown by are the ones its definition declared
+     * rather than whatever the definition says today. An instance started
+     * before a step had words carries none, and the step's identity stands in.
+     */
+    std::unordered_map<std::string, std::pair<std::string, std::string>> words;
+    if (!instance->materialised_steps_json.empty()) {
+        auto materialised =
+            rfl::json::read<std::vector<ores::workflow::service::materialised_step>>(
+                instance->materialised_steps_json);
+        if (materialised) {
+            for (const auto& step : *materialised)
+                words.emplace(step.name, std::make_pair(step.label, step.description));
+        }
+    }
+
     get_workflow_steps_response resp;
     resp.success = true;
     resp.status = state_name(instance->state_id);
@@ -226,6 +247,10 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         workflow_step_summary ws;
         ws.id = boost::uuids::to_string(s.id);
         ws.name = s.name;
+        if (const auto found = words.find(s.name); found != words.end()) {
+            ws.label = found->second.first;
+            ws.description = found->second.second;
+        }
         ws.status = state_name(s.state_id);
         ws.step_index = s.step_index;
         ws.created_at = fmt_tp(s.recorded_at);

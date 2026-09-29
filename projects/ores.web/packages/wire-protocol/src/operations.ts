@@ -771,6 +771,13 @@ export function toProvisionTenantResult(
 export const workflowStepSummarySchema = z.object({
     id: z.string().default(''),
     name: z.string().default(''),
+    /*
+     * The step's name and description in a person's words, as the run's own
+     * definition declared them. Both default to empty, because an instance
+     * started before a step had words carries none and the name stands in.
+     */
+    label: z.string().default(''),
+    description: z.string().default(''),
     status: z.string().default(''),
     step_index: z.number().int().default(0),
     created_at: z.string().default(''),

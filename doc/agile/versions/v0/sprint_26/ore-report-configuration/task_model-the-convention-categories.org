@@ -28,9 +28,9 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Twelve of the sixteen categories are modelled, so sixty-seven of the seventy-two files round trip outright. |
+| Now          | Thirteen of the sixteen categories are modelled, so sixty-nine of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =CommodityFuture=, which clears two files, then =CommodityForward=, =BondYield= and =IntradayPowerLoad=, one each. |
+| Next         | Model =CommodityForward= and =BondYield=, then =IntradayPowerLoad=, and then the sub-fields still counted: =AveragingData=, =ProhibitedExpiries=, the two continuation-mapping lists and =InflationSwap.PublicationSchedule=. No category left clears a file alone. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -57,10 +57,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 4 after twelve | =ores.ore.core.tests "[.][conventions]" -s= | =022309680e= |
-| Files carrying an unmodelled category | 63 at the start, 5 after twelve | the same | =022309680e= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 67 after twelve | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =022309680e= |
-| Files a single category would clear, now | CommodityFuture 2 | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =022309680e= |
+| Categories the mapper does not model | 16 at the start, 3 after thirteen | =ores.ore.core.tests "[.][conventions]" -s= | =7e6793fa2c= |
+| Files carrying an unmodelled category | 63 at the start, 3 after thirteen | the same | =7e6793fa2c= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 69 after thirteen | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =7e6793fa2c= |
+| Files a single category would clear, now | none: the three files left each carry more than one unmodelled item | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =7e6793fa2c= |
+| Fields counted rather than modelled | CommodityFuture.AveragingData 2 files, .ProhibitedExpiries 2, .FutureContinuationMappings 1, .OptionContinuationMappings 1, InflationSwap.PublicationSchedule 2 | =ores.ore.core.tests "conventions_unmodelled_categories_measurement" -s= | =7e6793fa2c= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -129,12 +130,21 @@ task and name that file in the Command column.
   twelve elements are otherwise identical, so it is one convention shared by
   twelve files, and eleven of them round trip the moment it lands -- the largest
   single win after =TenorBasisTwoSwap=.
+- =CommodityFuture= is modelled: thirty-four fields across five files, thirty of
+  them as forty columns. It is the first category whose entity flattens nested
+  structs instead of counting them: =AnchorDay= becomes seven columns and the
+  corpus uses all six of its variants, so flattening is what lets a commodity
+  future round trip at all. Four list-bearing fields -- =ProhibitedExpiries=,
+  =FutureContinuationMappings=, =OptionContinuationMappings= and =AveragingData=
+  -- are counted rather than modelled, and reaching seventy-two of seventy-two
+  will mean modelling them.
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Sixteen were unmodelled and twelve have landed, so
-  four remain. The expensive one left is =CommodityFuture= at thirty-four fields
-  across five files, and it is also the next-best win: it clears two files on
-  its own.
+  mapper in both directions. Sixteen were unmodelled and thirteen have landed,
+  so three remain, and the three files that still carry one each carry more than
+  one: the clearing measurement names no category that would clear a file alone
+  any more. The remaining work is =CommodityForward=, =BondYield=,
+  =IntradayPowerLoad= and the counted sub-fields.
 
 * Test Scenarios
 

@@ -31,6 +31,7 @@ The bootstrap protocol messages.
 :auth: none
 :response: bootstrap_status_response
 :http_route: true
+:shell_command: status
 :END:
 
 ** bootstrap_status_response

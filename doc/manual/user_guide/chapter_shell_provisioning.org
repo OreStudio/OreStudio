@@ -70,7 +70,7 @@ anything about.
 ** Setting up the system
 
 =bootstrap setup= is the first-run act. It is registered in the
-generated =bootstrap= menu, beside =bootstrap-status= and
+generated =bootstrap= menu, beside =status= and
 =create-initial-admin=, because it is what brings the installation to
 life. It requires bootstrap mode and no login.
 

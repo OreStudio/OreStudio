@@ -50,11 +50,11 @@ void bootstrap_operations_commands::register_commands(cli::Menu& root_menu, nats
     auto menu = std::make_unique<cli::Menu>("bootstrap");
 
     menu->Insert(
-        "bootstrap-status",
+        "status",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_bootstrap_status(std::ref(out), std::ref(session), std::move(args));
+            process_status(std::ref(out), std::ref(session), std::move(args));
         },
-        "bootstrap-status");
+        "status");
 
     menu->Insert(
         "create-initial-admin",
@@ -66,10 +66,10 @@ void bootstrap_operations_commands::register_commands(cli::Menu& root_menu, nats
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
-void bootstrap_operations_commands::process_bootstrap_status(std::ostream& out,
-                                                             nats_client& session,
-                                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap-status request.";
+void bootstrap_operations_commands::process_status(std::ostream& out,
+                                                   nats_client& session,
+                                                   const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating status request.";
 
     using request_type = ores::iam::messaging::bootstrap_status_request;
 
@@ -77,7 +77,7 @@ void bootstrap_operations_commands::process_bootstrap_status(std::ostream& out,
     // a message that establishes the session is never asked for one.
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run bootstrap-status." << std::endl;
+            fail(out) << "You must be logged in to run status." << std::endl;
             return;
         }
     }

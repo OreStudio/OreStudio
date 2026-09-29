@@ -339,6 +339,50 @@ class TestTheDeclaredTimeout:
                 ":request_timeout_seconds: 1800\n:auth: none\n"))
 
 
+class TestTheCommandVerb:
+    """A message whose name repeats its menu states the verb it wants."""
+
+    def _body(self, verb_line):
+        return f"""* Messages
+
+** bootstrap_status_request
+:PROPERTIES:
+:subject: iam.v1.bootstrap.status
+:response: bootstrap_status_response
+{verb_line}:END:
+"""
+
+    def test_a_name_that_repeats_the_menu_gives_the_command_it(self):
+        # The menu is 'bootstrap' and the message is named for the artefact and
+        # the action both, so the verb a caller types would repeat the menu.
+        command = shell_command_projection(
+            _declared(self._body(":shell_command: status\n")))[0]
+        assert command["command"] == "status"
+        assert command["identifier"] == "status"
+        assert command["usage"].startswith("status")
+
+    def test_a_message_that_states_no_verb_keeps_the_name_it_has(self):
+        command = shell_command_projection(_declared(self._body("")))[0]
+        assert command["command"] == "bootstrap-status"
+
+    @pytest.mark.parametrize("value", ["Status", "make status", "status_", "-status"])
+    def test_a_verb_that_is_not_a_command_is_refused(self, value):
+        # A verb a caller cannot type is a defect in the row, not a command.
+        with pytest.raises(ValueError, match="lowercase words joined by hyphens"):
+            _declared(self._body(f":shell_command: {value}\n"))
+
+    def test_the_bootstrap_status_command_is_status(self):
+        # Measured on the model rather than restated: the command a caller
+        # types beside bootstrap setup and bootstrap create-initial-admin.
+        operation = self._operation("ores.iam.bootstrap_messages.org")
+        status = [c for c in operation["shell_commands"]
+                  if c["command"] == "status"]
+        assert [c["subject"] for c in status] == ["iam.v1.bootstrap.status"]
+
+    def _operation(self, filename):
+        return load_org_operation_model(IAM_MODELING / filename)["operation"]
+
+
 class TestTheRefusal:
     """A field no token can fill fails the model rather than vanishing."""
     def _command_with(self, cpp_type):
@@ -434,7 +478,7 @@ class TestTheRealModels:
             )
         assert public == {
             "login", "service-login", "signup",
-            "bootstrap-status", "create-initial-admin",
+            "status", "create-initial-admin",
             "get-password-policy",
         }
 

@@ -63,11 +63,11 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief bootstrap-status
+     * @brief status
      */
-    static void process_bootstrap_status(std::ostream& out,
-                                         ores::nats::service::nats_client& session,
-                                         const std::vector<std::string>& args);
+    static void process_status(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
 
     /**
      * @brief create-initial-admin <principal> <password> <email>

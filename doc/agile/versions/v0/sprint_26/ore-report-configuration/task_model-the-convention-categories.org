@@ -28,9 +28,9 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | All sixteen categories are modelled and all seventy-two files round trip. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing: the task's acceptance is met. |
+| Next         | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance

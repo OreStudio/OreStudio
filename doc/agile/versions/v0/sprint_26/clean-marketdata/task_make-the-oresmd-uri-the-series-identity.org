@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2376
+#+pr: 2377
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -326,13 +326,12 @@ grid's own identity and then the cutover the task takes its name from.
 **Step two, in detail, for whoever takes it next.** The reader stands on four things,
 and only two of them exist today.
 
-- The key builder has to sit where both the feed and the service can reach it.
-  =ores.marketdata.core= is the natural home, added as a hand-written source and
+- The key builder sits in =ores.marketdata.core=, added as a hand-written source and
   registered with =regenerate_cmake_component_files.py --component ores.marketdata.core=.
-  Whether =ores.synthetic.api= may depend on it is the =reachability= gate's call, and
-  settling that is the first thing this step does; if it may not, the builder belongs in
-  the lowest component both already reach. The rule itself is the one the feed's copy
-  carries today, and the feed's copy goes when the shared one arrives.
+  =ores.synthetic.api= already links =ores.marketdata.core.lib=
+  (=projects/ores.synthetic/api/src/CMakeLists.txt=), so both sides can reach the builder.
+  The =reachability= gate has not been run on that dependency, and running it is the
+  step's first command. The feed's own copy goes when the shared one arrives.
 - The currency exists now: the config names it (#2375).
 - The dates exist now: =refctx= resolves a tenor code to a calendar date, which is the
   path the discount curve's own points already take.
@@ -408,6 +407,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2377][#2377]] | [agile] Answer where the shared key builder lives |
 | [[https://github.com/OreStudio/OreStudio/pull/2376][#2376]] | [agile] Write the reader's step in detail |
 | [[https://github.com/OreStudio/OreStudio/pull/2375][#2375]] | [refdata] Let the config name the currency its pillars are quoted in |
 | [[https://github.com/OreStudio/OreStudio/pull/2374][#2374]] | [agile] Record that the reader has no currency to key with |

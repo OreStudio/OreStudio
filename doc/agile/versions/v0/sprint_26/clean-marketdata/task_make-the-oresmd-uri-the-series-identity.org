@@ -328,10 +328,10 @@ and only two of them exist today.
 
 - The key builder sits in =ores.marketdata.core=, added as a hand-written source and
   registered with =regenerate_cmake_component_files.py --component ores.marketdata.core=.
-  That home is reachable from both sides, which the answer to the question this note
-  first left open settles: =ores.synthetic.api= already links =ores.marketdata.core.lib=
-  (=projects/ores.synthetic/api/src/CMakeLists.txt=), so the feed can call the shared
-  builder and its own copy goes when the shared one arrives.
+  =ores.synthetic.api= already links =ores.marketdata.core.lib=
+  (=projects/ores.synthetic/api/src/CMakeLists.txt=), so both sides can reach the builder.
+  The =reachability= gate has not been run on that dependency, and running it is the
+  step's first command. The feed's own copy goes when the shared one arrives.
 - The currency exists now: the config names it (#2375).
 - The dates exist now: =refctx= resolves a tenor code to a calendar date, which is the
   path the discount curve's own points already take.

@@ -141,3 +141,10 @@ declarations in 294 files, finds no visibility macro on any of them, and
 fails on a tree where the macro is restored, naming the file and the line.
 =.github/workflows/header-hygiene.yml= runs it on every pull request that
 touches =projects/=.
+
+Continuous Windows is dispatched against this branch, run 36566068366, to
+see the clang-cl diagnostic disappear on the platform that reported it.
+That run takes hours, so it is recorded rather than awaited: the
+translation unit that failed, =ores.dq.core.lib=, compiles on Linux with
+the same header, and the known =ores.shell.trading= limit is the next
+thing the Windows build reaches.

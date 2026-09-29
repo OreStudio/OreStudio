@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2365
+#+pr: 2366
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -211,6 +211,15 @@ curve -- so the grammar is proved before the feed and the seed are written again
 The case also pins the negative: two pillars are two series, and the curve's maturities
 are one.
 
+**The curve's half of the seed carries its identity now.** The FOMC seed row the
+republish service writes into reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with
+=oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount=, so the
+triple and the identity agree and neither is an invented vocabulary. Nothing else had
+to move: the republish service and the bootstrap reach that row by the fixed uuid the
+config names, and the pillars stay the observations' points. The raw grid's half waits
+for the re-key, because its identity only exists once the feed publishes one series per
+pillar.
+
 **The two configs still disagree on the roles, and identity is no longer what exposes
 it.** The synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the
 bootstrap config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Because the shape
@@ -269,7 +278,7 @@ plan itself stays — it is the historical record of what we did.)
 | =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
 | Series rows that carry an identity | 4569 of 5971; the 188 =FIXING= rows are named by =from_index_name()= | =count(*) filter (where series_type in (<the grammar's token table>) or series_type = 'FIXING')= over =ores_marketdata_market_series_tbl= | =3632865c32= |
 | Series rows that do not | 1402: 1400 =CD-0= to =CD-25= generator rows plus the two FOMC rows | the same query, negated | =3632865c32= |
-| Production rows no projection can name | 2: =RATES / YIELD / 'USD/SOFR-FOMC'= and =YieldCurve / DISCOUNT / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =3632865c32= |
+| Production rows no projection can name | 1: the FOMC raw grid =RATES / YIELD / 'USD/SOFR-FOMC'=; the curve row now reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with its ORE identity | =marketdata_market_series_fomc_populate.sql= and a read of the live rows | =48ab31abc8= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
@@ -309,6 +318,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2366][#2366]] | [sql,agile] Give the FOMC curve row its ORE identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2365][#2365]] | [marketdata,codegen] Pin the FOMC shapes before the feed writes them |
 | [[https://github.com/OreStudio/OreStudio/pull/2364][#2364]] | [marketdata,codegen] Walk every family that carries a point |
 | [[https://github.com/OreStudio/OreStudio/pull/2363][#2363]] | [agile] Pin the FOMC shapes and the series inverse |

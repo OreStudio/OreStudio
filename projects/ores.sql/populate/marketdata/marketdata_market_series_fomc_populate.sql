@@ -35,13 +35,16 @@
  *    produces exactly this qualifier.
  *
  *  - The bootstrapped curve the republish service writes into:
- *    YieldCurve / DISCOUNT / 'USD/SOFR-FOMC' -- a discount-factor curve,
- *    which is what curve_republish_service publishes per point
- *    (point_id = pillar end tenor code, value = discount factor). The
- *    series starts OBSERVED and is claimed -- stamped IR_CURVE_BOOTSTRAP
- *    with the config's id and version -- by the republish service on its
- *    first run, which is why the seed writes the sentinel (nil config id,
- *    version 0) rather than the derived shape directly.
+ *    DISCOUNT / RATE / 'USD/USD-SOFR-FOMC' -- ORE's own spelling for a
+ *    discount curve's points (DISCOUNT/RATE/CCY/CURVE/TENOR, the corpus
+ *    writes USD-DUMMY), which is what curve_republish_service publishes
+ *    per point (point_id = pillar end tenor code, value = discount
+ *    factor). The row's oresmd_uri is the key without its maturity, the
+ *    series the pillars' points hang off. The series starts OBSERVED and
+ *    is claimed -- stamped IR_CURVE_BOOTSTRAP with the config's id and
+ *    version -- by the republish service on its first run, which is why
+ *    the seed writes the sentinel (nil config id, version 0) rather than
+ *    the derived shape directly.
  *
  * Both rows belong to the system party, matching the party the synthetic
  * dataset publishes into and therefore the party_id on the feed's ticks.
@@ -52,13 +55,17 @@
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO NOTHING (a
  * rerun must not reset a row the republish service has already stamped).
+ * A database built before the curve's spelling changed keeps the old row
+ * and a null identity: the schema is applied by recreation, so a rebuild
+ * is the migration. The raw grid row stays null until the re-key gives
+ * the feed one series per pillar.
  */
 
 \echo '--- FOMC Segment Market Series ---'
 
 insert into ores_marketdata_market_series_tbl (
     id, tenant_id, version, party_id, series_type, metric, qualifier,
-    series_subclass,
+    series_subclass, oresmd_uri,
     derivation_kind, derivation_config_id, derivation_config_version,
     modified_by, performed_by, change_reason_code, change_commentary
 )
@@ -69,7 +76,7 @@ values
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
         'RATES', 'YIELD', 'USD/SOFR-FOMC',
-        'yield',
+        'yield', null,
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Raw FOMC-dated OIS grid: the synthetic feed''s tick target for the FOMC segment'
@@ -79,8 +86,8 @@ values
         ores_utility_system_tenant_id_fn(),
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
-        'YieldCurve', 'DISCOUNT', 'USD/SOFR-FOMC',
-        'yield',
+        'DISCOUNT', 'RATE', 'USD/USD-SOFR-FOMC',
+        'yield', 'oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount',
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Bootstrapped USD SOFR curve (FOMC segment): republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
@@ -114,9 +121,10 @@ on conflict (tenant_id, market_series_id, asset_class_code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
--- Summary
+-- Summary. Both spellings are listed because the curve's qualifier carries the
+-- currency its key names and the grid's does not.
 select 'marketdata_market_series (FOMC segment)' as entity, count(*) as count
 from ores_marketdata_market_series_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
-  and qualifier like 'USD/SOFR-FOMC%'
+  and qualifier in ('USD/SOFR-FOMC', 'USD/USD-SOFR-FOMC')
   and valid_to = ores_utility_infinity_timestamp_fn();

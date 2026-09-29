@@ -40,8 +40,8 @@
  * market_series rows seeded by
  * marketdata_market_series_fomc_populate.sql (a soft, cross-component
  * reference -- no FK): the raw RATES/YIELD grid the synthetic feed
- * publishes FOMC quotes into, and the YieldCurve/DISCOUNT series the
- * bootstrapped curve is written to.
+ * publishes FOMC quotes into, and the DISCOUNT/RATE/USD/USD-SOFR-FOMC
+ * series the bootstrapped curve is written to.
  *
  * The nine pillars chain SPOT -> 1F -> 2F -> ... -> 8F -> 1Y in sequence
  * order: a DEPOSIT from spot to the first meeting, then one SWAP per

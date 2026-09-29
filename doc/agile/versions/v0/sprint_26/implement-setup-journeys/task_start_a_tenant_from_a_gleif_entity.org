@@ -30,11 +30,11 @@ out, because a person provisioning their first tenant may not have an LEI yet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Three starting points are rows, the register card leads with the entity it is built around and derives the tenant from the one chosen, the manual card leaves the entity out, and the search matches a name or an LEI in the read and states how many parties the hierarchy would create. The shape of a tenant code and of a hostname is stated by the model and held by the table, and a run that names no legal entity imports nothing and says so instead of stopping. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing: the task's acceptance is met. A recreate is what applies the table's new checks to this environment. |
+| Next         | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -203,3 +203,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Three starting points are rows: the manual card, the register card and the
+demo. The register card leads with the entity the tenant is built around,
+derives the tenant's name, code, hostname, administrator and legal entity from
+the one chosen, and states how many parties that entity's hierarchy would
+create — a count checked against the publication itself. The search that finds
+an entity matches a name or an LEI in the read rather than filtering a page in
+the browser, because the deployment holds 18348 root entities and the entity
+somebody wants is not on any one page of them.
+
+The manual card leaves the legal entity out: the step that imports a hierarchy
+reads an absent entity as empty, completes with a warning and says there was
+nothing to import, which the rail shows beside it.
+
+The code's shape is stated once and applied everywhere: the field applies it as
+a person types, the provision request refuses a code that breaks it with a
+sentence, and the table holds every other writer to it — as it does for a
+hostname that names a port, which would make the tenant's own administrator
+unresolvable. Two writers the rule caught were fixed with it: the synthetic
+generator, whose codes carried the template's hyphen and a faker noun's
+capitals, and the test harness's suite tenant, which carried the suite's dots.
+
+Proved on the live deployment and at the schema:
+[[file:evidence/gleif_search_and_party_counts.txt][the search and the counts]] and
+[[file:evidence/tenant_shape_rule.txt][the shapes the table refuses]].

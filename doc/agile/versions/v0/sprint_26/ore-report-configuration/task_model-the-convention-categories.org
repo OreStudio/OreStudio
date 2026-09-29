@@ -2,7 +2,7 @@
 :ID: A436B63F-778C-4EE5-BD9C-9BAB5133316A
 :END:
 #+title: Task: Model the convention categories the mapper skips
-#+description: Fourteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip.
+#+description: Sixteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip.
 #+type: task
 #+level: s1
 #+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
@@ -35,7 +35,7 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 
 * Acceptance
 
-- Each of the fourteen categories has an entity, a create and a drop script, and a row in the RLS policies.
+- Each of the sixteen categories has an entity, a create and a drop script, and a row in the RLS policies., a create and a drop script, and a row in the RLS policies.
 - The mapper reads and writes each category, and its count of what it skips is zero.
 - The conventions kind is registered with the harness and all seventy-two files round trip.
 
@@ -73,7 +73,8 @@ task and name that file in the Command column.
   the token is what an export has to write back.
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Twelve remain, and the expensive ones are
+  mapper in both directions. Sixteen were unmodelled and three have landed, so
+  thirteen remain. The expensive ones are
   =CrossCurrencyBasis= at twenty-five fields across forty-nine files and
   =CommodityFuture= at thirty-four fields.
 

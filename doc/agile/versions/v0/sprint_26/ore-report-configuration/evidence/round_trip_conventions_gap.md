@@ -14,13 +14,14 @@ it skips into `mapped_conventions::unmodelled` and logs a warning per category.
 
 ## The categories the corpus uses and the mapper does not model
 
-Fourteen of the seventeen unmodelled categories appear in the corpus.
+Sixteen of the seventeen unmodelled categories appear in the corpus.
 `TenorBasisTwoSwap`, `FxOptionTimeWeighting` and `ZeroInflationIndex` do not.
 
 | Category | Files | Elements |
 |----------|-------|----------|
 | CrossCurrencyBasis | 49 | 522 |
 | SwapIndex | 47 | 678 |
+| TenorBasisTwoSwap | 46 | 65 |
 | Future | 39 | 102 |
 | AverageOIS | 36 | 43 |
 | FxOption | 36 | 420 |
@@ -29,12 +30,26 @@ Fourteen of the seventeen unmodelled categories appear in the corpus.
 | CrossCurrencyFixFloat | 18 | 41 |
 | BMABasisSwap | 16 | 20 |
 | CmsSpreadOption | 12 | 12 |
+| ZeroInflationIndex | 6 | 54 |
 | CommodityFuture | 5 | 808 |
 | CommodityForward | 2 | 5 |
 | BondYield | 1 | 5 |
 | IntradayPowerLoad | 1 | 2 |
 
-Sixty-three of the seventy-two files carry at least one of them.
+**Correction.** An earlier version of this table had fourteen rows and said that
+`TenorBasisTwoSwap` and `ZeroInflationIndex` do not appear in the corpus. Both
+do, in forty-six and six files. The fourteen rows were the whole list only
+because the command that produced them ended in `head -40`, and the measurement
+prints two lines per category, so the last two were cut off. A truncated list
+read as a complete one, which is the third time in this work that a formatted
+output has been trusted over the artefact.
+
+Seventeen categories were unmodelled between them. Sixteen appear in the corpus;
+only `FxOptionTimeWeighting` does not.
+
+Sixty-three of the seventy-two files carry at least one of them, and the list
+above is as it stood before any category was modelled. Three have since landed,
+so the live numbers are on the task.
 
 ## What the nine files that use only modelled categories fail on
 
@@ -87,7 +102,7 @@ trip, and they are asserted green rather than measured.
 
 Two kinds of change remain, in order of how much they buy:
 
-1. **The fourteen categories**, each of which needs a refdata entity, a mapper in
+1. **The sixteen categories**, each of which needs a refdata entity, a mapper in
    both directions, and its own round trip. This is the bulk of the work and it
    is why conventions is not one round's job.
 2. **The mapper's report of what it skips**, already delivered: it counts and

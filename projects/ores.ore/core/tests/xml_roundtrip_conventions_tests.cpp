@@ -151,6 +151,35 @@ TEST_CASE("conventions_future_round_trips", tags) {
     CHECK(files_with_future == 39);
 }
 
+TEST_CASE("conventions_fx_option_round_trips", tags) {
+    int files_with_fx_option = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.FxOption.empty())
+            continue;
+
+        ++files_with_fx_option;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.fx_option.size() == document.FxOption.size());
+
+        for (std::size_t i = 0; i < document.FxOption.size(); ++i) {
+            CHECK(mapped.fx_option[i].id == std::string(document.FxOption[i].Id));
+            CHECK(mapped.fx_option[i].atm_type == std::string(document.FxOption[i].AtmType));
+            CHECK(mapped.fx_option[i].delta_type == std::string(document.FxOption[i].DeltaType));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "FxOption");
+        INFO(path.string() + ": the document has " + std::to_string(document.FxOption.size()) +
+             " FxOption element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.FxOption.size()));
+    }
+
+    // Thirty-six of the seventy-two at the commit this was written at.
+    CHECK(files_with_fx_option == 36);
+}
+
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
     const auto kind = conventions_kind();
     int walked = 0;

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 493D88F1-2E4F-558B-889C-A95760B9C1C3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_option_conventions commands from the shell?
+#+description: Every command the fx_option_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_option_conventions:
+
+This file documents the fx_option_conventions resource at the shell, one section per command. Every command is a subcommand of =fx_option_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F45D129C-7B51-58CD-87CB-C22452ADFD5D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.list=.
+
+#+name: fx_option_conventions-list
+#+begin_src ores-shell :tangle fx_option_conventions-list.ores :exports none
+fx_option_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D9C86C99-FC12-5477-81B2-0DBA2243BD46
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.get=.
+
+#+name: fx_option_conventions-get
+#+begin_src ores-shell :tangle fx_option_conventions-get.ores :exports none
+fx_option_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B0628955-E424-5A9C-A086-7B139E8B3842
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.get_many=.
+
+#+name: fx_option_conventions-get-many
+#+begin_src ores-shell :tangle fx_option_conventions-get-many.ores :exports none
+fx_option_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: EADB14E3-319E-5470-8A51-AADEBE9B1ADB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions add <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor> <long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.put=.
+
+#+name: fx_option_conventions-add
+#+begin_src ores-shell :tangle fx_option_conventions-add.ores :exports none
+fx_option_conventions add __none__ - __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 9D2B1E82-A8DF-5033-9F92-7EB7AF426CA3
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions set <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor> <long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.put=.
+
+#+name: fx_option_conventions-set
+#+begin_src ores-shell :tangle fx_option_conventions-set.ores :exports none
+fx_option_conventions set __none__ - __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 28467DE7-DE14-5479-A4E9-68AAC124CDBD
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions put-many --count <n> <id> <fx_convention_id> <atm_type> <delta_type> <switch_tenor> <long_term_atm_type> <long_term_delta_type> <risk_reversal_in_favor_of> <butterfly_style> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.put_many=.
+
+#+name: fx_option_conventions-put-many
+#+begin_src ores-shell :tangle fx_option_conventions-put-many.ores :exports none
+fx_option_conventions put-many --count 1 __none__ - __none__ __none__ - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C3FA3CF1-9D92-56B3-9B32-85B6178FB1E7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.delete=.
+
+#+name: fx_option_conventions-delete
+#+begin_src ores-shell :tangle fx_option_conventions-delete.ores :exports none
+fx_option_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EAE09FCB-4128-5796-A9AF-417DECD08BD8
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions.delete_many=.
+
+#+name: fx_option_conventions-delete-many
+#+begin_src ores-shell :tangle fx_option_conventions-delete-many.ores :exports none
+fx_option_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EB1C99CB-D303-533A-A61D-41C82C03EC0C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions_versions.list=.
+
+#+name: fx_option_conventions-versions
+#+begin_src ores-shell :tangle fx_option_conventions-versions.ores :exports none
+fx_option_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DA99BC95-F0CB-5FAB-A0CE-B3FE1115AF07
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_option_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fx_option_conventions_versions.get=.
+
+#+name: fx_option_conventions-version
+#+begin_src ores-shell :tangle fx_option_conventions-version.ores :exports none
+fx_option_conventions version __none__ --version 1
+#+end_src
+

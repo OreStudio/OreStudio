@@ -411,6 +411,44 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
+fxOption reverse_fx_option(const refdata::domain::fx_option_convention& v) {
+    fxOption r;
+    static_cast<std::string&>(r.Id) = v.id;
+    if (v.fx_convention_id) {
+        fxOption_FXConventionID_t conventions;
+        static_cast<std::string&>(conventions) = *v.fx_convention_id;
+        r.FXConventionID = conventions;
+    }
+    static_cast<std::string&>(r.AtmType) = v.atm_type;
+    static_cast<std::string&>(r.DeltaType) = v.delta_type;
+    if (v.switch_tenor) {
+        fxOption_SwitchTenor_t tenor;
+        static_cast<std::string&>(tenor) = *v.switch_tenor;
+        r.SwitchTenor = tenor;
+    }
+    if (v.long_term_atm_type) {
+        fxOption_LongTermAtmType_t atm;
+        static_cast<std::string&>(atm) = *v.long_term_atm_type;
+        r.LongTermAtmType = atm;
+    }
+    if (v.long_term_delta_type) {
+        fxOption_LongTermDeltaType_t delta;
+        static_cast<std::string&>(delta) = *v.long_term_delta_type;
+        r.LongTermDeltaType = delta;
+    }
+    if (v.risk_reversal_in_favor_of) {
+        fxOption_RiskReversalInFavorOf_t favour;
+        static_cast<std::string&>(favour) = *v.risk_reversal_in_favor_of;
+        r.RiskReversalInFavorOf = favour;
+    }
+    if (v.butterfly_style) {
+        fxOption_ButterflyStyle_t style;
+        static_cast<std::string&>(style) = *v.butterfly_style;
+        r.ButterflyStyle = style;
+    }
+    return r;
+}
+
 futureType reverse_future(const refdata::domain::future_convention& v) {
     futureType r;
     static_cast<std::string&>(r.Id) = v.id;
@@ -887,6 +925,29 @@ refdata::domain::future_convention conventions_mapper::map_future(const futureTy
     return r;
 }
 
+refdata::domain::fx_option_convention conventions_mapper::map_fx_option(const fxOption& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping FX option convention: " << std::string(v.Id);
+
+    refdata::domain::fx_option_convention r;
+    r.id = std::string(v.Id);
+    if (v.FXConventionID)
+        r.fx_convention_id = std::string(*v.FXConventionID);
+    r.atm_type = std::string(v.AtmType);
+    r.delta_type = std::string(v.DeltaType);
+    if (v.SwitchTenor)
+        r.switch_tenor = std::string(*v.SwitchTenor);
+    if (v.LongTermAtmType)
+        r.long_term_atm_type = std::string(*v.LongTermAtmType);
+    if (v.LongTermDeltaType)
+        r.long_term_delta_type = std::string(*v.LongTermDeltaType);
+    if (v.RiskReversalInFavorOf)
+        r.risk_reversal_in_favor_of = std::string(*v.RiskReversalInFavorOf);
+    if (v.ButterflyStyle)
+        r.butterfly_style = std::string(*v.ButterflyStyle);
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::ois_convention conventions_mapper::map_ois(const oisType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << std::string(v.Id);
 
@@ -1092,6 +1153,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.fx_option.reserve(v.FxOption.size());
+    std::ranges::transform(v.FxOption, std::back_inserter(r.fx_option), [](const auto& x) {
+        return map_fx_option(x);
+    });
+
     r.future.reserve(v.Future.size());
     std::ranges::transform(v.Future, std::back_inserter(r.future), [](const auto& x) {
         return map_future(x);
@@ -1120,7 +1186,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
     count_unmodelled("CommodityForward", v.CommodityForward.size());
     count_unmodelled("CommodityFuture", v.CommodityFuture.size());
-    count_unmodelled("FxOption", v.FxOption.size());
     count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
     count_unmodelled("ZeroInflationIndex", v.ZeroInflationIndex.size());
     count_unmodelled("BondYield", v.BondYield.size());
@@ -1191,6 +1256,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.FxOption.reserve(v.fx_option.size());
+    for (const auto& x : v.fx_option)
+        r.FxOption.push_back(reverse_fx_option(x));
 
     r.Future.reserve(v.future.size());
     for (const auto& x : v.future)

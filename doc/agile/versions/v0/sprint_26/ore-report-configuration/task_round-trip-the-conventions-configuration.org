@@ -2,7 +2,7 @@
 :ID: 8A0973B9-A595-45D1-97EC-E83ECCCF5B27
 :END:
 #+title: Task: Round trip the conventions configuration
-#+description: conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Fourteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip.
+#+description: conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Sixteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip.
 #+type: task
 #+level: s1
 #+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
@@ -52,7 +52,7 @@ Every conventions document in the corpus imports, exports and matches, with the 
    measurement a person reads.
 3. Fix the modelled categories first, because they are the cheap half and they
    are why nine files fail for a reason unrelated to the unmodelled categories.
-4. Then model the fourteen categories, most used first, each with a refdata
+4. Then model the sixteen categories, most used first, each with a refdata
    entity, both mappers, and its own round trip.
 5. State the two normalisations the mapper performs on purpose in the kind's
    comparison, and only once the categories are modelled, because until then the
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 Delivered in [[https://github.com/OreStudio/OreStudio/pull/2354][PR #2354]], which
 closes this task with the modelled half of conventions proven and the unmodelled
 half scoped. The task's third acceptance bullet, that all seventy-two files
-round trip, is not met; the fourteen categories that stand between the corpus
+round trip, is not met; the sixteen categories that stand between the corpus
 and it are carried by
 [[id:A436B63F-778C-4EE5-BD9C-9BAB5133316A][Model the convention categories the
 mapper skips]], which continues this work.
@@ -136,7 +136,7 @@ kind's comparison answers it in two parts, and it is sound because the first
 part refuses a lost element and the second cannot hide one.
 
 *What does not.* The other sixty-three files each carry at least one of the
-fourteen categories the mapper does not model, from =CrossCurrencyBasis= in
+sixteen categories the mapper does not model, from =CrossCurrencyBasis= in
 forty-nine files to =IntradayPowerLoad= in one. A category the mapper cannot
 write is content the export cannot hold, so those files stay measured by a
 hidden probe rather than asserted.

@@ -1023,3 +1023,7 @@ tangled into the runnable script library
 * Future Conventions
 
 - [[id:6A85018B-DF01-5809-97DE-6B6D31554088][How do I run the future_conventions commands from the shell?]]
+
+* Fx Option Conventions
+
+- [[id:493D88F1-2E4F-558B-889C-A95760B9C1C3][How do I run the fx_option_conventions commands from the shell?]]

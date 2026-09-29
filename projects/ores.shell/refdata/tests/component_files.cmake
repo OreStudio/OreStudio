@@ -92,6 +92,7 @@ set(files
     "swap_convention_commands_tests.cpp"
     "swap_index_convention_commands_tests.cpp"
     "tenor_anchor_commands_tests.cpp"
+    "tenor_basis_swap_convention_commands_tests.cpp"
     "tenor_basis_two_swap_convention_commands_tests.cpp"
     "tenor_commands_tests.cpp"
     "tenor_convention_commands_tests.cpp"

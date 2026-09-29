@@ -32,7 +32,7 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * fifteen. The files that use only those fifteen round trip. The rest do not,
+ * sixteen. The files that use only those sixteen round trip. The rest do not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -250,6 +250,59 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     CHECK(files_with_basis == 49);
 }
 
+TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
+    int files_with_basis_swap = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.TenorBasisSwap.empty())
+            continue;
+
+        ++files_with_basis_swap;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.tenor_basis_swap.size() == document.TenorBasisSwap.size());
+
+        for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
+            const auto& in = document.TenorBasisSwap[i];
+            const auto& out = mapped.tenor_basis_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            if (in.PayIndex)
+                CHECK(out.pay_index == std::string(*in.PayIndex));
+            if (in.ReceiveIndex)
+                CHECK(out.receive_index == std::string(*in.ReceiveIndex));
+            if (in.LongIndex)
+                CHECK(out.long_index == std::string(*in.LongIndex));
+            if (in.ShortIndex)
+                CHECK(out.short_index == std::string(*in.ShortIndex));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "TenorBasisSwap");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.TenorBasisSwap.size()) +
+             " TenorBasisSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.TenorBasisSwap.size()));
+
+        // The mapper stores a canonical spelling of the sub-periods coupon
+        // type, so the export writes a spelling the document may not have used.
+        // What has to survive is the value: reading the export back and mapping
+        // it again must land on the same entity, field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.TenorBasisSwap.size() == document.TenorBasisSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
+            INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
+            CHECK(remapped.tenor_basis_swap[i] == mapped.tenor_basis_swap[i]);
+        }
+    }
+
+    // Twenty-nine of the seventy-two files carry it, and five of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_basis_swap == 29);
+}
+
 TEST_CASE("conventions_tenor_basis_two_swap_round_trips", tags) {
     int files_with_two_swap = 0;
 
@@ -315,10 +368,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Thirty-four of the seventy-two once TenorBasisTwoSwap landed: the twelve
-    // files it cleared on its own on top of the twenty-two already clean. The
-    // count is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 34);
+    // Thirty-nine of the seventy-two once TenorBasisSwap landed: the five files
+    // it cleared on its own on top of the thirty-four already clean. The count
+    // is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 39);
 }
 
 // Hidden by default, and run on demand:

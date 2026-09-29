@@ -444,6 +444,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_two_swap_conventions:write',    'Create and modify two-tenor basis swap conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_two_swap_conventions:delete',   'Delete two-tenor basis swap conventions');
 
+    -- Tenor basis swap conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_swap_conventions:read',         'View tenor basis swap conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_swap_conventions:write',        'Create and modify tenor basis swap conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_basis_swap_conventions:delete',       'Delete tenor basis swap conventions');
     -- Tenor anchors permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:read',                       'View tenor anchors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:write',                      'Create and modify tenor anchors');

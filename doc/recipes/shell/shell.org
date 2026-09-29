@@ -1039,3 +1039,7 @@ tangled into the runnable script library
 * Tenor Basis Two Swap Conventions
 
 - [[id:2F45F265-10AF-505E-9FE5-5A24BFE2B4CB][How do I run the tenor_basis_two_swap_conventions commands from the shell?]]
+
+* Tenor Basis Swap Conventions
+
+- [[id:1F1CD75E-CC99-5C2A-9667-BCAD83093001][How do I run the tenor_basis_swap_conventions commands from the shell?]]

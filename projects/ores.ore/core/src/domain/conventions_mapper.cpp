@@ -429,6 +429,60 @@ tenorBasisTwoSwapType reverse_tenor_basis_two_swap(
     return r;
 }
 
+tenorBasisSwapType reverse_tenor_basis_swap(const refdata::domain::tenor_basis_swap_convention& v) {
+    tenorBasisSwapType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    if (v.pay_index) {
+        tenorBasisSwapType_PayIndex_t x;
+        static_cast<std::string&>(x) = *v.pay_index;
+        r.PayIndex = x;
+    }
+    if (v.pay_frequency)
+        r.PayFrequency = *v.pay_frequency;
+    if (v.receive_index) {
+        tenorBasisSwapType_ReceiveIndex_t x;
+        static_cast<std::string&>(x) = *v.receive_index;
+        r.ReceiveIndex = x;
+    }
+    if (v.receive_frequency)
+        r.ReceiveFrequency = *v.receive_frequency;
+    if (v.spread_on_rec)
+        r.SpreadOnRec = make_bool(*v.spread_on_rec);
+    if (v.include_spread)
+        r.IncludeSpread = make_bool(*v.include_spread);
+    if (v.sub_periods_coupon_type) {
+        const auto& s = *v.sub_periods_coupon_type;
+        if (s == "Compounding")
+            r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
+        else if (s == "Averaging")
+            r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
+        else
+            throw std::runtime_error("reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " +
+                                     s);
+    }
+    if (v.pay_is_averaged)
+        r.PayIsAveraged = make_bool(*v.pay_is_averaged);
+    if (v.rec_is_averaged)
+        r.RecIsAveraged = make_bool(*v.rec_is_averaged);
+    if (v.long_index) {
+        tenorBasisSwapType_LongIndex_t x;
+        static_cast<std::string&>(x) = *v.long_index;
+        r.LongIndex = x;
+    }
+    if (v.long_pay_tenor)
+        r.LongPayTenor = *v.long_pay_tenor;
+    if (v.short_index) {
+        tenorBasisSwapType_ShortIndex_t x;
+        static_cast<std::string&>(x) = *v.short_index;
+        r.ShortIndex = x;
+    }
+    if (v.short_pay_tenor)
+        r.ShortPayTenor = *v.short_pay_tenor;
+    if (v.spread_on_short)
+        r.SpreadOnShort = make_bool(*v.spread_on_short);
+    return r;
+}
+
 crossCurrencyBasisType reverse_cross_currency_basis(
     const refdata::domain::cross_currency_basis_convention& v) {
     crossCurrencyBasisType r;
@@ -1053,6 +1107,70 @@ conventions_mapper::map_tenor_basis_two_swap(const tenorBasisTwoSwapType& v) {
     return r;
 }
 
+refdata::domain::tenor_basis_swap_convention
+conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping tenor basis swap convention: " << std::string(v.Id);
+
+    refdata::domain::tenor_basis_swap_convention r;
+    r.id = std::string(v.Id);
+
+    if (v.PayIndex)
+        r.pay_index = std::string(*v.PayIndex);
+
+    if (v.PayFrequency)
+        r.pay_frequency = std::string(*v.PayFrequency);
+
+    if (v.ReceiveIndex)
+        r.receive_index = std::string(*v.ReceiveIndex);
+
+    if (v.ReceiveFrequency)
+        r.receive_frequency = std::string(*v.ReceiveFrequency);
+
+    if (v.SpreadOnRec)
+        r.spread_on_rec = parse_bool(*v.SpreadOnRec);
+
+    if (v.IncludeSpread)
+        r.include_spread = parse_bool(*v.IncludeSpread);
+
+    if (v.SubPeriodsCouponType) {
+        using sp = domain::subPeriodsCouponType;
+        switch (*v.SubPeriodsCouponType) {
+            case sp::Compounding:
+                r.sub_periods_coupon_type = "Compounding";
+                break;
+            case sp::Averaging:
+                r.sub_periods_coupon_type = "Averaging";
+                break;
+            default:
+                throw std::runtime_error("Unknown sub-periods coupon type enum value");
+        }
+    }
+
+    if (v.PayIsAveraged)
+        r.pay_is_averaged = parse_bool(*v.PayIsAveraged);
+
+    if (v.RecIsAveraged)
+        r.rec_is_averaged = parse_bool(*v.RecIsAveraged);
+
+    if (v.LongIndex)
+        r.long_index = std::string(*v.LongIndex);
+
+    if (v.LongPayTenor)
+        r.long_pay_tenor = std::string(*v.LongPayTenor);
+
+    if (v.ShortIndex)
+        r.short_index = std::string(*v.ShortIndex);
+
+    if (v.ShortPayTenor)
+        r.short_pay_tenor = std::string(*v.ShortPayTenor);
+
+    if (v.SpreadOnShort)
+        r.spread_on_short = parse_bool(*v.SpreadOnShort);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::cross_currency_basis_convention
 conventions_mapper::map_cross_currency_basis(const crossCurrencyBasisType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << std::string(v.Id);
@@ -1359,6 +1477,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.tenor_basis_swap.reserve(v.TenorBasisSwap.size());
+    std::ranges::transform(v.TenorBasisSwap,
+                           std::back_inserter(r.tenor_basis_swap),
+                           [](const auto& x) { return map_tenor_basis_swap(x); });
+
     r.tenor_basis_two_swap.reserve(v.TenorBasisTwoSwap.size());
     std::ranges::transform(v.TenorBasisTwoSwap,
                            std::back_inserter(r.tenor_basis_two_swap),
@@ -1397,7 +1520,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("TenorBasisSwap", v.TenorBasisSwap.size());
     count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
     count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
     count_unmodelled("InflationSwap", v.InflationSwap.size());
@@ -1474,6 +1596,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.TenorBasisSwap.reserve(v.tenor_basis_swap.size());
+    for (const auto& x : v.tenor_basis_swap)
+        r.TenorBasisSwap.push_back(reverse_tenor_basis_swap(x));
 
     r.TenorBasisTwoSwap.reserve(v.tenor_basis_two_swap.size());
     for (const auto& x : v.tenor_basis_two_swap)

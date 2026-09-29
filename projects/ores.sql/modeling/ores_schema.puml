@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T10:56:36.111380Z
+' Generated: 2026-09-29T11:30:41.623001Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3375,6 +3375,51 @@ package "refdata" #FFF3E0 {
     curve or ladder's own quoting-basis override (see
     [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is
     out of scope for this model and lives on the curve/ladder entity instead.
+    end note
+
+    entity ores_refdata_tenor_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          pay_index : text
+          pay_frequency : text
+          receive_index : text
+          receive_frequency : text
+          spread_on_rec : boolean
+          include_spread : boolean
+          sub_periods_coupon_type : text
+          pay_is_averaged : boolean
+          rec_is_averaged : boolean
+          long_index : text
+          long_pay_tenor : text
+          short_index : text
+          short_pay_tenor : text
+          spread_on_short : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_basis_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Basis Swap Convention Table
+    Describes how ORE builds the two legs of a tenor basis swap, where each leg
+    pays a different tenor off its own index and the two legs may differ in more
+    than the tenor. Corresponds to the <TenorBasisSwap> element in ORE
+    conventions.xml. The id field is the natural key (ORE <Id> element).
+    ORE lets a tenor basis swap be written two ways, and the corpus uses both. The
+    paying and receiving form names PayIndex and ReceiveIndex with an optional
+    frequency each, and adds the averaging and sub-periods fields. The long and
+    short form names LongIndex and ShortIndex with an optional payment tenor
+    each, and adds the spread flags. The two forms do not share a field, so the
+    table carries every field of both and each row fills one form.
     end note
 
     entity ores_refdata_tenor_basis_two_swap_conventions_tbl <<temporal>> #C6F0D8 {

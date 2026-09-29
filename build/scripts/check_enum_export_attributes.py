@@ -31,6 +31,12 @@ macros where an enum's name belongs -- directly after "enum", "enum class" or
 keeps the rule honest: a name that looks like a macro but expands to something
 else is not reported.
 
+One pass over each file answers both questions, so the count that is reported
+and the rule that is enforced agree: a site is a declaration when the name that
+follows the enum keyword is followed by a colon, a brace or a semicolon, which
+is how a declaration is spelled, and it is a violation when that name is a
+visibility macro.
+
 What it cannot see
 ------------------
 
@@ -57,6 +63,7 @@ import argparse
 import pathlib
 import re
 import sys
+from typing import NamedTuple
 
 SOURCE_SUFFIXES = (".hpp", ".h", ".cpp", ".ipp", ".cc")
 
@@ -67,19 +74,25 @@ ATTRIBUTE_BODY_RE = re.compile(
     r"|__attribute__\s*\(\(\s*visibility"
 )
 
-# The macro is where the enum's name belongs, so it sits between the enum
-# keyword and the name.
-ENUM_RE = re.compile(r"\benum\s+(?:(?:class|struct)\s+)?([A-Za-z_]\w*)")
+# The two names every component's export macro expands to. They are defined in
+# Boost rather than under projects/, so a declaration that uses one directly
+# would otherwise be invisible to the check.
+BOOST_VISIBILITY_MACROS = {"BOOST_SYMBOL_EXPORT", "BOOST_SYMBOL_IMPORT"}
 
-# The same shape, narrowed to a declaration, for the count that is reported on
-# success: an elaborated type or a using-declaration names an enum without
-# declaring one.
-ENUM_DECLARATION_RE = re.compile(
-    r"\benum\s+(?:(?:class|struct)\s+)?([A-Za-z_]\w*)\s*(?::|\{)"
-)
+ENUM_KEYWORD_RE = re.compile(r"\benum\s+(?:(?:class|struct)\s+)?")
+IDENTIFIER_RE = re.compile(r"[A-Za-z_]\w*")
+# What follows an enum's name when it declares one, as opposed to naming an
+# enum in an elaborated type or a using-declaration.
+DECLARATION_TAIL_RE = re.compile(r"\s*(?::|\{|\;)")
+USING_ENUM_RE = re.compile(r"\busing\s+$")
 
-LINE_COMMENT_RE = re.compile(r"//[^\n]*")
-BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+class EnumSite(NamedTuple):
+    """One enum in one file, as the check reads it."""
+
+    line: int
+    source: str
+    macro: str | None
 
 
 def source_files(root: pathlib.Path) -> list[pathlib.Path]:
@@ -90,45 +103,93 @@ def source_files(root: pathlib.Path) -> list[pathlib.Path]:
     )
 
 
-def visibility_macros(root: pathlib.Path) -> set[str]:
-    macros: set[str] = set()
-    for path in source_files(root):
-        for line in path.read_text(errors="ignore").splitlines():
+def erase_comments_and_literals(text: str) -> str:
+    """Blank comments and string literals, keeping every offset in place.
+
+    A one-to-one replacement matters twice over: line numbers are reported
+    from these offsets, and a comment or a string that spells out the shape
+    the check looks for must not be read as code. Blanks are substituted for
+    the characters erased, newlines included, so nothing shifts.
+    """
+    out = list(text)
+    index = 0
+    length = len(text)
+    while index < length:
+        current = text[index]
+        if current == "/" and text[index : index + 2] == "//":
+            while index < length and text[index] != "\n":
+                out[index] = " "
+                index += 1
+        elif current == "/" and text[index : index + 2] == "/*":
+            while index < length and text[index : index + 2] != "*/":
+                if text[index] != "\n":
+                    out[index] = " "
+                index += 1
+            for offset in range(index, min(index + 2, length)):
+                out[offset] = " "
+            index += 2
+        elif current in "\"'":
+            quote = current
+            out[index] = " "
+            index += 1
+            while index < length and text[index] != quote:
+                if text[index] == "\\" and index + 1 < length:
+                    out[index] = " "
+                    index += 1
+                if index < length and text[index] != "\n":
+                    out[index] = " "
+                index += 1
+            if index < length:
+                out[index] = " "
+            index += 1
+        else:
+            index += 1
+    return "".join(out)
+
+
+def visibility_macros(sources: dict[pathlib.Path, str]) -> set[str]:
+    """Every macro defined under projects/ whose body is a visibility attribute."""
+    macros = set(BOOST_VISIBILITY_MACROS)
+    for text in sources.values():
+        joined = text.replace("\\\n", " ")
+        for line in joined.splitlines():
             match = DEFINE_RE.match(line)
             if match and ATTRIBUTE_BODY_RE.search(match.group(2)):
                 macros.add(match.group(1))
     return macros
 
 
-def strip_comments(text: str) -> str:
-    """Blank out comments so prose about the rule is not read as the rule."""
-    return BLOCK_COMMENT_RE.sub("", LINE_COMMENT_RE.sub("", text))
+def enum_sites(text: str, macros: set[str]) -> list[EnumSite]:
+    """Every enum declaration in one comment- and literal-erased file."""
+    sites: list[EnumSite] = []
+    for keyword in ENUM_KEYWORD_RE.finditer(text):
+        if USING_ENUM_RE.search(text, 0, keyword.start()):
+            continue
+        rest = text[keyword.end() :]
+        first = IDENTIFIER_RE.match(rest)
+        if first is None:
+            continue
+        macro = first.group(0) if first.group(0) in macros else None
+        cursor = first.end()
+        if macro is not None:
+            skipped = len(rest[cursor:]) - len(rest[cursor:].lstrip())
+            second = IDENTIFIER_RE.match(rest[cursor + skipped :])
+            if second is None:
+                continue
+            cursor += skipped + second.end()
+        if DECLARATION_TAIL_RE.match(rest[cursor:]) is None:
+            continue
+        line = text.count("\n", 0, keyword.start()) + 1
+        sites.append(EnumSite(line, text.splitlines()[line - 1].strip(), macro))
+    return sites
 
 
-def offending_declarations(
-    root: pathlib.Path, macros: set[str]
-) -> list[tuple[str, int, str]]:
-    found: list[tuple[str, int, str]] = []
-    for path in source_files(root):
-        lines = strip_comments(path.read_text(errors="ignore")).splitlines()
-        for number, line in enumerate(lines, start=1):
-            match = ENUM_RE.search(line)
-            if match and match.group(1) in macros:
-                found.append((str(path.relative_to(root)), number, line.strip()))
-    return found
-
-
-def enum_declaration_count(root: pathlib.Path) -> tuple[int, int]:
-    declarations = 0
-    files = 0
-    for path in source_files(root):
-        matches = ENUM_DECLARATION_RE.findall(
-            strip_comments(path.read_text(errors="ignore"))
-        )
-        if matches:
-            files += 1
-            declarations += len(matches)
-    return declarations, files
+def read_sources(root: pathlib.Path) -> dict[pathlib.Path, str]:
+    """Every C++ source under projects/, erased of comments and literals."""
+    return {
+        path: erase_comments_and_literals(path.read_text(errors="ignore"))
+        for path in source_files(root)
+    }
 
 
 def main() -> int:
@@ -141,11 +202,20 @@ def main() -> int:
         print(f"error: {root}/projects is missing", file=sys.stderr)
         return 1
 
-    macros = visibility_macros(root)
-    offending = offending_declarations(root, macros)
+    sources = read_sources(root)
+    macros = visibility_macros(sources)
+
+    declarations = 0
+    files = 0
+    offending: list[tuple[str, EnumSite]] = []
+    for path, text in sources.items():
+        sites = enum_sites(text, macros)
+        if sites:
+            files += 1
+            declarations += len(sites)
+        offending.extend((str(path.relative_to(root)), site) for site in sites if site.macro)
 
     if not offending:
-        declarations, files = enum_declaration_count(root)
         print(
             f"Enum export attributes: none; {declarations} enum declaration(s) "
             f"in {files} file(s) carry no visibility macro."
@@ -157,8 +227,8 @@ def main() -> int:
         "to an enum:",
         file=sys.stderr,
     )
-    for relative, number, line in offending:
-        print(f"  {relative}:{number}: {line}", file=sys.stderr)
+    for relative, site in offending:
+        print(f"  {relative}:{site.line}: {site.source}", file=sys.stderr)
     print(
         "clang-cl rejects the combination with -Wignored-attributes, an error "
         "under -Werror. An enum needs no export attribute to cross a binary "

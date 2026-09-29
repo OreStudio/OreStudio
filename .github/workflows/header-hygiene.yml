@@ -17,18 +17,21 @@
 name: Header hygiene
 on:  # yamllint disable-line rule:truthy
   # Any change under projects/ can write a header, so this fires on all of
-  # them, and on the check itself so an edit to it is verified here too.
+  # them, and on the check and this file, so an edit to either is verified
+  # here too.
   push:
     branches: ["main"]
     paths:
       - "projects/**"
       - "build/scripts/check_enum_export_attributes.py"
+      - ".github/workflows/header-hygiene.yml"
 
   pull_request:
     branches: ["main"]
     paths:
       - "projects/**"
       - "build/scripts/check_enum_export_attributes.py"
+      - ".github/workflows/header-hygiene.yml"
 
   workflow_dispatch:
 

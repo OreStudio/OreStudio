@@ -105,3 +105,58 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The shell says one thing per act. =bootstrap setup= is what =provision system=
+became, and it sits in the bootstrap menu with =bootstrap-status= and
+=create-initial-admin=, because those three are one story: what the installation
+answers, how it is given an administrator, and how it is brought to life. It
+does what it did before — reads the bootstrap answer, creates the administrator,
+signs in, sends one provision request for the first tenant, follows the run —
+and its name now says so. =provision tenant= and =provision party= keep the
+words the browser's routes use, and =provision tenant= means one thing for every
+tenant, the first included.
+
+The duplicates are gone. The generated =tenant_provisioning= command unit
+carried a second spelling of both porcelain requests, one that could not wait
+for a run, resolve a party or refuse before it started, and the journey's own
+recipes never called it. =tenants complete-provisioning= and the verb it called,
+=iam.v1.tenants.complete-provisioning=, are gone too: completing a tenant is the
+last step of the run the provision request starts, and that step acts on the
+tenant the run provisions rather than on the caller's own tenant. The standalone
+verb cleared a tenant's flags in the caller's party scope — the defect this
+branch found in the previous task's work — so retiring it removed the defect
+instead of fixing it.
+
+The synthetic organisation generator is deleted, and its recipe with it. It
+built a randomised organisation inside an existing tenant and only the shell's
+=synthetic generate= command drove it, which only the deleted recipe called, so
+nothing drives it now. Its four failures are recorded as the requirement list
+for whoever builds synthetic tenants and parties again: a fixed shape where a
+dataset needs one, staff accounts, locale coverage, and ISO 17442 checksum-valid
+identifiers. The =synthetic= menu keeps the market simulator, which is a
+different subsystem.
+
+The documents describe the surface that exists. The manual's provisioning
+chapter and the Acme chapter say =bootstrap setup= and offer no =--source= flag
+and no synthetic organisation. The three journey documents' subject tables and
+gap lists match the wire surface: one provision verb for every tenant, a party
+request that is no longer partial, and the gaps that are genuinely left. The
+story's Status records what landed and, more importantly, the two acceptance
+lines that did NOT: the *New tenant* and *New party* journeys are not routes of
+their own, and no scripted run proves the browser's path on a fresh database.
+Both are filed as their own task, so the story stays open rather than closing
+on a claim it cannot support.
+
+The work leaves two records behind rather than losing them: a capture for
+synthetic tenants and parties when they return, and a task for the codegen
+template that leaves the parent row the generated eventing integration tests
+seed, which is why =ores.iam.core.tests= fails on a second run against one
+database.
+
+Every codegen gate passed on the committed tree — drift, sweep, the twin
+coverage, the menu collisions (263 root names, none owned twice), the registry,
+the permissions, the route declarations, the reachability, the paste blocks, the
+populate references, the model drift, the SQL hygiene and the org lint — and the
+affected suites passed: =ores.iam.api.tests=, =ores.iam.core.tests=,
+=ores.shell.api.tests=, =ores.shell.application.tests=, =ores.synthetic.api.tests=
+and =ores.synthetic.core.tests=.

@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2384
+#+pr: 2385
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -442,6 +442,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2385][#2385]] | [refdata,marketdata] Drop the grid the feed no longer writes |
 | [[https://github.com/OreStudio/OreStudio/pull/2384][#2384]] | [marketdata,synthetic] Read the pillars by the identity the feed writes |
 | [[https://github.com/OreStudio/OreStudio/pull/2378][#2378]] | [agile] The gate permits the builder's home |
 | [[https://github.com/OreStudio/OreStudio/pull/2377][#2377]] | [agile] Answer where the shared key builder lives |

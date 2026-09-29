@@ -29,8 +29,8 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
-| Waiting on   | The internal series' identity: the FOMC grid is a row no projection can name, and it blocks the not-null and unique constraints the deletion needs. |
-| Next         | Settle the internal series' identity, which is what the not-null cutover waits on, then delete the triple against the census. That deletion is the fourth acceptance and it is not done, so the task stays open past the merge of its first unit. |
+| Waiting on   | Nothing now that the FOMC segment's identity is decided: the raw grid is re-keyed onto the ORE instruments it simulates and the republish curve onto ORE's =DISCOUNT= key, both before the constraints move. |
+| Next         | Re-key the FOMC segment: the synthetic feed publishes the grid under the instruments' ORE keys, the bootstrap reads them from its own pillars, and the seed and its tests follow. Then the not-null and unique constraints, then the deletion against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -120,38 +120,70 @@ compiler and the suites and by nothing else: it has no sender anywhere in the tr
 and no case exercises it, which is worth knowing before the cutover leans on it.
 
 **Not every series row in the table can be given an identity, and the constraint
-says so.** Measured on the live database at =ca23d34ef2=: of 5,864 series rows,
-**4,431** carry a series type the ORE key grammar knows, and **1,433 across 28
-types do not**. Almost all of the second population is test-data generator output --
-=CD-0= to =CD-25=, 1,431 rows, whose =series_type=, =metric= and =qualifier= are all
-the same string and whose subclass cycles through the generator's list -- plus one
-=YieldCurve= row the model's own example generator emits. Neither is data.
+says so.** Measured on the live database at =ca23d34ef2=, and re-read on the FOMC rows
+at =3632865c32=: of 5,864 series rows, **4,431** carry a series type the ORE key
+grammar knows, and **1,433 across 28 types do not**. All but two of the second
+population is test-data generator output -- =CD-0= to =CD-25=, 1,431 rows, whose
+=series_type=, =metric= and =qualifier= are all the same string and whose subclass
+cycles through the list the model's generated generator draws from.
 
-The population that matters is one row: the FOMC bootstrap's raw grid, seeded by
-=marketdata_market_series_fomc_populate.sql= as =RATES / YIELD / 'USD/SOFR-FOMC'=,
-"the identity the ingest loop resolves the ir_curve_feed's ticks by". =RATES= and
-=YIELD= are not ORE series types, so =from_ore_key()= cannot name that row, and
-neither can any other projection: the synthetic pipeline invented a vocabulary of
-its own.
+The remaining **two rows are the FOMC segment**, both seeded by
+=marketdata_market_series_fomc_populate.sql=, and both production: they carry the
+fixed uuids the FOMC bootstrap config references as its =source_series_id= and its
+=output_series_id=.
 
-So the plan's phase one -- the column not null, the natural key moved onto it --
-cannot proceed as written, and this is the third time the same shape has appeared:
-the premise "every identity-bearing row can be given an =oresmd_uri=" holds for what
-ORE's files carry, and fails for what the system invents. =GENERIC-MD= was the first,
-the generated feed binding writer the second. The options, recorded rather than
-chosen:
+- =RATES / YIELD / 'USD/SOFR-FOMC'=, the raw grid "the identity the ingest loop
+  resolves the ir_curve_feed's ticks by". =RATES= and =YIELD= are not ORE series
+  types, so =from_ore_key()= cannot name it.
+- =YieldCurve / DISCOUNT / 'USD/SOFR-FOMC'=, the curve the republish service writes
+  into. =YieldCurve= names a curve in ORE's curve configuration rather than a market
+  data type, so the grammar carries it in neither direction.
 
-- the synthetic feed publishes its raw grid under a real ORE key, the way its daily
-  average price already publishes under =COMMODITY_FWD/PRICE/ICE:PDQ/USD/<date>=.
-  This is the least invention and the one that makes the cutover's premise true;
-- oresmd grows a namespace for internally derived series, which is a grammar
-  extension and wants its own decision;
-- derived series keep the triple and the URI stays the key for observed ones, which
-  leaves two keys in one table and defeats the point of the cutover.
+This task's first reading called the second row generator output and so counted one
+production row. It is the republish seed, and there are two.
 
-The column stays nullable meanwhile, and the identity is what a row gets *if it has
-one*: the constraint would not catch the generator output anyway, since random text
-satisfies a not null column.
+**The instrument set is ORE's, and the corpus spells it.** The raw grid's ticks are
+simulated quotes for meeting-dated OIS, and its pillars pair FOMC meeting dates:
+=SPOT= to =1F=, then =1F= to =2F=, through =8F= to =1Y=. ORE carries the same
+instrument class elsewhere in the corpus: =external/ore/examples= spells a
+meeting-dated OIS as =IR_SWAP/RATE/GBP/20220922/1D/20221103= -- a start date, the
+overnight index tenor, an end date -- and the live table holds 58 series whose settle
+segment is =20220922=. The curve row is nameable in the same vocabulary:
+=DISCOUNT/RATE/CCY/CURVE/TENOR= is how the corpus carries a discount curve's points
+(the =USD-DUMMY= curve), and =DISCOUNT= is already an oresmd class. So the invented
+=RATES/YIELD= vocabulary is not what the instrument class needs.
+
+**Decided: the feed publishes the grid as the instruments it simulates, and the
+bootstrap reads them per pillar.** The synthetic feed resolves each entry's start and
+end tenor to dates already, because the schedule needs them, so the ORE key is a
+projection of what the feed holds. The grid stops being one series with a point per
+entry and becomes one series per instrument, which is how ORE models a curve's input;
+the bootstrap's own pillars carry the start tenor, the end tenor and the role, so its
+input is derived from the config rather than referenced by one =source_series_id=.
+The republish output keeps its one-series-per-curve shape and takes ORE's =DISCOUNT=
+key, with the pillar as the observation's point. The alternatives, recorded for the
+reader who asks why they were not taken:
+
+- oresmd grows a namespace for internally derived series. Rejected: it would make the
+  identity space admit whatever the system invents, which is what the grammar exists
+  to refuse, and the grid's instruments turn out to be ORE's after all.
+- the derived series keep the triple and the URI stays the key for observed rows
+  only. Rejected: two keys in one table, which defeats the point of the cutover.
+
+The deposit pillar, =SPOT= to the first meeting, is a money-market quote rather than a
+swap: the corpus spells that family =MM/RATE/CCY/SETTLE/TENOR= with tenors rather
+than dates, so its dated spelling is the one open question the implementing unit
+settles against the corpus.
+
+**The two configs disagree on the roles, and deriving a key is what exposes it.** The
+synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the bootstrap
+config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Nothing notices today,
+because the feed writes each tick under the end tenor's point id and the bootstrap
+reads by that point id alone, so the families never meet. A key derived from the
+pillar would pick a different family on the two sides, so the unit reconciles the
+vocabularies before it derives anything. The column stays nullable until the feed and the seed
+agree, and the identity is what a row gets *if it has one*: the constraint would not
+catch the generator output anyway, since random text satisfies a not null column.
 
 * Plan
 

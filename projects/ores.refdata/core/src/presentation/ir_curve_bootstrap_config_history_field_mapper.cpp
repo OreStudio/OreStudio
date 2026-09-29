@@ -39,8 +39,6 @@ render_ir_curve_bootstrap_config_fields(const domain::ir_curve_bootstrap_config&
         {.name = "Output Series ID", .value = boost::uuids::to_string(v.output_series_id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Currency Code", .value = v.currency_code});
-    fields.push_back(
-        {.name = "Source Series ID", .value = boost::uuids::to_string(v.source_series_id)});
     fields.push_back({.name = "Curve Family Role", .value = v.curve_family_role});
     fields.push_back({.name = "Discount Curve Config ID",
                       .value = boost::uuids::to_string(v.discount_curve_config_id)});

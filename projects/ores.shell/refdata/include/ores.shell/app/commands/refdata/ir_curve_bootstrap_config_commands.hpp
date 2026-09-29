@@ -87,16 +87,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <output_series_id> <currency_code> <source_series_id> <curve_family_role>
-     * <discount_curve_config_id> <interpolation_method> <day_count_convention>
-     * <tenor_convention_code> <split_tenor_code> <reason> <commentary>
+     * @brief add <output_series_id> <currency_code> <curve_family_role> <discount_curve_config_id>
+     * <interpolation_method> <day_count_convention> <tenor_convention_code> <split_tenor_code>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <output_series_id> <currency_code> <source_series_id> <curve_family_role>
+     * @brief set <id> <output_series_id> <currency_code> <curve_family_role>
      * <discount_curve_config_id> <interpolation_method> <day_count_convention>
      * <tenor_convention_code> <split_tenor_code> <reason> <commentary> [--version <n>]
      */
@@ -105,8 +105,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <output_series_id> <currency_code> <source_series_id>
-     * <curve_family_role> <discount_curve_config_id> <interpolation_method> <day_count_convention>
+     * @brief put-many --count <n> <id> <output_series_id> <currency_code> <curve_family_role>
+     * <discount_curve_config_id> <interpolation_method> <day_count_convention>
      * <tenor_convention_code> <split_tenor_code> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

@@ -36,7 +36,6 @@ export interface IrCurveBootstrapConfigWrite {
     id: string;
     output_series_id: string;
     currency_code: string;
-    source_series_id: string;
     curve_family_role: string;
     discount_curve_config_id: string;
     interpolation_method: string;

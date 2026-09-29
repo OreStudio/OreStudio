@@ -21,18 +21,9 @@
 /**
  * FOMC Segment Market Series Population Script
  *
- * Seeds the two market_series catalog rows for the FOMC-dated short end of
- * the USD SOFR curve, each with a fixed uuid the bootstrap config
- * references (see refdata_ir_curve_bootstrap_configs_populate.sql):
- *
- *  - The raw grid the synthetic feed publishes into: RATES / YIELD /
- *    'USD/SOFR-FOMC', the identity the ingest loop resolves the
- *    ir_curve_feed's ticks by. Seeding the row means the feed's ticks land
- *    in a fixed, known series id instead of one auto-created at first
- *    tick. The feed's own identity (see ir_curve_qualifier in
- *    ir_curve_template_resolver) is currency_code '/' + index_family + '-'
- *    + tenor, so the synthetic FOMC config (USD, sofr, tenor 'FOMC')
- *    produces exactly this qualifier.
+ * Seeds the market_series catalog row for the bootstrapped USD SOFR curve's
+ * FOMC-dated short end, with a fixed uuid the bootstrap config references as
+ * its output_series_id (see refdata_ir_curve_bootstrap_configs_populate.sql):
  *
  *  - The bootstrapped curve the republish service writes into:
  *    DISCOUNT / RATE / 'USD/USD-SOFR-FOMC' -- ORE's own spelling for a
@@ -46,10 +37,15 @@
  *    the seed writes the sentinel (nil config id, version 0) rather than
  *    the derived shape directly.
  *
- * Both rows belong to the system party, matching the party the synthetic
+ * There is no raw grid row. The synthetic FOMC feed publishes one series per
+ * pillar, each keyed as the meeting-dated OIS quote it simulates, so the
+ * bootstrap reads a pillar from the series that pillar's own ORE key names
+ * and no fixed grid id is needed to catch the feed's ticks.
+ *
+ * The row belongs to the system party, matching the party the synthetic
  * dataset publishes into and therefore the party_id on the feed's ticks.
  *
- * Both also carry one junction row each in
+ * It also carries a junction row in
  * ores_marketdata_market_series_asset_classes_tbl, since the asset class is
  * no longer a column on the series row.
  *
@@ -57,8 +53,7 @@
  * rerun must not reset a row the republish service has already stamped).
  * A database built before the curve's spelling changed keeps the old row
  * and a null identity: the schema is applied by recreation, so a rebuild
- * is the migration. The raw grid row stays null until the re-key gives
- * the feed one series per pillar.
+ * is the migration.
  */
 
 \echo '--- FOMC Segment Market Series ---'
@@ -70,17 +65,6 @@ insert into ores_marketdata_market_series_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (
-        'e1c2d3f4-5b6c-4d7e-9f8a-0b1c2d3e4f50',
-        ores_utility_system_tenant_id_fn(),
-        0,
-        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
-        'RATES', 'YIELD', 'USD/SOFR-FOMC',
-        'yield', null,
-        'OBSERVED', ores_utility_nil_uuid_fn(), 0,
-        current_user, current_user, 'system.initial_load',
-        'Raw FOMC-dated OIS grid: the synthetic feed''s tick target for the FOMC segment'
-    ),
     (
         'f2d3e4a5-6c7d-4e8f-8a9b-1c2d3e4f5061',
         ores_utility_system_tenant_id_fn(),
@@ -96,20 +80,13 @@ on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
--- Both series belong to the interest rates asset class, which the junction
+-- The curve belongs to the interest rates asset class, which the junction
 -- carries rather than the series row.
 insert into ores_marketdata_market_series_asset_classes_tbl (
     market_series_id, tenant_id, asset_class_code, version,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (
-        'e1c2d3f4-5b6c-4d7e-9f8a-0b1c2d3e4f50',
-        ores_utility_system_tenant_id_fn(),
-        'interest_rates', 0,
-        current_user, current_user, 'system.initial_load',
-        'The raw FOMC-dated OIS grid is an interest rates series'
-    ),
     (
         'f2d3e4a5-6c7d-4e8f-8a9b-1c2d3e4f5061',
         ores_utility_system_tenant_id_fn(),
@@ -121,10 +98,9 @@ on conflict (tenant_id, market_series_id, asset_class_code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
--- Summary. Both spellings are listed because the curve's qualifier carries the
--- currency its key names and the grid's does not.
+-- Summary.
 select 'marketdata_market_series (FOMC segment)' as entity, count(*) as count
 from ores_marketdata_market_series_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
-  and qualifier in ('USD/SOFR-FOMC', 'USD/USD-SOFR-FOMC')
+  and qualifier = 'USD/USD-SOFR-FOMC'
   and valid_to = ores_utility_infinity_timestamp_fn();

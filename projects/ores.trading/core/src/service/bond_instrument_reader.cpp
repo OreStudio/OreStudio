@@ -115,12 +115,16 @@ struct issue_leg_rows final {
  * rows these are, so a row there carries no role and the answer is the
  * bond.
  */
+// The role the security's rows are read under: the issue-keyed tables
+// already say whose rows they are, and the container still names the role.
+constexpr std::string_view bond_leg_role = "bond";
+
 std::string_view leg_role_of(const domain::bond_leg& row) {
     return row.leg_role;
 }
 
 std::string_view leg_role_of(const domain::bond_issue_leg&) {
-    return "bond";
+    return bond_leg_role;
 }
 
 std::string_view leg_role_of(const domain::bond_leg_amount& row) {
@@ -128,7 +132,7 @@ std::string_view leg_role_of(const domain::bond_leg_amount& row) {
 }
 
 std::string_view leg_role_of(const domain::bond_issue_leg_amount&) {
-    return "bond";
+    return bond_leg_role;
 }
 
 std::string_view leg_role_of(const domain::bond_leg_rate& row) {
@@ -136,7 +140,7 @@ std::string_view leg_role_of(const domain::bond_leg_rate& row) {
 }
 
 std::string_view leg_role_of(const domain::bond_issue_leg_rate&) {
-    return "bond";
+    return bond_leg_role;
 }
 
 std::string_view leg_role_of(const domain::bond_leg_amortization& row) {
@@ -144,7 +148,7 @@ std::string_view leg_role_of(const domain::bond_leg_amortization& row) {
 }
 
 std::string_view leg_role_of(const domain::bond_issue_leg_amortization&) {
-    return "bond";
+    return bond_leg_role;
 }
 
 /**

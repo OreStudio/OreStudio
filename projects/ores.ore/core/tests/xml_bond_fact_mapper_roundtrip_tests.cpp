@@ -83,6 +83,58 @@ bond_instrument_data map_inline(const std::string& xml) {
 } // namespace
 
 // =============================================================================
+// The six issue fields ORE states beside the security id
+// =============================================================================
+
+TEST_CASE("the_six_issue_fields_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Six_Fields">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <IssuerId>CPTY_C</IssuerId>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <CreditGroup>ACME</CreditGroup>
+      <VolatilityCurveId>VOL-EUR-1</VolatilityCurveId>
+      <PriceQuoteMethod>Percentage</PriceQuoteMethod>
+      <PriceQuoteBaseValue>100</PriceQuoteBaseValue>
+      <SubType>GovernmentBond</SubType>
+      <PriceType>Clean</PriceType>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(r.issue.credit_group == "ACME");
+    CHECK(r.issue.volatility_curve_id == "VOL-EUR-1");
+    CHECK(r.issue.price_quote_method == "Percentage");
+    CHECK(r.issue.price_quote_base_value == "100");
+    CHECK(r.issue.sub_type == "GovernmentBond");
+    REQUIRE(r.issue.price_type);
+    CHECK(*r.issue.price_type == "Clean");
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    const auto& bd = *rt.BondData;
+    REQUIRE(bd.CreditGroup);
+    CHECK(std::string(*bd.CreditGroup) == "ACME");
+    REQUIRE(bd.VolatilityCurveId);
+    CHECK(std::string(*bd.VolatilityCurveId) == "VOL-EUR-1");
+    REQUIRE(bd.PriceQuoteMethod);
+    CHECK(std::string(*bd.PriceQuoteMethod) == "Percentage");
+    REQUIRE(bd.PriceQuoteBaseValue);
+    CHECK(std::string(*bd.PriceQuoteBaseValue) == "100");
+    REQUIRE(bd.SubType);
+    CHECK(std::string(*bd.SubType) == "GovernmentBond");
+    REQUIRE(bd.PriceType);
+    CHECK(*bd.PriceType == ores::ore::domain::bondPriceType::Clean);
+
+    BOOST_LOG_SEV(lg, info) << "The six issue fields survive the round trip.";
+}
+
+// =============================================================================
 // The coupon leg keeps its own schedule
 // =============================================================================
 

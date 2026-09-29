@@ -462,9 +462,17 @@ via its "Verifies task" field.
 
 * Review
 
+The branch was reviewed as a delta against =origin/main= with the code
+review checklist, before the PR was raised. Findings and their decisions:
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The six bond_issue fields unit 1 added are never mapped or written, so an imported document's values are discarded | =bond_instrument_mapper.cpp=, =ore_import_execute_handler.cpp= | Accepted, fixed | mapped both ways, written on the issue request, and pinned by a new round-trip case; =PriceType= needed a local parse because only its rendering is public |
+| 2 | The security's legs are written once per trade, so a second trade on one ISIN collides on the leg's primary key | =ore_import_execute_handler.cpp= | Accepted, fixed | the security-owned family is written once, when the issue row is minted; the three product legs stay per trade |
+| 3 | Nothing reconciles a security whose document states fewer legs than the stored rows | =ore_import_execute_handler.cpp= | Declined, recorded | a security is written once per import and is immutable within it; reconciling an amended security needs the delete path, which the bond pilot owns |
+| 4 | No coverage for the new wiring: the six fields, the shared-security path, the notional through the database | tests | Partly accepted | the six fields now have a round-trip case; the import path has no test harness in =ores.ore/service/tests=, and building one is the pilot's |
+| 5 | Four =leg_role_of= overloads return a bare ="bond"= literal | =bond_instrument_reader.cpp= | Accepted, fixed | a named constant now holds it |
+| 6 | Issue-leg child rows name the issue, not the leg, so an orphan is possible | the leg family models | Declined, recorded | a bi-temporal parent admits no DDL foreign key against it (D15), and the reader already filters by leg |
 
 * Result
 

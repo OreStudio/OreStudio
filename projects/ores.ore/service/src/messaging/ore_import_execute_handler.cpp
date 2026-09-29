@@ -1248,6 +1248,12 @@ save_bond_instrument(Nats& nats,
         issue_req.change.write.credit_curve_id = issue.credit_curve_id;
         issue_req.change.write.reference_curve_id = issue.reference_curve_id;
         issue_req.change.write.income_curve_id = issue.income_curve_id;
+        issue_req.change.write.credit_group = issue.credit_group;
+        issue_req.change.write.volatility_curve_id = issue.volatility_curve_id;
+        issue_req.change.write.price_quote_method = issue.price_quote_method;
+        issue_req.change.write.price_quote_base_value = issue.price_quote_base_value;
+        issue_req.change.write.sub_type = issue.sub_type;
+        issue_req.change.write.price_type = issue.price_type;
         auto resp = nats_call(nats, issue_req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue failed" : error;
@@ -1291,11 +1297,19 @@ save_bond_instrument(Nats& nats,
     }
 
     const auto trade_id = instrument.identity.trade_id;
-    int leg_number = 0;
-    for (const auto& leg : data.bond_legs) {
-        if (auto failure = save_issue_leg(nats, issue.issue_id, ++leg_number, leg);
-            !failure.empty())
-            return failure;
+
+    // The security owns its legs, so they are written once, when the
+    // issue row is minted: a second trade on the same ISIN would collide
+    // with the first trade's rows, because a leg's parent is the issue.
+    // The three product legs below are the trade's own and are always
+    // written.
+    if (issue_is_new) {
+        int leg_number = 0;
+        for (const auto& leg : data.bond_legs) {
+            if (auto failure = save_issue_leg(nats, issue.issue_id, ++leg_number, leg);
+                !failure.empty())
+                return failure;
+        }
     }
     if (auto failure = save_leg(nats, trade_id, "trs_funding", 1, data.trs_funding_leg);
         !failure.empty())

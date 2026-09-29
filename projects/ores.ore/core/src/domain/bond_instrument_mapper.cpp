@@ -88,6 +88,16 @@ std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
+// Only the rendering of bondPriceType is public, so its two spellings are
+// read back here rather than through a generated parser.
+std::optional<domain::bondPriceType> parse_price_type(const std::string& text) {
+    if (text == "Clean")
+        return domain::bondPriceType::Clean;
+    if (text == "Dirty")
+        return domain::bondPriceType::Dirty;
+    return std::nullopt;
+}
+
 // The instrument header, the issue and the fact rows each carry the audit
 // columns; every row of a mapped trade shares the import provenance.
 template <typename T>
@@ -1105,6 +1115,18 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
         issue.reference_curve_id = std::string(*bd.ReferenceCurveId);
     if (bd.IncomeCurveId)
         issue.income_curve_id = std::string(*bd.IncomeCurveId);
+    if (bd.CreditGroup)
+        issue.credit_group = std::string(*bd.CreditGroup);
+    if (bd.VolatilityCurveId)
+        issue.volatility_curve_id = std::string(*bd.VolatilityCurveId);
+    if (bd.PriceQuoteMethod)
+        issue.price_quote_method = std::string(*bd.PriceQuoteMethod);
+    if (bd.PriceQuoteBaseValue)
+        issue.price_quote_base_value = std::string(*bd.PriceQuoteBaseValue);
+    if (bd.SubType)
+        issue.sub_type = std::string(*bd.SubType);
+    if (bd.PriceType)
+        issue.price_type = to_string(*bd.PriceType);
     if (bd.BondNotional)
         data.instrument.notional = to_optional_decimal(std::string(*bd.BondNotional));
 
@@ -1149,6 +1171,15 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     set_present_text(bd.CreditCurveId, issue.credit_curve_id);
     set_present_text(bd.ReferenceCurveId, issue.reference_curve_id);
     set_present_text(bd.IncomeCurveId, issue.income_curve_id);
+    set_present_text(bd.CreditGroup, issue.credit_group);
+    set_present_text(bd.VolatilityCurveId, issue.volatility_curve_id);
+    set_present_text(bd.PriceQuoteMethod, issue.price_quote_method);
+    set_present_text(bd.PriceQuoteBaseValue, issue.price_quote_base_value);
+    set_present_text(bd.SubType, issue.sub_type);
+    if (issue.price_type) {
+        if (const auto parsed = parse_price_type(*issue.price_type))
+            bd.PriceType = *parsed;
+    }
     set_present_decimal(bd.BondNotional, data.instrument.notional);
 
     // The legs are emitted when the document held any, or when the issue

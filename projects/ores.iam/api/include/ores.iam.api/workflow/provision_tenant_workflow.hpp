@@ -38,6 +38,11 @@ namespace ores::iam::workflow {
 /// run names this type.
 inline constexpr std::string_view provision_tenant_workflow_type = "provision_tenant_workflow";
 
+/// The workflow type a run that provisions one party of an existing tenant
+/// declares in its start message. It is not the request's subject either:
+/// =iam.v1.parties.provision= starts the run, and the run names this type.
+inline constexpr std::string_view provision_party_workflow_type = "provision_party_workflow";
+
 /**
  * @brief The subject every step of a provisioning run is dispatched to.
  *
@@ -54,18 +59,27 @@ inline constexpr std::string_view provision_tenant_step_subject = "iam.v1.tenant
 /// "the tenant is ready" is a step rather than a property of the definition.
 inline constexpr std::string_view complete_provisioning_step_kind = "complete_provisioning";
 
+/// The step kinds the notation knows, each named once so a handler that reads
+/// the catalogue by kind names the same string the catalogue declares.
+inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
+inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
+inline constexpr std::string_view provision_party_step_kind = "provision_party";
+inline constexpr std::string_view load_staff_step_kind = "load_staff";
+inline constexpr std::string_view attach_photos_step_kind = "attach_photos";
+inline constexpr std::string_view start_market_feeds_step_kind = "start_market_feeds";
+
 /// The step kinds the notation knows. A kind that is not here is a code change:
 /// the catalogue is fixed and a profile states only which kinds it orders and
 /// with what arguments. The completing step is deliberately absent, because
 /// every run appends it; a profile that orders it is refused rather than given
 /// a second one. Not every kind here is one this build executes; see
 /// @ref provision_executed_step_kinds for the subset a profile may order today.
-inline constexpr std::string_view provision_step_kinds[] = {"publish_bundle",
-                                                            "import_lei_hierarchy",
-                                                            "provision_party",
-                                                            "load_staff",
-                                                            "attach_photos",
-                                                            "start_market_feeds"};
+inline constexpr std::string_view provision_step_kinds[] = {publish_bundle_step_kind,
+                                                            import_lei_hierarchy_step_kind,
+                                                            provision_party_step_kind,
+                                                            load_staff_step_kind,
+                                                            attach_photos_step_kind,
+                                                            start_market_feeds_step_kind};
 
 /**
  * @brief What a person is shown for one step kind, and what it does.
@@ -88,26 +102,26 @@ struct step_kind_words {
  * screen can honestly say about it.
  */
 [[nodiscard]] inline step_kind_words words_for_step_kind(std::string_view kind) {
-    if (kind == "publish_bundle")
+    if (kind == publish_bundle_step_kind)
         return {"Publish the reference data",
                 "Publishes the reference data the tenant works from: the bundles the starting "
                 "point orders, and the datasets those bundles name."};
-    if (kind == "import_lei_hierarchy")
+    if (kind == import_lei_hierarchy_step_kind)
         return {"Import the legal entities",
                 "Reads the legal entity the starting point names by its LEI and the entities it "
                 "consolidates, and publishes them as the tenant's parties."};
-    if (kind == "provision_party")
+    if (kind == provision_party_step_kind)
         return {"Create the tenant's parties",
                 "Creates the party that represents the tenant itself, with the reference data a "
                 "party needs."};
-    if (kind == "load_staff")
+    if (kind == load_staff_step_kind)
         return {"Load the staff",
                 "Creates an account for each person the starting point lists, each in its own "
                 "party."};
-    if (kind == "attach_photos")
+    if (kind == attach_photos_step_kind)
         return {"Attach the photographs",
                 "Gives the accounts their photographs, and the tenant's party its logo."};
-    if (kind == "start_market_feeds")
+    if (kind == start_market_feeds_step_kind)
         return {"Start the market feeds",
                 "Starts the synthetic market data the tenant's curves and prices are built from."};
     if (kind == complete_provisioning_step_kind)
@@ -127,12 +141,12 @@ struct step_kind_words {
 /// notation; this list states which of its kinds have an executor here, so a
 /// profile that orders the rest is refused before its run starts rather than
 /// half-provisioned. Growing it is a code change beside the executor.
-inline constexpr std::string_view provision_executed_step_kinds[] = {"publish_bundle",
-                                                                     "import_lei_hierarchy",
-                                                                     "provision_party",
-                                                                     "load_staff",
-                                                                     "attach_photos",
-                                                                     "start_market_feeds"};
+inline constexpr std::string_view provision_executed_step_kinds[] = {publish_bundle_step_kind,
+                                                                     import_lei_hierarchy_step_kind,
+                                                                     provision_party_step_kind,
+                                                                     load_staff_step_kind,
+                                                                     attach_photos_step_kind,
+                                                                     start_market_feeds_step_kind};
 
 /// Whether this build executes the kind. A kind the catalogue does not know is
 /// not executed either, so one predicate answers both refusals.
@@ -223,6 +237,88 @@ namespace detail {
     return count == 1 ? kind : kind + "_" + std::to_string(count);
 }
 
+/// The run's declaration, or a throw naming what the request lacks.
+[[nodiscard]] inline provision_tenant_workflow_request
+read_workflow_request(const std::string& request_json) {
+    auto parsed = rfl::json::read<provision_tenant_workflow_request>(request_json);
+    if (!parsed)
+        throw std::runtime_error(
+            "A provisioning run was started with a request this deployment cannot read.");
+    // The run's own tenant scopes its rows; the tenant the run provisions is
+    // what every step acts on, and only the request names it.
+    if (parsed->tenant_id.empty())
+        throw std::runtime_error(
+            "A provisioning run was started with a request that names no tenant to provision.");
+    return *parsed;
+}
+
+/// One engine step for one kind, dispatched to the provisioning step subject
+/// with the run's tenant, administrator and parameters.
+[[nodiscard]] inline ores::workflow::service::workflow_step_def
+make_step(const provision_tenant_workflow_request& run,
+          const std::string& kind,
+          const std::string& arguments_json,
+          std::unordered_map<std::string, int>& seen) {
+    const auto words = words_for_step_kind(kind);
+
+    ores::workflow::service::workflow_step_def step;
+    step.name = unique_step_name(kind, seen);
+    step.label = std::string(words.label);
+    step.description = std::string(words.description);
+    step.command_subject = std::string(provision_tenant_step_subject);
+    step.compensation_subject = "";
+
+    provision_tenant_step_command command;
+    command.kind = kind;
+    command.tenant_id = run.tenant_id;
+    command.tenant_code = run.tenant_code;
+    command.tenant_hostname = run.tenant_hostname;
+    command.admin_account_id = run.admin_account_id;
+    command.arguments_json = arguments_json;
+    command.parameters = run.parameters;
+
+    step.build_command = [command](const std::string&,
+                                   const ores::workflow::service::workflow_step_results&) {
+        return rfl::json::write(command);
+    };
+    step.build_compensation = [](const std::string&, const std::string&) { return "{}"; };
+    return step;
+}
+
+/**
+ * @brief One engine step per kind the run declares, in the order it declares
+ * them.
+ *
+ * A kind the catalogue does not know, and a kind this build does not execute,
+ * are both refused by throwing before the engine creates the run, naming the
+ * kind in the message. The throw is the guard the engine logs and abandons, so
+ * a starting point that orders an unbuilt kind can never half-provision what it
+ * was asked for.
+ *
+ * The completing step a tenant run appends is deliberately not here: the run
+ * that provisions a party of an existing tenant has nothing to complete.
+ */
+[[nodiscard]] inline std::vector<ores::workflow::service::workflow_step_def>
+build_declared_steps(const provision_tenant_workflow_request& run,
+                     std::unordered_map<std::string, int>& seen) {
+    std::vector<ores::workflow::service::workflow_step_def> steps;
+    steps.reserve(run.steps.size());
+
+    for (const auto& declared : run.steps) {
+        if (declared.kind == complete_provisioning_step_kind)
+            throw std::runtime_error("The profile orders the step kind '" + declared.kind +
+                                     "', which every tenant run appends itself.");
+        if (!is_declared_step_kind(declared.kind))
+            throw std::runtime_error("The profile orders the step kind '" + declared.kind +
+                                     "', which this deployment does not know.");
+        if (!is_executed_step_kind(declared.kind))
+            throw std::runtime_error("The profile orders the step kind '" + declared.kind +
+                                     "', which this deployment does not execute.");
+        steps.push_back(make_step(run, declared.kind, declared.arguments_json, seen));
+    }
+    return steps;
+}
+
 } // namespace detail
 
 /**
@@ -233,11 +329,6 @@ namespace detail {
  * step is dispatched to @ref provision_tenant_step_subject, which ores.iam
  * serves: the engine sends a step and waits for the handler to report it, so a
  * step's kind must have an executor there.
- *
- * A kind the catalogue does not know, and a kind this build does not execute,
- * are both refused by throwing before the engine creates the run, naming the
- * kind in the message. The throw is the guard the engine logs and abandons, so
- * a profile that orders an unbuilt kind can never half-provision a tenant.
  */
 inline void
 register_provision_tenant_workflow(ores::workflow::service::workflow_registry& registry) {
@@ -256,64 +347,50 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-        auto parsed = rfl::json::read<provision_tenant_workflow_request>(request_json);
-        if (!parsed)
-            throw std::runtime_error(
-                "A provision tenant run was started with a request this deployment cannot read.");
-        // The run's own tenant scopes its rows; the tenant the run provisions
-        // is what every step acts on, and only the request names it.
-        if (parsed->tenant_id.empty())
-            throw std::runtime_error(
-                "A provision tenant run was started with a request that names no tenant to "
-                "provision.");
-
-        std::vector<workflow_step_def> steps;
-        steps.reserve(parsed->steps.size() + 1);
+        const auto run = detail::read_workflow_request(request_json);
         std::unordered_map<std::string, int> seen;
-
-        const auto add_step = [&](const std::string& kind, const std::string& arguments_json) {
-            const auto words = words_for_step_kind(kind);
-
-            workflow_step_def step;
-            step.name = detail::unique_step_name(kind, seen);
-            step.label = std::string(words.label);
-            step.description = std::string(words.description);
-            step.command_subject = std::string(provision_tenant_step_subject);
-            step.compensation_subject = "";
-
-            provision_tenant_step_command command;
-            command.kind = kind;
-            command.tenant_id = parsed->tenant_id;
-            command.tenant_code = parsed->tenant_code;
-            command.tenant_hostname = parsed->tenant_hostname;
-            command.admin_account_id = parsed->admin_account_id;
-            command.arguments_json = arguments_json;
-            command.parameters = parsed->parameters;
-
-            step.build_command = [command](const std::string&, const workflow_step_results&) {
-                return rfl::json::write(command);
-            };
-            step.build_compensation = [](const std::string&, const std::string&) {
-                return "{}";
-            };
-            steps.push_back(std::move(step));
-        };
-
-        for (const auto& declared : parsed->steps) {
-            if (declared.kind == complete_provisioning_step_kind)
-                throw std::runtime_error("The profile orders the step kind '" + declared.kind +
-                                         "', which every run appends itself.");
-            if (!is_declared_step_kind(declared.kind))
-                throw std::runtime_error("The profile orders the step kind '" + declared.kind +
-                                         "', which this deployment does not know.");
-            if (!is_executed_step_kind(declared.kind))
-                throw std::runtime_error("The profile orders the step kind '" + declared.kind +
-                                         "', which this deployment does not execute.");
-            add_step(declared.kind, declared.arguments_json);
-        }
-
-        add_step(std::string(complete_provisioning_step_kind), "{}");
+        auto steps = detail::build_declared_steps(run, seen);
+        steps.push_back(detail::make_step(
+            run, std::string(complete_provisioning_step_kind), "{}", seen));
         return steps;
+    };
+
+    registry.register_definition(std::move(def));
+}
+
+/**
+ * @brief Registers the provision_party_workflow definition.
+ *
+ * The party stage of a tenant that already exists, as its own run: one engine
+ * step per kind the request declares, which for a party is the profile's
+ * provision_party step with the party it acts on named. Nothing completes the
+ * run, because the tenant it belongs to is already active and provisioning one
+ * more of its parties neither activates nor finishes it.
+ *
+ * The tenant run and this one share the subject, the step command and the
+ * notation, so a kind means one thing on both sides and the executor that
+ * serves one serves the other.
+ */
+inline void
+register_provision_party_workflow(ores::workflow::service::workflow_registry& registry) {
+
+    using namespace ores::workflow::service;
+
+    workflow_definition def;
+    def.type_name = std::string(provision_party_workflow_type);
+    def.on_failure = failure_policy::stop;
+    def.description =
+        "Provisions one party of an existing tenant: publishes the bundles the starting point "
+        "orders against it, activates it, marks its onboarding complete, and associates the "
+        "administrator who asked with it. One engine step per declared kind, and no completing "
+        "step, because the tenant it belongs to is already active.";
+
+    def.build_steps = [](const std::string& request_json,
+                         const std::string& /*tenant_id*/,
+                         const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
+        const auto run = detail::read_workflow_request(request_json);
+        std::unordered_map<std::string, int> seen;
+        return detail::build_declared_steps(run, seen);
     };
 
     registry.register_definition(std::move(def));

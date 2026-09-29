@@ -111,6 +111,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
     ores::iam::workflow::register_provision_tenant_workflow(*registry);
+    ores::iam::workflow::register_provision_party_workflow(*registry);
     ores::workflow::workflow::register_identity_workflow(*registry);
 
     // ----------------------------------------------------------------

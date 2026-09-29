@@ -63,14 +63,6 @@ void bootstrap_operations_commands::register_commands(cli::Menu& root_menu, nats
         },
         "create-initial-admin <principal> <password> <email>");
 
-    menu->Insert(
-        "provision-tenant",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_provision_tenant(std::ref(out), std::ref(session), std::move(args));
-        },
-        "provision-tenant <type> <code> <name> <hostname> <description> <principal> <password> "
-        "<email>");
-
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -171,66 +163,6 @@ void bootstrap_operations_commands::process_create_initial_admin(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::create_initial_admin_response>(
-            out, session, std::string(req.nats_subject), req);
-    }
-    if (!result)
-        return;
-
-    out << rfl::json::write(*result) << std::endl;
-}
-
-void bootstrap_operations_commands::process_provision_tenant(std::ostream& out,
-                                                             nats_client& session,
-                                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating provision-tenant request.";
-
-    using request_type = ores::iam::messaging::provision_tenant_request;
-
-    // Whether the command presents a token is the protocol's own statement, so
-    // a message that establishes the session is never asked for one.
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run provision-tenant." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{};
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    constexpr std::size_t positional_count = 8;
-    if (parsed->positionals.size() != positional_count) {
-        fail(out) << "Expected " << positional_count << " arguments, got "
-                  << parsed->positionals.size() << "." << std::endl;
-        return;
-    }
-
-    request_type req;
-    std::size_t next = 0;
-    try {
-        req.type = parsed->positionals[next++];
-        req.code = parsed->positionals[next++];
-        req.name = parsed->positionals[next++];
-        req.hostname = parsed->positionals[next++];
-        req.description = parsed->positionals[next++];
-        req.principal = parsed->positionals[next++];
-        req.password = parsed->positionals[next++];
-        req.email = parsed->positionals[next++];
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    std::optional<ores::iam::messaging::provision_tenant_response> result;
-    if constexpr (request_type::requires_session) {
-        result = do_auth_request<ores::iam::messaging::provision_tenant_response>(
-            out, session, std::string(req.nats_subject), req);
-    } else {
-        result = do_request<ores::iam::messaging::provision_tenant_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

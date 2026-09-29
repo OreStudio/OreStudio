@@ -75,14 +75,6 @@ public:
     static void process_create_initial_admin(std::ostream& out,
                                              ores::nats::service::nats_client& session,
                                              const std::vector<std::string>& args);
-
-    /**
-     * @brief provision-tenant <type> <code> <name> <hostname> <description> <principal> <password>
-     * <email>
-     */
-    static void process_provision_tenant(std::ostream& out,
-                                         ores::nats::service::nats_client& session,
-                                         const std::vector<std::string>& args);
 };
 
 }

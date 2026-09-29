@@ -72,6 +72,24 @@ inline constexpr std::string_view update = "system.update";
 } // namespace change_reasons
 
 /**
+ * @brief The bearer token an inbound message carries, or an empty string.
+ *
+ * A handler that has to know its caller's account validates this token itself.
+ * The request context names who the caller is in words -- the actor's name and
+ * the tenant and party the session is in -- and an account identifier is not
+ * among them, so a handler that needs one reads the token's subject.
+ */
+inline std::string bearer_token(const ores::nats::message& msg) {
+    const auto found = msg.headers.find(std::string(ores::nats::headers::authorization));
+    if (found == msg.headers.end())
+        return {};
+    const auto& value = found->second;
+    if (!value.starts_with(ores::nats::headers::bearer_prefix))
+        return {};
+    return value.substr(ores::nats::headers::bearer_prefix.size());
+}
+
+/**
  * @brief Stamps server-authoritative fields on a domain object from the
  * request context.
  *

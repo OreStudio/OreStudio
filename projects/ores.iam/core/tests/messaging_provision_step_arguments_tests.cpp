@@ -34,6 +34,8 @@ using ores::iam::messaging::classify_step_kind;
 using ores::iam::messaging::parse_lei_hierarchy_arguments;
 using ores::iam::messaging::parse_market_feed_arguments;
 using ores::iam::messaging::parse_photo_arguments;
+using ores::iam::messaging::parse_provision_party_arguments;
+using ores::iam::messaging::parse_publish_bundle_arguments;
 using ores::iam::messaging::parse_staff_assignments;
 using ores::iam::messaging::parse_step_bundles;
 using ores::iam::messaging::provision_step_action;
@@ -242,4 +244,67 @@ TEST_CASE("a market feed step that names no theme is refused", tags) {
     CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"bundles": ["synthetic_realistic_2026"],
                                                        "theme": 7})"),
                       "The step's argument 'theme' is not a string.");
+}
+
+TEST_CASE("a publish step reads the datasets its profile opts in", tags) {
+    const auto arguments = parse_publish_bundle_arguments(
+        R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.large"]})", {});
+
+    CHECK(arguments.bundles == std::vector<std::string>{"base"});
+    CHECK(arguments.opted_in_datasets == std::vector<std::string>{"gleif.lei_counterparties.large"});
+}
+
+TEST_CASE("a publish step that opts in nothing publishes its bundles whole", tags) {
+    const auto arguments = parse_publish_bundle_arguments(R"({"bundles": ["base"]})", {});
+
+    CHECK(arguments.bundles == std::vector<std::string>{"base"});
+    CHECK(arguments.opted_in_datasets.empty());
+}
+
+TEST_CASE("a publish step builds an opted-in dataset from the run's parameter", tags) {
+    // The counterparty set a starting point publishes is the value of its own
+    // parameter, so the row names the parameter rather than one of its values.
+    const auto arguments = parse_publish_bundle_arguments(
+        R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]})",
+        parameters("counterparty_size", "small"));
+
+    CHECK(arguments.opted_in_datasets == std::vector<std::string>{"gleif.lei_counterparties.small"});
+}
+
+TEST_CASE("a publish step whose parameter the run supplies no value for is refused", tags) {
+    CHECK_THROWS_WITH(
+        parse_publish_bundle_arguments(
+            R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]})",
+            {}),
+        "The step's argument 'gleif.lei_counterparties.{counterparty_size}' names the parameter "
+        "'counterparty_size', which the run supplies no value for.");
+}
+
+TEST_CASE("a publish step whose parameter reference is not closed is refused", tags) {
+    CHECK_THROWS_WITH(
+        parse_publish_bundle_arguments(
+            R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{size"]})",
+            parameters("size", "small")),
+        "The step's argument 'gleif.lei_counterparties.{size' names a parameter without closing "
+        "its braces.");
+}
+
+TEST_CASE("a party step that names no party acts on every party the tenant holds", tags) {
+    const auto arguments = parse_provision_party_arguments(R"({"bundles": ["party_essentials"]})");
+
+    CHECK(arguments.bundles == std::vector<std::string>{"party_essentials"});
+    CHECK(arguments.party.empty());
+}
+
+TEST_CASE("a party step reads the one party it acts on", tags) {
+    const auto arguments = parse_provision_party_arguments(
+        R"({"bundles": ["party_essentials"], "party": "BARCLAYS PLC"})");
+
+    CHECK(arguments.bundles == std::vector<std::string>{"party_essentials"});
+    CHECK(arguments.party == "BARCLAYS PLC");
+}
+
+TEST_CASE("a party step that names no bundle is refused", tags) {
+    CHECK_THROWS_WITH(parse_provision_party_arguments(R"({"party": "BARCLAYS PLC"})"),
+                      "The step names no 'bundles' argument.");
 }

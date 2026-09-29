@@ -54,24 +54,24 @@ It is addressed at =iam.v1.tenants.provision=.
 tenant_provisioning provision-tenant __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
 #+end_src
 
-** =provision-acme-tenant=
+** =provision-party=
 :PROPERTIES:
-:ID: EF8E648E-5FED-5282-8685-9E6BCEAC7B96
+:ID: EF33ABD8-D0D6-52A4-84CB-4FCF3AE52465
 :END:
 
-Sends =provision_acme_tenant_command= and prints =provision_acme_tenant_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+Sends =provision_party_command= and prints =provision_party_command_response=, so the shape is the protocol's and the meaning is the service's. It reads =party=, =profile_code=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-tenant_provisioning provision-acme-tenant
+tenant_provisioning provision-party <party> <profile_code>
 #+end_example
 
-It is addressed at =iam.v1.tenants.provision-acme=.
+It is addressed at =iam.v1.parties.provision=.
 
-#+name: tenant_provisioning-provision-acme-tenant
-#+begin_src ores-shell :tangle tenant_provisioning-provision-acme-tenant.ores :exports none
-tenant_provisioning provision-acme-tenant
+#+name: tenant_provisioning-provision-party
+#+begin_src ores-shell :tangle tenant_provisioning-provision-party.ores :exports none
+tenant_provisioning provision-party __none__ __none__
 #+end_src
 

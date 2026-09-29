@@ -63,11 +63,10 @@ TEST_CASE("bootstrap_operations_registers_every_declared_command", tags) {
     for (const auto& verb : {
              std::string{"bootstrap bootstrap-status"},
              std::string{"bootstrap create-initial-admin"},
-             std::string{"bootstrap provision-tenant"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 3 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 2 command(s).";
 }
 
 TEST_CASE("bootstrap_operations_process_bootstrap_status_reaches_the_transport", tags) {
@@ -127,55 +126,6 @@ TEST_CASE("bootstrap_operations_process_create_initial_admin_reaches_the_transpo
                                                                     "sample",
                                                                     "sample",
                                                                 });
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
-    // Whether the command carries a token or not, everything ahead of the
-    // transport is satisfied, which is what the absence of a connection proves.
-    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("bootstrap_operations_process_provision_tenant_reports_the_expected_count", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    nats_client::login_info info;
-    info.username = "tester";
-    info.jwt = "token";
-    session.set_auth(std::move(info));
-    std::ostringstream out;
-
-    command_feedback::reset();
-    bootstrap_operations_commands::process_provision_tenant(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 8 arguments, got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("bootstrap_operations_process_provision_tenant_reaches_the_transport", tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    nats_client::login_info info;
-    info.username = "tester";
-    info.jwt = "token";
-    session.set_auth(std::move(info));
-    std::ostringstream out;
-
-    command_feedback::reset();
-    bootstrap_operations_commands::process_provision_tenant(out,
-                                                            session,
-                                                            std::vector<std::string>{
-                                                                "sample",
-                                                                "sample",
-                                                                "sample",
-                                                                "sample",
-                                                                "sample",
-                                                                "sample",
-                                                                "sample",
-                                                                "sample",
-                                                            });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

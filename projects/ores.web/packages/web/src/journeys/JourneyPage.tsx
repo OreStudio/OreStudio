@@ -36,6 +36,15 @@ export interface JourneyPageProps {
     readonly steps: readonly JourneyStep<ReactNode>[];
     readonly at: number;
     readonly onMove: (index: number) => void;
+    /**
+     * What stands above every step.
+     *
+     * The person is part way through one piece of work, and the steps are its
+     * parts, so what they are working on belongs to the panel rather than to
+     * one step's body: a banner and the tenant they are describing stay put
+     * while the step beneath them changes.
+     */
+    readonly header?: ReactNode;
 }
 
 const RAIL_ENTRY: Record<RailState, string> = {
@@ -66,7 +75,7 @@ const RAIL_MARK: Record<RailState, string> = {
  * The journeys that mount it arrive with their own plan steps, so nothing
  * imports it yet.
  */
-export function JourneyPage({ steps, at, onMove }: JourneyPageProps): ReactNode {
+export function JourneyPage({ steps, at, onMove, header }: JourneyPageProps): ReactNode {
     const { t } = useTranslation();
     const [failure, setFailure] = useState<string>();
     const [running, setRunning] = useState(false);
@@ -127,6 +136,9 @@ export function JourneyPage({ steps, at, onMove }: JourneyPageProps): ReactNode 
             </nav>
 
             <section className="card p-6">
+                {header !== undefined && (
+                    <div className="mb-5 border-b border-line pb-5">{header}</div>
+                )}
                 <h2 className="mb-1 text-lg font-semibold">{step.title}</h2>
                 <p className="mb-5 text-sm text-ink-muted">{step.lead}</p>
                 {failure !== undefined && (
@@ -135,9 +147,17 @@ export function JourneyPage({ steps, at, onMove }: JourneyPageProps): ReactNode 
                 {step.body}
                 {(step.next !== undefined || back) && (
                     <div className="mt-6 flex border-t border-line pt-4">
-                        <Button variant="ghost" disabled={!back} onClick={() => onMove(at - 1)}>
-                            {t('common.back')}
-                        </Button>
+                        {/*
+                         * A step the person may not walk back from offers no
+                         * button at all: a disabled one reports a rule they
+                         * cannot act on, and the rail already says the step is
+                         * behind them.
+                         */}
+                        {back && (
+                            <Button variant="ghost" onClick={() => onMove(at - 1)}>
+                                {t('common.back')}
+                            </Button>
+                        )}
                         {step.next !== undefined && (
                             <Button
                                 variant="primary"

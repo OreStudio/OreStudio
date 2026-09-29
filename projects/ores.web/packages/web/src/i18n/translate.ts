@@ -89,6 +89,16 @@ export function interpolate(message: string, values: InterpolationValues): strin
     });
 }
 
+/**
+ * The catalogue's prefix for text the server owns.
+ *
+ * A server sends a sentence, not a key, so the sentence is what the catalogue
+ * holds, under a prefix that keeps it out of the namespaces a screen's own
+ * messages live in. The prefix is applied by the lookup rather than by the
+ * caller, so a screen asks for the sentence it was given.
+ */
+export const SERVER_TEXT_PREFIX = 'server.';
+
 export interface Translator {
     /** The active language. */
     readonly language: Language;
@@ -102,6 +112,15 @@ export interface Translator {
     readonly t: (key: string, values?: InterpolationValues) => string;
     /** The message for a count, choosing between singular and plural forms. */
     readonly plural: (key: string, count: number, values?: InterpolationValues) => string;
+    /**
+     * Translates a sentence the server sent.
+     *
+     * The exact sentence is the key, because that is all the server states: a
+     * translation exists where somebody wrote one for that sentence, and where
+     * nobody has, the sentence itself is the answer. A screen that shows
+     * server text therefore shows the server's own words rather than nothing.
+     */
+    readonly serverText: (sentence: string) => string;
 }
 
 /**
@@ -139,6 +158,7 @@ export function createTranslator(
             const message = lookup(key) ?? key;
             return values === undefined ? message : interpolate(message, values);
         },
+        serverText: (sentence) => lookup(SERVER_TEXT_PREFIX + sentence) ?? sentence,
         plural: (key, count, values) => {
             const chosen =
                 selectPluralForm(target, key, count, language) ??

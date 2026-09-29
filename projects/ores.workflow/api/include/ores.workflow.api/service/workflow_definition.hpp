@@ -74,12 +74,26 @@ using workflow_step_results = std::vector<workflow_step_result>;
  */
 struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
     /**
-     * @brief Human-readable step name stored in workflow_step.name.
+     * @brief The step's identity, stored in workflow_step.name.
+     *
+     * Results are addressed by this name and a definition that renamed a step
+     * would orphan every result read from it, so it is an identifier even when
+     * it reads as words.
      */
     std::string name;
 
     /**
-     * @brief Human-readable description of what this step does.
+     * @brief The step's name in a person's words.
+     *
+     * A screen shows this where it shows the step, because the name above is
+     * the one the engine and the logs use and a rail of identifiers reads as
+     * nothing at all. Empty means the step has no better name than its
+     * identity, and a reader falls back to that.
+     */
+    std::string label;
+
+    /**
+     * @brief What this step does, in a person's words.
      */
     std::string description;
 
@@ -132,6 +146,8 @@ struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
  */
 struct ORES_WORKFLOW_API_EXPORT materialised_step {
     std::string name;
+    std::string label;
+    std::string description;
     std::string command_subject;
     std::string compensation_subject;
 };

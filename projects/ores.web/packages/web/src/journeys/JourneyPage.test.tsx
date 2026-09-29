@@ -41,10 +41,10 @@ const administrator = step('administrator', 'Create the administrator', {
 });
 const ready = step('ready', 'Ready');
 
-function render(steps: readonly JourneyStep<ReactNode>[], at: number): string {
+function render(steps: readonly JourneyStep<ReactNode>[], at: number, header?: ReactNode): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <JourneyPage steps={steps} at={at} onMove={() => undefined} />
+            <JourneyPage steps={steps} at={at} onMove={() => undefined} header={header} />
         </TranslationProvider>,
     );
 }
@@ -118,21 +118,17 @@ describe('the journey page', () => {
         expect(html).not.toContain('Start');
     });
 
-    it('disables Back at the first step', () => {
+    it('offers no Back at the first step, because there is nowhere to go', () => {
         const steps = defineJourney([welcome, ready]);
 
-        const html = render(steps, 0);
-
-        expect(buttonLabelled(html, 'Back')).toContain('disabled=""');
+        expect(render(steps, 0)).not.toContain('>Back<');
     });
 
-    it('disables Back when the step before it changed server state', () => {
+    it('offers no Back past a step that changed server state', () => {
         const review = step('review', 'Review', { next: { label: 'Finish', enabled: true } });
         const steps = defineJourney([welcome, administrator, review]);
 
-        const html = render(steps, 2);
-
-        expect(buttonLabelled(html, 'Back')).toContain('disabled=""');
+        expect(render(steps, 2)).not.toContain('>Back<');
     });
 
     it('refuses a position the journey does not have', () => {
@@ -140,5 +136,14 @@ describe('the journey page', () => {
 
         expect(() => render(steps, 2)).toThrow(RangeError);
         expect(() => render(steps, -1)).toThrow(RangeError);
+    });
+
+    it('stands what the person is working on above every step, not inside one', () => {
+        const steps = defineJourney([welcome, administrator, ready]);
+        const header = <p>Northwind Capital</p>;
+
+        for (const at of [0, 1, 2]) {
+            expect(render(steps, at, header)).toContain('Northwind Capital');
+        }
     });
 });

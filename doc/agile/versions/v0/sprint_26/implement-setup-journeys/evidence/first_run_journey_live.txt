@@ -1,0 +1,200 @@
+Live proof of the first run journey, recorded 2026-09-28 on the
+eager_maxwell environment at branch feature/build-the-first-run-journey
+(commit 3523c3ec09), on a fresh installation: `compass services stop`,
+the JetStream store removed, `compass db recreate -y -k`, and the fleet
+started again. The browser bundle and the BFF were built from the same
+commit before the fleet started, so the deployment served this branch.
+
+The installation was empty: `/api/bootstrap` answered
+`{"isInBootstrapMode":true,"message":""}` and the fleet held 25 running
+units.
+
+--- 1. the first screen, in a real browser ---
+
+Google Chrome, headless, against http://127.0.0.1:21402/. The rendered
+text, with the rail first:
+
+  Welcome to ORE Studio  2 Create the administrator  3 Choose a starting
+  point  4 Describe the tenant  5 Review  6 Provisioning  7 Hand off
+  8 First sign-in  9 Ready
+
+  Welcome to ORE Studio
+  This installation is empty. Set it up in three stages.
+
+  [Create the administrator] The account that owns this installation.
+  [Create the first tenant] Choose a starting point and provision the tenant.
+  [Sign in] The tenant administrator sets a password of their own.
+
+  Back   Get started
+
+The rail is the journey: nine steps on one page, the welcome screen in
+front of them, and no sign-in form, because the installation has nobody
+to sign in as.
+
+--- 2. the journey's calls, in the journey's order ---
+
+Each answer below is the BFF's, verbatim. The walk script is
+`first_run_walk.py`; it makes one request per thing the browser does.
+
+1. the deployment still needs its first administrator
+   {"isInBootstrapMode":true,"message":""}
+
+2. the rules a password must satisfy, read before anybody signed in
+   {"success":true,"message":"","minLength":12,"requireUppercase":true,
+    "requireLowercase":true,"requireDigit":true,"requireSpecial":true,
+    "specialChars":"!@#$%^&*()_+-=[]{}|;:,.<>?"}
+
+3. create the administrator
+   {"accountId":"80441f02-93d2-488e-80b7-4c16a0271f4d",
+    "tenantId":"ffffffff-ffff-ffff-ffff-ffffffffffff"}
+
+4. the deployment is no longer in bootstrap mode
+   {"isInBootstrapMode":false,"message":""}
+
+5. sign in as the administrator the journey created
+   {"outcome":"active","session":{"username":"super_admin",...
+    "party":{"name":"System Party","partyCategory":"System",...},
+    "passwordResetRequired":false}}
+
+6. the starting points the server holds
+
+   | code              | name        | steps | parameters | forces a change | inherits my password |
+   |-------------------+-------------+-------+------------+-----------------+----------------------|
+   | empty_operational | Operational |     3 |          2 | yes             | no                   |
+   | acme_demo         | ACME demo   |     6 |          0 | no              | yes                  |
+
+   The card's counts and its bullets are the row's, and the form is
+   built from the parameters the row declares: `root_lei`, a required
+   string, and `counterparty_size`, a choice of `small` or `large`
+   defaulting to `small`.
+
+7. create the first tenant from the Operational starting point
+   {"success":true,"message":"","instanceId":"6c85caae-226b-402d-9642-af596f12296a",
+    "tenantId":"81494e06-4baf-45d9-b18f-42f78ed530b1",
+    "accountId":"01a0ea63-7a2d-7ea8-acaf-2fcf3f73ef80"}
+
+8. follow the run until it rests
+
+   HTTP 200 status=in_progress current=0 steps: publish_bundle=in_progress
+   HTTP 200 status=in_progress current=0 steps: publish_bundle=in_progress
+   HTTP 200 status=in_progress current=0 steps: publish_bundle=in_progress
+   HTTP 200 status=in_progress current=0 steps: publish_bundle=in_progress
+   HTTP 200 status=in_progress current=0 steps: publish_bundle=in_progress
+   HTTP 200 status=failed current=1 steps: publish_bundle=completed,
+     import_lei_hierarchy=failed
+
+   The read answered while the run was open, and the rail it renders is
+   the answer: one line per step, the step the run is executing, and the
+   state it came to rest in. The run stopped on its own failed step, with
+   the completed step kept, which is the state the retry resumes from.
+
+   Corrected on 2026-09-29, after the walk was read again: the failure is
+   the walk's input, not the deployment's data. The LEI above is mistyped
+   — the code the deployment holds is `9DJT3UXIJIZJI4WXO774`, not
+   `9DJT3UXIJZI4WXO774` — so the publication was right to refuse it:
+
+     Query execution failed: ERROR: Root LEI not found in staging data:
+     9DJT3UXIJZI4WXO774
+
+   Publishing the same dataset for the same tenant with the correct code,
+   inside a transaction that was rolled back, inserts 668 parties, 668
+   identifiers and 57 BIC identifiers. The import reads what the
+   deployment holds, and the card works. The capture that recorded a data
+   gap has been withdrawn; what the walk did find is that the form takes
+   any string, and that a code the deployment does not hold arrives as the
+   publication's SQL rather than as a sentence about the entity.
+
+9. hand over: the administrator signs out
+   {"ok":true}
+
+10. the tenant administrator's first sign-in, which reports the forced change
+    {"outcome":"active","session":{"username":"northwind_admin",
+     "email":"admin@northwind.example.com","passwordResetRequired":true}}
+
+    The Operational card forces the change, so the answer that signs the
+    administrator in is the answer that says so: the profile's choice
+    reached the account the provisioner created.
+
+11. set a password of the tenant administrator's own
+    {"success":true}
+
+12. the change is no longer outstanding
+    {"username":"northwind_admin",...,"passwordResetRequired":false}
+
+13. hand over again, and sign in with the password just set
+    {"ok":true}
+
+14. the new password is the one that signs in
+    {"outcome":"active","session":{"username":"northwind_admin",...,
+     "passwordResetRequired":false}}
+
+--- 3. the same journey through the ACME demo card ---
+
+ACME asks for nothing, reuses the creating administrator's password, and
+orders six steps. Its run was followed to rest:
+
+  HTTP 200 status=in_progress current=2 steps: publish_bundle=completed,
+    import_lei_hierarchy=completed, provision_party=in_progress
+  HTTP 200 status=in_progress current=4 steps: ..., provision_party=completed,
+    load_staff=completed, attach_photos=in_progress
+  HTTP 200 status=in_progress current=5 steps: ..., attach_photos=completed,
+    start_market_feeds=in_progress
+  HTTP 200 status=completed current=6 steps: publish_bundle=completed,
+    import_lei_hierarchy=completed, provision_party=completed,
+    load_staff=completed, attach_photos=completed,
+    start_market_feeds=completed, complete_provisioning=completed_with_warnings
+
+The last step completed with warnings, which is a state the rail shows
+rather than a failure it hides.
+
+Its administrator's first sign-in works in more than one party, so the
+answer asks for a choice:
+
+  {"outcome":"party-required","username":"tenant_admin",
+   "availableParties":[{"name":"ACME Corporation US Inc",...},
+     {"name":"System Party",...},{"name":"ACME Corporation UK plc",...},
+     {"name":"ACME Corporation HK Ltd",...},{"name":"Acme Corporation Plc",...}],
+   "defaultPartyId":"e4225e1b-df60-425a-a53d-5a717f834a27",
+   "passwordResetRequired":false}
+
+  choose the party to start in
+  {"username":"tenant_admin",...,"party":{"name":"Acme Corporation Plc",
+   "partyCategory":"Operational","businessCenterCode":"GBLO"},...}
+
+  the session the choice opened
+  {"username":"tenant_admin",...,"party":{"name":"Acme Corporation Plc",...},
+   "passwordResetRequired":false}
+
+The party the person chose is the party the session works in.
+
+--- 4. what the two runs left ---
+
+   id                                  |       code       |    status
+---------------------------------------+------------------+---------------
+ d8f4e19f-3156-4483-87d6-9a0c12b27015 | acme_corporation | active
+ 81494e06-4baf-45d9-b18f-42f78ed530b1 | northwind        | bootstrapping
+
+The ACME tenant is active, because every step it ordered completed. The
+Operational tenant is still bootstrapping, because its run stopped on the
+failed LEI import: a tenant left half provisioned is visible as exactly
+that, and the journey's retry is the action that resumes it.
+
+    profile          |    state    | current step | steps
+---------------------+-------------+--------------+-------
+ empty_operational   | failed      |            1 |     4
+ empty_operational   | compensated |            2 |     3
+
+The runs themselves rest in failed and compensated, which is the
+definition's own policy: provisioning stops on a failed step rather than
+rolling back the work that completed.
+
+--- 5. the suites this branch runs ---
+
+  projects/ores.web/packages/web          75 tests, 9 files, all passing
+  projects/ores.web/packages/bff          49 tests, 10 files, all passing
+  projects/ores.web/packages/wire-protocol 43 tests, 6 files, all passing
+
+The web suite carries the rail's own cases: the nine steps in order, the
+steps that may not be walked back past, the password fields assessed
+against a policy the test states rather than against a copy the client
+keeps, and the first sign-in's four states.

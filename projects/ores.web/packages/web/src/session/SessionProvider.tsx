@@ -49,10 +49,20 @@ export type SessionState =
     | { readonly status: 'anonymous' }
     | { readonly status: 'authenticated'; readonly session: SessionView };
 
-/** A login that still needs a party, or one that completed. */
+/**
+ * A login that still needs a party, or one that completed.
+ *
+ * The forced-change flag travels with both, because the login answer carries
+ * it: a screen that has just signed somebody in is the screen that has to ask
+ * them to set a password of their own.
+ */
 export type SignInOutcome =
-    | { readonly outcome: 'active' }
-    | { readonly outcome: 'party-required'; readonly parties: readonly PartySummary[] };
+    | { readonly outcome: 'active'; readonly passwordResetRequired: boolean }
+    | {
+          readonly outcome: 'party-required';
+          readonly parties: readonly PartySummary[];
+          readonly passwordResetRequired: boolean;
+      };
 
 interface SessionContextValue {
     readonly state: SessionState;
@@ -135,11 +145,18 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
             if (result.outcome === 'active') {
                 queryClient.setQueryData(SESSION_QUERY_KEY, result.session);
                 setState({ status: 'authenticated', session: result.session });
-                return { outcome: 'active' };
+                return {
+                    outcome: 'active',
+                    passwordResetRequired: result.session.passwordResetRequired,
+                };
             }
             // A pending selection is not a session yet, so nothing is cached. The
             // sign-in screen renders the picker from this return value.
-            return { outcome: 'party-required', parties: result.availableParties };
+            return {
+                outcome: 'party-required',
+                parties: result.availableParties,
+                passwordResetRequired: result.passwordResetRequired,
+            };
         },
         [queryClient],
     );

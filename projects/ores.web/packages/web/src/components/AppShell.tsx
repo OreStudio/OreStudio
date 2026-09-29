@@ -24,6 +24,7 @@ import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { Button } from '../ui/Primitives.js';
+import { VersionFooter } from './VersionFooter.js';
 
 /**
  * The shell a signed-in person gets.
@@ -41,6 +42,8 @@ export interface AppShellProps {
     readonly tenantName: string;
     readonly partyName: string | undefined;
     readonly onSignOut: () => void;
+    /** The build the deployment answers with, or nothing before it answers. */
+    readonly serverVersion?: string;
     readonly children: ReactNode;
 }
 
@@ -49,9 +52,18 @@ export function AppShell({
     tenantName,
     partyName,
     onSignOut,
+    serverVersion,
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
+    /*
+     * The three parts are joined rather than printed one after another,
+     * because a part the session does not carry would otherwise leave its
+     * separator behind and read as a dot with nothing beside it.
+     */
+    const session = [username, tenantName, partyName]
+        .filter((part) => part !== undefined && part !== '')
+        .join(' · ');
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">
@@ -64,10 +76,7 @@ export function AppShell({
                         </span>
                     </Link>
                     <div className="ml-auto flex items-center gap-3 text-xs text-ink-muted">
-                        <span>
-                            {t('shell.session', { username, tenant: tenantName })}
-                            {partyName === undefined ? '' : ` · ${partyName}`}
-                        </span>
+                        <span>{session}</span>
                         <Button variant="ghost" size="sm" onClick={onSignOut}>
                             {t('nav.signOut')}
                         </Button>
@@ -75,6 +84,7 @@ export function AppShell({
                 </div>
             </header>
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">{children}</main>
+            <VersionFooter serverVersion={serverVersion} />
         </div>
     );
 }

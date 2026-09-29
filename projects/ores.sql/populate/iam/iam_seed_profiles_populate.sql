@@ -48,6 +48,10 @@
 -- administrator names, and creates no test data. It prefills no tenant detail,
 -- because the administrator supplies the tenant and its own identity.
 --
+-- Neither card asks its administrator to change the password the person who
+-- provisioned the tenant gave it: the choice is the profile's to make, and a
+-- deployment that wants the change states it here.
+--
 -- ACME demo: for demos and testing, so its tenant is an evaluation one. Its
 -- tenant type is the only tenant detail the form does not ask for, and the
 -- starting point the person chose states it.
@@ -68,7 +72,7 @@ insert into ores_iam_seed_profiles_tbl (
     'For real use',
     '["Standard reference data and counterparties", "Your legal entities, from their LEI", "No test data"]'::jsonb,
     'production', '', '', null, '', '',
-    false, true, 10,
+    false, false, 10,
     0, current_user, current_user, 'system.initial_load',
     'Initial population of seed profiles'
 ), (
@@ -81,6 +85,17 @@ insert into ores_iam_seed_profiles_tbl (
     'evaluation', 'Acme Corporation', 'acme_corporation', 'acme_corporation',
     'tenant_admin', 'admin@acme_corporation.com',
     true, false, 20,
+    0, current_user, current_user, 'system.initial_load',
+    'Initial population of seed profiles'
+), (
+    gen_random_uuid(),
+    'gleif_entity',
+    'GLEIF entity',
+    'A tenant built around a public registry hierarchy',
+    'For demos and testing',
+    '["A parent entity the deployment holds, from GLEIF", "Its hierarchy becomes the tenant''s parties", "The tenant is not that entity"]'::jsonb,
+    'evaluation', '', '', null, 'tenant_admin', '',
+    false, false, 15,
     0, current_user, current_user, 'system.initial_load',
     'Initial population of seed profiles'
 )
@@ -104,6 +119,9 @@ cross join (values
     ('empty_operational', 'publish_bundle', 10, '{"bundles": ["base"]}'::jsonb),
     ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["base"]}'::jsonb),
+    ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
+    ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -146,9 +164,17 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
        'Initial population of seed profile parameters'
 from ores_iam_seed_profiles_tbl p
 cross join (values
-    ('empty_operational', 'root_lei', 'Root LEI', 'string', null, '', true,
-     'The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant''s parties.', 10),
+    ('empty_operational', 'root_lei', 'Root LEI', 'string', null, '', false,
+     'The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant''s '
+     'parties. A person who has no LEI yet leaves it empty: the import then has '
+     'nothing to read and says so, and the parties are added later.', 10),
     ('empty_operational', 'counterparty_size', 'Counterparty set', 'choice',
+     '["small", "large"]'::jsonb, 'small', true,
+     'small is about 13k GLEIF counterparties; large is about 500k.', 20),
+    ('gleif_entity', 'root_lei', 'Parent legal entity', 'legal_entity', null, '', true,
+     'Search the legal entities this deployment holds, and the one you choose becomes '
+     'the tenant''s hierarchy.', 10),
+    ('gleif_entity', 'counterparty_size', 'Counterparty set', 'choice',
      '["small", "large"]'::jsonb, 'small', true,
      'small is about 13k GLEIF counterparties; large is about 500k.', 20)
 ) as v(code, name, label, data_type, choices_json, default_value, is_required, description, display_order)

@@ -47,13 +47,14 @@ inline auto& dq_lei_entity_summary_handler_lg() {
 } // namespace
 
 /**
- * @brief Serves dq.v1.lei-entities.summary.
+ * @brief Serves dq.v1.lei-entities.summary and dq.v1.lei-entities.search.
  *
  * The operation model generates no handler, so this handler is hand-written
- * beside it, as report_definition_template_handler.hpp is. Both branches
- * read the LEI artefact tables through a SQL function: one lists the
- * distinct countries, the other lists the active root entities of one
- * country.
+ * beside it, as report_definition_template_handler.hpp is. Every read goes
+ * through a SQL function: the summary reads list the distinct countries or the
+ * active root entities of one country, which is the country browser the shell
+ * offers, and the search matches a legal name or an LEI across countries and
+ * states how many parties the match's hierarchy would create.
  */
 class lei_entity_summary_handler {
 public:
@@ -66,17 +67,17 @@ public:
 
     void summary(ores::nats::message msg) {
         BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        const auto parsed = rfl::json::read<get_lei_entities_summary_request>(data);
+        /*
+         * The payload is read with the deployment's own wire codec, not as
+         * JSON: a caller reaches this subject through the platform's transport,
+         * which encodes in the format the deployment states, and a handler that
+         * insisted on one format refused every caller that used another.
+         */
+        const auto parsed = ores::service::messaging::decode<get_lei_entities_summary_request>(msg);
         if (!parsed) {
-            const auto err = parsed.error().what();
-            BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
-                << "Failed to decode " << msg.subject << ": " << err << " (payload: " << data
-                << ")";
             get_lei_entities_summary_response err_resp;
             err_resp.success = false;
-            err_resp.error_message = std::string("Failed to decode request: ") + err;
+            err_resp.error_message = "The request could not be read.";
             reply(nats_, msg, err_resp);
             return;
         }
@@ -115,6 +116,56 @@ public:
                                                  .entity_category = row[2].value_or(""),
                                                  .country = row[3].value_or("")});
                 }
+            }
+            resp.success = true;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.error_message = e.what();
+        }
+        BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void search(ores::nats::message msg) {
+        BOOST_LOG_SEV(dq_lei_entity_summary_handler_lg(), debug) << "Handling " << msg.subject;
+        const auto parsed = ores::service::messaging::decode<search_lei_entities_request>(msg);
+        if (!parsed) {
+            search_lei_entities_response err_resp;
+            err_resp.success = false;
+            err_resp.error_message = "The request could not be read.";
+            reply(nats_, msg, err_resp);
+            return;
+        }
+        const auto& req = *parsed;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        search_lei_entities_response resp;
+        try {
+            using namespace ores::database::repository;
+            const std::string sql =
+                "SELECT * FROM ores_dq_lei_entities_search_fn($1, $2, $3, $4)";
+            auto rows = execute_parameterized_multi_column_query(
+                ctx,
+                sql,
+                {req.search,
+                 req.country_filter,
+                 std::to_string(req.limit),
+                 std::to_string(req.offset)},
+                dq_lei_entity_summary_handler_lg(),
+                "searching LEI entities");
+            for (const auto& row : rows) {
+                if (row.size() >= 5)
+                    resp.entities.push_back({.lei = row[0].value_or(""),
+                                             .entity_legal_name = row[1].value_or(""),
+                                             .entity_category = row[2].value_or(""),
+                                             .country = row[3].value_or(""),
+                                             .party_count = std::stoll(row[4].value_or("0"))});
             }
             resp.success = true;
         } catch (const std::exception& e) {

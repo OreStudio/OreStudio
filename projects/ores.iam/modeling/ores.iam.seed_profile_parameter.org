@@ -101,9 +101,11 @@ faker::word::noun()
 :nullable: false
 :END:
 
-How to read the value: =string=, =integer=, =boolean= or =choice=. Stored
-beside the value because one table carries every type, and the form picks its
-widget from it. A =choice= takes one of the values in =choices_json=.
+How to read the value: =string=, =integer=, =boolean=, =choice= or
+=legal_entity=. Stored beside the value because one table carries every type,
+and the form picks its widget from it. A =choice= takes one of the values in
+=choices_json=, and a =legal_entity= is named by its LEI, which a screen fills
+from a search over the entities the deployment holds rather than by typing.
 
 #+begin_src cpp :name generator
 std::string("string")

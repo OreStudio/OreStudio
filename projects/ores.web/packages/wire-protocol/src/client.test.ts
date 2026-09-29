@@ -173,7 +173,10 @@ describe('OresClient login', () => {
 
         const outcome = await client.login({ principal: 'probe', password: 'wrong' });
 
-        expect(outcome).toEqual({ kind: 'rejected', message: 'Invalid username or password' });
+        expect(outcome).toMatchObject({
+            kind: 'rejected',
+            message: 'Invalid username or password',
+        });
         expect(client.hasToken).toBe(false);
     });
 

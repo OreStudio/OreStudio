@@ -42,6 +42,8 @@ interface SessionRecord {
     accountId: string;
     tenantId: string;
     tenantName: string;
+    /** The build the login was answered by. */
+    version: string;
     /** Absent until a party has been chosen. */
     party: PartySummary | undefined;
     availableParties: readonly PartySummary[];
@@ -61,6 +63,8 @@ export interface LiveSession {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** The build the login was answered by. */
+    readonly version: string;
     /** Absent only while a login is waiting on party selection. */
     readonly party: PartySummary | undefined;
     readonly availableParties: readonly PartySummary[];
@@ -86,6 +90,7 @@ export interface SessionStore {
         readonly accountId: string;
         readonly tenantId: string;
         readonly tenantName: string;
+        readonly version: string;
         readonly availableParties: readonly PartySummary[];
         readonly accessLifetimeSeconds: number;
         readonly passwordResetRequired: boolean;
@@ -96,6 +101,14 @@ export interface SessionStore {
     activate(id: string, session: ActiveSession): LiveSession | undefined;
     /** Records a re-issued token and its new lifetime after a refresh. */
     refresh(id: string, accessLifetimeSeconds: number): void;
+    /**
+     * Records that the signed-in account set a password of its own.
+     *
+     * The flag is a snapshot the login took, so a session that has just
+     * changed its password still reports the change as outstanding until this
+     * runs, and the next read would ask for it a second time.
+     */
+    passwordChanged(id: string): LiveSession | undefined;
     /** Closes the connection and forgets the session. */
     destroy(id: string): Promise<void>;
     destroyAll(): Promise<void>;
@@ -126,6 +139,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accountId: record.accountId,
             tenantId: record.tenantId,
             tenantName: record.tenantName,
+            version: record.version,
             party: record.party,
             availableParties: record.availableParties,
             accessLifetimeSeconds: record.accessLifetimeSeconds,
@@ -145,6 +159,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accountId: input.accountId,
             tenantId: input.tenantId,
             tenantName: input.tenantName,
+            version: input.version,
             party: session?.party,
             availableParties: input.availableParties,
             accessLifetimeSeconds: input.accessLifetimeSeconds,
@@ -186,6 +201,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
                 return undefined;
             }
             record.party = session.party;
+            record.version = session.version;
             record.accessLifetimeSeconds = session.accessLifetimeSeconds;
             record.passwordResetRequired = session.passwordResetRequired;
             record.expiresAt = now() + ttlMs;
@@ -197,6 +213,15 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             if (record !== undefined) {
                 record.accessLifetimeSeconds = accessLifetimeSeconds;
             }
+        },
+
+        passwordChanged(id) {
+            const record = sessions.get(hash(id));
+            if (record === undefined) {
+                return undefined;
+            }
+            record.passwordResetRequired = false;
+            return toLive(id, record);
         },
 
         async destroy(id) {

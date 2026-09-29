@@ -29,6 +29,8 @@
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/login_info_service.hpp"
+#include "ores.iam.core/service/tenant_code_check.hpp"
+#include "ores.iam.core/service/tenant_hostname_check.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -120,6 +122,23 @@ public:
                                                bool force_password_change = false) const {
         using ores::database::repository::execute_parameterized_multi_column_query;
         using ores::database::service::tenant_context;
+
+        /*
+         * The code is refused before the database is asked to hold it, so the
+         * caller gets a sentence about the code rather than a constraint
+         * violation from the insert.
+         */
+        if (const auto reason = check_tenant_code(code); !reason.empty())
+            throw std::runtime_error(reason);
+
+        /*
+         * The hostname is refused for the same reason and before the same
+         * insert: it becomes part of the administrator's principal, and a
+         * principal the routing cannot resolve is a tenant nobody can sign in
+         * to.
+         */
+        if (const auto reason = check_tenant_hostname(hostname); !reason.empty())
+            throw std::runtime_error(reason);
 
         auto sys_ctx = tenant_context::with_system_tenant(ctx_);
         const auto rows = execute_parameterized_multi_column_query(

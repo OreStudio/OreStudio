@@ -81,6 +81,13 @@ void lei_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                      "List a country's LEI entities, optionally filtered by legal name",
                      {"country [--filter <text>]"});
 
+    lei_menu->Insert("search",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         process_search(std::ref(out), std::ref(session), args);
+                     },
+                     "Find the legal entities matching a name or an LEI",
+                     {"<name or LEI>"});
+
     ores::shell::app::insert_menu(root_menu, std::move(lei_menu));
 }
 
@@ -146,6 +153,45 @@ void lei_commands::process_entities(std::ostream& out,
     }
     out << shown << " of " << result->entities.size() << " entit"
         << (result->entities.size() == 1 ? "y" : "ies") << " shown." << std::endl;
+}
+
+void lei_commands::process_search(std::ostream& out,
+                                  nats_client& session,
+                                  const std::vector<std::string>& args) {
+    if (args.size() != 1) {
+        fail(out) << "Usage: lei search <name or LEI>" << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    dq::messaging::search_lei_entities_request req;
+    req.search = args.front();
+
+    BOOST_LOG_SEV(lg(), debug) << "Searching LEI entities for: '" << req.search << "'";
+
+    try {
+        auto result = do_auth_request<dq::messaging::search_lei_entities_response>(
+            out, session, std::string(req.nats_subject), req);
+        if (!result)
+            return;
+        if (!result->success) {
+            fail(out) << "Failed to search LEI entities: " << result->error_message << std::endl;
+            return;
+        }
+        for (const auto& entity : result->entities) {
+            out << std::left << std::setw(22) << entity.lei << std::setw(8) << entity.country
+                << std::setw(20) << entity.entity_category << std::setw(48)
+                << entity.entity_legal_name << entity.party_count << " part"
+                << (entity.party_count == 1 ? "y" : "ies") << std::endl;
+        }
+        out << result->entities.size() << " match" << (result->entities.size() == 1 ? "" : "es")
+            << "." << std::endl;
+    } catch (const std::exception& e) {
+        fail(out) << "Request failed: " << e.what() << std::endl;
+    }
 }
 
 }

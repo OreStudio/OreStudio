@@ -104,15 +104,16 @@ the browser is not told the host, the port, the namespace, or the certificates.
 | Module | Job |
 |---|---|
 | =transport.ts= | Sends a request, parses the JSON, and raises =ApiFailure= on a non-success status. |
-| =client.ts= | The typed session calls: sign in, read the session, select the party, sign out. |
+| =client.ts= | The typed calls: the session, the starting points, the provision request and the run it starts, the password policy, and the signed-in account's own password. |
+| =journeys/= | The journey runtime, the first run journey, and the step library the tenant journeys place on their rails. |
 
 Every response is parsed against a Zod schema from
 =@ores/wire-protocol/browser=. A response that does not match its schema is a
 failure, not a surprise later.
 
-The shell reads the session and nothing else. The routes below that no module
-calls yet are served by the BFF and reachable, and a journey screen adds the
-call it needs.
+The shell reads the session; the first run journey reads and writes everything
+else. A route below that no module calls yet is served by the BFF and
+reachable, and the journey that needs it adds the call.
 
 The rule a journey follows is
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]: one
@@ -136,8 +137,12 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =POST /api/session/party= | Select the party for the session. |
 | =GET /api/bootstrap= | Whether the deployment still needs its first administrator. Served with no session, because a deployment in bootstrap mode has nobody to sign in as. |
 | =POST /api/bootstrap/administrator= | Create the first administrator, which closes bootstrap mode. Refused unless the deployment says it is still in bootstrap mode. |
+| =GET /api/password-policy= | The rules a password must satisfy, read from the server's validator. Served with no session, because the screen that shows the rules is the one a person signs in on. |
+| =POST /api/account/password= | Change the signed-in account's own password. The account is the session's own, so the route takes no account id. |
 | =GET /api/seed-profiles= | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
 | =POST /api/provision-tenant= | Provision a tenant from one starting point. The tenant and its administrator exist when it answers, and the answer carries the id of the run that provisions the rest. |
+| =GET /api/provision-tenant/:instanceId= | A run's progress: its state, the step it is executing, and one summary per step. This read is the progress contract the journey's rail renders. |
+| =POST /api/provision-tenant/:instanceId/retry= | Resume a stopped run from the step that failed. A refusal is an answer, not a failed call. |
 | =GET /api/site= | The site description. |
 | =GET /api/site/deployment= | The deployment description. Served only when the developer surface is on. |
 | =GET /api/health= | Liveness. |

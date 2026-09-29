@@ -352,6 +352,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(get_lei_entities_summary_request::nats_subject,
                                  queue_group,
                                  [les](ores::nats::message msg) { les->summary(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(search_lei_entities_request::nats_subject,
+                                 queue_group,
+                                 [les](ores::nats::message msg) { les->search(std::move(msg)); }));
     }
 
     // =========================================================================

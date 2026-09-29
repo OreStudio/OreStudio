@@ -39,6 +39,16 @@ export interface LoginResponse {
     account_id: string;
     tenant_id: string;
     tenant_name: string;
+    /**
+     * @brief The build the answering service runs, in full.
+     *
+     * A session is a session with a deployment, so the answer that opens one
+     * states which build it was opened against: a client that signs in states the
+     * deployment's version without having asked whether the deployment still
+     * needs an administrator, and a client that did ask can see whether the two
+     * answers agree.
+     */
+    version: string;
     username: string;
     email: string;
     password_reset_required: boolean;

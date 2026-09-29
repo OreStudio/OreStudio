@@ -132,6 +132,10 @@ TEST_CASE("a profile's kinds become steps in order, with the completing step las
     for (const auto& step : steps) {
         CHECK(step.command_subject == provision_tenant_step_subject);
         CHECK(step.compensation_subject.empty());
+        // A screen shows the label and the description, and falls back to the
+        // step's identity only when a definition declares none: every kind
+        // this definition declares declares both.
+        CHECK_FALSE(step.label.empty());
         CHECK_FALSE(step.description.empty());
     }
 }

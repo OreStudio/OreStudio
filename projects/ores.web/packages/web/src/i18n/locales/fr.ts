@@ -435,23 +435,6 @@ const fr: SourceCatalogue = {
         noneAvailable: 'Aucune image n’est disponible dans ce locataire.',
     },
 
-    shell: {
-        session: '{username} · {tenant}',
-    },
-
-    setup: {
-        title: 'Configurer cette installation',
-        bootstrapMode:
-            "Cette installation n'a pas encore de compte administrateur et fonctionne en mode amorçage. Personne ne peut se connecter tant qu'un administrateur n'existe pas.",
-        next: 'Créez le premier compte administrateur pour commencer.',
-        username: "Nom d'utilisateur de l'administrateur",
-        email: "Courriel de l'administrateur",
-        password: "Mot de passe de l'administrateur",
-        create: "Créer l'administrateur",
-        creating: 'Création...',
-        failed: "L'administrateur n'a pas été créé :",
-    },
-
     gate: {
         unreachable:
             "Le serveur n'a pas répondu : l'interface ne peut pas savoir si cette installation doit encore être configurée. {reason}",
@@ -461,6 +444,183 @@ const fr: SourceCatalogue = {
     journey: {
         steps: 'Étapes du parcours',
         actionFailed: "L'étape a échoué : {message}",
+        policyFailed:
+            "Les règles de mot de passe n'ont pas pu être lues, aucun mot de passe ne peut donc être défini ici. {message}",
+
+        welcome: {
+            title: 'Bienvenue dans ORE Studio',
+            lead: 'Cette installation est vide. Configurez-la en trois étapes. La liste de gauche nomme chaque étape.',
+            start: 'Commencer',
+            stage: {
+                admin: "Créer l'administrateur",
+                adminBody: 'Le compte propriétaire de cette installation.',
+                tenant: 'Créer le premier locataire',
+                tenantBody:
+                    'Le premier locataire, construit sur le serveur à partir d’un point de départ.',
+                signIn: 'Se connecter',
+                signInBody:
+                    "La première connexion de l'administrateur du locataire, avec son propre mot de passe.",
+            },
+        },
+
+        admin: {
+            title: "Créer l'administrateur",
+            lead: "Cette installation n'a aucun administrateur et personne ne peut encore se connecter.",
+            bootstrap:
+                "L'administrateur est propriétaire de l'installation. Le déploiement quitte le mode amorçage dès que ce compte existe.",
+            username: "Nom d'utilisateur de l'administrateur",
+            email: "Courriel de l'administrateur",
+            password: "Mot de passe de l'administrateur",
+            create: "Créer l'administrateur",
+            resumeTitle: "Se connecter en tant qu'administrateur",
+            resumeLead:
+                "Cette installation a déjà son administrateur. Connectez-vous avec ce compte pour continuer. Le mot de passe est aussi celui que l'entité reprend lorsque son profil partage le vôtre.",
+            signIn: 'Se connecter et continuer',
+            partyChoice:
+                "L'administrateur travaille dans plusieurs entités. Connectez-vous et choisissez-en une d'abord.",
+        },
+
+        profile: {
+            title: 'Choisir un point de départ',
+            lead: "Un point de départ est un profil détenu par le serveur. Il indique les paramètres, les étapes et le locataire qu'il crée.",
+            counts: '{settings} paramètres · {steps} étapes',
+        },
+
+        details: {
+            title: 'Décrire le locataire',
+            lead: 'Nommez le locataire et créez son administrateur.',
+            tenant: 'Locataire',
+            name: 'Nom',
+            code: 'Code',
+            codeHint: "Court et unique. Il nomme le locataire dans un nom d'utilisateur.",
+            hostname: "Nom d'hôte",
+            settings: '{profile} paramètres',
+            administrator: 'Administrateur du locataire',
+            username: "Nom d'utilisateur",
+            email: 'Courriel',
+            useMyPassword: 'Utiliser mon mot de passe',
+            adminPassword: "Mot de passe de l'administrateur",
+            passwordForced: 'Il devra le changer à la première connexion.',
+            standard: '{profile} utilise ses paramètres standard.',
+            leiSearch: 'Rechercher par nom ou LEI',
+            leiHowItWorks:
+                'Choisir une entité remplit le locataire ci-dessous, et chaque champ reste modifiable.',
+            leiChange: 'Changer',
+            leiKeep: 'Conserver',
+            leiParties: {
+                one: '1 entité dans sa hiérarchie',
+                other: '{count} entités dans sa hiérarchie',
+            },
+            leiNoMatch: 'Aucune entité ne correspond.',
+            leiReadFailed: "Les entités juridiques n'ont pas pu être lues. {message}",
+            changeSettings: 'Modifier les paramètres',
+            noCreatingPassword:
+                "L'administrateur qui crée le locataire doit d'abord définir un mot de passe.",
+            rows: {
+                tenant: 'Locataire',
+                hostname: "Nom d'hôte",
+                administrator: 'Administrateur',
+                password: 'Mot de passe',
+            },
+            passwordMine: 'Identique au mien',
+            passwordTyped: 'Défini ici',
+        },
+
+        review: {
+            title: 'Vérification',
+            lead: "Rien n'est créé tant que vous n'avez pas confirmé.",
+            startingPoint: 'Point de départ',
+            tenant: 'Locataire',
+            hostname: "Nom d'hôte",
+            administrator: 'Administrateur',
+            password: 'Mot de passe',
+            passwordMine: 'Le même que le vôtre',
+            passwordSet: 'Celui que vous avez saisi',
+            steps: 'La création du locataire exécute {steps} étapes.',
+            forcedChange: '{principal} définit son propre mot de passe à la première connexion.',
+            noPassword: "L'administrateur du locataire n'a pas encore de mot de passe.",
+            create: 'Créer le locataire',
+            noRun: "Le serveur a créé le locataire mais n'a désigné aucune exécution à suivre.",
+        },
+
+        provisioning: {
+            title: 'Provisionnement',
+            lead: 'Vous pouvez quitter cette page et revenir.',
+            readFailed: "La progression n'a pas pu être lue. {message}",
+            retry: "Reprendre à l'étape échouée",
+            retryKeeps: 'Les étapes terminées sont conservées.',
+            retrying: "L'exécution a repris à {step}.",
+            rolledBack:
+                "L'exécution a annulé les étapes qu'elle avait terminées, elle ne laisse donc rien derrière elle.",
+        },
+
+        handOff: {
+            title: 'Passation',
+            lead: 'Le locataire est prêt. Son administrateur se connecte ensuite.',
+            administrator: 'Son administrateur est {principal}.',
+            continue: "Continuer en tant qu'administrateur du locataire",
+            continueHint: 'Connectez-vous en tant que {principal} maintenant.',
+            elsewhere: 'Passer la main à quelqu’un d’autre',
+            elsewhereHint:
+                "Déconnectez-vous et transmettez le nom d'utilisateur et le mot de passe.",
+            elsewhereHintForced:
+                "Déconnectez-vous et transmettez le nom d'utilisateur. La personne définit son propre mot de passe à la première connexion.",
+        },
+
+        signIn: {
+            title: 'Première connexion',
+            lead: "L'administrateur du locataire se connecte pour la première fois.",
+            username: "Nom d'utilisateur",
+            password: 'Mot de passe',
+            submit: 'Se connecter',
+            submitting: 'Connexion...',
+            choosePartyHint: "Choisissez l'entité dans laquelle travailler.",
+            done: 'Connecté en tant que {principal}.',
+        },
+
+        change: {
+            required: 'Ce compte définit son propre mot de passe avant de continuer.',
+            new: 'Nouveau mot de passe',
+            submit: 'Définir le mot de passe',
+            submitting: 'Définition...',
+            done: 'Votre mot de passe est défini et vous êtes connecté en tant que {principal}.',
+        },
+
+        ready: {
+            title: 'Prêt',
+            lead: "L'installation est configurée et {principal} est connecté.",
+            home: "Aller à l'accueil",
+        },
+    },
+
+    version: {
+        client: 'client {version}',
+        server: 'serveur {version}',
+        serverUnknown: 'version du serveur inconnue',
+    },
+
+    server: {
+        'Publish the reference data': 'Publier les données de référence',
+        'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
+            'Publie les données de référence à partir desquelles le locataire travaille : les ensembles que le point de départ commande, et les jeux de données que ces ensembles nomment.',
+        'Import the legal entities': 'Importer les entités juridiques',
+        "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
+            "Lit l'entité juridique que le point de départ nomme par son LEI et les entités qu'elle consolide, puis les publie comme entités du locataire.",
+        "Create the tenant's parties": 'Créer les entités du locataire',
+        'Creates the party that represents the tenant itself, with the reference data a party needs.':
+            "Crée l'entité qui représente le locataire lui-même, avec les données de référence dont une entité a besoin.",
+        'Load the staff': 'Charger le personnel',
+        'Creates an account for each person the starting point lists, each in its own party.':
+            'Crée un compte pour chaque personne que le point de départ liste, chacune dans sa propre entité.',
+        'Attach the photographs': 'Joindre les photographies',
+        "Gives the accounts their photographs, and the tenant's party its logo.":
+            "Donne aux comptes leurs photographies et à l'entité du locataire son logo.",
+        'Start the market feeds': 'Démarrer les flux de marché',
+        "Starts the synthetic market data the tenant's curves and prices are built from.":
+            'Démarre les données de marché synthétiques à partir desquelles les courbes et les prix du locataire sont construits.',
+        Finish: 'Terminer',
+        'Marks the tenant ready: it stops bootstrapping and becomes active.':
+            'Marque le locataire comme prêt : il quitte le mode amorçage et devient actif.',
     },
 
     common: {
@@ -471,6 +631,7 @@ const fr: SourceCatalogue = {
         revert: 'Rétablir',
         apply: 'Appliquer',
         back: 'Retour',
+        continue: 'Continuer',
     },
 };
 

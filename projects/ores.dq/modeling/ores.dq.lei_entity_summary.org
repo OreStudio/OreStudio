@@ -21,13 +21,16 @@ It is an operation rather than an entity verb. The row is a projection over
 consolidates, which is a query shape and not a page over a table, and it returns
 a summary record rather than the entity.
 
-No handler is generated for an operation, so the handler that serves this
-subject is hand-written beside this model:
+No handler is generated for an operation, so the handler that serves these
+subjects is hand-written beside this model:
 =core/include/ores.dq.core/messaging/lei_entity_summary_handler.hpp=, wired in
-=core/src/messaging/registrar.cpp=. The two SQL functions it calls,
+=core/src/messaging/registrar.cpp=. The SQL functions it calls keep the
+deduplication and the consolidation filter in the database:
 =ores_dq_lei_entities_distinct_countries_fn= and
-=ores_dq_lei_entities_summary_by_country_fn=, keep the deduplication and the
-consolidation filter in the database.
+=ores_dq_lei_entities_summary_by_country_fn= answer the shell's country browser,
+and =ores_dq_lei_entities_search_fn= matches a name or an LEI for the search a
+starting point opens on, stating how many parties importing the match's
+hierarchy would create.
 
 * Includes
 
@@ -181,6 +184,187 @@ consolidation filter in the database.
 #+begin_src cpp :name comment
 /**
  * @brief The summarised entities.
+ */
+#+end_src
+
+** lei_entity_match
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One legal entity a search matched, and the work it would bring.
+ */
+#+end_src
+
+*** lei
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entity's LEI.
+ */
+#+end_src
+
+*** entity_legal_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entity's registered legal name.
+ */
+#+end_src
+
+*** entity_category
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The entity's category, as the registry classifies it.
+ */
+#+end_src
+
+*** country
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The country of the entity's legal address.
+ */
+#+end_src
+
+*** party_count
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many parties importing this entity's hierarchy would create,
+ * counting the entity itself.
+ *
+ * A person choosing the entity a tenant is built around is choosing that much
+ * work, so the match states it before the choice is made. It is the size of the
+ * hierarchy the deployment holds under the entity, which is what the
+ * publication walks.
+ */
+#+end_src
+
+** search_lei_entities_request
+:PROPERTIES:
+:subject:  dq.v1.lei-entities.search
+:response: search_lei_entities_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the root legal entities that match a search.
+ *
+ * The read a search uses, as against the country browser: a name or an LEI is
+ * what somebody looking for a particular entity knows, and the deployment holds
+ * far more entities than one answer can carry.
+ */
+#+end_src
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The text to match, or empty for every entity.
+ *
+ * A name matches anywhere in the legal name; an LEI matches from its start.
+ */
+#+end_src
+
+*** country_filter
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The country to restrict the matches to, or empty for every country.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many matches to skip.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  20
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many matches to return.
+ */
+#+end_src
+
+** search_lei_entities_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports the matches, or why they could not be read.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the read completed.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it failed, when it did.
+ */
+#+end_src
+
+*** entities
+:PROPERTIES:
+:cpp_type: std::vector<lei_entity_match>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The matches.
  */
 #+end_src
 

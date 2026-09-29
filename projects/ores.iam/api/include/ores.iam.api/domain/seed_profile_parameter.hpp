@@ -91,9 +91,10 @@ struct seed_profile_parameter final {
     std::string label;
 
     /**
-     * @brief How to read the value: string, integer, boolean or choice. Stored beside the value
-     * because one table carries every type, and the form picks its widget from it. A choice takes
-     * one of the values in choices_json.
+     * @brief How to read the value: string, integer, boolean, choice or legal_entity. Stored beside
+     * the value because one table carries every type, and the form picks its widget from it. A
+     * choice takes one of the values in choices_json, and a legal_entity is named by its LEI, which
+     * a screen fills from a search over the entities the deployment holds rather than by typing.
      */
     std::string data_type;
 

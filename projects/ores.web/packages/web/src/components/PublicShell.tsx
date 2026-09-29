@@ -22,6 +22,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PROJECT_SITE, headerMark } from '../assets/brand.js';
+import { VersionFooter } from './VersionFooter.js';
 
 /**
  * The shell a visitor gets.
@@ -31,13 +32,31 @@ import { PROJECT_SITE, headerMark } from '../assets/brand.js';
  * navigation a signed-in person needs would be three empty lists. This one is
  * the mark, the name, and the screen.
  */
-export function PublicShell({ children }: { readonly children: ReactNode }): ReactNode {
+export function PublicShell({
+    children,
+    wide = false,
+    serverVersion,
+}: {
+    readonly children: ReactNode;
+    /**
+     * Whether the screen is a journey rather than a form.
+     *
+     * A form reads badly when it is stretched across a desktop, so these
+     * screens the width they were written for. A journey is a rail and a step
+     * beside it, and a rail inside a form's column leaves the step about four
+     * hundred pixels and makes every line of it wrap.
+     */
+    readonly wide?: boolean;
+    /** The build the deployment answers with, or nothing before it answers. */
+    readonly serverVersion?: string;
+}): ReactNode {
     const { t } = useTranslation();
+    const width = wide ? 'max-w-[1100px]' : 'max-w-[680px]';
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">
             <header className="border-b border-line">
-                <div className="mx-auto flex w-full max-w-[680px] items-center gap-3 px-5 py-4">
+                <div className={`mx-auto flex w-full items-center gap-3 px-5 py-4 ${width}`}>
                     <img src={headerMark} alt="" className="h-7 w-auto" />
                     <a
                         href={PROJECT_SITE}
@@ -47,7 +66,8 @@ export function PublicShell({ children }: { readonly children: ReactNode }): Rea
                     </a>
                 </div>
             </header>
-            <main className="mx-auto w-full max-w-[680px] flex-1 px-5 py-12">{children}</main>
+            <main className={`mx-auto w-full flex-1 px-5 py-12 ${width}`}>{children}</main>
+            <VersionFooter serverVersion={serverVersion} />
         </div>
     );
 }

@@ -439,23 +439,6 @@ const pt: SourceCatalogue = {
         noneAvailable: 'Não existem imagens disponíveis neste inquilino.',
     },
 
-    shell: {
-        session: '{username} · {tenant}',
-    },
-
-    setup: {
-        title: 'Configurar esta instalação',
-        bootstrapMode:
-            'Esta instalação ainda não tem uma conta de administrador e está em modo de arranque. Ninguém pode iniciar sessão enquanto não existir um administrador.',
-        next: 'Crie a primeira conta de administrador para começar.',
-        username: 'Nome de utilizador do administrador',
-        email: 'Email do administrador',
-        password: 'Palavra-passe do administrador',
-        create: 'Criar administrador',
-        creating: 'A criar...',
-        failed: 'O administrador não foi criado:',
-    },
-
     gate: {
         unreachable:
             'O servidor não respondeu, por isso a interface não sabe se esta instalação ainda precisa de ser configurada. {reason}',
@@ -465,6 +448,183 @@ const pt: SourceCatalogue = {
     journey: {
         steps: 'Passos do percurso',
         actionFailed: 'O passo falhou: {message}',
+        policyFailed:
+            'Não foi possível ler as regras da palavra-passe, por isso não é possível definir aqui nenhuma. {message}',
+
+        welcome: {
+            title: 'Bem-vindo ao ORE Studio',
+            lead: 'Esta instalação está vazia. Configure-a em três etapas. A lista à esquerda indica cada passo.',
+            start: 'Começar',
+            stage: {
+                admin: 'Criar o administrador',
+                adminBody: 'A conta proprietária desta instalação.',
+                tenant: 'Criar o primeiro inquilino',
+                tenantBody:
+                    'O primeiro inquilino, criado no servidor a partir de um ponto de partida.',
+                signIn: 'Iniciar sessão',
+                signInBody:
+                    'O primeiro início de sessão do administrador do inquilino, com uma palavra-passe própria.',
+            },
+        },
+
+        admin: {
+            title: 'Criar o administrador',
+            lead: 'Esta instalação não tem administrador e ninguém pode iniciar sessão ainda.',
+            bootstrap:
+                'O administrador é proprietário da instalação. A implementação sai do modo de arranque quando esta conta existir.',
+            username: 'Nome de utilizador do administrador',
+            email: 'Email do administrador',
+            password: 'Palavra-passe do administrador',
+            create: 'Criar administrador',
+            resumeTitle: 'Iniciar sessão como administrador',
+            resumeLead:
+                'Esta instalação já tem o seu administrador. Inicie sessão com essa conta para continuar. A palavra-passe é também a que a entidade recebe quando o perfil dela partilha a sua.',
+            signIn: 'Iniciar sessão e continuar',
+            partyChoice:
+                'O administrador trabalha em mais do que uma entidade. Inicie sessão e escolha uma primeiro.',
+        },
+
+        profile: {
+            title: 'Escolher um ponto de partida',
+            lead: 'Um ponto de partida é um perfil que o servidor guarda. Indica as definições, os passos e o inquilino que cria.',
+            counts: '{settings} definições · {steps} passos',
+        },
+
+        details: {
+            title: 'Descrever o inquilino',
+            lead: 'Dê um nome ao inquilino e crie o seu administrador.',
+            tenant: 'Inquilino',
+            name: 'Nome',
+            code: 'Código',
+            codeHint: 'Curto e único. Dá nome ao inquilino num nome de utilizador.',
+            hostname: 'Nome do anfitrião',
+            settings: '{profile} definições',
+            administrator: 'Administrador do inquilino',
+            username: 'Nome de utilizador',
+            email: 'Email',
+            useMyPassword: 'Usar a minha palavra-passe',
+            adminPassword: 'Palavra-passe do administrador',
+            passwordForced: 'Terá de a alterar no primeiro início de sessão.',
+            standard: 'O {profile} usa as suas definições padrão.',
+            leiSearch: 'Pesquisar por nome ou LEI',
+            leiHowItWorks:
+                'Escolher uma entidade preenche o locatário abaixo, e cada campo continua editável.',
+            leiChange: 'Alterar',
+            leiKeep: 'Manter',
+            leiParties: {
+                one: '1 entidade na sua hierarquia',
+                other: '{count} entidades na sua hierarquia',
+            },
+            leiNoMatch: 'Nenhuma entidade corresponde.',
+            leiReadFailed: 'Não foi possível ler as entidades jurídicas. {message}',
+            changeSettings: 'Alterar definições',
+            noCreatingPassword:
+                'O administrador que cria o inquilino tem de definir primeiro uma palavra-passe.',
+            rows: {
+                tenant: 'Inquilino',
+                hostname: 'Nome do anfitrião',
+                administrator: 'Administrador',
+                password: 'Palavra-passe',
+            },
+            passwordMine: 'Igual à minha',
+            passwordTyped: 'Definida aqui',
+        },
+
+        review: {
+            title: 'Revisão',
+            lead: 'Nada é criado antes de confirmar.',
+            startingPoint: 'Ponto de partida',
+            tenant: 'Inquilino',
+            hostname: 'Nome do anfitrião',
+            administrator: 'Administrador',
+            password: 'Palavra-passe',
+            passwordMine: 'A mesma que a sua',
+            passwordSet: 'A que introduziu',
+            steps: 'A criação do inquilino executa {steps} passos.',
+            forcedChange:
+                '{principal} define a sua própria palavra-passe no primeiro início de sessão.',
+            noPassword: 'O administrador do inquilino ainda não tem palavra-passe.',
+            create: 'Criar inquilino',
+            noRun: 'O servidor criou o inquilino mas não indicou nenhuma execução a seguir.',
+        },
+
+        provisioning: {
+            title: 'Aprovisionamento',
+            lead: 'Pode sair desta página e voltar.',
+            readFailed: 'Não foi possível ler o progresso. {message}',
+            retry: 'Retomar a partir do passo falhado',
+            retryKeeps: 'Os passos concluídos são mantidos.',
+            retrying: 'A execução retomou em {step}.',
+            rolledBack:
+                'A execução anulou os passos que tinha concluído, por isso não deixa nada atrás.',
+        },
+
+        handOff: {
+            title: 'Passagem',
+            lead: 'O inquilino está pronto. O seu administrador inicia sessão a seguir.',
+            administrator: 'O seu administrador é {principal}.',
+            continue: 'Continuar como administrador do inquilino',
+            continueHint: 'Inicie sessão como {principal} agora.',
+            elsewhere: 'Passar a vez a outra pessoa',
+            elsewhereHint: 'Termine a sessão e entregue o nome de utilizador e a palavra-passe.',
+            elsewhereHintForced:
+                'Termine a sessão e entregue o nome de utilizador. A pessoa define a sua própria palavra-passe no primeiro início de sessão.',
+        },
+
+        signIn: {
+            title: 'Primeiro início de sessão',
+            lead: 'O administrador do inquilino inicia sessão pela primeira vez.',
+            username: 'Nome de utilizador',
+            password: 'Palavra-passe',
+            submit: 'Iniciar sessão',
+            submitting: 'A iniciar sessão...',
+            choosePartyHint: 'Escolha a entidade em que quer trabalhar.',
+            done: 'Sessão iniciada como {principal}.',
+        },
+
+        change: {
+            required: 'Esta conta define a sua própria palavra-passe antes de continuar.',
+            new: 'Nova palavra-passe',
+            submit: 'Definir palavra-passe',
+            submitting: 'A definir...',
+            done: 'A sua palavra-passe está definida e tem a sessão iniciada como {principal}.',
+        },
+
+        ready: {
+            title: 'Pronto',
+            lead: 'A instalação está configurada e {principal} tem a sessão iniciada.',
+            home: 'Ir para o início',
+        },
+    },
+
+    version: {
+        client: 'cliente {version}',
+        server: 'servidor {version}',
+        serverUnknown: 'versão do servidor desconhecida',
+    },
+
+    server: {
+        'Publish the reference data': 'Publicar os dados de referência',
+        'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
+            'Publica os dados de referência com que o inquilino trabalha: os pacotes que o ponto de partida encomenda e os conjuntos de dados que esses pacotes nomeiam.',
+        'Import the legal entities': 'Importar as entidades jurídicas',
+        "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
+            'Lê a entidade jurídica que o ponto de partida indica pelo seu LEI e as entidades que esta consolida, e publica-as como entidades do inquilino.',
+        "Create the tenant's parties": 'Criar as entidades do inquilino',
+        'Creates the party that represents the tenant itself, with the reference data a party needs.':
+            'Cria a entidade que representa o próprio inquilino, com os dados de referência de que uma entidade precisa.',
+        'Load the staff': 'Carregar o pessoal',
+        'Creates an account for each person the starting point lists, each in its own party.':
+            'Cria uma conta para cada pessoa que o ponto de partida lista, cada uma na sua própria entidade.',
+        'Attach the photographs': 'Anexar as fotografias',
+        "Gives the accounts their photographs, and the tenant's party its logo.":
+            'Dá as fotografias às contas e o logótipo à entidade do inquilino.',
+        'Start the market feeds': 'Iniciar os fluxos de mercado',
+        "Starts the synthetic market data the tenant's curves and prices are built from.":
+            'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
+        Finish: 'Concluir',
+        'Marks the tenant ready: it stops bootstrapping and becomes active.':
+            'Marca o inquilino como pronto: sai do modo de arranque e fica ativo.',
     },
 
     common: {
@@ -475,6 +635,7 @@ const pt: SourceCatalogue = {
         revert: 'Reverter',
         apply: 'Aplicar',
         back: 'Voltar',
+        continue: 'Continuar',
     },
 };
 

@@ -71,6 +71,17 @@ public:
     static void process_entities(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief Find the entities matching a name or an LEI: lei search <text>.
+     *
+     * The read matches across countries, which is what somebody who knows an
+     * entity's name can use, and each match states how many parties importing
+     * its hierarchy would create.
+     */
+    static void process_search(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
 };
 
 }

@@ -120,6 +120,7 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
         for (const auto& wanted : parsed->steps) {
             workflow_step_def s;
             s.name = wanted.name;
+            s.label = "Identity step '" + wanted.name + "'";
             s.description =
                 "Identity step '" + wanted.name + "' reporting '" + wanted.outcome() + "'";
             s.command_subject = std::string(identity_step_command_subject);

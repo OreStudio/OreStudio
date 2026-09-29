@@ -66,18 +66,35 @@ export const SUBJECTS = {
     workflowInstanceSteps: 'workflow.v1.instances.steps',
     retryWorkflowInstance: 'workflow.v1.instances.retry',
     passwordPolicy: 'iam.v1.auth.password-policy',
+    leiEntitiesSummary: 'dq.v1.lei-entities.summary',
+    leiEntitiesSearch: 'dq.v1.lei-entities.search',
 } as const;
 
 /**
  * Whether the deployment still needs provisioning.
  *
- * The IAM service answers the flag and leaves the sentence to the caller: a
+ * The IAM service answers the flags and leaves the sentence to the caller: a
  * deployment in bootstrap mode has no accounts to sign in with, so the words
  * that say so are the interface's, not the wire's.
  */
 export const bootstrapStatusResponseSchema = z.object({
     is_in_bootstrap_mode: z.boolean().default(false),
     message: z.string().default(''),
+    /*
+     * Whether the deployment has a tenant of its own, the system tenant being
+     * its bookkeeping rather than a tenant somebody set up. A deployment with
+     * none has not been set up, which the interface states alongside the
+     * administrator question: the screen that brings an installation to life
+     * stays the screen a person belongs on until there is something in it.
+     */
+    has_tenant: z.boolean().default(false),
+    /*
+     * The build the answering service runs. It travels with this read because
+     * this is the read a browser makes before it has a session, and a screen
+     * states the deployment's version whether or not it still needs an
+     * administrator.
+     */
+    version: z.string().default(''),
 });
 
 /**
@@ -156,6 +173,7 @@ export const loginResponseSchema = z
         account_id: text,
         tenant_id: text,
         tenant_name: text,
+        version: text,
         username: text,
         email: text,
         password_reset_required: flag,
@@ -176,6 +194,7 @@ export const loginResponseSchema = z
         accountId: row.account_id,
         tenantId: row.tenant_id,
         tenantName: row.tenant_name,
+        version: row.version,
         username: row.username,
         email: row.email,
         passwordResetRequired: row.password_reset_required,
@@ -670,6 +689,68 @@ export const seedProfilesResponseSchema = z.object({
 export type SeedProfilesResponse = z.infer<typeof seedProfilesResponseSchema>;
 
 /**
+ * One legal entity a deployment can start a tenant from, as a screen reads it.
+ *
+ * The read behind it matches the root legal entities the deployment holds
+ * against what a person typed, and this is the part of that answer a screen
+ * needs: the LEI that names the entity, the name a person recognises it by, the
+ * country it is registered in, and how many parties its hierarchy would create,
+ * which is the work choosing it starts.
+ */
+export const leiEntityChoiceSchema = z.object({
+    lei: z.string().default(''),
+    legalName: z.string().default(''),
+    country: z.string().default(''),
+    partyCount: z.number().default(0),
+});
+
+export type LeiEntityChoice = z.infer<typeof leiEntityChoiceSchema>;
+
+/** The body of the browser's legal-entity read. */
+export const leiEntitiesResponseSchema = z.object({
+    entities: z.array(leiEntityChoiceSchema).default([]),
+});
+
+export type LeiEntitiesResponse = z.infer<typeof leiEntitiesResponseSchema>;
+
+/** The server's own answer, before it is read in the interface's terms. */
+export const leiEntitySummaryResponseSchema = z.object({
+    success: z.boolean().default(false),
+    error_message: z.string().default(''),
+    entities: z
+        .array(
+            z.object({
+                lei: z.string().default(''),
+                entity_legal_name: z.string().default(''),
+                entity_category: z.string().default(''),
+                country: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
+
+export type LeiEntitySummaryResponse = z.infer<typeof leiEntitySummaryResponseSchema>;
+
+/** The server's answer to a legal-entity search, before it is read. */
+export const searchLeiEntitiesResponseSchema = z.object({
+    success: z.boolean().default(false),
+    error_message: z.string().default(''),
+    entities: z
+        .array(
+            z.object({
+                lei: z.string().default(''),
+                entity_legal_name: z.string().default(''),
+                entity_category: z.string().default(''),
+                country: z.string().default(''),
+                party_count: z.number().default(0),
+            }),
+        )
+        .default([]),
+});
+
+export type SearchLeiEntitiesResponse = z.infer<typeof searchLeiEntitiesResponseSchema>;
+
+/**
  * A request to provision one tenant from a starting point.
  *
  * The profile's parameters travel as a list of `name=value` entries, because
@@ -762,6 +843,13 @@ export function toProvisionTenantResult(
 export const workflowStepSummarySchema = z.object({
     id: z.string().default(''),
     name: z.string().default(''),
+    /*
+     * The step's name and description in a person's words, as the run's own
+     * definition declared them. Both default to empty, because an instance
+     * started before a step had words carries none and the name stands in.
+     */
+    label: z.string().default(''),
+    description: z.string().default(''),
     status: z.string().default(''),
     step_index: z.number().int().default(0),
     created_at: z.string().default(''),

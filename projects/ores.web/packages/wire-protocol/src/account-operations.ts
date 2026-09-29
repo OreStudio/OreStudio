@@ -88,10 +88,24 @@ export async function deleteAccount(caller: AuthenticatedCaller, accountId: stri
     }
 }
 
+/**
+ * A request to change the signed-in account's own password.
+ *
+ * The current password is asked for because the change replaces a credential
+ * the person already holds: a browser left signed in should not be enough to
+ * take the account over.
+ */
+export const changeOwnPasswordRequestSchema = z.object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(1),
+});
+
+export type ChangeOwnPasswordRequest = z.infer<typeof changeOwnPasswordRequestSchema>;
+
 /** Changes the signed-in account's own password. */
 export async function changeOwnPassword(
     caller: AuthenticatedCaller,
-    input: { readonly currentPassword: string; readonly newPassword: string },
+    input: ChangeOwnPasswordRequest,
 ): Promise<void> {
     const reply = await caller.callAuthenticated(
         ACCOUNT_SUBJECTS.changePassword,

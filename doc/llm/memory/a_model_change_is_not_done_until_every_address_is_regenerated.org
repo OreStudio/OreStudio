@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 087D3723-E265-4C0F-9E7A-257B852434BC
+:END:
+#+title: A model change is not done until every address is regenerated
+#+description: One edit under projects/*/modeling/ renders into C++, TypeScript, the SQL create scripts and the ER diagram, so a model change is finished only when every codegen address for that component has been regenerated and the drift gate agrees.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One edit under projects/*/modeling/ renders into several trees, so a model change is finished only when every codegen address for that component has been regenerated and the drift gate agrees.
+
+*Why:* A protocol model renders into C++ and TypeScript, and a domain model renders into its C++ header, the table's create script in ores.sql and the ER diagram in ores.sql/modeling/ores_schema.puml. Regenerating only the address the feature touches leaves checked-in output that no longer matches its model, and CI fails twice for it: the codegen sweep on the TypeScript twin, the codegen drift gate on the SQL script and the ER diagram. Both happened on the setup-journeys branch, on one model edit each time, and neither was visible from compass lint or from the code that was being changed.
+
+*How to apply:* After editing any projects/*/modeling/*.org, before pushing, run both gates from the worktree: projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all and the same script with --sweep. Neither is part of compass lint. The ER diagram needs the parser and generator, not just codegen: projects/ores.codegen/plantuml_er_generate.sh also rewrites ores_schema.png and ores_schema.cmapx with layout coordinates from whatever PlantUML build is installed, so regenerate the .puml with the two python commands the workflow uses and leave the .png/.cmapx alone. A PR that conflicts with main gets no pull_request runs at all, which looks like missing checks: check gh api repos/<org>/<repo>/pulls/<n> --jq .mergeable before believing a workflow is broken.

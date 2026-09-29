@@ -41,6 +41,8 @@ export const sessionViewSchema = z.object({
     accountId: z.string(),
     tenantId: z.string(),
     tenantName: z.string(),
+    /** The build the session was opened against, as the server stated it. */
+    version: z.string(),
     party: partySummarySchema,
     availableParties: z.array(partySummarySchema),
     /** Seconds the token remains valid for, so the browser can renew early. */
@@ -61,6 +63,8 @@ export const partyChoiceSchema = z.object({
     email: z.string(),
     accountId: z.string(),
     tenantName: z.string(),
+    /** The build the login was answered by. */
+    version: z.string(),
     availableParties: z.array(partySummarySchema),
     defaultPartyId: z.string().nullable(),
     passwordResetRequired: z.boolean(),
@@ -81,16 +85,23 @@ export const loginResultSchema = z.discriminatedUnion('outcome', [
 export type LoginResult = z.infer<typeof loginResultSchema>;
 
 /**
- * Whether the deployment is still waiting for its first administrator.
+ * Whether the deployment is still waiting to be set up.
  *
  * The interface asks this before it offers a sign-in, because a deployment in
  * bootstrap mode has no accounts to sign in with and a rejected credential
- * would send somebody hunting for a password that cannot exist. The message is
- * the server's; the interface may state the situation in its own words.
+ * would send somebody hunting for a password that cannot exist. It asks the
+ * tenant question with it, because an installation is set up when it has an
+ * administrator *and* a tenant of its own, and a browser that closed between
+ * the two comes back to the screen that finishes the job. The message is the
+ * server's; the interface may state the situation in its own words.
  */
 export const bootstrapStatusSchema = z.object({
     isInBootstrapMode: z.boolean(),
+    /** Whether the deployment has a tenant of its own, the system one aside. */
+    hasTenant: z.boolean(),
     message: z.string(),
+    /** The build the deployment runs, as the deployment states it. */
+    version: z.string(),
 });
 export type BootstrapStatus = z.infer<typeof bootstrapStatusSchema>;
 

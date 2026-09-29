@@ -22,6 +22,8 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
@@ -32,6 +34,42 @@ import { resolve } from 'node:path';
  * CORS configuration in the build. The BFF port is read from the same variable
  * the BFF reads, so there is one number rather than two that can disagree.
  */
+/**
+ * The build this bundle came from, stated the way the services state theirs:
+ * the release, then the commit, then whether the tree was clean.
+ *
+ * It is stamped in at build time rather than asked for at run time, because
+ * the point of a client version is to say what the *browser* is running: a
+ * person comparing it with the version the server answers with is looking for
+ * exactly the case this deployment hit once already, where a cached bundle
+ * served a screen the server no longer matched.
+ *
+ * The release is read from the project's own declaration, so there is one
+ * place the number is written. A checkout without git, or a shallow one, still
+ * builds: the commit is then simply absent.
+ */
+function buildVersion(checkout: string): string {
+    const cmake = readFileSync(resolve(checkout, 'CMakeLists.txt'), 'utf8');
+    const release = /project\(\s*\w+\s+VERSION\s+([0-9.]+)/.exec(cmake)?.[1] ?? 'unknown';
+    let commit = '';
+    try {
+        commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
+            cwd: checkout,
+            encoding: 'utf8',
+        }).trim();
+        const dirty = execFileSync('git', ['status', '--porcelain'], {
+            cwd: checkout,
+            encoding: 'utf8',
+        }).trim();
+        if (dirty.length > 0) {
+            commit = `${commit}-dirty`;
+        }
+    } catch {
+        commit = '';
+    }
+    return commit === '' ? `v${release}` : `v${release} (${commit})`;
+}
+
 export default defineConfig(({ mode }) => {
     /*
      * The checkout's `.env` is the one place those ports are declared. Vite loads
@@ -44,12 +82,16 @@ export default defineConfig(({ mode }) => {
      * its result, and merge it last, so a variable exported by the caller wins
      * over the file. Reading `process.env` again here would be dead code.
      */
-    const env = loadEnv(mode, resolve(import.meta.dirname, '../../../..'), '');
+    const checkout = resolve(import.meta.dirname, '../../../..');
+    const env = loadEnv(mode, checkout, '');
     const BFF_PORT = env['ORES_WEB_PORT'] ?? '8080';
     const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
 
     return {
         plugins: [react(), tailwindcss()],
+        define: {
+            __BUILD_VERSION__: JSON.stringify(buildVersion(checkout)),
+        },
         server: {
             port: WEB_PORT,
             // Fail rather than slide to another port: a dev server that quietly moves

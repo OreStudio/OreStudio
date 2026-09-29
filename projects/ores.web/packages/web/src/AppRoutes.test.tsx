@@ -41,6 +41,7 @@ const session: SessionView = {
     accountId: '3f1e2d4c-0000-4000-8000-000000000001',
     tenantId: '3f1e2d4c-0000-4000-8000-000000000002',
     tenantName: 'Acme Corporation',
+    version: 'v0.0.25 (test)',
     party,
     availableParties: [party],
     accessLifetimeSeconds: 3600,
@@ -50,11 +51,28 @@ const session: SessionView = {
 const inBootstrap: BootstrapState = {
     status: 'ready',
     inBootstrapMode: true,
+    hasTenant: false,
     message: 'This deployment has not been provisioned.',
+    version: 'v0.0.25 (test)',
 };
-const ready: BootstrapState = { status: 'ready', inBootstrapMode: false, message: '' };
+const ready: BootstrapState = {
+    status: 'ready',
+    inBootstrapMode: false,
+    hasTenant: true,
+    message: '',
+    version: 'v0.0.25 (test)',
+};
+/** An installation whose administrator exists and whose first tenant does not. */
+const tenantless: BootstrapState = { ...ready, hasTenant: false };
 const anonymous: SessionState = { status: 'anonymous' };
 const authenticated: SessionState = { status: 'authenticated', session };
+
+/**
+ * The journey stands in for itself here: this file is about the route table,
+ * and the journey reaches the server, which a rendered-to-string page cannot.
+ * The journey's own screens are asserted in its own file.
+ */
+const journey = <p>First run journey</p>;
 
 function render(
     path: string,
@@ -68,11 +86,12 @@ function render(
                 <AppRoutes
                     gate={gate}
                     session={sessionState}
-                    onSignIn={async () => ({ outcome: 'active' })}
+                    journey={journey}
+                    journeyInProgress={false}
+                    onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                     onChooseParty={async () => undefined}
                     onSignOut={() => undefined}
                     onRetryBootstrap={() => undefined}
-                    onCreateAdministrator={async () => undefined}
                     {...overrides}
                 />
             </MemoryRouter>
@@ -81,48 +100,38 @@ function render(
 }
 
 describe('the bootstrap gate', () => {
-    it('renders the setup page, and no sign-in, for any path while the flag is set', () => {
+    it('renders the journey, and no sign-in, for any path while the flag is set', () => {
         const html = render('/iam/account', inBootstrap, anonymous);
 
-        expect(html).toContain('Set up this installation');
-        expect(html).toContain('does not have an administrator account yet');
-        expect(html).toContain('This deployment has not been provisioned.');
-        // The setup form asks for a new password; the sign-in form is the one
-        // that would ask for an existing one, and it is not offered.
-        expect(html).toContain('new-password');
+        expect(html).toContain('First run journey');
+        // The sign-in form is the one that would ask for an existing password,
+        // and it is not offered: the installation has nobody to sign in as.
         expect(html).not.toContain('current-password');
     });
 
-    it('offers the action that closes bootstrap mode, with the identity proposed', () => {
-        const html = render('/', inBootstrap, anonymous);
-
-        expect(html).toContain('Create administrator');
-        expect(html).toContain('Administrator username');
-        expect(html).toContain('Administrator email');
-        // Proposed, and editable: a person who wants another name types one.
-        expect(html).toContain('value="super_admin"');
-        expect(html).toContain('value="super_admin@system.ores"');
-    });
-
-    it('proposes no password, because a password that ships with the product is not one', () => {
-        const html = render('/', inBootstrap, anonymous);
-        const passwordInput = /<input[^>]*type="password"[^>]*>/.exec(html)?.[0] ?? '';
-
-        expect(passwordInput).toContain('value=""');
-        expect(passwordInput).not.toContain('super_admin');
-    });
-
-    it('carries the banner, so the first screen of an installation looks like the product', () => {
-        const html = render('/', inBootstrap, anonymous);
-
-        expect(html).toContain('ore-studio-splash');
-    });
-
-    it('renders the setup page at the sign-in path too, so signing in is never offered', () => {
+    it('renders the journey at the sign-in path too, so signing in is never offered', () => {
         const html = render('/login', inBootstrap, anonymous);
 
-        expect(html).toContain('Set up this installation');
+        expect(html).toContain('First run journey');
         expect(html).not.toContain('current-password');
+    });
+});
+
+describe('a journey that has begun', () => {
+    it('keeps the browser on it after the flag clears', () => {
+        // Creating the administrator closes bootstrap mode, and the person is
+        // half way through the journey when it does.
+        const html = render('/setup', ready, authenticated, { journeyInProgress: true });
+
+        expect(html).toContain('First run journey');
+        expect(html).not.toContain('Sign out');
+    });
+
+    it('hands the browser to the ordinary routes once it finishes', () => {
+        const html = render('/', ready, authenticated, { journeyInProgress: false });
+
+        expect(html).not.toContain('First run journey');
+        expect(html).toContain('Acme Corporation');
     });
 });
 
@@ -153,6 +162,24 @@ describe('the route table once the flag is clear', () => {
     });
 });
 
+describe('an installation that has no tenant of its own', () => {
+    it('holds a person whose deployment has not been set up, signed in or not', () => {
+        const visitor = render('/iam/account', tenantless, anonymous);
+        const signedIn = render('/', tenantless, authenticated);
+
+        expect(visitor).toContain('First run journey');
+        expect(signedIn).toContain('First run journey');
+        expect(signedIn).not.toContain('Sign out');
+    });
+
+    it('hands the browser over as soon as there is one', () => {
+        const html = render('/', ready, authenticated);
+
+        expect(html).not.toContain('First run journey');
+        expect(html).toContain('Signed in');
+    });
+});
+
 describe('a server that does not answer', () => {
     it('says so and offers to ask again, rather than guessing a shell', () => {
         const html = render('/', ready, anonymous, {
@@ -162,6 +189,6 @@ describe('a server that does not answer', () => {
         expect(html).toContain('The server did not answer');
         expect(html).toContain('503: no broker');
         expect(html).toContain('Try again');
-        expect(html).not.toContain('Create administrator');
+        expect(html).not.toContain('First run journey');
     });
 });

@@ -26,3 +26,15 @@ declare module '*.svg' {
     const url: string;
     export default url;
 }
+
+/** PNG imports resolve to their URL. */
+declare module '*.png' {
+    const url: string;
+    export default url;
+}
+
+/**
+ * The build this bundle came from, stamped in by `vite.config.ts` at build
+ * time: the release and the commit, not a value the server could answer with.
+ */
+declare const __BUILD_VERSION__: string;

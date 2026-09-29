@@ -107,6 +107,8 @@ export interface ActiveSession {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** The build the session was opened against. */
+    readonly version: string;
     readonly username: string;
     readonly email: string;
     readonly party: PartySummary;
@@ -122,6 +124,8 @@ export interface PartySelectionRequired {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** The build the login was answered by. */
+    readonly version: string;
     readonly username: string;
     readonly email: string;
     readonly availableParties: readonly PartySummary[];
@@ -135,6 +139,8 @@ export interface PartySelectionRequired {
 export interface LoginRejected {
     readonly kind: 'rejected';
     readonly message: string;
+    /** The build that refused, which a caller can still state. */
+    readonly version: string;
 }
 
 export type LoginOutcome = ActiveSession | PartySelectionRequired | LoginRejected;
@@ -214,11 +220,15 @@ export class OresClient {
      * Asked before a login, not after it. A deployment in bootstrap mode has no
      * accounts to sign in with, so the answer decides whether a login is worth
      * attempting at all: the Qt client checked this first and never reached the
-     * credential form.
+     * credential form. The tenant answer travels with it because both describe
+     * the same thing from two sides: an installation is set up when it has an
+     * administrator and a tenant of its own.
      */
     async bootstrapStatus(): Promise<{
         isInBootstrapMode: boolean;
+        hasTenant: boolean;
         message: string;
+        version: string;
     }> {
         const reply = await this.#call(
             bootstrapSubjects.bootstrap_status_request,
@@ -228,7 +238,9 @@ export class OresClient {
         );
         return {
             isInBootstrapMode: reply.is_in_bootstrap_mode,
+            hasTenant: reply.has_tenant,
             message: reply.message,
+            version: reply.version,
         };
     }
 
@@ -437,6 +449,7 @@ export class OresClient {
             return {
                 kind: 'rejected',
                 message: reply.errorMessage.length > 0 ? reply.errorMessage : reply.message,
+                version: reply.version,
             };
         }
 
@@ -461,6 +474,7 @@ export class OresClient {
             accountId: reply.accountId,
             tenantId: reply.tenantId,
             tenantName: reply.tenantName,
+            version: reply.version,
             username: reply.username,
             email: reply.email,
             availableParties: reply.availableParties,
@@ -508,6 +522,7 @@ export class OresClient {
             accountId: input.expected.accountId,
             tenantId: input.expected.tenantId,
             tenantName: reply.tenantName.length > 0 ? reply.tenantName : input.expected.tenantName,
+            version: input.expected.version,
             username: reply.username.length > 0 ? reply.username : input.expected.username,
             email: input.expected.email,
             party,
@@ -832,6 +847,7 @@ function toActive(reply: LoginResponse, party: PartySummary): ActiveSession {
         accountId: reply.accountId,
         tenantId: reply.tenantId,
         tenantName: reply.tenantName,
+        version: reply.version,
         username: reply.username,
         email: reply.email,
         party,

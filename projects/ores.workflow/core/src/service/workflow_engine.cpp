@@ -41,7 +41,7 @@ std::string materialise_steps_json(const std::vector<workflow_step_def>& steps) 
     std::vector<materialised_step> ms;
     ms.reserve(steps.size());
     for (const auto& s : steps)
-        ms.push_back({s.name, s.command_subject, s.compensation_subject});
+        ms.push_back({s.name, s.label, s.description, s.command_subject, s.compensation_subject});
     return rfl::json::write(ms);
 }
 

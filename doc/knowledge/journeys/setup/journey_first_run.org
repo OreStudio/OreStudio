@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-27
+#+updated: 2026-09-29
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An empty installation is brought to life: the system administrator, the first tenant and the first sign-in.
@@ -61,9 +61,10 @@ journey that can happen on an empty database.
    LEI and the counterparty set, and sets the administrator's password. For
    /ACME demo/ the profile fills in the code, name, hostname and administrator
    username and email; the details show as a summary behind *Change settings*,
-   and the tenant administrator reuses the system administrator's password. No
-   forced password change follows for ACME, and one does for /Empty
-   operational/.
+   and the tenant administrator reuses the system administrator's password.
+   Neither starting point asks its administrator to change that password at
+   first sign-in: the choice is the profile's, and a profile that wants the
+   change states it in its row.
 5. *Review.* The person reads one summary: starting point, tenant name and
    code, administrator, and the profile's parameters. The screen states how
    many steps the profile runs. Nothing is created until the person confirms.
@@ -79,9 +80,9 @@ journey that can happen on an empty database.
    their first sign-in, or *Hand off to someone else*, which signs out and
    shows the username to pass on. The web keeps the administrator's password in
    memory only until this point; it is never written to storage.
-8. *First sign-in.* The tenant administrator sets a password only they know
-   when the profile forces a change, and chooses the party to start in when
-   they work in more than one. This is
+8. *First sign-in.* The tenant administrator sets a password of their own
+   when the profile asks for one, which neither starting point does today, and
+   chooses the party to start in when they work in more than one. This is
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][onboard]]: a person's first use
    of a tenant that already exists.
 9. *Ready.* The system confirms the installation. The person goes home, or to
@@ -173,62 +174,70 @@ profile-driven request =iam.v1.tenants.provision= does not exist yet.
 
 * What is missing
 
-1. *No journey state to add.* A journey is a definition, not a server-side
-   object, so no journey entity is added anywhere. A journey's progress state IS
-   a workflow instance in =ores.workflow=. That component exists, with entities,
-   services and subjects. The reads =workflow.v1.instances.list= and
-   =workflow.v1.instances.steps= are implemented and subscribed, so a screen can
-   read the instance and its steps. Only the server-side workflow resumes; the
-   client keeps the rail position in memory, and the human steps around the
-   workflow do not survive a reload.
-2. *No seed profile model and no read.* =ores.iam= owns the seed profile, its
-   parameter schema and the step-kind catalogue. A profile is registered data
-   that orders step kinds from a fixed catalogue: =publish_bundle=,
-   =import_lei_hierarchy=, =provision_party=, =load_staff=, =attach_photos=,
-   =start_market_feeds=. A new profile is a row; a new step kind is code. No
-   entity and no subject exist. The candidates are
-   =iam.v1.seed_profiles.list= and =iam.v1.seed_profiles.get=. The screen must
-   keep the two cards in code until then.
-3. *No generic provision-tenant request.* The accepted contract wants one
-   request that takes the profile code and its parameters and returns an
-   instance id at once, for every tenant including the first. The candidate is
-   =iam.v1.tenants.provision=, carrying the profile code and the profile's
-   parameters.
-4. *Progress is read, not pushed.* =provision_acme_tenant_response= returns its
-   steps only at the end, and the shell waits up to 45 minutes with no feedback.
-   A run started through the generic request is followed instead: the reads
-   =workflow.v1.instances.steps= and =workflow.v1.instances.list= answer the
-   run's status, the step it is executing and one summary per step, and the
-   browser reaches them through its own route and wire-client method, so the
-   page renders the rail from the read and asks again while the run is open.
-   The engine's =ores.workflow.workflow_instance_changed= event is not the
-   progress contract: its payload is an =entity_change_event= that carries
-   =entity_ids= while the schema the browser decodes reads =alpha2_codes= with
-   every field defaulted, and no one schema can read every entity's own event.
-   That mismatch is owned by
-   [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
-5. *A retry exists; discard exists.* The contract keeps completed steps and
-   resumes from the failed one. =workflow.v1.instances.retry= resumes a run that
-   stopped on its failed step, re-dispatching that step under its own identity
-   and leaving every completed step and its result alone;
-   =workflow_engine::recover_in_progress()= stays for runs that were in progress
-   when a service restarted. Discard already exists as
-   =iam.v1.system.reset-tenant=, which returns a tenant to bootstrap state. It
-   does not resume a failed workflow.
-6. *No password hand-over flags.* First run copies the system administrator's
-   password hash to the ACME tenant administrator, and only /Empty
-   operational/ forces a change at first sign-in. The provision request has no
-   flag for either. The candidates are a =use_caller_password= field on the
-   provision request and a =force_password_change= field on the seed profile.
-7. *The forced change fires.* The starting point's =force_password_change=
-   reaches the account the provisioner creates, and the login answer carries
-   the account record's flag, so the /Empty operational/ profile's administrator
-   is answered with =passwordResetRequired: true= at first sign-in and sets a
-   password only they know.
-8. *The policy is read, not copied.* The validator states its rules once as a
+Three things this journey names are not in the system, and none of them stops
+a person on the path it takes:
+
+- the provision request has no field for reusing the creating administrator's
+  password, so a profile that wants the hand-over is a profile the request
+  cannot state;
+- the root LEI the *Operational* card asks for is typed rather than chosen, so
+  a person has to know a code the deployment can check nothing about, and the
+  failure of a code it does not hold arrives as the publication's own SQL
+  error rather than as a sentence about the entity;
+- the engine's change event carries an =entity_change_event= that no one
+  schema can read for every entity, so the page follows the progress read
+  instead, which
+  [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]] owns.
+
+Everything else the journey reaches for exists, and the list below is the
+record of what each part turned out to be.
+
+1. *The journey's state is a workflow instance.* A journey is a definition and
+   not a server-side object, so no journey entity was added anywhere. The
+   run's state is a workflow instance in =ores.workflow=, and the page follows
+   it through the progress read. Only the server-side run resumes: the rail
+   position is memory, so a reload leaves the journey at the sign-in screen,
+   and the steps a person takes around the run do not survive it.
+2. *The starting points are data.* =ores.iam= owns the profile, its parameter
+   schema and the step-kind catalogue, and the reads =iam.v1.seed_profiles.list=
+   and =.get= answer them. *Operational* and *ACME demo* are rows, so a third
+   profile is a row and a new step kind is code. The page builds each card and
+   its form from the row, and holds no profile of its own.
+3. *One provision request serves every tenant.* =iam.v1.tenants.provision=
+   takes the profile code and its parameters and returns the instance id of the
+   run it starts, the first tenant included. The two verbs it replaces stay
+   reachable until the shell moves to it.
+4. *Progress is read, not pushed.* The page asks the progress read again while
+   the run is open and renders the rail from the answer: the run's state, the
+   step it is executing, and one line per step. The engine's
+   =workflow_instance_changed= event is not the progress contract: its payload
+   is an =entity_change_event= that no one schema can read for every entity.
+5. *A retry resumes a stopped run.* =workflow.v1.instances.retry= re-dispatches
+   the step a run stopped on and leaves the completed steps and their results
+   alone. Discard stays a separate administrator action,
+   =iam.v1.system.reset-tenant=, because the contract keeps completed work.
+6. *A forced change fires when a profile asks for one.* The profile's
+   =force_password_change= reaches the account the provisioner creates, and the
+   login answer carries the account record's flag, so a profile that asks for
+   the change is answered with =passwordResetRequired: true= at first sign-in
+   and its administrator sets a password only they know. Neither starting point
+   asks today. The profile's other hand-over choice, reusing the creating
+   administrator's password, is read for the *ACME demo* card; a request field
+   for it does not exist.
+7. *The policy is read, not copied.* The validator states its rules once as a
    record and enforces that record, and a read answers with it before anybody
-   has signed in, so the sign-in screen shows the server's rules. A client that
-   showed its own copy could state rules the server does not apply.
+   has signed in. Every password field in the journey is built from that
+   answer, so a deployment that tightens a rule tightens the screen.
+
+What remains is the rest of the plan: the *New tenant* and *New party*
+journeys, the shell's move to the same contract, and the proof of all three
+journeys on a fresh installation. One thing the first proof found has since
+been corrected: the *Operational* card's LEI import was said to have no staged
+GLEIF data to read, and it has. The code that failed was a mistyped LEI, and
+the publication inserts 668 parties for a correct one against the same tenant.
+The journey behaved as designed either way — the rail showed the failed step
+and the retry was offered — and what remains wrong is that the form takes any
+string and the failure arrives as SQL.
 
 * Related journeys
 

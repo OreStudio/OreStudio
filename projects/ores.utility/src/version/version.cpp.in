@@ -33,6 +33,13 @@ const char* platform_triplet() {
     return ORES_PLATFORM_TRIPLET;
 }
 
+std::string full_version_string() {
+    std::ostringstream ss;
+    ss << "v" ORES_VERSION << " [" << ORES_PLATFORM_TRIPLET << "]"
+       << " (" << build_info() << ")";
+    return ss.str();
+}
+
 std::string format_startup_message(const std::string& service_name) {
     std::ostringstream ss;
     ss << "Starting " << service_name << " v" ORES_VERSION

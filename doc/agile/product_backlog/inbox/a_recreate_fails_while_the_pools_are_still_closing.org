@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 3495D0A3-7B33-48FD-968B-3E5504009A0C
+:END:
+#+title: A database recreate fails while the fleet's pools are still closing
+#+description: compass db recreate refuses to drop a database that has connections to it. Stopping the fleet does not close its pooled connections at once, so a recreate started soon after a stop aborts with a few active connections even though --kill was passed. Waiting until the database has no other connections makes it succeed; on this machine that took between ten and forty seconds after the stop.
+#+type: capture
+#+level: cross
+#+filetags: :tooling:compass:database:reliability:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the recreate wait for the database to have no other connections, or make
+the kill take effect before the check, so that stopping the fleet and
+recreating can be one instruction. Today the two have to be separated by a
+wait whose length nobody knows.
+
+* Why
+
+Seen twice on 2026-09-29 while resetting the environment to walk the first run
+journey again:
+
+- stopped the fleet, slept three seconds, ran `compass db recreate -y -k`, and
+  it aborted with `ERROR: there are 3 active connection(s) to
+  ores_dev_eager_maxwell`, with the hint to pass `--kill`, which had been
+  passed;
+- stopped the fleet, slept twenty seconds, ran the same command, and it aborted
+  again with two active connections;
+- stopped the fleet, waited until `pg_stat_activity` held no other connection to
+  the database, and the same command finished in twenty-five seconds.
+
+The connections are the fleet's own pools closing: `compass services stop`
+returns as soon as the units are stopped, and a pool's backend takes a while to
+notice. Nothing is wrong with the refusal -- dropping a database out from under
+a live connection is worse -- but the wait is invisible, so a person or a
+script driving a reset learns the order the hard way, and a script that ignores
+the exit code goes on to start a fleet against the database it did not replace.
+
+* References
+
+- `compass db recreate` (-k/--kill) and `compass services stop`.
+
+* See also
+
+- [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Task: Build the First run journey]] --
+  where the reset is part of testing the journey from an empty installation.

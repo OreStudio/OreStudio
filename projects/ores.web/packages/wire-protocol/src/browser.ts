@@ -82,7 +82,26 @@ export { SUBJECTS } from './operations.js';
 export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';
 export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
 
+// The legal entities a tenant can be started from, for the search that fills a
+// form rather than making somebody type a code they would have to know.
+export { leiEntityChoiceSchema, leiEntitiesResponseSchema } from './operations.js';
+export type { LeiEntityChoice, LeiEntitiesResponse } from './operations.js';
+
 // The provision request and its answer, parsed by the browser for the same
 // reason: the BFF serialised them from these definitions.
 export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
 export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
+
+// The run a provision starts, which its journey follows by asking again, and
+// the retry that resumes it from the step that failed.
+export { retryWorkflowInstanceResultSchema, workflowProgressSchema } from './operations.js';
+export type {
+    RetryWorkflowInstanceResult,
+    WorkflowProgress,
+    WorkflowStepSummary,
+} from './operations.js';
+
+// The rules a password must satisfy, read before anybody has signed in because
+// the sign-in screen is where they are shown.
+export { passwordPolicySchema } from './operations.js';
+export type { PasswordPolicy } from './operations.js';

@@ -44,6 +44,27 @@ struct bootstrap_status_request {
 struct bootstrap_status_response {
     bool is_in_bootstrap_mode = false;
     std::string message;
+    /**
+     * @brief Whether the deployment has a tenant of its own.
+     *
+     * The system tenant is the deployment's own bookkeeping and not a tenant
+     * somebody set up, so it does not count. A deployment without one has not
+     * been set up: it has no work in it, and the screen that brings it to life
+     * is still the screen a person belongs on, however far through that screen
+     * they got before they closed the browser.
+     */
+    bool has_tenant = false;
+    /**
+     * @brief The build the answering service runs, in full.
+     *
+     * The read that reaches a browser before it has a session is the one a screen
+     * can state a deployment's version from, and the version belongs to the
+     * deployment rather than to the bootstrap question: an interface shows it
+     * after the administrator exists as well. A client's own version travels with
+     * the client, so the two together say whether the screen in front of somebody
+     * came from the build the server is running.
+     */
+    std::string version;
 };
 
 struct create_initial_admin_request {

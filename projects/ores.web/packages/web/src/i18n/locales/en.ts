@@ -437,23 +437,6 @@ export const en: SourceCatalogue = {
         noneAvailable: 'No images are available in this tenant.',
     },
 
-    shell: {
-        session: '{username} · {tenant}',
-    },
-
-    setup: {
-        title: 'Set up this installation',
-        bootstrapMode:
-            'This installation does not have an administrator account yet and is running in bootstrap mode. No one can sign in until an administrator exists.',
-        next: 'Create the first administrator account to begin.',
-        username: 'Administrator username',
-        email: 'Administrator email',
-        password: 'Administrator password',
-        create: 'Create administrator',
-        creating: 'Creating...',
-        failed: 'The administrator was not created:',
-    },
-
     gate: {
         unreachable:
             'The server did not answer, so the interface cannot tell whether this installation still needs setting up. {reason}',
@@ -463,6 +446,181 @@ export const en: SourceCatalogue = {
     journey: {
         steps: 'Journey steps',
         actionFailed: 'The step failed: {message}',
+        policyFailed:
+            'The password rules could not be read, so no password can be set here. {message}',
+
+        welcome: {
+            title: 'Welcome to ORE Studio',
+            lead: "Set up a new installation: the administrator that owns it, the first tenant, and the tenant administrator's first sign-in.",
+            start: 'Get started',
+            stage: {
+                admin: 'Create the administrator',
+                adminBody: 'The account that owns this installation.',
+                tenant: 'Create the first tenant',
+                tenantBody: 'The first tenant, built from a starting point on the server.',
+                signIn: 'Sign in',
+                signInBody:
+                    "The tenant administrator's first sign-in, with a password of their own.",
+            },
+        },
+
+        admin: {
+            title: 'Create the administrator',
+            lead: 'This installation has no administrator, and nobody can sign in yet.',
+            bootstrap:
+                'The administrator owns the installation. The deployment stops being in bootstrap mode when this account exists.',
+            username: 'Administrator username',
+            email: 'Administrator email',
+            password: 'Administrator password',
+            create: 'Create administrator',
+            resumeTitle: 'Sign in as the administrator',
+            resumeLead:
+                'This installation already has its administrator. Sign in as that account to carry on. The password is also what the tenant takes when its profile shares yours.',
+            signIn: 'Sign in and continue',
+            partyChoice:
+                'The administrator works in more than one party. Sign in and choose one first.',
+        },
+
+        profile: {
+            title: 'Choose a starting point',
+            lead: 'A starting point is a profile the server holds. It states the settings, the steps and the tenant it creates.',
+            counts: '{settings} settings · {steps} steps',
+        },
+
+        details: {
+            title: 'Describe the tenant',
+            lead: 'Name the tenant and create its administrator.',
+            tenant: 'Tenant',
+            name: 'Name',
+            code: 'Code',
+            codeHint: 'Short and unique. It names the tenant in a username.',
+            hostname: 'Hostname',
+            settings: '{profile} settings',
+            administrator: 'Tenant administrator',
+            username: 'Username',
+            email: 'Email',
+            useMyPassword: 'Use my password',
+            adminPassword: 'Administrator password',
+            passwordForced: 'They must change it at first sign-in.',
+            standard: '{profile} uses its standard settings.',
+            leiSearch: 'Search by name or LEI',
+            leiHowItWorks:
+                'Choosing an entity fills in the tenant below, and every field stays editable.',
+            leiChange: 'Change',
+            leiKeep: 'Keep',
+            leiParties: {
+                one: '1 party in its hierarchy',
+                other: '{count} parties in its hierarchy',
+            },
+            leiNoMatch: 'No entity matches that.',
+            leiReadFailed: 'The legal entities could not be read. {message}',
+            changeSettings: 'Change settings',
+            noCreatingPassword:
+                'The administrator who creates the tenant must set a password first.',
+            rows: {
+                tenant: 'Tenant',
+                hostname: 'Hostname',
+                administrator: 'Administrator',
+                password: 'Password',
+            },
+            passwordMine: 'Same as mine',
+            passwordTyped: 'Set here',
+        },
+
+        review: {
+            title: 'Review',
+            lead: 'Nothing is created until you confirm.',
+            startingPoint: 'Starting point',
+            tenant: 'Tenant',
+            hostname: 'Hostname',
+            administrator: 'Administrator',
+            password: 'Password',
+            passwordMine: 'The same as yours',
+            passwordSet: 'The one you typed',
+            steps: 'Creating the tenant runs {steps} steps.',
+            forcedChange: '{principal} sets a password of their own at first sign-in.',
+            noPassword: 'The tenant administrator has no password yet.',
+            create: 'Create tenant',
+            noRun: 'The server created the tenant but named no run to follow.',
+        },
+
+        provisioning: {
+            title: 'Provisioning',
+            lead: 'You can leave this page and come back.',
+            readFailed: 'The progress could not be read. {message}',
+            retry: 'Retry from the failed step',
+            retryKeeps: 'The steps that completed are kept.',
+            retrying: 'The run resumed at {step}.',
+            rolledBack:
+                'The run rolled back the steps it had completed, so it left nothing behind.',
+        },
+
+        handOff: {
+            title: 'Hand off',
+            lead: 'The tenant is ready. Its administrator signs in next.',
+            administrator: 'Its administrator is {principal}.',
+            continue: 'Continue as tenant admin',
+            continueHint: 'Sign in as {principal} now.',
+            elsewhere: 'Hand off to someone else',
+            elsewhereHint: 'Sign out and pass the username and the password on.',
+            elsewhereHintForced:
+                'Sign out and pass the username on. They set their own password at first sign-in.',
+        },
+
+        signIn: {
+            title: 'First sign-in',
+            lead: 'The tenant administrator signs in for the first time.',
+            username: 'Username',
+            password: 'Password',
+            submit: 'Sign in',
+            submitting: 'Signing in...',
+            choosePartyHint: 'Choose the party to work in.',
+            done: 'Signed in as {principal}.',
+        },
+
+        change: {
+            required: 'This account sets a password of its own before it goes on.',
+            new: 'New password',
+            submit: 'Set password',
+            submitting: 'Setting...',
+            done: 'Your password is set, and you are signed in as {principal}.',
+        },
+
+        ready: {
+            title: 'Ready',
+            lead: 'The installation is set up, and {principal} is signed in.',
+            home: 'Go home',
+        },
+    },
+
+    version: {
+        client: 'client {version}',
+        server: 'server {version}',
+        serverUnknown: 'server version unknown',
+    },
+
+    server: {
+        'Publish the reference data': 'Publish the reference data',
+        'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
+            'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.',
+        'Import the legal entities': 'Import the legal entities',
+        "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
+            "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.",
+        "Create the tenant's parties": "Create the tenant's parties",
+        'Creates the party that represents the tenant itself, with the reference data a party needs.':
+            'Creates the party that represents the tenant itself, with the reference data a party needs.',
+        'Load the staff': 'Load the staff',
+        'Creates an account for each person the starting point lists, each in its own party.':
+            'Creates an account for each person the starting point lists, each in its own party.',
+        'Attach the photographs': 'Attach the photographs',
+        "Gives the accounts their photographs, and the tenant's party its logo.":
+            "Gives the accounts their photographs, and the tenant's party its logo.",
+        'Start the market feeds': 'Start the market feeds',
+        "Starts the synthetic market data the tenant's curves and prices are built from.":
+            "Starts the synthetic market data the tenant's curves and prices are built from.",
+        Finish: 'Finish',
+        'Marks the tenant ready: it stops bootstrapping and becomes active.':
+            'Marks the tenant ready: it stops bootstrapping and becomes active.',
     },
 
     common: {
@@ -473,6 +631,7 @@ export const en: SourceCatalogue = {
         revert: 'Revert',
         apply: 'Apply',
         back: 'Back',
+        continue: 'Continue',
     },
 };
 

@@ -33,10 +33,13 @@ import {
     OresClient,
     SUBJECTS,
     bootstrapStatusSchema,
+    changeOwnPassword,
+    changeOwnPasswordRequestSchema,
     changeReasonPageSchema,
     createAdministratorRequestSchema,
     getImagesRequestSchema,
     initialAdministratorSchema,
+    searchLeiEntitiesResponseSchema,
     listImagesRequestSchema,
     listImagesResponseSchema,
     getImagesResponseSchema,
@@ -174,6 +177,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             accountId: session.accountId,
             tenantId: session.tenantId,
             tenantName: session.tenantName,
+            version: session.version,
             party: session.party,
             availableParties: session.availableParties,
             accessLifetimeSeconds: session.accessLifetimeSeconds,
@@ -189,6 +193,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 email: outcome.email,
                 accountId: outcome.accountId,
                 tenantName: outcome.tenantName,
+                version: outcome.version,
                 availableParties: outcome.availableParties,
                 defaultPartyId: outcome.defaultPartyId,
                 passwordResetRequired: outcome.passwordResetRequired,
@@ -203,6 +208,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                     accountId: outcome.accountId,
                     tenantId: outcome.tenantId,
                     tenantName: outcome.tenantName,
+                    version: outcome.version,
                     party: outcome.party,
                     availableParties: outcome.availableParties,
                     accessLifetimeSeconds: outcome.accessLifetimeSeconds,
@@ -409,6 +415,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                  */
                 tenantId: outcome.tenantId,
                 tenantName: outcome.tenantName,
+                version: outcome.version,
                 availableParties: outcome.availableParties,
                 accessLifetimeSeconds: outcome.accessLifetimeSeconds,
                 passwordResetRequired: outcome.passwordResetRequired,
@@ -447,6 +454,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 accountId: session.accountId,
                 tenantId: session.tenantId,
                 tenantName: session.tenantName,
+                version: session.version,
                 username: session.username,
                 email: session.email,
                 availableParties: session.availableParties as readonly PartySummary[],
@@ -462,6 +470,31 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw new NotAuthenticatedError('Session ended during party selection');
         }
         return sessionResponse(activated);
+    });
+
+    /**
+     * The signed-in account's own password.
+     *
+     * A person who must change their password has a session already: they
+     * signed in with the password the deployment gave them, and this is what
+     * replaces it with one only they know. Nobody else's password is reachable
+     * here, and the account is the session's own, so the route takes no
+     * account id.
+     */
+    server.post('/api/account/password', async (request) => {
+        const session = requireSession(request);
+        const parsed = changeOwnPasswordRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('The current password and the new password are required.');
+        }
+        await changeOwnPassword(session.client, parsed.data);
+        /*
+         * The session's copy of the flag is a snapshot of the login, so it is
+         * cleared here rather than read again: the account has just done what
+         * the flag asked for.
+         */
+        sessions.passwordChanged(session.id);
+        return { success: true };
     });
 
     /**
@@ -496,6 +529,46 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return seedProfilesResponseSchema.parse({
             profiles: await session.client.seedProfiles(),
         });
+    });
+
+    /**
+     * The root legal entities a tenant can be started from, matched against a
+     * search.
+     *
+     * The list a screen searches when it builds a tenant around a real legal
+     * entity. The deployment holds tens of thousands of them, so the matching
+     * and the size of the answer are the read's: a screen sends what the person
+     * typed rather than fetching a page and filtering it, because the entity
+     * somebody is looking for is not on any one page. Each match states how
+     * many parties its hierarchy would create, which is the work the choice
+     * starts.
+     */
+    server.get('/api/lei-entities', async (request) => {
+        const session = requireSession(request);
+        const query = request.query as Record<string, string | undefined>;
+        const response = searchLeiEntitiesResponseSchema.parse(
+            await session.client.callAuthenticated(
+                SUBJECTS.leiEntitiesSearch,
+                {
+                    search: query['search'] ?? '',
+                    country_filter: query['country'] ?? '',
+                    offset: 0,
+                    limit: Number(query['limit'] ?? 20),
+                },
+                searchLeiEntitiesResponseSchema,
+            ),
+        );
+        if (!response.success) {
+            throw invalidRequest(response.error_message);
+        }
+        return {
+            entities: response.entities.map((entity) => ({
+                lei: entity.lei,
+                legalName: entity.entity_legal_name,
+                country: entity.country,
+                partyCount: entity.party_count,
+            })),
+        };
     });
 
     /**

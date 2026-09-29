@@ -118,21 +118,17 @@ describe('the journey page', () => {
         expect(html).not.toContain('Start');
     });
 
-    it('disables Back at the first step', () => {
+    it('offers no Back at the first step, because there is nowhere to go', () => {
         const steps = defineJourney([welcome, ready]);
 
-        const html = render(steps, 0);
-
-        expect(buttonLabelled(html, 'Back')).toContain('disabled=""');
+        expect(render(steps, 0)).not.toContain('>Back<');
     });
 
-    it('disables Back when the step before it changed server state', () => {
+    it('offers no Back past a step that changed server state', () => {
         const review = step('review', 'Review', { next: { label: 'Finish', enabled: true } });
         const steps = defineJourney([welcome, administrator, review]);
 
-        const html = render(steps, 2);
-
-        expect(buttonLabelled(html, 'Back')).toContain('disabled=""');
+        expect(render(steps, 2)).not.toContain('>Back<');
     });
 
     it('refuses a position the journey does not have', () => {

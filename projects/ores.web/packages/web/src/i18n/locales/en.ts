@@ -437,10 +437,6 @@ export const en: SourceCatalogue = {
         noneAvailable: 'No images are available in this tenant.',
     },
 
-    shell: {
-        session: '{username} · {tenant}',
-    },
-
     gate: {
         unreachable:
             'The server did not answer, so the interface cannot tell whether this installation still needs setting up. {reason}',
@@ -535,21 +531,13 @@ export const en: SourceCatalogue = {
 
         provisioning: {
             title: 'Provisioning',
-            lead: 'This runs on the server. You can leave this page and come back.',
-            state: 'The run is {state}.',
+            lead: 'You can leave this page and come back.',
             readFailed: 'The progress could not be read. {message}',
             retry: 'Retry from the failed step',
             retryKeeps: 'The steps that completed are kept.',
             retrying: 'The run resumed at {step}.',
-        },
-
-        runStatus: {
-            pending: 'waiting to start',
-            in_progress: 'running',
-            completed: 'complete',
-            failed: 'stopped on a failed step',
-            compensating: 'rolling back',
-            compensated: 'rolled back',
+            rolledBack:
+                'The run rolled back the steps it had completed, so it left nothing behind.',
         },
 
         handOff: {
@@ -585,9 +573,7 @@ export const en: SourceCatalogue = {
 
         ready: {
             title: 'Ready',
-            lead: 'This installation is set up.',
-            done: 'The installation is ready, and {principal} is signed in.',
-            next: 'Go home to work in the tenant. Another tenant is a separate journey.',
+            lead: 'The installation is set up, and {principal} is signed in.',
             home: 'Go home',
         },
     },

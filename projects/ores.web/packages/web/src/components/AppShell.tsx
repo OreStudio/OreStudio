@@ -52,6 +52,14 @@ export function AppShell({
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
+    /*
+     * The three parts are joined rather than printed one after another,
+     * because a part the session does not carry would otherwise leave its
+     * separator behind and read as a dot with nothing beside it.
+     */
+    const session = [username, tenantName, partyName]
+        .filter((part) => part !== undefined && part !== '')
+        .join(' · ');
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">
@@ -64,10 +72,7 @@ export function AppShell({
                         </span>
                     </Link>
                     <div className="ml-auto flex items-center gap-3 text-xs text-ink-muted">
-                        <span>
-                            {t('shell.session', { username, tenant: tenantName })}
-                            {partyName === undefined ? '' : ` · ${partyName}`}
-                        </span>
+                        <span>{session}</span>
                         <Button variant="ghost" size="sm" onClick={onSignOut}>
                             {t('nav.signOut')}
                         </Button>

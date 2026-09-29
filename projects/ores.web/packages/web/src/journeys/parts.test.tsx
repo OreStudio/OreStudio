@@ -82,6 +82,13 @@ const blank: SeedProfileChoice = {
     tenant: { name: '', code: '', hostname: '', adminUsername: '', adminEmail: '' },
 };
 
+/** The demo profile, whose code names the artwork the bundle carries. */
+const acmeProfile: SeedProfileChoice = {
+    ...profile,
+    code: 'acme_demo',
+    name: 'ACME demo',
+};
+
 function fakeServer(): JourneyServer {
     return {
         createAdministrator: vi.fn(async () => undefined),
@@ -128,6 +135,23 @@ describe('the starting points', () => {
         expect(html).toContain('A production tenant with its own parties.');
         expect(html).toContain('One root legal entity');
         expect(html).toContain('1 settings · 1 steps');
+    });
+
+    it('shows the artwork the profile code names, and nothing when it names none', () => {
+        const acme = render(
+            <ProfileCards
+                profiles={[acmeProfile]}
+                selected={undefined}
+                onSelect={() => undefined}
+            />,
+        );
+        const plain = render(
+            <ProfileCards profiles={[profile]} selected={undefined} onSelect={() => undefined} />,
+        );
+
+        expect(acme).toContain('<img');
+        expect(acme).toContain('acme_demo');
+        expect(plain).not.toContain('<img');
     });
 
     it('marks the profile the person chose', () => {

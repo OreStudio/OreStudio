@@ -30,6 +30,7 @@
 
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
+import { profileLogo } from '../assets/profiles.js';
 import { Button, Field, Input, Notice, Select, cx } from '../ui/Primitives.js';
 import { NewPasswordField } from '../ui/PasswordField.js';
 import type { JourneyServer } from './server.js';
@@ -67,43 +68,53 @@ export function ProfileCards({
     const { t } = useTranslation();
     return (
         <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
-            {profiles.map((profile) => (
-                <button
-                    key={profile.code}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected === profile.code}
-                    onClick={() => onSelect(profile)}
-                    className={cx(
-                        'card p-4 text-left transition-colors',
-                        selected === profile.code
-                            ? 'border-accent ring-3 ring-accent/20'
-                            : 'hover:border-line-strong',
-                    )}
-                >
-                    <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-semibold">{profile.name}</span>
-                        <span className="text-xs text-ink-faint">{profile.audience}</span>
-                    </div>
-                    <p className="mt-1 text-sm text-ink-muted">{profile.summary}</p>
-                    <ul className="mt-3 space-y-1 text-sm">
-                        {profile.bullets.map((bullet) => (
-                            <li key={bullet} className="flex gap-2">
-                                <span aria-hidden className="text-ink-faint">
-                                    •
-                                </span>
-                                {bullet}
-                            </li>
-                        ))}
-                    </ul>
-                    <p className="mt-3 text-xs text-ink-faint">
-                        {t('journey.profile.counts', {
-                            settings: profile.parameters.length,
-                            steps: profile.steps.length,
-                        })}
-                    </p>
-                </button>
-            ))}
+            {profiles.map((profile) => {
+                const logo = profileLogo(profile.code);
+                return (
+                    <button
+                        key={profile.code}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected === profile.code}
+                        onClick={() => onSelect(profile)}
+                        className={cx(
+                            'card p-4 text-left transition-colors',
+                            selected === profile.code
+                                ? 'border-accent ring-3 ring-accent/20'
+                                : 'hover:border-line-strong',
+                        )}
+                    >
+                        {logo !== undefined && (
+                            <img
+                                src={logo}
+                                alt=""
+                                className="mb-3 h-10 w-auto rounded-md bg-white p-1"
+                            />
+                        )}
+                        <div className="flex items-baseline justify-between gap-2">
+                            <span className="font-semibold">{profile.name}</span>
+                            <span className="text-xs text-ink-faint">{profile.audience}</span>
+                        </div>
+                        <p className="mt-1 text-sm text-ink-muted">{profile.summary}</p>
+                        <ul className="mt-3 space-y-1 text-sm">
+                            {profile.bullets.map((bullet) => (
+                                <li key={bullet} className="flex gap-2">
+                                    <span aria-hidden className="text-ink-faint">
+                                        •
+                                    </span>
+                                    {bullet}
+                                </li>
+                            ))}
+                        </ul>
+                        <p className="mt-3 text-xs text-ink-faint">
+                            {t('journey.profile.counts', {
+                                settings: profile.parameters.length,
+                                steps: profile.steps.length,
+                            })}
+                        </p>
+                    </button>
+                );
+            })}
         </div>
     );
 }
@@ -490,11 +501,6 @@ export function RunProgress({
     return (
         <div>
             <ol className="space-y-2">{steps.map(stepLine)}</ol>
-            <p className="mt-4 text-sm text-ink-muted">
-                {t('journey.provisioning.state', {
-                    state: t(`journey.runStatus.${status === '' ? 'pending' : status}`),
-                })}
-            </p>
             {progress?.error !== undefined && progress.error !== '' && (
                 <div className="mt-4">
                     <Notice tone="error">{progress.error}</Notice>
@@ -515,6 +521,11 @@ export function RunProgress({
                     <span className="text-xs text-ink-faint">
                         {t('journey.provisioning.retryKeeps')}
                     </span>
+                </div>
+            )}
+            {status === 'compensated' && (
+                <div className="mt-4">
+                    <Notice tone="warn">{t('journey.provisioning.rolledBack')}</Notice>
                 </div>
             )}
             {retryNote !== undefined && (

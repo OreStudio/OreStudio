@@ -439,10 +439,6 @@ const pt: SourceCatalogue = {
         noneAvailable: 'Não existem imagens disponíveis neste inquilino.',
     },
 
-    shell: {
-        session: '{username} · {tenant}',
-    },
-
     gate: {
         unreachable:
             'O servidor não respondeu, por isso a interface não sabe se esta instalação ainda precisa de ser configurada. {reason}',
@@ -539,21 +535,13 @@ const pt: SourceCatalogue = {
 
         provisioning: {
             title: 'Aprovisionamento',
-            lead: 'Isto corre no servidor. Pode sair desta página e voltar.',
-            state: 'A execução está {state}.',
+            lead: 'Pode sair desta página e voltar.',
             readFailed: 'Não foi possível ler o progresso. {message}',
             retry: 'Retomar a partir do passo falhado',
             retryKeeps: 'Os passos concluídos são mantidos.',
             retrying: 'A execução retomou em {step}.',
-        },
-
-        runStatus: {
-            pending: 'à espera de começar',
-            in_progress: 'em execução',
-            completed: 'concluída',
-            failed: 'parada num passo falhado',
-            compensating: 'a reverter',
-            compensated: 'revertida',
+            rolledBack:
+                'A execução anulou os passos que tinha concluído, por isso não deixa nada atrás.',
         },
 
         handOff: {
@@ -589,9 +577,7 @@ const pt: SourceCatalogue = {
 
         ready: {
             title: 'Pronto',
-            lead: 'Esta instalação está configurada.',
-            done: 'A instalação está pronta e {principal} tem a sessão iniciada.',
-            next: 'Vá para o início para trabalhar no inquilino. Outro inquilino é um percurso separado.',
+            lead: 'A instalação está configurada e {principal} tem a sessão iniciada.',
             home: 'Ir para o início',
         },
     },

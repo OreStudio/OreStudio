@@ -218,6 +218,7 @@ export function FirstRunJourney({
     });
     const [creatingPassword, setCreatingPassword] = useState('');
     const [entry, setEntry] = useState<TenantEntry>();
+    const [tenantSignInComplete, setTenantSignInComplete] = useState(false);
     const [at, setAt] = useState(0);
     const tenant = useNewTenant();
     const started = useRef(false);
@@ -321,6 +322,8 @@ export function FirstRunJourney({
         administrator: draft,
         creatingPassword,
         entry,
+        tenantSignInComplete,
+        onTenantSignInComplete: () => setTenantSignInComplete(true),
         welcome: <Welcome />,
         administratorForm: (
             <AdministratorForm

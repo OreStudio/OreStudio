@@ -147,9 +147,17 @@ export function JourneyPage({ steps, at, onMove, header }: JourneyPageProps): Re
                 {step.body}
                 {(step.next !== undefined || back) && (
                     <div className="mt-6 flex border-t border-line pt-4">
-                        <Button variant="ghost" disabled={!back} onClick={() => onMove(at - 1)}>
-                            {t('common.back')}
-                        </Button>
+                        {/*
+                         * A step the person may not walk back from offers no
+                         * button at all: a disabled one reports a rule they
+                         * cannot act on, and the rail already says the step is
+                         * behind them.
+                         */}
+                        {back && (
+                            <Button variant="ghost" onClick={() => onMove(at - 1)}>
+                                {t('common.back')}
+                            </Button>
+                        )}
                         {step.next !== undefined && (
                             <Button
                                 variant="primary"

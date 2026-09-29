@@ -30,7 +30,6 @@
  */
 
 import type { ReactNode } from 'react';
-import { Notice } from '../ui/Primitives.js';
 import { FirstSignIn, type TenantEntry } from './FirstSignIn.js';
 import { newTenantSteps } from './newTenantSteps.js';
 import type { JourneyStep, StepId } from './runtime.js';
@@ -58,6 +57,10 @@ export interface FirstRunStepsInput {
     /** The password typed when the administrator was created. */
     readonly creatingPassword: string;
     readonly entry: TenantEntry | undefined;
+    /** Whether the tenant administrator's first sign-in has finished. */
+    readonly tenantSignInComplete: boolean;
+    /** Called when that sign-in finishes, so the footer's action can open. */
+    readonly onTenantSignInComplete: () => void;
     /** The splash, and what the three stages of the journey are. */
     readonly welcome: ReactNode;
     /** The form that describes the installation's first account. */
@@ -145,19 +148,25 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
                         server={server}
                         policy={policy}
                         entry={entry}
-                        onDone={() => input.goTo('ready')}
+                        onReady={input.onTenantSignInComplete}
                     />
                 ) : null,
+            next: {
+                label: t('common.continue'),
+                enabled: input.tenantSignInComplete,
+                run: async () => input.goTo('ready'),
+            },
         },
         {
             id: 'ready',
             title: t('journey.ready.title'),
-            lead: t('journey.ready.lead'),
-            body: (
-                <Notice tone="success">
-                    {t('journey.ready.done', { principal: entry?.principal ?? '' })}
-                </Notice>
-            ),
+            /*
+             * The confirmation is the step's own sentence, so it is the lead.
+             * A notice repeating it under the same title was the same statement
+             * three times on one screen.
+             */
+            lead: t('journey.ready.lead', { principal: entry?.principal ?? '' }),
+            body: null,
             next: {
                 label: t('journey.ready.home'),
                 enabled: true,

@@ -435,10 +435,6 @@ const fr: SourceCatalogue = {
         noneAvailable: 'Aucune image n’est disponible dans ce locataire.',
     },
 
-    shell: {
-        session: '{username} · {tenant}',
-    },
-
     gate: {
         unreachable:
             "Le serveur n'a pas répondu : l'interface ne peut pas savoir si cette installation doit encore être configurée. {reason}",
@@ -534,21 +530,13 @@ const fr: SourceCatalogue = {
 
         provisioning: {
             title: 'Provisionnement',
-            lead: 'Cela s’exécute sur le serveur. Vous pouvez quitter cette page et revenir.',
-            state: "L'exécution est {state}.",
+            lead: 'Vous pouvez quitter cette page et revenir.',
             readFailed: "La progression n'a pas pu être lue. {message}",
             retry: "Reprendre à l'étape échouée",
             retryKeeps: 'Les étapes terminées sont conservées.',
             retrying: "L'exécution a repris à {step}.",
-        },
-
-        runStatus: {
-            pending: 'en attente de démarrage',
-            in_progress: 'en cours',
-            completed: 'terminée',
-            failed: 'arrêtée sur une étape échouée',
-            compensating: 'annulation en cours',
-            compensated: 'annulée',
+            rolledBack:
+                "L'exécution a annulé les étapes qu'elle avait terminées, elle ne laisse donc rien derrière elle.",
         },
 
         handOff: {
@@ -585,9 +573,7 @@ const fr: SourceCatalogue = {
 
         ready: {
             title: 'Prêt',
-            lead: 'Cette installation est configurée.',
-            done: "L'installation est prête et {principal} est connecté.",
-            next: 'Rendez-vous à l’accueil pour travailler dans le locataire. Un autre locataire est un parcours distinct.',
+            lead: "L'installation est configurée et {principal} est connecté.",
             home: "Aller à l'accueil",
         },
     },

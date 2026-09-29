@@ -70,12 +70,17 @@ export function FirstSignIn({
     server,
     policy,
     entry,
-    onDone,
+    onReady,
 }: {
     readonly server: JourneyServer;
     readonly policy: PasswordPolicy;
     readonly entry: TenantEntry;
-    readonly onDone: () => void;
+    /**
+     * Called once the account is signed in and no change is outstanding, so
+     * the step's own action can open in the panel's footer: every step places
+     * its action there, and this one is no different.
+     */
+    readonly onReady: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const [current, setCurrent] = useState<TenantEntry>(entry);
@@ -119,6 +124,9 @@ export function FirstSignIn({
                           resetRequired: outcome.passwordResetRequired,
                       },
             );
+            if (!outcome.passwordResetRequired) {
+                onReady();
+            }
         });
     };
 
@@ -134,6 +142,9 @@ export function FirstSignIn({
                 password: current.password,
                 resetRequired: current.resetRequired,
             });
+            if (!current.resetRequired) {
+                onReady();
+            }
         });
     };
 
@@ -145,6 +156,7 @@ export function FirstSignIn({
         void run(async () => {
             await server.changePassword(current.password, chosen);
             setChanged(true);
+            onReady();
         });
     };
 
@@ -241,11 +253,6 @@ export function FirstSignIn({
                     : t('journey.signIn.done', { principal: current.principal })}
             </p>
             {failure !== undefined && <Notice tone="error">{failure}</Notice>}
-            <div className="flex justify-end">
-                <Button variant="primary" onClick={onDone}>
-                    {t('common.continue')}
-                </Button>
-            </div>
         </div>
     );
 }

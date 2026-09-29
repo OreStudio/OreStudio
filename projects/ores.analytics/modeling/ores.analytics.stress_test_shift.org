@@ -1,0 +1,242 @@
+:PROPERTIES:
+:ID: 9BCF3FA7-FB6E-4F63-90B5-52ED4E41ABEF
+:END:
+#+title: ores.analytics.stress_test_shift
+#+description: Codegen entity model for the analytics =stress_test_shift= table. One shift a stress scenario applies to one market object.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One shift a stress scenario applies to one market object.
+#+entity_singular: stress_test_shift
+#+entity_plural: stress_test_shifts
+#+entity_title: Stress Test Shift
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One entry of one shift block of a stress scenario: a market object, the kind of
+shift applied to it, and the shift itself. The corpus uses fourteen of the
+eighteen families the schema allows -- DiscountCurves, IndexCurves, FxSpots,
+FxVolatilities, SwaptionVolatilities, CapFloorVolatilities and the rest -- in
+three hundred and forty-eight entries.
+
+The families look different and are the same shape: an object named by one
+attribute -- =ccy=, =IndexCurve=, =FxVolatility=, =SwaptionVolatility= -- a
+=ShiftType=, and the shift as parallel lists of values and of tenors or
+expiries. Fourteen tables would be fourteen copies of those five columns with
+different attribute names. One table holds them all, with the family as a
+column and the object's name in =object_key=, which is what makes adding a
+family a seeded value rather than a table.
+
+The entries carry a few things besides the shift -- =ShiftSize=, =IRCurves=,
+=ShiftTerms= -- and those are written into =extras= as a stated list of
+name and value pairs, because they differ from family to family and none is
+common to all.
+
+Each row belongs to exactly one scenario, in the order the document wrote it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the shift.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** stress_test_scenario_id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:nullable:      false
+:END:
+
+The scenario this shift belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** family
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:END:
+
+The shift family's element name in the document: DiscountCurves, FxSpots and so on.
+
+#+begin_src cpp :name generator
+std::string("DiscountCurves")
+#+end_src
+
+** object_key
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:END:
+
+The market object the shift applies to, as the entry's own attribute names it.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** shift_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::optional<std::string>
+:nullable:      true
+:END:
+
+How the shift is applied -- Absolute, Relative, EqualTo or another of ORE's spellings.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** shifts
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::optional<std::string>
+:nullable:      true
+:END:
+
+The shift values, comma separated, as ORE writes them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** shift_tenors
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::optional<std::string>
+:nullable:      true
+:END:
+
+The tenors the shifts apply at, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** shift_expiries
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::optional<std::string>
+:nullable:      true
+:END:
+
+The expiries the shifts apply at, comma separated, for the families that shift by expiry rather than by tenor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extras
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::optional<std::string>
+:nullable:      true
+:END:
+
+The entry's other elements, one per semicolon, each a pipe-separated name and value.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:END:
+
+The order the document wrote the shift in.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_stress_test_shifts_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: stress_test_shift
+:entity_plural_short:   stress_test_shifts
+:entity_singular_words: stress test shift
+:entity_plural_words:   stress test shifts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sts
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| family       | Family       |
+| object_key   | Object       |
+| shift_type   | Shift Type   |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        stress_test_shifts
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: stress_test_shift
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

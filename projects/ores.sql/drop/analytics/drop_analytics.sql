@@ -1,3 +1,5 @@
+\ir ./analytics_stress_test_shifts_notify_trigger_drop.sql
+\ir ./analytics_stress_test_shifts_drop.sql
 \ir ./analytics_stress_test_scenarios_notify_trigger_drop.sql
 \ir ./analytics_stress_test_scenarios_drop.sql
 \ir ./analytics_stress_test_libraries_notify_trigger_drop.sql

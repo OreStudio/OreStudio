@@ -67,3 +67,5 @@
 \ir ./analytics_stress_test_libraries_notify_trigger_create.sql
 \ir ./analytics_stress_test_scenarios_create.sql
 \ir ./analytics_stress_test_scenarios_notify_trigger_create.sql
+\ir ./analytics_stress_test_shifts_create.sql
+\ir ./analytics_stress_test_shifts_notify_trigger_create.sql

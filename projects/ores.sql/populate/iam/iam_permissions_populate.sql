@@ -767,6 +767,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::stress_test_scenarios:read', 'View stress test scenarios');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::stress_test_scenarios:write', 'Create and modify stress test scenarios');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::stress_test_scenarios:delete', 'Delete stress test scenarios');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::stress_test_shifts:read', 'View stress test shifts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::stress_test_shifts:write', 'Create and modify stress test shifts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::stress_test_shifts:delete', 'Delete stress test shifts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_entity_configs:delete', 'Delete credit simulation entity configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_entity_configs:write', 'Create and modify credit simulation entity configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::credit_simulation_matrix_configs:delete', 'Delete credit simulation matrix configs');

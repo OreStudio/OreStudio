@@ -72,23 +72,44 @@ function reasonOf(error: unknown): string {
  * being described stands beside it: the form, the review, the run and the
  * hand-over are all about that tenant, and a person who looked away should not
  * have to walk back up the rail to remember which one it is.
+ *
+ * The lockup keeps its own proportions. The artwork is wider than it is tall
+ * and the panel is wider than the artwork, so a band of a fixed height crops
+ * the top and the foot off the wordmark.
  */
 function JourneyHeader({ tenant }: { readonly tenant: NewTenant }): ReactNode {
+    const tenantName = tenant.details?.name ?? '';
+    const profileName = tenant.profile?.name ?? '';
+    /*
+     * The tenant's name is what the person typed or the profile proposed, so it
+     * is the heading when there is one and the starting point is only what it
+     * was built from. Before that there is no tenant to name, and the heading
+     * is the starting point itself: one line, never the same line twice.
+     */
+    const heading = tenantName !== '' ? tenantName : profileName;
+    const builtFrom = tenantName !== '' ? profileName : '';
     return (
         <div>
+            {/*
+             * The artwork's own dimensions are stated, so the panel reserves
+             * the room before the image arrives, and the width the panel has
+             * scales it by the ratio 964:323. Nothing here crops it or states a
+             * height: a height that is not the ratio's is what cut the top and
+             * the foot off the wordmark.
+             */}
             <img
                 src={heroSplash}
                 alt=""
-                className="h-24 w-full rounded-md border border-line object-cover"
+                width={964}
+                height={323}
+                className="h-auto w-full rounded-md border border-line"
             />
             {tenant.profile !== undefined && (
                 <div className="mt-3 flex items-baseline justify-between gap-3 text-sm">
-                    <span className="font-medium">
-                        {tenant.details?.name !== undefined && tenant.details.name !== ''
-                            ? tenant.details.name
-                            : tenant.profile.name}
-                    </span>
-                    <span className="text-xs text-ink-faint">{tenant.profile.name}</span>
+                    <span className="truncate font-medium">{heading}</span>
+                    {builtFrom !== '' && (
+                        <span className="truncate text-xs text-ink-faint">{builtFrom}</span>
+                    )}
                 </div>
             )}
         </div>

@@ -132,7 +132,7 @@ TEST_CASE("read_latest_market_series_by_id", tags) {
     CHECK(read[0].series_type == target.series_type);
 }
 
-TEST_CASE("read_latest_market_series_by_type", tags) {
+TEST_CASE("read_latest_market_series_by_identity", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -142,17 +142,14 @@ TEST_CASE("read_latest_market_series_by_type", tags) {
     auto s = generate_synthetic_market_series(ctx);
     repo.write(h.context(), s);
 
-    // Scoped to the row's own party: the identity is unique per party, so the
-    // triple can name one series in each of several parties.
-    auto read = repo.read_latest_by_type(h.context(),
-                                         s.series_type,
-                                         s.metric,
-                                         s.qualifier,
-                                         boost::uuids::to_string(s.party_id));
-    BOOST_LOG_SEV(lg, debug) << "Read by type: " << read;
+    // Scoped to the row's own party: the identity is unique per party, so one
+    // identity can name a series in each of several parties.
+    auto read =
+        repo.read_latest_by_uri(h.context(), s.oresmd_uri, boost::uuids::to_string(s.party_id));
+    BOOST_LOG_SEV(lg, debug) << "Read by identity: " << read;
 
     REQUIRE(read.size() == 1);
-    CHECK(read[0].qualifier == s.qualifier);
+    CHECK(read[0].oresmd_uri == s.oresmd_uri);
 }
 
 TEST_CASE("read_all_versions_of_market_series", tags) {

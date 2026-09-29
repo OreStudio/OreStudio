@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2372
+#+pr: 2373
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -389,6 +389,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2373][#2373]] | [synthetic] Key every pillar as the OIS quote it simulates |
 | [[https://github.com/OreStudio/OreStudio/pull/2372][#2372]] | [agile] Write the re-key's plan |
 | [[https://github.com/OreStudio/OreStudio/pull/2370][#2370]] | [refdata,marketdata] Let the config name its tenor convention |
 | [[https://github.com/OreStudio/OreStudio/pull/2369][#2369]] | [agile] Record where the bootstrap gets its tenor convention |

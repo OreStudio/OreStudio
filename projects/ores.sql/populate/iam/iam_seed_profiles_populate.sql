@@ -150,8 +150,10 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
        'Initial population of seed profile parameters'
 from ores_iam_seed_profiles_tbl p
 cross join (values
-    ('empty_operational', 'root_lei', 'Root LEI', 'string', null, '', true,
-     'The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant''s parties.', 10),
+    ('empty_operational', 'root_lei', 'Root LEI', 'string', null, '', false,
+     'The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant''s '
+     'parties. A person who has no LEI yet leaves it empty: the import then has '
+     'nothing to read and says so, and the parties are added later.', 10),
     ('empty_operational', 'counterparty_size', 'Counterparty set', 'choice',
      '["small", "large"]'::jsonb, 'small', true,
      'small is about 13k GLEIF counterparties; large is about 500k.', 20)

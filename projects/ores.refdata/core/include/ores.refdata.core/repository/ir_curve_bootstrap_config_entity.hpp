@@ -53,6 +53,7 @@ struct ir_curve_bootstrap_config_entity {
     std::string discount_curve_config_id;
     std::string interpolation_method = "LOG_LINEAR_DISCOUNT";
     std::string day_count_convention;
+    std::string tenor_convention_code;
     std::string split_tenor_code;
     std::string modified_by;
     std::string performed_by;

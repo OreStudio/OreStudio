@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T11:53:27.527611Z
+' Generated: 2026-09-29T12:50:53.174377Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2424,6 +2424,7 @@ package "refdata" #FFF3E0 {
         * discount_curve_config_id : uuid <<FK>>
         * interpolation_method : text
         * day_count_convention : text
+        * tenor_convention_code : text
         * split_tenor_code : text
         * modified_by : text
         * performed_by : text

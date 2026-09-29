@@ -45,6 +45,7 @@ render_ir_curve_bootstrap_config_fields(const domain::ir_curve_bootstrap_config&
                       .value = boost::uuids::to_string(v.discount_curve_config_id)});
     fields.push_back({.name = "Interpolation Method", .value = v.interpolation_method});
     fields.push_back({.name = "Day Count Convention", .value = v.day_count_convention});
+    fields.push_back({.name = "Tenor Convention Code", .value = v.tenor_convention_code});
     fields.push_back({.name = "Split Tenor Code", .value = v.split_tenor_code});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

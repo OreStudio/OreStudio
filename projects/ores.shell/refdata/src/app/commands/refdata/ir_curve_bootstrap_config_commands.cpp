@@ -143,7 +143,8 @@ void ir_curve_bootstrap_config_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <output_series_id> <source_series_id> <curve_family_role> <discount_curve_config_id> "
-        "<interpolation_method> <day_count_convention> <split_tenor_code> <reason> <commentary>");
+        "<interpolation_method> <day_count_convention> <tenor_convention_code> <split_tenor_code> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,7 +153,7 @@ void ir_curve_bootstrap_config_commands::register_commands(cli::Menu& root_menu,
         },
         "set <id> <output_series_id> <source_series_id> <curve_family_role> "
         "<discount_curve_config_id> <interpolation_method> <day_count_convention> "
-        "<split_tenor_code> <reason> <commentary> [--version <n>]");
+        "<tenor_convention_code> <split_tenor_code> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +162,7 @@ void ir_curve_bootstrap_config_commands::register_commands(cli::Menu& root_menu,
         },
         "put-many --count <n> <id> <output_series_id> <source_series_id> <curve_family_role> "
         "<discount_curve_config_id> <interpolation_method> <day_count_convention> "
-        "<split_tenor_code> <reason> <commentary>");
+        "<tenor_convention_code> <split_tenor_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +356,8 @@ void ir_curve_bootstrap_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -376,6 +377,9 @@ void ir_curve_bootstrap_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.day_count_convention,
                    parsed->positionals[next++],
                    "day_count_convention");
+        read_token(req.change.write.tenor_convention_code,
+                   parsed->positionals[next++],
+                   "tenor_convention_code");
         read_token(
             req.change.write.split_tenor_code, parsed->positionals[next++], "split_tenor_code");
         req.intent.reason_code = parsed->positionals[next++];
@@ -420,8 +424,8 @@ void ir_curve_bootstrap_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -441,6 +445,9 @@ void ir_curve_bootstrap_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.day_count_convention,
                    parsed->positionals[next++],
                    "day_count_convention");
+        read_token(req.change.write.tenor_convention_code,
+                   parsed->positionals[next++],
+                   "tenor_convention_code");
         read_token(
             req.change.write.split_tenor_code, parsed->positionals[next++], "split_tenor_code");
         req.intent.reason_code = parsed->positionals[next++];
@@ -497,8 +504,8 @@ void ir_curve_bootstrap_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -520,6 +527,9 @@ void ir_curve_bootstrap_config_commands::process_put_many(std::ostream& out,
             read_token(change.write.day_count_convention,
                        parsed->positionals[next++],
                        "day_count_convention");
+            read_token(change.write.tenor_convention_code,
+                       parsed->positionals[next++],
+                       "tenor_convention_code");
             read_token(
                 change.write.split_tenor_code, parsed->positionals[next++], "split_tenor_code");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

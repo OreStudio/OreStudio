@@ -91,6 +91,7 @@ to_domain(const messaging::ir_curve_bootstrap_config_write& write) {
     v.discount_curve_config_id = write.discount_curve_config_id;
     v.interpolation_method = write.interpolation_method;
     v.day_count_convention = write.day_count_convention;
+    v.tenor_convention_code = write.tenor_convention_code;
     v.split_tenor_code = write.split_tenor_code;
     return v;
 }

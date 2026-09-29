@@ -113,6 +113,11 @@ struct market_series final {
      * copies the write's fields straight through, so a caller that omits the identity stores a
      * version without one. Until the column is not null, which is what forces every writer to
      * supply it, a caller updating a series has to carry the identity it read.
+     *
+     * The test-data generator writes a generic index name, the one oresmd URI that names a series
+     * with nothing but a name, so a generated row carries an identity the grammar reads. The
+     * generator sets it explicitly, so the not-null the cutover adds is met by design rather than
+     * by a default value.
      */
     std::string oresmd_uri;
 

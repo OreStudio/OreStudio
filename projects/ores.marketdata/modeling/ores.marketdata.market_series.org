@@ -120,6 +120,16 @@ identity stores a version without one. Until the column is =not null=, which is
 what forces every writer to supply it, a caller updating a series has to carry the
 identity it read.
 
+The test-data generator writes a generic index name, the one oresmd URI that names
+a series with nothing but a name, so a generated row carries an identity the grammar
+reads. The generator sets it explicitly, so the not-null the cutover adds is met by
+design rather than by a default value.
+
+#+begin_src cpp :name generator
+std::string("oresmd://generic/") + std::string(faker::word::noun()) + "-" +
+    std::to_string(idx) + "?type=fixing"
+#+end_src
+
 ** series_subclass
 :PROPERTIES:
 :type:     text

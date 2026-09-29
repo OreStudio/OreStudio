@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2366
+#+pr: 2368
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -229,7 +229,9 @@ feed's FRA path and the bootstrap's single-period swap path agree on the same pi
 and the FOMC unit answers it on its own terms. The column stays nullable until the feed
 and the seed agree, and the identity is what a row gets *if it has one*: the constraint
 would not catch the generator output anyway, since random text satisfies a not null
-column.
+column. What the generator writes is now a generic index name -- the one oresmd URI
+that names a series with a name and nothing else -- rather than the default faker noun,
+so the rows it produces carry an identity the grammar reads.
 
 **Two IR families keep their coordinate where the projection did not look, and the
 rest do not.** The decomposition splits a datum key into the series and the point, and
@@ -279,6 +281,7 @@ plan itself stays — it is the historical record of what we did.)
 | Series rows that carry an identity | 4569 of 5971; the 188 =FIXING= rows are named by =from_index_name()= | =count(*) filter (where series_type in (<the grammar's token table>) or series_type = 'FIXING')= over =ores_marketdata_market_series_tbl= | =3632865c32= |
 | Series rows that do not | 1402: 1400 =CD-0= to =CD-25= generator rows plus the two FOMC rows | the same query, negated | =3632865c32= |
 | Production rows no projection can name | 1: the FOMC raw grid =RATES / YIELD / 'USD/SOFR-FOMC'=; the curve row now reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with its ORE identity | =marketdata_market_series_fomc_populate.sql= and a read of the live rows | =48ab31abc8= |
+| Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
@@ -318,6 +321,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2368][#2368]] | [marketdata] Have the generator name the rows it writes |
 | [[https://github.com/OreStudio/OreStudio/pull/2366][#2366]] | [sql,agile] Give the FOMC curve row its ORE identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2365][#2365]] | [marketdata,codegen] Pin the FOMC shapes before the feed writes them |
 | [[https://github.com/OreStudio/OreStudio/pull/2364][#2364]] | [marketdata,codegen] Walk every family that carries a point |
@@ -360,6 +364,9 @@ via its "Verifies task" field.
 | 27 | The curve's second maturity is compared but not round-tripped | the FOMC shapes case | accepted, fixed | Both maturities now round-trip to their own keys, so the point is pinned as surviving the key as well as leaving the identity. |
 | 28 | The case name says one series per pillar, but half of it is one series per curve | the FOMC shapes case | accepted, fixed | Renamed =the_fomc_segments_shapes_name_their_series=. |
 | 29 | The comment claims the republish service writes the curve | the FOMC shapes case | accepted, fixed | The comment now says only what the case can show: the curve keeps ORE's discount shape. |
+| 30 | A generated name is not percent-encoded, so a reserved character in a faker noun would not parse | the model's generator | recorded | The limitation stands: the not-null unit is where a generated row's identity meets the parser, and a case there parses a few of them. |
+| 31 | The URI is unique only if the generator's counter never repeats | the model's generator | recorded | The unique index belongs to the cutover, and that unit has to say whether the counter is enough. |
+| 32 | The model's paragraph was dense | the model's generator | accepted, fixed | Reworded: the generator sets the identity explicitly, so the not-null is met by design rather than by a default value. |
 
 * Result
 

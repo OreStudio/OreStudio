@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string_view>
@@ -363,12 +364,20 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         repository::market_series_repository series_repo;
         repository::market_series_asset_class_repository series_asset_class_repo(tenant_ctx);
         // The identity this key is, written on the series this loop creates and used
-        // to find one it did not. A tick whose key the grammar cannot name carries
-        // none, and a series created before the identity column existed carries
-        // none, so the triple is asked as the fallback either way.
-        const auto identity = core::oresmd_projections::from_ore_key(ore_key);
+        // to find one it did not. The tick names one datum, so its key is the series'
+        // key plus the point the datum sits at, and the identity is that key's
+        // projection with the point dropped: every point of one series resolves to
+        // one identity. A tick that names no point, or a class whose key carries
+        // none, is named by the series key alone. A tick whose key the grammar cannot
+        // name carries none, and a series created before the identity column existed
+        // carries none, so the triple is asked as the fallback either way.
+        std::optional<domain::market_data_identifier> identity;
+        if (!point_id.empty())
+            identity = core::oresmd_projections::from_ore_key(ore_key + "/" + point_id);
+        if (!identity)
+            identity = core::oresmd_projections::from_ore_key(ore_key);
         const auto oresmd_uri =
-            identity ? core::oresmd_parser::to_uri(*identity).value : std::string{};
+            identity ? core::oresmd_parser::to_series_uri(*identity).value : std::string{};
         auto existing = oresmd_uri.empty() ?
                             std::vector<domain::market_series>{} :
                             series_repo.read_latest_by_uri(

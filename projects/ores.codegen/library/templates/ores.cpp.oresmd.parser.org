@@ -750,5 +750,23 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
     return to_uri(identifier);
 }
 
+domain::oresmd_uri oresmd_parser::to_series_uri(
+    const domain::market_data_identifier& identifier) {
+    // The point is the observation's coordinate and the surface is its vol point, so
+    // a series is the identifier with both dropped. The visitor asks each variant
+    // whether it has the fields at all: the security, power and generic classes carry
+    // neither, and a fixing's are unset, so those identifiers come back unchanged.
+    auto series = identifier;
+    std::visit(
+        [](auto& id) {
+            if constexpr (requires { id.point; })
+                id.point.reset();
+            if constexpr (requires { id.vol; })
+                id.vol.reset();
+        },
+        series);
+    return to_uri(series);
+}
+
 }
 #+end_src

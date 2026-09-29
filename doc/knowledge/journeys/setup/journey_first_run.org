@@ -52,19 +52,22 @@ journey that can happen on an empty database.
    shared policy. The system runs [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][system bootstrap]]:
    it creates the system administrator and nothing else. No tenant is created
    at this step, and nobody can sign in yet.
-3. *Choose a starting point.* The new tenant steps now run inline, as rail
-   steps 2 to 6. The person picks a
+3. *Choose a starting point.* The new tenant steps run inline, as rail
+   steps 3 to 7. The person picks a
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][seed profile]]: /Empty
-   operational/ or /ACME demo/. Each card shows a tagline, three bullets and
-   its counts. The ACME card also shows the ACME logo. Nothing is created yet.
+   operational/, /GLEIF entity/ or /ACME demo/. Each card shows a tagline,
+   three bullets and its counts. The ACME card also shows the ACME logo.
+   Nothing is created yet.
 4. *Describe the tenant.* For /Empty operational/ the person enters the root
    LEI and the counterparty set, and sets the administrator's password. For
-   /ACME demo/ the profile fills in the code, name, hostname and administrator
-   username and email; the details show as a summary behind *Change settings*,
-   and the tenant administrator reuses the system administrator's password.
-   Neither starting point asks its administrator to change that password at
-   first sign-in: the choice is the profile's, and a profile that wants the
-   change states it in its row.
+   /GLEIF entity/ the person searches the legal entities the deployment holds
+   and chooses the one the tenant is built around; the card states how many
+   parties that entity's hierarchy would create. For /ACME demo/ the profile
+   fills in the code, name, hostname and administrator username and email; the
+   details show as a summary behind *Change settings*, and the tenant
+   administrator reuses the system administrator's password. No starting point
+   asks its administrator to change that password at first sign-in: the choice
+   is the profile's, and a profile that wants the change states it in its row.
 5. *Review.* The person reads one summary: starting point, tenant name and
    code, administrator, and the profile's parameters. The screen states how
    many steps the profile runs. Nothing is created until the person confirms.
@@ -90,7 +93,7 @@ journey that can happen on an empty database.
 
 One flat step rail. The new tenant steps are written once, as a library of
 step definitions, and first run expands them inline. The person sees the
-Welcome screen first, and then one rail of eight steps, never a journey inside
+Welcome screen first, and then one rail of nine steps, never a journey inside
 a journey. Steps that change server state are final: there is no Back past
 them.
 
@@ -130,7 +133,7 @@ tenant journey alike.
 | =tenant_type= | The classification the provision step sets on the tenant | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
 | =tenant_status= | The tenant moves from /bootstrapping/ to /active/ | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
 | =account_party= | The [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]] the first sign-in chooses between | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
-| Seed profile | The ordered workflow steps the profile selects, and its parameters | none — no model and no subject exist |
+| Seed profile | The ordered workflow steps the profile selects, and its parameters | [[id:25B5DE96-7E9E-4713-92D7-F286BB41C855][ores.iam.seed_profile]] |
 
 Three values must never reach this screen: =password_hash=, =password_salt=
 and any cleartext password after it is sent. The password fields write; no
@@ -143,47 +146,55 @@ read returns a hash.
 |------+-----------+---------+--------|
 | Welcome | Read whether the system is in bootstrap mode | =iam.v1.bootstrap.status= | exists |
 | Create the administrator | Create the system administrator | =iam.v1.bootstrap.create-admin= | exists |
-| Choose a starting point | List the seed profiles | none | missing |
-| Describe the tenant | Provision a tenant from a seed profile, the first tenant included | =iam.v1.tenants.provision= | missing |
-| Review | Start the provision-tenant workflow | =iam.v1.tenants.provision= | missing |
+| Choose a starting point | List the seed profiles, their steps and their parameters | =iam.v1.seed_profiles.list= | exists |
+| Describe the tenant | Provision a tenant from a seed profile, the first tenant included | =iam.v1.tenants.provision= | exists |
 | Provisioning | Follow the workflow instance's progress | =workflow.v1.instances.steps= | exists |
-| Provisioning | Mark provisioning complete | =iam.v1.tenants.complete-provisioning= | exists |
-| Provisioning | Retry from the failed step | none | missing |
+| Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
 | Hand off | Sign out | =iam.v1.auth.logout= | exists |
 | Hand off | Sign in as the tenant administrator | =iam.v1.auth.login= | exists |
+| Hand off | Re-ask the deployment when the administrator was created | none | exists |
 | First sign-in | Set a new password | =iam.v1.accounts.change-password= | exists |
 | First sign-in | Choose the party to start in | =iam.v1.accounts.select-party= | exists |
 
 =iam.v1.bootstrap.status= and =iam.v1.bootstrap.create-admin= are declared in
 [[id:4B98E2D0-8FE3-4321-8CFD-90A4C13422EA][ores.iam.bootstrap_messages]] and
-need no session, because the system is in bootstrap mode. The account and
-tenant subjects need a session. =workflow.v1.instances.steps= is not in the
-generated web protocol: the generator emits no =workflow= package for the
-browser, so the BFF adds a route for it.
+need no session, because the system is in bootstrap mode.
+=iam.v1.bootstrap.status= answers whether the deployment still needs an
+administrator and whether it has a tenant of its own: it is set up when it has
+both. The account and tenant subjects need a session. The starting point is
+answered by the three reads =iam.v1.seed_profiles.list=,
+=iam.v1.seed_profile_steps.list-by-seed-profile-id= and
+=iam.v1.seed_profile_parameters.list-by-seed-profile-id=, which the browser
+composes into one card per profile. =workflow.v1.instances.steps= and
+=workflow.v1.instances.retry= are not in the generated web protocol: the
+generator emits no =workflow= package for the browser, so the BFF adds a route
+for each and the wire client parses the reply.
 
-=iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= no
-longer exist. The generic profile-driven request =iam.v1.tenants.provision=
-replaced both, for every tenant the first one included, and the work
-=iam.v1.tenants.provision-acme= did server-side is now the steps a starting
-point orders: the run those steps are dispatched as is what streams the
-progress, so neither client waits on a reply that carries the work.
+The one verb that provisions a tenant is =iam.v1.tenants.provision=. It takes
+the profile code, the tenant fields, the administrator fields and the profile's
+parameter values, creates the tenant and its administrator, and answers at once
+with the id of the run that executes the steps the profile orders. It serves
+every tenant, the first one included.
 
 * What is missing
 
-Three things this journey names are not in the system, and none of them stops
-a person on the path it takes:
+Three things the journey reaches for are not in the browser:
 
-- the provision request has no field for reusing the creating administrator's
-  password, so a profile that wants the hand-over is a profile the request
-  cannot state;
-- the root LEI the *Operational* card asks for is typed rather than chosen, so
-  a person has to know a code the deployment can check nothing about, and the
-  failure of a code it does not hold arrives as the publication's own SQL
-  error rather than as a sentence about the entity;
-- the engine's change event carries an =entity_change_event= that no one
-  schema can read for every entity, so the page follows the progress read
-  instead, which
-  [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]] owns.
+- The *New tenant* and *New party* journeys have no rail of their own. Their
+  step library
+  (=projects/ores.web/packages/web/src/journeys/newTenantSteps.tsx=) exists and
+  first run places it inline, but no route renders either journey alone, and the
+  party journey's activate and publish steps have no screen. A task to build
+  them is filed beside this change.
+- No scripted end-to-end run proves the browser's path on a fresh database the
+  way =projects/ores.web/scripts/verify-login.ts= proves the sign-in. The proof
+  of the three journeys is manual.
+- The *Operational* card's root LEI is typed rather than chosen, so a person has
+  to know a code the deployment can check nothing about. The deployment
+  answers a legal-entity search the *GLEIF entity* card uses to choose its root
+  LEI, and the *Operational* card's optional parameter still takes a string, so
+  a code the deployment does not hold fails inside the publication and arrives
+  as its SQL error rather than as a sentence about the entity.
 
 Everything else the journey reaches for exists, and the list below is the
 record of what each part turned out to be.
@@ -191,18 +202,23 @@ record of what each part turned out to be.
 1. *The journey's state is a workflow instance.* A journey is a definition and
    not a server-side object, so no journey entity was added anywhere. The
    run's state is a workflow instance in =ores.workflow=, and the page follows
-   it through the progress read. Only the server-side run resumes: the rail
-   position is memory, so a reload leaves the journey at the sign-in screen,
-   and the steps a person takes around the run do not survive it.
+   it through the progress read. A browser that reloads half way through comes
+   back to the setup rail, because the gate answers the deployment and not the
+   tab: the route table keeps the browser on the journey while the deployment
+   still needs an administrator or still has no tenant of its own.
 2. *The starting points are data.* =ores.iam= owns the profile, its parameter
-   schema and the step-kind catalogue, and the reads =iam.v1.seed_profiles.list=
-   and =.get= answer them. *Operational* and *ACME demo* are rows, so a third
-   profile is a row and a new step kind is code. The page builds each card and
-   its form from the row, and holds no profile of its own.
+   schema and the step-kind catalogue, and the reads =iam.v1.seed_profiles.list=,
+   =iam.v1.seed_profiles.get=,
+   =iam.v1.seed_profile_steps.list-by-seed-profile-id= and
+   =iam.v1.seed_profile_parameters.list-by-seed-profile-id= answer them.
+   *Operational*, *GLEIF entity* and *ACME demo* are rows, so a third profile is
+   a row and a new step kind is code. The page builds each card and its form
+   from the rows and holds no profile of its own.
 3. *One provision request serves every tenant.* =iam.v1.tenants.provision=
-   takes the profile code and its parameters and returns the instance id of the
-   run it starts, the first tenant included. The two verbs it replaces stay
-   reachable until the shell moves to it.
+   takes the profile code, the tenant fields, the administrator fields and the
+   profile's parameter values, and returns the instance id of the run it starts,
+   the first tenant included. The tenant and its administrator exist by the time
+   it answers, and the steps the starting point orders run afterwards.
 4. *Progress is read, not pushed.* The page asks the progress read again while
    the run is open and renders the rail from the answer: the run's state, the
    step it is executing, and one line per step. The engine's
@@ -216,24 +232,22 @@ record of what each part turned out to be.
    =force_password_change= reaches the account the provisioner creates, and the
    login answer carries the account record's flag, so a profile that asks for
    the change is answered with =passwordResetRequired: true= at first sign-in
-   and its administrator sets a password only they know. Neither starting point
-   asks today. The profile's other hand-over choice, reusing the creating
-   administrator's password, is read for the *ACME demo* card; a request field
-   for it does not exist.
+   and its administrator sets a password only they know. Neither *Operational*
+   nor *ACME demo* asks. The profile's other hand-over choice, reusing the
+   creating administrator's password, is read for the *ACME demo* card, and the
+   browser sends the creating administrator's password in the request's
+   administrator field, because a server cannot read the password its caller
+   signed in with.
 7. *The policy is read, not copied.* The validator states its rules once as a
    record and enforces that record, and a read answers with it before anybody
    has signed in. Every password field in the journey is built from that
    answer, so a deployment that tightens a rule tightens the screen.
 
-What remains is the rest of the plan: the *New tenant* and *New party*
-journeys, the shell's move to the same contract, and the proof of all three
-journeys on a fresh installation. One thing the first proof found has since
-been corrected: the *Operational* card's LEI import was said to have no staged
-GLEIF data to read, and it has. The code that failed was a mistyped LEI, and
-the publication inserts 668 parties for a correct one against the same tenant.
-The journey behaved as designed either way — the rail showed the failed step
-and the retry was offered — and what remains wrong is that the form takes any
-string and the failure arrives as SQL.
+One thing the first proof found has since been corrected: the *Operational*
+card's LEI import was said to have no staged GLEIF data to read, and it has.
+The code that failed was a mistyped LEI, and the publication inserts 668 parties
+for a correct one against the same tenant. The journey behaved as designed
+either way -- the rail showed the failed step and the retry was offered.
 
 * Related journeys
 

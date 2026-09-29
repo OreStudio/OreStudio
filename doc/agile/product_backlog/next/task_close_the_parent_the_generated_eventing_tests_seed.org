@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 089BF824-EA74-44C0-BBB5-6F5085FE1B7E
+:END:
+#+title: Task: Close the parent row the generated eventing tests seed
+#+description: The codegen template that writes the eventing integration tests seeds a soft-FK parent row and closes only the row under test, so a suite fails on a second run against one database. One template change regenerates 53 files across five components. See capture D42BD56B.
+#+type: task
+#+level: s1
+#+filetags: :next:product_backlog:agile:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Next]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated eventing integration tests close the row they are about and no
+other, so a suite that writes a soft-FK parent leaves the parent active, and a
+second run against the same database fails on it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Next]] |
+| Now          | Not yet started. The template and the reproduction are known; see the capture this task came from. |
+| Waiting on   | Nothing.                               |
+| Next         | Close the parent in the template's cleanup block and regenerate the 53 files that carry the pattern. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- A generated eventing integration test closes every row it seeds, parent and
+  grandparent included, so its suite passes twice in a row against one
+  database.
+- =ores.iam.core.tests=, and every other suite the template writes, pass on a
+  second run against the database the first run left behind.
+- The regeneration touches only the tests the template writes, and the codegen
+  gates stay green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The defect was found while running the end-to-end provisioning recipes: a
+second run of =ores.iam.core.tests= failed with
+
+#+begin_example
+ERROR:  duplicate key value violates unique constraint "seed_profiles_code_uniq_idx"
+DETAIL:  Key (code)=(CD_profile-2) already exists.
+#+end_example
+
+A generated entity's code restarts its sequence in every process, so the
+parent a previous run seeded collides with the one this run writes. The suites
+affected are the seed profile parameter and step ones in =ores.iam=, and 53
+files carry the same seeded-parent pattern across five components.
+
+The reproduction, the capture it came from and the workaround are recorded in
+[[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][A generated eventing integration test leaves the parent row it seeds active]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

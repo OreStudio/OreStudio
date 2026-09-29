@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 77CFDF61-0AE6-4176-9ADA-2D15207767EA
+:END:
+#+title: Task: Build the New tenant and New party journeys and the scripted browser proof
+#+description: Two acceptance lines of the story are unmet: the New tenant and New party journeys are not journeys of their own (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The *New tenant* and *New party* journeys run in =ores.web= as journeys of
+their own, on the same runtime and the same step library the first run inlines,
+and a scripted end-to-end run proves the browser's path on a fresh database.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Not yet started. The step library exists and the first run inlines it, the request that provisions a tenant and the one that provisions a party exist, and the progress read and the retry verb exist. What is missing is the routes that render each journey alone and the party journey's own screens. |
+| Waiting on   | Nothing.                               |
+| Next         | Build the two routes on the existing runtime and step library, then the scripted proof. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- *New tenant* runs in the browser, signing in as an administrator, choosing a
+  starting point, describing the tenant, following the run and handing over to
+  the new tenant's administrator.
+- *New party* runs in the browser: find the legal entity, describe the party,
+  review, follow the run, and the next steps.
+- Both reuse the runtime and the step library the first run uses, and first run
+  inlines those same steps.
+- A scripted end-to-end run walks the first-run path against the real server on
+  a fresh database, in the shape of
+  =projects/ores.web/scripts/verify-login.ts=, and is committed as the proof.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

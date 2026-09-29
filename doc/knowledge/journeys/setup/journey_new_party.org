@@ -20,8 +20,9 @@ each step needs.
 * Goal
 
 "I want a legal entity my team can work as, with the accounts that work in it."
-The tenant administrator finds the legal entity in the GLEIF register, or adds
-it by name when it has no LEI, names the party, and chooses the accounts that
+The tenant administrator finds the legal entity among those the deployment
+holds, or adds it by name when it has no LEI, names the party, and chooses the
+accounts that
 work in it. The journey is done when the party is /active/, its essential data
 is published, and its accounts can sign in to it.
 
@@ -43,11 +44,11 @@ signed-in tenant administrator and a tenant that is already /active/.
 
 * Steps
 
-1. *Find the legal entity.* The person searches the GLEIF register by name or
-   by LEI. Each result shows the legal name, the country, the LEI and the
-   parent entity, so a subsidiary is recognisable as one. The person picks one,
-   or chooses *It has no LEI: add it by name* and types the name instead.
-   Nothing is created yet.
+1. *Find the legal entity.* The person searches the legal entities the
+   deployment holds, by name or by LEI. Each result shows the legal name, the
+   country, the LEI and how many parties the hierarchy would create, so a
+   subsidiary is recognisable as one. The person picks one, or chooses *It has
+   no LEI: add it by name* and types the name instead. Nothing is created yet.
 2. *Describe the party.* The person sets a short name, taken from the legal
    name, and ticks the *accounts that work in it*: this is the
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]].
@@ -58,14 +59,16 @@ signed-in tenant administrator and a tenant that is already /active/.
 3. *Review.* The person reads one summary: legal entity, LEI, short name, the
    accounts, and the party data. The screen states that nothing is created
    until the person confirms.
-4. *Provisioning.* The person confirms. The system starts the
+4. *Provisioning.* The person confirms, and the system starts the
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][provision]] workflow for the
-   party and lists its steps: create the party, activate it, publish its
-   essential data, link its accounts, complete. Each line reads pending,
-   running, done or failed. *This is the step that carries the state.* The
-   person can leave the page and come back. A failed step stops the instance,
-   the party stays inactive, and a retry resumes from the failed step; the
-   completed steps are kept.
+   party. The party stage is one request and its run is one step kind, so the
+   rail lists the profile's =provision_party= step, which publishes the party's
+   bundles, activates the party and marks its onboarding complete, and the run
+   joins the caller to the party. Each line reads pending, running, done or
+   failed. *This is the step that carries the state.* The person can leave the
+   page and come back. A failed step stops the instance, the party stays
+   inactive, and a retry resumes from the failed step; the completed steps are
+   kept.
 5. *Next steps.* The party is /active/. The page offers three exits: switch to
    the new party and work in it now, set up its books, or add another party.
    The person can also just go back; the Parties page lists the new party as
@@ -80,7 +83,7 @@ The same journey page as the tenant journeys: a flat step rail on the left and
 one step at a time. The party header, the short name and the LEI, appears on
 every step after the legal entity is chosen.
 
-#+caption: New party: a flat step rail on the left, the GLEIF results, and one step at a time.
+#+caption: New party: a flat step rail on the left, the legal-entity search results, and one step at a time.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/setup/wireframe_new_party.png]]
 
@@ -113,7 +116,7 @@ the party are chosen here, in the describe step, not in a later wizard.
 | =account= | The accounts the picker offers, and the one that runs the journey | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
 | =account_party= | The accounts that work in the party — the association this journey writes | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
 | =counterparty= | The tenant-wide counterparties the tenant's seed profile already published | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
-| GLEIF legal entity | Legal name, country, LEI and parent, read from the register | [[id:C9B53884-25FA-4D13-AE8A-6469B1854474][ores.dq.lei_entity]] and [[id:B3776F91-B146-47DA-B76E-7C79FBD2E342][ores.dq.lei_relationship]]; no live GLEIF proxy and no search subject exist |
+| GLEIF legal entity | Legal name, country, LEI and parent, read from the register | [[id:C9B53884-25FA-4D13-AE8A-6469B1854474][ores.dq.lei_entity]] and [[id:B3776F91-B146-47DA-B76E-7C79FBD2E342][ores.dq.lei_relationship]] |
 
 No password or secret appears on this screen at all. The person chooses which
 accounts work in the party; the accounts themselves are created elsewhere.
@@ -123,80 +126,109 @@ accounts work in the party; the accounts themselves are created elsewhere.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Find the legal entity | Search the GLEIF register by name or LEI | none | missing |
+| Find the legal entity | Search the legal entities the deployment holds, by name or LEI | =dq.v1.lei-entities.search= | exists |
 | Find the legal entity | List the parties already in the tenant | =refdata.v1.parties.list= | exists |
 | Describe the party | List the accounts that may work in the party | =iam.v1.accounts.list= | exists |
 | Describe the party | Read the existing account-party associations | =iam.v1.account_parties.list= | exists |
-| Review | Start the provision-party workflow | =workflow.v1.parties.provision= | partial |
+| Review | Start the provision-party workflow | =iam.v1.parties.provision= | exists |
 | Provisioning | Create the party | =refdata.v1.parties.put= | exists |
 | Provisioning | Activate the party | =refdata.v1.parties.put= | exists |
-| Provisioning | Publish the party's essential data | none | missing |
-| Provisioning | Link the accounts that work in it | =iam.v1.account_parties.put_many= | exists |
-| Provisioning | Mark the party provisioning complete | none | missing |
-| Provisioning | Retry from the failed step | none | missing |
+| Provisioning | Publish the party's essential data | =iam.v1.parties.provision= | exists |
+| Provisioning | Mark the party provisioning complete | =iam.v1.parties.provision= | exists |
+| Provisioning | Join the caller to the party | =iam.v1.parties.provision= | exists |
+| Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
 | Next steps | Switch to the new party | =iam.v1.accounts.switch-party= | exists |
 | Next steps | Read the party's books | =refdata.v1.books.list= | exists |
 
 The two =iam.v1.account_parties= subjects are declared in
-[[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]];
+[[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]], and
+=iam.v1.account_parties.put_many= is what writes the accounts that work in a
+party; the run the provision request starts joins the caller on its own.
 =iam.v1.accounts.switch-party= is declared in
 [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]], and
 =iam.v1.accounts.list= is generated from
 [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]]. The
 =refdata.v1.parties= and =refdata.v1.books= subjects are generated from their
 entity models. All of them exist in the generated web protocol.
-=workflow.v1.instances.steps= does not: the generator emits no =workflow=
-package for the browser, so the BFF adds a route for it.
+=dq.v1.lei-entities.search= matches a name or an LEI over the legal entities the
+deployment holds and states, per match, how many parties the hierarchy would
+create; the BFF adds a route to it and the wire client parses the reply.
+=workflow.v1.instances.steps= and =workflow.v1.instances.retry= are not in the
+generated web protocol: the generator emits no =workflow= package for the
+browser, so the BFF adds a route for each and the wire client parses the reply.
 
-Activation is =partial= in effect: =refdata.v1.parties.put= writes the row,
-including the status, so the activate step has a subject. But the
-provision-party workflow writes the initial status as =Inactive= and never
-activates the party, so no workflow performs the activate step. Progress is
-readable: =workflow.v1.instances.steps= and =workflow.v1.instances.list= exist
-and are subscribed.
+The party stage is one request, =iam.v1.parties.provision=. It takes a party,
+by its identifier or its exact full name, and a profile code; it resolves the
+party in the caller's own tenant, and answers at once with the id of a run that
+publishes the party's bundles, activates the party, marks its onboarding
+complete and joins the caller to it. The starting point states which bundles a
+party is published from, as the arguments of its =provision_party= step, and a
+profile that orders no party step is refused. A reference that matches more
+than one party is refused as well, because a run acts on one party.
+
+Every subject in the table exists on the wire, and the shell's =provision party=
+sends =iam.v1.parties.provision= and follows the same progress read. The browser
+reaches the search, but it has no route to the request that starts a party's
+run, and no screen sends it.
 
 * What is missing
 
-1. *No GLEIF search.* Nothing reads the GLEIF register. The register is a
-   public API outside ORE Studio, so the candidate is a server-side search that
-   proxies it and returns legal name, country, LEI and parent, for example
-   =refdata.v1.legal_entities.search=. Until it exists the
-   screen can only offer the manual path.
-2. *No journey record, and none is added.* A journey is a definition, not a
-   server-side object. Its progress state is a workflow instance in
-   =ores.workflow=, and that component exists, with its entities, services and
-   subjects. Only the server-side workflow resumes, so the party steps and the
-   human steps around it do not survive a reload. The retired
-   =iam.v1.journeys.get-active= candidate is dropped.
-3. *The provision-party request does not match the journey.*
-   =workflow.v1.parties.provision= exists. It runs a three-step saga per party —
-   =refdata.v1.parties.put=, =iam.v1.accounts.save= and
-   =iam.v1.account_parties.put_many= — and it compensates the completed steps in
-   reverse order when a step fails. But it creates its accounts from the
-   passwords in the request, so it does not take an existing party plus chosen
-   accounts, and it does not activate, onboard or publish bundles. The candidate
-   is a request that takes the party id and the chosen accounts and returns a
-   workflow instance id at once.
-4. *No publish of the essential data.* The seed-profile contract proposes a
-   =party_essentials= bundle that holds =ore.report_definitions= and
-   =crm_topology=. That bundle does not exist, and no handler publishes it. The
-   candidate is a publish step inside the provision-party workflow, or
-   =refdata.v1.parties.publish-essentials= for a party on its own.
-5. *No completion signal the browser can read.* The engine publishes
+1. *No route of its own.* This journey is not built as a journey of its own. No
+   route renders it, the steps that find the legal entity, describe the party,
+   review it, watch the run and offer the next steps have no screen, and the BFF
+   adds no route to the request that starts a party's run. The server side the
+   journey needs exists. A task to build it is filed beside this change.
+2. *The chosen accounts are not written by the run.* The describe step picks the
+   accounts that work in the party, and the run joins the caller alone. Writing
+   the other chosen associations is =iam.v1.account_parties.put_many=, and the
+   request that provisions a party takes no account list, so no step of the
+   party's own run writes them.
+3. *No scripted end-to-end proof.* No scripted run proves this browser's path
+   the way =projects/ores.web/scripts/verify-login.ts= proves the sign-in, so
+   the proof of the journey stays manual.
+4. *No completion signal the browser can read.* The engine publishes
    =ores.workflow.workflow_instance_changed= on every state change, but the
    payload is an =entity_change_event= that carries =entity_ids=, and the schema
    the browser decodes reads =alpha2_codes= with every field defaulted, so the
    browser receives an empty identifier list. The reads
-   =workflow.v1.instances.steps= and =workflow.v1.instances.list= exist and are
-   subscribed, and they return the instance status and its steps. They are not
-   enough on their own: =workflow.v1.parties.provision= declares
-   =workflow_instance_ids= in its response, and the handler leaves that vector
-   empty, because it publishes each start request and never learns the instance
-   id. A caller cannot follow the workflow it started until that is fixed.
-6. *No retry.* A retry, resume or abandon verb does not exist anywhere in
-   =ores.workflow=. The engine recovers in-flight instances once, when the
-   service starts, and nothing else starts a failed step again. The candidate is
-   a retry request for the workflow instance.
+   =workflow.v1.instances.steps= and =workflow.v1.instances.retry= exist and are
+   what a page follows a run with. That mismatch is owned by
+   [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
+
+The rest of the journey is in place, and the list below is the record of what
+each part turned out to be.
+
+1. *The legal-entity search reads the deployment's own data.*
+   =dq.v1.lei-entities.search= matches a name or an LEI over the legal entities
+   the deployment holds, and states, per match, how many parties the hierarchy
+   would create. The deployment's records are the ones a tenant is built from;
+   no live proxy to the public register is needed. The browser reaches the
+   search through a BFF route, and the party named by hand is the same journey
+   with the search skipped.
+2. *No journey record, and none is added.* A journey is a definition, not a
+   server-side object. Its progress state is a workflow instance in
+   =ores.workflow=, with its entities, services and subjects, and the run is
+   followed by the id the request answers with. Only the server-side workflow
+   resumes, so the human steps around it do not survive a reload. The retired
+   =iam.v1.journeys.get-active= candidate is dropped.
+3. *The provision-party request is one stage.* =iam.v1.parties.provision= takes
+   a party, by its identifier or its exact full name, and a profile code,
+   resolves the party in the caller's tenant, and returns a workflow instance id
+   at once. The run publishes the bundles the starting point orders, activates
+   the party, marks its onboarding complete and joins the administrator who
+   asked to it, so the request carries the whole active, onboard and publish
+   stage.
+4. *The party's bundles are the starting point's.* The =party_essentials= bundle
+   is one of the bundles a =provision_party= step may order, as the step's own
+   arguments, and every starting point that orders the kind orders it. A party's
+   data is therefore the profile's, and the step the tenant run carries is the
+   one the party stage runs. There is no separate publish request for a party on
+   its own.
+5. *A retry resumes a stopped run.* =workflow.v1.instances.retry= resumes a run
+   that stopped on its failed step: it re-dispatches that step under its own
+   identity, clears the run's error, and leaves every completed step and its
+   result alone. The engine's =recover_in_progress()= stays for runs that were
+   in progress when a service restarted.
 
 * Related journeys
 

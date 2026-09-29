@@ -59,13 +59,16 @@ thing that happens on an empty database.
    steps the profile runs. Nothing is created until the person confirms.
 4. *Provisioning.* The person confirms. The system starts the
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][provision]] workflow and the
-   page lists one line per workflow step: create the tenant and its admin,
-   publish the base reference data, import the counterparties, import the
-   parties, provision each party, complete. Each line reads pending, running,
-   done or failed. *This is the step that carries the state.* The person can
-   leave the page and come back. A failed step stops the instance, the tenant
-   stays /bootstrapping/, and a retry resumes from the failed step; completed
-   steps are kept. A tenant that should not continue can be discarded.
+   page lists one line per workflow step: the step kinds the starting point
+   orders -- publish the base reference data, import the counterparties, import
+   the parties, provision each party, load the staff, attach the photographs,
+   start the market feeds, whichever the profile declares -- and the completing
+   step every tenant run appends, which marks the tenant /active/. The tenant
+   and its administrator exist before the run starts. Each line reads pending,
+   running, done or failed. *This is the step that carries the state.* The
+   person can leave the page and come back. A failed step stops the instance,
+   the tenant stays /bootstrapping/, and a retry resumes from the failed step;
+   completed steps are kept. A tenant that should not continue can be discarded.
 5. *Hand off.* The tenant is /active/. The page shows the tenant's
    administrator as =username@code= and offers two exits. *Continue as tenant
    admin* signs out, signs in as that administrator, and opens their first
@@ -120,7 +123,7 @@ every new password uses one shared field.
 | =account_contact_information= | The administrator's email and contact details | [[id:892C7799-23B7-4D3D-900D-8A2D08D62A6C][ores.iam.account_contact_information]] |
 | =account_party= | The [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]] between the administrator and the tenant's first party | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
 | =counterparty= | The tenant-wide counterparties the profile publishes | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
-| Seed profile | The ordered workflow steps, the parameters, and the tenant details the profile prefills | none — no model and no subject exist |
+| Seed profile | The ordered workflow steps, the parameters, and the tenant details the profile prefills | [[id:25B5DE96-7E9E-4713-92D7-F286BB41C855][ores.iam.seed_profile]] |
 
 The password material — =password_hash=, =password_salt= and
 =service_password_hash= — never reaches this screen. The password field writes
@@ -131,34 +134,36 @@ a hash server-side; no read returns one.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Choose a starting point | List the seed profiles | none | missing |
-| Choose a starting point | Read a profile's parameter schema | none | missing |
-| Describe the tenant | Submit the tenant and its administrator | none | missing |
-| Describe the tenant | Provision the tenant from the chosen profile | =iam.v1.tenants.provision= | missing |
-| Review | Start the provision-tenant workflow | =iam.v1.tenants.provision= | missing |
+| Choose a starting point | List the seed profiles | =iam.v1.seed_profiles.list= | exists |
+| Choose a starting point | Read a profile's steps and its parameter schema | =iam.v1.seed_profile_steps.list-by-seed-profile-id= | exists |
+| Describe the tenant | Submit the tenant and its administrator | =iam.v1.tenants.provision= | exists |
 | Provisioning | Follow the workflow instance's progress | =workflow.v1.instances.steps= | exists |
-| Provisioning | Mark provisioning complete | =iam.v1.tenants.complete-provisioning= | exists |
-| Provisioning | Retry from the failed step | none | missing |
+| Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
 | Provisioning | Discard a failed tenant | =iam.v1.system.reset-tenant= | exists |
 | Hand off | Sign out | =iam.v1.auth.logout= | exists |
 | Hand off | Sign in as the tenant administrator | =iam.v1.auth.login= | exists |
+| Hand off | Choose the party to start in | =iam.v1.accounts.select-party= | exists |
 
-=iam.v1.tenants.provision= and =iam.v1.tenants.complete-provisioning= are
-declared in
+=iam.v1.tenants.provision= is declared in
 [[id:E37DCAAC-30A3-4E7E-890D-EBD226538690][ores.iam.tenant_provisioning_messages]];
 =iam.v1.auth.login= and =iam.v1.auth.logout= are declared in
-[[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]]. All of
-them exist in the generated web protocol. =workflow.v1.instances.steps= does
-not: the generator emits no =workflow= package for the browser, so the BFF adds
-a route for it and the wire client parses its reply.
+[[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]], and
+=iam.v1.accounts.select-party= in
+[[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. All of
+them exist in the generated web protocol. Completing the tenant is not a
+request of its own: the last step of the run the provision request starts acts
+on the tenant the run provisions, marks it /active/, clears its bootstrap mode
+and completes its onboarding. =workflow.v1.instances.steps= and
+=workflow.v1.instances.retry= are not in the generated web protocol: the
+generator emits no =workflow= package for the browser, so the BFF adds a route
+for each and the wire client parses the reply.
 
-=iam.v1.tenants.provision-acme= no longer exists: it ran the whole
-provisioning server-side through internal actor impersonation, but it was
-ACME-only, it took no seed profile, and it returned all its steps at the end, so
-it streamed no progress. The generic profile-driven request
-=iam.v1.tenants.provision= replaced it and the bootstrap request beside it, for
-every tenant the first one included, and the steps a starting point orders are
-what carries the work now.
+=iam.v1.tenants.provision= is the one verb that provisions a tenant. It takes
+the profile code, the tenant fields, the administrator fields and the profile's
+parameter values, creates the tenant and its administrator, and answers at once
+with the id of the run that executes the steps the profile orders. It serves
+every tenant, the first one included, and the shell's =provision tenant= and
+=bootstrap setup= send the same request and follow the same progress read.
 
 =iam.v1.system.reset-tenant= discards a half-provisioned tenant. It soft-deletes
 the admin-created data, turns the operational parties /inactive/, and sets the
@@ -170,31 +175,53 @@ that gap in full.
 
 * What is missing
 
+1. *No browser route of its own.* The journey's steps are written once, as a
+   library of step definitions, and first run places that library inline on its
+   rail. No route renders the new tenant journey alone, so a system
+   administrator reaches these steps only through the first run's setup page.
+   The same library is what the standalone journey renders, and a task to build
+   it is filed beside this change.
+2. *No scripted end-to-end proof.* Nothing runs this browser's path on a fresh
+   database the way =projects/ores.web/scripts/verify-login.ts= proves the
+   sign-in, so the proof of the journey stays manual.
+3. *No discard that stops the workflow.* =iam.v1.system.reset-tenant= discards
+   the tenant, but it does not stop a workflow instance the tenant owns.
+   =iam.v1.tenants.delete= closes the row and sets the status to /terminated/,
+   and it also leaves a running workflow alone. The missing part is the stop,
+   not the discard. [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a
+   tenant]] records that gap in full.
+
+The rest of the journey is in place, and the list below is the record of what
+each part turned out to be.
+
 1. *No journey state to add.* A journey is a definition, not a server-side
    object. A journey's progress state is a workflow instance in =ores.workflow=,
-   and that instance already carries the workflow type, the current step, the
-   request, the result and the error. No journey entity is added anywhere, and
-   no subject returns a journey as an object. The server side this journey still
-   needs is the provision-tenant workflow definition, which item 3 names. Until
-   it exists the client keeps the current step in memory, and "you can leave and
-   come back" is not true.
-2. *No seed profile model and no read.* =ores.iam= owns the seed profile, its
+   and that instance carries the workflow type, the current step, the request,
+   the result and the error. No journey entity is added anywhere, and no subject
+   returns a journey as an object. The provision-tenant definition exists: it
+   runs one engine step per step kind the profile orders, plus the completing
+   step every tenant run appends, and the client follows it by the instance id
+   the request answers with. The run resumes on the server; the rail position is
+   memory.
+2. *The seed profile is data, and it is read.* =ores.iam= owns the profile, its
    parameter schema and the step-kind catalogue. A profile is registered data
    that orders step kinds from a fixed catalogue: =publish_bundle=,
    =import_lei_hierarchy=, =provision_party=, =load_staff=, =attach_photos=,
-   =start_market_feeds=. A new profile is a row; a new step kind is code. No
-   seed profile entity and no seed profile subject exist. The candidates are
-   =iam.v1.seed_profiles.list= and =iam.v1.seed_profiles.get=, including each
-   profile's parameter schema and its prefilled tenant details. The screen must
-   keep the two cards in code until then.
-3. *No generic provision-tenant request.* The accepted contract wants one
-   request that takes the profile code and its parameters, returns a workflow
-   instance id at once, and streams progress. The candidate is
-   =iam.v1.tenants.provision=.
+   =start_market_feeds=. A new profile is a row; a new step kind is code. The
+   reads =iam.v1.seed_profiles.list= and =iam.v1.seed_profiles.get= answer the
+   profile, and
+   =iam.v1.seed_profile_steps.list-by-seed-profile-id= and
+   =iam.v1.seed_profile_parameters.list-by-seed-profile-id= answer its ordered
+   steps and its parameter schema. The screen builds its cards from those rows
+   and holds none of them in code.
+3. *One provision request serves every tenant.* =iam.v1.tenants.provision= takes
+   the profile code, the tenant fields, the administrator fields and the
+   profile's parameter values, returns a workflow instance id at once, and is
+   what the page follows. The tenant and its administrator exist when it
+   answers; the steps run afterwards.
 4. *Progress is read, not pushed.* A step is followed through a read rather
    than a pushed event. A run started through the generic request is followed
-   through the reads =workflow.v1.instances.steps= and
-   =workflow.v1.instances.list=, which answer the
+   through =workflow.v1.instances.steps=, which answers the
    run's status, the step it is executing and one summary per step, and both
    the browser route and the wire-client method behind it exist, so the page
    renders its rail from the read and asks again while the run is open. The
@@ -203,18 +230,13 @@ that gap in full.
    while the shared browser schema reads =alpha2_codes=, and no one schema can
    read every entity's own event. That mismatch is owned by
    [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
-5. *A retry exists.* The contract keeps completed steps and resumes from the
-   failed one. =workflow.v1.instances.retry= resumes a run that stopped on its
-   failed step: it re-dispatches that step under its own identity, clears the
-   run's error, and leaves every completed step and its result alone. A run
-   whose definition declares the compensate policy still rolls back instead, and
-   =recover_in_progress()= stays for runs that were in progress when a service
-   restarted.
-6. *No discard that stops the workflow.* =iam.v1.system.reset-tenant= discards
-   the tenant, but it does not stop a workflow instance the tenant owns.
-   =iam.v1.tenants.delete= closes the row and sets the status to /terminated/,
-   and it also leaves a running workflow alone. The missing part is the stop,
-   not the discard.
+5. *A retry resumes a stopped run.* The contract keeps completed steps and
+   resumes from the failed one. =workflow.v1.instances.retry= resumes a run that
+   stopped on its failed step: it re-dispatches that step under its own identity,
+   clears the run's error, and leaves every completed step and its result alone.
+   A run whose definition declares the compensate policy still rolls back
+   instead, and =recover_in_progress()= stays for runs that were in progress
+   when a service restarted.
 
 * Related journeys
 

@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: D5B80AC4-6CA5-4560-9BBA-43220FD266CA
+:END:
+#+title: Synthetic tenants and parties, when they return
+#+description: The synthetic organisation generator was deleted: it built parties, counterparties, business units, portfolios, books and contacts inside an existing tenant, from a seed, and its only caller was a shell recipe that created a tenant named acme. What a synthetic tenant is worth having is a tenant created from a starting point with synthetic parties in it, which is a step kind or a profile rather than a shell command.
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:synthetic:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A starting point, or a step kind, that fills a tenant with synthetic parties:
+the thing the deleted organisation generator did, expressed in the shape
+provisioning has now.
+
+* Why
+
+The generator that was deleted built parties, counterparties, business units,
+portfolios, books and contacts inside an existing tenant, from a seed, and its
+only caller was a shell recipe that created a tenant called =acme=. It was not
+usable post-provisioning (it tried to create a second root party per tenant and
+the unique index refused it), it produced identifiers that were not
+well-formed LEIs, and it had no concept of staff accounts, so the datasets it
+was meant to serve stopped using it.
+
+What is worth having is the other shape: a tenant created from a starting
+point, with synthetic parties in it, described by the starting point's own
+rows, so both clients get it and neither holds a generator's knobs. That is
+either a new step kind (code) or a new starting point whose arguments name a
+generator (data), and the four requirements the analysis left behind -- a
+fixed shape where a dataset needs one, staff accounts, locale coverage, and
+ISO 17442 checksum-valid LEIs -- are the list.
+
+* References
+
+- =projects/ores.seeder/datasets/acme_corporation_structure_analysis/dataset_overview.org=
+  records what the deleted generator could not do.
+
+* See also
+
+-

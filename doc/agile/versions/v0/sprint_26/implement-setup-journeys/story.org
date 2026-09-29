@@ -48,9 +48,9 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The architecture is corrected, the rail renders from =runtime.ts=, the shell and the bootstrap gate are in, and an empty installation can be set up from the browser: the setup page creates the first administrator, which closes bootstrap mode. The starting points are registered rows the browser reads, one provision request creates a tenant and its administrator for every tenant, the first included, and the request starts a real workflow whose six step kinds all execute: both registered starting points now provision end to end on the live deployment. A stopped run can be followed through the progress read and retried from the step that failed. The gate now answers the deployment rather than the tab, so a browser that reloads half way through comes back to the setup rail and signs in as the administrator the deployment already has. The register card leads with the entity a tenant is built around, derives the rest of the form from the entity chosen, and the search that finds it matches a name or an LEI in the read and states how many parties the hierarchy would create. |
+| Now           | Both clients run the three Setup journeys' work against the same contract, and nothing is left of the provisioning the wizards did client-side. The browser sets an empty installation up from the setup page — the first administrator, the first tenant from a registered starting point, the hand-over, the first sign-in and *Ready* — and a reload comes back to the rail rather than stranding the person. The shell says the same things with =bootstrap setup=, =provision tenant= and =provision party=, each sending one request per stage and following the run through the same progress read the browser's rail renders, and the end-to-end recipes each ran from their own empty installation to a working tenant. The two verbs the generic request replaced retired with the shell, and so did the generated duplicates of the porcelain commands and the synthetic organisation generator. |
 | Waiting on    | Nothing. |
-| Next          | The shape of a tenant code checked by the database itself, and the manual card's import step when no entity is named. |
+| Next          | Two acceptance lines are not met, and they are why this story stays open: the *New tenant* and *New party* journeys are not journeys of their own yet (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database the way =projects/ores.web/scripts/verify-login.ts= proves the sign-in. Both are recorded as tasks of their own. |
 | Last touched  | 2026-09-29                               |
 
 * Acceptance
@@ -78,11 +78,11 @@ state and the progress are real.
 - A scripted end-to-end run proves the path on a fresh database, in the
   shape of =scripts/verify-login.ts=.
 - The shell drives the same three journeys through the same contract.
-  =provision system=, =provision tenant= and =provision party= call the
-  generic provision request once this story has added it, and the three
-  end-to-end provisioning recipes under
-  =doc/recipes/shell/provisioning/= each run from an empty installation to
-  a working tenant without orchestrating anything client-side.
+  =bootstrap setup=, =provision tenant= and =provision party= call the
+  generic provision request this story added, and the end-to-end
+  provisioning recipes under =doc/recipes/shell/provisioning/= each run
+  from an empty installation to a working tenant without orchestrating
+  anything client-side.
 - Every gap the three journey documents record is closed, or stated on
   the screen and recorded in this story.
 
@@ -109,6 +109,8 @@ state and the progress are real.
 | [[id:68113CC3-55C1-4EDE-AEFF-CEE043A9431C][Build the First run journey]] | DONE | 2026-09-29 | 2026-09-29 | The first run journey leads an empty installation from the welcome screen through creating the system administrator, the first tenant's steps inline on one rail, the hand-over to its administrator, their first sign-in, and Ready. |
 | [[id:01CF4ADC-404E-4CEA-8594-C033245A7342][Start a tenant from a GLEIF entity]] | DONE | 2026-09-29 | 2026-09-29 | The starting points become three: build the tenant by hand, build it around a parent legal entity the deployment holds in its GLEIF data, or take the prefilled demo. The GLEIF card opens on a search over those entities and derives the tenant from the one chosen; the manual card may leave the legal entity out altogether. |
 | [[id:CD991920-78E3-4CD3-965D-B1E76665BAB2][Keep the setup screen after a reload]] | DONE | | 2026-09-29 | An installation is set up when it has an administrator and a tenant of its own, so the setup journey is the only screen until it has both. A browser that reloads half way through comes back to the rail and signs in as the administrator the deployment already has, rather than being stranded with no way back to the work. |
+| [[id:C7487AE2-CC23-4FF3-AAB1-E4FF30F331CD][Mop up the provisioning surface and the synthetic organisation]] | STARTED | 2026-09-29 | | Rename the first-run command to bootstrap setup, retire the generated duplicates of the provision verbs, delete the synthetic organisation generator and its recipe, and close the story with its documents brought up to date. |
+| [[id:77CFDF61-0AE6-4176-9ADA-2D15207767EA][Build the New tenant and New party journeys and the scripted browser proof]] | BACKLOG | | | Two acceptance lines of the story are unmet: the New tenant and New party journeys are not journeys of their own (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database. |
 
 * Plan
 
@@ -230,25 +232,24 @@ none of them depends on it and all of them are permanent.
   exist, and no page defining the runtime at all. The answers above are
   recorded in that audit and land as their own documentation change.
 - *Every journey has two clients, and the shell is the other one.*
-  =ores.shell= already carries the three Setup journeys as porcelain
-  commands — =provision system=, =provision tenant= and =provision
-  party=. Three recipes under =doc/recipes/shell/provisioning/= run a
-  whole system provisioning, one per value the =--source= flag accepts,
-  and between them they cover the three journeys this story builds in the
-  browser:
+  =ores.shell= carries the three Setup journeys as porcelain commands —
+  =bootstrap setup=, =provision tenant= and =provision party=. The
+  recipes under =doc/recipes/shell/provisioning/= run a whole system
+  provisioning, one per starting point, and between them they cover the
+  three journeys this story builds in the browser:
 
-  - =acme_system_provision.org= creates a tenant called =acme=,
-    provisions it with =--source synthetic=, then adds a party and sets
-    the default party.
-  - =barclays_system_provision.org= creates =barclays=, provisions it
-    with =--source gleif= against a root LEI, then adds a party and sets
-    the default party.
+  - =barclays_system_provision.org= creates =barclays= from the GLEIF
+    starting point with the hierarchy's root LEI, then runs the party
+    stage and sets the default party.
   - =how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
-    creates =acme_corporation= and provisions it with =--source acme=,
-    which reaches the synchronous =provision-acme= handler. It stops
-    after the tenant stage and additionally publishes two compute
-    packages and the risk-management bundle, so it is the only one of
-    the three that does not run the party journey.
+    creates =acme_corporation= from the demonstration starting point,
+    whose own steps import the Acme hierarchy, publish each party's data,
+    attach the staff photographs and start the market feeds. It stops
+    after the tenant stage and additionally publishes the vendored
+    compute packages, so it is the only one that does not run the party
+    stage on its own.
+  - =tenant_provision.org= adds a tenant to a system that is already set
+    up, which is the New tenant journey's shell form.
 
   A step's contract therefore has two callers from the day it lands, and
   a contract that suits only one of them is wrong.
@@ -259,11 +260,12 @@ none of them depends on it and all of them are permanent.
   client-side orchestration is deleted." The three porcelain commands
   were 696 lines that published bundles, waited on workflows, generated a
   synthetic organisation and associated parties themselves. That landing
-  left =provision system=, =provision tenant= and =provision party= as
+  left =bootstrap setup=, =provision tenant= and =provision party= as
   thin callers of =iam.v1.tenants.provision= and =iam.v1.parties.provision=
   -- the same subjects the browser calls -- and retired the verbs the
-  shell was their last caller of. The generator stays a shell tool: it is
-  a recipe's own step now, not provisioning's.
+  shell was their last caller of. The synthetic organisation generator
+  went too: provisioning creates no synthetic parties, and synthetic
+  tenants and parties are their own work when they return.
 - *The shell is lined up in the same group, not afterwards.* A shell
   that still drives the retired subjects while the browser uses the new
   one is two clients disagreeing about what provisioning is, and the
@@ -298,7 +300,6 @@ none of them depends on it and all of them are permanent.
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why the state is a workflow instance. |
 | [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] | knowledge | The standard the C++ work in this story is held to. |
 | [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the TypeScript work in this story is held to: the full strictness set, no unchecked escape hatch, parse at the boundary, and one gate per item. |
-| =doc/recipes/shell/provisioning/acme_system_provision.org= | recipe | End-to-end on the synthetic path: system and tenant from the operational starting point, a synthetic organisation from the generator, and the party stage, with the sign-ins between them. |
 | =doc/recipes/shell/provisioning/barclays_system_provision.org= | recipe | End-to-end on the GLEIF path: system and tenant from the GLEIF starting point with the hierarchy's root LEI, the counterparty set the profile's parameter names, and the party stage, with the sign-ins between them. |
 | =doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org= | recipe | End-to-end on the demonstration path: system and tenant from the =acme_demo= starting point, whose own steps import the Acme hierarchy, publish each party's data, attach the staff photographs and start the market feeds. It stops after the tenant stage and publishes the vendored compute packages, so it does not run the party stage on its own. |
 | [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][Audit the journey, provisioning and web-client architecture before the first implementation story]] | investigation | What the architecture documents say today, what is stale, and what is written nowhere. The story starts only after this is signed off. |

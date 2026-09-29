@@ -64,7 +64,7 @@ follows.
 
    The login credentials for the test scenario's connection step come
    *from the provisioning script that recipe runs* — read the
-   =provision system=/=login= lines in
+   =bootstrap setup=/=login= lines in
    [[proj:projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores][=how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=]]
    rather than hardcoding them into the scenario doc, since they can
    change independently of this recipe (usernames for generated staff

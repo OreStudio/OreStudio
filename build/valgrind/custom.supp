@@ -2112,3 +2112,113 @@
    fun:nats_openLib
    ...
 }
+
+#
+#  Coverage instrumentation
+#
+#  The nightly debug builds compile with code_coverage=1, so every translation
+#  unit registers its counters with the LLVM coverage runtime from a
+#  shared-object initialiser. The runtime keeps the registration for the
+#  process lifetime and never frees it, so every block is still reachable. This
+#  one category accounted for 3,254 of the 3,329 defects the 2026-09-29 nightly
+#  reported for ores.refdata.core.tests. Anchored on the runtime's own frames,
+#  so an allocation that merely passes through the loader still surfaces.
+#
+{
+   LLVM coverage instrumentation registration
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:llvm_gcov_init
+   fun:__llvm_gcov_init
+   ...
+}
+#
+#  glibc atexit handler registration
+#
+#  A translation unit with a namespace-scope object registers its destructor
+#  with __cxa_atexit when it loads, and glibc allocates the handler node for the
+#  lifetime of the process. The objects in question are the per-component logger
+#  singletons and the faker's vocabulary registries, none of which are freed
+#  before exit, so the nodes are still reachable rather than lost.
+#
+{
+   glibc atexit handler registration
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__new_exitfn
+   fun:__internal_atexit
+   fun:__cxa_atexit
+   ...
+}
+#
+#  libpq connection state
+#
+#  sqlgen opens one libpq connection per pool slot and the pool lives for the
+#  process lifetime, so the connection's own allocations -- the PGconn, its
+#  option strings, the SASL negotiation buffers and the parameter status list --
+#  are still reachable at exit. They are the library's per-connection state, not
+#  a leak the caller can free without closing a connection the rest of the
+#  process may still use. Anchored on the entry point that creates the
+#  connection, so an allocation from anywhere else in libpq still surfaces.
+#
+{
+   libpq connection state held for the process lifetime
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:PQconnectdb
+   ...
+}
+#
+#  libpq per-query state
+#
+#  The connection state grows while a statement runs: the command queue entry,
+#  the parameter status list and the query's own string copies are allocated
+#  inside PQexec and released only when the connection closes. The pool keeps
+#  the connection, so they are still reachable at exit.
+#
+{
+   libpq per-query state held for the process lifetime
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:PQexec
+   ...
+}
+#
+#  Catch2 reporter output stream
+#
+#  The test binary opens its XML report file once, and the stream keeps its
+#  buffer and its FILE until the process exits, which is after the reporter has
+#  flushed. Anchored on the reporter's own stream type, so a file the tests open
+#  themselves still surfaces.
+#
+{
+   Catch2 reporter file stream
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:_ZN5Catch6Detail12_GLOBAL__N_110FileStreamC1E*
+   ...
+}
+#
+#  NATS C client connection error state
+#
+#  The library keeps a per-thread error string and refreshes it on the connect
+#  path; nats_clearLastError allocates the slot and the library frees it only in
+#  nats_library_cleanup(), which the client layer deliberately does not call.
+#  Anchored on the connect path, so an error string allocated elsewhere still
+#  surfaces.
+#
+{
+   NATS C library connection error state
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_getThreadError
+   ...
+   fun:natsConnection_Connect
+   ...
+}

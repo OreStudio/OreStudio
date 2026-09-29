@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :web:ux:journeys:setup:iam:v0:sprint_26:implement-setup-journeys:
 #+owner: marco
-#+branch:
+#+branch: feature/start-a-tenant-from-a-gleif-entity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
 #+updated: 2026-09-29
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,9 +32,9 @@ out, because a person provisioning their first tenant may not have an LEI yet.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Three starting points are rows, the register card leads with the entity it is built around and derives the tenant from the one chosen, the manual card leaves the entity out, and the search matches a name or an LEI in the read and states how many parties the hierarchy would create. |
+| Now          | Three starting points are rows, the register card leads with the entity it is built around and derives the tenant from the one chosen, the manual card leaves the entity out, and the search matches a name or an LEI in the read and states how many parties the hierarchy would create. The shape of a tenant code and of a hostname is stated by the model and held by the table, and a run that names no legal entity imports nothing and says so instead of stopping. |
 | Waiting on   | Nothing.                               |
-| Next         | The shape of a tenant code, enforced by the database rather than only by the provision request. |
+| Next         | Nothing: the task's acceptance is met. A recreate is what applies the table's new checks to this environment. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -111,9 +111,23 @@ the code itself, which is what the old client did.
 =ores.iam.core/service/tenant_code_check.hpp=, the provision request applies it
 before the row is written, and a unit test asserts it directly: the accepted
 shape, each way of breaking it, and the sentence the caller shows for each.
-What the task leaves is the database applying the same rule, so a row written by
-another caller cannot hold a code the screen would refuse. The legal entity the
-manual card may now leave out is added later through the *New party* journey.
+*The shape is the table's as well as the request's.* =check_tenant_code= and
+=check_tenant_hostname= state the rule to a caller as a sentence, and the tenant
+model states it as the table's own checks, so a row written by the shell, a
+script or SQL is held to what the screen applies. Making the rule true uncovered
+two writers that were writing what it refuses, and both moved with it: the
+synthetic generator produced codes like =CD_tenant-3=, and the test harness's
+suite tenant carried the suite's dots. See
+[[file:evidence/tenant_shape_rule.txt][the evidence file]].
+
+*Nothing to import is a step that says so.* The manual card declares the legal
+entity as optional, and the import step threw when a run supplied none, which
+stopped a run whose card promises a tenant built from the party it creates for
+itself. The step now reads an absent entity as empty, completes with a warning
+and logs why; the rail shows that sentence beside the step.
+
+*What this task leaves.* The legal entity the manual card may leave out is added
+later through the *New party* journey.
 
 * Measurements
 
@@ -127,6 +141,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Tenant codes the synthetic generator produced that broke the rule, before | 20000 of 20000 | [[file:evidence/tenant_shape_rule.txt][tenant_shape_rule.txt]] | 6510d89ddb |
+| Tenant codes the synthetic generator produced that broke the rule, after | 0 of 20000 | [[file:evidence/tenant_shape_rule.txt][tenant_shape_rule.txt]] | 6510d89ddb |
 | Root legal entities the deployment holds | 18348 | [[file:evidence/gleif_search_and_party_counts.txt][gleif_search_and_party_counts.txt]] | 2232df3c9c |
 | Parties BARCLAYS PLC's hierarchy would create | 81 | [[file:evidence/gleif_search_and_party_counts.txt][gleif_search_and_party_counts.txt]] | 2232df3c9c |
 | Parties BANK OF AMERICA CORPORATION's hierarchy would create | 668 | [[file:evidence/gleif_search_and_party_counts.txt][gleif_search_and_party_counts.txt]] | 2232df3c9c |

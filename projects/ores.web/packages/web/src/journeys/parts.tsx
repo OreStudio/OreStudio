@@ -471,6 +471,17 @@ export function RunStep({
 }): ReactNode {
     const tone = STEP_TONE[step.status] ?? 'text-ink';
     const label = step.label !== '' ? words(step.label) : step.name;
+    /*
+     * Why a step finished with a warning. The step's own sentence is the last
+     * thing it logged, which is how a step says it had nothing to do rather
+     * than failing: a person who sees a warning on the rail is owed the reason
+     * beside it.
+     */
+    const lastLogged = step.log.length > 0 ? step.log[step.log.length - 1] : undefined;
+    const warning =
+        step.status === 'completed_with_warnings' && lastLogged !== undefined
+            ? words(lastLogged.message)
+            : '';
     return (
         <li key={step.id} className={cx('flex items-start gap-3 text-sm', tone)}>
             <span
@@ -485,6 +496,9 @@ export function RunStep({
                     <span className="mt-0.5 block text-xs text-ink-faint">
                         {words(step.description)}
                     </span>
+                )}
+                {warning !== '' && (
+                    <span className="mt-0.5 block text-xs text-warn">{warning}</span>
                 )}
             </span>
             {step.error !== '' && <span className="text-xs text-down">{step.error}</span>}

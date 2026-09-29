@@ -224,7 +224,12 @@ struct lei_hierarchy_step_arguments {
  *
  * The profile names the bundle that carries the hierarchy. The root LEI may
  * come from the step's arguments or, when the row states none, from the run's
- * parameters, which is how the form supplies it.
+ * parameters, which is how the form supplies it. A run that supplies neither
+ * imports nothing rather than being refused: a starting point may leave the
+ * legal entity out, and its tenant is then built from the party it creates for
+ * itself. The step says it had nothing to import, which the run reports as a
+ * warning, because a run that silently did nothing where it promised work is
+ * worse than one that says so.
  */
 [[nodiscard]] inline lei_hierarchy_step_arguments parse_lei_hierarchy_arguments(
     const std::string& arguments_json,
@@ -236,9 +241,6 @@ struct lei_hierarchy_step_arguments {
     result.root_lei = detail::read_string(arguments, "root_lei");
     if (result.root_lei.empty())
         result.root_lei = detail::parameter_value(parameters, "root_lei");
-    if (result.root_lei.empty())
-        throw std::runtime_error("The step states no 'root_lei' argument and the run supplies no "
-                                 "'root_lei' parameter.");
 
     return result;
 }

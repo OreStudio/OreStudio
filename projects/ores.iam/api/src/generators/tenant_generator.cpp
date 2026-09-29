@@ -46,7 +46,17 @@ domain::tenant generate_synthetic_tenant(utility::generation::generation_context
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string(faker::word::noun()) + "_tenant" + "-" + std::to_string(idx);
+    r.code = // no_generator_suffix: the "-<idx>" the template appends is not a shape this
+             // code may have, so the index that keeps it unique is joined with an
+             // underscore instead, and the noun is lowercased because a faker noun can be
+             // an abbreviation such as "CD".
+        [idx] {
+            std::string code(faker::word::noun());
+            for (auto& character : code)
+                if (character >= 'A' && character <= 'Z')
+                    character = static_cast<char>(character - 'A' + 'a');
+            return code + "_tenant_" + std::to_string(idx);
+        }();
     r.name = std::string(faker::company::companyName());
     r.type = "automation";
     r.description = std::string(faker::lorem::sentence());

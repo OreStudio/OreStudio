@@ -122,21 +122,26 @@ TEST_CASE("an LEI import that names no bundle is refused", tags) {
                       "The step names no 'bundles' argument.");
 }
 
-TEST_CASE("an LEI import whose root LEI comes from neither the step nor the run is refused", tags) {
-    CHECK_THROWS_WITH(parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})", {}),
-                      "The step states no 'root_lei' argument and the run supplies no 'root_lei' "
-                      "parameter.");
-    CHECK_THROWS_WITH(
+TEST_CASE("an LEI import whose root LEI comes from neither the step nor the run reads as empty",
+          tags) {
+    // A starting point may leave the legal entity out: the step then imports
+    // nothing and says so, rather than stopping a run whose tenant is built
+    // from the party it creates for itself.
+    const auto absent = parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})", {});
+    const auto other =
         parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})",
-                                      parameters("counterparty_size", "small")),
-        "The step states no 'root_lei' argument and the run supplies no 'root_lei' parameter.");
+                                      parameters("counterparty_size", "small"));
+
+    CHECK(absent.root_lei.empty());
+    CHECK(absent.bundles == std::vector<std::string>{"lei_hierarchy"});
+    CHECK(other.root_lei.empty());
 }
 
-TEST_CASE("an LEI import whose root LEI parameter is empty is refused", tags) {
-    CHECK_THROWS_WITH(
-        parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})",
-                                      parameters("root_lei", "")),
-        "The step states no 'root_lei' argument and the run supplies no 'root_lei' parameter.");
+TEST_CASE("an LEI import whose root LEI parameter is empty reads as empty", tags) {
+    const auto arguments = parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})",
+                                                         parameters("root_lei", ""));
+
+    CHECK(arguments.root_lei.empty());
 }
 
 TEST_CASE("an LEI import whose root_lei argument is not a string is refused", tags) {

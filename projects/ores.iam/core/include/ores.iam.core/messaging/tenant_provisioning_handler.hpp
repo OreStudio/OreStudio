@@ -1100,12 +1100,29 @@ private:
 
     /// Publishes the bundles that carry the LEI hierarchy, each with the root
     /// LEI the step's arguments or the run's parameters name.
+    ///
+    /// A run that names no legal entity imports nothing, and the step says so
+    /// as a warning rather than stopping: a starting point may leave the entity
+    /// out, and the tenant is then built from the party it creates for itself.
+    /// The publication has the same branch for the same reason.
     void
     import_lei_hierarchy_step(const ores::service::messaging::workflow_step_context& wf,
                               const ores::iam::workflow::provision_tenant_step_command& command,
                               const step_actor& actor) {
         const auto arguments =
             parse_lei_hierarchy_arguments(command.arguments_json, command.parameters);
+        if (arguments.root_lei.empty()) {
+            wf.warn(rfl::json::write(provision_step_result{
+                        .kind = command.kind, .bundles = arguments.bundles, .root_lei = ""}),
+                    {ores::workflow::messaging::step_log_entry{
+                        .level = ores::workflow::messaging::step_log_level::warn,
+                        .message =
+                            "The starting point names no legal entity, so there was nothing to "
+                            "import.",
+                        .context = command.tenant_id}});
+            return;
+        }
+
         auto client =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 

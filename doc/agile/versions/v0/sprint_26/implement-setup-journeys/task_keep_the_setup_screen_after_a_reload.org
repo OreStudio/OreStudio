@@ -8,12 +8,12 @@
 #+filetags: :web:ux:journeys:setup:iam:v0:sprint_26:implement-setup-journeys:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2381
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
 #+updated: 2026-09-29
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The setup screen survives a reload, and it resumes where the deployment is rathe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The deployment answers whether it has a tenant of its own, the route table stays on the setup journey until it has one, and a journey that opens on a deployment with an administrator asks for that account. A reload of the live deployment lands on that step. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Sign in as the administrator the live deployment holds, and walk the rail to the starting points. |
+| Next         | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2381][#2381]] | [agile] Close the task that keeps the setup screen after a reload |
 
 * Review
 
@@ -132,3 +132,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+An installation is set up when it has an administrator and a tenant of its own,
+and the setup journey is the only screen until it has both. The status read
+answers the tenant question beside the administrator one, the route table keeps
+every path on the journey while either is missing, and the gate is asked again
+when the journey finishes so the browser is released by the fact the journey
+produced.
+
+A browser that reloads half way through comes back to the rail and signs in as
+the administrator the deployment already has: a rail position is memory, so the
+journey opens on the step that signs in rather than at the beginning of work
+that is partly done, and the password typed there is the one a profile that
+shares it hands to the tenant's administrator. It is not measured against the
+policy a second time, because a rule tightened since it was set must not lock
+somebody out of the installation they own.
+
+The first cut read the tenant answer from the wrong column and answered "no
+tenant" for a deployment full of them, which stranded the walk at *Go home*;
+the predicate asks the row's own id, a unit test builds rows in the shape the
+table holds, and that test fails against the old predicate. Proved on the live
+deployment: =/api/bootstrap= answers =hasTenant: true=, and a reload lands on
+the sign-in step with the rail intact.

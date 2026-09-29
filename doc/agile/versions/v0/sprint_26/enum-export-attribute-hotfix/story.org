@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: FD348688-933D-4C9A-98C5-237DF13428AC
+:END:
+#+title: Story: Hotfix: a visibility macro on an enum breaks the Windows build
+#+description: The workflow definition marks its failure_policy enum with ORES_WORKFLOW_API_EXPORT. That macro expands to a DLL import or export attribute, which does not apply to an enum, and clang-cl reports it as -Wignored-attributes, an error under -Werror, so the Windows build stops in ores.dq.core.lib. The macro is dropped, and a check now fails a pull request that puts a visibility macro on an enum.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.workflow:windows:ci:utility:sprint_26:v0:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every Windows clang-cl job is red at one declaration:
+
+#+begin_src text
+projects/ores.workflow/api/include/ores.workflow.api/service/
+  workflow_definition.hpp:149:17: error: '__dllimport__' attribute only
+  applies to functions, variables, classes, and Objective-C interfaces
+  [-Werror,-Wignored-attributes]
+#+end_src
+
+The offending line is the enum, not a struct:
+
+#+begin_src cpp
+enum class ORES_WORKFLOW_API_EXPORT failure_policy : std::uint8_t {
+#+end_src
+
+=ORES_WORKFLOW_API_EXPORT= expands to =BOOST_SYMBOL_IMPORT= or
+=BOOST_SYMBOL_EXPORT=, which is =__declspec(dllimport)= or
+=__declspec(dllexport)= on the Microsoft ABI, and neither attribute applies
+to an enum. clang-cl reports it and =-Werror= makes the report fatal, so the
+build stops while compiling a translation unit of =ores.dq.core.lib= that
+includes the header. The first template instantiation of the enum does not
+matter: the diagnostic is on the declaration, so any unit that includes the
+header fails.
+
+The fix drops the macro, because an enum needs no export attribute to cross
+a binary boundary. The check that would have caught it before the merge did
+not exist: no Linux or macOS compiler reports the defect, and the three
+continuous workflows run on a schedule rather than on a pull request, so
+Windows -- the only platform that reports it -- saw it at least twelve hours
+after the merge. This story adds that check as well.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-29                               |
+
+* Acceptance
+
+- The =failure_policy= declaration carries no visibility macro, and no other
+  enum in the tree does.
+- The tree builds, and the workflow suites pass.
+- =check_enum_export_attributes.py= passes on the tree and fails on a tree
+  where the macro is back on the enum, naming the file and the line.
+- The check runs on every pull request that touches =projects/=, so the
+  defect fails in seconds rather than in a scheduled Windows run.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:83AF7559-BD60-4ACE-998A-C9080C56AFA9][Implement Hotfix: a visibility macro on an enum breaks the Windows build]] | DONE | 2026-09-29 | 2026-09-29 | Drop the macro, measure what each platform reports so the gap is on record, write the check and wire it to a pull-request workflow, rebuild the affected library, run the workflow suites, and raise the pull request. |
+
+* Decisions
+
+- The macro is dropped rather than the declaration rewritten. An enum is a
+  complete type with no member table to import; the attribute is meaningless
+  on it, and every other enum in the estate is declared without one.
+- The check reads the macro definitions under =projects/= and keeps those
+  whose body is a symbol visibility or DLL storage attribute, instead of
+  matching a name that ends in =EXPORT=. The rule it enforces is the one
+  the compiler enforces: an attribute that decides symbol storage does not
+  belong on an enum. A name-based rule would report a macro that expands to
+  something else and miss nothing real.
+- The check runs on a new pull-request workflow rather than on a continuous
+  one. All three continuous workflows are triggered by a schedule, so a
+  check there reports after the merge. The scan needs no toolchain, so it
+  costs a checkout and a second on every pull request.
+- The declaration keeps a comment saying why it has no macro, because the
+  surrounding structs all have one and the absence reads as an omission.
+
+* Out of scope
+
+- A pull-request build on any platform, which is the gate that would have
+  caught this without a check at all. The gap is captured as
+  [[id:D016B599-5E12-4E51-948C-B17DF0A4FFDF][No per-PR CI job builds or tests C++ outside the codegen paths]], and
+  this incident is recorded there as its third instance.
+- The =ores.shell.trading= translation unit that exceeds the MSVC limits,
+  which is the other known reason a Windows job is red and is unchanged by
+  this story.
+- A DLL attribute written out at a declaration instead of through a macro,
+  which the check does not see.

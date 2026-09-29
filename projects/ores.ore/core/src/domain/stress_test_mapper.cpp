@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/stress_test_mapper.hpp"
+#include "ores.ore.core/domain/ore_code_tables.hpp"
 #include <array>
 #include <string_view>
 #include <utility>
@@ -81,15 +82,35 @@ mapped_stress_test stress_test_mapper::map(const stresstesting& v) {
     for (const auto& scenario : v.StressTest) {
         ++position;
 
-        analytics::domain::stress_test_scenario row;
-        row.name = scenario.id;
-        row.position = position;
+        mapped_stress_scenario mapped_scenario;
+        mapped_scenario.scenario.name = scenario.id;
+        mapped_scenario.scenario.position = position;
         if (scenario.Date)
-            row.date = std::string(*scenario.Date);
-        r.scenarios.push_back(std::move(row));
+            mapped_scenario.scenario.date = std::string(*scenario.Date);
+
+        std::size_t discount_curve_shifts = 0;
+        if (scenario.DiscountCurves) {
+            for (const auto& entry : scenario.DiscountCurves->DiscountCurve) {
+                ++discount_curve_shifts;
+                analytics::domain::stress_test_shift shift;
+                shift.family = "DiscountCurves";
+                shift.object_key = to_string(entry.ccy);
+                shift.position = static_cast<int>(discount_curve_shifts);
+                if (!entry.ShiftType.empty())
+                    shift.shift_type =
+                        to_string(static_cast<domain::shiftType>(entry.ShiftType.front()));
+                if (entry.Shifts)
+                    shift.shifts = std::string(*entry.Shifts);
+                shift.shift_tenors = std::string(entry.ShiftTenors);
+                mapped_scenario.shifts.push_back(std::move(shift));
+            }
+        }
+
+        r.scenarios.push_back(std::move(mapped_scenario));
 
         for (const auto& [family, present] : families_of(scenario)) {
-            if (present)
+            // DiscountCurves is mapped, so it is not a gap.
+            if (present && family != "DiscountCurves")
                 ++r.unmodelled[std::string(family)];
         }
     }
@@ -106,9 +127,30 @@ stresstesting stress_test_mapper::reverse(const mapped_stress_test& v) {
 
     for (const auto& row : v.scenarios) {
         stresstest scenario;
-        scenario.id = row.name;
-        if (row.date)
-            scenario.Date = stresstest_Date_t(*row.date);
+        scenario.id = row.scenario.name;
+        if (row.scenario.date)
+            scenario.Date = stresstest_Date_t(*row.scenario.date);
+
+        stressdiscountcurves curves;
+        for (const auto& shift : row.shifts) {
+            if (shift.family != "DiscountCurves")
+                continue;
+            stressdiscountcurve entry;
+            entry.ccy = parse_currency_code(shift.object_key);
+            if (shift.shift_type) {
+                shiftTypeEntry type;
+                static_cast<domain::shiftType&>(type) = parse_shift_type(*shift.shift_type);
+                entry.ShiftType.push_back(type);
+            }
+            if (shift.shifts)
+                entry.Shifts = stressdiscountcurve_Shifts_t(*shift.shifts);
+            if (shift.shift_tenors)
+                entry.ShiftTenors = stressdiscountcurve_ShiftTenors_t(*shift.shift_tenors);
+            curves.DiscountCurve.push_back(std::move(entry));
+        }
+        if (!curves.DiscountCurve.empty())
+            scenario.DiscountCurves = curves;
+
         r.StressTest.push_back(std::move(scenario));
     }
 

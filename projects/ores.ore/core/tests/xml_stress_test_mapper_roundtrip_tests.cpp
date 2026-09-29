@@ -90,12 +90,39 @@ TEST_CASE("stress_test_library_and_scenarios_round_trip_over_the_corpus", tags) 
             const auto& row = mapped.scenarios.at(i);
 
             INFO(path.string() + ": scenario " + std::to_string(i));
-            CHECK(row.name == in.id);
+            CHECK(row.scenario.name == in.id);
             CHECK(out.id == in.id);
-            CHECK(row.position == static_cast<int>(i) + 1);
+            CHECK(row.scenario.position == static_cast<int>(i) + 1);
             CHECK(static_cast<bool>(out.Date) == static_cast<bool>(in.Date));
             if (in.Date)
                 CHECK(std::string(*out.Date) == std::string(*in.Date));
+
+            // The DiscountCurves shifts the scenario applies, which are the
+            // first family to be mapped.
+            const std::size_t expected = in.DiscountCurves
+                                             ? in.DiscountCurves->DiscountCurve.size()
+                                             : 0;
+            REQUIRE(row.shifts.size() == expected);
+            // An empty block means the same as no block, so one that carries
+            // no entries is written back as none. The corpus has such a block.
+            if (expected == 0) {
+                if (out.DiscountCurves)
+                    CHECK(out.DiscountCurves->DiscountCurve.empty());
+            } else {
+                REQUIRE(static_cast<bool>(out.DiscountCurves));
+            }
+            for (std::size_t j = 0; j < expected; ++j) {
+                const auto& original = in.DiscountCurves->DiscountCurve.at(j);
+                const auto& stored = row.shifts.at(j);
+                const auto& round_tripped = out.DiscountCurves->DiscountCurve.at(j);
+                CHECK(stored.family == "DiscountCurves");
+                CHECK(stored.object_key == to_string(original.ccy));
+                CHECK(round_tripped.ccy == original.ccy);
+                CHECK(static_cast<bool>(round_tripped.Shifts) ==
+                      static_cast<bool>(original.Shifts));
+                if (original.Shifts)
+                    CHECK(std::string(*round_tripped.Shifts) == std::string(*original.Shifts));
+            }
         }
 
         CHECK(static_cast<bool>(reversed.UseSpreadedTermStructures) ==
@@ -108,7 +135,6 @@ TEST_CASE("stress_test_library_and_scenarios_round_trip_over_the_corpus", tags) 
     // How many of the corpus's forty-six scenarios apply each of the four
     // busiest families. They are counted because the shifts are not modelled,
     // and asserted so that the gap is measured rather than assumed.
-    CHECK(families_in_use.at("DiscountCurves") == 41);
     CHECK(families_in_use.at("FxSpots") == 41);
     CHECK(families_in_use.at("IndexCurves") == 41);
     CHECK(families_in_use.at("FxVolatilities") == 41);

@@ -22,6 +22,7 @@
 
 #include "ores.analytics.api/domain/stress_test_library.hpp"
 #include "ores.analytics.api/domain/stress_test_scenario.hpp"
+#include "ores.analytics.api/domain/stress_test_shift.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include <map>
@@ -39,9 +40,16 @@ namespace ores::ore::domain {
  * shifts cannot round trip until they are, and saying which families are in
  * play is how the next step is chosen.
  */
+struct mapped_stress_scenario {
+    analytics::domain::stress_test_scenario scenario;
+    std::vector<analytics::domain::stress_test_shift> shifts;
+
+    friend bool operator==(const mapped_stress_scenario&, const mapped_stress_scenario&) = default;
+};
+
 struct mapped_stress_test {
     analytics::domain::stress_test_library library;
-    std::vector<analytics::domain::stress_test_scenario> scenarios;
+    std::vector<mapped_stress_scenario> scenarios;
     std::map<std::string, std::size_t> unmodelled;
 
     friend bool operator==(const mapped_stress_test&, const mapped_stress_test&) = default;

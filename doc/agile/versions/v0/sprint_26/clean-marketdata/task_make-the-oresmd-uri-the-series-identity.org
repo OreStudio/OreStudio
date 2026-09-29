@@ -229,7 +229,9 @@ feed's FRA path and the bootstrap's single-period swap path agree on the same pi
 and the FOMC unit answers it on its own terms. The column stays nullable until the feed
 and the seed agree, and the identity is what a row gets *if it has one*: the constraint
 would not catch the generator output anyway, since random text satisfies a not null
-column.
+column. What the generator writes is now a generic index name -- the one oresmd URI
+that names a series with a name and nothing else -- rather than the default faker noun,
+so the rows it produces carry an identity the grammar reads.
 
 **Two IR families keep their coordinate where the projection did not look, and the
 rest do not.** The decomposition splits a datum key into the series and the point, and
@@ -279,6 +281,7 @@ plan itself stays — it is the historical record of what we did.)
 | Series rows that carry an identity | 4569 of 5971; the 188 =FIXING= rows are named by =from_index_name()= | =count(*) filter (where series_type in (<the grammar's token table>) or series_type = 'FIXING')= over =ores_marketdata_market_series_tbl= | =3632865c32= |
 | Series rows that do not | 1402: 1400 =CD-0= to =CD-25= generator rows plus the two FOMC rows | the same query, negated | =3632865c32= |
 | Production rows no projection can name | 1: the FOMC raw grid =RATES / YIELD / 'USD/SOFR-FOMC'=; the curve row now reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with its ORE identity | =marketdata_market_series_fomc_populate.sql= and a read of the live rows | =48ab31abc8= |
+| Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |

@@ -67,13 +67,43 @@ struct ir_curve_schedule_step final {
  */
 struct ir_curve_resolved_entry final {
     int sequence_index = 0;
-    std::string point_id;   // end_tenor_code
-    std::string curve_role; // DEPOSIT, FRA, or SWAP
+    std::string point_id;         // end_tenor_code
+    std::string start_tenor_code; // SPOT for the entry that starts at spot
+    std::string curve_role;       // DEPOSIT, FRA, or SWAP
     std::size_t ticks_ahead_start = 0;
     std::size_t ticks_ahead_end = 0;
     double year_fraction = 0.0; // accrual from start to end (Deposit/FRA)
     std::vector<ir_curve_schedule_step> fixed_leg_schedule; // Swap only
+    std::chrono::year_month_day start_date; // the entry's start, as the calendar has it
+    std::chrono::year_month_day end_date;   // the entry's end
 };
+
+/**
+ * @brief The ORE quote key of one pillar: an IR swap whose start slot holds 0D for the
+ * entry that starts at spot and the entry's start date otherwise, the overnight index
+ * tenor beside it, and the entry's end date last.
+ *
+ * The corpus spells the same instrument class so -- IR_SWAP/RATE/GBP/20220922/1D/20221103
+ * -- one pillar is one series, the key without its end date, and the end date is the
+ * observation's point.
+ */
+struct pillar_quote_key final {
+    std::string series_type;
+    std::string metric;
+    std::string qualifier;
+    std::string point;
+};
+
+/**
+ * @brief Builds the key above from the currency and the entry's own dates. A pillar
+ * starts at spot when its start tenor code is SPOT, which the config spells for its own
+ * first entry; every other pillar starts on its start date.
+ */
+ORES_SYNTHETIC_API_EXPORT pillar_quote_key
+make_pillar_quote_key(const std::string& ccy,
+                      const std::string& start_tenor_code,
+                      std::chrono::year_month_day start_date,
+                      std::chrono::year_month_day end_date);
 
 /**
  * @brief Refdata inputs resolve() needs, gathered once at feed construction (never touched again

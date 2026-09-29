@@ -288,3 +288,21 @@ TEST_CASE("factory::make dispatches to a replacement registration for a kind", t
     CHECK(dynamic_cast<const stub_feed*>(feed.get()) != nullptr);
     CHECK(feed->source_name() == "stub");
 }
+
+TEST_CASE("a_pillar_key_names_the_instrument_the_feed_simulates", "[feed_factory]") {
+    // The grid is a set of meeting-dated OIS quotes: a pillar that starts at spot is keyed
+    // with 0D in its start slot and every other pillar with the date it starts on, the
+    // overnight index tenor sits beside it, and the end date is the observation's point.
+    const auto spot = ores::synthetic::feed::make_pillar_quote_key(
+        "USD", "SPOT", std::chrono::year{2026} / 1 / 28, std::chrono::year{2026} / 3 / 19);
+    CHECK(spot.series_type == "IR_SWAP");
+    CHECK(spot.metric == "RATE");
+    CHECK(spot.qualifier == "USD/0D/1D");
+    CHECK(spot.point == "20260319");
+
+    const auto dated = ores::synthetic::feed::make_pillar_quote_key(
+        "USD", "1F", std::chrono::year{2026} / 1 / 28, std::chrono::year{2026} / 3 / 19);
+    CHECK(dated.qualifier == "USD/20260128/1D");
+    CHECK(dated.point == "20260319");
+    CHECK(dated.qualifier != spot.qualifier);
+}

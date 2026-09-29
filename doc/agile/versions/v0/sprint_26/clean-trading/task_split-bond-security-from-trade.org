@@ -473,6 +473,11 @@ review checklist, before the PR was raised. Findings and their decisions:
 | 4 | No coverage for the new wiring: the six fields, the shared-security path, the notional through the database | tests | Partly accepted | the six fields now have a round-trip case; the import path has no test harness in =ores.ore/service/tests=, and building one is the pilot's |
 | 5 | Four =leg_role_of= overloads return a bare ="bond"= literal | =bond_instrument_reader.cpp= | Accepted, fixed | a named constant now holds it |
 | 6 | Issue-leg child rows name the issue, not the leg, so an orphan is possible | the leg family models | Declined, recorded | a bi-temporal parent admits no DDL foreign key against it (D15), and the reader already filters by leg |
+| 7 | The =bond_issue_leg= prose still says the leg's currency and day counter reach the issue row, which the dedupe removed | =bond_issue_leg.org= | Accepted, fixed | the prose now says the leg holds them and the issue keeps no copy; the model was regenerated, so the SQL, the header and the diagram follow |
+| 8 | The import writer has no end-to-end evidence | =ore_import_execute_handler.cpp= | Declined, recorded | the round trip is blocked ahead of any bond code and the service has no test harness; both are recorded on the bond pilot, which reworks the add and delete paths |
+| 9 | The =modified_by= failure must be tracked explicitly | =task_finish-bond-pilot.org= | Accepted, recorded | the diagnosis and the recipe are now on the pilot's notes |
+| 10 | Confirm two instruments on one ISIN cannot write conflicting issue rows | handler | Accepted, confirmed | the handler reuses the issue through =issue_ids_by_security= and only mints one when the security is new; the unique index on =(tenant_id, security_id)= refuses a second live row |
+| 11 | Confirm the component migrates by recreation and no environment holds real data | task | Accepted, recorded | =compass db recreate= is the upgrade path, and the pilot's notes now say so |
 
 * Result
 

@@ -147,6 +147,35 @@ rows the work touches.
   no fact table. The suite asserts the absence. Do not add one.
 - The Qt bridge task =3E14AEC0= is moot: the qt tree was deleted at
   =af67db3062=.
+- *The round-trip gate is blocked on the import path, not on the bond
+  family.* PR 5 could not run it: =ore import= fails at its first step
+  with =All 4 trade save(s) failed=, and the trading service's log gives
+  the cause -- =ores.trading.repository.trade_repository= reports
+  =modified_by cannot be null or empty= from
+  =ores_iam_validate_account_username_fn=, raised by
+  =ores_trading_trades_insert_fn= when the =trades.put_many= request
+  carries no audit name. Every later failure, including =Invalid
+  trade_id= on the bond instrument, follows from the trade never
+  landing. The recipe is =doc/recipes/shell/ore/
+  how_do_i_round_trip_an_ore_document_through_the_database.org=, and
+  the full diagnosis is on =task_split-bond-security-from-trade.org=.
+  Fix this before the corpus sweep, or the sweep measures nothing.
+- *The import writer has no test of its own.* =ores.ore/service/tests=
+  holds only =main.cpp=, so the security-keyed write path PR 5 added is
+  covered by the reader and mapper suites alone. A focused test over
+  the handler's security-keyed writes is worth adding here, where the
+  add and delete paths are reworked anyway.
+- *The underlyings table is D21's.* Decision D21 on
+  =task_split-bond-security-from-trade.org= settles its shape -- keyed
+  by the trade, holding an oresmd URI and an optional weight -- and
+  records the evidence: nine ORE instrument types carry
+  =underlyingTypes=, the corpus holds 241 structured =Underlying=
+  elements, and 132 of them are products rather than quoted names, so
+  the row needs a second arm a URI cannot express.
+- *The component migrates by recreation.* =compass db recreate= is the
+  upgrade path, so the narrowed =leg_role= check and the removed
+  =bond_issue= columns need no data migration. Any environment holding
+  real trading data would need one, and none does today.
 
 * Test Scenarios
 

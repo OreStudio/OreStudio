@@ -40,10 +40,10 @@
  * amounts and the rate group below. Those tables key on issue_id as
  * well, so a schedule or an amount reaches the leg that stated it.
  *
- * The leg's currency and day counter also reach the issue row, because
- * the issue is where a reader looks for the coupon terms. The row here
- * is the document's own statement and wins on export, so a leg whose
- * terms differ from the issue's still round trips.
+ * The leg's currency and day counter live here and nowhere else. The issue
+ * row keeps no copy of the coupon terms: bondReferenceDatum states them
+ * on legData alone, so a leg whose terms differ from its neighbour's
+ * still round trips.
  *
  * Every member the schema declares optional is nullable here and an
  * std::optional in C++, so a member the document states and the row

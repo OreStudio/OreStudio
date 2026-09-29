@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2400
+#+pr: 2402
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -374,6 +374,22 @@ reading the remaining hits as the synthetic config's own =ore_key= and the wire 
 The whole tree builds again with the handler projecting the config's key to the identity,
 and the whole-tree build is now what a rename's evidence rests on.
 
+**The identity cannot name a datum alone, and the projection needs the grammar's own
+fact.** The export rebuilds a datum's key from the series' registry columns today, and the
+replacement was attempted a second time: a helper that reads the series' identity and puts
+the observation's point into the identifier's coordinate field. It names an FX rate, whose
+series key is complete on its own, and it returns nothing for a discount curve -- the family
+the republish service publishes -- because a curve's maturity is the identifier's =tenor=
+while a money market's is its =point=, and one point string cannot know which. Filling
+whichever coordinate field the series left empty aborted the suite rather than working. Both
+attempts were reverted, because a key that comes out wrong is worse than one that does not
+come out at all: a reader would write it to a file. The fact that decides it -- which
+identifier field holds which class's coordinate -- belongs in the oresmd family tables, so
+the grammar exposes one projection from a series identifier and a point, and a hand-written
+helper cannot know it. Until that exists the writers that hold a producer key store it (the
+import and the ingest loop do; the republish service does not), and the export's rebuild
+stays.
+
 **The export cannot rebuild a datum's key from the identity, and that was worth finding
 before the columns go.** The export writes an observation under the key it was given when
 the row carries one, and rebuilds it from the series' registry columns when it does not.
@@ -512,6 +528,8 @@ which is the same reason the identity lookups fall back to the triple.
 | The tree after the rename, built whole | a hard error in =tenant_provisioning_handler.hpp=: =no member named 'ore_key'= in the binding and in its write, on the commit that merged as #2392 | =cmake --build --preset linux-clang-debug-make= with no target | =599a1a06db= |
 | Pull-request checks that compile C++ | 0: =tests= runs the codegen suite, and the rest are Python gates; the C++ build is in the continuous and nightly workflows | =sed -n '/^  tests:/,/^  [a-z-]*:$/p' .github/workflows/codegen-drift.yml= | =599a1a06db= |
 | The tree after the fix | builds whole, no error and no warning | the same whole-tree command | =599a1a06db= |
+| Families the identity-plus-point projection names | FX, whose key is complete without a point; not the discount curve, whose maturity is the identifier's =tenor=, and filling whichever field the series left empty aborted the suite | =ores.marketdata.core.tests "[datum_key]"= on the reverted branch | =e76dcf160b= |
+| Writers that store the producer's key with the datum | 2 of 3: the import and the ingest loop; the republish service is the one left, and it publishes the family the projection cannot name | =grep -n "obs.key = " projects/ores.marketdata/core/src/service/import_service.cpp projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= | =e76dcf160b= |
 | Datum keys the ingest loop stores | 1 per tick now, where it stored none; the rule is the export's own rebuild rule | =grep -n "obs.key = series_key_registry_" projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= | =b3f8c1194f= |
 | The export experiment's failure | the corpus import-export case fails when the export rebuilds a key from the identity, because a datum's point sits in a per-family field | =ores.marketdata.core.tests "[ore_export]"=, on the reverted branch | =b3f8c1194f= |
 | =ores.marketdata.service= and =core= suites with the stored key | 176 in 28 and 1893 in 414 assertions and cases | the two binaries | =b3f8c1194f= |
@@ -552,6 +570,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2402][#2402]] | [agile] Record what the datum-key projection cannot do |
 | [[https://github.com/OreStudio/OreStudio/pull/2400][#2400]] | [iam] Let a written binding join the freshness list |
 | [[https://github.com/OreStudio/OreStudio/pull/2399][#2399]] | [iam] Build the provisioning handler against the binding's identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2397][#2397]] | [marketdata] Keep the key a tick's datum is written under |

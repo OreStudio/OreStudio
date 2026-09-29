@@ -28,9 +28,9 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Ten of the sixteen categories are modelled, so fifty of the seventy-two files round trip outright. |
+| Now          | Eleven of the sixteen categories are modelled, so fifty-six of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =CrossCurrencyFixFloat=, which clears six files, then =CmsSpreadOption= and =CommodityFuture=, which clear one each. |
+| Next         | Model =CmsSpreadOption=, which clears eleven files, then =CommodityFuture=, which clears one. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -57,10 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 6 after ten | =ores.ore.core.tests "[.][conventions]" -s= | =3c775b17d9= |
-| Files carrying an unmodelled category | 63 at the start, 22 after ten | the same | =3c775b17d9= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 50 after ten | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =3c775b17d9= |
-| Files a single category would clear, now | CrossCurrencyFixFloat 6, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =3c775b17d9= |
+| Categories the mapper does not model | 16 at the start, 5 after eleven | =ores.ore.core.tests "[.][conventions]" -s= | =9be2f59e8c= |
+| Files carrying an unmodelled category | 63 at the start, 16 after eleven | the same | =9be2f59e8c= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 56 after eleven | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =9be2f59e8c= |
+| Files a single category would clear, now | CmsSpreadOption 11, then CommodityFuture 1 | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =9be2f59e8c= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -120,12 +120,17 @@ task and name that file in the Command column.
   shipped files set it. The mapper counts it into =unmodelled= under
   =InflationSwap.PublicationSchedule=, and the category's case asserts both the
   count over the corpus and that a file carrying a schedule names it.
+- =CrossCurrencyFixFloat= is modelled: eighteen fields, nine required and nine
+  optional, across eighteen files. The corpus sets none of the optional ones, so
+  a case builds the element and sets all nine, including a zero-valued fixing
+  days and a false resettable flag -- the two a mapper that tested the value
+  rather than the presence would drop.
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Sixteen were unmodelled and ten have landed, so six
-  remain. The expensive one left is =CommodityFuture= at thirty-four fields
-  across five files. The next-best win is =CrossCurrencyFixFloat=, which clears
-  six files on its own from only eighteen that carry it.
+  mapper in both directions. Sixteen were unmodelled and eleven have landed, so
+  five remain. The expensive one left is =CommodityFuture= at thirty-four fields
+  across five files. The next-best win is =CmsSpreadOption=, which clears eleven
+  files on its own from only twelve that carry it.
 
 * Test Scenarios
 

@@ -38,11 +38,11 @@ that has stopped admitting people.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------+
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | Started. The model change lands first, because the handler cannot answer with a code the response cannot carry. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Add =error_code= to the sign-up response, regenerate every address of it, then gate the handler on the two flags. |
+| Next         | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -100,3 +100,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gate is real. =iam.v1.auth.signup= reads =system.user_signups= and
+=system.signup_requires_authorization= at system scope before it creates anything,
+and refuses with =signup_disabled= or =signup_requires_authorization= and the code
+the response now carries. A settings read that fails closes the door, because a
+deployment that cannot say whether it accepts registrations does not accept them.
+The refusal is recorded in the auth event log like every other sign-up failure.
+
+The decision is a function of the two flags, and the read is a second overload
+that supplies them. That split is what makes the test possible: the seeded default
+is =false=, so a test against the read could only ever see one branch, and nothing
+can turn the switch on until the settings write exists.
+
+*Verified.* =ores.iam.core.tests= builds, and the four cases in
+=messaging_auth_registration_gate_tests.cpp= pass: the switch off, the switch off
+with the authorisation flag on, the door open, and that the authorisation flag
+cannot change an answer the switch has already given. The test file is in the
+generated build list, and the reachability gate counts it: 7743 cases in 953
+sources.
+
+Two things this task did not do, both recorded rather than hidden:
+
+- A refusal from the account service still answers =invalid_request=. The service
+  throws sentences, so the validation refusals cannot carry their real codes until
+  it returns them; that belongs with the sign-up screen, which is what needs to
+  branch on them.
+- The =http/http/signup= recipe's captured answer predates the gate and names a
+  message nothing produces. Re-capturing it is the HTTP recipe harness's job, and
+  hand-writing a capture would be a record of a call nobody made.
+
+The dead flag-aware service is still dead. This task made the live path read the
+flags rather than adopt that service, so the next step of the plan — decide
+whether it becomes the live path or is deleted — is still open, and the service
+still implements checks the live path does not.

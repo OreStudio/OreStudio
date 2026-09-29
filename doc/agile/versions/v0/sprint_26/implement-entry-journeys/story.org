@@ -48,7 +48,7 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 | [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Use one rail and one splash header on every setup screen]] | BACKLOG | | | Draw the setup journeys, the registration door and the sign-in dialog on the same rail and the same splash header, so every screen that sets something up looks like the same product. |
 | [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] | BACKLOG | | | Document how a person asks for roles beyond the default one registration gives them, as its own journey in the Access group, separate from sign up. |
 | [[id:A7881424-279D-4E8F-8C4E-5B9B89C25529][Document the entry journeys' server side]] | DONE | | 2026-09-29 | Write the page that traces how the server handles sign in and sign up, with an interaction diagram for the policy read, the sign-in branch and the registration branch. |
-| [[id:AE38F3C4-BC68-4ACD-BB8D-FB53574F57BE][Make the registration gate real]] | STARTED | 2026-09-29 | | Read the deployment's self-registration switch on the live sign-up path and give every refusal a code, so the door a deployment believes it has closed is actually closed. |
+| [[id:AE38F3C4-BC68-4ACD-BB8D-FB53574F57BE][Make the registration gate real]] | DONE | 2026-09-29 | 2026-09-29 | Read the deployment's self-registration switch on the live sign-up path and give every refusal a code, so the door a deployment believes it has closed is actually closed. |
 
 * Decisions
 

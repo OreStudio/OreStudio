@@ -21,9 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "domain_curve_template_validation_tests.cpp"
-    "domain_generated_organisation_tests.cpp"
     "domain_generation_options_tests.cpp"
-    "domain_organisation_generation_options_tests.cpp"
     "domain_synthetic_catalog_tests.cpp"
     "feed_factory_tests.cpp"
     "main.cpp"

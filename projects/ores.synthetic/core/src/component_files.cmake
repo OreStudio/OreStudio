@@ -87,8 +87,6 @@ set(files
     "service/ir_curve_generation_config_service.cpp"
     "service/ir_curve_template_entry_service.cpp"
     "service/market_data_generation_config_service.cpp"
-    "service/organisation_generator_service.cpp"
-    "service/organisation_publisher_service.cpp"
     "service/yield_curve_process_parameter_definition_service.cpp"
     "service/yield_curve_process_type_service.cpp"
 )
@@ -120,7 +118,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/market_data_generation_config_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/market_data_generation_config_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/market_data_generation_config_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/organisation_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/yield_curve_process_parameter_definition_handler.hpp"
@@ -174,8 +171,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/ir_curve_generation_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/ir_curve_template_entry_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/market_data_generation_config_service.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/organisation_generator_service.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/organisation_publisher_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/yield_curve_process_parameter_definition_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/service/yield_curve_process_type_service.hpp"
 )

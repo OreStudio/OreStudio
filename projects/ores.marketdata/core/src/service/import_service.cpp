@@ -220,8 +220,8 @@ import_service::import(const messaging::import_market_data_request& req) {
         // Look up existing series in DB: by the identity first, which is what the
         // series is meant to be found by, and by the triple after it, because a row
         // written before the identity column existed carries none.
-        auto existing = oresmd_uri.empty() ? std::vector<domain::market_series>{}
-                                          : series_repo.read_latest_by_uri(ctx_, oresmd_uri);
+        auto existing = oresmd_uri.empty() ? std::vector<domain::market_series>{} :
+                                             series_repo.read_latest_by_uri(ctx_, oresmd_uri);
         if (existing.empty())
             existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
         if (!existing.empty()) {

@@ -367,11 +367,12 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         // none, and a series created before the identity column existed carries
         // none, so the triple is asked as the fallback either way.
         const auto identity = core::oresmd_projections::from_ore_key(ore_key);
-        const auto oresmd_uri = identity ? core::oresmd_parser::to_uri(*identity).value : std::string{};
-        auto existing = oresmd_uri.empty() ? std::vector<domain::market_series>{}
-                                           : series_repo.read_latest_by_uri(
-                                                 tenant_ctx, oresmd_uri,
-                                                 boost::uuids::to_string(party_id));
+        const auto oresmd_uri =
+            identity ? core::oresmd_parser::to_uri(*identity).value : std::string{};
+        auto existing = oresmd_uri.empty() ?
+                            std::vector<domain::market_series>{} :
+                            series_repo.read_latest_by_uri(
+                                tenant_ctx, oresmd_uri, boost::uuids::to_string(party_id));
         if (existing.empty())
             existing = series_repo.read_latest_by_type(
                 tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));

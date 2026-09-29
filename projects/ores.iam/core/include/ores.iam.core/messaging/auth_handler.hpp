@@ -39,6 +39,7 @@
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/service_session_service.hpp"
+#include "ores.iam.core/service/signup_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -297,21 +298,50 @@ public:
         }
 
         try {
-            service::account_operations_service acct_svc(ctx_);
+            /*
+             * The registration is the self-registration service's, not the
+             * administrator path's. That service checks the username and the
+             * email for uniqueness and the password against the policy, and
+             * answers with a code for each refusal; the administrator path
+             * checks none of them. It re-reads the flags the gate above already
+             * read, which is deliberate: it must refuse for every caller and not
+             * only for this one.
+             */
+            auto flags = std::make_shared<variability::service::system_settings_service>(
+                ctx_, database::service::tenant_context::system_tenant_id);
             auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
-            service::account_setup_service setup_svc(acct_svc, auth_svc);
-            auto acct = setup_svc.create_account(
-                req->principal, req->email, req->password, ctx_.service_account());
+            service::signup_service signup_svc(ctx_, flags, auth_svc);
+            const auto result = signup_svc.register_user(req->principal, req->email, req->password);
+
+            if (!result.success) {
+                const auto code = ores::utility::serialization::to_string(result.error_code);
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Signup refused for " << req->principal << ": " << code;
+                record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
+                    ev_repo.record_signup_failure(std::chrono::system_clock::now(),
+                                                  "",
+                                                  req->principal,
+                                                  result.error_message);
+                });
+                reply(nats_,
+                      msg,
+                      signup_response{.success = false,
+                                      .message = result.error_message,
+                                      .error_code = code});
+                return;
+            }
+
             BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
             record_auth_event(ctx_, "signup_success", [&](auto& ev_repo) {
                 ev_repo.record_signup_success(std::chrono::system_clock::now(),
-                                              acct.tenant_id.to_string(),
-                                              boost::uuids::to_string(acct.id),
-                                              acct.username);
+                                              ctx_.tenant_id().to_string(),
+                                              boost::uuids::to_string(result.account_id),
+                                              result.username);
             });
             reply(nats_,
                   msg,
-                  signup_response{.success = true, .account_id = boost::uuids::to_string(acct.id)});
+                  signup_response{.success = true,
+                                  .account_id = boost::uuids::to_string(result.account_id)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {

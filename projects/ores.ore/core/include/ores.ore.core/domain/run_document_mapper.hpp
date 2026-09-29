@@ -23,6 +23,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.reporting.api/domain/report_analytic.hpp"
+#include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
 #include <string>
 #include <vector>
@@ -107,6 +108,21 @@ public:
      * ORE writes it, and the rest follow in order.
      */
     static analyticsType reverse_analytics(const std::vector<mapped_run_analytic>& v);
+
+    /**
+     * @brief Maps a run document's named market bindings to the entities.
+     *
+     * Each binding is a market role and the configuration set the run asks it
+     * for, in the order the document wrote them.
+     */
+    static std::vector<reporting::domain::report_market_binding>
+    map_market_bindings(const ore& v);
+
+    /**
+     * @brief Reconstructs a run document's named market bindings.
+     */
+    static parameterListType reverse_market_bindings(
+        const std::vector<reporting::domain::report_market_binding>& v);
 };
 
 }

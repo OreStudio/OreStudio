@@ -180,6 +180,39 @@ run_document_mapper::reverse_analytics(const std::vector<mapped_run_analytic>& v
     return r;
 }
 
+std::vector<reporting::domain::report_market_binding>
+run_document_mapper::map_market_bindings(const ore& v) {
+    std::vector<reporting::domain::report_market_binding> r;
+    if (!v.Markets)
+        return r;
+
+    int position = 0;
+    for (const auto& parameter : v.Markets->Parameter) {
+        ++position;
+        reporting::domain::report_market_binding binding;
+        binding.role = std::string(parameter.name);
+        binding.configuration_name = static_cast<const std::string&>(parameter);
+        binding.position = position;
+        r.push_back(std::move(binding));
+    }
+
+    return r;
+}
+
+parameterListType run_document_mapper::reverse_market_bindings(
+    const std::vector<reporting::domain::report_market_binding>& v) {
+    parameterListType r;
+
+    for (const auto& binding : v) {
+        parameterListType_Parameter_t parameter;
+        parameter.name = binding.role;
+        static_cast<std::string&>(parameter) = binding.configuration_name;
+        r.Parameter.push_back(parameter);
+    }
+
+    return r;
+}
+
 parameterListType run_document_mapper::reverse_setup(const reporting::domain::report_run_setup& v) {
     parameterListType r;
 

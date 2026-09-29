@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-30T10:27:28.823738Z
+' Generated: 2026-09-30T10:27:30.283764Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9705,6 +9705,42 @@ package "reporting" #E0F7FA {
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_market_bindings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * role : text
+        * configuration_name : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_market_bindings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Market Binding Table
+    One Parameter of the Markets block in a run document: a market role, and the
+    configuration set the run binds to it. Three hundred and thirteen of the corpus's
+    four hundred and sixteen documents carry the block, and between them they bind
+    nineteen hundred and fifteen times, in eight roles: pricing,
+    simulation, sensitivity, lgmcalibration, fxcalibration,
+    eqcalibration, infcalibration and bondpricing.
+    The role is a free string in ORE's schema and the value names a configuration
+    set built in todaysmarket.xml, which is market data and belongs to another
+    component. This table holds the binding, not the configuration it names: what
+    the run asks the market for, by role, in the order the document wrote it.
+    Each row belongs to exactly one report_definition and a definition has many
+    bindings.
     end note
 
     entity ores_reporting_report_run_setups_tbl <<temporal>> #C6F0D8 {

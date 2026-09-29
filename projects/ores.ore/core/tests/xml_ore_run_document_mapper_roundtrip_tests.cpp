@@ -168,3 +168,53 @@ TEST_CASE("ore_run_document_analytics_round_trip_over_the_corpus", tags) {
     CHECK(analytics == 1874);
     CHECK(without_a_type == 0);
 }
+
+TEST_CASE("ore_run_document_market_bindings_round_trip_over_the_corpus", tags) {
+    using namespace ores::ore::domain;
+
+    int files = 0;
+    int files_with_markets = 0;
+    int bindings = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("ore", corpus_root())) {
+        ++files;
+        const auto document = load(path);
+
+        const auto mapped = run_document_mapper::map_market_bindings(document);
+        if (!document.Markets) {
+            CHECK(mapped.empty());
+            continue;
+        }
+
+        ++files_with_markets;
+        REQUIRE(mapped.size() == document.Markets->Parameter.size());
+
+        for (std::size_t i = 0; i < mapped.size(); ++i) {
+            ++bindings;
+            INFO(path.string() + ": binding " + std::to_string(i));
+            CHECK(mapped.at(i).position == static_cast<int>(i) + 1);
+            CHECK(mapped.at(i).role == std::string(document.Markets->Parameter.at(i).name));
+            CHECK(mapped.at(i).configuration_name ==
+                  static_cast<const std::string&>(document.Markets->Parameter.at(i)));
+        }
+
+        const auto reversed = run_document_mapper::reverse_market_bindings(mapped);
+        const auto original = parameters_of(*document.Markets);
+        const auto exported = parameters_of(reversed);
+        REQUIRE(exported.size() == original.size());
+        for (const auto& [role, configuration] : original) {
+            const auto it = exported.find(role);
+            if (it == exported.end()) {
+                INFO(path.string() + ": the export is missing " + role);
+                CHECK(false);
+                continue;
+            }
+            INFO(path.string() + ": " + role);
+            CHECK(it->second == configuration);
+        }
+    }
+
+    CHECK(files == 416);
+    CHECK(files_with_markets == 413);
+    CHECK(bindings == 1915);
+}

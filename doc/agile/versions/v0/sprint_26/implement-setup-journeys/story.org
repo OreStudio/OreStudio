@@ -65,9 +65,12 @@ state and the progress are real.
   retry resumes from that step and keeps the steps that completed.
 - The seed profiles are registered data. Adding a profile is adding a
   row; adding a step kind is code.
-- The forced password change fires. The tenant administrator of an
-  *Empty operational* tenant sets a password only they know at first
-  sign-in.
+- A profile may force a password change, and neither card does. The
+  provisioner marks the account when the starting point asks for it and
+  the login answer reports the mark, so a deployment that wants the
+  tenant administrator to set a password only they know states it in the
+  profile's row; the *Operational* card asked for it until the journey
+  was walked, and the product owner chose to drop it.
 - The password rules the screen shows are the rules the server
   enforces, read from the server rather than declared in the client.
 - The bootstrap gate holds. While the system is in bootstrap mode the

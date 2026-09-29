@@ -48,6 +48,10 @@
 -- administrator names, and creates no test data. It prefills no tenant detail,
 -- because the administrator supplies the tenant and its own identity.
 --
+-- Neither card asks its administrator to change the password the person who
+-- provisioned the tenant gave it: the choice is the profile's to make, and a
+-- deployment that wants the change states it here.
+--
 -- ACME demo: for demos and testing, so its tenant is an evaluation one. Its
 -- tenant type is the only tenant detail the form does not ask for, and the
 -- starting point the person chose states it.
@@ -68,7 +72,7 @@ insert into ores_iam_seed_profiles_tbl (
     'For real use',
     '["Standard reference data and counterparties", "Your legal entities, from their LEI", "No test data"]'::jsonb,
     'production', '', '', null, '', '',
-    false, true, 10,
+    false, false, 10,
     0, current_user, current_user, 'system.initial_load',
     'Initial population of seed profiles'
 ), (

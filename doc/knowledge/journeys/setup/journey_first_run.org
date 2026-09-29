@@ -61,9 +61,10 @@ journey that can happen on an empty database.
    LEI and the counterparty set, and sets the administrator's password. For
    /ACME demo/ the profile fills in the code, name, hostname and administrator
    username and email; the details show as a summary behind *Change settings*,
-   and the tenant administrator reuses the system administrator's password. No
-   forced password change follows for ACME, and one does for /Empty
-   operational/.
+   and the tenant administrator reuses the system administrator's password.
+   Neither starting point asks its administrator to change that password at
+   first sign-in: the choice is the profile's, and a profile that wants the
+   change states it in its row.
 5. *Review.* The person reads one summary: starting point, tenant name and
    code, administrator, and the profile's parameters. The screen states how
    many steps the profile runs. Nothing is created until the person confirms.
@@ -79,9 +80,9 @@ journey that can happen on an empty database.
    their first sign-in, or *Hand off to someone else*, which signs out and
    shows the username to pass on. The web keeps the administrator's password in
    memory only until this point; it is never written to storage.
-8. *First sign-in.* The tenant administrator sets a password only they know
-   when the profile forces a change, and chooses the party to start in when
-   they work in more than one. This is
+8. *First sign-in.* The tenant administrator sets a password of their own
+   when the profile asks for one, which neither starting point does today, and
+   chooses the party to start in when they work in more than one. This is
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][onboard]]: a person's first use
    of a tenant that already exists.
 9. *Ready.* The system confirms the installation. The person goes home, or to
@@ -215,11 +216,12 @@ record of what each part turned out to be.
    the step a run stopped on and leaves the completed steps and their results
    alone. Discard stays a separate administrator action,
    =iam.v1.system.reset-tenant=, because the contract keeps completed work.
-6. *The forced change fires.* The profile's =force_password_change= reaches the
-   account the provisioner creates, and the login answer carries the account
-   record's flag, so the *Operational* profile's administrator is answered with
-   =passwordResetRequired: true= at first sign-in and sets a password only they
-   know. The profile's other hand-over choice, reusing the creating
+6. *A forced change fires when a profile asks for one.* The profile's
+   =force_password_change= reaches the account the provisioner creates, and the
+   login answer carries the account record's flag, so a profile that asks for
+   the change is answered with =passwordResetRequired: true= at first sign-in
+   and its administrator sets a password only they know. Neither starting point
+   asks today. The profile's other hand-over choice, reusing the creating
    administrator's password, is read for the *ACME demo* card; a request field
    for it does not exist.
 7. *The policy is read, not copied.* The validator states its rules once as a

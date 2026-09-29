@@ -202,7 +202,7 @@ held every public screen to a form's width, which left a rail and a step about
 four hundred pixels and wrapped every line of both. A journey now asks for the
 wider container. The splash became the panel's header, so it frames every step
 rather than one, and the tenant being described stands beside it once a
-starting point is chosen. The lead says that the list on the left names every
-step, which is what makes "three stages" and a nine-step rail agree, and the
-three cards say what a stage leaves behind. The copy is in all three catalogue
-languages.
+starting point is chosen. The lead names the three things the setup creates,
+in the order the cards beside it state them, so nothing on the screen claims a
+count the rail does not show, and the cards say what each stage leaves behind.
+The copy is in all three catalogue languages.

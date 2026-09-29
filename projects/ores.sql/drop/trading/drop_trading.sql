@@ -121,6 +121,14 @@
 \ir ./trading_instrument_schedule_dates_drop.sql
 \ir ./trading_instrument_schedules_notify_trigger_drop.sql
 \ir ./trading_instrument_schedules_drop.sql
+\ir ./trading_bond_issue_leg_rates_notify_trigger_drop.sql
+\ir ./trading_bond_issue_leg_rates_drop.sql
+\ir ./trading_bond_issue_leg_amortizations_notify_trigger_drop.sql
+\ir ./trading_bond_issue_leg_amortizations_drop.sql
+\ir ./trading_bond_issue_leg_amounts_notify_trigger_drop.sql
+\ir ./trading_bond_issue_leg_amounts_drop.sql
+\ir ./trading_bond_issue_legs_notify_trigger_drop.sql
+\ir ./trading_bond_issue_legs_drop.sql
 \ir ./trading_bond_leg_rates_notify_trigger_drop.sql
 \ir ./trading_bond_leg_rates_drop.sql
 \ir ./trading_bond_leg_amortizations_notify_trigger_drop.sql

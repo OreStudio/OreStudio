@@ -1,0 +1,286 @@
+:PROPERTIES:
+:ID: fb11c91a-929c-42c9-9442-9d226d606db6
+:END:
+#+title: ores.trading.bond_issue_leg
+#+description: Codegen entity model for the trading =bond_issue_leg= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One coupon leg of a bond issue, keyed to the issue and the leg's ordinal.
+#+entity_singular: bond_issue_leg
+#+entity_plural: bond_issue_legs
+#+entity_title: Bond Issue Leg
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One row per leg a bond issue states, keyed to the issue and the leg's
+ordinal within the issue's leg list.
+
+The ORE schema declares the bond's leg list unbounded, and a bond states
+one leg per coupon. The legs are =LegData= inside =bondReferenceDatum=,
+the security, so the issue owns them: one schedule serves every
+instrument of that ISIN. The funding, repo and ascot legs are the
+product's own and stay with their trade-keyed tables.
+
+The row carries the leg's payment terms, its day counters, its
+settlement block and the two flags the schema states on the leg itself.
+Everything else the leg states lives in a table of its own: the
+schedules in =instrument_schedule=, the amortizations, the named
+amounts and the rate group below. Those tables key on =issue_id= as
+well, so a schedule or an amount reaches the leg that stated it.
+
+The leg's currency and day counter also reach the issue row, because
+the issue is where a reader looks for the coupon terms. The row here
+is the document's own statement and wins on export, so a leg whose
+terms differ from the issue's still round trips.
+
+Every member the schema declares optional is nullable here and an
+=std::optional= in C++, so a member the document states and the row
+cannot hold stays distinguishable from one the document omits.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** issue_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:END:
+
+The bond issue this leg belongs to.
+
+The issue row carries the workspace and the party. The
+leg rows are family-owned and ride the issue's scope, so no
+workspace column rides them.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within the issue's leg list, counting from one.
+
+The issue's leg list is unbounded, and a bond states one leg per
+coupon.
+
+** payer
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg's payer is the counterparty rather than the party.
+
+** leg_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The leg's type as the document spells it, such as =Fixed= or
+=Floating=.
+
+The type is the document's own member and drives which arm of the rate
+group a document states. It is kept as text, not decoded, so export
+re-emits the spelling.
+
+Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating, OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+ISO 4217 currency code of the leg.
+
+Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+** payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention the leg's payments are adjusted by.
+
+** payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Number of business days between a payment's accrual end and its pay
+date.
+
+The column is text rather than a number because the container holds
+the document's text and export re-emits it unchanged.
+
+** payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the leg's payment dates are adjusted against.
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day count convention of the leg.
+
+** last_period_day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day count convention the leg applies to its final coupon period.
+
+** notional_payment_lag
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Number of business days between a notional exchange and its pay date.
+
+** strict_notional_dates
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg's notional exchanges fall on the schedule's dates
+without adjustment.
+
+** indexings_from_asset_leg
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg takes its indexings from the asset leg rather than
+stating them.
+
+** settlement_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+FX index the leg's settlement block fixes against.
+
+The block is present when this column is set. The schema requires the
+index on a settlement block, so a null column and an absent block are
+the same statement, and one column carries both.
+
+** settlement_fixing_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the settlement block's FX index fixes on (ISO 8601 date string).
+
+* Foreign keys
+
+** issue_id
+:PROPERTIES:
+:table:         ores_trading_bond_issues_tbl
+:target_column: issue_id
+:nullable:      false
+:error_message: Invalid issue_id: %. Bond issue must exist for tenant.
+:END:
+
+The bond issue this row belongs to. A bond's legs belong to the
+security, so a fact or child row names the issue its document states and
+the insert trigger checks it there.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_issue_legs_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "leg_number" > 0                                            |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_issue_leg
+:entity_plural_short:   bond_issue_legs
+:entity_singular_words: bond issue leg
+:entity_plural_words:   bond issue legs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: leg
+:END:
+
+** Table display
+
+| column          | header         |
+|-----------------+----------------|
+| leg_number      | Leg            |
+| leg_type        | Type           |
+| currency        | Currency       |
+| day_counter     | Day Counter    |
+| payment_calendar | Calendar      |
+| modified_by     | Modified By    |
+| version         | Version        |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

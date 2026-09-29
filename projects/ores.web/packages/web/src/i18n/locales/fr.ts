@@ -584,6 +584,30 @@ const fr: SourceCatalogue = {
         serverUnknown: 'version du serveur inconnue',
     },
 
+    server: {
+        'Publish the reference data': 'Publier les données de référence',
+        'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
+            'Publie les données de référence à partir desquelles le locataire travaille : les ensembles que le point de départ commande, et les jeux de données que ces ensembles nomment.',
+        'Import the legal entities': 'Importer les entités juridiques',
+        "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
+            "Lit l'entité juridique que le point de départ nomme par son LEI et les entités qu'elle consolide, puis les publie comme entités du locataire.",
+        "Create the tenant's parties": 'Créer les entités du locataire',
+        'Creates the party that represents the tenant itself, with the reference data a party needs.':
+            "Crée l'entité qui représente le locataire lui-même, avec les données de référence dont une entité a besoin.",
+        'Load the staff': 'Charger le personnel',
+        'Creates an account for each person the starting point lists, each in its own party.':
+            'Crée un compte pour chaque personne que le point de départ liste, chacune dans sa propre entité.',
+        'Attach the photographs': 'Joindre les photographies',
+        "Gives the accounts their photographs, and the tenant's party its logo.":
+            "Donne aux comptes leurs photographies et à l'entité du locataire son logo.",
+        'Start the market feeds': 'Démarrer les flux de marché',
+        "Starts the synthetic market data the tenant's curves and prices are built from.":
+            'Démarre les données de marché synthétiques à partir desquelles les courbes et les prix du locataire sont construits.',
+        Finish: 'Terminer',
+        'Marks the tenant ready: it stops bootstrapping and becomes active.':
+            'Marque le locataire comme prêt : il quitte le mode amorçage et devient actif.',
+    },
+
     common: {
         loading: 'Chargement...',
         all: 'Tous',

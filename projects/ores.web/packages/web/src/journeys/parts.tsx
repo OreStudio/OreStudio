@@ -397,8 +397,24 @@ const STEP_TONE: Record<string, string> = {
 /** The statuses a run is still working through. */
 const OPEN_RUN = new Set(['', 'pending', 'in_progress', 'compensating']);
 
-function stepLine(step: WorkflowStepSummary): ReactNode {
+/**
+ * One line of the rail.
+ *
+ * The run states each step's name and description in a person's words, and the
+ * catalogue translates them where somebody has; a run started before a step
+ * had words shows the step's identity instead, which is at least the name the
+ * server logs.
+ */
+export function RunStep({
+    step,
+    words,
+}: {
+    readonly step: WorkflowStepSummary;
+    /** Translates a sentence the server sent, or returns it unchanged. */
+    readonly words: (sentence: string) => string;
+}): ReactNode {
     const tone = STEP_TONE[step.status] ?? 'text-ink';
+    const label = step.label !== '' ? words(step.label) : step.name;
     return (
         <li key={step.id} className={cx('flex items-start gap-3 text-sm', tone)}>
             <span
@@ -408,7 +424,12 @@ function stepLine(step: WorkflowStepSummary): ReactNode {
                 {STEP_MARK[step.status] ?? '○'}
             </span>
             <span className={step.status === 'pending' ? 'text-ink-faint' : 'text-ink'}>
-                {step.name}
+                <span className="block">{label}</span>
+                {step.description !== '' && (
+                    <span className="mt-0.5 block text-xs text-ink-faint">
+                        {words(step.description)}
+                    </span>
+                )}
             </span>
             {step.error !== '' && <span className="text-xs text-down">{step.error}</span>}
         </li>
@@ -432,7 +453,7 @@ export function RunProgress({
     readonly instanceId: string;
     readonly onComplete: () => void;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, text } = useTranslation();
     const [progress, setProgress] = useState<WorkflowProgress>();
     const [failure, setFailure] = useState<string>();
     const [retryNote, setRetryNote] = useState<string>();
@@ -500,7 +521,11 @@ export function RunProgress({
 
     return (
         <div>
-            <ol className="space-y-2">{steps.map(stepLine)}</ol>
+            <ol className="space-y-2">
+                {steps.map((step) => (
+                    <RunStep key={step.id} step={step} words={text} />
+                ))}
+            </ol>
             {progress?.error !== undefined && progress.error !== '' && (
                 <div className="mt-4">
                     <Notice tone="error">{progress.error}</Notice>

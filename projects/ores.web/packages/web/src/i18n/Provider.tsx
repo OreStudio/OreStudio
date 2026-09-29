@@ -48,6 +48,8 @@ interface TranslationContextValue {
     readonly language: Language;
     readonly setLanguage: (language: Language) => void;
     readonly languages: readonly Language[];
+    /** Translates a sentence the server sent, or returns it unchanged. */
+    readonly text: (sentence: string) => string;
     readonly t: (key: string, values?: InterpolationValues) => string;
     readonly plural: (key: string, count: number, values?: InterpolationValues) => string;
 }
@@ -115,6 +117,7 @@ export function TranslationProvider({ children }: { readonly children: ReactNode
             languages: LANGUAGES,
             t: translator.t,
             plural: translator.plural,
+            text: translator.serverText,
         }),
         [language, setLanguage, translator],
     );

@@ -588,6 +588,30 @@ const pt: SourceCatalogue = {
         serverUnknown: 'versão do servidor desconhecida',
     },
 
+    server: {
+        'Publish the reference data': 'Publicar os dados de referência',
+        'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
+            'Publica os dados de referência com que o inquilino trabalha: os pacotes que o ponto de partida encomenda e os conjuntos de dados que esses pacotes nomeiam.',
+        'Import the legal entities': 'Importar as entidades jurídicas',
+        "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
+            'Lê a entidade jurídica que o ponto de partida indica pelo seu LEI e as entidades que esta consolida, e publica-as como entidades do inquilino.',
+        "Create the tenant's parties": 'Criar as entidades do inquilino',
+        'Creates the party that represents the tenant itself, with the reference data a party needs.':
+            'Cria a entidade que representa o próprio inquilino, com os dados de referência de que uma entidade precisa.',
+        'Load the staff': 'Carregar o pessoal',
+        'Creates an account for each person the starting point lists, each in its own party.':
+            'Cria uma conta para cada pessoa que o ponto de partida lista, cada uma na sua própria entidade.',
+        'Attach the photographs': 'Anexar as fotografias',
+        "Gives the accounts their photographs, and the tenant's party its logo.":
+            'Dá as fotografias às contas e o logótipo à entidade do inquilino.',
+        'Start the market feeds': 'Iniciar os fluxos de mercado',
+        "Starts the synthetic market data the tenant's curves and prices are built from.":
+            'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
+        Finish: 'Concluir',
+        'Marks the tenant ready: it stops bootstrapping and becomes active.':
+            'Marca o inquilino como pronto: sai do modo de arranque e fica ativo.',
+    },
+
     common: {
         loading: 'A carregar...',
         all: 'Todos',

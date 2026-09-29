@@ -124,6 +124,8 @@ const progress: WorkflowProgress = {
         {
             id: 'aaaa1111-1111-1111-1111-111111111111',
             name: 'publish_bundle',
+            label: 'Publish the reference data',
+            description: 'Publishes the reference data the tenant works from.',
             status: 'completed',
             step_index: 0,
             created_at: '2026-09-28T17:00:00Z',
@@ -135,6 +137,8 @@ const progress: WorkflowProgress = {
         {
             id: 'bbbb2222-2222-2222-2222-222222222222',
             name: 'provision_party',
+            label: "Create the tenant's parties",
+            description: 'Creates the party that represents the tenant itself.',
             status: 'failed',
             step_index: 2,
             created_at: '2026-09-28T17:00:11Z',

@@ -24,7 +24,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { FirstSignIn } from './FirstSignIn.js';
-import { ProfileCards, TenantForm, TenantSummary } from './parts.js';
+import { ProfileCards, RunStep, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyServer } from './server.js';
 import { detailsFor } from './state.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
@@ -348,5 +348,42 @@ describe('the first sign-in', () => {
 
         expect(html).toContain('Signed in as northwind_admin@northwind.example.com.');
         expect(html).not.toContain('type="password"');
+    });
+});
+
+describe("a run's step", () => {
+    const step = {
+        id: '11111111-1111-1111-1111-111111111111',
+        name: 'import_lei_hierarchy',
+        label: 'Import the legal entities',
+        description: 'Reads the legal entity the starting point names by its LEI.',
+        status: 'completed',
+        step_index: 2,
+        created_at: '',
+        started_at: null,
+        completed_at: null,
+        error: '',
+        log: [],
+    };
+
+    it('states the step in the words the server sent for it', () => {
+        const html = render(<RunStep step={step} words={(sentence) => sentence} />);
+
+        expect(html).toContain('Import the legal entities');
+        expect(html).toContain('Reads the legal entity the starting point names by its LEI.');
+    });
+
+    it('falls back to the step\u2019s identity when its definition had no words', () => {
+        const html = render(
+            <RunStep step={{ ...step, label: '', description: '' }} words={(s) => s} />,
+        );
+
+        expect(html).toContain('import_lei_hierarchy');
+    });
+
+    it('translates the words through the catalogue it is handed', () => {
+        const html = render(<RunStep step={step} words={(sentence) => `[${sentence}]`} />);
+
+        expect(html).toContain('[Import the legal entities]');
     });
 });

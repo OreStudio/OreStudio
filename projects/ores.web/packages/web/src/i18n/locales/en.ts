@@ -584,6 +584,30 @@ export const en: SourceCatalogue = {
         serverUnknown: 'server version unknown',
     },
 
+    server: {
+        'Publish the reference data': 'Publish the reference data',
+        'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
+            'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.',
+        'Import the legal entities': 'Import the legal entities',
+        "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.":
+            "Reads the legal entity the starting point names by its LEI and the entities it consolidates, and publishes them as the tenant's parties.",
+        "Create the tenant's parties": "Create the tenant's parties",
+        'Creates the party that represents the tenant itself, with the reference data a party needs.':
+            'Creates the party that represents the tenant itself, with the reference data a party needs.',
+        'Load the staff': 'Load the staff',
+        'Creates an account for each person the starting point lists, each in its own party.':
+            'Creates an account for each person the starting point lists, each in its own party.',
+        'Attach the photographs': 'Attach the photographs',
+        "Gives the accounts their photographs, and the tenant's party its logo.":
+            "Gives the accounts their photographs, and the tenant's party its logo.",
+        'Start the market feeds': 'Start the market feeds',
+        "Starts the synthetic market data the tenant's curves and prices are built from.":
+            "Starts the synthetic market data the tenant's curves and prices are built from.",
+        Finish: 'Finish',
+        'Marks the tenant ready: it stops bootstrapping and becomes active.':
+            'Marks the tenant ready: it stops bootstrapping and becomes active.',
+    },
+
     common: {
         loading: 'Loading...',
         all: 'All',

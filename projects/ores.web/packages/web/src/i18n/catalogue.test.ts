@@ -53,6 +53,19 @@ describe('the catalogue', () => {
         }
     });
 
+    it('translates a sentence the server sent, and returns it when nobody has', () => {
+        // The server's own text is keyed by the sentence itself, so a screen
+        // can show what it was given without holding a table of its own.
+        const french = createTranslator('fr', enFlat, frFlat);
+
+        expect(french.serverText('Publish the reference data')).not.toBe(
+            'Publish the reference data',
+        );
+        expect(french.serverText('A sentence nobody has translated')).toBe(
+            'A sentence nobody has translated',
+        );
+    });
+
     it('is sourced in English, which a translation falls back to', () => {
         // A translation that carries one message, deliberately: every other key has
         // to come from English, and the message it does carry has to win.

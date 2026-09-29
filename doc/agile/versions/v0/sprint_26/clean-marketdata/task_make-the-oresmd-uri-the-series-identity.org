@@ -209,3 +209,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The additive half of the identity cutover is delivered. =market_series= carries
+=oresmd_uri=, and both writers of series rows supply it: the import, from
+=from_ore_key()= for a market-data key and from =from_index_name()= for a fixing's
+index name -- the latter's first production call site -- and the ingest loop, which
+derives it from the =ore_key= it already builds. The repository reads by identity
+through =read_latest_by_uri=, declared in the model beside the triple reader, and
+each lookup asks by identity first and by the triple after it, for a row written
+before the column existed.
+
+Nothing is deleted. The triple still keys the row, so a series with no identity is
+still reachable and the component cannot be stranded by this change. Measured on the
+rebuilt tree: 1782 assertions in 400 cases, including a case that imports one key
+from each space and reads the series back by its identity and by its triple, both
+agreeing. Component drift is clean for =marketdata= at all eight addresses,
+including the entity that gained the column.
+
+Three measurements taken here changed the plan rather than the code, and each is
+recorded with its number:
+
+- the =feed_binding= column cannot be written, because its only writer is a generated
+  service with no derivation hook and a model's generator block feeds test data;
+- the column cannot be made =not null= yet, because the FOMC bootstrap seeds a series
+  under the synthetic pipeline's own vocabulary, which no projection can name;
+- =marketdata= is one modelling pass short of =COMPONENTS_UNDER_TEST=, because seven
+  hand-written protocol headers carry no TypeScript twin and a twin is generated from
+  an operation model. Listing the component was tried and reverted, and the modelling
+  pattern to follow is read off =ores.variability.operations=.
+
+What the deletion still owes is recorded where it belongs: the internal series'
+identity, a backfill or a recreated database, the unique index on the identity, and
+the behaviour that a write omitting the identity clears it until the column is
+=not null=.

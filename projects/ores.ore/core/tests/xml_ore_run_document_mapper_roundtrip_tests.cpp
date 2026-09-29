@@ -75,11 +75,19 @@ TEST_CASE("ore_run_document_setup_round_trips_over_the_corpus", tags) {
 
     int files = 0;
     int ignored_parameters = 0;
+    int repeated_parameters = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("ore", corpus_root())) {
         ++files;
         const auto document = load(path);
         const auto original = parameters_of(document.Setup);
+        std::map<std::string, int> occurrences;
+        for (const auto& parameter : document.Setup.Parameter)
+            ++occurrences[std::string(parameter.name)];
+        for (const auto& [name, count] : occurrences) {
+            if (count > 1)
+                ++repeated_parameters;
+        }
 
         const auto setup = run_document_mapper::map_setup(document);
         const auto reversed = run_document_mapper::reverse_setup(setup);
@@ -111,6 +119,10 @@ TEST_CASE("ore_run_document_setup_round_trips_over_the_corpus", tags) {
     // The corpus holds four hundred and sixteen run documents.
     CHECK(files == 416);
     CHECK(ignored_parameters == 0);
+
+    // The duplicate count is asserted so the last-occurrence rule is measured
+    // rather than assumed: three documents repeat continueOnError three times.
+    CHECK(repeated_parameters == 3);
 }
 
 TEST_CASE("ore_run_document_analytics_round_trip_over_the_corpus", tags) {
@@ -217,4 +229,29 @@ TEST_CASE("ore_run_document_market_bindings_round_trip_over_the_corpus", tags) {
     CHECK(files == 416);
     CHECK(files_with_markets == 413);
     CHECK(bindings == 1915);
+}
+
+// The mapper refuses what it cannot represent rather than dropping it, so a
+// document that names a parameter the entity has no column for, or writes a
+// value the column cannot hold, is rejected by name.
+TEST_CASE("ore_run_document_setup_refuses_what_it_cannot_hold", tags) {
+    using namespace ores::ore::domain;
+
+    const auto document_with = [](const std::string& name, const std::string& value) {
+        ore document;
+        parameterListType_Parameter_t parameter;
+        parameter.name = name;
+        static_cast<std::string&>(parameter) = value;
+        document.Setup.Parameter.push_back(parameter);
+        return document;
+    };
+
+    CHECK_NOTHROW(run_document_mapper::map_setup(document_with("baseCurrency", "USD")));
+
+    CHECK_THROWS_AS(run_document_mapper::map_setup(document_with("notASetupParameter", "x")),
+                    std::runtime_error);
+    CHECK_THROWS_AS(run_document_mapper::map_setup(document_with("nThreads", "many")),
+                    std::runtime_error);
+    CHECK_THROWS_AS(run_document_mapper::map_setup(document_with("logMask", "")),
+                    std::runtime_error);
 }

@@ -41,6 +41,7 @@ namespace ores::ore::domain {
 struct mapped_run_parameter {
     std::string name;
     std::string value;
+    int position = 0;
 
     friend bool operator==(const mapped_run_parameter&, const mapped_run_parameter&) = default;
 };
@@ -79,16 +80,25 @@ public:
     /**
      * @brief Maps an ORE run document's Setup block to the setup entity.
      *
-     * A parameter the entity has no column for is ignored rather than guessed
-     * at; the corpus uses forty names and the entity carries all forty.
+     * A parameter the entity has no column for is refused rather than dropped,
+     * and a value that cannot be read as the column's type is refused too: a
+     * document that loses a parameter on the way in would otherwise lose it
+     * silently. The corpus uses forty names and the entity carries all forty,
+     * so nothing shipped is refused.
+     *
+     * A name that appears twice is read from its last occurrence. Three shipped
+     * documents repeat continueOnError and in all three the values agree.
      */
     static reporting::domain::report_run_setup map_setup(const ore& v);
 
     /**
      * @brief Reconstructs an ORE Setup block from the setup entity.
      *
-     * The parameters are written in a fixed order, because ORE reads them by
-     * name and the entity has no order of its own.
+     * The parameters are written in the mapper's own fixed order, which is not
+     * necessarily the order the document wrote them in: the entity is a row of
+     * columns and has no order of its own. ORE reads the parameters by name, so
+     * the order is lossy on purpose and the round trip compares names and
+     * values rather than positions.
      */
     static parameterListType reverse_setup(const reporting::domain::report_run_setup& v);
 
@@ -97,7 +107,9 @@ public:
      *
      * The order is the order the document wrote, counting from one, and it is
      * what ORE runs the analytics in. Every element carries an active flag,
-     * which becomes a column rather than a parameter.
+     * which becomes a column rather than a parameter. Each parameter carries
+     * its own position within its analytic, so a later writer can fill the
+     * column the schema asks for.
      */
     static std::vector<mapped_run_analytic> map_analytics(const ore& v);
 

@@ -19,7 +19,10 @@
  */
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include <array>
+#include <charconv>
 #include <optional>
+#include <set>
+#include <stdexcept>
 #include <string_view>
 
 namespace ores::ore::domain {
@@ -95,11 +98,33 @@ const std::array<int_binding, 3> int_bindings = {{
     {"ignoreFixingLag", &setup_t::ignore_fixing_lag},
 }};
 
+/**
+ * @brief Reads a parameter the entity holds as an integer.
+ *
+ * ORE writes these as text, so a value that is not a whole number is a
+ * document the mapper cannot represent. It is refused by name rather than
+ * converted with std::stoi, which throws an exception that says nothing about
+ * which parameter was at fault.
+ */
+int parse_int(const std::string& name, const std::string& value) {
+    int out = 0;
+    const auto* first = value.data();
+    const auto* last = value.data() + value.size();
+    const auto result = std::from_chars(first, last, out);
+    if (result.ec != std::errc() || result.ptr != last)
+        throw std::runtime_error("run_document_mapper: Setup parameter '" + name +
+                                 "' is not an integer: '" + value + "'");
+    return out;
+}
+
 }
 
 reporting::domain::report_run_setup run_document_mapper::map_setup(const ore& v) {
     reporting::domain::report_run_setup r;
 
+    // A name that appears more than once is read from its last occurrence.
+    // Three shipped documents repeat continueOnError, and in all three the
+    // repeated values agree, so the rule is stated rather than enforced.
     for (const auto& parameter : v.Setup.Parameter) {
         const std::string name(parameter.name);
         const std::string value(parameter);
@@ -117,10 +142,14 @@ reporting::domain::report_run_setup run_document_mapper::map_setup(const ore& v)
 
         for (const auto& binding : int_bindings) {
             if (binding.parameter == name) {
-                r.*(binding.member) = std::stoi(value);
+                r.*(binding.member) = parse_int(name, value);
+                matched = true;
                 break;
             }
         }
+        if (!matched)
+            throw std::runtime_error("run_document_mapper: no column holds Setup parameter '" +
+                                     name + "'");
     }
 
     return r;
@@ -138,14 +167,16 @@ std::vector<mapped_run_analytic> run_document_mapper::map_analytics(const ore& v
         if (element.type)
             mapped.analytic.analytic_type_code = std::string(*element.type);
 
+        int position = 0;
         for (const auto& parameter : element.Parameter) {
+            ++position;
             const std::string name(parameter.name);
             const std::string value(parameter);
             if (name == "active") {
                 mapped.analytic.active = value;
                 continue;
             }
-            mapped.parameters.push_back({name, value});
+            mapped.parameters.push_back({name, value, position});
         }
 
         r.push_back(std::move(mapped));
@@ -162,10 +193,14 @@ run_document_mapper::reverse_analytics(const std::vector<mapped_run_analytic>& v
         analyticsType_Analytic_t element;
         element.type = mapped.analytic.analytic_type_code;
 
-        parameterListType_Parameter_t active;
-        active.name = "active";
-        static_cast<std::string&>(active) = mapped.analytic.active;
-        element.Parameter.push_back(active);
+        // An element the document wrote without an active flag must not gain
+        // one on the way back out.
+        if (!mapped.analytic.active.empty()) {
+            parameterListType_Parameter_t active;
+            active.name = "active";
+            static_cast<std::string&>(active) = mapped.analytic.active;
+            element.Parameter.push_back(active);
+        }
 
         for (const auto& parameter : mapped.parameters) {
             parameterListType_Parameter_t x;

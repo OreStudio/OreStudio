@@ -72,7 +72,9 @@ signed-in tenant administrator and a tenant that is already /active/.
 5. *Next steps.* The party is /active/. The page offers three exits: switch to
    the new party and work in it now, set up its books, or add another party.
    The person can also just go back; the Parties page lists the new party as
-   active.
+   active. Where the deployment accepts self-registration, the page may also
+   nominate this party as the one a new account joins; the tenant's first
+   sign-in nominates it, and this is where a second party takes it over.
 
 The rail is flat: a person sees five steps. Steps that change server state are
 final, so there is no Back past them.

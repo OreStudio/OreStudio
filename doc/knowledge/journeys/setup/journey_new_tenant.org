@@ -75,7 +75,10 @@ thing that happens on an empty database.
    sign-in. *Hand off to someone else* signs out and shows the username to pass
    on; that person sets their own password at first sign-in. The web keeps the
    administrator's password in memory only until this point, and never writes
-   it to storage.
+   it to storage. Where the deployment accepts self-registration, the person
+   may also mark this tenant as the one a registration lands in. The
+   installation's first tenant is marked when it is created, so a later tenant
+   takes the mark over deliberately or not at all.
 
 The rail is flat: a person sees five steps and never a journey inside a
 journey. Steps that change server state are final, so there is no Back past

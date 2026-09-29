@@ -47,7 +47,7 @@ the whole policy for the tenant at the address:
 
 | Field | Meaning | Source |
 |-------+---------+--------|
-| =signups_enabled= | Whether this tenant accepts registrations at all | The setting =system.user_signups= |
+| =signups_enabled= | Whether the deployment accepts registrations at all | The setting =system.user_signups=, read at system scope |
 | =authorization_required= | Whether a registration also waits on an approval step | The setting =system.signup_requires_authorization= |
 | =tenant= | The tenant a registration lands in, when one is known | The address, else the tenant flagged =is_registration_default= |
 | =party= | The party a new account joins, when the tenant nominates one | The party flagged =is_registration_default= |
@@ -57,6 +57,16 @@ the whole policy for the tenant at the address:
 The password rules stay where they are: [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] already
 answers =iam.v1.auth.password-policy=, and the sign-up screen reads it the same
 way the sign-in screen does.
+
+** The scope of the switch
+
+=system.user_signups= is the deployment's answer, not a tenant's. It is seeded
+once on the system tenant, and its registered default is =false=, so a
+deployment nobody has asked refuses registration. The settings are scoped, so a
+tenant override beside it is possible, but nothing sets one today and the door
+must not confuse the two. What the door reports is the deployment's switch; a
+tenant that wants its own answer is a later change with its own rule for which
+of the two wins.
 
 The read is separate from =iam.v1.bootstrap.status= rather than folded into it.
 The bootstrap read answers whether the deployment has been set up; this one
@@ -214,6 +224,37 @@ the honest behaviour is that the flag *closes* registration and the policy read
 reports =authorization_required= so the screen shows why. The approval workflow
 itself is out of scope for this story and belongs to =ores.workflow=.
 
+* Where the defaults come from
+
+A fresh installation has none of these values, and the door cannot invent them.
+[[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] is where they are set, because it is the only journey that runs
+on an empty installation and it already creates the things a default points at.
+
+- *The default tenant is the first tenant.* At the end of its provisioning the
+  system administrator confirms it as the tenant registrations land in. The flag
+  is the super administrator's to set, and the first tenant is the only sensible
+  answer while the installation holds one.
+- *The switch is answered in the same pass.* The system administrator states
+  whether the installation accepts self-registration, and the door reports that
+  answer from then on. A deployment that refuses needs nothing else. One that
+  accepts says so deliberately rather than by omission, which is the difference
+  between a door that is closed and a door nobody has looked at.
+- *The default party and the default role are the tenant administrator's,* and
+  the journey's first sign-in is where they name them, beside the party they
+  choose to work as. An administrator who never names them still leaves a
+  deployment that accepts registrations; the accounts it creates wait in the
+  pending state rather than failing at sign-in.
+
+[[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and
+[[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions
+when they create a tenant or a party later, because an installation that grows
+past its first tenant still has to say which tenant is the default and where a
+new account joins.
+
+This is why the switch and the defaults belong to the setup journeys rather than
+to the sign-up screen: the person who opens the door is not the person who
+decides what it opens onto.
+
 * The registration flow end to end
 
 1. The door asks =iam.v1.auth.registration-policy=, unauthenticated, with the
@@ -293,6 +334,7 @@ administrator can, which does not make the other two theirs.
 | BFF | A registration-policy route, a registration route under the limiter, and the hostname forwarded |
 | Wire protocol | The browser-safe exports and the operation entries the two subjects need |
 | Clients | The sign-up screen and the sign-in screen changes, on the same subjects from the shell |
+| Journeys | [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] gains the registration step and nominates the tenant administrator's defaults; [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions when they create a tenant or a party |
 
 * Out of scope
 

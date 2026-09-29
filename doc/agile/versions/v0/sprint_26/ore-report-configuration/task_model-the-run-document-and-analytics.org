@@ -28,9 +28,9 @@ A report definition's run is configured by typed entities for its setup, its mar
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The analytic type lookup, the run setup entity and the ordered analytic list have landed; the per-type parameter entities follow. |
+| Now          | The vocabulary, the run setup entity, the ordered analytic list and the parameter table have landed; the parameter vocabulary and the market bindings follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Model the parameter entities the busiest types need -- npv, cashflow, curves, xva, simulation, initialMargin -- then the market bindings. |
+| Next         | Seed the value domains and the parameter definitions the analytics use, then model the market bindings. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -63,6 +63,16 @@ task and name that file in the Command column.
 | Analytics the corpus runs | 1874 rows across the 416 documents, in all 35 types, each carrying an active flag | =python3= census over =external/ore/examples/= | =9b8a773a50= |
 
 * Notes
+
+- The plan said each analytic type would own a typed parameter table. The work
+  changed that, and the reason is on the record: thirty-five tables, one of them
+  around seventy columns wide, is not a shape to maintain, and the reporting
+  registry already solved this exact problem when it modelled a configuration's
+  parameters -- a definition lookup, a value domain, and a row per value. The
+  run's analytics use that pattern too, so a parameter is added as a lookup row
+  and never as a column, which is the acceptance's own test. One table replaces
+  the plan's thirty-five. The decision is stated in
+  =ores.reporting.report_analytic_parameter='s model prose for review.
 
 * Test Scenarios
 

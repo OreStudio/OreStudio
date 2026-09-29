@@ -1387,6 +1387,12 @@ private:
                     << "create_theme_feed_bindings: save binding " << source_name << " for party "
                     << party_id_str << " failed: " << resp.result.message;
                 all_saved = false;
+            } else {
+                // The freshness list is read once, so a pair this loop just wrote has
+                // to join it: two enabled configs whose keys project to one identity
+                // would otherwise both pass the check and the second would meet the
+                // unique index instead of the skip above.
+                existing.push_back(oresmd_uri + "|" + source_name);
             }
         }
         if (sources.empty())

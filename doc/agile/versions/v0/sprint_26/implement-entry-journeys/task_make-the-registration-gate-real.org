@@ -130,7 +130,13 @@ Two things this task did not do, both recorded rather than hidden:
   message nothing produces. Re-capturing it is the HTTP recipe harness's job, and
   hand-writing a capture would be a record of a call nobody made.
 
-The dead flag-aware service is still dead. This task made the live path read the
-flags rather than adopt that service, so the next step of the plan — decide
-whether it becomes the live path or is deleted — is still open, and the service
-still implements checks the live path does not.
+The dead flag-aware service is no longer dead. The plan left open whether it
+should become the live path or be deleted, and the decision is adoption: it is
+the only thing in the tree that checks the username and the email for uniqueness
+and the password against the policy, and the administrator path the sign-up path
+used checks none of them. The live path now registers through it, so a validation
+refusal answers with its own code rather than =invalid_request=.
+
+That leaves the administrator path alone, deliberately. Creating an administrator
+is a different act with a different policy, and adopting the self-registration
+service there would change it.

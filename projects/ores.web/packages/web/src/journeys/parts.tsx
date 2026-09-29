@@ -31,6 +31,8 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { profileLogo } from '../assets/profiles.js';
+import { codeFromName, emailFromPrincipal, hostnameFromCode } from './derive.js';
+import { LegalEntitySearch } from './LegalEntitySearch.js';
 import { Button, Field, Input, Notice, Select, cx } from '../ui/Primitives.js';
 import { NewPasswordField } from '../ui/PasswordField.js';
 import type { JourneyServer } from './server.js';
@@ -127,6 +129,7 @@ export function ProfileCards({
  * one opens the form. The password field is the server's policy, applied.
  */
 export function TenantForm({
+    server,
     profile,
     details,
     policy,
@@ -134,6 +137,7 @@ export function TenantForm({
     onChange,
     onPasswordAcceptable,
 }: {
+    readonly server: JourneyServer;
     readonly profile: SeedProfileChoice;
     readonly details: TenantDetails;
     readonly policy: PasswordPolicy;
@@ -143,11 +147,41 @@ export function TenantForm({
 }): ReactNode {
     const { t } = useTranslation();
     const [open, setOpen] = useState(profile.tenant.name === '');
+    /*
+     * The fields a person has typed in themselves. A proposal stops the moment
+     * somebody edits the field it proposes, which is what the old client did:
+     * the derivation helps while a form is being filled, and it never
+     * overwrites what somebody wrote.
+     */
+    const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
 
     const set = (
         key: 'name' | 'code' | 'hostname' | 'adminUsername' | 'adminEmail',
         value: string,
-    ): void => onChange({ ...details, [key]: value });
+    ): void => {
+        setTouched((current) => new Set(current).add(key));
+        onChange({ ...details, [key]: value });
+    };
+
+    /**
+     * What choosing a legal entity proposes: the tenant is named after it, the
+     * code follows the name, the hostname follows the code, the administrator
+     * is addressed at the tenant, and the entity's LEI is what the run imports.
+     */
+    const chooseEntity = (parameter: string, legalName: string, lei: string): void => {
+        const code = touched.has('code') ? details.code : codeFromName(legalName);
+        const hostname = touched.has('hostname') ? details.hostname : hostnameFromCode(code);
+        onChange({
+            ...details,
+            name: touched.has('name') ? details.name : legalName,
+            code,
+            hostname,
+            adminEmail: touched.has('adminEmail')
+                ? details.adminEmail
+                : emailFromPrincipal(details.adminUsername, hostname),
+            parameters: { ...details.parameters, [parameter]: lei },
+        });
+    };
     const setParameter = (name: string, value: string): void =>
         onChange({ ...details, parameters: { ...details.parameters, [name]: value } });
 
@@ -240,10 +274,22 @@ export function TenantForm({
                     {profile.parameters.map((parameter) => (
                         <Field
                             key={parameter.name}
-                            label={parameter.label}
-                            {...(parameter.hint !== '' && { hint: parameter.hint })}
+                            className={parameter.dataType === 'legal_entity' ? 'sm:col-span-2' : ''}
+                            label={parameter.dataType === 'legal_entity' ? '' : parameter.label}
+                            {...(parameter.dataType !== 'legal_entity' &&
+                                parameter.hint !== '' && { hint: parameter.hint })}
                         >
-                            {parameter.choices.length > 0 ? (
+                            {parameter.dataType === 'legal_entity' ? (
+                                <LegalEntitySearch
+                                    server={server}
+                                    value={details.parameters[parameter.name] ?? ''}
+                                    label={parameter.label}
+                                    hint={parameter.hint}
+                                    onChoose={(entity) =>
+                                        chooseEntity(parameter.name, entity.legalName, entity.lei)
+                                    }
+                                />
+                            ) : parameter.choices.length > 0 ? (
                                 <Select
                                     value={details.parameters[parameter.name] ?? ''}
                                     onChange={(event) =>

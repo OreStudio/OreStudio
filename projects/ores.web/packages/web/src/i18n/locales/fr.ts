@@ -498,6 +498,9 @@ const fr: SourceCatalogue = {
             adminPassword: "Mot de passe de l'administrateur",
             passwordForced: 'Il devra le changer à la première connexion.',
             standard: '{profile} utilise ses paramètres standard.',
+            leiSearch: 'Rechercher par nom ou LEI',
+            leiNoMatch: 'Aucune entité ne correspond.',
+            leiReadFailed: "Les entités juridiques n'ont pas pu être lues. {message}",
             changeSettings: 'Modifier les paramètres',
             noCreatingPassword:
                 "L'administrateur qui crée le locataire doit d'abord définir un mot de passe.",

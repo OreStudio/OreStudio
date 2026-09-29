@@ -40,6 +40,7 @@ import type {
     ProvisionTenantRequest,
     ProvisionTenantResult,
     RetryWorkflowInstanceResult,
+    LeiEntityChoice,
     SeedProfileChoice,
     WorkflowProgress,
 } from '@ores/wire-protocol/browser';
@@ -56,6 +57,7 @@ export interface JourneyServer {
     readonly signOut: () => Promise<void>;
     readonly passwordPolicy: () => Promise<PasswordPolicy>;
     readonly seedProfiles: () => Promise<readonly SeedProfileChoice[]>;
+    readonly leiEntities: () => Promise<readonly LeiEntityChoice[]>;
     readonly provision: (request: ProvisionTenantRequest) => Promise<ProvisionTenantResult>;
     readonly progress: (instanceId: string) => Promise<WorkflowProgress>;
     readonly retry: (instanceId: string, stepName?: string) => Promise<RetryWorkflowInstanceResult>;
@@ -78,6 +80,7 @@ export function useJourneyServer(): JourneyServer {
             signOut,
             passwordPolicy: api.passwordPolicy,
             seedProfiles: api.seedProfiles,
+            leiEntities: api.leiEntities,
             provision: api.provisionTenant,
             progress: api.provisionTenantProgress,
             retry: api.retryProvisionTenant,

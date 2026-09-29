@@ -39,6 +39,7 @@ import {
     createAdministratorRequestSchema,
     getImagesRequestSchema,
     initialAdministratorSchema,
+    leiEntitySummaryResponseSchema,
     listImagesRequestSchema,
     listImagesResponseSchema,
     getImagesResponseSchema,
@@ -528,6 +529,41 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return seedProfilesResponseSchema.parse({
             profiles: await session.client.seedProfiles(),
         });
+    });
+
+    /**
+     * The root legal entities a tenant can be started from.
+     *
+     * The list a screen searches when it builds a tenant around a real legal
+     * entity. The read answers a country and a page, so the search itself
+     * happens in the caller; the deployment holds about two thousand of them,
+     * which is more than one page, and that shortcoming is captured rather
+     * than hidden here.
+     */
+    server.get('/api/lei-entities', async (request) => {
+        const session = requireSession(request);
+        const query = request.query as Record<string, string | undefined>;
+        const response = leiEntitySummaryResponseSchema.parse(
+            await session.client.callAuthenticated(
+                SUBJECTS.leiEntitiesSummary,
+                {
+                    country_filter: query['country'] ?? '',
+                    offset: 0,
+                    limit: Number(query['limit'] ?? 1000),
+                },
+                leiEntitySummaryResponseSchema,
+            ),
+        );
+        if (!response.success) {
+            throw invalidRequest(response.error_message);
+        }
+        return {
+            entities: response.entities.map((entity) => ({
+                lei: entity.lei,
+                legalName: entity.entity_legal_name,
+                country: entity.country,
+            })),
+        };
     });
 
     /**

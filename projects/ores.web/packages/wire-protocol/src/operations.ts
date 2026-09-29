@@ -66,6 +66,7 @@ export const SUBJECTS = {
     workflowInstanceSteps: 'workflow.v1.instances.steps',
     retryWorkflowInstance: 'workflow.v1.instances.retry',
     passwordPolicy: 'iam.v1.auth.password-policy',
+    leiEntitiesSummary: 'dq.v1.lei-entities.summary',
 } as const;
 
 /**
@@ -677,6 +678,47 @@ export const seedProfilesResponseSchema = z.object({
 });
 
 export type SeedProfilesResponse = z.infer<typeof seedProfilesResponseSchema>;
+
+/**
+ * One legal entity a deployment can start a tenant from, as a screen reads it.
+ *
+ * The read behind it lists the root legal entities the deployment holds, and
+ * this is the part of that answer a screen needs: the LEI that names the
+ * entity, the name a person recognises it by, and the country it is registered
+ * in.
+ */
+export const leiEntityChoiceSchema = z.object({
+    lei: z.string().default(''),
+    legalName: z.string().default(''),
+    country: z.string().default(''),
+});
+
+export type LeiEntityChoice = z.infer<typeof leiEntityChoiceSchema>;
+
+/** The body of the browser's legal-entity read. */
+export const leiEntitiesResponseSchema = z.object({
+    entities: z.array(leiEntityChoiceSchema).default([]),
+});
+
+export type LeiEntitiesResponse = z.infer<typeof leiEntitiesResponseSchema>;
+
+/** The server's own answer, before it is read in the interface's terms. */
+export const leiEntitySummaryResponseSchema = z.object({
+    success: z.boolean().default(false),
+    error_message: z.string().default(''),
+    entities: z
+        .array(
+            z.object({
+                lei: z.string().default(''),
+                entity_legal_name: z.string().default(''),
+                entity_category: z.string().default(''),
+                country: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
+
+export type LeiEntitySummaryResponse = z.infer<typeof leiEntitySummaryResponseSchema>;
 
 /**
  * A request to provision one tenant from a starting point.

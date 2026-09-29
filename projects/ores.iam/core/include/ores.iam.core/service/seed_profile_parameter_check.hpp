@@ -103,8 +103,10 @@ read_choices(const std::string& choices_json) {
  * profile does not declare; a required parameter the request states as empty;
  * a choice parameter whose value is not one of its choices; a value that does
  * not read as the parameter's declared data type; and a parameter whose
- * declared data type is not one of string, integer, boolean or choice, which is
- * a defect in the profile rather than in the request.
+ * declared data type is not one of string, integer, boolean, choice or legal
+ * entity, which is a defect in the profile rather than in the request. A legal
+ * entity is named by its LEI, whose shape is the same fact the read that fills
+ * it answers with.
  *
  * A parameter the request omits takes the profile's default, and one the
  * profile declares as required, with no default to take, is refused. An
@@ -184,6 +186,20 @@ check_parameters(const std::vector<domain::seed_profile_parameter>& declared,
         } else if (d.data_type == "boolean") {
             if (!detail::reads_as_boolean(value))
                 return {{}, "The value '" + value + "' for '" + d.name + "' is not true or false."};
+        } else if (d.data_type == "legal_entity") {
+            /*
+             * A legal entity is named by its LEI. The shape is checked here
+             * because a screen fills this setting from a search over the
+             * entities the deployment holds, and a value that is not an LEI
+             * cannot have come from one.
+             */
+            const bool is_lei =
+                value.size() == 20 &&
+                std::all_of(value.begin(), value.end(), [](unsigned char c) {
+                    return std::isalnum(c) != 0;
+                });
+            if (!is_lei)
+                return {{}, "The value '" + value + "' for '" + d.name + "' is not an LEI."};
         } else if (d.data_type != "string") {
             return {{},
                     "The parameter '" + d.name + "' declares the unknown data type '" +

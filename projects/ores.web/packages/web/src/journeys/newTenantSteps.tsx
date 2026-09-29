@@ -157,6 +157,7 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
             body:
                 profile !== undefined && details !== undefined ? (
                     <TenantForm
+                        server={server}
                         profile={profile}
                         details={details}
                         policy={policy}

@@ -502,6 +502,9 @@ const pt: SourceCatalogue = {
             adminPassword: 'Palavra-passe do administrador',
             passwordForced: 'Terá de a alterar no primeiro início de sessão.',
             standard: 'O {profile} usa as suas definições padrão.',
+            leiSearch: 'Pesquisar por nome ou LEI',
+            leiNoMatch: 'Nenhuma entidade corresponde.',
+            leiReadFailed: 'Não foi possível ler as entidades jurídicas. {message}',
             changeSettings: 'Alterar definições',
             noCreatingPassword:
                 'O administrador que cria o inquilino tem de definir primeiro uma palavra-passe.',

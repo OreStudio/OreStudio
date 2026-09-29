@@ -499,6 +499,9 @@ export const en: SourceCatalogue = {
             adminPassword: 'Administrator password',
             passwordForced: 'They must change it at first sign-in.',
             standard: '{profile} uses its standard settings.',
+            leiSearch: 'Search by name or LEI',
+            leiNoMatch: 'No entity matches that.',
+            leiReadFailed: 'The legal entities could not be read. {message}',
             changeSettings: 'Change settings',
             noCreatingPassword:
                 'The administrator who creates the tenant must set a password first.',

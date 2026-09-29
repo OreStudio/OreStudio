@@ -23,6 +23,7 @@ import {
     bootstrapStatusSchema,
     initialAdministratorSchema,
     loginResultSchema,
+    leiEntitiesResponseSchema,
     passwordPolicySchema,
     provisionTenantResultSchema,
     retryWorkflowInstanceResultSchema,
@@ -32,6 +33,7 @@ import {
     type BootstrapStatus,
     type CreateAdministratorRequest,
     type InitialAdministrator,
+    type LeiEntityChoice,
     type LoginResult,
     type PasswordPolicy,
     type ProvisionTenantRequest,
@@ -130,6 +132,14 @@ export const api = {
      */
     async passwordPolicy(): Promise<PasswordPolicy> {
         return passwordPolicySchema.parse(await request('/api/password-policy', { method: 'GET' }));
+    },
+
+    /** The root legal entities a tenant can be started from. */
+    async leiEntities(): Promise<readonly LeiEntityChoice[]> {
+        const payload = leiEntitiesResponseSchema.parse(
+            await request('/api/lei-entities', { method: 'GET' }),
+        );
+        return payload.entities;
     },
 
     /** The starting points a new tenant may be provisioned from. */

@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2397
+#+pr: 2399
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -536,6 +536,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2399][#2399]] | [iam] Build the provisioning handler against the binding's identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2397][#2397]] | [marketdata] Keep the key a tick's datum is written under |
 | [[https://github.com/OreStudio/OreStudio/pull/2395][#2395]] | [marketdata] Delete the reader nothing calls |
 | [[https://github.com/OreStudio/OreStudio/pull/2394][#2394]] | [marketdata,synthetic] Read a series by identity |

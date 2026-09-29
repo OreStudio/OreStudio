@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-30T10:27:20.799307Z
+' Generated: 2026-09-30T10:27:21.953511Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9632,6 +9632,85 @@ package "reporting" #E0F7FA {
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_run_setups_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+          asof_date : text
+          accrual_date : text
+          input_path : text
+          input_path_market : text
+          input_path_portfolio : text
+          output_path : text
+          log_file : text
+          log_mask : integer
+          n_threads : integer
+          observation_model : text
+          base_currency : text
+          date_calendar : text
+          date_convention : text
+          fixing_cutoff : text
+          continue_on_error : text
+          build_failed_trades : text
+          imply_todays_fixings : text
+          ignore_fixing_lag : integer
+          include_todays_cash_flows : text
+          include_reference_date_events : text
+          lazy_market_building : text
+          enrich_index_fixings : text
+          use_analytics : text
+          csv_comment_report_header : text
+          default_mapping_to_identity : text
+          portfolio_recurse_into_sub_directories : text
+          curve_config_file : text
+          conventions_file : text
+          market_config_file : text
+          pricing_engines_file : text
+          pricing_engines_file_scenario : text
+          portfolio_file : text
+          market_data_file : text
+          market_data_mapping_file : text
+          fixing_data_file : text
+          fixing_data_mapping_file : text
+          calendar_adjustment : text
+          currency_configuration : text
+          reference_data_file : text
+          counterparty_file : text
+          script_library : text
+          ibor_fallback_config : text
+          additional_results : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_run_setups_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Run Setup Table
+    The Setup block of the ORE run document, as typed columns: the dates the run
+    works to, the paths it reads and writes, the flags it runs under, and the
+    configuration files it names. The corpus uses forty of these parameters across
+    all four hundred and sixteen shipped run documents, and asofDate, inputPath,
+    outputPath and logFile appear in every one.
+    Each row is owned by exactly one report_definition (1:1, enforced by the
+    unique index on report_definition_id). It replaces the part of
+    risk_report_config that held a handful of these parameters as columns mixed in
+    with the analytic switches; the switches become rows in report_analytic, and
+    what is left of the run's configuration is here.
+    Values are held as ORE spells them rather than converted, because the run
+    document is written back to ORE and the flags are not all booleans: the
+    fixing and cashflow flags are Y or N, the model flags are true or
+    false, and accrualDate may be the literal ASOF. Converting them would
+    mean inventing a canonical form ORE does not have.
     end note
 
     entity ores_reporting_report_types_tbl <<temporal>> #C6F0D8 {

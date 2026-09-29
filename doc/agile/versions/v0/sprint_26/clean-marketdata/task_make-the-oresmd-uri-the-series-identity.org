@@ -633,6 +633,9 @@ via its "Verifies task" field.
 | 77 | =find_series_by_uri= and =find_series= repeat the list, send and error handling | =market_data_client.cpp= | answered | Both are the same ten lines around a different match predicate, and one of them goes with the triple when the IR caller does, so a helper would be an abstraction with one unit's lifetime. Recorded rather than taken, and the deletion revisits it. |
 | 78 | =find_series_by_uri= could be tested with a mocked list response | the client | recorded | The client suite covers the pure subject helpers only; a mocked response needs the NATS stub that =market_data_client='s =send()= calls through, which no case in the tree has. The same missing harness as the handler's and the dq publish's, recorded with them for V06. |
 | 79 | The retained =find_series='s doc still says "natural key" where the identity is now the natural key | =market_data_client.hpp= | accepted, fixed | It says "the same decomposition" now. |
+| 80 | The test helper's comment says it goes with the columns; linking it to the task would stop it being orphaned | =service_import_service_tests.cpp= | accepted, fixed | The comment names task 4050BF6C-DBC3-4E75-A204-A75CE4AFA323 now. |
+| 81 | The revision could not be diffed against a merge base, so the build and tests were not re-run | the PR | answered | CI's =tests= job builds its database from the create scripts and passed, together with the other fifteen checks. |
+| 82 | A dated plan still mentions =read_latest_by_type= | =doc/plans/2026-03-31-ore-marketdata-domain-model.org= | recorded | It is a historical plan document; the record's own measurement counts C++, headers and models, and the plan is left as the dated artefact it is. |
 
 * Result
 

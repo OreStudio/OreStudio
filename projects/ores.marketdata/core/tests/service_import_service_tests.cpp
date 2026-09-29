@@ -46,7 +46,8 @@ namespace {
 // The assertions below ask whether the import filed a series under a given key.
 // The repository no longer reads by the registry's decomposition -- the identity
 // is what a series is looked up by -- so the list is filtered here, which keeps
-// the assertions about the key the import was given rather than about the rows.
+// the assertions about the key the import was given rather than about the rows. It
+// goes when the decomposition columns do: task 4050BF6C-DBC3-4E75-A204-A75CE4AFA323.
 std::vector<ores::marketdata::domain::market_series>
 series_with_triple(ores::marketdata::repository::market_series_repository& repo,
                    ores::database::context ctx,

@@ -29,7 +29,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
-| Waiting on   | Nothing: the unit starts with the bootstrap config naming its own tenor convention, which stands alone. |
+| Waiting on   | Nothing. |
 | Next         | Give the bootstrap config its tenor convention (the column, its seed for every config, and the service reading it instead of the grid's qualifier), then re-key the FOMC segment onto the shapes recorded above -- the synthetic feed publishing one series per pillar, the bootstrap reading them from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
@@ -232,7 +232,9 @@ resolve as ordinary spot-starting instruments. The unit is therefore two parts: 
 bootstrap config names its own tenor convention -- a column seeded to =RATES_SPOT_FOMC=
 for the FOMC config and =RATES_SPOT_FORWARD= for the rest -- and then the feed and the
 bootstrap move to the per-pillar identities. The first part stands alone and is where
-the unit starts.
+the unit starts, and it deletes =tenor_convention_code_for()= and its throw path rather
+than keeping them as a fallback: a fallback would leave the coupling between a series'
+spelling and the convention its pillars resolve under.
 
 **The two configs still disagree on the roles, and identity is no longer what exposes
 it.** The synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the

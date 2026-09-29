@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: B1B5DE48-263C-41EF-8C35-B26E48DF6668
+:END:
+#+title: ores.analytics.stress_test_scenario
+#+description: Codegen entity model for the analytics =stress_test_scenario= table. One named scenario of a stress library, and the date it is applied at.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One named scenario of a stress library, and the date it is applied at.
+#+entity_singular: stress_test_scenario
+#+entity_plural: stress_test_scenarios
+#+entity_title: Stress Test Scenario
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One =StressTest= element of an ORE stress document. The id attribute is the
+scenario's name, which is what a run's analytic refers to; the corpus holds
+twenty-six distinct names across forty-six uses, so a name is shared between
+documents.
+
+What a scenario actually does lives in its shift blocks -- DiscountCurves,
+FxSpots, SwaptionVolatilities and fifteen more -- and each is modelled as it
+lands. This row holds the scenario itself: its name, the library it belongs to
+and the date it is applied at.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:nullable:      false
+:END:
+
+Surrogate key for the scenario.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** stress_test_library_id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:nullable:      false
+:END:
+
+The library this scenario belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:END:
+
+The scenario's name, which is the id attribute ORE writes and a run refers to.
+
+#+begin_src cpp :name generator
+std::string("parallel_rates")
+#+end_src
+
+** date
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::optional<std::string>
+:nullable:      true
+:END:
+
+The date or tenor the scenario is applied at, as ORE spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:END:
+
+The order the document wrote the scenario in.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_stress_test_scenarios_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: stress_test_scenario
+:entity_plural_short:   stress_test_scenarios
+:entity_singular_words: stress test scenario
+:entity_plural_words:   stress test scenarios
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sts
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| name         | Name         |
+| date         | Date         |
+| position     | Position     |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        stress_test_scenarios
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: stress_test_scenario
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

@@ -61,3 +61,9 @@
 \ir ./analytics_credit_simulation_entity_configs_notify_trigger_create.sql
 
 -- Credit simulation transition matrix cells (one row per grid cell)
+
+-- Stress testing (the ORE stress library and its scenarios)
+\ir ./analytics_stress_test_libraries_create.sql
+\ir ./analytics_stress_test_libraries_notify_trigger_create.sql
+\ir ./analytics_stress_test_scenarios_create.sql
+\ir ./analytics_stress_test_scenarios_notify_trigger_create.sql

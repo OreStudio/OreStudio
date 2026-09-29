@@ -22,6 +22,9 @@
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/analytic_type_repository.hpp"
+#include "ores.reporting.core/repository/parameter_definition_repository.hpp"
+#include "ores.reporting.core/repository/parameter_value_domain_repository.hpp"
+#include "ores.reporting.core/repository/report_analytic_parameter_repository.hpp"
 #include "ores.reporting.core/repository/report_analytic_repository.hpp"
 #include "ores.reporting.core/repository/report_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
@@ -32,6 +35,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <map>
+#include <set>
 #include <string>
 
 namespace {
@@ -56,6 +60,9 @@ std::map<std::string, std::string> parameters_of(
 using ores::ore::domain::run_document_mapper;
 using ores::platform::filesystem::file;
 using ores::reporting::repository::analytic_type_repository;
+using ores::reporting::repository::parameter_definition_repository;
+using ores::reporting::repository::parameter_value_domain_repository;
+using ores::reporting::repository::report_analytic_parameter_repository;
 using ores::reporting::repository::report_analytic_repository;
 using ores::reporting::repository::report_market_binding_repository;
 using ores::reporting::repository::report_run_setup_repository;
@@ -124,6 +131,59 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
         analytics_repo.write(h.context(), row.analytic);
     bindings_repo.write(h.context(), bindings);
 
+    // A parameter is a value keyed to a definition, and the definition is the
+    // vocabulary the document's names resolve to. The test tenant gets the
+    // definitions this document needs before its parameters can be written.
+    parameter_value_domain_repository domains_repo;
+    parameter_definition_repository definitions_repo;
+    report_analytic_parameter_repository parameters_repo;
+
+    // A definition names a value domain and that is a soft foreign key too.
+    {
+        ores::reporting::domain::parameter_value_domain domain;
+        domain.code = "string";
+        domain.name = "Text";
+        domain.storage_kind = "string";
+        domain.referenced_entity = "";
+        domains_repo.write(h.context(), domain);
+    }
+
+    std::map<std::pair<std::string, std::string>, boost::uuids::uuid> definition_ids;
+    int definition_position = 0;
+    for (const auto& row : analytics) {
+        for (const auto& parameter : row.parameters) {
+            const auto key = std::make_pair(row.analytic.analytic_type_code, parameter.name);
+            if (definition_ids.contains(key))
+                continue;
+
+            ores::reporting::domain::parameter_definition definition;
+            definition.id = next_id();
+            definition.scope = "analytic";
+            definition.subtype = key.first;
+            definition.name = key.second;
+            definition.position = ++definition_position;
+            definition.parameter_value_domain_code = "string";
+            definition.is_required = false;
+            definitions_repo.write(h.context(), definition);
+            definition_ids[key] = definition.id;
+        }
+    }
+
+    std::vector<ores::reporting::domain::report_analytic_parameter> written_parameters;
+    for (const auto& row : analytics) {
+        for (const auto& parameter : row.parameters) {
+            ores::reporting::domain::report_analytic_parameter value;
+            value.id = next_id();
+            value.report_analytic_id = row.analytic.id;
+            value.parameter_definition_id =
+                definition_ids.at({row.analytic.analytic_type_code, parameter.name});
+            value.value = parameter.value;
+            value.position = parameter.position;
+            written_parameters.push_back(std::move(value));
+        }
+    }
+    parameters_repo.write(h.context(), written_parameters);
+
     const auto stored_setups = setups.read_latest(h.context());
     const auto found_setup = std::find_if(stored_setups.begin(), stored_setups.end(),
                                           [&](const auto& row) {
@@ -181,4 +241,49 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
               analytics.at(i).analytic.display_order);
         CHECK(read_analytics.at(i).analytic.active == analytics.at(i).analytic.active);
     }
+
+    // The parameters: read back, resolve each definition to its name again,
+    // and compare against what the document wrote.
+    const auto stored_parameters = parameters_repo.read_latest(h.context());
+    // Only the analytics this test wrote, which are the ones whose ids it set.
+    std::set<boost::uuids::uuid> own_analytics;
+    for (const auto& row : analytics)
+        own_analytics.insert(row.analytic.id);
+
+    std::map<boost::uuids::uuid, std::vector<ores::reporting::domain::report_analytic_parameter>>
+        by_analytic;
+    for (const auto& parameter : stored_parameters) {
+        if (!own_analytics.contains(parameter.report_analytic_id))
+            continue;
+        by_analytic[parameter.report_analytic_id].push_back(parameter);
+    }
+
+    std::map<boost::uuids::uuid, std::string> definition_names;
+    for (const auto& [key, id] : definition_ids)
+        definition_names[id] = key.second;
+
+    int compared_parameters = 0;
+    for (const auto& row : analytics) {
+        const auto it = by_analytic.find(row.analytic.id);
+        if (row.parameters.empty()) {
+            CHECK(it == by_analytic.end());
+            continue;
+        }
+        REQUIRE(it != by_analytic.end());
+        auto stored = it->second;
+        std::sort(stored.begin(), stored.end(),
+                  [](const auto& lhs, const auto& rhs) { return lhs.position < rhs.position; });
+        REQUIRE(stored.size() == row.parameters.size());
+        for (std::size_t i = 0; i < row.parameters.size(); ++i) {
+            ++compared_parameters;
+            INFO("parameter " << row.parameters.at(i).name);
+            CHECK(definition_names.at(stored.at(i).parameter_definition_id) ==
+                  row.parameters.at(i).name);
+            CHECK(stored.at(i).value == row.parameters.at(i).value);
+            CHECK(stored.at(i).position == row.parameters.at(i).position);
+        }
+    }
+
+    INFO("parameters compared: " << compared_parameters);
+    CHECK(compared_parameters > 0);
 }

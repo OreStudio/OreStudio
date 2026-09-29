@@ -55,6 +55,7 @@ set(files
     "diary_entry_type_eventing_integration_tests.cpp"
     "floating_index_type_eventing_integration_tests.cpp"
     "fra_convention_eventing_integration_tests.cpp"
+    "future_convention_eventing_integration_tests.cpp"
     "ibor_index_convention_eventing_integration_tests.cpp"
     "instrument_code_eventing_integration_tests.cpp"
     "ledger_feed_type_eventing_integration_tests.cpp"

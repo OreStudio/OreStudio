@@ -116,6 +116,41 @@ TEST_CASE("conventions_swap_index_round_trips", tags) {
     CHECK(files_with_swap_index == 47);
 }
 
+TEST_CASE("conventions_future_round_trips", tags) {
+    int files_with_future = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.Future.empty())
+            continue;
+
+        ++files_with_future;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.future.size() == document.Future.size());
+
+        for (std::size_t i = 0; i < document.Future.size(); ++i) {
+            const std::string id(document.Future[i].Id);
+            CHECK(mapped.future[i].id == id);
+            CHECK(mapped.future[i].index == std::string(document.Future[i].Index));
+            if (document.Future[i].DateGenerationRule)
+                CHECK(mapped.future[i].date_generation_rule ==
+                      to_string(*document.Future[i].DateGenerationRule));
+            if (document.Future[i].OvernightIndexFutureNettingType)
+                CHECK(mapped.future[i].netting_type ==
+                      to_string(*document.Future[i].OvernightIndexFutureNettingType));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "Future");
+        INFO(path.string() + ": the document has " + std::to_string(document.Future.size()) +
+             " Future element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.Future.size()));
+    }
+
+    // Thirty-nine of the seventy-two at the commit this was written at.
+    CHECK(files_with_future == 39);
+}
+
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
     const auto kind = conventions_kind();
     int walked = 0;
@@ -133,9 +168,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Nine of the seventy-two at the commit this was written at. The count is
-    // asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 9);
+    // Twelve of the seventy-two once SwapIndex and Future were modelled, and
+    // nine before. The count is asserted so that a change in it is noticed
+    // rather than absorbed.
+    CHECK(walked == 12);
 }
 
 // Hidden by default, and run on demand:

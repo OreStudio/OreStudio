@@ -60,6 +60,7 @@ set(files
     "diary_entry_type_commands_tests.cpp"
     "floating_index_type_commands_tests.cpp"
     "fra_convention_commands_tests.cpp"
+    "future_convention_commands_tests.cpp"
     "ibor_index_convention_commands_tests.cpp"
     "instrument_code_commands_tests.cpp"
     "ir_curve_bootstrap_config_commands_tests.cpp"

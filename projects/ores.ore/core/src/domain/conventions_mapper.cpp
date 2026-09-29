@@ -29,6 +29,35 @@ using namespace ores::logging;
 
 namespace {
 
+domain::futureDateGenerationRule parse_date_generation_rule(const std::string& v) {
+    using rule = domain::futureDateGenerationRule;
+    if (v == "IMM")
+        return rule::IMM;
+    if (v == "FirstDayOfMonth")
+        return rule::FirstDayOfMonth;
+    if (v == "IMMAUD")
+        return rule::IMMAUD;
+    if (v == "SecondThursday")
+        return rule::SecondThursday;
+    if (v == "IMMNZD")
+        return rule::IMMNZD;
+    if (v == "IMMCAD")
+        return rule::IMMCAD;
+    if (v == "IMMEUR")
+        return rule::IMMEUR;
+    throw std::runtime_error("Unknown future date generation rule: " + v);
+}
+
+domain::overnightIndexFutureNettingType parse_future_netting_type(const std::string& v) {
+    using netting = domain::overnightIndexFutureNettingType;
+    if (v == "Averaging")
+        return netting::Averaging;
+    if (v == "Compounding")
+        return netting::Compounding;
+    throw std::runtime_error("Unknown overnight index future netting type: " + v);
+}
+
+
 constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
 constexpr std::string_view audit_commentary = "Imported from ORE XML";
@@ -379,6 +408,27 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     static_cast<std::string&>(r.FixingCalendar) = v.fixing_calendar;
     r.DayCounter = parse_day_counter(v.day_count_fraction);
     r.SettlementDays = static_cast<int64_t>(v.settlement_days);
+    return r;
+}
+
+futureType reverse_future(const refdata::domain::future_convention& v) {
+    futureType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Index) = v.index;
+    if (v.date_generation_rule)
+        r.DateGenerationRule = parse_date_generation_rule(*v.date_generation_rule);
+    if (v.netting_type)
+        r.OvernightIndexFutureNettingType = parse_future_netting_type(*v.netting_type);
+    if (v.calendar) {
+        futureType_Calendar_t calendar;
+        static_cast<std::string&>(calendar) = *v.calendar;
+        r.Calendar = calendar;
+    }
+    if (v.overnight_index_tenor) {
+        futureType_OvernightIndexTenor_t tenor;
+        static_cast<std::string&>(tenor) = *v.overnight_index_tenor;
+        r.OvernightIndexTenor = tenor;
+    }
     return r;
 }
 
@@ -819,6 +869,24 @@ conventions_mapper::map_swap_index(const swapIndexType& v) {
     return r;
 }
 
+refdata::domain::future_convention conventions_mapper::map_future(const futureType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping future convention: " << std::string(v.Id);
+
+    refdata::domain::future_convention r;
+    r.id = std::string(v.Id);
+    r.index = std::string(v.Index);
+    if (v.DateGenerationRule)
+        r.date_generation_rule = to_string(*v.DateGenerationRule);
+    if (v.OvernightIndexFutureNettingType)
+        r.netting_type = to_string(*v.OvernightIndexFutureNettingType);
+    if (v.Calendar)
+        r.calendar = std::string(*v.Calendar);
+    if (v.OvernightIndexTenor)
+        r.overnight_index_tenor = std::string(*v.OvernightIndexTenor);
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::ois_convention conventions_mapper::map_ois(const oisType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << std::string(v.Id);
 
@@ -1024,6 +1092,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.future.reserve(v.Future.size());
+    std::ranges::transform(v.Future, std::back_inserter(r.future), [](const auto& x) {
+        return map_future(x);
+    });
+
     r.swap_index.reserve(v.SwapIndex.size());
     std::ranges::transform(
         v.SwapIndex, std::back_inserter(r.swap_index), [](const auto& x) {
@@ -1037,7 +1110,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("Future", v.Future.size());
     count_unmodelled("AverageOIS", v.AverageOIS.size());
     count_unmodelled("TenorBasisSwap", v.TenorBasisSwap.size());
     count_unmodelled("TenorBasisTwoSwap", v.TenorBasisTwoSwap.size());
@@ -1119,6 +1191,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.Future.reserve(v.future.size());
+    for (const auto& x : v.future)
+        r.Future.push_back(reverse_future(x));
 
     r.SwapIndex.reserve(v.swap_index.size());
     for (const auto& x : v.swap_index)

@@ -73,6 +73,8 @@
 \ir ./refdata_swap_conventions_drop.sql
 \ir ./refdata_swap_index_conventions_notify_trigger_drop.sql
 \ir ./refdata_swap_index_conventions_drop.sql
+\ir ./refdata_future_conventions_notify_trigger_drop.sql
+\ir ./refdata_future_conventions_drop.sql
 \ir ./refdata_zero_conventions_notify_trigger_drop.sql
 \ir ./refdata_zero_conventions_drop.sql
 \ir ./refdata_deposit_conventions_notify_trigger_drop.sql

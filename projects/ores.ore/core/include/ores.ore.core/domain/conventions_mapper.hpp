@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.api/domain/future_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
@@ -77,6 +78,7 @@ struct mapped_conventions {
     std::vector<refdata::domain::deposit_convention> deposit;
     std::vector<refdata::domain::swap_convention> swap;
     std::vector<refdata::domain::swap_index_convention> swap_index;
+    std::vector<refdata::domain::future_convention> future;
     std::vector<refdata::domain::ois_convention> ois;
     std::vector<refdata::domain::fra_convention> fra;
     std::vector<refdata::domain::ibor_index_convention> ibor_index;
@@ -136,6 +138,8 @@ public:
     static refdata::domain::swap_convention map_swap(const swapType& v);
 
     static refdata::domain::swap_index_convention map_swap_index(const swapIndexType& v);
+
+    static refdata::domain::future_convention map_future(const futureType& v);
 
     static refdata::domain::ois_convention map_ois(const oisType& v);
 

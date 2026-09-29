@@ -1019,3 +1019,7 @@ tangled into the runnable script library
 * Swap Index Conventions
 
 - [[id:0519E904-7233-5F89-9476-DAE349DD325F][How do I run the swap_index_conventions commands from the shell?]]
+
+* Future Conventions
+
+- [[id:6A85018B-DF01-5809-97DE-6B6D31554088][How do I run the future_conventions commands from the shell?]]

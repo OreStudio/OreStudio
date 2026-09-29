@@ -122,12 +122,19 @@ void ir_curve_feed::start() {
                 ores::marketdata::domain::ir_curve_tick tick;
                 tick.tenant_id = tenant_id_;
                 tick.party_id = party_id_;
-                tick.series_type = series_type_;
-                tick.metric = metric_;
-                tick.qualifier = qualifier_;
+                // The grid is a set of meeting-dated OIS quotes, and each tick names
+                // one pillar: the ORE key the resolver builds from the entry's own
+                // dates, so the series the ingest loop writes carries the
+                // instrument's identity rather than the pipeline's own vocabulary.
+                const auto ccy = qualifier_.substr(0, qualifier_.find('/'));
+                const auto key =
+                    feed::make_pillar_quote_key(ccy, e.start_tenor_code, e.start_date, e.end_date);
+                tick.series_type = key.series_type;
+                tick.metric = key.metric;
+                tick.qualifier = key.qualifier;
                 tick.asset_class = std::string(ores::marketdata::domain::ir_curve_asset_class);
                 tick.subclass = subclass_for(e.curve_role);
-                tick.point_id = e.point_id;
+                tick.point_id = key.point;
                 tick.source_name = source_name_;
                 tick.datetime = now;
                 tick.value = price_ir_curve_entry(*process_, e);

@@ -152,8 +152,7 @@ read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
  * @param trade_ids UUIDs of the trades whose amortizations to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_amortization>
-read_leg_amortizations_by_trade_ids(context ctx,
-                                         const std::vector<std::string>& trade_ids);
+read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the schedules of a set of instruments, whichever owner stated them.
@@ -208,8 +207,7 @@ read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& t
  * @param trade_ids UUIDs of the trades whose exercise fees to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_exercise_fee>
-read_option_exercise_fees_by_trade_ids(context ctx,
-                                            const std::vector<std::string>& trade_ids);
+read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the payment dates of a set of instruments' option rows.
@@ -220,8 +218,7 @@ read_option_exercise_fees_by_trade_ids(context ctx,
  * @param trade_ids UUIDs of the trades whose payment dates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_payment_date>
-read_option_payment_dates_by_trade_ids(context ctx,
-                                            const std::vector<std::string>& trade_ids);
+read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the strike of a set of instruments.
@@ -250,8 +247,7 @@ read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_id
  * @param trade_ids UUIDs of the trades whose delivery basket to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_future_delivery_basket>
-read_delivery_baskets_by_trade_ids(context ctx,
-                                        const std::vector<std::string>& trade_ids);
+read_delivery_baskets_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**@}*/
 

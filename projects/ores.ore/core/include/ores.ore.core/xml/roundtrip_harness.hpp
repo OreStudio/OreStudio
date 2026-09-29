@@ -92,9 +92,8 @@ ORES_ORE_CORE_EXPORT std::string first_difference(const std::string& lhs, const 
  * discovered as a failure.
  */
 template <typename Document>
-std::string parsed_text_difference(const Document& lhs,
-                                   const Document& rhs,
-                                   const std::string& path) {
+std::string
+parsed_text_difference(const Document& lhs, const Document& rhs, const std::string& path) {
     const std::string left = save_data(lhs);
     const std::string right = save_data(rhs);
     if (left == right)

@@ -110,8 +110,7 @@ public:
     // its underlying sub-trade, so the mapper reads the top-level shape and
     // the nested one. The entries of an option position become child rows.
     static trading::domain::equity_instrument_data forward_equity_position(const trade& t);
-    static trading::domain::equity_instrument_data
-    forward_equity_option_position(const trade& t);
+    static trading::domain::equity_instrument_data forward_equity_option_position(const trade& t);
 
     // Phase 4 — reverse
     static trade
@@ -150,9 +149,9 @@ public:
 
     // Equity position — reverse. The outer type names the document the
     // position came from, so the total return swap is rebuilt as one.
-    static trade reverse_equity_position(
-        const ores::trading::domain::equity_position_instrument& instr,
-        const std::string& outer_trade_type);
+    static trade
+    reverse_equity_position(const ores::trading::domain::equity_position_instrument& instr,
+                            const std::string& outer_trade_type);
     static trade reverse_equity_option_position(
         const ores::trading::domain::equity_position_instrument& instr,
         const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings,

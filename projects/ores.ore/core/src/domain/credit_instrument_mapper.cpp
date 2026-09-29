@@ -82,7 +82,9 @@ void credit_instrument_mapper::map_cds_leg(const legData& ld, credit_instrument&
     if (ld.Currency)
         instr.currency = std::string(*ld.Currency);
     if (ld.Notionals && !ld.Notionals->Notional.empty())
-        instr.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(ld.Notionals->Notional.front())).value();
+        instr.notional = ores::utility::decimal::decimal::from_double(
+                             static_cast<double>(ld.Notionals->Notional.front()))
+                             .value();
     if (ld.DayCounter)
         instr.day_count_fraction_code = to_string(*ld.DayCounter);
     if (ld.legDataType && ld.legDataType->FixedLegData &&
@@ -306,8 +308,7 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
     trade t;
     t.TradeType = oreTradeType::IndexCreditDefaultSwapOption;
     indexCreditDefaultSwapOptionData d;
-    static_cast<std::string&>(d.IndexCreditDefaultSwapData.CreditCurveId) =
-        instr.reference_entity;
+    static_cast<std::string&>(d.IndexCreditDefaultSwapData.CreditCurveId) = instr.reference_entity;
     d.IndexCreditDefaultSwapData.LegData = reverse_cds_leg(instr);
     if (instr.option_strike)
         d.Strike = static_cast<float>(*instr.option_strike);

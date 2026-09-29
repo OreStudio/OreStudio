@@ -79,9 +79,8 @@ TEST_CASE("read_latest_rounding_types_no_duplicate_codes", tags) {
     auto read_rounding_types = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
 
-    const auto it = std::ranges::find_if(read_rounding_types, [&](const auto& rt) {
-        return rt.code == written.code;
-    });
+    const auto it = std::ranges::find_if(read_rounding_types,
+                                         [&](const auto& rt) { return rt.code == written.code; });
     REQUIRE(it != read_rounding_types.end());
     CHECK(it->name == written.name);
 

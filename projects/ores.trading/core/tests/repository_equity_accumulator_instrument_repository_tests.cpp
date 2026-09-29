@@ -94,7 +94,8 @@ TEST_CASE("equity_accumulator_instrument_write_and_read_latest", tags) {
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2026-02-05"));
     CHECK(read[0].fixing_frequency == "Monthly");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double() == 3500.0);
+    CHECK(read[0].knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double() ==
+          3500.0);
     CHECK(read[0].payoff_type == "Decumulator");
     BOOST_LOG_SEV(lg, debug) << "Read equity accumulator instrument: " << read[0];
 }

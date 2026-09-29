@@ -143,8 +143,7 @@ TEST_CASE("instrument_payload_reads_a_bare_swap_body", tags) {
     const auto decoded = decode_instrument(payload);
     REQUIRE(std::holds_alternative<swap_instrument_data>(decoded));
     const auto& data = std::get<swap_instrument_data>(decoded);
-    CHECK(std::get<vanilla_swap_instrument>(data.instrument).identity.trade_id ==
-          trade_id);
+    CHECK(std::get<vanilla_swap_instrument>(data.instrument).identity.trade_id == trade_id);
     CHECK(data.legs.size() == 1u);
     CHECK(data.call_dates.empty());
 }

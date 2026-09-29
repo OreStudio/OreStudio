@@ -83,9 +83,8 @@ TEST_CASE("write_multiple_parties", tags) {
 
     const auto read_parties = repo.read_latest(h.context());
     for (const auto& written : parties) {
-        const auto it = std::ranges::find_if(read_parties, [&](const party& p) {
-            return p.id == written.id;
-        });
+        const auto it =
+            std::ranges::find_if(read_parties, [&](const party& p) { return p.id == written.id; });
         REQUIRE(it != read_parties.end());
         CHECK(it->full_name == written.full_name);
     }
@@ -112,9 +111,8 @@ TEST_CASE("read_latest_parties", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     for (const auto& written : written_parties) {
-        const auto it = std::ranges::find_if(read_parties, [&written](const party& p) {
-            return p.id == written.id;
-        });
+        const auto it = std::ranges::find_if(
+            read_parties, [&written](const party& p) { return p.id == written.id; });
         REQUIRE(it != read_parties.end());
         CHECK(it->full_name == written.full_name);
     }
@@ -168,8 +166,8 @@ TEST_CASE("read_nonexistent_party_id", tags) {
     auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
-    const auto answered_with_another_key = std::ranges::any_of(
-        read_parties, [&](const party& p) { return p.id == nonexistent_id; });
+    const auto answered_with_another_key =
+        std::ranges::any_of(read_parties, [&](const party& p) { return p.id == nonexistent_id; });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the key that was written.

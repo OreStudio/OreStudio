@@ -89,8 +89,8 @@ TEST_CASE("read_latest_currency_market_tiers_no_duplicate_codes", tags) {
     CHECK(codes.size() == read_tiers.size());
 
     for (const auto& written : tiers) {
-        const auto it = std::ranges::find_if(
-            read_tiers, [&](const auto& t) { return t.code == written.code; });
+        const auto it =
+            std::ranges::find_if(read_tiers, [&](const auto& t) { return t.code == written.code; });
         REQUIRE(it != read_tiers.end());
         CHECK(it->name == written.name);
     }
@@ -141,8 +141,8 @@ TEST_CASE("read_nonexistent_currency_market_tier_code", tags) {
     auto read_tiers = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
 
-    const auto answered_with_another_key = std::ranges::any_of(
-        read_tiers, [&](const auto& t) { return t.code == nonexistent_code; });
+    const auto answered_with_another_key =
+        std::ranges::any_of(read_tiers, [&](const auto& t) { return t.code == nonexistent_code; });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the code that was written.

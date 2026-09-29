@@ -74,8 +74,7 @@ std::string conventions_difference(const conventions& original,
     }
     for (const auto& [name, count] : from_export) {
         if (!from_document.contains(name))
-            return path + ": the export writes <" + name +
-                   ">, which the document did not have";
+            return path + ": the export writes <" + name + ">, which the document did not have";
     }
 
     // The two documents are the same when the same mapper reads the same

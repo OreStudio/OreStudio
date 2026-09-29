@@ -108,8 +108,8 @@ TEST_CASE("decimal_scale_follows_the_value", tags) {
 TEST_CASE("decimal_refuses_text_that_is_not_a_decimal", tags) {
     auto lg(make_logger(test_suite));
 
-    for (const auto* text : {"", " ", "abc", "nan", "inf", "-inf", "1.2.3", "1e", "0x10",
-                             "1,5", "--1", "1 2", "."}) {
+    for (const auto* text :
+         {"", " ", "abc", "nan", "inf", "-inf", "1.2.3", "1e", "0x10", "1,5", "--1", "1 2", "."}) {
         const auto result = decimal::from_string(text);
         BOOST_LOG_SEV(lg, info) << "Refused [" << text << "]";
         CHECK_FALSE(result.has_value());
@@ -148,7 +148,8 @@ TEST_CASE("decimal_reaches_a_double_only_through_the_named_boundary", tags) {
     CHECK(decimal::from_double(parsed("0.0425").to_double()).value().to_string() == "0.0425");
 
     const auto wide = parsed("12345678901234567890.123456789");
-    BOOST_LOG_SEV(lg, info) << "Through a double: " << decimal::from_double(wide.to_double())->to_string();
+    BOOST_LOG_SEV(lg, info) << "Through a double: "
+                            << decimal::from_double(wide.to_double())->to_string();
     CHECK(decimal::from_double(wide.to_double()).value() != wide);
 }
 

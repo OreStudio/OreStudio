@@ -133,8 +133,8 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", tags) {
     }
 
     for (int i = 0; i < probe_count; ++i) {
-        const auto read = repo.read_latest(
-            ctx, id_str, "bond", "1", "notional", std::to_string(i + 1));
+        const auto read =
+            repo.read_latest(ctx, id_str, "bond", "1", "notional", std::to_string(i + 1));
         REQUIRE(read.size() == 1);
         BOOST_LOG_SEV(lg, debug) << "Read back: " << read[0].value.to_string();
         CHECK(read[0].value.to_string() == probes[i].canonical);
@@ -191,8 +191,7 @@ TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", tags) {
      * test states the refusal rather than hiding the value behind a cast.
      */
     const std::string too_wide = "12345678901234567890.1234567890";
-    CHECK(decimal::from_string(too_wide).value().to_string() ==
-          "12345678901234567890.123456789");
+    CHECK(decimal::from_string(too_wide).value().to_string() == "12345678901234567890.123456789");
 
     bond_leg_amount_repository repo;
     bool refused = false;

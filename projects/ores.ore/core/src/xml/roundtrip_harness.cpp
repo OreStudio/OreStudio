@@ -39,8 +39,7 @@ std::string first_difference(const std::string& lhs, const std::string& rhs) {
     if (at == limit && lhs.size() == rhs.size())
         return {};
 
-    const auto line =
-        1 + static_cast<std::size_t>(std::count(lhs.begin(), lhs.begin() + at, '\n'));
+    const auto line = 1 + static_cast<std::size_t>(std::count(lhs.begin(), lhs.begin() + at, '\n'));
     const auto from = at > window ? at - window : 0;
 
     auto excerpt = [&](const std::string& text) {
@@ -60,8 +59,7 @@ std::vector<std::filesystem::path> files_of_kind(const std::string& file_prefix,
                                                  const std::filesystem::path& corpus_root) {
     std::vector<std::filesystem::path> files;
     std::error_code ec;
-    for (std::filesystem::recursive_directory_iterator it(corpus_root, ec), end;
-         it != end && !ec;
+    for (std::filesystem::recursive_directory_iterator it(corpus_root, ec), end; it != end && !ec;
          it.increment(ec)) {
         if (!it->is_regular_file(ec))
             continue;

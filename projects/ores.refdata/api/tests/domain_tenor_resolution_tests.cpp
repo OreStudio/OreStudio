@@ -224,7 +224,8 @@ TEST_CASE("windows_overlap_detects_overlapping_windows", tags) {
     auto deposit =
         tenor_window{horizon, resolve_end_date(threeMonths, convention, resolution, horizon, spot)};
     auto overlapping = tenor_window{
-        laterHorizon, resolve_end_date(threeMonths, convention, resolution, laterHorizon, laterSpot)};
+        laterHorizon,
+        resolve_end_date(threeMonths, convention, resolution, laterHorizon, laterSpot)};
 
     CHECK(windows_overlap(deposit, overlapping));
 }

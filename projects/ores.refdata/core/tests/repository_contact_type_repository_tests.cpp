@@ -75,9 +75,8 @@ TEST_CASE("write_multiple_contact_types", tags) {
 
     const auto read_contact_types = repo.read_latest(h.context());
     for (const auto& written : contact_types) {
-        const auto it = std::ranges::find_if(read_contact_types, [&](const contact_type& c) {
-            return c.code == written.code;
-        });
+        const auto it = std::ranges::find_if(
+            read_contact_types, [&](const contact_type& c) { return c.code == written.code; });
         REQUIRE(it != read_contact_types.end());
         CHECK(it->name == written.name);
     }
@@ -101,9 +100,8 @@ TEST_CASE("read_latest_contact_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
 
     for (const auto& written : written_contact_types) {
-        const auto it = std::ranges::find_if(read_contact_types, [&](const contact_type& c) {
-            return c.code == written.code;
-        });
+        const auto it = std::ranges::find_if(
+            read_contact_types, [&](const contact_type& c) { return c.code == written.code; });
         REQUIRE(it != read_contact_types.end());
         CHECK(it->name == written.name);
     }

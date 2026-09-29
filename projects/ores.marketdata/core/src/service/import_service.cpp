@@ -180,7 +180,8 @@ canonical_key(const std::string& key,
 
 } // namespace
 
-import_service::import_service(context ctx, ores::nats::service::nats_client& auth_nats,
+import_service::import_service(context ctx,
+                               ores::nats::service::nats_client& auth_nats,
                                known_pairs_provider known_pairs)
     : ctx_(std::move(ctx))
     , auth_nats_(auth_nats)
@@ -301,8 +302,8 @@ import_service::import(const messaging::import_market_data_request& req) {
         if (std::any_of(data.begin(), data.end(), [](const auto& d) {
                 return d.series_type == "FX" && d.metric == "RATE";
             }))
-            fx_checker.emplace(known_pairs_ ? known_pairs_()
-                                            : fetch_known_currency_pairs(auth_nats_));
+            fx_checker.emplace(known_pairs_ ? known_pairs_() :
+                                              fetch_known_currency_pairs(auth_nats_));
 
         // parse_market_data already de-duplicated repeated (date, key)
         // pairs (last-line-wins) — see duplicate_policy. In error mode,
@@ -375,8 +376,8 @@ import_service::import(const messaging::import_market_data_request& req) {
                 // it projects to is what the series is given. A name no class can
                 // name leaves the column empty rather than storing a guess.
                 const auto identifier = core::oresmd_projections::from_index_name(f.qualifier);
-                const auto uri = identifier ? core::oresmd_parser::to_uri(*identifier).value
-                                            : std::string{};
+                const auto uri =
+                    identifier ? core::oresmd_parser::to_uri(*identifier).value : std::string{};
                 const auto series = find_or_create_series(
                     std::string(fixing_series_type), "RATE", f.qualifier, uri);
 

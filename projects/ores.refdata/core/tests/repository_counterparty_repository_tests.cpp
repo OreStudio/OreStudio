@@ -26,9 +26,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -77,9 +77,8 @@ TEST_CASE("write_multiple_counterparties", tags) {
 
     const auto read_counterparties = repo.read_latest(h.context());
     for (const auto& written : counterparties) {
-        const auto it = std::ranges::find_if(read_counterparties, [&](const counterparty& c) {
-            return c.id == written.id;
-        });
+        const auto it = std::ranges::find_if(
+            read_counterparties, [&](const counterparty& c) { return c.id == written.id; });
         REQUIRE(it != read_counterparties.end());
         CHECK(it->full_name == written.full_name);
     }
@@ -103,9 +102,8 @@ TEST_CASE("read_latest_counterparties", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     for (const auto& written : written_counterparties) {
-        const auto it = std::ranges::find_if(read_counterparties, [&](const counterparty& c) {
-            return c.id == written.id;
-        });
+        const auto it = std::ranges::find_if(
+            read_counterparties, [&](const counterparty& c) { return c.id == written.id; });
         REQUIRE(it != read_counterparties.end());
         CHECK(it->full_name == written.full_name);
     }

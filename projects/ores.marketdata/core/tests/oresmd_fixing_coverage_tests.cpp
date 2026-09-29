@@ -100,13 +100,14 @@ std::string class_of(std::string_view name) {
     // GENERIC-MD/<TYPE>/<METRIC>/... is the market-data key form an oresmd URI
     // replaces. The corpus puts two of the latter in a fixing payload, and they
     // are errors rather than fixings.
-    const std::pair<std::string_view, std::string_view> prefixed[] = {{"FX-", "fx"},
-                                                                      {"EQ-", "equity"},
-                                                                      {"COMM-", "commodity"},
-                                                                      {"POWER-", "power"},
-                                                                      {"BOND-", "security"},
-                                                                      {"GENERIC-MD/", market_data_key_class},
-                                                                      {"GENERIC-", "generic"}};
+    const std::pair<std::string_view, std::string_view> prefixed[] = {
+        {"FX-", "fx"},
+        {"EQ-", "equity"},
+        {"COMM-", "commodity"},
+        {"POWER-", "power"},
+        {"BOND-", "security"},
+        {"GENERIC-MD/", market_data_key_class},
+        {"GENERIC-", "generic"}};
     for (const auto& [prefix, cls] : prefixed) {
         if (name.starts_with(prefix))
             return std::string(cls);

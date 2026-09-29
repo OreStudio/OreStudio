@@ -152,9 +152,8 @@ public:
                 auto marked = *record;
                 marked.password_reset_required = true;
                 logins.save_login_info(marked);
-                BOOST_LOG_SEV(lg(), ores::logging::info)
-                    << "Administrator " << admin_username
-                    << " must set a password at first sign-in";
+                BOOST_LOG_SEV(lg(), ores::logging::info) << "Administrator " << admin_username
+                                                         << " must set a password at first sign-in";
             } else {
                 BOOST_LOG_SEV(lg(), ores::logging::warn)
                     << "No login record for " << admin_username

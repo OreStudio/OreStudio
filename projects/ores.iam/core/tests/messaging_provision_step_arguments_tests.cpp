@@ -175,18 +175,16 @@ TEST_CASE("a staff step's party entry that omits its name or its bundles is refu
     CHECK_THROWS_WITH(
         parse_staff_assignments(R"({"parties": [{"name": "ACME Corporation UK plc"}]})"),
         "The step names no 'bundles' argument.");
-    CHECK_THROWS_WITH(
-        parse_staff_assignments(
-            R"({"parties": [{"name": "ACME Corporation UK plc", "bundles": []}]})"),
-        "The step names no bundle in its 'bundles' argument.");
+    CHECK_THROWS_WITH(parse_staff_assignments(
+                          R"({"parties": [{"name": "ACME Corporation UK plc", "bundles": []}]})"),
+                      "The step names no bundle in its 'bundles' argument.");
 }
 
 TEST_CASE("a staff step's party entry whose default flag is not a boolean is refused", tags) {
-    CHECK_THROWS_WITH(
-        parse_staff_assignments(R"({"parties": [
+    CHECK_THROWS_WITH(parse_staff_assignments(R"({"parties": [
              {"name": "ACME Corporation UK plc", "bundles": ["acme_uk"], "default": "yes"}
            ]})"),
-        "The step's argument 'default' is not a boolean.");
+                      "The step's argument 'default' is not a boolean.");
 }
 
 TEST_CASE("a photo step reads each party's name and dataset and the logo's key", tags) {
@@ -225,17 +223,17 @@ TEST_CASE("a market feed step reads its configuration bundles and its theme", ta
         R"({"bundles": ["synthetic_realistic_2026", "marketdata.reference_vintage_2026_05_05"],
             "theme": "synthetic.themes.realistic_2026"})");
 
-    CHECK(arguments.bundles ==
-          std::vector<std::string>{"synthetic_realistic_2026",
-                                   "marketdata.reference_vintage_2026_05_05"});
+    CHECK(arguments.bundles == std::vector<std::string>{"synthetic_realistic_2026",
+                                                        "marketdata.reference_vintage_2026_05_05"});
     CHECK(arguments.theme == "synthetic.themes.realistic_2026");
 }
 
 TEST_CASE("a market feed step that names no theme is refused", tags) {
     CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"bundles": ["synthetic_realistic_2026"]})"),
                       "The step names no 'theme' argument.");
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"theme": "synthetic.themes.realistic_2026"})"),
-                      "The step names no 'bundles' argument.");
+    CHECK_THROWS_WITH(
+        parse_market_feed_arguments(R"({"theme": "synthetic.themes.realistic_2026"})"),
+        "The step names no 'bundles' argument.");
     CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"bundles": ["synthetic_realistic_2026"],
                                                        "theme": 7})"),
                       "The step's argument 'theme' is not a string.");

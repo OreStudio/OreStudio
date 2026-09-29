@@ -96,8 +96,8 @@ public:
             repository::workspace_repository repo;
             reply(nats_,
                   msg,
-                  resolve_workspace_response{
-                      .resolution_order = repo.resolution_order(ctx, req->workspace_id)});
+                  resolve_workspace_response{.resolution_order =
+                                                 repo.resolution_order(ctx, req->workspace_id)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(workspace_operations_handler_lg(), error)
                 << "Error resolving workspace " << req->workspace_id << ": " << e.what();
@@ -128,9 +128,10 @@ public:
         if (!req) {
             BOOST_LOG_SEV(workspace_operations_handler_lg(), warn)
                 << "Failed to decode set_trade_scope_request";
-            reply(nats_,
-                  msg,
-                  set_trade_scope_response{.success = false, .message = "Failed to decode request"});
+            reply(
+                nats_,
+                msg,
+                set_trade_scope_response{.success = false, .message = "Failed to decode request"});
             return;
         }
 

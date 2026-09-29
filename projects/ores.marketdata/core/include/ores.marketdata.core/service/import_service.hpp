@@ -68,8 +68,8 @@ public:
      *        against, when the caller wants to name them rather than have the
      *        service read them from ores.refdata.
      */
-    using known_pairs_provider = std::function<
-        std::set<ores::ore::market::fx_quote_convention_checker::currency_pair>()>;
+    using known_pairs_provider =
+        std::function<std::set<ores::ore::market::fx_quote_convention_checker::currency_pair>()>;
 
     /**
      * @param auth_nats Authenticated client used to fetch ores.refdata's
@@ -82,7 +82,8 @@ public:
      *        its own pairs is deterministic instead of racing whatever
      *        ores.refdata.service happens to answer.
      */
-    import_service(context ctx, ores::nats::service::nats_client& auth_nats,
+    import_service(context ctx,
+                   ores::nats::service::nats_client& auth_nats,
                    known_pairs_provider known_pairs = {});
 
     messaging::import_market_data_response import(const messaging::import_market_data_request& req);

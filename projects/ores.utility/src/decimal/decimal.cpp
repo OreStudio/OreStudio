@@ -103,8 +103,8 @@ std::optional<parts> split(std::string_view str) {
     if (i != str.size())
         return std::nullopt;
 
-    p.digits = std::string(str.substr(int_begin, int_end - int_begin))
-        + std::string(str.substr(frac_begin, frac_end - frac_begin));
+    p.digits = std::string(str.substr(int_begin, int_end - int_begin)) +
+               std::string(str.substr(frac_begin, frac_end - frac_begin));
     p.point = static_cast<long>(int_end - int_begin) + exponent;
     return p;
 }
@@ -138,8 +138,8 @@ std::string to_plain_string(const value_type& v) {
         int_part = "0";
         frac_part = std::string(static_cast<std::size_t>(-p->point), '0') + p->digits;
     } else if (static_cast<std::size_t>(p->point) >= p->digits.size()) {
-        int_part = p->digits
-            + std::string(static_cast<std::size_t>(p->point) - p->digits.size(), '0');
+        int_part =
+            p->digits + std::string(static_cast<std::size_t>(p->point) - p->digits.size(), '0');
     } else {
         const auto point = static_cast<std::size_t>(p->point);
         int_part = p->digits.substr(0, point);
@@ -164,27 +164,27 @@ std::string to_plain_string(const value_type& v) {
 
 }
 
-decimal::decimal(value_type v) : value_(std::move(v)) {}
+decimal::decimal(value_type v)
+    : value_(std::move(v)) {}
 
 std::expected<decimal, std::string> decimal::from_string(std::string_view str) {
     const auto p = split(str);
     if (!p)
-        return std::unexpected(
-            "A decimal is text such as \"-12.5\" or \"1e-10\", got: \"" + std::string(str) + "\"");
+        return std::unexpected("A decimal is text such as \"-12.5\" or \"1e-10\", got: \"" +
+                               std::string(str) + "\"");
 
     constexpr std::size_t held = std::numeric_limits<value_type>::digits10;
     if (significant_digit_count(p->digits) > held) {
-        return std::unexpected(
-            "A decimal holds " + std::to_string(held)
-            + " significant digits, and this text states more: \"" + std::string(str)
-            + "\" would be rounded silently");
+        return std::unexpected("A decimal holds " + std::to_string(held) +
+                               " significant digits, and this text states more: \"" +
+                               std::string(str) + "\" would be rounded silently");
     }
 
     try {
         return decimal(value_type(std::string(str)));
     } catch (const std::exception& e) {
-        return std::unexpected(
-            "Unable to read the decimal \"" + std::string(str) + "\": " + e.what());
+        return std::unexpected("Unable to read the decimal \"" + std::string(str) +
+                               "\": " + e.what());
     }
 }
 

@@ -84,9 +84,13 @@ TEST_CASE("roundtrip_harness_names_the_difference_when_one_document_is_a_prefix"
 }
 
 TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", tags) {
-    const auto kind = ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-        "credit simulation", "creditsimulation", credit_simulation_mapper::map,
-        credit_simulation_mapper::reverse, credit_simulation_difference);
+    const auto kind =
+        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
+            "credit simulation",
+            "creditsimulation",
+            credit_simulation_mapper::map,
+            credit_simulation_mapper::reverse,
+            credit_simulation_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
@@ -95,9 +99,13 @@ TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", tags) {
 }
 
 TEST_CASE("roundtrip_harness_round_trips_every_credit_simulation_in_the_corpus", tags) {
-    const auto kind = ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-        "credit simulation", "creditsimulation", credit_simulation_mapper::map,
-        credit_simulation_mapper::reverse, credit_simulation_difference);
+    const auto kind =
+        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
+            "credit simulation",
+            "creditsimulation",
+            credit_simulation_mapper::map,
+            credit_simulation_mapper::reverse,
+            credit_simulation_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
@@ -110,9 +118,13 @@ TEST_CASE("roundtrip_harness_round_trips_every_credit_simulation_in_the_corpus",
 }
 
 TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", tags) {
-    const auto kind = ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-        "credit simulation, lossy", "creditsimulation", lose_everything, rebuild_nothing,
-        credit_simulation_difference);
+    const auto kind =
+        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
+            "credit simulation, lossy",
+            "creditsimulation",
+            lose_everything,
+            rebuild_nothing,
+            credit_simulation_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
@@ -122,9 +134,13 @@ TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", tags) {
 }
 
 TEST_CASE("roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold", tags) {
-    const auto kind = ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-        "basel traffic light", "baselTrafficLight", credit_simulation_mapper::map,
-        credit_simulation_mapper::reverse, credit_simulation_difference);
+    const auto kind =
+        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
+            "basel traffic light",
+            "baselTrafficLight",
+            credit_simulation_mapper::map,
+            credit_simulation_mapper::reverse,
+            credit_simulation_difference);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 

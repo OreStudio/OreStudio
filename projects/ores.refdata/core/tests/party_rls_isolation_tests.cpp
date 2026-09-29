@@ -31,10 +31,10 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
@@ -189,9 +189,8 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
     // one the system party can see. The test shares the store with the rest of
     // the suite, so the read is expected to carry other parties' assignments --
     // what it must never carry is one outside the visible set.
-    const auto out_of_scope = std::ranges::find_if(all, [&](const party_counterparty& pc) {
-        return !is_visible(pc.party_id);
-    });
+    const auto out_of_scope = std::ranges::find_if(
+        all, [&](const party_counterparty& pc) { return !is_visible(pc.party_id); });
     CHECK(out_of_scope == all.end());
 
     const auto tid_str = tid.to_string();

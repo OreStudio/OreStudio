@@ -83,7 +83,6 @@ public:
      * invalid.
      */
     static validation_result validate(const std::string& password, bool enforce_policy = true);
-
 };
 
 }

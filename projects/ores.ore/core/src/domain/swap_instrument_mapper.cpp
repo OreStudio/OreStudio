@@ -422,7 +422,9 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(ld.ScheduleData));
 
     if (ld.Notionals)
-        tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(first_notional(*ld.Notionals))).value();
+        tm.notional = ores::utility::decimal::decimal::from_double(
+                          static_cast<double>(first_notional(*ld.Notionals)))
+                          .value();
 
     if (ld.legDataType) {
         const auto& ldt = *ld.legDataType;
@@ -545,7 +547,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     fi.start_date = to_domain_date(std::string(fra.StartDate));
     fi.end_date = to_domain_date(std::string(fra.EndDate));
     fi.currency = to_string(fra.Currency);
-    fi.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
+    fi.notional =
+        ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
     fi.rate_index = std::string(fra.Index);
     fi.strike = static_cast<double>(fra.Strike);
     fi.long_short = "Long";
@@ -557,7 +560,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     tm.currency = to_string(fra.Currency);
     tm.floating_index_code = std::string(fra.Index);
     tm.fixed_rate = static_cast<double>(fra.Strike);
-    tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
+    tm.notional =
+        ores::utility::decimal::decimal::from_double(static_cast<double>(fra.Notional)).value();
     auto& au = sl.audit;
     au.modified_by = "ores";
     au.performed_by = "ores";
@@ -604,7 +608,9 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     tm.payment_frequency_code = tenor_to_payment_frequency(first_tenor(cf.LegData.ScheduleData));
 
     if (!cf.LegData.Notionals.Notional.empty())
-        tm.notional = ores::utility::decimal::decimal::from_double(static_cast<double>(cf.LegData.Notionals.Notional.front())).value();
+        tm.notional = ores::utility::decimal::decimal::from_double(
+                          static_cast<double>(cf.LegData.Notionals.Notional.front()))
+                          .value();
 
     if (cf.LegData.legDataType.FloatingLegData) {
         tm.floating_index_code = std::string(cf.LegData.legDataType.FloatingLegData->Index);

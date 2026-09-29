@@ -19,9 +19,9 @@
  */
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
 #include "ores.ore.core/xml/importer.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/book_status_constants.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"

@@ -72,14 +72,15 @@ std::vector<domain::equity_position_option_underlying> parse_entries(const std::
             while (field_begin <= token.size()) {
                 const auto field_end = token.find(':', field_begin);
                 fields.push_back(token.substr(
-                    field_begin, field_end == std::string::npos ? field_end : field_end - field_begin));
+                    field_begin,
+                    field_end == std::string::npos ? field_end : field_end - field_begin));
                 if (field_end == std::string::npos)
                     break;
                 field_begin = field_end + 1;
             }
             if (fields.size() < 3)
-                throw std::runtime_error(
-                    "An entry states at least name:strike:long_short, got '" + token + "'.");
+                throw std::runtime_error("An entry states at least name:strike:long_short, got '" +
+                                         token + "'.");
             domain::equity_position_option_underlying entry;
             entry.sequence_number = static_cast<int>(entries.size()) + 1;
             entry.underlying_name = fields[0];
@@ -108,23 +109,24 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
                                                                    nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("equity_position_option_underlyings");
 
-    menu->Insert(
-        "set",
-        [&session](std::ostream& out, std::string instrument_id, std::string entries) {
-            process_set_underlyings(
-                std::ref(out), std::ref(session), std::move(instrument_id), std::move(entries));
-        },
-        "Write the option entries of one equity position instrument "
-        "(instrument_id "
-        "\"name:strike:long_short[:weight[:option_type[:exercise_type[:settlement_type]]]]"
-        ",...\")",
-        {"instrument_id", "entries"});
+    menu->Insert("set",
+                 [&session](std::ostream& out, std::string trade_id, std::string entries) {
+                     process_set_underlyings(
+                         std::ref(out), std::ref(session), std::move(trade_id), std::move(entries));
+                 },
+                 "Write the option entries of one equity position instrument "
+                 "(trade_id "
+                 "\"name:strike:long_short[:weight[:option_type[:exercise_type[:settlement_type]]]]"
+                 ",...\")",
+                 {"trade_id", "entries"});
 
     root_menu.Insert(std::move(menu));
 }
 
-void equity_position_option_underlying_commands::process_set_underlyings(
-    std::ostream& out, nats_client& session, std::string instrument_id, std::string entries) {
+void equity_position_option_underlying_commands::process_set_underlyings(std::ostream& out,
+                                                                         nats_client& session,
+                                                                         std::string trade_id,
+                                                                         std::string entries) {
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to write equity position entries." << std::endl;
         return;
@@ -140,15 +142,15 @@ void equity_position_option_underlying_commands::process_set_underlyings(
 
     boost::uuids::uuid id;
     try {
-        id = boost::uuids::string_generator()(instrument_id);
+        id = boost::uuids::string_generator()(trade_id);
     } catch (const std::exception&) {
-        fail(out) << "Invalid instrument_id '" << instrument_id << "'." << std::endl;
+        fail(out) << "Invalid trade_id '" << trade_id << "'." << std::endl;
         return;
     }
 
     for (auto& entry : parsed) {
         messaging::put_equity_position_option_underlying_request req;
-        req.change.write.instrument_id = id;
+        req.change.write.trade_id = id;
         req.change.write.sequence_number = entry.sequence_number;
         req.change.write.underlying_name = std::move(entry.underlying_name);
         req.change.write.strike = entry.strike;
@@ -160,8 +162,7 @@ void equity_position_option_underlying_commands::process_set_underlyings(
         auto result = do_auth_request<messaging::put_equity_position_option_underlying_response>(
             out, session, std::string(req.nats_subject), req);
         if (!result || result->result.outcome != ores::utility::domain::outcome::ok) {
-            const auto& message =
-                result ? result->result.message : std::string("no response");
+            const auto& message = result ? result->result.message : std::string("no response");
             BOOST_LOG_SEV(lg(), warn) << "Failed to write equity position entry: " << message;
             fail(out) << "Failed to write equity position entry: " << message << std::endl;
             return;

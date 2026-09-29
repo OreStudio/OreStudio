@@ -107,6 +107,125 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Swap Index Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_swap_index_conventions_tbl enable row level security;
+
+drop policy if exists swap_index_conventions_tenant_isolation_policy
+    on ores_refdata_swap_index_conventions_tbl;
+
+create policy swap_index_conventions_tenant_isolation_policy
+    on ores_refdata_swap_index_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Future Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_future_conventions_tbl enable row level security;
+
+drop policy if exists future_conventions_tenant_isolation_policy
+    on ores_refdata_future_conventions_tbl;
+
+create policy future_conventions_tenant_isolation_policy
+    on ores_refdata_future_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Option Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_fx_option_conventions_tbl enable row level security;
+
+drop policy if exists fx_option_conventions_tenant_isolation_policy
+    on ores_refdata_fx_option_conventions_tbl;
+
+create policy fx_option_conventions_tenant_isolation_policy
+    on ores_refdata_fx_option_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Averaging OIS Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_average_ois_conventions_tbl enable row level security;
+
+drop policy if exists average_ois_conventions_tenant_isolation_policy
+    on ores_refdata_average_ois_conventions_tbl;
+
+create policy average_ois_conventions_tenant_isolation_policy
+    on ores_refdata_average_ois_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Cross-Currency Basis Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_cross_currency_basis_conventions_tbl enable row level security;
+
+drop policy if exists cross_currency_basis_conventions_tenant_isolation_policy
+    on ores_refdata_cross_currency_basis_conventions_tbl;
+
+create policy cross_currency_basis_conventions_tenant_isolation_policy
+    on ores_refdata_cross_currency_basis_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Two-Tenor Basis Swap Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_tenor_basis_two_swap_conventions_tbl enable row level security;
+
+drop policy if exists tenor_basis_two_swap_conventions_tenant_isolation_policy
+    on ores_refdata_tenor_basis_two_swap_conventions_tbl;
+
+create policy tenor_basis_two_swap_conventions_tenant_isolation_policy
+    on ores_refdata_tenor_basis_two_swap_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Tenor Basis Swap Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_tenor_basis_swap_conventions_tbl enable row level security;
+
+drop policy if exists tenor_basis_swap_conventions_tenant_isolation_policy
+    on ores_refdata_tenor_basis_swap_conventions_tbl;
+
+create policy tenor_basis_swap_conventions_tenant_isolation_policy
+    on ores_refdata_tenor_basis_swap_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- OIS Conventions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ois_conventions_tbl enable row level security;
@@ -163,6 +282,22 @@ drop policy if exists overnight_index_conventions_tenant_isolation_policy
     on ores_refdata_overnight_index_conventions_tbl;
 
 create policy overnight_index_conventions_tenant_isolation_policy on ores_refdata_overnight_index_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Zero Inflation Index Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_zero_inflation_index_conventions_tbl enable row level security;
+
+drop policy if exists zero_inflation_index_conventions_tenant_isolation_policy
+    on ores_refdata_zero_inflation_index_conventions_tbl;
+
+create policy zero_inflation_index_conventions_tenant_isolation_policy on ores_refdata_zero_inflation_index_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

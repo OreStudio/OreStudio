@@ -45,7 +45,7 @@ generate_synthetic_instrument_option(utility::generation::generation_context& ct
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.instrument_id = ctx.generate_uuid();
+    r.trade_id = ctx.generate_uuid();
     r.long_short = std::string("Long");
     r.has_exercise_data = true;
     r.exercise_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};

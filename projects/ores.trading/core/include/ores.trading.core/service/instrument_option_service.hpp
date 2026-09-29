@@ -121,8 +121,7 @@ public:
      * @return The instrument option at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_option>
-    get_instrument_option_at_version(const boost::uuids::uuid& instrument_id,
-                                     std::uint32_t version);
+    get_instrument_option_at_version(const boost::uuids::uuid& trade_id, std::uint32_t version);
 
     /**
      * @brief Retrieves a single instrument option by its primary key.
@@ -133,13 +132,13 @@ public:
      * @return The instrument option if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_option>
-    get_instrument_option(const boost::uuids::uuid& instrument_id);
+    get_instrument_option(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of instrument options by primary key.
      */
     std::vector<domain::instrument_option>
-    get_instrument_options(const std::vector<std::string>& instrument_ids);
+    get_instrument_options(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a instrument option (creates or updates).
@@ -162,12 +161,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_instrument_option(const boost::uuids::uuid& instrument_id);
+    void delete_instrument_option(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes instrument options by their primary keys.
      */
-    void delete_instrument_options(const std::vector<std::string>& instrument_ids);
+    void delete_instrument_options(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a instrument option.
@@ -175,7 +174,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::instrument_option>
-    get_instrument_option_history(const std::string& instrument_id);
+    get_instrument_option_history(const std::string& trade_id);
 
 private:
     context ctx_;

@@ -231,9 +231,12 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
         request_json(
             {declared("load_staff",
                       R"({"parties":[{"name":"Acme Corporation Plc","bundles":["acme_group"]}]})"),
-             declared("attach_photos",
-                      R"({"parties":[{"name":"Acme Corporation Plc","dataset":"acme.acme_group.accounts"}]})"),
-             declared("start_market_feeds", R"({"bundles":["synthetic_realistic_2026"],"theme":"synthetic.themes.realistic_2026"})")}),
+             declared(
+                 "attach_photos",
+                 R"({"parties":[{"name":"Acme Corporation Plc","dataset":"acme.acme_group.accounts"}]})"),
+             declared(
+                 "start_market_feeds",
+                 R"({"bundles":["synthetic_realistic_2026"],"theme":"synthetic.themes.realistic_2026"})")}),
         tenant_id,
         correlation_id);
 

@@ -200,16 +200,16 @@ std::optional<domain::composite_leg> composite_leg_repository::read_at_version(
     return entities.front();
 }
 
-std::vector<domain::composite_leg> composite_leg_repository::read_latest_by_instrument_id(
-    context ctx, const std::string& instrument_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest composite legs. instrument_id: " << instrument_id
+std::vector<domain::composite_leg> composite_leg_repository::read_latest_by_trade_id(
+    context ctx, const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest composite legs. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value()) |
+                             "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
                        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
@@ -217,13 +217,14 @@ std::vector<domain::composite_leg> composite_leg_repository::read_latest_by_inst
         query,
         [](const auto& entities) { return composite_leg_mapper::map(entities); },
         lg(),
-        "Reading latest composite legs by instrument_id.");
+        "Reading latest composite legs by trade_id.");
 }
 
-std::uint32_t composite_leg_repository::get_total_composite_leg_count_by_instrument_id(
-    context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active composite legs count. instrument_id: "
-                               << instrument_id;
+std::uint32_t
+composite_leg_repository::get_total_composite_leg_count_by_trade_id(context ctx,
+                                                                    const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active composite legs count. trade_id: "
+                               << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
@@ -234,14 +235,14 @@ std::uint32_t composite_leg_repository::get_total_composite_leg_count_by_instrum
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<composite_leg_entity>(sqlgen::count().as<"count">()) |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value()) |
+                             "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
                        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active composite legs count by instrument_id: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active composite legs count by trade_id: " << count;
     return count;
 }
 

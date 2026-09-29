@@ -54,7 +54,6 @@ struct trade_entity {
     std::string trade_type;
     std::optional<std::string> counterparty_id;
     std::optional<std::string> product_type;
-    std::optional<std::string> instrument_id;
     std::optional<std::string> asset_class;
     std::string netting_set_id;
     std::string activity_type_code;

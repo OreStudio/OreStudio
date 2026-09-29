@@ -22,6 +22,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
+#include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -44,7 +45,8 @@ using namespace ores::logging;
  */
 equity_variance_swap_instrument make_instrument(database_helper& h) {
     equity_variance_swap_instrument r;
-    r.identity.instrument_id = boost::uuids::random_generator()();
+    // The instrument is keyed by its trade, so the trade is written first.
+    r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "EquityVarianceSwap";
     r.underlying_name = ".SPX";
@@ -71,7 +73,7 @@ TEST_CASE("equity_variance_swap_instrument_write_and_read_latest", tags) {
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     auto instr = make_instrument(h);
-    const auto id_str = boost::uuids::to_string(instr.identity.instrument_id);
+    const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "Writing equity variance swap instrument: " << instr;
 
     equity_variance_swap_instrument_repository repo;
@@ -109,7 +111,7 @@ TEST_CASE("equity_variance_swap_instrument_remove", tags) {
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     auto instr = make_instrument(h);
-    const auto id_str = boost::uuids::to_string(instr.identity.instrument_id);
+    const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
 
     equity_variance_swap_instrument_repository repo;
     repo.write(ctx, instr);

@@ -71,6 +71,10 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
     r.format = ""; // Not in XSD
     const std::string ore_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    // ORE's token is carried verbatim so that an export writes back what an
+    // import read. The nature is our classification of it and is derived,
+    // because Major and Minor both classify as fiat.
+    r.ore_currency_type = ore_type.empty() ? std::nullopt : std::optional<std::string>(ore_type);
     r.monetary_nature = map_monetary_nature(ore_type);
     // market_tier is left empty on import and is not written on export.
     r.market_tier = "";
@@ -100,9 +104,9 @@ currencyDefinition currency_mapper::map(const refdata::domain::currency& v) {
     r.FractionsPerUnit = v.fractions_per_unit;
     r.RoundingType = parse_rounding_type(v.rounding_type);
     r.RoundingPrecision = v.rounding_precision;
-    if (!v.monetary_nature.empty()) {
+    if (v.ore_currency_type) {
         currencyDefinition_CurrencyType_t ct;
-        static_cast<xsd::string&>(ct) = v.monetary_nature;
+        static_cast<xsd::string&>(ct) = *v.ore_currency_type;
         r.CurrencyType = ct;
     }
 

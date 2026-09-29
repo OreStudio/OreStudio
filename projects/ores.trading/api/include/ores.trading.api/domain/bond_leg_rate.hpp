@@ -79,9 +79,9 @@ struct bond_leg_rate final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument this rate block belongs to.
+     * @brief The trade this rate block belongs to.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Which leg list of the instrument the leg holding this rate block belongs to: bond,

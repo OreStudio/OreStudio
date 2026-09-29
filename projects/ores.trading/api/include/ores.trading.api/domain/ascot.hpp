@@ -33,7 +33,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Per-trade ascot facts: one row per ascot instrument, keyed by instrument_id.
+ * @brief Per-trade ascot facts: one row per ascot instrument, keyed by trade_id.
  *
  * One row per asset swapped convertible option transaction (ascot), keyed
  * by the instrument row it extends. The columns fix the ER row
@@ -58,12 +58,12 @@ struct ascot final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the ascot instrument this fact row extends.
+     * @brief The trade the ascot fact row belongs to.
      *
-     * The instrument row carries the trade, workspace and party; the fact row only carries the
-     * ascot terms. Per the ER, no workspace column rides the fact tables.
+     * The trade row carries the workspace and the party; the fact row only carries the ascot terms.
+     * Per the ER, no workspace column rides the fact tables.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Option type of the conversion option (Call, Put).

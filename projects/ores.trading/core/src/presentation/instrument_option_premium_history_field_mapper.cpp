@@ -34,7 +34,7 @@ render_instrument_option_premium_fields(const domain::instrument_option_premium&
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Amount", .value = v.amount.to_string()});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back(

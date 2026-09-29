@@ -73,9 +73,8 @@ TEST_CASE("write_multiple_currencies", tags) {
 
     const auto read_currencies = repo.read_latest(h.context());
     for (const auto& written : currencies) {
-        const auto it = std::ranges::find_if(read_currencies, [&](const currency& c) {
-            return c.iso_code == written.iso_code;
-        });
+        const auto it = std::ranges::find_if(
+            read_currencies, [&](const currency& c) { return c.iso_code == written.iso_code; });
         REQUIRE(it != read_currencies.end());
         CHECK(it->name == written.name);
     }

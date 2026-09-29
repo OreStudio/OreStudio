@@ -59,7 +59,7 @@ std::vector<domain::instrument_schedule> read_one(repository::instrument_schedul
                                                   const ores::database::context& ctx,
                                                   const messaging::instrument_schedule_key& key) {
     return repo.read_latest(ctx,
-                            boost::uuids::to_string(key.instrument_id),
+                            boost::uuids::to_string(key.trade_id),
                             key.owner_role,
                             std::to_string(key.owner_number),
                             key.schedule_role,
@@ -74,7 +74,7 @@ std::vector<domain::instrument_schedule> read_one(repository::instrument_schedul
  */
 messaging::instrument_schedule_key key_from(const domain::instrument_schedule& v) {
     messaging::instrument_schedule_key key;
-    key.instrument_id = v.instrument_id;
+    key.trade_id = v.trade_id;
     key.owner_role = v.owner_role;
     key.owner_number = v.owner_number;
     key.schedule_role = v.schedule_role;
@@ -91,7 +91,7 @@ messaging::instrument_schedule_key key_from(const domain::instrument_schedule& v
  */
 domain::instrument_schedule to_domain(const messaging::instrument_schedule_write& write) {
     domain::instrument_schedule v;
-    v.instrument_id = write.instrument_id;
+    v.trade_id = write.trade_id;
     v.owner_role = write.owner_role;
     v.owner_number = write.owner_number;
     v.schedule_role = write.schedule_role;
@@ -236,7 +236,7 @@ instrument_schedule_service::delete_instrument_schedule(
         expected = request.removal.precondition.version;
     }
     switch (repo_.remove(ctx_,
-                         boost::uuids::to_string(request.removal.key.instrument_id),
+                         boost::uuids::to_string(request.removal.key.trade_id),
                          request.removal.key.owner_role,
                          std::to_string(request.removal.key.owner_number),
                          request.removal.key.schedule_role,
@@ -283,10 +283,10 @@ instrument_schedule_service::delete_many_instrument_schedules(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> instrument_id_keys;
-    instrument_id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        instrument_id_keys.push_back(boost::uuids::to_string(removal.key.instrument_id));
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
     std::vector<std::string> owner_role_keys;
     owner_role_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
@@ -304,7 +304,7 @@ instrument_schedule_service::delete_many_instrument_schedules(
     for (const auto& removal : request.removals)
         sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
     repo_.remove(ctx_,
-                 instrument_id_keys,
+                 trade_id_keys,
                  owner_role_keys,
                  owner_number_keys,
                  schedule_role_keys,
@@ -330,7 +330,7 @@ instrument_schedule_service::list_instrument_schedule_versions(
         return response;
     }
     auto all = repo_.read_all(ctx_,
-                              boost::uuids::to_string(request.key.instrument_id),
+                              boost::uuids::to_string(request.key.trade_id),
                               request.key.owner_role,
                               std::to_string(request.key.owner_number),
                               request.key.schedule_role,
@@ -350,14 +350,14 @@ messaging::get_instrument_schedule_version_response
 instrument_schedule_service::get_instrument_schedule_version(
     const messaging::get_instrument_schedule_version_request& request) {
     messaging::get_instrument_schedule_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_,
-        boost::uuids::to_string(request.key.instrument_schedule.instrument_id),
-        request.key.instrument_schedule.owner_role,
-        std::to_string(request.key.instrument_schedule.owner_number),
-        request.key.instrument_schedule.schedule_role,
-        std::to_string(request.key.instrument_schedule.sequence_number),
-        request.key.version);
+    auto found =
+        repo_.read_at_version(ctx_,
+                              boost::uuids::to_string(request.key.instrument_schedule.trade_id),
+                              request.key.instrument_schedule.owner_role,
+                              std::to_string(request.key.instrument_schedule.owner_number),
+                              request.key.instrument_schedule.schedule_role,
+                              std::to_string(request.key.instrument_schedule.sequence_number),
+                              request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -429,59 +429,57 @@ std::uint32_t instrument_schedule_service::count_instrument_schedules() {
 
 
 std::optional<domain::instrument_schedule>
-instrument_schedule_service::get_instrument_schedule_at_version(const std::string& instrument_id,
+instrument_schedule_service::get_instrument_schedule_at_version(const std::string& trade_id,
                                                                 const std::string& owner_role,
                                                                 const std::string& owner_number,
                                                                 const std::string& schedule_role,
                                                                 const std::string& sequence_number,
                                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument schedule at version. "
-                               << "instrument_id: " << instrument_id
-                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << "trade_id: " << trade_id << " owner_role: " << owner_role
+                               << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     return repo_.read_at_version(
-        ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number, version);
+        ctx_, trade_id, owner_role, owner_number, schedule_role, sequence_number, version);
 }
 
 std::optional<domain::instrument_schedule>
-instrument_schedule_service::get_instrument_schedule(const std::string& instrument_id,
+instrument_schedule_service::get_instrument_schedule(const std::string& trade_id,
                                                      const std::string& owner_role,
                                                      const std::string& owner_number,
                                                      const std::string& schedule_role,
                                                      const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument schedule. "
-                               << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Getting instrument schedule. " << "trade_id: " << trade_id
                                << " owner_role: " << owner_role << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number;
-    auto results = repo_.read_latest(
-        ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
+    auto results =
+        repo_.read_latest(ctx_, trade_id, owner_role, owner_number, schedule_role, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::instrument_schedule> instrument_schedule_service::get_instrument_schedules(
-    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& owner_roles,
     const std::vector<std::string>& owner_numbers,
     const std::vector<std::string>& schedule_roles,
     const std::vector<std::string>& sequence_numbers) {
     return repo_.read_latest(
-        ctx_, instrument_ids, owner_roles, owner_numbers, schedule_roles, sequence_numbers);
+        ctx_, trade_ids, owner_roles, owner_numbers, schedule_roles, sequence_numbers);
 }
 
 void instrument_schedule_service::save_instrument_schedule(const domain::instrument_schedule& v) {
-    if (v.instrument_id.is_nil())
-        throw std::invalid_argument("Instrument Schedule instrument_id cannot be empty.");
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Instrument Schedule trade_id cannot be empty.");
     if (v.owner_role.empty())
         throw std::invalid_argument("Instrument Schedule owner_role cannot be empty.");
     if (v.schedule_role.empty())
         throw std::invalid_argument("Instrument Schedule schedule_role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument schedule. "
-                               << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Saving instrument schedule. " << "trade_id: " << v.trade_id
                                << " owner_role: " << v.owner_role
                                << " owner_number: " << v.owner_number
                                << " schedule_role: " << v.schedule_role
@@ -489,8 +487,7 @@ void instrument_schedule_service::save_instrument_schedule(const domain::instrum
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument schedule. "
-                              << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), info) << "Saved instrument schedule. " << "trade_id: " << v.trade_id
                               << " owner_role: " << v.owner_role
                               << " owner_number: " << v.owner_number
                               << " schedule_role: " << v.schedule_role
@@ -500,8 +497,8 @@ void instrument_schedule_service::save_instrument_schedule(const domain::instrum
 void instrument_schedule_service::save_instrument_schedules(
     const std::vector<domain::instrument_schedule>& instrument_schedules) {
     for (const auto& e : instrument_schedules) {
-        if (e.instrument_id.is_nil())
-            throw std::invalid_argument("Instrument Schedule instrument_id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Instrument Schedule trade_id cannot be empty.");
         if (e.owner_role.empty())
             throw std::invalid_argument("Instrument Schedule owner_role cannot be empty.");
         if (e.schedule_role.empty())
@@ -516,47 +513,43 @@ void instrument_schedule_service::save_instrument_schedules(
     repo_.write(ctx_, ts);
 }
 
-void instrument_schedule_service::delete_instrument_schedule(const std::string& instrument_id,
+void instrument_schedule_service::delete_instrument_schedule(const std::string& trade_id,
                                                              const std::string& owner_role,
                                                              const std::string& owner_number,
                                                              const std::string& schedule_role,
                                                              const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument schedule. "
-                               << "instrument_id: " << instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument schedule. " << "trade_id: " << trade_id
                                << " owner_role: " << owner_role << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument schedule. "
-                              << "instrument_id: " << instrument_id << " owner_role: " << owner_role
-                              << " owner_number: " << owner_number
+    repo_.remove(ctx_, trade_id, owner_role, owner_number, schedule_role, sequence_number);
+    BOOST_LOG_SEV(lg(), info) << "Removed instrument schedule. " << "trade_id: " << trade_id
+                              << " owner_role: " << owner_role << " owner_number: " << owner_number
                               << " schedule_role: " << schedule_role
                               << " sequence_number: " << sequence_number;
 }
 
 void instrument_schedule_service::delete_instrument_schedules(
-    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& owner_roles,
     const std::vector<std::string>& owner_numbers,
     const std::vector<std::string>& schedule_roles,
     const std::vector<std::string>& sequence_numbers) {
-    repo_.remove(
-        ctx_, instrument_ids, owner_roles, owner_numbers, schedule_roles, sequence_numbers);
+    repo_.remove(ctx_, trade_ids, owner_roles, owner_numbers, schedule_roles, sequence_numbers);
 }
 
 std::vector<domain::instrument_schedule>
-instrument_schedule_service::get_instrument_schedule_history(const std::string& instrument_id,
+instrument_schedule_service::get_instrument_schedule_history(const std::string& trade_id,
                                                              const std::string& owner_role,
                                                              const std::string& owner_number,
                                                              const std::string& schedule_role,
                                                              const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument schedule. "
-                               << "instrument_id: " << instrument_id
-                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << "trade_id: " << trade_id << " owner_role: " << owner_role
+                               << " owner_number: " << owner_number
                                << " schedule_role: " << schedule_role
                                << " sequence_number: " << sequence_number;
-    return repo_.read_all(
-        ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
+    return repo_.read_all(ctx_, trade_id, owner_role, owner_number, schedule_role, sequence_number);
 }
 
 }

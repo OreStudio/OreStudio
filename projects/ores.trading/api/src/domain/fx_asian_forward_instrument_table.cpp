@@ -51,7 +51,7 @@ std::string convert_to_table(const std::vector<fx_asian_forward_instrument>& v) 
           << fort::endr;
 
     for ([[maybe_unused]] const auto& fafi : v) {
-        table << fafi.identity.instrument_id << fafi.identity.trade_type_code << fafi.fx_index
+        table << fafi.identity.trade_id << fafi.identity.trade_type_code << fafi.fx_index
               << fafi.reference_currency << opt_str(fafi.reference_notional)
               << fafi.settlement_currency << opt_str(fafi.settlement_notional)
               << opt_str(fafi.payment_date) << fafi.audit.recorded_at << fort::endr;

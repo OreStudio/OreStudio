@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "asset_class_code_commands_tests.cpp"
+    "average_ois_convention_commands_tests.cpp"
     "book_commands_tests.cpp"
     "book_purpose_type_commands_tests.cpp"
     "book_status_commands_tests.cpp"
@@ -43,6 +44,7 @@ set(files
     "crm_driver_pair_commands_tests.cpp"
     "crm_enabled_derived_pair_commands_tests.cpp"
     "crm_topology_config_commands_tests.cpp"
+    "cross_currency_basis_convention_commands_tests.cpp"
     "currency_calendar_commands_tests.cpp"
     "currency_commands_tests.cpp"
     "currency_country_commands_tests.cpp"
@@ -60,6 +62,8 @@ set(files
     "diary_entry_type_commands_tests.cpp"
     "floating_index_type_commands_tests.cpp"
     "fra_convention_commands_tests.cpp"
+    "future_convention_commands_tests.cpp"
+    "fx_option_convention_commands_tests.cpp"
     "ibor_index_convention_commands_tests.cpp"
     "instrument_code_commands_tests.cpp"
     "ir_curve_bootstrap_config_commands_tests.cpp"
@@ -86,7 +90,10 @@ set(files
     "rounding_type_commands_tests.cpp"
     "series_subclass_code_commands_tests.cpp"
     "swap_convention_commands_tests.cpp"
+    "swap_index_convention_commands_tests.cpp"
     "tenor_anchor_commands_tests.cpp"
+    "tenor_basis_swap_convention_commands_tests.cpp"
+    "tenor_basis_two_swap_convention_commands_tests.cpp"
     "tenor_commands_tests.cpp"
     "tenor_convention_commands_tests.cpp"
     "tenor_convention_resolution_commands_tests.cpp"
@@ -95,4 +102,5 @@ set(files
     "tenor_schedule_commands_tests.cpp"
     "tenor_unit_commands_tests.cpp"
     "zero_convention_commands_tests.cpp"
+    "zero_inflation_index_convention_commands_tests.cpp"
 )

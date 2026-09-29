@@ -34,7 +34,7 @@ render_bond_option_fields(const domain::bond_option& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Option Strike", .value = v.option_strike.to_string()});
     fields.push_back({.name = "Redemption", .value = v.redemption.value_or(std::string{})});

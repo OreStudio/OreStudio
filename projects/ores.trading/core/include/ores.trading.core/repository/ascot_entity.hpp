@@ -42,7 +42,7 @@ struct ascot_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_ascots_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
     std::string ascot_option_type;

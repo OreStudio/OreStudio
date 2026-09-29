@@ -78,11 +78,11 @@ TEST_CASE("instrument_payload_round_trips_every_alternative", tags) {
 TEST_CASE("instrument_payload_carries_the_leaf_data", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const auto instrument_id = boost::uuids::random_generator()();
+    const auto trade_id = boost::uuids::random_generator()();
     const auto issue_id = boost::uuids::random_generator()();
 
     bond_instrument_data bond;
-    bond.instrument.identity.instrument_id = instrument_id;
+    bond.instrument.identity.trade_id = trade_id;
     bond.instrument.issue_id = issue_id;
 
     const auto payload = encode_instrument(trade_instrument{bond});
@@ -92,7 +92,7 @@ TEST_CASE("instrument_payload_carries_the_leaf_data", tags) {
     const auto decoded = decode_instrument(payload);
     REQUIRE(std::holds_alternative<bond_instrument_data>(decoded));
     const auto& round_tripped = std::get<bond_instrument_data>(decoded);
-    CHECK(round_tripped.instrument.identity.instrument_id == instrument_id);
+    CHECK(round_tripped.instrument.identity.trade_id == trade_id);
     CHECK(round_tripped.instrument.issue_id == issue_id);
 }
 
@@ -130,10 +130,10 @@ TEST_CASE("instrument_payload_refuses_a_body_that_does_not_parse", tags) {
 TEST_CASE("instrument_payload_reads_a_bare_swap_body", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const auto instrument_id = boost::uuids::random_generator()();
+    const auto trade_id = boost::uuids::random_generator()();
 
     vanilla_swap_instrument swap;
-    swap.identity.instrument_id = instrument_id;
+    swap.identity.trade_id = trade_id;
     swap.identity.trade_type_code = "Swap";
 
     const with_legs<vanilla_swap_instrument, swap_leg> bare{swap, {swap_leg{}}};
@@ -143,8 +143,7 @@ TEST_CASE("instrument_payload_reads_a_bare_swap_body", tags) {
     const auto decoded = decode_instrument(payload);
     REQUIRE(std::holds_alternative<swap_instrument_data>(decoded));
     const auto& data = std::get<swap_instrument_data>(decoded);
-    CHECK(std::get<vanilla_swap_instrument>(data.instrument).identity.instrument_id ==
-          instrument_id);
+    CHECK(std::get<vanilla_swap_instrument>(data.instrument).identity.trade_id == trade_id);
     CHECK(data.legs.size() == 1u);
     CHECK(data.call_dates.empty());
 }

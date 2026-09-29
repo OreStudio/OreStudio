@@ -36,12 +36,12 @@
 namespace ores::trading::messaging {
 
 struct equity_position_option_underlying_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
 };
 
 struct equity_position_option_underlying_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
     std::string underlying_name;
     ores::utility::decimal::decimal strike;

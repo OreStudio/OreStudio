@@ -35,15 +35,15 @@
 namespace ores::trading::domain {
 
 /**
- * @brief The reshaped bond instrument: one trade of the bond family, keyed by instrument_id with
- * the ten-code trade_type_code check and the issue_id foreign key to the bond issue.
+ * @brief The reshaped bond instrument: one trade of the bond family, keyed by trade_id with the
+ * ten-code trade_type_code check and the issue_id foreign key to the bond issue.
  *
  * One row per bond trade, reshaped from the wide legacy table per the
  * bond relational model deliverable
  * (doc/knowledge/architecture/trading_bond_relational_model.org). The
- * row carries the instrument's identity only: instrument_id,
- * trade_type_code over the ten bond codes, party_id, the optional
- * trade_id soft link, and issue_id, the NOT NULL foreign key to the
+ * row carries the instrument's identity only: trade_id, the trade that
+ * identifies both the trade and its instrument, trade_type_code over the
+ * ten bond codes, party_id, and issue_id, the NOT NULL foreign key to the
  * bond issue row that holds every term of the bond. The economics
  * moved to the issue (one row per ISIN, shared by every instrument of
  * it), so an amendment to a term touches the issue row once, not every

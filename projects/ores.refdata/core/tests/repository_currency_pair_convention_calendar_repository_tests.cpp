@@ -198,8 +198,7 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars", tags) {
     for (const auto& written : pccs) {
         const auto it =
             std::ranges::find_if(read_pccs, [&](const currency_pair_convention_calendar& r) {
-                return r.pair_code == written.pair_code &&
-                       r.calendar_code == written.calendar_code;
+                return r.pair_code == written.pair_code && r.calendar_code == written.calendar_code;
             });
         REQUIRE(it != read_pccs.end());
         CHECK(it->change_commentary == written.change_commentary);
@@ -336,8 +335,7 @@ TEST_CASE("remove_currency_pair_convention_calendar", tags) {
 
     const auto removed_rows = repo.read_latest_by_calendar(calendars[5].code);
     const auto still_present = std::ranges::any_of(
-        removed_rows,
-        [&](const auto& r) { return r.calendar_code == calendars[5].code; });
+        removed_rows, [&](const auto& r) { return r.calendar_code == calendars[5].code; });
     CHECK_FALSE(still_present);
 
     // The removal took only the row it named.
@@ -408,8 +406,8 @@ TEST_CASE("read_nonexistent_currency_pair_convention_calendar", tags) {
     repo.write(keeper);
 
     auto read_pccs = repo.read_latest_by_pair("ZZZ/ZZZ");
-    const auto answered_with_another_key = std::ranges::any_of(
-        read_pccs, [&](const auto& r) { return r.pair_code == "ZZZ/ZZZ"; });
+    const auto answered_with_another_key =
+        std::ranges::any_of(read_pccs, [&](const auto& r) { return r.pair_code == "ZZZ/ZZZ"; });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the pair that was written.

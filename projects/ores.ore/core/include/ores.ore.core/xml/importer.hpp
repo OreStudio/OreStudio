@@ -136,7 +136,7 @@ public:
      *
      * Parses the portfolio XML, maps each trade to the ORES trading domain,
      * and captures the raw ORE CounterParty string from each trade envelope.
-     * All UUID fields (trade.id, instrument_id, book_id, etc.) are left nil;
+     * All UUID fields (trade.id, trade_id, book_id, etc.) are left nil;
      * the caller (e.g. ore_import_planner) is responsible for minting UUIDs
      * via trading::domain::stamp_ids and populating context fields.
      *

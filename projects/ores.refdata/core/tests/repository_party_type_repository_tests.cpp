@@ -75,9 +75,8 @@ TEST_CASE("write_multiple_party_types", tags) {
 
     const auto read_party_types = repo.read_latest(h.context());
     for (const auto& written : party_types) {
-        const auto it = std::ranges::find_if(read_party_types, [&](const party_type& pt) {
-            return pt.code == written.code;
-        });
+        const auto it = std::ranges::find_if(
+            read_party_types, [&](const party_type& pt) { return pt.code == written.code; });
         REQUIRE(it != read_party_types.end());
         CHECK(it->name == written.name);
     }
@@ -101,9 +100,8 @@ TEST_CASE("read_latest_party_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
 
     for (const auto& written : written_party_types) {
-        const auto it = std::ranges::find_if(read_party_types, [&](const party_type& pt) {
-            return pt.code == written.code;
-        });
+        const auto it = std::ranges::find_if(
+            read_party_types, [&](const party_type& pt) { return pt.code == written.code; });
         REQUIRE(it != read_party_types.end());
         CHECK(it->name == written.name);
     }

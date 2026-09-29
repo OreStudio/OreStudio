@@ -40,6 +40,7 @@
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -92,10 +93,17 @@ using ores::trading::repository::instrument_strike_repository;
 using ores::trading::service::bond_instrument_reader;
 
 struct stamps final {
+    database_helper* h;
     boost::uuids::uuid party_id;
     ores::utility::uuid::tenant_id tenant_id;
     std::string user;
 };
+
+// An instrument is keyed by its trade, and a test writes several instruments,
+// so each one mints a trade of its own.
+boost::uuids::uuid mint_trade(const stamps& s) {
+    return ores::trading::tests::write_parent_trade(*s.h);
+}
 
 template <typename T>
 void stamp(T& v, const stamps& s) {
@@ -107,7 +115,8 @@ void stamp(T& v, const stamps& s) {
 }
 
 stamps make_stamps(database_helper& h) {
-    return stamps{.party_id = boost::uuids::random_generator()(),
+    return stamps{.h = &h,
+                  .party_id = boost::uuids::random_generator()(),
                   .tenant_id = h.tenant_id(),
                   .user = h.db_user()};
 }
@@ -136,7 +145,7 @@ bond_instrument make_instrument(const stamps& s,
                                 const boost::uuids::uuid& issue_id,
                                 const std::string& trade_type_code) {
     bond_instrument r;
-    r.identity.instrument_id = boost::uuids::random_generator()();
+    r.identity.trade_id = mint_trade(s);
     r.identity.tenant_id = s.tenant_id;
     r.identity.party_id = s.party_id;
     r.identity.trade_type_code = trade_type_code;
@@ -173,27 +182,27 @@ bond_issue_conversion_target make_conversion_target(const stamps& s,
     return r;
 }
 
-bond_option make_option(const stamps& s, const boost::uuids::uuid& instrument_id) {
+bond_option make_option(const stamps& s, const boost::uuids::uuid& trade_id) {
     bond_option r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.option_type = "Call";
     return r;
 }
 
-instrument_option make_instrument_option(const stamps& s, const boost::uuids::uuid& instrument_id) {
+instrument_option make_instrument_option(const stamps& s, const boost::uuids::uuid& trade_id) {
     instrument_option r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.long_short = "Long";
     return r;
 }
 
 instrument_option_premium
-make_premium(const stamps& s, const boost::uuids::uuid& instrument_id, int sequence_number) {
+make_premium(const stamps& s, const boost::uuids::uuid& trade_id, int sequence_number) {
     instrument_option_premium r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.sequence_number = sequence_number;
     r.amount = ores::utility::decimal::decimal::from_string("1000").value();
     r.currency = "EUR";
@@ -202,59 +211,59 @@ make_premium(const stamps& s, const boost::uuids::uuid& instrument_id, int seque
 }
 
 instrument_option_exercise_fee
-make_exercise_fee(const stamps& s, const boost::uuids::uuid& instrument_id, int sequence_number) {
+make_exercise_fee(const stamps& s, const boost::uuids::uuid& trade_id, int sequence_number) {
     instrument_option_exercise_fee r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.sequence_number = sequence_number;
     r.amount = ores::utility::decimal::decimal::from_string("25").value();
     return r;
 }
 
 instrument_option_payment_date make_payment_date(const stamps& s,
-                                                 const boost::uuids::uuid& instrument_id,
+                                                 const boost::uuids::uuid& trade_id,
                                                  int sequence_number,
                                                  const std::string& payment_date) {
     instrument_option_payment_date r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.sequence_number = sequence_number;
     r.payment_date = ores::platform::time::datetime::from_iso8601_date(payment_date);
     return r;
 }
 
-instrument_strike make_strike(const stamps& s, const boost::uuids::uuid& instrument_id) {
+instrument_strike make_strike(const stamps& s, const boost::uuids::uuid& trade_id) {
     instrument_strike r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.price_value = ores::utility::decimal::decimal::from_string("101.5").value();
     r.price_currency = "EUR";
     return r;
 }
 
-bond_forward make_forward(const stamps& s, const boost::uuids::uuid& instrument_id) {
+bond_forward make_forward(const stamps& s, const boost::uuids::uuid& trade_id) {
     bond_forward r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     return r;
 }
 
 bond_future_delivery_basket make_delivery_basket(const stamps& s,
-                                                 const boost::uuids::uuid& instrument_id,
+                                                 const boost::uuids::uuid& trade_id,
                                                  int sequence_number,
                                                  const std::string& delivery_basket_id) {
     bond_future_delivery_basket r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.sequence_number = sequence_number;
     r.delivery_basket_id = delivery_basket_id;
     return r;
 }
 
-bond_trs make_trs(const stamps& s, const boost::uuids::uuid& instrument_id) {
+bond_trs make_trs(const stamps& s, const boost::uuids::uuid& trade_id) {
     bond_trs r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.return_type = "Total";
     r.funding_leg_type = "Fixed";
     r.funding_rate = 3.0;
@@ -263,12 +272,12 @@ bond_trs make_trs(const stamps& s, const boost::uuids::uuid& instrument_id) {
 }
 
 bond_leg make_leg(const stamps& s,
-                  const boost::uuids::uuid& instrument_id,
+                  const boost::uuids::uuid& trade_id,
                   const std::string& leg_role,
                   int leg_number) {
     bond_leg r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.leg_role = leg_role;
     r.leg_number = leg_number;
     r.payer = true;
@@ -279,7 +288,7 @@ bond_leg make_leg(const stamps& s,
 }
 
 bond_leg_amount make_amount(const stamps& s,
-                            const boost::uuids::uuid& instrument_id,
+                            const boost::uuids::uuid& trade_id,
                             const std::string& leg_role,
                             int leg_number,
                             const std::string& amount_role,
@@ -287,7 +296,7 @@ bond_leg_amount make_amount(const stamps& s,
                             const char* value) {
     bond_leg_amount r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.leg_role = leg_role;
     r.leg_number = leg_number;
     r.amount_role = amount_role;
@@ -297,13 +306,13 @@ bond_leg_amount make_amount(const stamps& s,
 }
 
 bond_leg_rate make_rate(const stamps& s,
-                        const boost::uuids::uuid& instrument_id,
+                        const boost::uuids::uuid& trade_id,
                         const std::string& leg_role,
                         int leg_number,
                         const std::string& rate_kind) {
     bond_leg_rate r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.leg_role = leg_role;
     r.leg_number = leg_number;
     r.rate_kind = rate_kind;
@@ -311,13 +320,13 @@ bond_leg_rate make_rate(const stamps& s,
 }
 
 bond_leg_amortization make_amortization(const stamps& s,
-                                        const boost::uuids::uuid& instrument_id,
+                                        const boost::uuids::uuid& trade_id,
                                         const std::string& leg_role,
                                         int leg_number,
                                         int sequence_number) {
     bond_leg_amortization r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.leg_role = leg_role;
     r.leg_number = leg_number;
     r.sequence_number = sequence_number;
@@ -327,7 +336,7 @@ bond_leg_amortization make_amortization(const stamps& s,
 }
 
 instrument_schedule make_schedule(const stamps& s,
-                                  const boost::uuids::uuid& instrument_id,
+                                  const boost::uuids::uuid& trade_id,
                                   const std::string& owner_role,
                                   int owner_number,
                                   const std::string& schedule_role,
@@ -335,7 +344,7 @@ instrument_schedule make_schedule(const stamps& s,
                                   const std::string& schedule_kind) {
     instrument_schedule r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.owner_role = owner_role;
     r.owner_number = owner_number;
     r.schedule_role = schedule_role;
@@ -345,7 +354,7 @@ instrument_schedule make_schedule(const stamps& s,
 }
 
 instrument_schedule_date make_schedule_date(const stamps& s,
-                                            const boost::uuids::uuid& instrument_id,
+                                            const boost::uuids::uuid& trade_id,
                                             const std::string& owner_role,
                                             int owner_number,
                                             const std::string& schedule_role,
@@ -354,7 +363,7 @@ instrument_schedule_date make_schedule_date(const stamps& s,
                                             const std::string& schedule_date) {
     instrument_schedule_date r;
     stamp(r, s);
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.owner_role = owner_role;
     r.owner_number = owner_number;
     r.schedule_role = schedule_role;
@@ -386,7 +395,7 @@ TEST_CASE("read_instruments_rebuilds_children_in_ordinal_order", tags) {
                           make_conversion_target(s, issue.issue_id, 1, "UND-1")})
         bond_issue_conversion_target_repository().write(ctx, r);
 
-    const auto id = boost::uuids::to_string(instr.identity.instrument_id);
+    const auto id = boost::uuids::to_string(instr.identity.trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 
@@ -424,8 +433,8 @@ TEST_CASE("read_instruments_gives_two_instruments_the_one_issue", tags) {
     bond_issue_call_date_repository().write(ctx,
                                             make_call_date(s, issue.issue_id, 1, "2028-01-15"));
 
-    const auto first_id = boost::uuids::to_string(first.identity.instrument_id);
-    const auto second_id = boost::uuids::to_string(second.identity.instrument_id);
+    const auto first_id = boost::uuids::to_string(first.identity.trade_id);
+    const auto second_id = boost::uuids::to_string(second.identity.trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({first_id, second_id});
 
@@ -446,7 +455,7 @@ TEST_CASE("read_instruments_omits_an_instrument_with_no_header_row", tags) {
     const auto written = make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, written);
 
-    const auto written_id = boost::uuids::to_string(written.identity.instrument_id);
+    const auto written_id = boost::uuids::to_string(written.identity.trade_id);
     const auto unwritten_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
     bond_instrument_reader reader(ctx);
@@ -466,45 +475,43 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     bond_issue_repository().write(ctx, issue);
     const auto instr = make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, instr);
-    const auto instrument_id = instr.identity.instrument_id;
+    const auto trade_id = instr.identity.trade_id;
 
-    auto leg = make_leg(s, instrument_id, "bond", 1);
+    auto leg = make_leg(s, trade_id, "bond", 1);
     leg.last_period_day_counter = "ACT/360";
     leg.notional_payment_lag = 2;
     leg.settlement_fx_index = "EUR/USD";
     leg.settlement_fixing_date = "2024-04-15";
     bond_leg_repository().write(ctx, leg);
 
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, "1000"));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, trade_id, "bond", 1, "notional", 1, "1000"));
     // Written in reverse ordinal order, so the order read back is the
     // query's doing rather than the insert order's.
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "rate", 2, "5"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "rate", 1, "4"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "rate", 2, "5"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "rate", 1, "4"));
 
-    bond_leg_rate_repository().write(ctx, make_rate(s, instrument_id, "bond", 1, "fixed"));
+    bond_leg_rate_repository().write(ctx, make_rate(s, trade_id, "bond", 1, "fixed"));
 
-    auto amortization = make_amortization(s, instrument_id, "bond", 1, 1);
+    auto amortization = make_amortization(s, trade_id, "bond", 1, 1);
     amortization.end_date = "2030-01-15";
     bond_leg_amortization_repository().write(ctx, amortization);
 
-    auto rules = make_schedule(s, instrument_id, "bond", 1, "schedule", 1, "rules");
+    auto rules = make_schedule(s, trade_id, "bond", 1, "schedule", 1, "rules");
     rules.start_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     rules.tenor = "1Y";
     rules.calendar = "TARGET";
     rules.convention = "ModifiedFollowing";
     instrument_schedule_repository().write(ctx, rules);
 
-    auto payment_dates = make_schedule(s, instrument_id, "bond", 1, "payment_dates", 1, "dates");
+    auto payment_dates = make_schedule(s, trade_id, "bond", 1, "payment_dates", 1, "dates");
     instrument_schedule_repository().write(ctx, payment_dates);
     instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, instrument_id, "bond", 1, "payment_dates", 1, 1, "2024-07-15"));
+        ctx, make_schedule_date(s, trade_id, "bond", 1, "payment_dates", 1, 1, "2024-07-15"));
     instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, instrument_id, "bond", 1, "payment_dates", 1, 2, "2025-01-15"));
+        ctx, make_schedule_date(s, trade_id, "bond", 1, "payment_dates", 1, 2, "2025-01-15"));
 
-    const auto id = boost::uuids::to_string(instrument_id);
+    const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 
@@ -558,11 +565,11 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     bond_issue_repository().write(ctx, issue);
     const auto instr = make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, instr);
-    const auto instrument_id = instr.identity.instrument_id;
+    const auto trade_id = instr.identity.trade_id;
 
-    bond_leg_repository().write(ctx, make_leg(s, instrument_id, "bond", 1));
+    bond_leg_repository().write(ctx, make_leg(s, trade_id, "bond", 1));
 
-    auto rate = make_rate(s, instrument_id, "bond", 1, "floating");
+    auto rate = make_rate(s, trade_id, "bond", 1, "floating");
     rate.index = "EURIBOR-6M";
     rate.is_in_arrears = false;
     rate.fixing_days = 2;
@@ -573,35 +580,31 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     bond_leg_rate_repository().write(ctx, rate);
 
     bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, "1000000"));
+        ctx, make_amount(s, trade_id, "bond", 1, "notional", 1, "1000000"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "spread", 2, "0.75"));
+                                       make_amount(s, trade_id, "bond", 1, "spread", 2, "0.75"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "spread", 1, "0.5"));
+                                       make_amount(s, trade_id, "bond", 1, "spread", 1, "0.5"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "cap", 1, "6"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "floor", 1, "1"));
     bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "cap", 1, "6"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "floor", 1, "1"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, instrument_id, "bond", 1, "gearing", 1, "1.5"));
+                                       make_amount(s, trade_id, "bond", 1, "gearing", 1, "1.5"));
 
-    auto fixing = make_schedule(s, instrument_id, "bond", 1, "fixing_schedule", 1, "dates");
+    auto fixing = make_schedule(s, trade_id, "bond", 1, "fixing_schedule", 1, "dates");
     fixing.convention = "Following";
     instrument_schedule_repository().write(ctx, fixing);
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, instrument_id, "bond", 1, "fixing_schedule", 1, 1, "2024-04-15"));
+        ctx, make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 1, "2024-04-15"));
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, instrument_id, "bond", 1, "fixing_schedule", 1, 2, "2024-10-15"));
+        ctx, make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 2, "2024-10-15"));
 
-    auto reset = make_schedule(s, instrument_id, "bond", 1, "reset_schedule", 1, "rules");
+    auto reset = make_schedule(s, trade_id, "bond", 1, "reset_schedule", 1, "rules");
     reset.calendar = "TARGET";
     reset.convention = "ModifiedFollowing";
     reset.tenor = "6M";
     instrument_schedule_repository().write(ctx, reset);
 
-    const auto id = boost::uuids::to_string(instrument_id);
+    const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 
@@ -653,8 +656,8 @@ TEST_CASE("read_instruments_keeps_each_leg_in_its_own_role", tags) {
     bond_instrument_repository().write(ctx, first_instrument);
     bond_instrument_repository().write(ctx, second_instrument);
 
-    const auto first_id_uuid = first_instrument.identity.instrument_id;
-    const auto second_id_uuid = second_instrument.identity.instrument_id;
+    const auto first_id_uuid = first_instrument.identity.trade_id;
+    const auto second_id_uuid = second_instrument.identity.trade_id;
 
     // The second leg is written first, so the order read back is the
     // leg's own order rather than the insert order's.
@@ -698,14 +701,14 @@ TEST_CASE("read_instruments_reads_a_fact_row_only_for_its_type_code", tags) {
     const auto plain = make_instrument(s, issue.issue_id, "Bond");
     bond_instrument_repository().write(ctx, option);
     bond_instrument_repository().write(ctx, plain);
-    auto fact = make_option(s, option.identity.instrument_id);
+    auto fact = make_option(s, option.identity.trade_id);
     fact.redemption = "Bullet";
     fact.price_type = "Clean";
     fact.knocks_out = "Up";
     bond_option_repository().write(ctx, fact);
 
-    const auto option_id = boost::uuids::to_string(option.identity.instrument_id);
-    const auto plain_id = boost::uuids::to_string(plain.identity.instrument_id);
+    const auto option_id = boost::uuids::to_string(option.identity.trade_id);
+    const auto plain_id = boost::uuids::to_string(plain.identity.trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({option_id, plain_id});
 
@@ -734,9 +737,9 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     bond_issue_repository().write(ctx, issue);
     const auto instr = make_instrument(s, issue.issue_id, "BondOption");
     bond_instrument_repository().write(ctx, instr);
-    const auto instrument_id = instr.identity.instrument_id;
+    const auto trade_id = instr.identity.trade_id;
 
-    auto block = make_instrument_option(s, instrument_id);
+    auto block = make_instrument_option(s, trade_id);
     block.option_type = "Call";
     block.style = "European";
     block.notice_period = "5D";
@@ -754,36 +757,34 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     block.settlement_fx_index = "EUR/USD";
     instrument_option_repository().write(ctx, block);
 
-    const auto second = make_premium(s, instrument_id, 2);
-    const auto first = make_premium(s, instrument_id, 1);
+    const auto second = make_premium(s, trade_id, 2);
+    const auto first = make_premium(s, trade_id, 1);
     instrument_option_premium_repository().write(ctx, second);
     instrument_option_premium_repository().write(ctx, first);
 
-    auto fee = make_exercise_fee(s, instrument_id, 1);
+    auto fee = make_exercise_fee(s, trade_id, 1);
     fee.type = "Percentage";
     fee.currency = "EUR";
     instrument_option_exercise_fee_repository().write(ctx, fee);
 
     instrument_option_payment_date_repository().write(
-        ctx, make_payment_date(s, instrument_id, 1, "2025-01-20"));
+        ctx, make_payment_date(s, trade_id, 1, "2025-01-20"));
     instrument_option_payment_date_repository().write(
-        ctx, make_payment_date(s, instrument_id, 2, "2025-07-20"));
+        ctx, make_payment_date(s, trade_id, 2, "2025-07-20"));
 
-    auto dates = make_schedule(s, instrument_id, "option", 1, "exercise_dates", 1, "dates");
+    auto dates = make_schedule(s, trade_id, "option", 1, "exercise_dates", 1, "dates");
     instrument_schedule_repository().write(ctx, dates);
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, instrument_id, "option", 1, "exercise_dates", 1, 1, "2025-01-15"));
+        ctx, make_schedule_date(s, trade_id, "option", 1, "exercise_dates", 1, 1, "2025-01-15"));
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, instrument_id, "option", 1, "exercise_dates", 1, 2, "2025-07-15"));
+        ctx, make_schedule_date(s, trade_id, "option", 1, "exercise_dates", 1, 2, "2025-07-15"));
 
-    auto schedule = make_schedule(s, instrument_id, "option", 1, "exercise_schedule", 1, "rules");
+    auto schedule = make_schedule(s, trade_id, "option", 1, "exercise_schedule", 1, "rules");
     schedule.calendar = "TARGET";
     schedule.tenor = "6M";
     instrument_schedule_repository().write(ctx, schedule);
 
-    const auto id = boost::uuids::to_string(instrument_id);
+    const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 
@@ -845,11 +846,11 @@ TEST_CASE("read_instruments_rebuilds_a_strike_a_forward_and_a_delivery_basket", 
     bond_issue_repository().write(ctx, issue);
     const auto instr = make_instrument(s, issue.issue_id, "BondFuture");
     bond_instrument_repository().write(ctx, instr);
-    const auto instrument_id = instr.identity.instrument_id;
+    const auto trade_id = instr.identity.trade_id;
 
-    instrument_strike_repository().write(ctx, make_strike(s, instrument_id));
+    instrument_strike_repository().write(ctx, make_strike(s, trade_id));
 
-    auto forward = make_forward(s, instrument_id);
+    auto forward = make_forward(s, trade_id);
     forward.long_in_forward = "true";
     forward.forward_maturity_date = "2026-03-15";
     forward.settlement = "Cash";
@@ -863,11 +864,11 @@ TEST_CASE("read_instruments_rebuilds_a_strike_a_forward_and_a_delivery_basket", 
     // Written out of order, so the read back proves the ordinal is the
     // order rather than the insert's.
     bond_future_delivery_basket_repository().write(
-        ctx, make_delivery_basket(s, instrument_id, 2, "XS0000000013"));
+        ctx, make_delivery_basket(s, trade_id, 2, "XS0000000013"));
     bond_future_delivery_basket_repository().write(
-        ctx, make_delivery_basket(s, instrument_id, 1, "XS0000000012"));
+        ctx, make_delivery_basket(s, trade_id, 1, "XS0000000012"));
 
-    const auto id = boost::uuids::to_string(instrument_id);
+    const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 
@@ -906,20 +907,20 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", tags) {
     bond_issue_repository().write(ctx, issue);
     const auto instr = make_instrument(s, issue.issue_id, "BondTRS");
     bond_instrument_repository().write(ctx, instr);
-    const auto instrument_id = instr.identity.instrument_id;
+    const auto trade_id = instr.identity.trade_id;
 
-    auto trs = make_trs(s, instrument_id);
+    auto trs = make_trs(s, trade_id);
     trs.payer = "true";
     trs.price_type = "Clean";
     trs.initial_price = ores::utility::decimal::decimal::from_string("99.25").value();
     bond_trs_repository().write(ctx, trs);
 
-    auto schedule = make_schedule(s, instrument_id, "trs", 1, "schedule", 1, "rules");
+    auto schedule = make_schedule(s, trade_id, "trs", 1, "schedule", 1, "rules");
     schedule.tenor = "3M";
     schedule.calendar = "TARGET";
     instrument_schedule_repository().write(ctx, schedule);
 
-    const auto id = boost::uuids::to_string(instrument_id);
+    const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 
@@ -950,13 +951,13 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_r
     bond_issue_repository().write(ctx, issue);
     const auto instr = make_instrument(s, issue.issue_id, "Ascot");
     bond_instrument_repository().write(ctx, instr);
-    const auto instrument_id = instr.identity.instrument_id;
+    const auto trade_id = instr.identity.trade_id;
 
-    auto block = make_instrument_option(s, instrument_id);
+    auto block = make_instrument_option(s, trade_id);
     block.option_type = "Put";
     instrument_option_repository().write(ctx, block);
 
-    const auto id = boost::uuids::to_string(instrument_id);
+    const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
     const auto instruments = reader.read_instruments({id});
 

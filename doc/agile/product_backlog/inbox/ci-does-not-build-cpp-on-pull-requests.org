@@ -2,27 +2,54 @@
 :ID: D016B599-5E12-4E51-948C-B17DF0A4FFDF
 :END:
 #+title: No per-PR CI job builds or tests C++ outside the codegen paths
-#+description: The only per-PR job that compiles and runs the test suite lives in codegen-drift.yml, which is path-filtered to projects/*/modeling, projects/ores.codegen, projects/ores.http, projects/ores.sql/populate and doc/recipes/shell. A pull request that changes only C++ or tests therefore runs compass lint and nothing else, and Continuous Linux runs on a schedule rather than on PRs. Both C++ compile breaks that reached main this sprint -- the FSM consumer on fsm_protocol.hpp and the IAM dataset handler on get_datasets_request -- would have been caught by a build on their pull request.
+#+description: The only per-PR job that compiles and runs the test suite lives in codegen-drift.yml, which is path-filtered to projects/*/modeling, projects/ores.codegen, projects/ores.http, projects/ores.sql/populate and doc/recipes/shell. A pull request that changes only C++ or tests therefore runs compass lint and nothing else, and Continuous Linux runs on a schedule rather than on PRs. Both C++ compile breaks that reached main this sprint -- the FSM consumer on fsm_protocol.hpp and the IAM dataset handler on get_datasets_request -- would have been caught by a build on their pull request. A third joined them on 2026-09-29: a visibility macro on an enum in ores.workflow, which turns every Windows clang-cl job red and which no Linux or macOS compiler reports at all.
 #+type: capture
 #+level: cross
 #+filetags: 
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-29
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-(One paragraph: the idea.)
+Build and test the C++ tree on a pull request, on at least one platform.
+The workflow that does build and test -- =codegen-drift.yml= -- is
+path-filtered to the inputs codegen reads, so a pull request that touches
+only C++ sources or tests checks out the tree, runs =compass lint= and
+stops.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+A compile break is the cheapest defect to find and the most expensive to
+find late. Three reached main this sprint, each reddening the continuous
+builds until a hotfix landed: an FSM consumer that named a symbol the
+protocol header no longer declared, an IAM dataset handler that named a
+response field the generated type does not have, and a visibility macro on
+an enum that only Windows reports.
+
+That last one shows the shape of the gap most sharply. No Linux or macOS
+compiler reports a symbol visibility attribute on an enum, so nothing
+outside a Windows run can find it, and Continuous Windows runs every twelve
+hours and takes five to eight. Without a build on the pull request, the only
+gates are the static checks, and a static check has to be written for each
+mistake after it happens.
+
+A build on every pull request costs a vcpkg install and a full compile of
+the tree. A cheaper first step is a single preset, cached, on the platform
+that reports the most -- or a merge queue.
 
 * References
 
--
+- Story [[id:FD348688-933D-4C9A-98C5-237DF13428AC][Hotfix: a visibility macro on an enum breaks the Windows build]]:
+  the third instance, and the static check written in place of a build.
+- Story [[id:7AB722C0-9CCC-4ED4-996C-C2118CBEBFCE][Hotfix: a Boost library landed without its vcpkg port]]:
+  the same cost argument -- a check in front of the build rather than a
+  build on the pull request.
 
 * See also
 
--
+- =.github/workflows/codegen-drift.yml= -- the path filter in question.
+- =.github/workflows/header-hygiene.yml= -- a pull-request workflow added
+  on 2026-09-29 for the one defect class that can be caught by reading
+  sources.

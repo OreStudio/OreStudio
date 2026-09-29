@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: A strike a document states as a price, a yield or a bare number, keyed to the instrument.
+#+brief: A strike a document states as a price, a yield or a bare number, keyed to the trade.
 #+entity_singular: instrument_strike
 #+entity_plural: instrument_strikes
 #+entity_title: Instrument Strike
@@ -14,7 +14,7 @@
 #+updated: 2026-09-11
 
 One row per instrument whose document stated a strike as a price or as
-a yield, keyed to the instrument.
+a yield, keyed to the trade.
 
 The schema states the strike as a choice of three: a price with its
 currency, a yield with its compounding, or a number with an optional
@@ -33,14 +33,15 @@ row and the other four are null.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose document stated this strike.
+The trade whose document stated this strike.
 
 ** price_value
 :PROPERTIES:
@@ -96,6 +97,20 @@ fact row.
 :END:
 
 Currency the bare strike is stated in.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

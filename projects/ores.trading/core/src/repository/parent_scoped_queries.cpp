@@ -173,16 +173,16 @@ read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>
         "Reading bond issue conversion targets by issue ids.");
 }
 
-std::vector<domain::bond_leg>
-read_legs_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+std::vector<domain::bond_leg> read_legs_by_trade_ids(context ctx,
+                                                     const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
 
     return execute_read_query<bond_leg_entity, domain::bond_leg>(
         ctx,
@@ -193,17 +193,15 @@ read_legs_by_instrument_ids(context ctx, const std::vector<std::string>& instrum
 }
 
 std::vector<domain::bond_leg_amount>
-read_leg_amounts_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_leg_amounts_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<bond_leg_amount_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-              "valid_to"_c == max.value()) |
-        order_by(
-            "instrument_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "amount_role"_c, "sequence_number"_c);
 
     return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
@@ -214,15 +212,15 @@ read_leg_amounts_by_instrument_ids(context ctx, const std::vector<std::string>& 
 }
 
 std::vector<domain::bond_leg_rate>
-read_leg_rates_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_rate_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c);
 
     return execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
         ctx,
@@ -233,17 +231,15 @@ read_leg_rates_by_instrument_ids(context ctx, const std::vector<std::string>& in
 }
 
 std::vector<domain::bond_leg_amortization>
-read_leg_amortizations_by_instrument_ids(context ctx,
-                                         const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-              "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
 
     return execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
@@ -254,19 +250,16 @@ read_leg_amortizations_by_instrument_ids(context ctx,
 }
 
 std::vector<domain::instrument_schedule>
-read_schedules_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_schedules_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_schedule_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c,
-                                "owner_role"_c,
-                                "owner_number"_c,
-                                "schedule_role"_c,
-                                "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_schedule_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by(
+            "trade_id"_c, "owner_role"_c, "owner_number"_c, "schedule_role"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
         ctx,
@@ -277,20 +270,20 @@ read_schedules_by_instrument_ids(context ctx, const std::vector<std::string>& in
 }
 
 std::vector<domain::instrument_schedule_date>
-read_schedule_dates_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_schedule_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_schedule_date_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c,
-                                "owner_role"_c,
-                                "owner_number"_c,
-                                "schedule_role"_c,
-                                "schedule_sequence_number"_c,
-                                "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_schedule_date_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c,
+                 "owner_role"_c,
+                 "owner_number"_c,
+                 "schedule_role"_c,
+                 "schedule_sequence_number"_c,
+                 "sequence_number"_c);
 
     return execute_read_query<instrument_schedule_date_entity, domain::instrument_schedule_date>(
         ctx,
@@ -301,15 +294,15 @@ read_schedule_dates_by_instrument_ids(context ctx, const std::vector<std::string
 }
 
 std::vector<domain::instrument_option>
-read_options_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_options_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_option_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_option_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c);
 
     return execute_read_query<instrument_option_entity, domain::instrument_option>(
         ctx,
@@ -320,16 +313,15 @@ read_options_by_instrument_ids(context ctx, const std::vector<std::string>& inst
 }
 
 std::vector<domain::instrument_option_premium>
-read_option_premiums_by_instrument_ids(context ctx,
-                                       const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_option_premium_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_option_premium_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_option_premium_entity, domain::instrument_option_premium>(
         ctx,
@@ -340,16 +332,15 @@ read_option_premiums_by_instrument_ids(context ctx,
 }
 
 std::vector<domain::instrument_option_exercise_fee>
-read_option_exercise_fees_by_instrument_ids(context ctx,
-                                            const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_option_exercise_fee_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_option_exercise_fee_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_option_exercise_fee_entity,
                               domain::instrument_option_exercise_fee>(
@@ -361,16 +352,15 @@ read_option_exercise_fees_by_instrument_ids(context ctx,
 }
 
 std::vector<domain::instrument_option_payment_date>
-read_option_payment_dates_by_instrument_ids(context ctx,
-                                            const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_option_payment_date_entity,
                               domain::instrument_option_payment_date>(
@@ -382,15 +372,15 @@ read_option_payment_dates_by_instrument_ids(context ctx,
 }
 
 std::vector<domain::instrument_strike>
-read_strikes_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_strike_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c);
+    const auto query =
+        sqlgen::read<std::vector<instrument_strike_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c);
 
     return execute_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
@@ -401,15 +391,15 @@ read_strikes_by_instrument_ids(context ctx, const std::vector<std::string>& inst
 }
 
 std::vector<domain::bond_forward>
-read_forwards_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_forward_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c);
+    const auto query =
+        sqlgen::read<std::vector<bond_forward_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c);
 
     return execute_read_query<bond_forward_entity, domain::bond_forward>(
         ctx,
@@ -420,16 +410,15 @@ read_forwards_by_instrument_ids(context ctx, const std::vector<std::string>& ins
 }
 
 std::vector<domain::bond_future_delivery_basket>
-read_delivery_baskets_by_instrument_ids(context ctx,
-                                        const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+read_delivery_baskets_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_future_delivery_basket_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c);
+    const auto query =
+        sqlgen::read<std::vector<bond_future_delivery_basket_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "sequence_number"_c);
 
     return execute_read_query<bond_future_delivery_basket_entity,
                               domain::bond_future_delivery_basket>(

@@ -28,9 +28,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -96,9 +96,8 @@ TEST_CASE("write_multiple_counterparty_contact_informations", tags) {
     const auto read_counterparty_contact_informations = repo.read_latest(h.context());
     for (const auto& written : counterparty_contact_informations) {
         const auto it = std::ranges::find_if(
-            read_counterparty_contact_informations, [&](const counterparty_contact_information& c) {
-                return c.id == written.id;
-            });
+            read_counterparty_contact_informations,
+            [&](const counterparty_contact_information& c) { return c.id == written.id; });
         REQUIRE(it != read_counterparty_contact_informations.end());
         CHECK(it->city == written.city);
     }
@@ -132,9 +131,8 @@ TEST_CASE("read_latest_counterparty_contact_informations", tags) {
 
     for (const auto& written : written_counterparty_contact_informations) {
         const auto it = std::ranges::find_if(
-            read_counterparty_contact_informations, [&](const counterparty_contact_information& c) {
-                return c.id == written.id;
-            });
+            read_counterparty_contact_informations,
+            [&](const counterparty_contact_information& c) { return c.id == written.id; });
         REQUIRE(it != read_counterparty_contact_informations.end());
         CHECK(it->city == written.city);
     }

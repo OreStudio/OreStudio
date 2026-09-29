@@ -1015,3 +1015,35 @@ tangled into the runnable script library
 * Vanilla Swap Instruments
 
 - [[id:9F8435B5-AB4E-59E1-B85A-AB212F3E9A52][How do I run the vanilla_swap_instruments commands from the shell?]]
+
+* Swap Index Conventions
+
+- [[id:0519E904-7233-5F89-9476-DAE349DD325F][How do I run the swap_index_conventions commands from the shell?]]
+
+* Future Conventions
+
+- [[id:6A85018B-DF01-5809-97DE-6B6D31554088][How do I run the future_conventions commands from the shell?]]
+
+* Fx Option Conventions
+
+- [[id:493D88F1-2E4F-558B-889C-A95760B9C1C3][How do I run the fx_option_conventions commands from the shell?]]
+
+* Average Ois Conventions
+
+- [[id:D7E6C28D-4DD4-5CF8-9682-B19E2DFE97F9][How do I run the average_ois_conventions commands from the shell?]]
+
+* Cross Currency Basis Conventions
+
+- [[id:15F5D765-33EA-5B26-8005-D711223E6A18][How do I run the cross_currency_basis_conventions commands from the shell?]]
+
+* Tenor Basis Two Swap Conventions
+
+- [[id:2F45F265-10AF-505E-9FE5-5A24BFE2B4CB][How do I run the tenor_basis_two_swap_conventions commands from the shell?]]
+
+* Tenor Basis Swap Conventions
+
+- [[id:1F1CD75E-CC99-5C2A-9667-BCAD83093001][How do I run the tenor_basis_swap_conventions commands from the shell?]]
+
+* Zero Inflation Index Conventions
+
+- [[id:2185C4AF-356E-5FA0-B5E3-40720A53EFE5][How do I run the zero_inflation_index_conventions commands from the shell?]]

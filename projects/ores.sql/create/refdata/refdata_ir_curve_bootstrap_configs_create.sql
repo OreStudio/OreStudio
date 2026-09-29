@@ -94,6 +94,7 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     "discount_curve_config_id" uuid not null,
     "interpolation_method" text not null,
     "day_count_convention" text not null,
+    "tenor_convention_code" text not null,
     "split_tenor_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,

@@ -37,9 +37,9 @@ std::string convert_to_table(const std::vector<fx_forward_instrument>& v) {
           << "Sold Amount" << "Value Date" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& fxfi : v) {
-        table << fxfi.identity.instrument_id << fxfi.identity.trade_type_code
-              << fxfi.bought_currency << fxfi.bought_amount << fxfi.sold_currency
-              << fxfi.sold_amount << fxfi.value_date << fxfi.audit.recorded_at << fort::endr;
+        table << fxfi.identity.trade_id << fxfi.identity.trade_type_code << fxfi.bought_currency
+              << fxfi.bought_amount << fxfi.sold_currency << fxfi.sold_amount << fxfi.value_date
+              << fxfi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

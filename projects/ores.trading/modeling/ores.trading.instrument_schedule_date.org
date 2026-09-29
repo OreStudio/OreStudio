@@ -41,17 +41,18 @@ without a table of its own.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose owner states the owning schedule.
+The trade whose owner states the owning schedule.
 
-The instrument row carries the trade, the workspace and the party. The
-date rows are family-owned and ride the instrument's scope, so no
+The trade row carries the workspace and the party. The
+date rows are family-owned and ride the trade's scope, so no
 workspace column rides them.
 
 ** owner_role
@@ -121,6 +122,20 @@ The date (ISO 8601 date string).
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

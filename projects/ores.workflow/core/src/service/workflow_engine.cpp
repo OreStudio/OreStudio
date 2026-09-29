@@ -357,8 +357,7 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
 void workflow_engine::stop_on_failure(const domain::workflow_instance& instance,
                                       const std::string& failure_msg) {
 
-    BOOST_LOG_SEV(lg(), warn) << "Workflow STOPPED on its failed step:" << " type="
-                              << instance.type
+    BOOST_LOG_SEV(lg(), warn) << "Workflow STOPPED on its failed step:" << " type=" << instance.type
                               << " workflow=" << boost::uuids::to_string(instance.id)
                               << " error=" << failure_msg;
 

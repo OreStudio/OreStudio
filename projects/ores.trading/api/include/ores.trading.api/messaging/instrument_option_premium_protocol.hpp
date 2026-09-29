@@ -36,12 +36,12 @@
 namespace ores::trading::messaging {
 
 struct instrument_option_premium_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
 };
 
 struct instrument_option_premium_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
     ores::utility::decimal::decimal amount;
     std::string currency;

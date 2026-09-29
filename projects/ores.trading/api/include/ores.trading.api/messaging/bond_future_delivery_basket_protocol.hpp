@@ -36,12 +36,12 @@
 namespace ores::trading::messaging {
 
 struct bond_future_delivery_basket_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
 };
 
 struct bond_future_delivery_basket_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     int sequence_number;
     std::string delivery_basket_id;
 };

@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: Per-trade bond future facts: one row per future instrument, keyed by instrument_id.
+#+brief: Per-trade bond future facts: one row per future instrument, keyed by trade_id.
 #+entity_singular: bond_future
 #+entity_plural: bond_futures
 #+entity_title: Bond Future
@@ -31,16 +31,17 @@ lands in the shared instrument-keyed underlyings of the parent story
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the bond future instrument this fact row extends.
+The trade the bond future fact row belongs to.
 
-The instrument row carries the trade, workspace and party; the fact
+The trade row carries the workspace and the party; the fact
 row only carries the future terms. Per the ER, no workspace column
 rides the fact tables.
 
@@ -258,6 +259,20 @@ names this the delivery date of the fact row.
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::year{2029}/9/28}
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

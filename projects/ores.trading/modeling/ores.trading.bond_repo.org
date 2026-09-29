@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: Per-trade bond repo facts: one row per repo instrument, keyed by instrument_id.
+#+brief: Per-trade bond repo facts: one row per repo instrument, keyed by trade_id.
 #+entity_singular: bond_repo
 #+entity_plural: bond_repos
 #+entity_title: Bond Repo
@@ -33,16 +33,17 @@ limit, task D7943D7E wave 1.3).
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the bond repo instrument this fact row extends.
+The trade the bond repo fact row belongs to.
 
-The instrument row carries the trade, workspace and party; the fact
+The trade row carries the workspace and the party; the fact
 row only carries the repo terms. Per the ER, no workspace column
 rides the fact tables.
 
@@ -59,7 +60,6 @@ The flattening mapper corrupts the coupon frequency from this value
 today; the reworked mapper must stop.
 
 Soft FK to ores_refdata_leg_types_tbl: leg types belong to ores.refdata (Fixed, Floating, OIS, CMS, ...), so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
-
 
 #+begin_src cpp :name generator
 std::string("Fixed")
@@ -90,6 +90,20 @@ Index code of the repo leg, when the leg is floating.
 #+begin_src cpp :name generator
 std::string("SOFR")
 #+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

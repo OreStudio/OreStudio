@@ -141,7 +141,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <instrument_id> <leg_number> <leg_type_code> <day_count_fraction_code> "
+        "add <id> <trade_id> <leg_number> <leg_type_code> <day_count_fraction_code> "
         "<business_day_convention_code> <payment_frequency_code> <floating_index_code> "
         "<fixed_rate> <spread> <notional> <currency> <reason> <commentary>");
 
@@ -150,7 +150,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <instrument_id> <leg_number> <leg_type_code> <day_count_fraction_code> "
+        "set <id> <trade_id> <leg_number> <leg_type_code> <day_count_fraction_code> "
         "<business_day_convention_code> <payment_frequency_code> <floating_index_code> "
         "<fixed_rate> <spread> <notional> <currency> <reason> <commentary> [--version <n>]");
 
@@ -159,7 +159,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <instrument_id> <leg_number> <leg_type_code> "
+        "put-many --count <n> <id> <trade_id> <leg_number> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
         "<floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary>");
 
@@ -178,11 +178,11 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         "delete-many <id> <reason> <commentary>");
 
     menu->Insert(
-        "by-instrument-id",
+        "by-trade-id",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_by_instrument_id(std::ref(out), std::ref(session), std::move(args));
+            process_by_trade_id(std::ref(out), std::ref(session), std::move(args));
         },
-        "by-instrument-id <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "versions",
@@ -369,7 +369,7 @@ void swap_leg_commands::process_add(std::ostream& out,
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.change.write.leg_number, parsed->positionals[next++], "leg_number");
         read_token(req.change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
         read_token(req.change.write.day_count_fraction_code,
@@ -436,7 +436,7 @@ void swap_leg_commands::process_set(std::ostream& out,
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.change.write.leg_number, parsed->positionals[next++], "leg_number");
         read_token(req.change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
         read_token(req.change.write.day_count_fraction_code,
@@ -517,7 +517,7 @@ void swap_leg_commands::process_put_many(std::ostream& out,
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::swap_leg_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(change.write.leg_number, parsed->positionals[next++], "leg_number");
             read_token(change.write.leg_type_code, parsed->positionals[next++], "leg_type_code");
             read_token(change.write.day_count_fraction_code,
@@ -657,15 +657,15 @@ void swap_leg_commands::process_delete_many(std::ostream& out,
     out << rfl::json::write(*result) << std::endl;
 }
 
-void swap_leg_commands::process_by_instrument_id(std::ostream& out,
-                                                 nats_client& session,
-                                                 const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-instrument-id request.";
+void swap_leg_commands::process_by_trade_id(std::ostream& out,
+                                            nats_client& session,
+                                            const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-trade-id request.";
 
-    using request_type = messaging::list_by_instrument_id_swap_legs_request;
+    using request_type = messaging::list_by_trade_id_swap_legs_request;
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run by-instrument-id." << std::endl;
+            fail(out) << "You must be logged in to run by-trade-id." << std::endl;
             return;
         }
     }
@@ -692,8 +692,8 @@ void swap_leg_commands::process_by_instrument_id(std::ostream& out,
                       << std::endl;
             return;
         }
-        req.instrument_id = ores::shell::app::from_token<boost::uuids::uuid>(
-            parsed->positionals[next++], "instrument_id");
+        req.trade_id = ores::shell::app::from_token<boost::uuids::uuid>(parsed->positionals[next++],
+                                                                        "trade_id");
         if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
@@ -704,7 +704,7 @@ void swap_leg_commands::process_by_instrument_id(std::ostream& out,
         return;
     }
 
-    auto result = do_auth_request<messaging::list_by_instrument_id_swap_legs_response>(
+    auto result = do_auth_request<messaging::list_by_trade_id_swap_legs_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

@@ -50,8 +50,7 @@ fs::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-bool same_optional_text(const xsd::optional<calendar>& lhs,
-                        const xsd::optional<calendar>& rhs) {
+bool same_optional_text(const xsd::optional<calendar>& lhs, const xsd::optional<calendar>& rhs) {
     const bool left = static_cast<bool>(lhs);
     const bool right = static_cast<bool>(rhs);
     if (left != right)
@@ -108,7 +107,8 @@ ores::ore::xml::roundtrip_kind calendar_kind() {
     return ores::ore::xml::make_roundtrip_kind<
         calendaradjustment,
         std::vector<ores::refdata::messaging::calendar_adjustment>>(
-        "calendar adjustments", "calendaradjustment",
+        "calendar adjustments",
+        "calendaradjustment",
         static_cast<std::vector<ores::refdata::messaging::calendar_adjustment> (*)(
             const calendaradjustment&)>(&calendar_adjustment_mapper::map),
         static_cast<calendaradjustment (*)(
@@ -120,7 +120,8 @@ ores::ore::xml::roundtrip_kind calendar_kind() {
 ores::ore::xml::roundtrip_kind currency_kind() {
     return ores::ore::xml::make_roundtrip_kind<currencyConfig,
                                                std::vector<ores::refdata::domain::currency>>(
-        "currencies", "currencies",
+        "currencies",
+        "currencies",
         static_cast<std::vector<ores::refdata::domain::currency> (*)(const currencyConfig&)>(
             &currency_mapper::map),
         static_cast<currencyConfig (*)(const std::vector<ores::refdata::domain::currency>&)>(
@@ -130,7 +131,10 @@ ores::ore::xml::roundtrip_kind currency_kind() {
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions, mapped_conventions>(
-        "conventions", "conventions", &conventions_mapper::map, &conventions_mapper::reverse,
+        "conventions",
+        "conventions",
+        &conventions_mapper::map,
+        &conventions_mapper::reverse,
         ores::ore::xml::parsed_text_difference<conventions>);
 }
 
@@ -147,19 +151,24 @@ TEST_CASE("reference_calendar_adjustments_round_trip", tags) {
     CHECK(walk.failures.empty());
 }
 
+TEST_CASE("reference_currencies_round_trip", tags) {
+    const auto walk = ores::ore::xml::walk_kind(currency_kind(), corpus_root());
+
+    for (const auto& failure : walk.failures)
+        WARN(failure);
+
+    CHECK(walk.files == 13);
+    CHECK(walk.passed == walk.files);
+    CHECK(walk.failures.empty());
+}
+
 // Hidden by default, and run on demand:
 //   ores.ore.core.tests "[.measurement]"
-// It measures the two kinds that do not round trip yet. Their reasons are
-// losses rather than comparisons that need stating, so they cannot be asserted
-// green without hiding the loss, and they are recorded in the evidence file.
+// It measures the kind that does not round trip yet. Its reason is a mapper
+// that skips categories rather than a comparison that needs stating, so it
+// cannot be asserted green without hiding the loss, and it is recorded in the
+// evidence file.
 TEST_CASE("reference_kinds_measurement", "[.][measurement][reference]") {
-    const auto currencies = ores::ore::xml::walk_kind(currency_kind(), corpus_root());
-    WARN("currencies files=" + std::to_string(currencies.files) +
-         " passed=" + std::to_string(currencies.passed));
-    for (const auto& failure : currencies.failures)
-        WARN(failure);
-    CHECK(currencies.files == 13);
-
     const auto conventions = ores::ore::xml::walk_kind(conventions_kind(), corpus_root());
     WARN("conventions files=" + std::to_string(conventions.files) +
          " passed=" + std::to_string(conventions.passed));

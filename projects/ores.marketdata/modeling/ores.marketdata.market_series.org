@@ -95,6 +95,41 @@ Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
 Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
 =EUR-CHF=, =EUR-EURIBOR-3M=).
 
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The oresmd identifier this series is, written as a URI: the canonical form of the
+key's series part -- the key without the point the observation at hand carries -- or
+the index name the row arrived under, and the identity the series is meant to be read
+by. The point belongs to the observation rows beneath this one, so a series with two
+points carries one identity rather than the identity of whichever point arrived
+first.
+
+Nullable, and not yet the natural key, because the triple above still keys the row:
+the cutover that deletes =series_type=, =metric= and =qualifier= is what makes this
+=not null= and unique. Every row the corpus import writes carries one, and a row
+whose key the grammar cannot name carries none rather than a guessed identity.
+
+A write that leaves this empty **clears** it rather than keeping it: the generated
+service copies the write's fields straight through, so a caller that omits the
+identity stores a version without one. Until the column is =not null=, which is
+what forces every writer to supply it, a caller updating a series has to carry the
+identity it read.
+
+The test-data generator writes a generic index name, the one oresmd URI that names
+a series with nothing but a name, so a generated row carries an identity the grammar
+reads. The generator sets it explicitly, so the not-null the cutover adds is met by
+design rather than by a default value.
+
+#+begin_src cpp :name generator
+std::string("oresmd://generic/") + std::string(faker::word::noun()) + "-" +
+    std::to_string(idx) + "?type=fixing"
+#+end_src
+
 ** series_subclass
 :PROPERTIES:
 :type:     text
@@ -264,6 +299,58 @@ market_series_repository::read_latest_by_type(context ctx, const std::string& se
         ctx, query,
         [](const auto& entities) { return market_series_mapper::map(entities); },
         lg(), "Reading latest market series by type");
+}
+#+end_src
+
+*** read_latest_by_uri
+:PROPERTIES:
+:ID: 2fc528c8-f766-41d8-b64b-e17a9990f683
+:END:
+
+Reads the latest market series matching =oresmd_uri=. When =party_id= is non-empty,
+scopes the result to that party.
+
+This is the lookup the cutover moves to. The URI is the identity, so a reader that
+starts here finds a series without knowing how the registry decomposed its key; the
+triple reader above stays only while the columns it matches are still stored, and
+for rows written before the URI column existed, which carry none.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::market_series> read_latest_by_uri(context ctx,
+    const std::string& oresmd_uri, const std::string& party_id = {});
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::market_series>
+market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri,
+                                             const std::string& party_id) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+
+    if (!party_id.empty()) {
+        const auto query = sqlgen::read<std::vector<market_series_entity>> |
+                           where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                                 "valid_to"_c == max.value() &&
+                                 "oresmd_uri"_c == oresmd_uri) |
+                           order_by("id"_c);
+        return execute_read_query<market_series_entity, domain::market_series>(
+            ctx, query,
+            [](const auto& entities) { return market_series_mapper::map(entities); },
+            lg(), "Reading latest market series by URI and party");
+    }
+
+    const auto query = sqlgen::read<std::vector<market_series_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
+                             "oresmd_uri"_c == oresmd_uri) |
+                       order_by("id"_c);
+    return execute_read_query<market_series_entity, domain::market_series>(
+        ctx, query,
+        [](const auto& entities) { return market_series_mapper::map(entities); },
+        lg(), "Reading latest market series by URI");
 }
 #+end_src
 

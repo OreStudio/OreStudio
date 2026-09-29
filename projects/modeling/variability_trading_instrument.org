@@ -2,7 +2,7 @@
 :ID: FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE
 :END:
 #+title: Profile: Trading instrument
-#+description: Flat ORE trading instrument sub-types: identity + audit field groups, tenant+workspace scope, party_id from session, no UI surface.
+#+description: Flat ORE trading instrument sub-types: identity + audit field groups, the trade as the instrument's key, tenant+workspace scope, party_id from session, no UI surface.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -17,8 +17,8 @@ guarantee the exact feature combination below, with no ad hoc variation.
 * Purpose
 
 Models a flat ORE trading instrument sub-type: a single-row instrument
-record with an identity group (=instrument_id=, =trade_type_code=,
-=party_id=, =trade_id=), an audit group, and the instrument's own flat
+record with an identity group (=trade_id=, =trade_type_code=,
+=party_id=), an audit group, and the instrument's own flat
 payoff/term fields, scoped to both tenant and workspace (instruments
 are curated per trading desk/workspace). Party is stamped from the
 session GUC; the trade type is validated at insert time against the

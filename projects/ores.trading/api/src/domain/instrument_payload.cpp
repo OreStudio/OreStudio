@@ -175,23 +175,19 @@ std::optional<with_legs<Leaf, Leg>> decode_leaf_with_legs(const instrument_paylo
  * same recursive helper pair decode_flat uses.
  */
 template <typename Variant, std::size_t I>
-void try_one_swap(const instrument_payload& payload,
-                  std::optional<swap_instrument_data>& found) {
+void try_one_swap(const instrument_payload& payload, std::optional<swap_instrument_data>& found) {
     using Leaf = std::variant_alternative_t<I, Variant>;
     if (found || payload.type != leaf_name<Leaf>())
         return;
     if (auto r = read_as<swap_leaf_payload<Leaf>>(payload)) {
-        found = swap_instrument_data{Variant(std::move(r->instrument)),
-                                     std::move(r->legs),
-                                     std::move(r->call_dates)};
+        found = swap_instrument_data{
+            Variant(std::move(r->instrument)), std::move(r->legs), std::move(r->call_dates)};
         return;
     }
     // A payload written before the call dates became child rows carries the
     // leaf and its legs only, so read it and leave the schedule empty.
     if (auto r = read_as<with_legs<Leaf, swap_leg>>(payload))
-        found = swap_instrument_data{Variant(std::move(r->instrument)),
-                                     std::move(r->legs),
-                                     {}};
+        found = swap_instrument_data{Variant(std::move(r->instrument)), std::move(r->legs), {}};
 }
 
 template <typename Variant, std::size_t... Is>
@@ -204,7 +200,8 @@ void try_each_swap(const instrument_payload& payload,
 template <typename Variant>
 std::optional<swap_instrument_data> decode_swap(const instrument_payload& payload) {
     std::optional<swap_instrument_data> found;
-    try_each_swap<Variant>(payload, found, std::make_index_sequence<std::variant_size_v<Variant>>{});
+    try_each_swap<Variant>(
+        payload, found, std::make_index_sequence<std::variant_size_v<Variant>>{});
     return found;
 }
 
@@ -246,8 +243,8 @@ void try_one_equity(const instrument_payload& payload,
     if (found || payload.type != leaf_name<Leaf>())
         return;
     if (auto r = read_as<equity_leaf_payload<Leaf>>(payload)) {
-        found = equity_instrument_data{Variant(std::move(r->instrument)),
-                                       std::move(r->underlyings)};
+        found =
+            equity_instrument_data{Variant(std::move(r->instrument)), std::move(r->underlyings)};
         return;
     }
     if (auto r = read_as<Leaf>(payload))
@@ -310,8 +307,8 @@ instrument_payload encode_instrument(const trade_instrument& instrument) {
                 encode_swap(leaf.instrument, leaf.legs, leaf.call_dates, out);
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 out.type = std::string(leaf_name<commodity_instrument>());
-                out.body = rfl::json::write(
-                    commodity_leaf_payload{leaf.instrument, leaf.constituents});
+                out.body =
+                    rfl::json::write(commodity_leaf_payload{leaf.instrument, leaf.constituents});
             } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
                 encode_equity(leaf.instrument, leaf.underlyings, out);
             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {

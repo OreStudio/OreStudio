@@ -42,8 +42,7 @@ namespace ores::trading::domain {
 // incremental migration in tasks 12-15) is over.
 template <typename T>
 concept Instrument = requires(T t) {
-    { t.identity.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
-    { t.identity.trade_id } -> std::convertible_to<std::optional<boost::uuids::uuid>>;
+    { t.identity.trade_id } -> std::convertible_to<boost::uuids::uuid>;
 };
 
 // Retained as an alias for call sites written during the migration.
@@ -88,53 +87,44 @@ struct equity_instrument_data {
     std::vector<equity_position_option_underlying> underlyings;
 };
 
+// The trade id is the instrument's own key, so there is one id to stamp
+// rather than a trade id and an instrument id that can disagree.
 template <Instrument T>
-void stamp_ids(T& instr, boost::uuids::uuid instrument_id, boost::uuids::uuid trade_id) {
-    instr.identity.instrument_id = instrument_id;
+void stamp_ids(T& instr, boost::uuids::uuid trade_id) {
     instr.identity.trade_id = trade_id;
 }
 
 template <typename... Ts>
     requires(Instrument<Ts> && ...)
-void stamp_ids(std::variant<Ts...>& v,
-               boost::uuids::uuid instrument_id,
-               boost::uuids::uuid trade_id) {
-    std::visit([&](auto& instr) { stamp_ids(instr, instrument_id, trade_id); }, v);
+void stamp_ids(std::variant<Ts...>& v, boost::uuids::uuid trade_id) {
+    std::visit([&](auto& instr) { stamp_ids(instr, trade_id); }, v);
 }
 
 template <typename T, typename Leg>
-void stamp_ids(with_legs<T, Leg>& data,
-               boost::uuids::uuid instrument_id,
-               boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, instrument_id, trade_id);
+void stamp_ids(with_legs<T, Leg>& data, boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, trade_id);
     for (auto& leg : data.legs)
-        leg.identity.instrument_id = instrument_id;
+        leg.identity.trade_id = trade_id;
 }
 
-inline void stamp_ids(swap_instrument_data& data,
-                      boost::uuids::uuid instrument_id,
-                      boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, instrument_id, trade_id);
+inline void stamp_ids(swap_instrument_data& data, boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, trade_id);
     for (auto& leg : data.legs)
-        leg.identity.instrument_id = instrument_id;
+        leg.identity.trade_id = trade_id;
     for (auto& call_date : data.call_dates)
-        call_date.instrument_id = instrument_id;
+        call_date.trade_id = trade_id;
 }
 
-inline void stamp_ids(commodity_instrument_data& data,
-                      boost::uuids::uuid instrument_id,
-                      boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, instrument_id, trade_id);
+inline void stamp_ids(commodity_instrument_data& data, boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, trade_id);
     for (auto& constituent : data.constituents)
-        constituent.instrument_id = instrument_id;
+        constituent.trade_id = trade_id;
 }
 
-inline void stamp_ids(equity_instrument_data& data,
-                      boost::uuids::uuid instrument_id,
-                      boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, instrument_id, trade_id);
+inline void stamp_ids(equity_instrument_data& data, boost::uuids::uuid trade_id) {
+    stamp_ids(data.instrument, trade_id);
     for (auto& underlying : data.underlyings)
-        underlying.instrument_id = instrument_id;
+        underlying.trade_id = trade_id;
 }
 
 } // namespace ores::trading::domain

@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
@@ -128,6 +129,10 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
 struct named_key final {
     std::string canonical;
     ores::ore::market::decomposed_key decomposition;
+    /// The identity the key projects to, as a URI. This is what the series is meant
+    /// to be read by; the canonical spelling beside it is what the file's key
+    /// becomes, which a consumer of ORE keys still needs.
+    std::string uri;
     bool fx_pair_reversed = false;
 };
 
@@ -165,6 +170,10 @@ canonical_key(const std::string& key,
     named_key result;
     result.decomposition = registry.decompose(*canonical);
     result.canonical = std::move(*canonical);
+    // The file's key names one datum, and the series is the datum's identity with
+    // its point dropped: the series is what the row above holds, and its points are
+    // the observations beneath it.
+    result.uri = core::oresmd_parser::to_series_uri(*identifier).value;
     // Only asked when there is a difference to explain, so the second projection
     // costs nothing on the keys that already read back as they arrived.
     result.fx_pair_reversed =
@@ -174,7 +183,8 @@ canonical_key(const std::string& key,
 
 } // namespace
 
-import_service::import_service(context ctx, ores::nats::service::nats_client& auth_nats,
+import_service::import_service(context ctx,
+                               ores::nats::service::nats_client& auth_nats,
                                known_pairs_provider known_pairs)
     : ctx_(std::move(ctx))
     , auth_nats_(auth_nats)
@@ -199,16 +209,25 @@ import_service::import(const messaging::import_market_data_request& req) {
     // carries neither payload never pays for it.
     std::optional<core::series_classifier> classifier;
 
+    // The identity the series is given, when the caller has one: the oresmd URI its
+    // key or index name projects to. Empty for a row whose key the grammar cannot
+    // name, which keeps the registry's own decomposition instead.
     auto find_or_create_series = [&](const std::string& series_type,
                                      const std::string& metric,
-                                     const std::string& qualifier) -> boost::uuids::uuid {
+                                     const std::string& qualifier,
+                                     const std::string& oresmd_uri) -> boost::uuids::uuid {
         const auto key = std::make_tuple(series_type, metric, qualifier);
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
             return it->second;
 
-        // Look up existing series in DB.
-        const auto existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
+        // Look up existing series in DB: by the identity first, which is what the
+        // series is meant to be found by, and by the triple after it, because a row
+        // written before the identity column existed carries none.
+        auto existing = oresmd_uri.empty() ? std::vector<domain::market_series>{} :
+                                             series_repo.read_latest_by_uri(ctx_, oresmd_uri);
+        if (existing.empty())
+            existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
         if (!existing.empty()) {
             const auto id = existing.front().id;
             series_cache.emplace(key, id);
@@ -228,6 +247,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.metric = metric;
         s.qualifier = qualifier;
         s.series_subclass = cl.series_subclass;
+        s.oresmd_uri = oresmd_uri;
         s.modified_by = ctx_.actor();
         s.performed_by = ctx_.service_account();
         s.change_reason_code =
@@ -285,8 +305,8 @@ import_service::import(const messaging::import_market_data_request& req) {
         if (std::any_of(data.begin(), data.end(), [](const auto& d) {
                 return d.series_type == "FX" && d.metric == "RATE";
             }))
-            fx_checker.emplace(known_pairs_ ? known_pairs_()
-                                            : fetch_known_currency_pairs(auth_nats_));
+            fx_checker.emplace(known_pairs_ ? known_pairs_() :
+                                              fetch_known_currency_pairs(auth_nats_));
 
         // parse_market_data already de-duplicated repeated (date, key)
         // pairs (last-line-wins) — see duplicate_policy. In error mode,
@@ -316,7 +336,8 @@ import_service::import(const messaging::import_market_data_request& req) {
                              "reversed relative to refdata's canonical currency pair." :
                              "not the canonical spelling of this key."));
 
-                const auto series = find_or_create_series(series_type, metric, qualifier);
+                const auto series = find_or_create_series(
+                    series_type, metric, qualifier, named ? named->uri : std::string{});
 
                 domain::market_observation obs;
                 obs.id = gen();
@@ -352,9 +373,16 @@ import_service::import(const messaging::import_market_data_request& req) {
             std::vector<domain::market_fixing> fixings;
             fixings.reserve(data.size());
             for (const auto& f : data) {
-                // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name
-                const auto series =
-                    find_or_create_series(std::string(fixing_series_type), "RATE", f.qualifier);
+                // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name.
+                // The index name is an identity of its own class, so it is read by
+                // from_index_name() rather than by the ORE key grammar, and the URI
+                // it projects to is what the series is given. A name no class can
+                // name leaves the column empty rather than storing a guess.
+                const auto identifier = core::oresmd_projections::from_index_name(f.qualifier);
+                const auto uri =
+                    identifier ? core::oresmd_parser::to_uri(*identifier).value : std::string{};
+                const auto series = find_or_create_series(
+                    std::string(fixing_series_type), "RATE", f.qualifier, uri);
 
                 domain::market_fixing fix;
                 fix.id = gen();

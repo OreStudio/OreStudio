@@ -56,11 +56,6 @@ struct instrument_identity {
     boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
-     * @brief UUID uniquely identifying this instrument.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
      * @brief ORE product type code (soft FK to ores_trading_trade_types_tbl).
      */
     std::string trade_type_code;
@@ -71,9 +66,12 @@ struct instrument_identity {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief Soft back-reference to the trade this instrument belongs to, when known.
+     * @brief The trade this instrument belongs to, and the instrument's own key.
+
+The trade id identifies both the trade and its instrument, so there is one
+identity rather than two and the two cannot disagree.
      */
-    std::optional<boost::uuids::uuid> trade_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Value equality.

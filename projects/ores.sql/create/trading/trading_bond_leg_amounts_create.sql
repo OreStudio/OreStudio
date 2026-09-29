@@ -40,7 +40,7 @@
  */
 
 create table if not exists "ores_trading_bond_leg_amounts_tbl" (
-    "instrument_id" uuid not null,
+    "trade_id" uuid not null,
     "leg_role" text not null,
     "leg_number" integer not null,
     "amount_role" text not null,
@@ -55,10 +55,10 @@ create table if not exists "ores_trading_bond_leg_amounts_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, instrument_id, leg_role, leg_number, amount_role, sequence_number, valid_from, valid_to),
+    primary key (tenant_id, trade_id, leg_role, leg_number, amount_role, sequence_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        instrument_id WITH =,
+        trade_id WITH =,
         leg_role WITH =,
         leg_number WITH =,
         amount_role WITH =,
@@ -66,7 +66,7 @@ create table if not exists "ores_trading_bond_leg_amounts_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("leg_role" <> ''),
     check ("amount_role" <> ''),
     check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
@@ -76,11 +76,11 @@ create table if not exists "ores_trading_bond_leg_amounts_tbl" (
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists bond_leg_amounts_version_uniq_idx
-on "ores_trading_bond_leg_amounts_tbl" (tenant_id, instrument_id, leg_role, leg_number, amount_role, sequence_number, version)
+on "ores_trading_bond_leg_amounts_tbl" (tenant_id, trade_id, leg_role, leg_number, amount_role, sequence_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists bond_leg_amounts_id_uniq_idx
-on "ores_trading_bond_leg_amounts_tbl" (tenant_id, instrument_id, leg_role, leg_number, amount_role, sequence_number)
+on "ores_trading_bond_leg_amounts_tbl" (tenant_id, trade_id, leg_role, leg_number, amount_role, sequence_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists bond_leg_amounts_tenant_idx
@@ -95,6 +95,17 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -102,7 +113,7 @@ begin
     select version into current_version
     from "ores_trading_bond_leg_amounts_tbl"
     where tenant_id = NEW.tenant_id
-      and instrument_id = NEW.instrument_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number and amount_role = NEW.amount_role and sequence_number = NEW.sequence_number
+      and trade_id = NEW.trade_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number and amount_role = NEW.amount_role and sequence_number = NEW.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -131,7 +142,7 @@ begin
         update "ores_trading_bond_leg_amounts_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number and amount_role = NEW.amount_role and sequence_number = NEW.sequence_number
+          and trade_id = NEW.trade_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number and amount_role = NEW.amount_role and sequence_number = NEW.sequence_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -156,6 +167,6 @@ on delete to "ores_trading_bond_leg_amounts_tbl" do instead (
     update "ores_trading_bond_leg_amounts_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and instrument_id = OLD.instrument_id and leg_role = OLD.leg_role and leg_number = OLD.leg_number and amount_role = OLD.amount_role and sequence_number = OLD.sequence_number
+      and trade_id = OLD.trade_id and leg_role = OLD.leg_role and leg_number = OLD.leg_number and amount_role = OLD.amount_role and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

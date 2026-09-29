@@ -347,7 +347,12 @@ TEST_CASE("{{description}}", tags) {
 {{#security_projections}}
 TEST_CASE("{{description}}", tags) {
     const auto id = parse("{{{uri}}}");
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
     REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
 }
 
 {{/security_projections}}
@@ -972,10 +977,6 @@ TEST_CASE("from_index_name_rejects_names_it_cannot_have_projected", tags) {
     // producer's other token has no family to resolve to.
     REQUIRE_FALSE(oresmd_projections::from_index_name("USD--3M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("EUR-NOSUCHFAMILY").has_value());
-    // Another asset class's index name. UKRPI is an inflation index, and this
-    // projection is the interest-rate one; naming it is its own asset class's
-    // work, recorded in the analysis.
-    REQUIRE_FALSE(oresmd_projections::from_index_name("UKRPI").has_value());
 }
 
 TEST_CASE("from_index_name_reads_the_fx_fixing_names_the_corpus_carries", tags) {
@@ -1224,16 +1225,137 @@ TEST_CASE("from_index_name_refuses_the_market_data_keys_the_corpus_misfiles_as_f
             .has_value());
 }
 
+TEST_CASE("from_index_name_reads_the_inflation_codes_the_corpus_carries", tags) {
+    // The seven inflation index names in external/ore/examples are bare codes. The
+    // class is the only one whose index name is not a prefix and a tail, so the code
+    // alone is the whole of the name.
+    for (const auto& name : {"AUCPI", "EUHICP", "EUHICPXT", "FRHICP", "UKRPI", "USCPI", "ZACPI"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        CHECK(std::get<inflation_market_data_identifier>(*id).type == instrument_type::fixing);
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+    // A code is taken before the interest-rate fallback is reached, so the two
+    // classes do not compete for a bare token.
+    REQUIRE(std::holds_alternative<inflation_market_data_identifier>(
+        *oresmd_projections::from_index_name("UKRPI")));
+}
+
+TEST_CASE("from_index_name_refuses_a_dash_less_token_that_is_not_an_inflation_code", tags) {
+    // Nothing in a bare token says which class it belongs to, so a token the model
+    // does not carry keeps its name rather than being given an inflation identity.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("NOTACODE").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("FIXINGDATE").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD").has_value());
+    // The match is on the spelling the table carries, so a code written another way
+    // is refused rather than reshaped on the way back, as a power delivery date is.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("ukrpi").has_value());
+    // The write side refuses what the read side refuses: an identifier holding a
+    // code the class does not carry has no name to write, rather than one reshaped
+    // into a token this library would then accept. The parser refuses such a code as
+    // it arrives, which the model's own rejection row covers.
+    auto unknown = std::get<inflation_market_data_identifier>(
+        parse("oresmd://inflation/ukrpi?type=fixing"));
+    unknown.index_code = "NOTACODE";
+    REQUIRE_FALSE(oresmd_projections::to_index_name(unknown).has_value());
+    // The projection emits an index name for a fixing alone.
+    REQUIRE_FALSE(oresmd_projections::to_index_name(
+                      parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"))
+                      .has_value());
+}
+
+TEST_CASE("from_index_name_reads_the_equity_names_the_corpus_carries", tags) {
+    // The eight equity index names in external/ore/examples, all fixings, each a
+    // bare ticker or an identifier scheme and its code. A fixing carries no
+    // currency, which is what makes the whole projection EQ-<ticker>.
+    for (const auto& name : {"EQ-SP5",
+                             "EQ-RIC:.SPX",
+                             "EQ-RIC:.STOXX50",
+                             "EQ-RIC:.STOXX50E",
+                             "EQ-RIC:FISV.OQ",
+                             "EQ-RIC:KSS.N",
+                             "EQ-RIC:ON.O",
+                             "EQ-FIGI:BBG00R251JN8"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        const auto& equity = std::get<equity_market_data_identifier>(*id);
+        CHECK(equity.type == instrument_type::fixing);
+        CHECK_FALSE(equity.ccy.has_value());
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+}
+
+TEST_CASE("from_index_name_refuses_equity_names_that_are_not_the_shape", tags) {
+    // A prefix with nothing after it names nothing, and an index name carries no
+    // slash.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("EQ-").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("EQ-A/B").has_value());
+    // The projection emits an index name for a fixing alone, so a quote projects none.
+    REQUIRE_FALSE(oresmd_projections::to_index_name(
+                      parse("oresmd://equity/sp5?ccy=usd&type=quote&quote=spot"))
+                      .has_value());
+}
+
+TEST_CASE("from_index_name_reads_the_security_names_the_corpus_carries", tags) {
+    // The two security fixing names in external/ore/examples are on one ISIN: the
+    // bond itself, and the future that expires in August 2025.
+    for (const auto& name : {"BOND-ISIN:IE00BH3SQ895", "BOND-ISIN:IE00BH3SQ895-2025-08"}) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        const auto& security = std::get<security_market_data_identifier>(*id);
+        CHECK(security.type == instrument_type::fixing);
+        CHECK(security.security_id == "ISIN:IE00BH3SQ895");
+        const auto back = oresmd_projections::to_index_name(*id);
+        REQUIRE(back.has_value());
+        CHECK(*back == name);
+    }
+    // The future's month is the delivery field, and the first name carries none.
+    const auto future = oresmd_projections::from_index_name("BOND-ISIN:IE00BH3SQ895-2025-08");
+    REQUIRE(future.has_value());
+    const auto& security = std::get<security_market_data_identifier>(*future);
+    REQUIRE(security.delivery.has_value());
+    CHECK(*security.delivery == "2025-08");
+    CHECK_FALSE(std::get<security_market_data_identifier>(
+                    *oresmd_projections::from_index_name("BOND-ISIN:IE00BH3SQ895"))
+                    .delivery.has_value());
+}
+
+TEST_CASE("from_index_name_refuses_security_names_that_are_not_the_shape", tags) {
+    REQUIRE_FALSE(oresmd_projections::from_index_name("BOND-").has_value());
+    // A trailing period is a contract month or nothing: a year alone, a full date and
+    // a two-digit year are refused rather than split at a guess.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("BOND-ISIN:IE00BH3SQ895-2025").has_value());
+    REQUIRE_FALSE(
+        oresmd_projections::from_index_name("BOND-ISIN:IE00BH3SQ895-2025-08-15").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("BOND-ISIN:IE00BH3SQ895-25-08").has_value());
+    REQUIRE_FALSE(oresmd_projections::to_index_name(
+                      parse("oresmd://security/isin:ie00bh3sq895?type=quote&quote=bond_price"))
+                      .has_value());
+    // The parser reads a delivery without judging its shape, so a month that is not
+    // a contract month arrives and projects no name: the write side is what refuses
+    // it, and the two sides stay in step that way.
+    REQUIRE_FALSE(oresmd_projections::to_index_name(
+                      parse("oresmd://security/isin:ie00bh3sq895?type=fixing&delivery=2025-13x"))
+                      .has_value());
+}
+
 TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", tags) {
     // A spot quote and a fixing have one point per date, whoever supplies the
-    // name for it. A power, commodity or generic fixing carries its coordinate --
-    // a delivery window, a contract month, a name -- as a field of its own rather
-    // than as a point, so it is one of these.
+    // name for it. A fixing whose coordinate is a field of its own -- a delivery
+    // window, a contract month, a name, a code -- is one of these rather than a
+    // quote that names its own point.
     for (const auto& uri : {"oresmd://fx/eurusd?type=quote&quote=spot",
                             "oresmd://ir/usd?type=fixing&index=libor&tenor=3m",
                             "oresmd://power/ice:pdq?type=fixing&delivery=2021-01-04-14400-18000",
                             "oresmd://commodity/ice:b?type=fixing&delivery=2024-12",
                             "oresmd://generic/juniornote?type=fixing&name_spelling=JuniorNote",
+                            "oresmd://inflation/ukrpi?type=fixing",
+                            "oresmd://equity/sp5?type=fixing",
+                            "oresmd://security/isin:ie00bh3sq895?type=fixing&delivery=2025-08",
                             "oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"}) {
         const auto id = oresmd_parser::parse(oresmd_uri{uri});
         CHECK(oresmd_projections::is_scalar(id));
@@ -1245,5 +1367,119 @@ TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", t
         const auto id = oresmd_parser::parse(oresmd_uri{uri});
         CHECK_FALSE(oresmd_projections::is_scalar(id));
     }
+}
+
+TEST_CASE("a_keys_points_project_to_one_series_identity", tags) {
+    // A series is what the series row holds and its points are the observation rows
+    // beneath it. The file's key names one datum, so its point is the datum's own
+    // coordinate: the series' identity is the datum's identity with the point
+    // dropped, and the two points below are one series rather than two.
+    const auto five = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/5Y");
+    const auto ten = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/10Y");
+    REQUIRE(five);
+    REQUIRE(ten);
+
+    const auto five_series = oresmd_parser::to_series_uri(*five).value;
+    CHECK(five_series == oresmd_parser::to_series_uri(*ten).value);
+    CHECK(five_series == "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+
+    // The datum's own identity keeps its point, so the two keys differ as data.
+    CHECK(oresmd_parser::to_uri(*five).value != oresmd_parser::to_uri(*ten).value);
+
+    // The series identity is a URI this grammar reads back, which is what a row
+    // found by it needs.
+    CHECK(oresmd_parser::to_uri(oresmd_parser::parse(oresmd_uri{five_series})).value ==
+          five_series);
+
+    // A volatility surface is one series per underlying, and the coordinates it is
+    // sampled at are its points, so dropping them merges no surface with another:
+    // the corpus carries one CHF swaption series whose points are expiry/tenor/strike.
+    const auto atm = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
+    const auto strike = oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/0.02");
+    REQUIRE(atm);
+    REQUIRE(strike);
+    const auto surface = oresmd_parser::to_series_uri(*atm).value;
+    CHECK(surface == oresmd_parser::to_series_uri(*strike).value);
+    CHECK(surface.find("point=") == std::string::npos);
+    CHECK(oresmd_parser::to_uri(*atm).value != oresmd_parser::to_uri(*strike).value);
+}
+
+TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags) {
+    // A series is the key without the segments the decomposition calls the point, and
+    // which identifier fields hold those segments is a fact about each family: the
+    // swap, money-market and FRA families hold the coordinate in point, a discount
+    // curve's maturity is its tenor, and a future's coordinate is the contract code
+    // and the underlying tenor. Each pair below is two points of one series, so the
+    // two must project to one identity.
+    const std::pair<const char*, const char*> pairs[] = {
+        {"MM/RATE/CHF/2D/1M", "MM/RATE/CHF/2D/2M"},
+        {"FRA/RATE/EUR/3M/6M", "FRA/RATE/EUR/3M/12M"},
+        {"IR_SWAP/RATE/USD/0D/1D/5Y", "IR_SWAP/RATE/USD/0D/1D/10Y"},
+        {"SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM", "SWAPTION/RATE_LNVOL/EUR/5Y/2Y/0.02"},
+        {"COMMODITY_FWD/PRICE/GOLD/USD/2016-02-29", "COMMODITY_FWD/PRICE/GOLD/USD/2016-03-31"},
+        {"DISCOUNT/RATE/EUR/EUR/1D", "DISCOUNT/RATE/EUR/EUR/10Y"},
+        {"MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M", "MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/6M"},
+        {"OI_FUTURE/PRICE/USD/2025-11/XCME:SRA/3M", "OI_FUTURE/PRICE/USD/2025-12/XCME:SRA/3M"},
+    };
+    for (const auto& [one, other] : pairs) {
+        const auto first = oresmd_projections::from_ore_key(one);
+        const auto second = oresmd_projections::from_ore_key(other);
+        REQUIRE(first);
+        REQUIRE(second);
+        CHECK(oresmd_parser::to_series_uri(*first).value ==
+              oresmd_parser::to_series_uri(*second).value);
+        CHECK(oresmd_parser::to_series_uri(*first).value.find("point=") == std::string::npos);
+    }
+
+    // The other direction: a field the series keeps must keep two series apart, or the
+    // drop above would be over-clearing. A contract month separates two futures of one
+    // currency, a tenor separates two swaps of one currency, and a currency separates
+    // two discount curves of one curve name.
+    const std::pair<const char*, const char*> distinct[] = {
+        {"MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M", "MM_FUTURE/PRICE/EUR/2024-05/XICE:FEI/3M"},
+        {"IR_SWAP/RATE/USD/0D/1D/5Y", "IR_SWAP/RATE/USD/0D/3M/5Y"},
+        {"DISCOUNT/RATE/EUR/EUR/1D", "DISCOUNT/RATE/USD/USD/1D"},
+    };
+    for (const auto& [one, other] : distinct) {
+        const auto first = oresmd_projections::from_ore_key(one);
+        const auto second = oresmd_projections::from_ore_key(other);
+        REQUIRE(first);
+        REQUIRE(second);
+        CHECK(oresmd_parser::to_series_uri(*first).value !=
+              oresmd_parser::to_series_uri(*second).value);
+    }
+}
+
+TEST_CASE("the_fomc_segments_shapes_name_their_series", tags) {
+    // The FOMC segment's raw grid is a set of meeting-dated OIS quotes, and the record
+    // decides their spelling: an ORE swap whose start slot holds 0D for the pillar that
+    // starts at spot and a meeting date for the rest, the overnight index tenor beside
+    // it, and the end date last. The seed and the feed will write these, so the grammar
+    // is pinned here before either does: a pillar is one series, two pillars are two,
+    // and the curve keeps ORE's discount shape.
+    const auto spot = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/20260128");
+    const auto first = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/20260128/1D/20260319");
+    REQUIRE(spot);
+    REQUIRE(first);
+    CHECK(oresmd_projections::to_quote_key(*spot) == "IR_SWAP/RATE/USD/0D/1D/20260128");
+    CHECK(oresmd_projections::to_quote_key(*first) == "IR_SWAP/RATE/USD/20260128/1D/20260319");
+    CHECK(oresmd_parser::to_series_uri(*spot).value ==
+          "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+    CHECK(oresmd_parser::to_series_uri(*first).value ==
+          "oresmd://ir/usd?tenor=1d&settle=20260128&type=quote&metric=rate&quote=ir_swap");
+    // The two pillars are two series, which is what one series per pillar means.
+    CHECK(oresmd_parser::to_series_uri(*spot).value != oresmd_parser::to_series_uri(*first).value);
+
+    // The curve is one series per curve with the pillar as the point: the maturity
+    // leaves the identity, so the two pillars below reach one row.
+    const auto one_day = oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD-SOFR-FOMC/1D");
+    const auto ten_year = oresmd_projections::from_ore_key("DISCOUNT/RATE/USD/USD-SOFR-FOMC/10Y");
+    REQUIRE(one_day);
+    REQUIRE(ten_year);
+    CHECK(oresmd_projections::to_quote_key(*one_day) == "DISCOUNT/RATE/USD/USD-SOFR-FOMC/1D");
+    CHECK(oresmd_projections::to_quote_key(*ten_year) == "DISCOUNT/RATE/USD/USD-SOFR-FOMC/10Y");
+    const auto curve = oresmd_parser::to_series_uri(*one_day).value;
+    CHECK(curve == oresmd_parser::to_series_uri(*ten_year).value);
+    CHECK(curve == "oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount");
 }
 #+end_src

@@ -42,7 +42,7 @@ instrument_option_payment_date_mapper::map(const instrument_option_payment_date_
     domain::instrument_option_payment_date r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.payment_date = ores::platform::time::datetime::from_iso8601_date(v.payment_date);
     r.modified_by = v.modified_by;
@@ -60,7 +60,7 @@ instrument_option_payment_date_mapper::map(const domain::instrument_option_payme
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     instrument_option_payment_date_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;

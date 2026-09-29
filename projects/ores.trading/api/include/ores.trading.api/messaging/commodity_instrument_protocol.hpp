@@ -36,13 +36,12 @@
 namespace ores::trading::messaging {
 
 struct commodity_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct commodity_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     std::string commodity_code;
     std::string currency;
     double quantity;

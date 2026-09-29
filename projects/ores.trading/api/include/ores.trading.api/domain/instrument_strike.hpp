@@ -35,10 +35,10 @@
 namespace ores::trading::domain {
 
 /**
- * @brief A strike a document states as a price, a yield or a bare number, keyed to the instrument.
+ * @brief A strike a document states as a price, a yield or a bare number, keyed to the trade.
  *
  * One row per instrument whose document stated a strike as a price or as
- * a yield, keyed to the instrument.
+ * a yield, keyed to the trade.
  *
  * The schema states the strike as a choice of three: a price with its
  * currency, a yield with its compounding, or a number with an optional
@@ -59,9 +59,9 @@ struct instrument_strike final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose document stated this strike.
+     * @brief The trade whose document stated this strike.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief The strike stated as a price.

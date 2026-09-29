@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "trade_parent_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -69,11 +70,11 @@ const probe probes[] = {
 constexpr int probe_count = sizeof(probes) / sizeof(probes[0]);
 
 bond_leg_amount make_amount(database_helper& h,
-                            const boost::uuids::uuid& instrument_id,
+                            const boost::uuids::uuid& trade_id,
                             int sequence_number,
                             const char* text) {
     bond_leg_amount r;
-    r.instrument_id = instrument_id;
+    r.trade_id = trade_id;
     r.leg_role = "bond";
     r.leg_number = 1;
     r.amount_role = "notional";
@@ -93,7 +94,7 @@ bond_leg_amount make_amount(database_helper& h,
  * mapper renders from it. This is what proves the seam.
  */
 std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
-                                                  const std::string& instrument_id) {
+                                                  const std::string& trade_id) {
     using namespace ores::database::repository;
     using namespace sqlgen::literals;
 
@@ -101,7 +102,7 @@ std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_amount_entity>> |
-                       sqlgen::where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       sqlgen::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                                      "valid_to"_c == max.value()) |
                        sqlgen::order_by("sequence_number"_c);
 
@@ -122,18 +123,18 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", tags) {
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    const auto instrument_id = boost::uuids::random_generator()();
-    const auto id_str = boost::uuids::to_string(instrument_id);
+    const auto trade_id = ores::trading::tests::write_parent_trade(h);
+    const auto id_str = boost::uuids::to_string(trade_id);
 
     bond_leg_amount_repository repo;
     for (int i = 0; i < probe_count; ++i) {
         BOOST_LOG_SEV(lg, debug) << "Writing amount: " << probes[i].text;
-        CHECK_NOTHROW(repo.write(ctx, make_amount(h, instrument_id, i + 1, probes[i].text)));
+        CHECK_NOTHROW(repo.write(ctx, make_amount(h, trade_id, i + 1, probes[i].text)));
     }
 
     for (int i = 0; i < probe_count; ++i) {
-        const auto read = repo.read_latest(
-            ctx, id_str, "bond", "1", "notional", std::to_string(i + 1));
+        const auto read =
+            repo.read_latest(ctx, id_str, "bond", "1", "notional", std::to_string(i + 1));
         REQUIRE(read.size() == 1);
         BOOST_LOG_SEV(lg, debug) << "Read back: " << read[0].value.to_string();
         CHECK(read[0].value.to_string() == probes[i].canonical);
@@ -157,12 +158,12 @@ TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", tags) {
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    const auto instrument_id = boost::uuids::random_generator()();
-    const auto id_str = boost::uuids::to_string(instrument_id);
+    const auto trade_id = ores::trading::tests::write_parent_trade(h);
+    const auto id_str = boost::uuids::to_string(trade_id);
 
     const std::string exact = "999999999999999999.9999999999";
     bond_leg_amount_repository repo;
-    REQUIRE_NOTHROW(repo.write(ctx, make_amount(h, instrument_id, 1, exact.c_str())));
+    REQUIRE_NOTHROW(repo.write(ctx, make_amount(h, trade_id, 1, exact.c_str())));
 
     const auto read = repo.read_latest(ctx, id_str, "bond", "1", "notional", "1");
     REQUIRE(read.size() == 1);
@@ -181,8 +182,8 @@ TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", tags) {
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    const auto instrument_id = boost::uuids::random_generator()();
-    const auto id_str = boost::uuids::to_string(instrument_id);
+    const auto trade_id = ores::trading::tests::write_parent_trade(h);
+    const auto id_str = boost::uuids::to_string(trade_id);
 
     /*
      * The value the type holds exactly, and the column cannot: 20 integer
@@ -190,14 +191,13 @@ TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", tags) {
      * test states the refusal rather than hiding the value behind a cast.
      */
     const std::string too_wide = "12345678901234567890.1234567890";
-    CHECK(decimal::from_string(too_wide).value().to_string() ==
-          "12345678901234567890.123456789");
+    CHECK(decimal::from_string(too_wide).value().to_string() == "12345678901234567890.123456789");
 
     bond_leg_amount_repository repo;
     bool refused = false;
     std::string message;
     try {
-        repo.write(ctx, make_amount(h, instrument_id, 1, too_wide.c_str()));
+        repo.write(ctx, make_amount(h, trade_id, 1, too_wide.c_str()));
     } catch (const std::exception& e) {
         refused = true;
         message = e.what();

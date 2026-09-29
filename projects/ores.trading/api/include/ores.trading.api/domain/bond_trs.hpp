@@ -35,8 +35,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Per-trade bond total return swap facts: one row per TRS instrument, keyed by
- * instrument_id.
+ * @brief Per-trade bond total return swap facts: one row per TRS instrument, keyed by trade_id.
  *
  * One row per bond total return swap trade, keyed by the instrument row
  * it extends. The columns fix the ER row ("return type, funding index
@@ -68,12 +67,12 @@ struct bond_trs final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the bond TRS instrument this fact row extends.
+     * @brief The trade the bond TRS fact row belongs to.
      *
-     * The instrument row carries the trade, workspace and party; the fact row only carries the swap
-     * terms. Per the ER, no workspace column rides the fact tables.
+     * The trade row carries the workspace and the party; the fact row only carries the swap terms.
+     * Per the ER, no workspace column rides the fact tables.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Return type of the total return side (Total, Price).

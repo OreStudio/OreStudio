@@ -42,6 +42,7 @@ create table if not exists "ores_dq_currencies_artefact_tbl" (
     "format" text not null,
     "monetary_nature" text not null,
     "market_tier" text not null,
+    "ore_currency_type" text null,
     "image_id" uuid null,
     "spot_days" integer not null default 2,
     "day_basis" text not null default 'ACT/360',

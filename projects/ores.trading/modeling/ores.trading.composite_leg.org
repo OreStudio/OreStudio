@@ -16,7 +16,7 @@
 #+updated: 2026-09-27
 
 Child table of =composite_instruments=. Each row is one constituent trade
-of a composite basket and names the parent through =instrument_id=, with
+of a composite basket and names the parent through =trade_id=, with
 =leg_sequence= giving the leg's 1-based ordinal inside the basket.
 
 The leg carries no economics of its own: the ORE schema states a basket as
@@ -27,7 +27,7 @@ shape flag.
 
 The row keeps its own =id= surrogate: =composite_legs= is one of the five
 id-keyed tables the component's investigation names, and its
-=instrument_id= is a foreign key to the instrument rather than the row's
+=trade_id= is a foreign key to the instrument rather than the row's
 own key.
 
 * Flags
@@ -71,7 +71,7 @@ Party that owns this leg record.
 
 Set from session variable app.current_party_id.
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :group:    identity
 :type:     uuid
@@ -79,10 +79,9 @@ Set from session variable app.current_party_id.
 :nullable: false
 :END:
 
-The composite instrument this leg belongs to.
+The trade this leg belongs to.
 
-Soft FK to ores_trading_composite_instruments_tbl, checked by the insert
-trigger.
+The trade that carries this leg, checked by the insert trigger.
 
 ** leg_sequence
 :PROPERTIES:
@@ -114,18 +113,18 @@ std::string(faker::word::noun())
 
 * Foreign keys
 
-** instrument_id
+** trade_id
 :PROPERTIES:
-:table:         ores_trading_composite_instruments_tbl
-:target_column: instrument_id
+:table:         ores_trading_trades_tbl
+:target_column: id
 :nullable:      false
-:error_message: Invalid instrument_id: %. Composite instrument must exist for tenant.
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
 :list_by:       true
 :END:
 
-The target states =instrument_id= because that is the parent table's own
-key column. The parent is an identity-grouped instrument, so its key is
-reached through the identity member both in the store and in the domain.
+The target is the trades table and the target column is its own =id=: the
+composite instrument's key is the trade it belongs to, so the leg names the
+trade and the insert trigger checks it there.
 
 * SQL
 
@@ -146,7 +145,7 @@ reached through the identity member both in the store and in the domain.
 | name | columns | unique | current_only | where_extra |
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
-| instrument | tenant_id, instrument_id | false | true | |
+| trade_id | tenant_id, trade_id | false | true | |
 
 * Insert trigger
 
@@ -198,7 +197,7 @@ instrument sub-type: it carries its own =id= key, so it cannot take the
 | column                  | header       |
 |-------------------------+--------------|
 | identity.id             | ID           |
-| identity.instrument_id  | Instrument   |
+| identity.trade_id  | Instrument   |
 | identity.leg_sequence   | Sequence     |
 | constituent_trade_id    | Constituent  |
 | audit.modified_by       | Modified By  |

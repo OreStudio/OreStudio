@@ -202,6 +202,25 @@ std::string first_segment(const boost::urls::url_view& u) {
     BOOST_THROW_EXCEPTION(oresmd_exception("oresmd URI is missing its entity path segment."));
 }
 
+/*
+ * The inflation index codes the model carries. A fixing's name is the code alone,
+ * so a fixing whose code this class does not carry has no index name to write back:
+ * it is refused here rather than accepted and dropped. A quote's key names its code
+ * in the middle of the key, and every code is accepted for one.
+ */
+bool inflation_index_code_is_known(std::string_view name) {
+    static const std::string_view codes[] = {
+{{#oresmd_quote_types}}
+{{#inflation}}
+{{#index_codes}}
+        "{{code}}",
+{{/index_codes}}
+{{/inflation}}
+{{/oresmd_quote_types}}
+    };
+    return std::ranges::any_of(codes, [name](std::string_view known) { return known == name; });
+}
+
 {{#oresmd_parse_specs}}
 {{#ir}}
 market_data_identifier parse_ir(const boost::urls::url_view& u, const query_params& qp) {
@@ -387,8 +406,16 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
         id.point = to_lower(*qp.point);
 {{/has_point}}
 {{#has_delivery}}
-    if (qp.delivery)
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://{{asset_class}}/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
+    }
 {{/has_delivery}}
 {{#has_name_spelling}}
     // The spelling is the token as ORE wrote it, so it is carried raw rather than
@@ -434,6 +461,13 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
 {{/fx}}
+{{#inflation}}
+    if (id.type == instrument_type::fixing && !inflation_index_code_is_known(id.index_code))
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://inflation/... '{}' is not an index code the model carries, so it has no "
+            "index name to write back.",
+            id.index_code)));
+{{/inflation}}
 {{#correlation}}
     // A pairwise correlation names a second operand as well as the entity, and
     // the entity carries the first: the two take fixed positions in the key.
@@ -690,6 +724,44 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                                          const canonical_values& canonical) {
     validate_canonical(identifier, canonical);
     return to_uri(identifier);
+}
+
+domain::oresmd_uri oresmd_parser::to_series_uri(
+    const domain::market_data_identifier& identifier) {
+    // The point is the observation's coordinate and the surface is its vol point, so
+    // a series is the identifier with both dropped. The visitor asks each variant
+    // whether it has the fields at all: the security, power and generic classes carry
+    // neither, and a fixing's are unset, so those identifiers come back unchanged.
+    auto series = identifier;
+    std::visit(
+        [](auto& id) {
+            if constexpr (requires { id.point; })
+                id.point.reset();
+            if constexpr (requires { id.vol; })
+                id.vol.reset();
+            // Three IR families keep their coordinate in fields the surface drop above
+            // does not reach, and the decomposition's own split says which fields: a
+            // discount curve's series is the currency and the curve, so its maturity
+            // is the tenor; a money-market future's series is the currency and the
+            // contract month, so its coordinate is the contract code and the
+            // underlying tenor; and an overnight-index future's series is the currency
+            // alone, so the contract month is part of its coordinate too.
+            if constexpr (std::is_same_v<std::decay_t<decltype(id)>,
+                                         ir_market_data_identifier>) {
+                if (id.quote_type == ir_quote_type::discount) {
+                    id.tenor.reset();
+                } else if (id.quote_type == ir_quote_type::mm_future) {
+                    id.contract_code.reset();
+                    id.tenor.reset();
+                } else if (id.quote_type == ir_quote_type::oi_future) {
+                    id.contract_month.reset();
+                    id.contract_code.reset();
+                    id.tenor.reset();
+                }
+            }
+        },
+        series);
+    return to_uri(series);
 }
 
 }

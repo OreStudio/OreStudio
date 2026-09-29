@@ -127,13 +127,12 @@ struct step_kind_words {
 /// notation; this list states which of its kinds have an executor here, so a
 /// profile that orders the rest is refused before its run starts rather than
 /// half-provisioned. Growing it is a code change beside the executor.
-inline constexpr std::string_view provision_executed_step_kinds[] = {
-    "publish_bundle",
-    "import_lei_hierarchy",
-    "provision_party",
-    "load_staff",
-    "attach_photos",
-    "start_market_feeds"};
+inline constexpr std::string_view provision_executed_step_kinds[] = {"publish_bundle",
+                                                                     "import_lei_hierarchy",
+                                                                     "provision_party",
+                                                                     "load_staff",
+                                                                     "attach_photos",
+                                                                     "start_market_feeds"};
 
 /// Whether this build executes the kind. A kind the catalogue does not know is
 /// not executed either, so one predicate answers both refusals.

@@ -30,9 +30,9 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
@@ -127,8 +127,7 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     const auto read_pcs = repo.read_latest();
     for (const auto& written : pcs) {
         const auto it = std::ranges::find_if(read_pcs, [&](const party_counterparty& r) {
-            return r.party_id == written.party_id &&
-                   r.counterparty_id == written.counterparty_id;
+            return r.party_id == written.party_id && r.counterparty_id == written.counterparty_id;
         });
         REQUIRE(it != read_pcs.end());
         CHECK(it->change_commentary == written.change_commentary);

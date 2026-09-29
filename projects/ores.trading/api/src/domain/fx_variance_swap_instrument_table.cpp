@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<fx_variance_swap_instrument>& v) 
           << "End Date" << "Strike" << "Notional" << "Moment Type" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& fxvsi : v) {
-        table << fxvsi.identity.instrument_id << fxvsi.identity.trade_type_code << fxvsi.currency
+        table << fxvsi.identity.trade_id << fxvsi.identity.trade_type_code << fxvsi.currency
               << fxvsi.underlying_code << fxvsi.start_date << fxvsi.end_date << fxvsi.strike
               << fxvsi.notional << fxvsi.moment_type << fxvsi.audit.recorded_at << fort::endr;
     }

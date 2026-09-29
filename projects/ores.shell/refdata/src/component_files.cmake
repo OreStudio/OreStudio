@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "app/commands/refdata/asset_class_code_commands.cpp"
+    "app/commands/refdata/average_ois_convention_commands.cpp"
     "app/commands/refdata/book_commands.cpp"
     "app/commands/refdata/book_purpose_type_commands.cpp"
     "app/commands/refdata/book_status_commands.cpp"
@@ -43,6 +44,7 @@ set(files
     "app/commands/refdata/crm_driver_pair_commands.cpp"
     "app/commands/refdata/crm_enabled_derived_pair_commands.cpp"
     "app/commands/refdata/crm_topology_config_commands.cpp"
+    "app/commands/refdata/cross_currency_basis_convention_commands.cpp"
     "app/commands/refdata/currency_calendar_commands.cpp"
     "app/commands/refdata/currency_commands.cpp"
     "app/commands/refdata/currency_country_commands.cpp"
@@ -60,6 +62,8 @@ set(files
     "app/commands/refdata/diary_entry_type_commands.cpp"
     "app/commands/refdata/floating_index_type_commands.cpp"
     "app/commands/refdata/fra_convention_commands.cpp"
+    "app/commands/refdata/future_convention_commands.cpp"
+    "app/commands/refdata/fx_option_convention_commands.cpp"
     "app/commands/refdata/ibor_index_convention_commands.cpp"
     "app/commands/refdata/instrument_code_commands.cpp"
     "app/commands/refdata/ir_curve_bootstrap_config_commands.cpp"
@@ -85,7 +89,10 @@ set(files
     "app/commands/refdata/rounding_type_commands.cpp"
     "app/commands/refdata/series_subclass_code_commands.cpp"
     "app/commands/refdata/swap_convention_commands.cpp"
+    "app/commands/refdata/swap_index_convention_commands.cpp"
     "app/commands/refdata/tenor_anchor_commands.cpp"
+    "app/commands/refdata/tenor_basis_swap_convention_commands.cpp"
+    "app/commands/refdata/tenor_basis_two_swap_convention_commands.cpp"
     "app/commands/refdata/tenor_commands.cpp"
     "app/commands/refdata/tenor_convention_commands.cpp"
     "app/commands/refdata/tenor_convention_resolution_commands.cpp"
@@ -94,11 +101,13 @@ set(files
     "app/commands/refdata/tenor_schedule_commands.cpp"
     "app/commands/refdata/tenor_unit_commands.cpp"
     "app/commands/refdata/zero_convention_commands.cpp"
+    "app/commands/refdata/zero_inflation_index_convention_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/average_ois_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/book_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/book_status_commands.hpp"
@@ -121,6 +130,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/crm_enabled_derived_pair_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/crm_topology_config_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/cross_currency_basis_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/currency_calendar_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/currency_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/currency_country_commands.hpp"
@@ -138,6 +148,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/diary_entry_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/fra_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/future_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/fx_option_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/ibor_index_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/instrument_code_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/ir_curve_bootstrap_config_commands.hpp"
@@ -163,7 +175,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/rounding_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/swap_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/swap_index_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_basis_swap_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_basis_two_swap_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_convention_resolution_commands.hpp"
@@ -172,4 +187,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_schedule_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_unit_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/zero_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/zero_inflation_index_convention_commands.hpp"
 )

@@ -212,8 +212,8 @@ void account_operations_service::delete_account(const boost::uuids::uuid& accoun
 }
 
 authenticated_login account_operations_service::login(const std::string& username,
-                                                  const std::string& password,
-                                                  const boost::asio::ip::address& ip_address) {
+                                                      const std::string& password,
+                                                      const boost::asio::ip::address& ip_address) {
 
     throw_if_empty("Username", username);
     // FIXME: do not log
@@ -302,8 +302,7 @@ authenticated_login account_operations_service::login(const std::string& usernam
     login_info_repo_.write(ctx_, login_info);
 
     return authenticated_login{.account = account,
-                              .password_reset_required =
-                                  login_info.password_reset_required};
+                               .password_reset_required = login_info.password_reset_required};
 }
 
 bool account_operations_service::lock_account(const boost::uuids::uuid& account_id) {

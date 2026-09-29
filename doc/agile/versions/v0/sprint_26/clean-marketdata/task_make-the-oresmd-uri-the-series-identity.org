@@ -1,0 +1,491 @@
+:PROPERTIES:
+:ID: 4050BF6C-DBC3-4E75-A204-A75CE4AFA323
+:END:
+#+title: Task: Make the oresmd URI the series identity
+#+description: Cut the market series identity over to the oresmd URI: the column on market_series and feed_binding, the import writing it, and the registry triple gone.
+#+type: task
+#+level: s1
+#+filetags: :clean-marketdata:sprint_26:v0:
+#+owner: marco
+#+branch: feature/market-series-uri-identity
+#+pr: 2372
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every identity-bearing market-data row carries the oresmd_uri that its key or its index name projects to, so the series identity is the URI rather than the registry's (series_type, metric, qualifier) triple, and the import creates a series for every row ORE's own examples carry -- the fixing half included.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
+| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
+| Waiting on   | Nothing. |
+| Next         | Give the bootstrap config its tenor convention (the column, its seed for every config, and the service reading it instead of the grid's qualifier), then re-key the FOMC segment onto the shapes recorded above -- the synthetic feed publishing one series per pillar, the bootstrap reading them from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- market_series and feed_binding carry oresmd_uri, and it is the natural key for a series and for a feed binding.
+- import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
+- The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
+- series_type, metric, qualifier, ore_key and the import classification table are deleted, and every consumer reads the URI.
+- The FOMC segment's instruments carry ORE identities: the raw grid is one series per pillar, named by the shape of the instrument the feed simulates -- the spot-starting pillar spelled as the swap it is, so no pillar needs a new spelling -- and the republish curve carries ORE's DISCOUNT key.
+
+* Scope, measured before the column
+
+Read at =00c9cdd711= on the merged trunk. Nothing here is a claim about the
+abandoned branch; the two write paths are the code as it stands.
+
+**Neither import path stores an identity today.**
+
+- *Market data.* =import_service.cpp='s =canonical_key()= already computes the
+  identifier: it calls =from_ore_key()=, projects it back with =to_quote_key()=, and
+  returns the canonical spelling and the registry's decomposition of it. The
+  identifier itself is **discarded**. The series is found or created on
+  =(series_type, metric, qualifier)=, and the observation keeps the file's own text
+  in =obs.key=, because the rows above hold the canonical spelling rather than it.
+- *Fixings.* The series is created as
+  =find_or_create_series("FIXING", "RATE", f.qualifier)=, where the qualifier **is**
+  the index name. =from_index_name()= has no production call site at all: zero
+  outside the projections and their tests. A fixing series therefore has no
+  identifier to store, and the index name is the whole of its identity.
+
+**Both identity-bearing tables are known, and the blast radius is measured.**
+=market_series= keys on the triple; =feed_binding= keys on =ore_key= and
+=source_name=. 63 files across =ores.marketdata=, =ores.synthetic=, =ores.shell= and
+=ores.ore= name =qualifier=, which is the set the deletion has to carry. The value
+the new column needs is in hand on the market-data path and one call away on the
+fixing path, so this task is the cutover and its consumers rather than a new
+projection.
+
+* What the deletion has to carry, counted
+
+Counted at =ce3c6f32bd= on this branch, with member-access and column patterns
+rather than the bare word, because =metric= alone matches 481 files and most of
+them are somebody else's metric:
+
+| What | Count | Pattern |
+|------+-------+---------|
+| C++ files reaching a series' =qualifier= | 21 | =\.qualifier\b= |
+| C++ files reaching a series' =series_type= or =metric= | 32 | =\.(series_type\|metric)\b=, in the three components that hold series |
+| SQL files naming the ="qualifier"= column | 2 | the market series create and populate scripts |
+| SQL files naming the ="ore_key"= column | 2 | the feed binding create and populate scripts |
+| Generated TypeScript carrying the field | 2 | the market series domain and protocol twins |
+| Org documents naming =qualifier= | 80 | models, recipes and manuals |
+
+The organs split by component: =ores.marketdata= 33, =ores.synthetic= 16,
+=ores.ore= 12, then two in the shell and one each in =ores.trading= and
+=ores.testing=. The deletion is therefore a cross-component change, which is why
+the plan kept it as its own acceptance rather than folding it into the column's.
+
+**=feed_binding='s column is deferred, and the reason is structural.** The plan
+gives the binding an =oresmd_uri= beside its =ore_key=, and the column was added and
+regenerated: =ores_marketdata_feed_bindings_tbl= took it and the entity's layers
+followed. It was then taken back out, because nothing can write it today. The row is
+assembled by the generated service -- =feed_binding_service.cpp= carries the
+AUTO-GENERATED banner -- and the service template has no per-column derivation hook;
+the =#+begin_src cpp :name generator= blocks a model can declare feed the test-data
+generators under =api/src/generators/=, not a real write. Every other writer is a
+generated shell command. So the binding's identity arrives with the unit that
+replaces =ore_key=, where the same code that supplies the key today supplies the URI;
+until then the column would be null in every row, which is worse than absent. The
+natural key stays =ore_key= and =source_name= meanwhile.
+
+**The identity the writers derived named a datum, not a series.** The column sits on
+the series row, and the value came from a key that names one datum: =IR_SWAP/RATE/
+USD/0D/1D/5Y= is the 5Y point of the =USD/0D/1D= series. The import projected the
+file's whole key, so a series row's identity carried whichever point arrived first,
+and two databases built from the same files in a different order would disagree about
+the identity of one series. The ingest loop projected the triple alone, which names no
+class whose key is longer than the triple, so a swap, curve or future series got no
+identity at all from a live tick. =oresmd_parser::to_series_uri()= projects the
+identifier with its point, and a volatility surface with it, dropped; both writers
+call it, and the ingest loop builds the datum's full key -- the triple plus the tick's
+point -- before falling back to the triple. No row changes shape: the series and its
+points were already separate rows.
+
+**The deletion needs no backfill, and the fallback is what says so.** The plan
+records a hard cutover with no backfill, which only works because this schema is
+applied by recreation rather than by migration: a database is built from the create
+scripts, so it holds no series written before the identity column. The triple
+fallback exists for a database that does have one, and it is the thing the deletion
+removes -- at which point a series with no identity is unreachable, which is why the
+create scripts and the writers have to agree before the columns go.
+
+**The curve snapshot requests name the series by the triple, and the identity move
+was taken back.** Making them carry the identity is two hand edits, because neither
+the protocol header nor the handler is generated, and the edit was made and then
+reverted before the merge: a request carrying only an identity cannot reach a row
+that has none, and this path must read the FOMC grid, which no projection can name.
+So the handler's two lookups are the production readers left on the triple **alone**;
+the import's and the ingest loop's calls ask by identity first and fall back to the
+triple. The move waits for the rows to have identities. The path is verified by the
+compiler and the suites and by nothing else: it has no sender anywhere in the tree
+and no case exercises it, which is worth knowing before the cutover leans on it.
+
+**Not every series row in the table can be given an identity, and the constraint
+says so.** Read on the live database at =ca23d34ef2=: of 5,864 series rows, **4,431**
+carry a series type the ORE key grammar knows, and **1,433 across 28 types do not**.
+Re-read at =3632865c32=, after the generator had been run again: of 5,971 rows,
+**4,569** are nameable -- by =from_ore_key()=, or by =from_index_name()= for the 188
+=FIXING= rows, which the quote grammar has no type for -- and **1,402 are not**. All
+but two of the unnameable set is test-data generator output: =CD-0= to =CD-25=, 1,400
+rows, whose =series_type=, =metric= and =qualifier= are all the same string and whose
+subclass cycles through the list the model's generated generator draws from.
+
+The remaining **two rows are the FOMC segment**, both seeded by
+=marketdata_market_series_fomc_populate.sql=, and both production: they carry the
+fixed uuids the FOMC bootstrap config references as its =source_series_id= and its
+=output_series_id=.
+
+- =RATES / YIELD / 'USD/SOFR-FOMC'=, the raw grid "the identity the ingest loop
+  resolves the ir_curve_feed's ticks by". =RATES= and =YIELD= are not ORE series
+  types, so =from_ore_key()= cannot name it.
+- =YieldCurve / DISCOUNT / 'USD/SOFR-FOMC'=, the curve the republish service writes
+  into. =YieldCurve= names a curve in ORE's curve configuration rather than a market
+  data type, so the grammar carries it in neither direction.
+
+This task's first reading called the second row generator output and so counted one
+production row. It is the republish seed, and there are two.
+
+**The instrument set is ORE's, and the corpus spells it.** The raw grid's ticks are
+simulated quotes for meeting-dated OIS, and its pillars pair FOMC meeting dates:
+=SPOT= to =1F=, then =1F= to =2F=, through =8F= to =1Y=. ORE carries the same
+instrument class elsewhere in the corpus: =external/ore/examples= spells a
+meeting-dated OIS as =IR_SWAP/RATE/GBP/20220922/1D/20221103= -- a start date, the
+overnight index tenor, an end date -- and the live table holds 58 series whose settle
+segment is =20220922=. The curve row is nameable in the same vocabulary:
+=DISCOUNT/RATE/CCY/CURVE/TENOR= is how the corpus carries a discount curve's points
+(the =USD-DUMMY= curve), and =DISCOUNT= is already an oresmd class. So the invented
+=RATES/YIELD= vocabulary is not what the instrument class needs.
+
+**Decided: the feed publishes the grid as the instruments it simulates, and the
+bootstrap reads them per pillar.** The synthetic feed resolves each entry's start and
+end tenor to dates already, because the schedule needs them, so the ORE key is a
+projection of what the feed holds. The grid stops being one series with a point per
+entry and becomes one series per instrument, which is how ORE models a curve's input;
+the bootstrap's own pillars carry the start tenor, the end tenor and the role, so its
+input is derived from the config rather than referenced by one =source_series_id=.
+The republish output keeps its one-series-per-curve shape and takes ORE's =DISCOUNT=
+key, with the pillar as the observation's point. The alternatives, recorded for the
+reader who asks why they were not taken:
+
+- oresmd grows a namespace for internally derived series. Rejected: it would make the
+  identity space admit whatever the system invents, which is what the grammar exists
+  to refuse, and the grid's instruments turn out to be ORE's after all.
+- the derived series keep the triple and the URI stays the key for observed rows
+  only. Rejected: two keys in one table, which defeats the point of the cutover.
+
+**The shape decides the identity, and it closes the deposit pillar's open question.**
+Every pillar's quote is an ORE swap key: =IR_SWAP/RATE/CCY/<start>/1D/<end>=, which the
+corpus spells for the same instrument class as =IR_SWAP/RATE/GBP/20220922/1D/20221103=
+(=external/ore/examples=, 58 series in the live table whose settle segment is
+=20220922=). The start slot holds =0D= for the pillar that starts at spot and a meeting
+date for the rest, =1D= is the overnight index tenor every dated OIS quote in the corpus
+carries, and the end date is last. One series per pillar -- the key without its end date
+-- and the end date is the observation's point. ORE's money-market family has no dated
+point, so the spot-starting pillar is spelled as the swap it is rather than as a
+deposit; the dated spelling the unit left open is therefore closed, and no pillar needs
+a new spelling.
+
+The curve the republish service writes keeps the corpus's discount shape,
+=DISCOUNT/RATE/CCY/CURVE/TENOR= (=DISCOUNT/RATE/USD/USD-DUMMY/1D= in
+=external/ore/examples=). There the curve is the series and the =TENOR= is the
+coordinate, which is the slot the corpus's =1D= fills: the series' key is
+=DISCOUNT/RATE/CCY/CURVE= and the maturity is the observation's point. That is also why
+the =DISCOUNT= family appears in the defect below -- the projection has to drop a
+maturity the identifier holds in =tenor= -- rather than because the shape is wrong.
+
+Both shapes are pinned by a case -- the spot-starting pillar, a dated pillar and the
+curve -- so the grammar is proved before the feed and the seed are written against it.
+The case also pins the negative: two pillars are two series, and the curve's maturities
+are one.
+
+**The curve's half of the seed carries its identity now.** The FOMC seed row the
+republish service writes into reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with
+=oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount=, so the
+triple and the identity agree and neither is an invented vocabulary. Nothing else had
+to move: the republish service and the bootstrap reach that row by the fixed uuid the
+config names, and the pillars stay the observations' points. The raw grid's half waits
+for the re-key, because its identity only exists once the feed publishes one series per
+pillar.
+
+**The bootstrap reads its tenor convention off the grid series, so the re-key has to
+give it somewhere else to look.** =curve_republish_service.cpp='s
+=tenor_convention_code_for()= returns =RATES_SPOT_FOMC= for a source qualifier ending in
+=-FOMC= and =RATES_SPOT_FORWARD= otherwise, =build_refdata_context()= throws when the
+series is missing, and that convention decides which tenor resolutions the pillar dates
+come from. The grid's qualifier is =USD/SOFR-FOMC= today, which is what the rule
+matches; the per-pillar qualifiers the re-key writes (=USD/20260128/1D=) match nothing,
+so the convention would silently become =RATES_SPOT_FORWARD= and the FOMC pillars would
+resolve as ordinary spot-starting instruments. The unit is therefore two parts: the
+bootstrap config names its own tenor convention -- a column seeded to =RATES_SPOT_FOMC=
+for the FOMC config and =RATES_SPOT_FORWARD= for the rest -- and then the feed and the
+bootstrap move to the per-pillar identities. The first part stands alone and is where
+the unit starts, and it deletes =tenor_convention_code_for()= and its throw path rather
+than keeping them as a fallback: a fallback would leave the coupling between a series'
+spelling and the convention its pillars resolve under.
+
+**The two configs still disagree on the roles, and identity is no longer what exposes
+it.** The synthetic config's FOMC entries are a =DEPO=, seven =FRA=s and an =IRS=; the
+bootstrap config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Because the shape
+decides the key, a pillar's role no longer reaches its identity and the vocabularies do
+not need reconciling for one. The disagreement is a pricing question -- whether the
+feed's FRA path and the bootstrap's single-period swap path agree on the same pillar --
+and the FOMC unit answers it on its own terms. The column stays nullable until the feed
+and the seed agree, and the identity is what a row gets *if it has one*: the constraint
+would not catch the generator output anyway, since random text satisfies a not null
+column. What the generator writes is now a generic index name -- the one oresmd URI
+that names a series with a name and nothing else -- rather than the default faker noun,
+so the rows it produces carry an identity the grammar reads.
+
+**Two IR families keep their coordinate where the projection did not look, and the
+rest do not.** The decomposition splits a datum key into the series and the point, and
+=to_series_uri()= was written to drop the identifier's =point= and its surface. That is
+the whole of the coordinate for the swap, money-market, FRA, vol and commodity families
+-- the MM series =CHF/2D= carries its maturities in =point=, the FRA series =EUR/3M=
+likewise -- but not for two IR families:
+
+- a =DISCOUNT= curve's maturity is the identifier's =tenor=, because the series is the
+  currency and the curve: =DISCOUNT/RATE/EUR/EUR= carries =1D= through =35Y= as points;
+- a future's coordinate is its =contract_code= and its =tenor=, because the series is
+  the currency and the contract month: =MM_FUTURE/PRICE/EUR/2024-04= carries
+  =XICE:FEI/3M= as its point.
+
+So those two families' series identities carried one observation's coordinate while the
+rest were right. The triple fallback keeps a row reachable and stops duplicates, so
+nothing broke; what was wrong was the value stored. At =94e2d8645d= the live table held
+36 =DISCOUNT= series and 70 in the two future families.
+
+**The fix is in the projection, and the survey is a test.** Which fields hold the
+coordinate is a fact about each family, so =to_series_uri()= now clears the discount
+tenor and the future's contract code and tenor as well. A case walks one two-point pair
+per family -- MM, FRA, swap, swaption, commodity forward, discount and future -- and
+asserts that the two points project to one identity with no point in it, so a family
+that regresses fails the case rather than the cutover. The earlier reading of this
+defect named the no-index families too, which the case disproves: their coordinate is
+the =point=, and 232 of their series were never affected. The series-level inverse this
+record first asked for is not needed, because the identifier already holds every field
+the series needs.
+
+* Plan
+
+The additive half is delivered (#2358), the identity is a series rather than a datum
+for every family (#2362, #2364), the FOMC shapes are pinned (#2365), the curve's seed
+row carries its identity (#2366), the generator writes one (#2368), and the config
+names the tenor convention its pillars resolve under (#2370). What is left is the
+grid's own identity and then the cutover the task takes its name from.
+
+**The re-key, in four steps.** Each step ends green on its own.
+
+1. *The feed keys each pillar.* =ir_curve_resolved_entry= gains the entry's
+   =start_date= and =end_date= strings, which =resolve()= already computes for the
+   year fraction. A pillar is spot-starting when its =start_tenor_code= is =SPOT= --
+   the config's own first entry -- and meeting-dated otherwise, and that one rule
+   lives in a single builder both sides call rather than being written twice.
+   =ir_curve_feed= publishes one tick per entry with =series_type="IR_SWAP"=,
+   =metric="RATE"=, =qualifier= =<CCY>/<start>= (the start slot holding =0D= for the
+   spot-starting pillar and the start date for the rest), =1D= as the index tenor, and
+   =point_id= the entry's end date. The ingest loop already derives the series identity
+   from a tick's full key, so the series appear with their ORE identities and nothing
+   else in the pipeline moves. =ores.synthetic= is where this step's test belongs: a
+   tick per pillar carrying the shape above.
+2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
+   =source_series_id= and reads, per pillar, the series the key above projects to:
+   resolve the pillar's start and end tenor codes to dates through =refctx=, call the
+   same builder, find the series by identity, and take its observation. The rate map is
+   keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
+   already matches on, so its contract does not change. The grid series stays readable
+   as a fallback, and the reader prefers the pillar's series wherever it exists: a
+   database with some pillars written under the new keys and some under the grid
+   resolves each pillar from whichever holds it. That is the same shape as the triple
+   fallback the readers already carry, and it goes with the column below. The lineage
+   lists the nine series the reader took rather than the grid, and its own
+   =source_series_id= column is untouched -- the column step three drops is the
+   config's. =curve_republish_resolver_fomc_tests= is this step's proof.
+3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
+   drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
+   the bootstrap config's =source_series_id= loses its reader. Dropping the config's
+   column is a refdata change, not one file: the model, the regenerated domain,
+   protocol, entity, mapper, history field mapper, service and shell command, the
+   generate artefact's TypeScript twin, the populate and a migration. The lineage's
+   column of the same name stays.
+4. *The constraints and the deletion.* With every writer supplying an identity and no
+   row without one, =oresmd_uri= becomes not-null and unique, the natural key moves
+   onto it, and then =series_type=, =metric=, =qualifier=, =ore_key= and the import
+   classification table go, with the census's 21 + 32 C++ files, 4 SQL files, 2
+   TypeScript twins and 80 org documents as the checklist. The triple readers and
+   their fallbacks go last, because they are what keeps a half-migrated database
+   reachable in the meantime.
+
+The one thing the plan does not do is keep two writers: the feed either publishes the
+grid's key or the pillars' keys, never both. The fallback above is a *reader*
+tolerance, so a database written before step one is still readable after step three,
+which is the same reason the identity lookups fall back to the triple.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Corpus instrument keys that name | 485606 of 485606 | =ores.marketdata.core.tests "[oresmd]"= | =00c9cdd711= |
+| Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
+| =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
+| Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
+| Production readers left on the triple alone | 2: the curve snapshot handler's two lookups; the import's and the ingest loop's calls ask by identity first and fall back to the triple | =grep -rn "read_latest_by_type" projects/ --include=*.cpp --include=*.hpp=, less the repository's own definition and the tests | =664cae095d= |
+| =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
+| Series rows that carry an identity | 4569 of 5971; the 188 =FIXING= rows are named by =from_index_name()= | =count(*) filter (where series_type in (<the grammar's token table>) or series_type = 'FIXING')= over =ores_marketdata_market_series_tbl= | =3632865c32= |
+| Series rows that do not | 1402: 1400 =CD-0= to =CD-25= generator rows plus the two FOMC rows | the same query, negated | =3632865c32= |
+| Production rows no projection can name | 1: the FOMC raw grid =RATES / YIELD / 'USD/SOFR-FOMC'=; the curve row now reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with its ORE identity | =marketdata_market_series_fomc_populate.sql= and a read of the live rows | =48ab31abc8= |
+| Where the bootstrap's tenor convention comes from | the source series' qualifier, through =tenor_convention_code_for()= | =grep -n "tenor_convention_code_for" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =07d9052523= |
+| Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
+| =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
+| Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
+| A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
+| =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
+| Families whose projection dropped the coordinate, and now do not | 36 =DISCOUNT= series and 70 in =MM_FUTURE=/=OI_FUTURE=; the 232 no-index series were never affected | =count(*) filter (where series_type = 'DISCOUNT')= and =... in ('MM_FUTURE','OI_FUTURE')= over =ores_marketdata_market_series_tbl= | =94e2d8645d=, the merge of #2363 |
+| Families the case walks, two points each | eight: =MM=, =FRA=, =IR_SWAP=, =SWAPTION=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= and =OI_FUTURE=, plus three pairs that must stay apart | =ores.marketdata.core.tests "every_family_that_carries_a_point_projects_one_series_identity"= | =0819a6d9b6= |
+| =ores.marketdata.core= suite, with the family survey | 1839 assertions in 403 cases | =ores.marketdata.core.tests= | =0819a6d9b6= |
+| FOMC shapes the seed and the feed will write, pinned ahead of them | three: the spot-starting pillar, a dated pillar, and the curve | =ores.marketdata.core.tests "the_fomc_segments_shapes_name_their_series"= | =960a6d81c0= |
+| =ores.marketdata.core= suite, with the FOMC shapes | 1852 assertions in 404 cases | =ores.marketdata.core.tests= | =960a6d81c0= |
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2372][#2372]] | [agile] Write the re-key's plan |
+| [[https://github.com/OreStudio/OreStudio/pull/2370][#2370]] | [refdata,marketdata] Let the config name its tenor convention |
+| [[https://github.com/OreStudio/OreStudio/pull/2369][#2369]] | [agile] Record where the bootstrap gets its tenor convention |
+| [[https://github.com/OreStudio/OreStudio/pull/2368][#2368]] | [marketdata] Have the generator name the rows it writes |
+| [[https://github.com/OreStudio/OreStudio/pull/2366][#2366]] | [sql,agile] Give the FOMC curve row its ORE identity |
+| [[https://github.com/OreStudio/OreStudio/pull/2365][#2365]] | [marketdata,codegen] Pin the FOMC shapes before the feed writes them |
+| [[https://github.com/OreStudio/OreStudio/pull/2364][#2364]] | [marketdata,codegen] Walk every family that carries a point |
+| [[https://github.com/OreStudio/OreStudio/pull/2363][#2363]] | [agile] Pin the FOMC shapes and the series inverse |
+| [[https://github.com/OreStudio/OreStudio/pull/2362][#2362]] | [marketdata,codegen] Name a series, not one of its points |
+| [[https://github.com/OreStudio/OreStudio/pull/2361][#2361]] | [agile] Decide the FOMC segment's identity |
+| [[https://github.com/OreStudio/OreStudio/pull/2359][#2359]] | [marketdata,agile] Settle the cutover's review record |
+| [[https://github.com/OreStudio/OreStudio/pull/2358][#2358]] | [marketdata] Write the market series' oresmd identity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A series with no identity is unreachable through the curve snapshot handler, which reads by identity alone | =curve_snapshot_protocol.hpp=, =curve_snapshot_handler.hpp= | taken back | The requests and the handler carry the triple again: a request with only an identity has no fallback for a row that has none, and this path must read the FOMC grid. The move waits for the rows to have identities. The handler's two lookups are the production readers left on the triple alone. |
+| 2 | Legacy rows are never backfilled, so the not-null unit needs a data step | =import_service.cpp=, =feed_ingest_loop.cpp=, the migration | recorded | The not-null unit's prerequisites carry it, with a recreated database as the alternative: the schema is applied by recreation, so a rebuilt database holds no row written before the column, and the triple fallback exists for one that does. |
+| 3 | A write that omits =oresmd_uri= clears an existing identity | the market series model | accepted, documented | The model's description of the column now says that a write leaving it empty clears it, because the generated service copies the write's fields straight through. The structural fix is the not-null unit, where the column stops being optional. |
+| 4 | The three shell commands gained a required positional argument | the market series recipe, the shell library | accepted, fixed | The recipe and the three tangled library scripts carry the new argument (=1cfba6cc49=). The commands have no other caller: no CI workflow, script or recipe names them beyond the recipe and the shell's own tests. |
+| 5 | Two different keys can resolve to one series | =import_service.cpp= | recorded | Intended: the cache is keyed by the triple and the lookup is by the identity, so a key that projects to an identity another key already holds finds that series, and the reversed-pair warning still reports the difference. The unique index on the identity belongs to the cutover, and a case pinning the collision belongs with it. |
+| 6 | The identity column has no index, while the triple is indexed | =marketdata_market_series_create.sql= | recorded | The triple's index is the natural key's unique index. The column is not the natural key yet; the cutover moves the key onto it, and the same generated index follows. |
+| 7 | Three small points: a line over the column limit, a doc-comment sentence that overstates, and mixed comment styles | =feed_ingest_loop.cpp=, the market series model, =curve_snapshot_protocol.hpp= | accepted, fixed in part | The over-long line, and the same shape the change wrote in =import_service.cpp= and in its case, are reformatted by =clang-format= (=d0d56cfc4e=); the files carry older violations this change leaves alone. The model's sentence already qualifies itself in the same breath, and the regenerated header carries it. The comment styles stay as they are: the pair is cosmetic and the path is hand-written. |
+| 8 | The census row cites =664cae095d= while the review rows cite =1cfba6cc49= and =d0d56cfc4e=, and the reviewer could not resolve them | the measurements and review tables | answered | All three resolve. =664cae095d= is the tip of the branch that merged as =0989e6f243=, and =1cfba6cc49= is on the trunk; =d0d56cfc4e= is the formatting commit on this branch, which the merge brings in. |
+| 9 | =#+pr:= names 2359 while =#+branch:= still names the branch of #2358 | this task | answered | The task spans two units and each has its own branch, so the field can only name one; it keeps the branch its first unit was built on, and the =* PRs= table carries both, newest first. |
+| 10 | The row about the model's doc sentence cannot be checked from this diff | the market series model | answered | The model is in the merged tree rather than in this diff. The sentence it names is the column's description, which qualifies "every row the corpus import writes" in the same breath. |
+| 11 | The ingest loop's key building is untested, so the format it builds must match the grammar for every class with a point | =feed_ingest_loop.cpp= | recorded, no change | The projection cases now carry both shapes the loop builds -- a six-segment swap key and a six-segment vol key -- and the corpus coverage test already names every per-class key the corpus carries. A helper would move four lines into one caller and would not exercise the loop, which has no harness; the loop's construction is recorded as a limit of the unit. |
+| 12 | Dropping the point and the surface may merge series that should stay apart | =oresmd_parser.cpp= | answered, pinned | The series row keeps the underlying and the point keeps the coordinates: the live table's CHF swaption series carries =10Y/10Y/ATM= as one of its points, and =Lufthansa/EUR= carries =10Y/11.47=. So dropping the surface merges nothing the registry keeps apart, and the case now pins that two swaption strikes project to one surface identity with no point in it. |
+| 13 | Rows the import wrote earlier hold a datum identity, which the series lookup will not find | =import_service.cpp= | answered | The import asks by identity and falls back to the triple, the same order the ingest loop uses, so an older row is still reachable; it keeps the identity it has. The schema is applied by recreation, so a rebuilt database holds no such row, and a backfill is a recorded prerequisite of the not-null unit rather than of this one. |
+| 14 | The import case's qualifier assertion depends on the first point | =service_import_service_tests.cpp= | answered | The qualifier is the registry's decomposition of the canonical key, and the unit changes only the identity the series stores. The assertion pins that both points land in one row under the series' own qualifier, which is what the case is for. |
+| 15 | The key is concatenated on every tick | =feed_ingest_loop.cpp= | recorded, no change | Negligible beside the database round trips the same function makes, as the reviewer notes. |
+| 16 | The measurement cites =5e48f41fea= without saying it is a merge | the measurements table | accepted | Both new rows say it is the merge of #2362. |
+| 17 | The =DISCOUNT= count is not covered by the row's command | the measurements table | accepted | It has its own row and its own command. |
+| 18 | The corpus claims carry no path | the FOMC shapes | accepted | Both spellings name =external/ore/examples=, and the dated-OIS count is given. |
+| 19 | The =DISCOUNT= shape could read as the tenor-in-identifier defect | the FOMC shapes | accepted | A sentence says the curve is the series and the =TENOR= is the coordinate, which is why the family is in the defect list rather than the shape being wrong. |
+| 20 | Which unit adds the shapes' tests is not stated | Status | accepted | =Next= named the series-inverse unit at the time; the case landed with the projection fix instead, and the body records why the inverse is not needed. |
+| 21 | =OI_FUTURE= is handled but untested | =oresmd_parser.cpp= | accepted, fixed | The corpus's =OI_FUTURE/PRICE/USD/2025-11/XCME:SRA/3M= joins the survey, and it exposed a third split: an overnight-index future's series is the currency alone, so its contract month is part of the coordinate too and is now dropped. |
+| 22 | The two resets were not separate, so a field could be cleared for a family that keeps it | =oresmd_parser.cpp= | accepted, fixed | The resets are now one branch per family, each naming what its series holds. |
+| 23 | Different contract codes can merge into one series | =oresmd_parser.cpp= | answered, pinned | Intended: the registry gives a money-market future's series the currency and the contract month, so the code and the underlying tenor are the coordinate. A pair of futures differing only in month now pins that the series still separates. |
+| 24 | No negative assertion, so over-clearing would pass | the family case | accepted, fixed | Three pairs that must stay apart -- two futures' months, two swaps' tenors, two curves' currencies -- assert different identities. |
+| 25 | One pair per family could hide a second shape | the family case | recorded | The corpus coverage case and the per-class round trips remain the wider net; the survey is the identity rule's own guard. |
+| 26 | =std::is_same_v= and =std::decay_t= need =<type_traits>= | =oresmd_parser.cpp= | answered | The generated file compiles in CI and the nightly include check is the wider net; the template's own include list is where the header would go if it is ever named. |
+| 27 | The curve's second maturity is compared but not round-tripped | the FOMC shapes case | accepted, fixed | Both maturities now round-trip to their own keys, so the point is pinned as surviving the key as well as leaving the identity. |
+| 28 | The case name says one series per pillar, but half of it is one series per curve | the FOMC shapes case | accepted, fixed | Renamed =the_fomc_segments_shapes_name_their_series=. |
+| 29 | The comment claims the republish service writes the curve | the FOMC shapes case | accepted, fixed | The comment now says only what the case can show: the curve keeps ORE's discount shape. |
+| 30 | A generated name is not percent-encoded, so a reserved character in a faker noun would not parse | the model's generator | recorded | The limitation stands: the not-null unit is where a generated row's identity meets the parser, and a case there parses a few of them. |
+| 31 | The URI is unique only if the generator's counter never repeats | the model's generator | recorded | The unique index belongs to the cutover, and that unit has to say whether the counter is enough. |
+| 32 | The model's paragraph was dense | the model's generator | accepted, fixed | Reworded: the generator sets the identity explicitly, so the not-null is met by design rather than by a default value. |
+| 33 | The migration backfills every config with the FOMC convention | the migration | accepted, fixed | The default is =RATES_SPOT_FORWARD= for every null row, and only the seeded config's id takes =RATES_SPOT_FOMC=. |
+| 34 | Historical rows would keep a null and fail the not-null | the migration | accepted, fixed | The backfill drops the current-row predicate, so every row, history included, carries a convention before the constraint is set. |
+| 35 | The convention code is free text | the model | recorded | Validation belongs with the refdata convention lookups; the republish path already fails loudly on an unknown convention, and a key or a check is the refdata component's call. |
+| 36 | No case covers a config that takes the forward convention | the service tests | recorded | A second config or a fixture is the re-key unit's work; the record's limitation says the same. |
+| 37 | A generated config's default convention must exist if a test republishes one | the model's generator | recorded | No test republishes a generated config today, and the default matches the ordinary case. |
+
+* Result
+
+The additive half of the identity cutover is delivered. =market_series= carries
+=oresmd_uri=, and both writers of series rows supply it: the import, from
+=from_ore_key()= for a market-data key and from =from_index_name()= for a fixing's
+index name -- the latter's first production call site -- and the ingest loop, which
+derives it from the =ore_key= it already builds. The repository reads by identity
+through =read_latest_by_uri=, declared in the model beside the triple reader, and
+the import's and the ingest loop's lookups ask by identity first and by the triple
+after it, for a row written before the column existed.
+
+Nothing is deleted. The triple still keys the row, so a series with no identity is
+still reachable and the component cannot be stranded by this change. Measured on the
+rebuilt tree: 1782 assertions in 400 cases, including a case that imports one key
+from each space and reads the series back by its identity and by its triple, both
+agreeing. Component drift is clean for =marketdata= at all eight addresses,
+including the entity that gained the column.
+
+**A second unit, on the same column, made the identity name a series rather than a
+datum.** The import projected the file's whole key and the ingest loop projected the
+triple alone, so a series' identity carried whichever of its points arrived first and
+a swap series got none from a live tick at all. =to_series_uri()= projects the
+identifier with its point dropped, both writers call it, and the ingest loop builds
+the datum's full key before falling back to the triple. Two IR families kept their
+coordinate where that projection did not look -- a discount curve's maturity and a
+future's contract code and tenor -- and it now drops those too, with a case walking one
+two-point pair per family and three pairs that must stay apart, which is what guards
+the drop against over-clearing. Measured on the rebuilt tree: 1839 assertions in 403
+cases.
+
+Three measurements taken here changed the plan rather than the code, and each is
+recorded with its number:
+
+- the =feed_binding= column cannot be written, because its only writer is a generated
+  service with no derivation hook and a model's generator block feeds test data;
+- the column cannot be made =not null= yet, because the FOMC bootstrap seeds a series
+  under the synthetic pipeline's own vocabulary, which no projection can name -- the
+  replacement is the instruments' own ORE keys, decided above;
+- =marketdata= is one modelling pass short of =COMPONENTS_UNDER_TEST=, because seven
+  hand-written protocol headers carry no TypeScript twin and a twin is generated from
+  an operation model. Listing the component was tried and reverted, and the modelling
+  pattern to follow is read off =ores.variability.operations=.
+
+What the deletion still owes is recorded where it belongs: the internal series'
+identity, a backfill or a recreated database, the unique index on the identity, and
+the behaviour that a write omitting the identity clears it until the column is
+=not null=.

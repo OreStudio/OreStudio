@@ -84,10 +84,12 @@ ACCOUNT_SQL = ("select username from ores_iam_accounts_tbl "
                "where valid_to = ores_utility_infinity_timestamp_fn() "
                "order by (account_type = 'service') desc, username limit 1;")
 
-# The legacy bond instrument table keeps its name through the reshape, so the
-# family entries below stay valid when the reshaped table replaces it.
+# The bond instrument table is keyed by trade_id: the instrument and the trade
+# are one identity. Every trade-keyed table therefore couples to the trades
+# table, which loads first.
 BOND_INSTRUMENTS = "ores_trading_bond_instruments_tbl"
 BOND_ISSUES = "ores_trading_bond_issues_tbl"
+TRADES = "ores_trading_trades_tbl"
 
 # The ten bond trade-type codes, in declaration order. One trade of each code
 # loads per ISIN, so the j-th instrument row of a code sits at
@@ -115,12 +117,12 @@ CHILD_TABLES = ("ores_trading_bond_issue_call_dates_tbl",
 # the referenced table already holds, so the referenced table loads first. Row
 # i of the referencing table couples to row i of the referenced one.
 REFERENCES = {
-    ("ores_trading_composite_legs_tbl", "instrument_id"):
-        ("ores_trading_composite_instruments_tbl", "id"),
+    ("ores_trading_composite_legs_tbl", "trade_id"):
+        (TRADES, "id"),
     ("ores_trading_party_roles_tbl", "trade_id"):
-        ("ores_trading_trades_tbl", "id"),
+        (TRADES, "id"),
     ("ores_trading_trade_identifiers_tbl", "trade_id"):
-        ("ores_trading_trades_tbl", "id"),
+        (TRADES, "id"),
     ("ores_trading_bond_issue_call_dates_tbl", "issue_id"):
         ("ores_trading_bond_issues_tbl", "issue_id"),
     ("ores_trading_bond_issue_conversion_targets_tbl", "issue_id"):
@@ -248,21 +250,23 @@ class Generator:
             if col == "trade_type_code":
                 return TRADE_TYPE_CODES[i % len(TRADE_TYPE_CODES)]
             if col == "issue_id":
-                # Row i trades the i // len(codes) issue's ISIN. Inert while the
-                # legacy table lacks the column; the reshaped instrument rows
-                # carry it, and the seed couples them to the loaded issue.
+                # Row i trades the (i // len(codes))-th issue's ISIN, so it
+                # couples to the loaded issue at that index.
                 return str(uuid.uuid5(NS, f"{BOND_ISSUES}.issue_id."
                                         f"{i // len(TRADE_TYPE_CODES)}"))
         if col == "security_id" and table == BOND_ISSUES:
             return f"XS{i:010d}"
-        if col == "instrument_id" and table in FACT_CODE:
-            # The fact row of the j-th instrument row of its own product code.
-            return str(uuid.uuid5(
-                NS, f"{BOND_INSTRUMENTS}.id."
-                    f"{i * len(TRADE_TYPE_CODES) + TRADE_TYPE_CODES.index(FACT_CODE[table])}"))
         ref = REFERENCES.get((table, col))
         if ref:
             return str(uuid.uuid5(NS, f"{ref[0]}.{ref[1]}.{i}"))
+        if col == "trade_id":
+            # Every trade-keyed row couples to the loaded trade at its own
+            # index. A fact row extends the instrument row of its own product
+            # code, so it takes that row's trade.
+            j = (i * len(TRADE_TYPE_CODES) +
+                 TRADE_TYPE_CODES.index(FACT_CODE[table])
+                 if table in FACT_CODE else i)
+            return str(uuid.uuid5(NS, f"{TRADES}.id.{j}"))
         key = (table, col)
         if key in self.allowed:
             return self.allowed[key][i % len(self.allowed[key])]
@@ -540,7 +544,9 @@ def main():
         return
 
     referenced = [t for t, _ in REFERENCES.values()]
-    order = sorted(cols, key=lambda t: (t not in referenced, t))
+    # Every trade-keyed table couples to the trades table, so it loads before
+    # all of them, not only before the other referenced tables.
+    order = sorted(cols, key=lambda t: (t != TRADES, t not in referenced, t))
     for table in order:
         spec = cols[table]
         names = [c for c, _, _, _ in spec]

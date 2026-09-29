@@ -47,8 +47,8 @@ std::string instrument_option_payment_date_repository::sql() {
 
 ores::utility::domain::precondition instrument_option_payment_date_repository::replace_claim(
     context ctx, const domain::instrument_option_payment_date& v) {
-    const auto current = read_latest(
-        ctx, boost::uuids::to_string(v.instrument_id), std::to_string(v.sequence_number));
+    const auto current =
+        read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -76,7 +76,7 @@ domain::instrument_option_payment_date instrument_option_payment_date_repository
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
             const auto current = read_latest(
-                ctx, boost::uuids::to_string(v.instrument_id), std::to_string(v.sequence_number));
+                ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
         }
@@ -103,7 +103,7 @@ void instrument_option_payment_date_repository::write(
     const domain::instrument_option_payment_date& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument option payment date. "
-                               << "instrument_id: " << v.instrument_id
+                               << "trade_id: " << v.trade_id
                                << " sequence_number: " << v.sequence_number;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx,
@@ -133,7 +133,7 @@ instrument_option_payment_date_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c);
+                       order_by("trade_id"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_option_payment_date_entity,
                               domain::instrument_option_payment_date>(
@@ -146,15 +146,15 @@ instrument_option_payment_date_repository::read_latest(context ctx) {
 
 std::vector<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_latest(context ctx,
-                                                       const std::string& instrument_id,
+                                                       const std::string& trade_id,
                                                        const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument option payment date. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
 
     return execute_read_query<instrument_option_payment_date_entity,
@@ -163,20 +163,20 @@ instrument_option_payment_date_repository::read_latest(context ctx,
         query,
         [](const auto& entities) { return instrument_option_payment_date_mapper::map(entities); },
         lg(),
-        "Reading latest instrument option payment date by instrument_id.");
+        "Reading latest instrument option payment date by trade_id.");
 }
 
 
 std::vector<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_all(context ctx,
-                                                    const std::string& instrument_id,
+                                                    const std::string& trade_id,
                                                     const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all instrument option payment date versions. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "sequence_number"_c == sequence_number) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -186,21 +186,21 @@ instrument_option_payment_date_repository::read_all(context ctx,
         query,
         [](const auto& entities) { return instrument_option_payment_date_mapper::map(entities); },
         lg(),
-        "Reading all instrument option payment date versions by instrument_id.");
+        "Reading all instrument option payment date versions by trade_id.");
 }
 
 std::optional<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_at_version(context ctx,
-                                                           const std::string& instrument_id,
+                                                           const std::string& trade_id,
                                                            const std::string& sequence_number,
                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading instrument option payment date at version. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "sequence_number"_c == sequence_number && "version"_c == version) |
                        sqlgen::limit(1);
 
@@ -217,15 +217,16 @@ instrument_option_payment_date_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 instrument_option_payment_date_repository::remove_status
 instrument_option_payment_date_repository::remove(context ctx,
-                                                  const std::string& instrument_id,
+                                                  const std::string& trade_id,
                                                   const std::string& sequence_number,
                                                   std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing instrument option payment date. "
-                               << "instrument_id: " << instrument_id
+                               << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
-    const auto current = read_latest(ctx, instrument_id, sequence_number);
+    const auto current = read_latest(ctx, trade_id, sequence_number);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -239,7 +240,7 @@ instrument_option_payment_date_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<instrument_option_payment_date_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "sequence_number"_c == sequence_number &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -248,15 +249,15 @@ instrument_option_payment_date_repository::remove(context ctx,
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id, sequence_number).empty())
+    if (!read_latest(ctx, trade_id, sequence_number).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
 void instrument_option_payment_date_repository::remove(context ctx,
-                                                       const std::string& instrument_id,
+                                                       const std::string& trade_id,
                                                        const std::string& sequence_number) {
-    static_cast<void>(remove(ctx, instrument_id, sequence_number, std::nullopt));
+    static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::instrument_option_payment_date>
@@ -269,7 +270,7 @@ instrument_option_payment_date_repository::read_latest(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "sequence_number"_c) | sqlgen::offset(offset) |
+                       order_by("trade_id"_c, "sequence_number"_c) | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_read_query<instrument_option_payment_date_entity,
@@ -306,15 +307,15 @@ instrument_option_payment_date_repository::get_total_option_payment_date_count(c
 std::vector<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_latest(
     context ctx,
-    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
-    if (instrument_ids.empty() || sequence_numbers.empty())
+    if (trade_ids.empty() || sequence_numbers.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<instrument_option_payment_date_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
               "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
     auto result = execute_read_query<instrument_option_payment_date_entity,
                                      domain::instrument_option_payment_date>(
@@ -326,16 +327,16 @@ instrument_option_payment_date_repository::read_latest(
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
     // exact requested key-tuples here.
-    if (sequence_numbers.size() != instrument_ids.size())
+    if (sequence_numbers.size() != trade_ids.size())
         throw std::invalid_argument("instrument_option_payment_date_repository::read_latest: key "
                                     "column vectors must be the same length");
     std::set<std::tuple<std::string, std::string>> requested;
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        requested.emplace(instrument_ids[i], sequence_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(trade_ids[i], sequence_numbers[i]);
     std::vector<domain::instrument_option_payment_date> filtered;
     filtered.reserve(result.size());
     for (auto& item : result) {
-        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.instrument_id),
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.trade_id),
                                                std::to_string(item.sequence_number))))
             filtered.push_back(std::move(item));
     }
@@ -344,16 +345,16 @@ instrument_option_payment_date_repository::read_latest(
 
 void instrument_option_payment_date_repository::remove(
     context ctx,
-    const std::vector<std::string>& instrument_ids,
+    const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
-    if (sequence_numbers.size() != instrument_ids.size())
+    if (sequence_numbers.size() != trade_ids.size())
         throw std::invalid_argument("instrument_option_payment_date_repository::remove: key column "
                                     "vectors must be the same length");
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        remove(ctx, instrument_ids[i], sequence_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        remove(ctx, trade_ids[i], sequence_numbers[i]);
 }
 
 

@@ -161,8 +161,14 @@ struct ORES_WORKFLOW_API_EXPORT materialised_step {
  * published data a person expects to keep stops on the failed step and waits
  * for a retry, because every step is idempotent and undoing costs more than
  * resuming.
+ *
+ * The declaration deliberately carries no ORES_WORKFLOW_API_EXPORT, unlike
+ * the structs around it: that macro expands to a DLL import or export
+ * attribute, which does not apply to an enum, and clang-cl rejects it with
+ * -Wignored-attributes, an error under -Werror. An enum needs no export
+ * attribute to travel across a binary boundary.
  */
-enum class ORES_WORKFLOW_API_EXPORT failure_policy : std::uint8_t {
+enum class failure_policy : std::uint8_t {
     /// Roll the completed steps back and end in compensated. The default.
     compensate = 0,
     /// Stop on the failed step, keep every completed step, and end in failed.

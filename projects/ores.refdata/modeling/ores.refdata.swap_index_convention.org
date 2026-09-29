@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: B177DECD-6841-46E4-BA5A-B01532374200
+:END:
+#+title: ores.refdata.swap_index_convention
+#+description: Codegen entity model for the refdata =swap_index_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The swap convention a named swap index refers to, and the calendar its fixings are read on.
+#+entity_singular: swap_index_convention
+#+entity_plural: swap_index_conventions
+#+entity_title: Swap Index Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+A named swap index, which ORE describes by pointing at the swap convention it
+follows rather than by restating that convention's fields. Corresponds to the
+<SwapIndex> element in ORE conventions.xml. The id field is the natural key
+(ORE <Id> element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique swap index identifier.
+
+Examples: 'EUR-6M-SWAP-INDEX', 'USD-3M-SWAP-INDEX'.
+
+#+begin_src cpp :name generator
+std::string("EUR-6M-SWAP-INDEX")
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The =swap_convention= this index follows, by its id. ORE names a convention here
+rather than repeating its fields, so an index is a reference and not a copy.
+
+#+begin_src cpp :name generator
+std::string("EUR-6M-SWAP-CONVENTIONS")
+#+end_src
+
+** fixing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the index's fixings are read on (e.g. 'TARGET'). ORE leaves it out when
+the index fixes on the convention's own calendar.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_swap_index_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swap_index_convention
+:entity_plural_short:   swap_index_conventions
+:entity_singular_words: swap index convention
+:entity_plural_words:   swap index conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sic
+:END:
+
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| id              | Id              |
+| conventions     | Conventions     |
+| fixing_calendar | Fixing Calendar |
+| modified_by     | Modified By     |
+| version         | Version         |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           swap_index_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   swap_index_convention
+:END:
+
+*** Detail fields
+
+| field           | label           | widget            | type      | is_key | is_required | placeholder                  |
+|-----------------+-----------------+-------------------+-----------+--------+-------------+------------------------------|
+| id              | Id              | idEdit            | line_edit | true   | true        | Enter swap index id          |
+| conventions     | Conventions     | conventionsEdit   | line_edit |        | true        | e.g. EUR-6M-SWAP-CONVENTIONS |
+| fixing_calendar | Fixing Calendar | fixingCalendarEdit | line_edit |        |             | e.g. TARGET                  |
+
+*** Columns
+
+| enum_name      | field           | header          | type      | width |
+|----------------+-----------------+-----------------+-----------+-------|
+| Id             | id              | Id              | string    | 220   |
+| Conventions    | conventions     | Conventions     | string    | 260   |
+| FixingCalendar | fixing_calendar | Fixing Calendar | string    | 160   |
+| Version        | version         | Version         | int       | 80    |
+| ModifiedBy     | modified_by     | Modified By     | string    | 120   |
+| RecordedAt     | recorded_at     | Recorded At     | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

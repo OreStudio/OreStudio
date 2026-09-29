@@ -1394,6 +1394,54 @@ slash, which keeps them out of the fixing space, so the target is **156 of 158**
 rather than 158. Three classes remain: inflation (7), equity (8) and security (2).
 The =FIXING= exemption in the oresmd coverage gate still stands, unchanged.
 
+*Update, 2026-09-28 (task AB2922AA, commit 48eb0e27aa).* The fixing key space is
+closed. Inflation, equity and security are the last three classes. Inflation is the
+one class whose index name is a bare token, so its model carries the codes and a
+dash-less name resolves only when it is one of them; equity needs no new field,
+because a fixing carries no currency and the ticker is the tail ORE writes,
+identifier scheme included; security reuses =delivery= for a bond future's expiry
+month, which is the shape commodity already gives its contract month. Every class
+the corpus puts in the fixing space resolves, so **156 of 156** index names
+round-trip and the two =GENERIC-MD= rows stay refused. The corpus-driven test names
+the classes with an empty allowlist, and it pins those two keys in a bucket of their
+own, so the census is whole without an exception standing in for a class. What
+remains is the cutover itself: the import still writes the index name into the
+series qualifier.
+
+*Update, 2026-09-29 (PR 5's scoping round).* The blocker this section records is
+cleared, and the claim above is now false: the fixing half names, so the cutover's
+premise -- every identity-bearing row can be given an =oresmd_uri= -- holds over the
+whole corpus. Measured on the merged trunk: =from_ore_key()= names **485,606 of
+485,606** corpus instrument keys, which the ORESMD coverage gate asserts, and
+=from_index_name()= names **156 of 156** fixing index names, with the two
+=GENERIC-MD/EQUITY_OPTION/...= rows refused as market-data keys in a fixing column
+rather than as fixings. No identity-bearing row in the corpus has no way back.
+
+**What the import writes today.** Two write paths, and neither stores an identity:
+
+- *Market data.* =import_service.cpp= computes the identifier already --
+=canonical_key()= calls =from_ore_key()=, projects it with =to_quote_key()=, and
+returns the canonical spelling plus the registry's decomposition -- and then
+**discards the identifier**. The series is found or created on
+=(series_type, metric, qualifier)=, and the observation keeps the file's own text in
+=obs.key=, because the rows above hold the canonical spelling rather than it.
+- *Fixings.* The series is created as
+=find_or_create_series("FIXING", "RATE", f.qualifier)=, where the qualifier *is* the
+index name. =from_index_name()= has **no production call site at all**: 0 outside
+the projections and the tests. So a fixing series has no identifier to store and the
+index name is its whole identity.
+
+**Where the =oresmd_uri= column belongs, and what it costs.** =market_series= and
+=feed_binding= are both identity-bearing: the series on its
+=(series_type, metric, qualifier)= triple, the binding on =ore_key= and
+=source_name=. The cutover adds the column to both, moves the natural key onto it,
+repurposes =point_id=, then deletes =series_type=, =metric=, =qualifier=, =ore_key=
+and the import classification table. The blast radius of deleting the triple is 63
+files across =ores.marketdata=, =ores.synthetic=, =ores.shell= and =ores.ore= that
+name =qualifier=. The value the column needs is in hand on the market-data path
+already and one call away on the fixing path, so the work is the cutover and its
+consumers rather than a new projection.
+
 ** PR 6 -- Join =COMPONENTS_UNDER_TEST=
 
 *Scope.* Add =marketdata= to =component_registry.py= and run every gate:
@@ -1488,3 +1536,49 @@ projects/ores.codegen/venv/bin/python tmp/marketdata_analysis/coverage_probe.py
 - Whether =feed_binding='s no-match profile gap is fixed here or in the
   profile catalogue, since =reporting.report_definition= has the same
   shape.
+
+*Update, 2026-09-29 (PR 6's survey).* The component was put through V06's gates to
+see whether the story can close, and it is one item short.
+
+**Met.** The drift check reports no drift for =marketdata= at all eight addresses --
+=ores.cmake=, =ores.cpp=, =ores.doc=, =ores.plantuml=, =ores.shell=, =ores.sql=,
+=ores.ts.domain= and =ores.ts.protocol= -- including the market series entity that
+gained the =oresmd_uri= column, so the component regenerates byte for byte from its
+models. Its populate references resolve, its handler permissions are seeded, and its
+suites pass.
+
+**Not met, and it is the whole of what stands between it and
+=COMPONENTS_UNDER_TEST=.** Seven of its protocol headers carry no TypeScript twin,
+so the twin gate fails the moment the component is listed:
+=crm_protocol.hpp=, =curve_republish_protocol.hpp=, =curve_snapshot_protocol.hpp=,
+=import_protocol.hpp=, =market_feed_config_protocol.hpp=,
+=market_series_export_protocol.hpp= and =ore_export_protocol.hpp=. They are
+hand-written rather than generated from an operation model, and a twin is generated
+from the model, so each needs one first. That is the standard's M06 item.
+
+Listing the component was tried and reverted, because the gate exists to refuse
+exactly that: it went from "protocol twin coverage intact, all 171 headers in 12
+committed components" to "incomplete" on the addition alone. The component's
+registration is therefore one modelling pass away, and the survey above is what says
+so.
+
+*Update, 2026-09-29 (what M06 needs, read off the component that did it).* The
+seven protocols need one model file, not seven. =ores.variability= joins
+=COMPONENTS_UNDER_TEST= today and carries its operations in a single
+=ores.variability.operations.org=: an =* Includes= block, then a =* Messages=
+section whose =** <message>= subsections carry =:subject:= and =:response:= and
+whose =*** <field>= subsections carry the field's =:cpp_type:=. The generator writes
+the header from that, including =nats_subject= and =response_type=, and the
+TypeScript twin from the same model -- which is why a hand-written header cannot
+have one.
+
+So the unit is =projects/ores.marketdata/modeling/ores.marketdata.operations.org=
+declaring the messages of =crm_protocol.hpp=, =curve_republish_protocol.hpp=,
+=curve_snapshot_protocol.hpp=, =import_protocol.hpp=,
+=market_feed_config_protocol.hpp=, =market_series_export_protocol.hpp= and
+=ore_export_protocol.hpp=; the seven headers become generated; and the two gates
+that decide the join are =check_protocol_twin_coverage.py= and
+=check_component_drift.py --component marketdata=. The work is the messages'
+domain-typed fields -- the import request alone carries content, source, a
+duplicate policy and its response a vector of observations and two count-plus-issue
+lists -- rather than the plumbing, which the pattern already supplies.

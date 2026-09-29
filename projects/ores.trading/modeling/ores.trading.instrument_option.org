@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: The option block a document states on an instrument, keyed to the instrument.
+#+brief: The option block a document states on an instrument, keyed to the trade.
 #+entity_singular: instrument_option
 #+entity_plural: instrument_options
 #+entity_title: Instrument Option
@@ -45,14 +45,15 @@ document held.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose document stated this option block.
+The trade whose document stated this option block.
 
 ** long_short
 :PROPERTIES:
@@ -82,7 +83,6 @@ std::string("Long")
 The option's type, as the document spelled it.
 
 Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
-
 
 ** payoff_type
 :PROPERTIES:
@@ -394,6 +394,20 @@ FX index the settlement block fixes against.
 :END:
 
 Date the settlement block fixes on, when the document states one.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

@@ -73,21 +73,21 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <instrument_id>
+     * @brief get <trade_id>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <instrument_id>
+     * @brief get-many <trade_id>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_type_code> <trade_id> <start_date> <maturity_date> <settlement_lag>
+     * @brief add <trade_id> <trade_type_code> <start_date> <maturity_date> <settlement_lag>
      * <netting_set_id> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,44 +95,44 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date>
-     * <settlement_lag> <netting_set_id> <description> <reason> <commentary> [--version <n>]
+     * @brief set <trade_id> <trade_type_code> <start_date> <maturity_date> <settlement_lag>
+     * <netting_set_id> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <start_date>
-     * <maturity_date> <settlement_lag> <netting_set_id> <description> <reason> <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_type_code> <start_date> <maturity_date>
+     * <settlement_lag> <netting_set_id> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <instrument_id> <reason> <commentary> [--version <n>]
+     * @brief delete <trade_id> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <instrument_id> <reason> <commentary>
+     * @brief delete-many <trade_id> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <instrument_id> --version <n>
+     * @brief version <trade_id> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

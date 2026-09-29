@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: 10E9D9B1-1141-4F80-B211-49069D228956
+:END:
+#+title: ores.refdata.fx_option_convention
+#+description: Codegen entity model for the refdata =fx_option_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The at-the-money and delta conventions an FX option is quoted on.
+#+entity_singular: fx_option_convention
+#+entity_plural: fx_option_conventions
+#+entity_title: FX Option Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE quotes an FX option: which strike counts as at the money, how
+the delta is measured, and what happens beyond a switch tenor. Corresponds to
+the <FxOption> element in ORE conventions.xml. The id field is the natural key
+(ORE <Id> element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    true
+:END:
+
+Unique FX option identifier.
+
+Examples: 'EUR-USD-FXOPTION', 'GBP-USD-FXOPTION'.
+
+#+begin_src cpp :name generator
+std::string("EUR-USD-FXOPTION")
+#+end_src
+
+** fx_convention_id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+The FX convention this option follows, by its id, when it follows one rather than stating its own ATM and delta types.
+
+#+begin_src cpp :name generator
+std::string("EUR-USD-FX")
+#+end_src
+
+** atm_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+How the at-the-money strike is chosen, in ORE's own spelling (e.g. 'Atm', 'AtmDeltaNeutral').
+
+#+begin_src cpp :name generator
+std::string("Atm")
+#+end_src
+
+** delta_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+How the delta is measured, in ORE's own spelling (e.g. 'Spot', 'Forward', 'PaSpot').
+
+#+begin_src cpp :name generator
+std::string("Spot")
+#+end_src
+
+** switch_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Tenor at which a long-term ATM type and delta type take over from the short-term ones.
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+** long_term_atm_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+ATM type used beyond the switch tenor.
+
+#+begin_src cpp :name generator
+std::string("Atm")
+#+end_src
+
+** long_term_delta_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Delta type used beyond the switch tenor.
+
+#+begin_src cpp :name generator
+std::string("Forward")
+#+end_src
+
+** risk_reversal_in_favor_of
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Which side a risk reversal is quoted in favour of, in ORE's own spelling.
+
+#+begin_src cpp :name generator
+std::string("Call")
+#+end_src
+
+** butterfly_style
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+How the butterfly is constructed, in ORE's own spelling (e.g. 'Broker', 'Smile').
+
+#+begin_src cpp :name generator
+std::string("Broker")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fx_option_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_option_convention
+:entity_plural_short:   fx_option_conventions
+:entity_singular_words: FX option convention
+:entity_plural_words:   FX option conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: foc
+:END:
+
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| id              | Id              |
+| atm_type        | ATM Type        |
+| delta_type      | Delta Type      |
+| modified_by     | Modified By     |
+| version         | Version         |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           fx_option_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   fx_option_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter FX option id |
+| fx convention id | FX Convention | fxConventionIdEdit | line_edit |  |  | e.g. EUR-USD-FX |
+| atm type | ATM Type | atmTypeEdit | line_edit |  | true | e.g. Atm |
+| delta type | Delta Type | deltaTypeEdit | line_edit |  | true | e.g. Spot |
+| switch tenor | Switch Tenor | switchTenorEdit | line_edit |  |  | e.g. 1Y |
+| long term atm type | Long Term ATM | longTermAtmTypeEdit | line_edit |  |  | e.g. Atm |
+| long term delta type | Long Term Delta | longTermDeltaTypeEdit | line_edit |  |  | e.g. Forward |
+| risk reversal in favor of | RR In Favour Of | riskReversalInFavorOfEdit | line_edit |  |  | e.g. Call |
+| butterfly style | Butterfly Style | butterflyStyleEdit | line_edit |  |  | e.g. Broker |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 220 |
+| FxConventionId | fx_convention_id | FX Convention | string | 160 |
+| AtmType | atm_type | ATM Type | string | 140 |
+| DeltaType | delta_type | Delta Type | string | 140 |
+| SwitchTenor | switch_tenor | Switch Tenor | string | 120 |
+| LongTermAtmType | long_term_atm_type | Long Term ATM | string | 140 |
+| LongTermDeltaType | long_term_delta_type | Long Term Delta | string | 140 |
+| RiskReversalInFavorOf | risk_reversal_in_favor_of | RR In Favour Of | string | 140 |
+| ButterflyStyle | butterfly_style | Butterfly Style | string | 140 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

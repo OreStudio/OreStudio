@@ -41,6 +41,7 @@ export interface IrCurveBootstrapConfig {
     discount_curve_config_id: string;
     interpolation_method: string;
     day_count_convention: string;
+    tenor_convention_code: string;
     split_tenor_code: string;
     modified_by: string;
     performed_by: string;

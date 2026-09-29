@@ -156,10 +156,9 @@ TEST_CASE("read_nonexistent_regulatory_book_type_code", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read regulatory book types: " << read_regulatory_book_types;
 
     const auto answered_with_another_key =
-        std::ranges::any_of(read_regulatory_book_types,
-                            [&](const regulatory_book_type& rbt) {
-                                return rbt.code == nonexistent_code;
-                            });
+        std::ranges::any_of(read_regulatory_book_types, [&](const regulatory_book_type& rbt) {
+            return rbt.code == nonexistent_code;
+        });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the key that was written.
@@ -230,7 +229,7 @@ TEST_CASE("read_latest_regulatory_book_types_includes_the_written_row", tags) {
     repo.write(h.context(), rbt);
 
     const auto read_regulatory_book_types = repo.read_latest(h.context());
-    const auto found = std::ranges::any_of(
-        read_regulatory_book_types, [&](const auto& v) { return v.code == rbt.code; });
+    const auto found = std::ranges::any_of(read_regulatory_book_types,
+                                           [&](const auto& v) { return v.code == rbt.code; });
     CHECK(found);
 }

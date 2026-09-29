@@ -44,7 +44,7 @@ domain::bond_forward generate_synthetic_bond_forward(utility::generation::genera
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.instrument_id = ctx.generate_uuid();
+    r.trade_id = ctx.generate_uuid();
     r.amount = ores::utility::decimal::decimal::from_string(
                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                    .value();

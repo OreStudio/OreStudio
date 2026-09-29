@@ -42,7 +42,7 @@ struct callable_swap_call_date_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_callable_swap_call_dates_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;

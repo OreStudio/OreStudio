@@ -35,7 +35,7 @@ namespace ores::trading::service {
  *
  * A bond instrument is spread over one header row, one issue row, the
  * issue's two keyed child lists, the leg family and one fact row chosen
- * by the instrument's type code. The export path holds the instrument
+ * by the instrument's type code. The export path holds the trade
  * identifiers and needs the whole container for each, which no single
  * generated repository read answers.
  *
@@ -61,12 +61,12 @@ public:
     /**
      * @brief Reads the containers of a set of bond instruments.
      *
-     * @param instrument_ids UUIDs of the instruments to read.
+     * @param trade_ids UUIDs of the trades whose bond instruments to read.
      * @return The containers keyed by instrument id as text. An
      * instrument with no header row is absent from the result.
      */
     std::unordered_map<std::string, domain::bond_instrument_data>
-    read_instruments(const std::vector<std::string>& instrument_ids) const;
+    read_instruments(const std::vector<std::string>& trade_ids) const;
 
 private:
     context ctx_;

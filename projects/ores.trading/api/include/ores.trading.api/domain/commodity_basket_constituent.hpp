@@ -35,8 +35,8 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One constituent of a commodity basket instrument, keyed to the instrument and the
- * constituent's ordinal.
+ * @brief One constituent of a commodity basket instrument, keyed to the trade and the constituent's
+ * ordinal.
  *
  * One row per underlying a commodity basket product names, keyed to the
  * instrument and the constituent's ordinal within the document.
@@ -51,8 +51,8 @@ namespace ores::trading::domain {
  * a binary float. The document may state no weight, and then the column is
  * null rather than a zero the document never wrote.
  *
- * The instrument row carries the trade, the workspace and the party. The
- * constituent rows are family-owned and ride the instrument's scope, so no
+ * The trade row carries the workspace and the party. The
+ * constituent rows are family-owned and ride the trade's scope, so no
  * workspace column rides them.
  */
 struct commodity_basket_constituent final {
@@ -67,9 +67,9 @@ struct commodity_basket_constituent final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the commodity basket instrument whose document states this constituent.
+     * @brief The trade whose commodity basket document states this constituent.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Ordinal of this constituent within the document's list, counting from one.

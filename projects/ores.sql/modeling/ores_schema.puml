@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T12:51:01.726129Z
+' Generated: 2026-09-29T13:15:27.878232Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -860,6 +860,41 @@ package "refdata" #FFF3E0 {
     The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.
     end note
 
+    entity ores_refdata_average_ois_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * spot_lag : integer
+        * fixed_tenor : text
+        * fixed_day_count_fraction : text
+          fixed_calendar : text
+          fixed_convention : text
+          fixed_payment_convention : text
+          fixed_frequency : text
+        * index : text
+        * on_tenor : text
+        * rate_cutoff : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_average_ois_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Averaging OIS Convention Table
+    Describes how ORE averages the floating leg of an overnight index swap over a
+    tenor, and how the fixed leg pays against it. Corresponds to the <AverageOIS>
+    element in ORE conventions.xml. The id field is the natural key (ORE <Id>
+    element).
+    end note
+
     entity ores_refdata_benchmark_rates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1646,6 +1681,56 @@ package "refdata" #FFF3E0 {
     topologies and never share an engine.
     end note
 
+    entity ores_refdata_cross_currency_basis_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * settlement_days : integer
+          settlement_calendar : text
+        * roll_convention : text
+        * flat_index : text
+        * spread_index : text
+          eom : boolean
+          is_resettable : boolean
+          flat_index_is_resettable : boolean
+          flat_tenor : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          flat_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+          flat_include_spread : boolean
+          flat_lookback : text
+          flat_fixing_days : integer
+          flat_rate_cutoff : integer
+          flat_is_averaged : boolean
+          flat_observation_shift : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross-Currency Basis Convention Table
+    Describes how ORE builds both legs of a cross-currency basis swap: the two
+    indices, their tenors, their payment lags and their fixing and cutoff rules, and
+    whether the spread is included in a leg's coupons. Corresponds to the
+    <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    end note
+
     entity ores_refdata_currencies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * iso_code : text <<PK>>
@@ -1661,6 +1746,7 @@ package "refdata" #FFF3E0 {
         * format : text
         * monetary_nature : text
         * market_tier : text
+          ore_currency_type : text
           image_id : uuid <<FK>>
         * spot_days : integer
         * day_basis : text
@@ -2186,6 +2272,68 @@ package "refdata" #FFF3E0 {
     Corresponds to the <FRA> element in ORE conventions.xml.
     end note
 
+    entity ores_refdata_future_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * index : text
+          date_generation_rule : text
+          netting_type : text
+          calendar : text
+          overnight_index_tenor : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_future_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Future Convention Table
+    Describes how ORE builds the dates and settles the fixings of a future.
+    Corresponds to the <Future> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    end note
+
+    entity ores_refdata_fx_option_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          fx_convention_id : text <<FK>>
+        * atm_type : text
+        * delta_type : text
+          switch_tenor : text
+          long_term_atm_type : text
+          long_term_delta_type : text
+          risk_reversal_in_favor_of : text
+          butterfly_style : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_option_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Option Convention Table
+    Describes how ORE quotes an FX option: which strike counts as at the money, how
+    the delta is measured, and what happens beyond a switch tenor. Corresponds to
+    the <FxOption> element in ORE conventions.xml. The id field is the natural key
+    (ORE <Id> element).
+    end note
+
     entity ores_refdata_ibor_index_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
@@ -2278,6 +2426,7 @@ package "refdata" #FFF3E0 {
         * discount_curve_config_id : uuid <<FK>>
         * interpolation_method : text
         * day_count_convention : text
+        * tenor_convention_code : text
         * split_tenor_code : text
         * modified_by : text
         * performed_by : text
@@ -3175,6 +3324,33 @@ package "refdata" #FFF3E0 {
     curve. Corresponds to the <Swap> element in ORE conventions.xml.
     end note
 
+    entity ores_refdata_swap_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * conventions : text
+          fixing_calendar : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swap_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Index Convention Table
+    A named swap index, which ORE describes by pointing at the swap convention it
+    follows rather than by restating that convention's fields. Corresponds to the
+    <SwapIndex> element in ORE conventions.xml. The id field is the natural key
+    (ORE <Id> element).
+    end note
+
     entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -3202,6 +3378,87 @@ package "refdata" #FFF3E0 {
     curve or ladder's own quoting-basis override (see
     [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is
     out of scope for this model and lives on the curve/ladder entity instead.
+    end note
+
+    entity ores_refdata_tenor_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          pay_index : text
+          pay_frequency : text
+          receive_index : text
+          receive_frequency : text
+          spread_on_rec : boolean
+          include_spread : boolean
+          sub_periods_coupon_type : text
+          pay_is_averaged : boolean
+          rec_is_averaged : boolean
+          long_index : text
+          long_pay_tenor : text
+          short_index : text
+          short_pay_tenor : text
+          spread_on_short : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_basis_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Basis Swap Convention Table
+    Describes how ORE builds the two legs of a tenor basis swap, where each leg
+    pays a different tenor off its own index and the two legs may differ in more
+    than the tenor. Corresponds to the <TenorBasisSwap> element in ORE
+    conventions.xml. The id field is the natural key (ORE <Id> element).
+    ORE lets a tenor basis swap be written two ways, and the corpus uses both. The
+    paying and receiving form names PayIndex and ReceiveIndex with an optional
+    frequency each, and adds the averaging and sub-periods fields. The long and
+    short form names LongIndex and ShortIndex with an optional payment tenor
+    each, and adds the spread flags. The two forms do not share a field, so the
+    table carries every field of both and each row fills one form.
+    end note
+
+    entity ores_refdata_tenor_basis_two_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * calendar : text
+        * long_fixed_frequency : text
+        * long_fixed_convention : text
+        * long_fixed_day_count_fraction : text
+        * long_index : text
+        * short_fixed_frequency : text
+        * short_fixed_convention : text
+        * short_fixed_day_count_fraction : text
+        * short_index : text
+          long_minus_short : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_basis_two_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Two-Tenor Basis Swap Convention Table
+    Describes how ORE builds both legs of a two-tenor basis swap, where a long leg
+    and a short leg pay different frequencies off different indices, and which of
+    the two the quoted spread is measured from. Corresponds to the
+    <TenorBasisTwoSwap> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
     end note
 
     entity ores_refdata_tenor_convention_resolutions_tbl <<temporal>> #C6F0D8 {
@@ -3495,6 +3752,47 @@ package "refdata" #FFF3E0 {
     Specifies the day count fraction and compounding method used when bootstrapping
     a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in
     ORE conventions.xml. The id field is the natural key (ORE <Id> element).
+    end note
+
+    entity ores_refdata_zero_inflation_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * region_name : text
+        * region_code : text
+        * revised : boolean
+        * frequency : text
+        * availability_lag : text
+        * currency : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_zero_inflation_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Zero Inflation Index Convention Table
+    Describes a zero-coupon inflation index: the region it is published for, how
+    often it is published, how far behind its publication date it becomes
+    available, and the currency it is quoted in. Corresponds to the
+    <ZeroInflationIndex> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    Every field is required. The corpus sets all seven in all fifty-four elements,
+    and ORE's schema holds them by value, so an element without one does not parse.
+    The element carries one more field, RebasingEvents, and this table does not
+    model it: the ORE type holds it as a list of doubles, and the refdata schema has
+    no array column. No shipped file sets it. Rather than drop it silently the
+    mapper counts every element that carries one into
+    mapped_conventions::unmodelled under ZeroInflationIndex.RebasingEvents, so a
+    document that uses it is excluded from the round-trip set and named in the
+    measurement.
     end note
 
 }
@@ -3842,6 +4140,7 @@ package "dq_staging" #F3E5F5 {
         * format : text
         * monetary_nature : text
         * market_tier : text
+          ore_currency_type : text
           image_id : uuid <<FK>>
         * spot_days : integer
         * day_basis : text
@@ -5313,7 +5612,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_ascots_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
@@ -5377,12 +5676,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_balance_guaranteed_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           lockout_days : integer
@@ -5432,7 +5730,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_forwards_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
           long_in_forward : text
@@ -5459,7 +5757,7 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Forward Table
-    One row per forward bond instrument, keyed to the instrument.
+    One row per forward bond instrument, keyed to the trade.
     A forward bond states a bond block, a settlement block, an optional
     premium block and a long-in-forward flag. The bond block is the issue
     and the nine bond tables hold it; this table holds the other three,
@@ -5472,7 +5770,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_future_delivery_baskets_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         * valid_from : timestamptz <<PK>>
         --
@@ -5501,7 +5799,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_futures_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * contract_name : text
@@ -5544,13 +5842,12 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_instruments_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * issue_id : uuid <<FK>>
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -5568,9 +5865,9 @@ package "trading" #E8F5E9 {
     One row per bond trade, reshaped from the wide legacy table per the
     bond relational model deliverable
     (doc/knowledge/architecture/trading_bond_relational_model.org). The
-    row carries the instrument's identity only: instrument_id,
-    trade_type_code over the ten bond codes, party_id, the optional
-    trade_id soft link, and issue_id, the NOT NULL foreign key to the
+    row carries the instrument's identity only: trade_id, the trade that
+    identifies both the trade and its instrument, trade_type_code over the
+    ten bond codes, party_id, and issue_id, the NOT NULL foreign key to the
     bond issue row that holds every term of the bond. The economics
     moved to the issue (one row per ISIN, shared by every instrument of
     it), so an amendment to a term touches the issue row once, not every
@@ -5698,7 +5995,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_leg_amortizations_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * leg_role : text <<PK>>
         * leg_number : integer <<PK>>
         * sequence_number : integer <<PK>>
@@ -5736,7 +6033,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_leg_amounts_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * leg_role : text <<PK>>
         * leg_number : integer <<PK>>
         * amount_role : text <<PK>>
@@ -5773,7 +6070,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_leg_rates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * leg_role : text <<PK>>
         * leg_number : integer <<PK>>
         --
@@ -5844,7 +6141,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * leg_role : text <<PK>>
         * leg_number : integer <<PK>>
         --
@@ -5875,7 +6172,7 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Leg Table
-    One row per leg an instrument states, keyed to the instrument, the list
+    One row per leg an instrument states, keyed to the trade, the list
     the leg belongs to and the leg's ordinal within that list.
     The ORE schema declares the bond's leg list unbounded and a bond states
     one leg per coupon. The total return swap, the repo and the ascot each
@@ -5899,7 +6196,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_options_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * option_type : text
@@ -5937,7 +6234,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_repos_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * repo_type : text
@@ -5969,7 +6266,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_bond_trs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * return_type : text
@@ -6011,7 +6308,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_callable_swap_call_dates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
@@ -6041,19 +6338,18 @@ package "trading" #E8F5E9 {
     date is refused by the column's type rather than by a convention the
     readers must share, and a repeated date stays two rows because the
     ordinal, not the date, is part of the key.
-    The instrument row carries the trade, the workspace and the party. The
-    call date rows are family-owned and ride the instrument's scope, so no
+    The trade row carries the workspace and the party. The
+    call date rows are family-owned and ride the trade's scope, so no
     workspace column rides them.
     end note
 
     entity ores_trading_callable_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           description : text
@@ -6088,12 +6384,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_cap_floor_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           description : text
@@ -6117,7 +6412,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_commodity_basket_constituents_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
@@ -6146,19 +6441,18 @@ package "trading" #E8F5E9 {
     weight is money-role decimal, so the column holds an exact numeric and not
     a binary float. The document may state no weight, and then the column is
     null rather than a zero the document never wrote.
-    The instrument row carries the trade, the workspace and the party. The
-    constituent rows are family-owned and ride the instrument's scope, so no
+    The trade row carries the workspace and the party. The
+    constituent rows are family-owned and ride the trade's scope, so no
     workspace column rides them.
     end note
 
     entity ores_trading_commodity_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * commodity_code : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -6214,12 +6508,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_composite_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
           description : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -6237,7 +6530,7 @@ package "trading" #E8F5E9 {
     Composite Instrument Table
     Represents the composite product types ORE states. trade_type_code
     discriminates the exact product, and the constituent trades live in the
-    composite_legs child table keyed by this instrument's instrument_id.
+    composite_legs child table keyed by this instrument's trade_id.
     The parent row carries only the basket identity and its optional free-text
     description: the basket's constituents are child rows, so there is no
     per-leg block to hold here. The table is bi-temporal and audited, so the
@@ -6250,7 +6543,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * instrument_id : uuid <<FK>>
+        * trade_id : uuid <<FK>>
         * leg_sequence : integer
         * constituent_trade_id : text <<FK>>
         * workspace_id : uuid <<FK>>
@@ -6268,7 +6561,7 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Composite Leg Table
     Child table of composite_instruments. Each row is one constituent trade
-    of a composite basket and names the parent through instrument_id, with
+    of a composite basket and names the parent through trade_id, with
     leg_sequence giving the leg's 1-based ordinal inside the basket.
     The leg carries no economics of its own: the ORE schema states a basket as
     a list of whole trades, so the constituent is a child row that points at
@@ -6277,18 +6570,17 @@ package "trading" #E8F5E9 {
     shape flag.
     The row keeps its own id surrogate: composite_legs is one of the five
     id-keyed tables the component's investigation names, and its
-    instrument_id is a foreign key to the instrument rather than the row's
+    trade_id is a foreign key to the instrument rather than the row's
     own key.
     end note
 
     entity ores_trading_credit_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * reference_entity : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6344,12 +6636,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * strike : numeric(28, 10)
@@ -6388,12 +6679,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_asian_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6430,12 +6720,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_barrier_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6476,12 +6765,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6517,12 +6805,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_forward_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -6550,12 +6837,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6591,12 +6877,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_position_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -6629,7 +6914,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_position_option_underlyings_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
@@ -6673,19 +6958,18 @@ package "trading" #E8F5E9 {
     exercise date list stays unmodelled: it is a collection of its own, and
     a single date column would silently drop the rest of the list. That
     shape belongs to defect 16, the observation schedule.
-    The instrument row carries the trade, the workspace and the party. The
-    entry rows are family-owned and ride the instrument's scope, so no
+    The trade row carries the workspace and the party. The
+    entry rows are family-owned and ride the trade's scope, so no
     workspace column rides them.
     end note
 
     entity ores_trading_equity_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
           underlying_name : text
           basket_json : text
         * currency : text
@@ -6717,12 +7001,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_equity_variance_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -6804,12 +7087,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fra_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * end_date : date
         * currency : text
@@ -6838,12 +7120,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * currency : text
         * fixing_amount : numeric(28, 10)
         * strike : numeric(28, 10)
@@ -6873,12 +7154,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_asian_forward_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * fx_index : text
           reference_currency : text
           reference_notional : numeric(28, 10)
@@ -6917,12 +7197,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_barrier_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * bought_currency : text
         * bought_amount : numeric(28, 10)
         * sold_currency : text
@@ -6956,12 +7235,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * foreign_currency : text
         * domestic_currency : text
         * payoff_currency : text
@@ -6998,12 +7276,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_forward_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * bought_currency : text
         * bought_amount : numeric(28, 10)
         * sold_currency : text
@@ -7032,12 +7309,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_vanilla_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * bought_currency : text
         * bought_amount : numeric(28, 10)
         * sold_currency : text
@@ -7067,12 +7343,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_fx_variance_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * end_date : date
         * currency : text
@@ -7102,12 +7377,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_inflation_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * inflation_index_code : text
@@ -7134,7 +7408,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_option_exercise_fees_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
@@ -7166,7 +7440,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_option_payment_dates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
@@ -7193,7 +7467,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_option_premiums_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
@@ -7232,7 +7506,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_options_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * long_short : text
@@ -7302,7 +7576,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_schedule_dates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * owner_role : text <<PK>>
         * owner_number : integer <<PK>>
         * schedule_role : text <<PK>>
@@ -7342,7 +7616,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_schedules_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         * owner_role : text <<PK>>
         * owner_number : integer <<PK>>
         * schedule_role : text <<PK>>
@@ -7409,7 +7683,7 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_instrument_strikes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
           price_value : numeric(28, 10)
@@ -7432,7 +7706,7 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Instrument Strike Table
     One row per instrument whose document stated a strike as a price or as
-    a yield, keyed to the instrument.
+    a yield, keyed to the trade.
     The schema states the strike as a choice of three: a price with its
     currency, a yield with its compounding, or a number with an optional
     currency. A bare number reaches the bond option fact row instead, so
@@ -7443,12 +7717,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_knock_out_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * barrier_level : numeric(18, 10)
@@ -7717,11 +7990,10 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_rpa_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * reference_counterparty : text
@@ -7749,12 +8021,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_scripted_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * script_name : text
           script_body : text
           events_json : text
@@ -7827,7 +8098,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * instrument_id : uuid <<FK>>
+        * trade_id : uuid <<FK>>
         * leg_number : integer
         * leg_type_code : text
         * day_count_fraction_code : text
@@ -7861,9 +8132,9 @@ package "trading" #E8F5E9 {
     one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
     leg type does not state are null: fixed_rate is null for a floating leg and
     floating_index_code is null for a fixed leg.
-    The row keeps its own id surrogate and names the parent instrument through
-    instrument_id, which is a soft foreign key to the instrument family rather
-    than to one table.
+    The row keeps its own id surrogate and names the parent through trade_id.
+    The instrument is keyed by its trade, so all nine rates families name the one
+    parent the trades table holds rather than a table per family.
     It binds :profile: trading-instrument, like the nine instrument sub-types
     whose legs it holds. Three table features justify the bind: the table is
     tenant-scoped through tenant_id and the tenant isolation policy, it is
@@ -7880,12 +8151,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_swaption_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * expiry_date : date
         * exercise_type : text
         * settlement_type : text
@@ -8109,7 +8379,6 @@ package "trading" #E8F5E9 {
         * trade_type : text
           counterparty_id : uuid <<FK>>
           product_type : product_type_t
-          instrument_id : uuid <<FK>>
           asset_class : text
         * netting_set_id : text <<FK>>
         * activity_type_code : text
@@ -8143,12 +8412,11 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_vanilla_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * instrument_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
         --
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           settlement_lag : integer
@@ -9411,6 +9679,7 @@ package "marketdata" #E3F2FD {
         * series_type : text
         * metric : text
         * qualifier : text
+          oresmd_uri : text
         * series_subclass : text
         * derivation_kind : text
         * derivation_config_id : uuid <<FK>>

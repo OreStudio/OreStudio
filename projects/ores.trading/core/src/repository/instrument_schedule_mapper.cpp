@@ -41,7 +41,7 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
     domain::instrument_schedule r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.owner_role = v.owner_role.value();
     r.owner_number = boost::lexical_cast<int>(v.owner_number.value());
     r.schedule_role = v.schedule_role.value();
@@ -87,7 +87,7 @@ instrument_schedule_entity instrument_schedule_mapper::map(const domain::instrum
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     instrument_schedule_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
     r.owner_role = v.owner_role;
     r.owner_number = std::to_string(v.owner_number);
     r.schedule_role = v.schedule_role;

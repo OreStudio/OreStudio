@@ -195,16 +195,16 @@ swap_leg_repository::read_at_version(context ctx, const std::string& id, std::ui
     return entities.front();
 }
 
-std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_instrument_id(
-    context ctx, const std::string& instrument_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap legs. instrument_id: " << instrument_id
+std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_trade_id(
+    context ctx, const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap legs. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value()) |
+                             "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
                        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<swap_leg_entity, domain::swap_leg>(
@@ -212,14 +212,13 @@ std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_instrument_id(
         query,
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
-        "Reading latest swap legs by instrument_id.");
+        "Reading latest swap legs by trade_id.");
 }
 
 std::uint32_t
-swap_leg_repository::get_total_swap_leg_count_by_instrument_id(context ctx,
-                                                               const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap legs count. instrument_id: "
-                               << instrument_id;
+swap_leg_repository::get_total_swap_leg_count_by_trade_id(context ctx,
+                                                          const std::string& trade_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap legs count. trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
@@ -230,14 +229,14 @@ swap_leg_repository::get_total_swap_leg_count_by_instrument_id(context ctx,
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::select_from<swap_leg_entity>(sqlgen::count().as<"count">()) |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value()) |
+                             "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
                        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active swap legs count by instrument_id: " << count;
+    BOOST_LOG_SEV(lg(), debug) << "Total active swap legs count by trade_id: " << count;
     return count;
 }
 
@@ -359,16 +358,16 @@ void swap_leg_repository::remove(context ctx, const std::vector<std::string>& id
 
 std::vector<domain::swap_leg>
 swap_leg_repository::read_by_instruments_batch(context ctx,
-                                               const std::vector<std::string>& instrument_ids) {
-    if (instrument_ids.empty())
+                                               const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c, "leg_number"_c);
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "leg_number"_c);
     return execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,

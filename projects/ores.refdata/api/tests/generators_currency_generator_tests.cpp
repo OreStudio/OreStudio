@@ -122,16 +122,14 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
 
     CHECK(currencies.size() == 50);
 
-    const auto first = std::ranges::find_if(currencies, [](const auto& c) {
-        return c.iso_code == "XAE";
-    });
+    const auto first =
+        std::ranges::find_if(currencies, [](const auto& c) { return c.iso_code == "XAE"; });
     REQUIRE(first != currencies.end());
     CHECK(first->name == "Aerilonian Dollar");
     CHECK(first->numeric_code == "10001");
 
-    const auto last = std::ranges::find_if(currencies, [](const auto& c) {
-        return c.iso_code == "XZE";
-    });
+    const auto last =
+        std::ranges::find_if(currencies, [](const auto& c) { return c.iso_code == "XZE"; });
     REQUIRE(last != currencies.end());
     CHECK(last->name == "Zephyrian Zephyr");
     CHECK(last->numeric_code == "10050");
@@ -160,9 +158,8 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_availabl
 
     CHECK(currencies.size() == 50);
 
-    const auto last = std::ranges::find_if(currencies, [](const auto& c) {
-        return c.iso_code == "XZE";
-    });
+    const auto last =
+        std::ranges::find_if(currencies, [](const auto& c) { return c.iso_code == "XZE"; });
     REQUIRE(last != currencies.end());
     CHECK(last->name == "Zephyrian Zephyr");
     CHECK(last->numeric_code == "10050");

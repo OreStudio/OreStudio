@@ -35,9 +35,9 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One leg of a bond instrument, keyed to the instrument and the leg's ordinal.
+ * @brief One leg of a bond instrument, keyed to the trade and the leg's ordinal.
  *
- * One row per leg an instrument states, keyed to the instrument, the list
+ * One row per leg an instrument states, keyed to the trade, the list
  * the leg belongs to and the leg's ordinal within that list.
  *
  * The ORE schema declares the bond's leg list unbounded and a bond states
@@ -74,17 +74,17 @@ struct bond_leg final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument this leg belongs to.
+     * @brief The trade this leg belongs to.
      *
-     * The instrument row carries the trade, the workspace and the party. The leg rows are
-     * family-owned and ride the instrument's scope, so no workspace column rides them.
+     * The trade row carries the workspace and the party. The leg rows are family-owned and ride the
+     * trade's scope, so no workspace column rides them.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
-     * @brief Which leg list of the instrument this row belongs to: bond for a leg of the bond
-     * itself, or trs_funding, repo or ascot_swap for the single leg of a total return swap, a repo
-     * or an ascot.
+     * @brief Which leg list of the trade this row belongs to: bond for a leg of the bond itself, or
+     * trs_funding, repo or ascot_swap for the single leg of a total return swap, a repo or an
+     * ascot.
      *
      * A document states the bond's legs as a list and each of the other three as at most one leg.
      * The four are the same leg shape, so one table holds them and the role says which member of

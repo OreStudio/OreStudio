@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: A7231118-9660-490F-84F8-812FDD679A79
+:END:
+#+title: ores.refdata.future_convention
+#+description: Codegen entity model for the refdata =future_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for an interest rate or overnight index future.
+#+entity_singular: future_convention
+#+entity_plural: future_conventions
+#+entity_title: Future Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds the dates and settles the fixings of a future.
+Corresponds to the <Future> element in ORE conventions.xml. The id field is the
+natural key (ORE <Id> element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique future identifier.
+
+Examples: 'EUR-3M-FUTURE', 'USD-SOFR-3M-FUTURE'.
+
+#+begin_src cpp :name generator
+std::string("EUR-3M-FUTURE")
+#+end_src
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Underlying index the future settles against.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-3M")
+#+end_src
+
+** date_generation_rule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the future's dates are generated, in ORE's own spelling (e.g. 'IMM',
+'FirstDayOfMonth', 'SecondThursday', 'IMMCAD'). ORE enumerates these, and the
+token is carried verbatim so that an export writes back what an import read.
+
+#+begin_src cpp :name generator
+std::string("IMM")
+#+end_src
+
+** netting_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How an overnight index future nets its fixings, in ORE's own spelling:
+'Averaging' or 'Compounding'.
+
+#+begin_src cpp :name generator
+std::string("Compounding")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the future's dates roll on (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** overnight_index_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Tenor of the overnight index the future tracks, when it tracks one that is not
+the index's own.
+
+#+begin_src cpp :name generator
+std::string("3M")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_future_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: future_convention
+:entity_plural_short:   future_conventions
+:entity_singular_words: future convention
+:entity_plural_words:   future conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fc
+:END:
+
+** Table display
+
+| column                 | header                 |
+|------------------------+------------------------|
+| id                     | Id                     |
+| index                  | Index                  |
+| date_generation_rule   | Date Rule              |
+| netting_type           | Netting                |
+| modified_by            | Modified By            |
+| version                | Version                |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           future_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   future_convention
+:END:
+
+*** Detail fields
+
+| field                | label             | widget                  | type      | is_key | is_required | placeholder       |
+|----------------------+-------------------+-------------------------+-----------+--------+-------------+-------------------|
+| id                   | Id                | idEdit                  | line_edit | true   | true        | Enter future id   |
+| index                | Index             | indexEdit               | line_edit |        | true        | e.g. EUR-EURIBOR-3M |
+| date_generation_rule | Date Rule         | dateGenerationRuleEdit  | line_edit |        |             | e.g. IMM          |
+| netting_type         | Netting           | nettingTypeEdit         | line_edit |        |             | e.g. Compounding  |
+| calendar             | Calendar          | calendarEdit            | line_edit |        |             | e.g. TARGET       |
+| overnight_index_tenor | Overnight Tenor  | overnightIndexTenorEdit | line_edit |        |             | e.g. 3M           |
+
+*** Columns
+
+| enum_name              | field                  | header          | type      | width |
+|------------------------+------------------------+-----------------+-----------+-------|
+| Id                     | id                     | Id              | string    | 220   |
+| Index                  | index                  | Index           | string    | 180   |
+| DateGenerationRule     | date_generation_rule   | Date Rule       | string    | 140   |
+| NettingType            | netting_type           | Netting         | string    | 120   |
+| Calendar               | calendar               | Calendar        | string    | 140   |
+| OvernightIndexTenor    | overnight_index_tenor  | Overnight Tenor | string    | 120   |
+| Version                | version                | Version         | int       | 80    |
+| ModifiedBy             | modified_by            | Modified By     | string    | 120   |
+| RecordedAt             | recorded_at            | Recorded At     | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

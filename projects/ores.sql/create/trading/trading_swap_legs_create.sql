@@ -35,9 +35,9 @@
  * leg type does not state are null: fixed_rate is null for a floating leg and
  * floating_index_code is null for a fixed leg.
  *
- * The row keeps its own id surrogate and names the parent instrument through
- * instrument_id, which is a soft foreign key to the instrument family rather
- * than to one table.
+ * The row keeps its own id surrogate and names the parent through trade_id.
+ * The instrument is keyed by its trade, so all nine rates families name the one
+ * parent the trades table holds rather than a table per family.
  *
  * It binds :profile: trading-instrument, like the nine instrument sub-types
  * whose legs it holds. Three table features justify the bind: the table is
@@ -59,7 +59,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "instrument_id" uuid not null,
+    "trade_id" uuid not null,
     "leg_number" integer not null default 1,
     "leg_type_code" text not null,
     "day_count_fraction_code" text not null,
@@ -107,8 +107,8 @@ create index if not exists swap_legs_party_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists swap_legs_instrument_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, instrument_id)
+create index if not exists swap_legs_trade_id_idx
+on "ores_trading_swap_legs_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists swap_legs_workspace_idx
@@ -128,6 +128,17 @@ begin
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
+
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
 
     -- Validate leg_type_code
     NEW.leg_type_code := ores_refdata_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);

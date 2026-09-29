@@ -96,6 +96,7 @@ domain::currency to_domain(const messaging::currency_write& write) {
     v.format = write.format;
     v.monetary_nature = write.monetary_nature;
     v.market_tier = write.market_tier;
+    v.ore_currency_type = write.ore_currency_type;
     v.image_id = write.image_id;
     v.spot_days = write.spot_days;
     v.day_basis = write.day_basis;

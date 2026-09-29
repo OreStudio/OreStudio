@@ -36,11 +36,11 @@
 namespace ores::trading::messaging {
 
 struct bond_forward_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct bond_forward_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::optional<std::string> long_in_forward;
     std::optional<std::string> forward_maturity_date;
     std::optional<std::string> forward_settlement_date;

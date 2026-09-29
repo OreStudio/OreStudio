@@ -47,6 +47,7 @@ struct ir_curve_bootstrap_config_write {
     boost::uuids::uuid discount_curve_config_id;
     std::string interpolation_method;
     std::string day_count_convention;
+    std::string tenor_convention_code;
     std::string split_tenor_code;
 };
 

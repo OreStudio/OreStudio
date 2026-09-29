@@ -34,8 +34,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One stated payment date of an option block, keyed to the instrument and the date's
- * ordinal.
+ * @brief One stated payment date of an option block, keyed to the trade and the date's ordinal.
  *
  * One row per payment date an option block states outright, keyed to the
  * instrument and the date's ordinal.
@@ -56,9 +55,9 @@ struct instrument_option_payment_date final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose option block stated this payment date.
+     * @brief The trade whose option block stated this payment date.
      */
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 
     /**
      * @brief Ordinal of this payment date within the option block's list.

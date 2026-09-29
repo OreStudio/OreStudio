@@ -42,12 +42,9 @@ domain::swaption_instrument swaption_instrument_mapper::map(const swaption_instr
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-    r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ?
-                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
-                              std::nullopt;
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.settlement_type = v.settlement_type;
@@ -75,15 +72,12 @@ swaption_instrument_entity swaption_instrument_mapper::map(const domain::swaptio
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swaption_instrument_entity r;
-    r.instrument_id = boost::uuids::to_string(v.identity.instrument_id);
+    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
     r.tenant_id = v.identity.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ?
-                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
-                     std::nullopt;
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.exercise_type = v.exercise_type;
     r.settlement_type = v.settlement_type;

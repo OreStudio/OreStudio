@@ -281,7 +281,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
         const auto {{column}}_catalogue = {{column}}_catalogue_repo.read_latest(
             party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
         REQUIRE_FALSE({{column}}_catalogue.empty());
-        v.{{{group_prefix}}}{{column}} = {{column}}_catalogue.front().{{target_column}};
+        v.{{{group_prefix}}}{{column}} = {{column}}_catalogue.front().{{{parent_target_prefix}}}{{target_column}};
     }
 {{/use_system_tenant}}
 {{^use_system_tenant}}
@@ -289,19 +289,14 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto {{column}}_parent = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
-{{#parent_has_audit_group}}
-    {{column}}_parent.audit.change_reason_code = "system.test";
-{{/parent_has_audit_group}}
-{{^parent_has_audit_group}}
-    {{column}}_parent.change_reason_code = "system.test";
-{{/parent_has_audit_group}}
+    {{column}}_parent.{{{parent_audit_prefix}}}change_reason_code = "system.test";
 {{#parent_supplies_party}}
     // The {{entity_singular}} derives its own party from this
     // {{parent_entity_singular}}, so the {{parent_entity_singular}} carries the
     // session party rather than a fresh one. Give it any other party and the
     // written row is owned by a party the session cannot see, which makes it
     // invisible to the very session that wrote it.
-    {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = *party_ctx.party_id();
+    {{column}}_parent.{{{parent_party_prefix}}}party_id = *party_ctx.party_id();
 {{/parent_supplies_party}}
 {{#parent_requires_party}}
 {{^parent_supplies_party}}
@@ -319,7 +314,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     }
     ores::refdata::repository::party_repository {{column}}_party_repo;
     {{column}}_party_repo.write(party_ctx, {{column}}_party);
-    {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = {{column}}_party.id;
+    {{column}}_parent.{{{parent_party_prefix}}}party_id = {{column}}_party.id;
 {{/parent_supplies_party}}
 {{/parent_requires_party}}
 {{#parent_is_party}}
@@ -327,8 +322,8 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     // attach to the existing root party instead of creating a second one.
     auto {{column}}_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
     for (const auto& e : {{column}}_existing) {
-        if (e.tenant_id == {{column}}_parent.tenant_id) {
-            {{column}}_parent.parent_party_id = e.id;
+        if (e.tenant_id == {{column}}_parent.{{{parent_tenant_prefix}}}tenant_id) {
+            {{column}}_parent.{{{parent_parent_party_prefix}}}parent_party_id = e.id;
             break;
         }
     }
@@ -341,12 +336,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{#parent_required_fks}}
 {{^use_system_tenant}}
     auto {{var}} = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
-{{#parent_has_audit_group}}
-    {{var}}.audit.change_reason_code = "system.test";
-{{/parent_has_audit_group}}
-{{^parent_has_audit_group}}
-    {{var}}.change_reason_code = "system.test";
-{{/parent_has_audit_group}}
+    {{var}}.{{{audit_prefix}}}change_reason_code = "system.test";
 {{/use_system_tenant}}
 {{/parent_required_fks}}
 {{#parent_required_fks}}
@@ -365,7 +355,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     }
     ores::refdata::repository::party_repository {{var}}_party_repo;
     {{var}}_party_repo.write(party_ctx, {{var}}_party);
-    {{var}}.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = {{var}}_party.id;
+    {{var}}.{{{party_prefix}}}party_id = {{var}}_party.id;
 {{/requires_party}}
 {{#use_system_tenant}}
     // {{parent_entity_singular}} is system-tenant reference data: reference a
@@ -376,7 +366,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
         const auto {{var}}_catalogue = {{var}}_repo.read_latest(
             party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
         REQUIRE_FALSE({{var}}_catalogue.empty());
-        {{parent_var}}.{{column}} = {{var}}_catalogue.front().{{target_column}};
+        {{parent_var}}.{{{owner_group_prefix}}}{{column}} = {{var}}_catalogue.front().{{{target_group_prefix}}}{{target_column}};
     }
 {{/use_system_tenant}}
 {{^use_system_tenant}}
@@ -385,7 +375,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     // matches no active row, so it must be written first.
     ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{var}}_repo;
     {{var}}_repo.write(party_ctx, {{var}});
-    {{parent_var}}.{{column}} = {{var}}.{{target_column}};
+    {{parent_var}}.{{{owner_group_prefix}}}{{column}} = {{var}}.{{{target_group_prefix}}}{{target_column}};
 {{/use_system_tenant}}
 {{/parent_required_fks}}
 {{#parent_seed_country_sentinel}}
@@ -413,7 +403,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{/parent_seed_currency}}
     ores::{{parent_component}}::repository::{{parent_entity_singular}}_repository {{column}}_repo;
     {{column}}_repo.write(party_ctx, {{column}}_parent);
-    v.{{{group_prefix}}}{{column}} = {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}{{target_column}};
+    v.{{{group_prefix}}}{{column}} = {{column}}_parent.{{{parent_target_prefix}}}{{target_column}};
 {{/use_system_tenant}}
 {{/parent_entity_singular}}
 {{#parent_seed_snippet}}

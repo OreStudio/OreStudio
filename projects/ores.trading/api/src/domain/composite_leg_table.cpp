@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<composite_leg>& v) {
           << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& cl : v) {
-        table << cl.identity.id << cl.identity.instrument_id << cl.identity.leg_sequence
+        table << cl.identity.id << cl.identity.trade_id << cl.identity.leg_sequence
               << cl.constituent_trade_id << cl.audit.modified_by << cl.audit.recorded_at
               << fort::endr;
     }

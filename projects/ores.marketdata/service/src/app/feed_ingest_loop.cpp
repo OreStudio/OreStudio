@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
@@ -41,6 +42,7 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string_view>
@@ -361,8 +363,28 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         const std::string ore_key = series_type + "/" + metric + "/" + qualifier;
         repository::market_series_repository series_repo;
         repository::market_series_asset_class_repository series_asset_class_repo(tenant_ctx);
-        auto existing = series_repo.read_latest_by_type(
-            tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));
+        // The identity this key is, written on the series this loop creates and used
+        // to find one it did not. The tick names one datum, so its key is the series'
+        // key plus the point the datum sits at, and the identity is that key's
+        // projection with the point dropped: every point of one series resolves to
+        // one identity. A tick that names no point, or a class whose key carries
+        // none, is named by the series key alone. A tick whose key the grammar cannot
+        // name carries none, and a series created before the identity column existed
+        // carries none, so the triple is asked as the fallback either way.
+        std::optional<domain::market_data_identifier> identity;
+        if (!point_id.empty())
+            identity = core::oresmd_projections::from_ore_key(ore_key + "/" + point_id);
+        if (!identity)
+            identity = core::oresmd_projections::from_ore_key(ore_key);
+        const auto oresmd_uri =
+            identity ? core::oresmd_parser::to_series_uri(*identity).value : std::string{};
+        auto existing = oresmd_uri.empty() ?
+                            std::vector<domain::market_series>{} :
+                            series_repo.read_latest_by_uri(
+                                tenant_ctx, oresmd_uri, boost::uuids::to_string(party_id));
+        if (existing.empty())
+            existing = series_repo.read_latest_by_type(
+                tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));
         if (existing.empty()) {
             BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << ore_key;
 
@@ -373,6 +395,7 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
             series.series_type = series_type;
             series.metric = metric;
             series.qualifier = qualifier;
+            series.oresmd_uri = oresmd_uri;
             series.series_subclass = series_subclass;
             series.modified_by = ctx.service_account();
             series.performed_by = ctx.service_account();

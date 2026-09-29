@@ -38,6 +38,12 @@ type and the parser requires it for every `type` except `fixing`. Unlike IR, whe
 `entity` already is the currency, an equity's `entity` is a ticker, so this is
 independent information rather than a repeat of the path segment.
 
+A fixing's `ticker` is the whole tail ORE writes after `EQ-`, its identifier scheme
+included, because ORE spells the scheme in the name: the corpus carries
+`EQ-RIC:.SPX` and `EQ-FIGI:BBG00R251JN8` as fixings, and
+`EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/...` as the quote key for the same
+instrument. So the fixing name needs no field the type does not have.
+
 * Requirement brief
 
 A logical, possibly-partial oresmd requirement for an equity/index instrument.
@@ -79,6 +85,7 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 
 | uri | expected | description |
 |-----+----------+-------------|
+| oresmd://equity/sp5?type=fixing | nullopt | equity_fixing_has_no_quote_key |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=spot | EQUITY/PRICE/AAPL/USD | equity_spot_quote_key_matches_worked_example |
 | oresmd://equity/aapl?ccy=usd&type=quote | EQUITY/PRICE/AAPL/USD | equity_quote_key_defaults_to_spot |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y | EQUITY_DIVIDEND/RATE/AAPL/USD/1Y | equity_dividend_quote_key |
@@ -92,6 +99,8 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 
 | uri | description |
 |-----+-------------|
+| oresmd://equity/sp5?type=fixing | round_trip_equity_fixing |
+| oresmd://equity/ric:.spx?type=fixing | round_trip_equity_fixing_with_an_identifier_scheme |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=spot | round_trip_equity |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y | round_trip_equity_dividend |
 | oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m | round_trip_equity_fwd |

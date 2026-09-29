@@ -26,8 +26,6 @@
 #include <variant>
 #include <vector>
 
-namespace ores::trading::messaging {
-
-}
+namespace ores::trading::messaging {}
 
 #endif

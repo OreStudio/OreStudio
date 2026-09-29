@@ -34,19 +34,6 @@ check. =expiry_date= is an ISO 8601 date string.
 
 * Columns
 
-** instrument_id
-:PROPERTIES:
-:group:        identity
-:primary_key:  true
-:type:         uuid
-:cpp_type:     boost::uuids::uuid
-:nullable:     false
-:END:
-
-UUID uniquely identifying this equity digital option instrument.
-
-Surrogate key for the instrument record.
-
 ** trade_type_code
 :PROPERTIES:
 :group:    identity
@@ -77,15 +64,19 @@ Set from session variable app.current_party_id.
 
 ** trade_id
 :PROPERTIES:
-:group:    identity
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
+:group:       identity
+:primary_key: true
+:supplied_by:  user
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
-Optional soft FK to the parent trade.
+The trade this instrument belongs to, and the instrument's own key.
 
-Links instrument to a trade if applicable.
+The trade id identifies both the trade and its instrument, so the
+instrument carries no identity of its own: this column is the key, and the
+trade it names gives the instrument its scope.
 
 ** underlying_name
 :PROPERTIES:
@@ -139,7 +130,6 @@ Call or Put; empty for touch options.
 
 Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
 
-
 #+begin_src cpp :name generator
 std::string("Call")
 #+end_src
@@ -180,7 +170,6 @@ std::nullopt
 e.g. UpIn, DownOut; empty for digital.
 
 Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
-
 
 ** expiry_date
 :PROPERTIES:
@@ -226,6 +215,19 @@ Digital payout; absent when not specified.
 
 Optional free-text description.
 
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this instrument. An instrument is written beside
+its trade, so a row cannot exist without one.
+
 * SQL
 
 ** Flags
@@ -250,7 +252,6 @@ Optional free-text description.
 | name | columns | unique | current_only | where_extra |
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
-| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -301,7 +302,7 @@ repository profiles regenerate correctly.
 
 |  column                    |  header        |
 |--------------------------|--------------|
-|  identity.instrument_id    |  ID            |
+|  identity.trade_id    |  ID            |
 |  identity.trade_type_code  |  Type          |
 |  underlying_name           |  Underlying    |
 |  currency                  |  Ccy           |

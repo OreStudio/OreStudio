@@ -421,7 +421,6 @@ std::uint32_t count_trades_for_books(context ctx,
 
 }
 
-
 std::vector<domain::trade> trade_repository::read_latest_for_node_id(context ctx,
                                                                      std::uint32_t offset,
                                                                      std::uint32_t limit,

@@ -1,0 +1,64 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Header hygiene
+on:  # yamllint disable-line rule:truthy
+  # Any change under projects/ can write a header, so this fires on all of
+  # them, and on the check and this file, so an edit to either is verified
+  # here too.
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/**"
+      - "build/scripts/check_enum_export_attributes.py"
+      - ".github/workflows/header-hygiene.yml"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/**"
+      - "build/scripts/check_enum_export_attributes.py"
+      - ".github/workflows/header-hygiene.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # A visibility macro applied to an enum. The attribute does not apply to an
+  # enum on any ABI, and clang-cl reports it as -Wignored-attributes, which is
+  # an error under -Werror. It reached main on 2026-09-28 in
+  # ores.workflow/api/include/ores.workflow.api/service/workflow_definition.hpp
+  # and turned the Windows build red in ores.dq.core.lib.
+  #
+  # No compiler on Linux or macOS catches it, and the three continuous
+  # workflows run on a schedule rather than on a pull request, so Windows --
+  # the only platform that reports it -- would see it at best twelve hours
+  # after the merge. The check is a source scan, so it needs no toolchain and
+  # takes about a second.
+  enum-attributes:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check no visibility macro decorates an enum
+        run: |
+          python3 build/scripts/check_enum_export_attributes.py

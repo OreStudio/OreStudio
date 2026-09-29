@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 83AF7559-BD60-4ACE-998A-C9080C56AFA9
+:END:
+#+title: Task: Implement Hotfix: a visibility macro on an enum breaks the Windows build
+#+description: Drop ORES_WORKFLOW_API_EXPORT from the failure_policy enum in the workflow definition, measure what each platform reports so the gap is on record, add a check that fails a pull request when a visibility macro decorates an enum, rebuild the affected library and run the workflow suites.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:ores.workflow:windows:ci:utility:sprint_26:v0:enum-export-attribute-hotfix:
+#+owner: marco
+#+branch: hotfix/enum-export-attribute
+#+pr: 2367
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FD348688-933D-4C9A-98C5-237DF13428AC][Hotfix: a visibility macro on an enum breaks the Windows build]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the Windows clang-cl build compile the workflow definition again, and
+close the gap that let the defect reach main.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FD348688-933D-4C9A-98C5-237DF13428AC][Hotfix: a visibility macro on an enum breaks the Windows build]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- =enum class failure_policy : std::uint8_t= declares the enum with no
+  visibility macro, and the header still compiles.
+- =ores.workflow.api=, =ores.workflow.core=, =ores.workflow.service= and
+  =ores.dq.core.lib= build, and the workflow suites pass.
+- =check_enum_export_attributes.py= exits 0 on the tree, naming how many
+  enum declarations it read, and exits 1 on a tree where the macro is back
+  on the enum, naming the file and the line.
+- The check runs in a pull-request workflow that fires on any change under
+  =projects/=.
+
+* Plan
+
+1. Scan the tree for the shape and confirm the one site.
+2. Reproduce the platform behaviour: what clang-cl reports, and what clang
+   and gcc on Linux report for the same declaration.
+3. Drop the macro, add the comment that says why, and rebuild.
+4. Run the workflow and dq suites.
+5. Write the check, prove it in both directions, and wire it to a workflow.
+6. Record the story, the task and the sprint row, then raise the pull
+   request.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Enum declarations under =projects/= | 421 in 294 files | =python3 build/scripts/check_enum_export_attributes.py= | this branch |
+| Visibility macros on an enum, before | 1 (=workflow_definition.hpp:149=) | =grep -rnE "enum( +class)? +[A-Za-z_]+_EXPORT" projects/ --include=*.hpp= | 8eb2cd0576 |
+| Visibility macros on an enum, after | 0, exit 0 | =python3 build/scripts/check_enum_export_attributes.py= | this branch |
+| The check on a tree with the macro restored | exit 1, naming the file and the line | same, with the macro added under a scratch root | this branch |
+| The check on the review fixture | exit 1, two offending declarations, each at its real line: one below a three-line block comment, one behind a backslash-continued macro definition | fixture under a temporary root, =--root= | this branch |
+| The same fixture's non-violations | not reported: a string literal that spells the shape, a =using enum=, an elaborated type, and an enum with no macro | same | this branch |
+| The check on a bare Boost macro split across lines | exit 1, reported at the =enum= keyword's line | second fixture, =enum class=/=BOOST_SYMBOL_EXPORT= on separate lines | this branch |
+| =BOOST_SYMBOL_IMPORT= on Linux | =__attribute__((__visibility__("default")))= | =clang++ -E= on a file that includes =boost/config.hpp= | this branch |
+| clang and gcc on Linux on the declaration | both exit 0, no diagnostic | =-Wall -Wextra -Werror= on the enum with that attribute | this branch |
+| clang on Linux on the Windows spelling | exit 1, =-Wunknown-attributes= | =-Wignored-attributes -Werror= on =__attribute__((__dllimport__))= | this branch |
+| Affected build | exit 0 | =cmake --build --preset linux-clang-debug-make -j 8= | this branch |
+| Workflow and dq suites | 8 of 8 pass | =ctest --preset linux-clang-debug-make -R "workflow|dq"= | this branch |
+| Full test suite, before the database was recreated | 84 of 89 pass: =ores.iam.core.tests=, =ores.refdata.core.tests=, =ores.workspace.core.tests=, =ores.trading.core.tests= and =ores.marketdata.core.tests= fail on a column the local database does not have | =ctest --preset linux-clang-debug-make -j 4= | this branch |
+| Full test suite, after =compass db recreate -y -k= | 89 of 89 pass | same | this branch |
+
+* Notes
+
+- The exact diagnostic is quoted from the CI log of a Windows clang-cl job:
+  =error: '__dllimport__' attribute only applies to functions, variables,
+  classes, and Objective-C interfaces [-Werror,-Wignored-attributes]=. It
+  cannot be reproduced on Linux, because =__dllimport__= is the Microsoft
+  spelling of the attribute and clang on a Linux target does not know it --
+  the local probe reports =-Wunknown-attributes= instead. That is itself the
+  point: the macros expand per platform, and the platform that rejects the
+  attribute is the one no pull request builds.
+- The attribute is harmless where the compiler accepts it, which is why this
+  survived review. cppreference is plain that =dllimport= applies to
+  functions, data and classes, and neither MSVC nor clang-cl documents it on
+  an enum; clang-cl is simply the only toolchain in the matrix that says so
+  and the estate builds with =-Werror=.
+- An enum needs no import or export attribute. =failure_policy= travels
+  across the boundary as a =std::uint8_t=, and every other enum in the
+  estate is declared without a macro.
+- The check reads =projects/= only, which is where every C++ source and
+  every visibility macro in the estate lives: the =export.hpp= of each
+  component defines its macro and the headers use it.
+- The check blanks comments before it scans, so a comment that describes
+  the rule does not violate it. The comment left on the declaration is
+  exactly such a comment.
+- The first full test run failed five suites on
+  =column "oresmd_uri" does not exist=, which is the local database rather
+  than the tree: it was created before that column reached the schema. A
+  =compass db recreate -y -k= took the suite to 89 of 89, including
+  =ores.refdata.core.tests=, which was the one failure recorded on main
+  earlier in the sprint. No code changed between the two runs.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2367][#2367]] | Hotfix: a visibility macro on an enum breaks the Windows build |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The reported line number shrinks when a multi-line block comment precedes the declaration, because the comment is removed with its newlines. | =check_enum_export_attributes.py= | Fixed | The erasure blanks characters in place, newlines included, so the offsets still map to source lines. A fixture with a three-line block comment ahead of the declaration reports the declaration's real line. |
+| 2 | The scan is line by line, so an =enum class= whose macro sits on the next line is missed, and a macro definition continued with a backslash is not read. | =check_enum_export_attributes.py= | Fixed | One pass over the whole file; continuation lines are joined before the definitions are read. Both shapes are in the fixture and both are reported. |
+| 3 | A string literal that spells the forbidden shape is reported. | =check_enum_export_attributes.py= | Fixed | String and character literals are erased by the same in-place pass. The fixture carries such a string and it is not reported. |
+| 4 | The declaration grammar the count uses and the one the rule enforces accept different sets, so the printed count describes another population. | =check_enum_export_attributes.py= | Fixed | One pass, one grammar: the count and the rule read the same sites. An elaborated type or a =using enum= is neither counted nor reported. |
+| 5 | A visibility macro used directly -- =enum class BOOST_SYMBOL_EXPORT foo= -- is not in the set, because Boost defines that name and the check reads =projects/= only. | =check_enum_export_attributes.py= | Fixed | The two names every component macro expands to are seeded into the set, and the fixture proves the direct use is reported. |
+| 6 | The workflow does not list itself in its path filters, which four sibling pull-request workflows do. | =header-hygiene.yml= | Fixed | Both path lists name the workflow file, so an edit to it is checked. |
+| 7 | The branch rewrites the workflow inventory, fills a backlog capture and deletes a duplicate task row in the Boost story, none of which the task plan asks for. | several | Accepted | All three correct a record that is wrong: the inventory claimed four pull-request workflows and listed them, the capture was a placeholder, and the Boost story listed one task twice, as DONE and as BACKLOG. The commit message states each. |
+| 8 | The workflow also runs on a push to =main= and on =workflow_dispatch=, and the acceptance asks only for pull requests. | =header-hygiene.yml= | Accepted | Every check workflow in the estate carries the same three triggers. The pull request is the one the acceptance names; the other two are the house shape. |
+| 9 | Long sentences in the descriptions, the check's docstring and the workflow comment, against the simplified-technical-English rule. | several | Declined | The descriptions follow the sibling stories in this sprint, the incident narrative is the reasoning the comment rules preserve rather than edit history, and no tool enforces the rule on org metadata. |
+
+* Result
+
+=workflow_definition.hpp= declares =enum class failure_policy :
+std::uint8_t= with no visibility macro, the comment above it says why, and
+the tree builds. The full suite passes 89 of 89 on a recreated database.
+
+=build/scripts/check_enum_export_attributes.py= reads 421 enum
+declarations in 294 files, finds no visibility macro on any of them, and
+fails on a tree where the macro is restored, naming the file and the line.
+=.github/workflows/header-hygiene.yml= runs it on every pull request that
+touches =projects/=.
+
+Continuous Windows is dispatched against this branch, run 36566068366, to
+see the clang-cl diagnostic disappear on the platform that reported it.
+That run takes hours, so it is recorded rather than awaited: the
+translation unit that failed, =ores.dq.core.lib=, compiles on Linux with
+the same header, and the known =ores.shell.trading= limit is the next
+thing the Windows build reaches.

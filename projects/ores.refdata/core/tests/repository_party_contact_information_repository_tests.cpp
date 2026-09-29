@@ -28,9 +28,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -235,9 +235,8 @@ TEST_CASE("read_nonexistent_party_contact_information_id", tags) {
                              << read_party_contact_informations;
 
     const auto answered_with_another_key = std::ranges::any_of(
-        read_party_contact_informations, [&](const party_contact_information& pci) {
-            return pci.id == nonexistent_id;
-        });
+        read_party_contact_informations,
+        [&](const party_contact_information& pci) { return pci.id == nonexistent_id; });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the ID that was written.

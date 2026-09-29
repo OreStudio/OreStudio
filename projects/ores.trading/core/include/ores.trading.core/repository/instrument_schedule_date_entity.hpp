@@ -42,7 +42,7 @@ struct instrument_schedule_date_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_instrument_schedule_dates_tbl";
 
-    sqlgen::PrimaryKey<std::string> instrument_id;
+    sqlgen::PrimaryKey<std::string> trade_id;
     sqlgen::PrimaryKey<std::string> owner_role;
     sqlgen::PrimaryKey<std::string> owner_number;
     sqlgen::PrimaryKey<std::string> schedule_role;

@@ -60,6 +60,7 @@ domain::currency generate_synthetic_currency(utility::generation::generation_con
     r.format = std::string("%3% %1$.2f");
     r.monetary_nature = std::string("fiat");
     r.market_tier = std::string("g10");
+    r.ore_currency_type = std::nullopt;
     r.image_id = std::nullopt;
     r.spot_days = faker::helper::randomElement(std::vector<int>{1, 2});
     r.day_basis = std::string("ACT/360");

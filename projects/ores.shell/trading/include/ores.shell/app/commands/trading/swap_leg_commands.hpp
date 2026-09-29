@@ -87,7 +87,7 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <instrument_id> <leg_number> <leg_type_code> <day_count_fraction_code>
+     * @brief add <id> <trade_id> <leg_number> <leg_type_code> <day_count_fraction_code>
      * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <fixed_rate>
      * <spread> <notional> <currency> <reason> <commentary>
      */
@@ -96,7 +96,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <instrument_id> <leg_number> <leg_type_code> <day_count_fraction_code>
+     * @brief set <id> <trade_id> <leg_number> <leg_type_code> <day_count_fraction_code>
      * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <fixed_rate>
      * <spread> <notional> <currency> <reason> <commentary> [--version <n>]
      */
@@ -105,7 +105,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <instrument_id> <leg_number> <leg_type_code>
+     * @brief put-many --count <n> <id> <trade_id> <leg_number> <leg_type_code>
      * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
      * <floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary>
      */
@@ -128,12 +128,11 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief by-instrument-id <instrument_id> [--offset <n>] [--limit <n>] [--order <field>]
-     * [--desc]
+     * @brief by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
-    static void process_by_instrument_id(std::ostream& out,
-                                         ores::nats::service::nats_client& session,
-                                         const std::vector<std::string>& args);
+    static void process_by_trade_id(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
 
     /**
      * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

@@ -122,7 +122,7 @@ public:
      * @return The equity swap instrument at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::equity_swap_instrument>
-    get_equity_swap_instrument_at_version(const boost::uuids::uuid& instrument_id,
+    get_equity_swap_instrument_at_version(const boost::uuids::uuid& trade_id,
                                           std::uint32_t version);
 
     /**
@@ -134,13 +134,13 @@ public:
      * @return The equity swap instrument if found, std::nullopt otherwise.
      */
     std::optional<domain::equity_swap_instrument>
-    get_equity_swap_instrument(const boost::uuids::uuid& instrument_id);
+    get_equity_swap_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Retrieves a batch of equity swap instruments by primary key.
      */
     std::vector<domain::equity_swap_instrument>
-    get_equity_swap_instruments(const std::vector<std::string>& instrument_ids);
+    get_equity_swap_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Saves a equity swap instrument (creates or updates).
@@ -164,12 +164,12 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_equity_swap_instrument(const boost::uuids::uuid& instrument_id);
+    void delete_equity_swap_instrument(const boost::uuids::uuid& trade_id);
 
     /**
      * @brief Deletes equity swap instruments by their primary keys.
      */
-    void delete_equity_swap_instruments(const std::vector<std::string>& instrument_ids);
+    void delete_equity_swap_instruments(const std::vector<std::string>& trade_ids);
 
     /**
      * @brief Retrieves all historical versions of a equity swap instrument.
@@ -177,7 +177,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::equity_swap_instrument>
-    get_equity_swap_instrument_history(const std::string& instrument_id);
+    get_equity_swap_instrument_history(const std::string& trade_id);
 
 private:
     context ctx_;

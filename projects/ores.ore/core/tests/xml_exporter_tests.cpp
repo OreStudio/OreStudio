@@ -67,7 +67,8 @@ TEST_CASE("export_single_currency_to_xml", tags) {
     c.fractions_per_unit = 100;
     c.rounding_type = "Closest";
     c.rounding_precision = 2;
-    c.monetary_nature = "Major";
+    c.monetary_nature = "fiat";
+    c.ore_currency_type = "Major";
 
     const auto xml = exporter::export_currency_config({c});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;

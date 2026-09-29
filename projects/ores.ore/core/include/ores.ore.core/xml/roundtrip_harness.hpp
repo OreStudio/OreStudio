@@ -92,9 +92,8 @@ ORES_ORE_CORE_EXPORT std::string first_difference(const std::string& lhs, const 
  * discovered as a failure.
  */
 template <typename Document>
-std::string parsed_text_difference(const Document& lhs,
-                                   const Document& rhs,
-                                   const std::string& path) {
+std::string
+parsed_text_difference(const Document& lhs, const Document& rhs, const std::string& path) {
     const std::string left = save_data(lhs);
     const std::string right = save_data(rhs);
     if (left == right)
@@ -147,6 +146,17 @@ roundtrip_kind make_roundtrip_kind(std::string name,
     };
     return kind;
 }
+
+/**
+ * @brief Every file of @p file_prefix under @p corpus_root, in sorted order.
+ *
+ * The corpus of a kind is the set of files whose stem starts with its prefix,
+ * which is what the census globs match. Exposed because a kind sometimes needs
+ * to measure something other than a round trip, and whoever measures it should
+ * not have to restate what its corpus is.
+ */
+ORES_ORE_CORE_EXPORT std::vector<std::filesystem::path>
+files_of_kind(const std::string& file_prefix, const std::filesystem::path& corpus_root);
 
 /**
  * @brief What a walk over one kind's corpus did.

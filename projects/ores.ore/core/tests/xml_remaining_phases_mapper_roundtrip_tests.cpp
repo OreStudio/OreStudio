@@ -210,7 +210,8 @@ TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
 TEST_CASE("equity_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
-    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
 
     CHECK(instr.identity.trade_type_code == "EquityDoubleBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -222,7 +223,8 @@ TEST_CASE("equity_double_barrier_option_forward", tags) {
 TEST_CASE("equity_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
-    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
 
     const auto rt = equity_instrument_mapper::reverse_equity_double_barrier_option(instr);
     REQUIRE(rt.EquityDoubleBarrierOptionData.operator bool());
@@ -238,7 +240,8 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     // Reuse EquityBarrierOption file (same structure, different trade type)
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
-    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
 
     CHECK(instr.identity.trade_type_code == "EquityEuropeanBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -249,7 +252,8 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
 TEST_CASE("equity_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
-    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r.instrument);
 
     const auto rt = equity_instrument_mapper::reverse_equity_european_barrier_option(instr);
     REQUIRE(rt.EquityEuropeanBarrierOptionData.operator bool());

@@ -68,9 +68,9 @@ register_composite_leg_handlers(ores::nats::service::client& nats,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_composite_legs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_by_instrument_id_composite_legs_request::nats_subject,
+        list_by_trade_id_composite_legs_request::nats_subject,
         queue_group,
-        [h](ores::nats::message msg) { h->list_by_instrument_id_composite_legs(std::move(msg)); }));
+        [h](ores::nats::message msg) { h->list_by_trade_id_composite_legs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_composite_leg_versions_request::nats_subject,
         queue_group,

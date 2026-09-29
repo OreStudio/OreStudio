@@ -49,7 +49,7 @@ ores::utility::domain::precondition
 bond_leg_amortization_repository::replace_claim(context ctx,
                                                 const domain::bond_leg_amortization& v) {
     const auto current = read_latest(ctx,
-                                     boost::uuids::to_string(v.instrument_id),
+                                     boost::uuids::to_string(v.trade_id),
                                      v.leg_role,
                                      std::to_string(v.leg_number),
                                      std::to_string(v.sequence_number));
@@ -80,7 +80,7 @@ bond_leg_amortization_repository::apply_claim(context ctx,
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
             const auto current = read_latest(ctx,
-                                             boost::uuids::to_string(v.instrument_id),
+                                             boost::uuids::to_string(v.trade_id),
                                              v.leg_role,
                                              std::to_string(v.leg_number),
                                              std::to_string(v.sequence_number));
@@ -107,8 +107,7 @@ void bond_leg_amortization_repository::write(context ctx,
 void bond_leg_amortization_repository::write(context ctx,
                                              const domain::bond_leg_amortization& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amortization. "
-                               << "instrument_id: " << v.instrument_id
+    BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amortization. " << "trade_id: " << v.trade_id
                                << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number
                                << " sequence_number: " << v.sequence_number;
     const auto t = apply_claim(ctx, v, claim);
@@ -137,10 +136,9 @@ std::vector<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
+    const auto query = sqlgen::read<std::vector<bond_leg_amortization_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c);
 
     return execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
@@ -152,18 +150,18 @@ bond_leg_amortization_repository::read_latest(context ctx) {
 
 std::vector<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_latest(context ctx,
-                                              const std::string& instrument_id,
+                                              const std::string& trade_id,
                                               const std::string& leg_role,
                                               const std::string& leg_number,
                                               const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amortization. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
+                               << "trade_id: " << trade_id << " leg_role: " << leg_role
                                << " leg_number: " << leg_number
                                << " sequence_number: " << sequence_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
                              "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
 
@@ -172,50 +170,50 @@ bond_leg_amortization_repository::read_latest(context ctx,
         query,
         [](const auto& entities) { return bond_leg_amortization_mapper::map(entities); },
         lg(),
-        "Reading latest bond leg amortization by instrument_id.");
+        "Reading latest bond leg amortization by trade_id.");
 }
 
 
 std::vector<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_all(context ctx,
-                                           const std::string& instrument_id,
+                                           const std::string& trade_id,
                                            const std::string& leg_role,
                                            const std::string& leg_number,
                                            const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bond leg amortization versions. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
+                               << "trade_id: " << trade_id << " leg_role: " << leg_role
                                << " leg_number: " << leg_number
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
-                             "sequence_number"_c == sequence_number) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_amortization_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
+              "leg_number"_c == leg_number && "sequence_number"_c == sequence_number) |
+        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
         query,
         [](const auto& entities) { return bond_leg_amortization_mapper::map(entities); },
         lg(),
-        "Reading all bond leg amortization versions by instrument_id.");
+        "Reading all bond leg amortization versions by trade_id.");
 }
 
 std::optional<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_at_version(context ctx,
-                                                  const std::string& instrument_id,
+                                                  const std::string& trade_id,
                                                   const std::string& leg_role,
                                                   const std::string& leg_number,
                                                   const std::string& sequence_number,
                                                   std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading bond leg amortization at version. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
+                               << "trade_id: " << trade_id << " leg_role: " << leg_role
                                << " leg_number: " << leg_number
                                << " sequence_number: " << sequence_number
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
                              "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
                              "sequence_number"_c == sequence_number && "version"_c == version) |
                        sqlgen::limit(1);
@@ -233,18 +231,18 @@ bond_leg_amortization_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 bond_leg_amortization_repository::remove_status
 bond_leg_amortization_repository::remove(context ctx,
-                                         const std::string& instrument_id,
+                                         const std::string& trade_id,
                                          const std::string& leg_role,
                                          const std::string& leg_number,
                                          const std::string& sequence_number,
                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg amortization. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number
+    BOOST_LOG_SEV(lg(), debug) << "Removing bond leg amortization. " << "trade_id: " << trade_id
+                               << " leg_role: " << leg_role << " leg_number: " << leg_number
                                << " sequence_number: " << sequence_number;
-    const auto current = read_latest(ctx, instrument_id, leg_role, leg_number, sequence_number);
+    const auto current = read_latest(ctx, trade_id, leg_role, leg_number, sequence_number);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -257,28 +255,27 @@ bond_leg_amortization_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<bond_leg_amortization_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "leg_role"_c == leg_role && "leg_number"_c == leg_number &&
-                             "sequence_number"_c == sequence_number &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query =
+        sqlgen::delete_from<bond_leg_amortization_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_role"_c == leg_role &&
+              "leg_number"_c == leg_number && "sequence_number"_c == sequence_number &&
+              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing bond leg amortization from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, instrument_id, leg_role, leg_number, sequence_number).empty())
+    if (!read_latest(ctx, trade_id, leg_role, leg_number, sequence_number).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
 void bond_leg_amortization_repository::remove(context ctx,
-                                              const std::string& instrument_id,
+                                              const std::string& trade_id,
                                               const std::string& leg_role,
                                               const std::string& leg_number,
                                               const std::string& sequence_number) {
-    static_cast<void>(
-        remove(ctx, instrument_id, leg_role, leg_number, sequence_number, std::nullopt));
+    static_cast<void>(remove(ctx, trade_id, leg_role, leg_number, sequence_number, std::nullopt));
 }
 
 std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::read_latest(
@@ -287,11 +284,10 @@ std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::rea
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<bond_leg_amortization_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "leg_role"_c, "leg_number"_c, "sequence_number"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
@@ -324,20 +320,19 @@ std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_
 
 std::vector<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_latest(context ctx,
-                                              const std::vector<std::string>& instrument_ids,
+                                              const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& leg_roles,
                                               const std::vector<std::string>& leg_numbers,
                                               const std::vector<std::string>& sequence_numbers) {
-    if (instrument_ids.empty() || leg_roles.empty() || leg_numbers.empty() ||
-        sequence_numbers.empty())
+    if (trade_ids.empty() || leg_roles.empty() || leg_numbers.empty() || sequence_numbers.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<bond_leg_amortization_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-              "leg_role"_c.in(leg_roles) && "leg_number"_c.in(leg_numbers) &&
-              "sequence_number"_c.in(sequence_numbers) && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "leg_role"_c.in(leg_roles) &&
+              "leg_number"_c.in(leg_numbers) && "sequence_number"_c.in(sequence_numbers) &&
+              "valid_to"_c == max.value());
     auto result = execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
         query,
@@ -347,17 +342,17 @@ bond_leg_amortization_repository::read_latest(context ctx,
     // Compound key: the query above is a per-column .in() cross-product
     // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
     // exact requested key-tuples here.
-    if (leg_roles.size() != instrument_ids.size() || leg_numbers.size() != instrument_ids.size() ||
-        sequence_numbers.size() != instrument_ids.size())
+    if (leg_roles.size() != trade_ids.size() || leg_numbers.size() != trade_ids.size() ||
+        sequence_numbers.size() != trade_ids.size())
         throw std::invalid_argument("bond_leg_amortization_repository::read_latest: key column "
                                     "vectors must be the same length");
     std::set<std::tuple<std::string, std::string, std::string, std::string>> requested;
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        requested.emplace(instrument_ids[i], leg_roles[i], leg_numbers[i], sequence_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(trade_ids[i], leg_roles[i], leg_numbers[i], sequence_numbers[i]);
     std::vector<domain::bond_leg_amortization> filtered;
     filtered.reserve(result.size());
     for (auto& item : result) {
-        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.instrument_id),
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.trade_id),
                                                item.leg_role,
                                                std::to_string(item.leg_number),
                                                std::to_string(item.sequence_number))))
@@ -367,19 +362,19 @@ bond_leg_amortization_repository::read_latest(context ctx,
 }
 
 void bond_leg_amortization_repository::remove(context ctx,
-                                              const std::vector<std::string>& instrument_ids,
+                                              const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& leg_roles,
                                               const std::vector<std::string>& leg_numbers,
                                               const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
     // be filtered after the fact like a read -- remove one tuple at a time.
-    if (leg_roles.size() != instrument_ids.size() || leg_numbers.size() != instrument_ids.size() ||
-        sequence_numbers.size() != instrument_ids.size())
+    if (leg_roles.size() != trade_ids.size() || leg_numbers.size() != trade_ids.size() ||
+        sequence_numbers.size() != trade_ids.size())
         throw std::invalid_argument(
             "bond_leg_amortization_repository::remove: key column vectors must be the same length");
-    for (std::size_t i = 0; i < instrument_ids.size(); ++i)
-        remove(ctx, instrument_ids[i], leg_roles[i], leg_numbers[i], sequence_numbers[i]);
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        remove(ctx, trade_ids[i], leg_roles[i], leg_numbers[i], sequence_numbers[i]);
 }
 
 

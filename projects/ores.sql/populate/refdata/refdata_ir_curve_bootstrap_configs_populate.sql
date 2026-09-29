@@ -40,8 +40,8 @@
  * market_series rows seeded by
  * marketdata_market_series_fomc_populate.sql (a soft, cross-component
  * reference -- no FK): the raw RATES/YIELD grid the synthetic feed
- * publishes FOMC quotes into, and the YieldCurve/DISCOUNT series the
- * bootstrapped curve is written to.
+ * publishes FOMC quotes into, and the DISCOUNT/RATE/USD/USD-SOFR-FOMC
+ * series the bootstrapped curve is written to.
  *
  * The nine pillars chain SPOT -> 1F -> 2F -> ... -> 8F -> 1Y in sequence
  * order: a DEPOSIT from spot to the first meeting, then one SWAP per
@@ -58,7 +58,7 @@
 insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
     id, tenant_id, version, output_series_id, party_id, source_series_id,
     curve_family_role, discount_curve_config_id, interpolation_method,
-    day_count_convention, split_tenor_code,
+    day_count_convention, tenor_convention_code, split_tenor_code,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values (
@@ -69,7 +69,7 @@ values (
     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
     'e1c2d3f4-5b6c-4d7e-9f8a-0b1c2d3e4f50',
     'FUNDING', ores_utility_nil_uuid_fn(), 'FLAT_FORWARD_THEN_LOG_LINEAR',
-    'A360', '1Y',
+    'A360', 'RATES_SPOT_FOMC', '1Y',
     current_user, current_user, 'system.initial_load',
     'Initial population of IR curve bootstrap configs'
 )
@@ -83,6 +83,7 @@ do update set
     discount_curve_config_id = excluded.discount_curve_config_id,
     interpolation_method = excluded.interpolation_method,
     day_count_convention = excluded.day_count_convention,
+    tenor_convention_code = excluded.tenor_convention_code,
     split_tenor_code = excluded.split_tenor_code,
     modified_by = current_user,
     performed_by = current_user,

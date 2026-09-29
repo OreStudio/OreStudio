@@ -37,13 +37,12 @@
 namespace ores::trading::messaging {
 
 struct composite_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct composite_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     std::string description;
 };
 
@@ -294,7 +293,7 @@ struct get_composite_instrument_legs_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string instrument_id;
+    std::string trade_id;
 };
 
 struct get_composite_instrument_legs_response {

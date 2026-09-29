@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "asset_class_code_eventing_integration_tests.cpp"
+    "average_ois_convention_eventing_integration_tests.cpp"
     "book_eventing_integration_tests.cpp"
     "book_purpose_type_eventing_integration_tests.cpp"
     "book_status_eventing_integration_tests.cpp"
@@ -42,6 +43,7 @@ set(files
     "crm_driver_pair_eventing_integration_tests.cpp"
     "crm_enabled_derived_pair_eventing_integration_tests.cpp"
     "crm_topology_config_eventing_integration_tests.cpp"
+    "cross_currency_basis_convention_eventing_integration_tests.cpp"
     "currency_eventing_integration_tests.cpp"
     "currency_group_eventing_integration_tests.cpp"
     "currency_market_tier_eventing_integration_tests.cpp"
@@ -55,6 +57,8 @@ set(files
     "diary_entry_type_eventing_integration_tests.cpp"
     "floating_index_type_eventing_integration_tests.cpp"
     "fra_convention_eventing_integration_tests.cpp"
+    "future_convention_eventing_integration_tests.cpp"
+    "fx_option_convention_eventing_integration_tests.cpp"
     "ibor_index_convention_eventing_integration_tests.cpp"
     "instrument_code_eventing_integration_tests.cpp"
     "ledger_feed_type_eventing_integration_tests.cpp"
@@ -104,7 +108,10 @@ set(files
     "series_subclass_code_eventing_integration_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"
     "swap_convention_eventing_integration_tests.cpp"
+    "swap_index_convention_eventing_integration_tests.cpp"
     "tenor_anchor_eventing_integration_tests.cpp"
+    "tenor_basis_swap_convention_eventing_integration_tests.cpp"
+    "tenor_basis_two_swap_convention_eventing_integration_tests.cpp"
     "tenor_convention_eventing_integration_tests.cpp"
     "tenor_eventing_integration_tests.cpp"
     "tenor_kind_eventing_integration_tests.cpp"
@@ -112,4 +119,5 @@ set(files
     "tenor_schedule_eventing_integration_tests.cpp"
     "tenor_unit_eventing_integration_tests.cpp"
     "zero_convention_eventing_integration_tests.cpp"
+    "zero_inflation_index_convention_eventing_integration_tests.cpp"
 )

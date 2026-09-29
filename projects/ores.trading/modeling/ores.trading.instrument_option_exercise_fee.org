@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One entry of an option block's exercise fee list, keyed to the instrument and the entry's ordinal.
+#+brief: One entry of an option block's exercise fee list, keyed to the trade and the entry's ordinal.
 #+entity_singular: instrument_option_exercise_fee
 #+entity_plural: instrument_option_exercise_fees
 #+entity_title: Instrument Option Exercise Fee
@@ -33,14 +33,15 @@ that cannot be null.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the instrument whose option block stated this exercise fee.
+The trade whose option block stated this exercise fee.
 
 ** sequence_number
 :PROPERTIES:
@@ -92,6 +93,20 @@ Date the exercise fee starts to apply.
 Currency the exercise fee is stated in.
 
 Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

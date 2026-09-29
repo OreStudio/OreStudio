@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<balance_guaranteed_swap_instrumen
           << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& bg : v) {
-        table << bg.identity.instrument_id << bg.identity.trade_type_code << bg.start_date
+        table << bg.identity.trade_id << bg.identity.trade_type_code << bg.start_date
               << bg.maturity_date << opt_str(bg.lockout_days) << bg.audit.recorded_at << fort::endr;
     }
     return table.to_string();

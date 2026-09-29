@@ -39,8 +39,7 @@ std::string first_difference(const std::string& lhs, const std::string& rhs) {
     if (at == limit && lhs.size() == rhs.size())
         return {};
 
-    const auto line =
-        1 + static_cast<std::size_t>(std::count(lhs.begin(), lhs.begin() + at, '\n'));
+    const auto line = 1 + static_cast<std::size_t>(std::count(lhs.begin(), lhs.begin() + at, '\n'));
     const auto from = at > window ? at - window : 0;
 
     auto excerpt = [&](const std::string& text) {
@@ -56,28 +55,31 @@ std::string first_difference(const std::string& lhs, const std::string& rhs) {
                        excerpt(rhs));
 }
 
-roundtrip_walk walk_kind(const roundtrip_kind& kind, const std::filesystem::path& corpus_root) {
-    roundtrip_walk walk;
-    walk.kind = kind.name;
-
+std::vector<std::filesystem::path> files_of_kind(const std::string& file_prefix,
+                                                 const std::filesystem::path& corpus_root) {
     std::vector<std::filesystem::path> files;
     std::error_code ec;
-    for (std::filesystem::recursive_directory_iterator it(corpus_root, ec), end;
-         it != end && !ec;
+    for (std::filesystem::recursive_directory_iterator it(corpus_root, ec), end; it != end && !ec;
          it.increment(ec)) {
         if (!it->is_regular_file(ec))
             continue;
         const auto& path = it->path();
         if (path.extension() != ".xml")
             continue;
-        if (path.stem().string().rfind(kind.file_prefix, 0) != 0)
+        if (path.stem().string().rfind(file_prefix, 0) != 0)
             continue;
         files.push_back(path);
     }
 
     std::sort(files.begin(), files.end());
+    return files;
+}
 
-    for (const auto& path : files) {
+roundtrip_walk walk_kind(const roundtrip_kind& kind, const std::filesystem::path& corpus_root) {
+    roundtrip_walk walk;
+    walk.kind = kind.name;
+
+    for (const auto& path : files_of_kind(kind.file_prefix, corpus_root)) {
         ++walk.files;
         const auto outcome = kind.check(path);
         if (outcome.passed)

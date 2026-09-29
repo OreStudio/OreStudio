@@ -50,6 +50,7 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
         boost::lexical_cast<boost::uuids::uuid>(v.discount_curve_config_id);
     r.interpolation_method = v.interpolation_method;
     r.day_count_convention = v.day_count_convention;
+    r.tenor_convention_code = v.tenor_convention_code;
     r.split_tenor_code = v.split_tenor_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -77,6 +78,7 @@ ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v
     r.discount_curve_config_id = boost::uuids::to_string(v.discount_curve_config_id);
     r.interpolation_method = v.interpolation_method;
     r.day_count_convention = v.day_count_convention;
+    r.tenor_convention_code = v.tenor_convention_code;
     r.split_tenor_code = v.split_tenor_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -128,21 +128,21 @@ void inflation_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <instrument_id>");
+        "get <trade_id>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <instrument_id>");
+        "get-many <trade_id>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_type_code> <trade_id> <start_date> <maturity_date> <inflation_index_code> "
+        "add <trade_id> <trade_type_code> <start_date> <maturity_date> <inflation_index_code> "
         "<base_cpi> <lag_convention> <description> <reason> <commentary>");
 
     menu->Insert(
@@ -150,46 +150,44 @@ void inflation_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <instrument_id> <trade_type_code> <trade_id> <start_date> <maturity_date> "
-        "<inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary> "
-        "[--version <n>]");
+        "set <trade_id> <trade_type_code> <start_date> <maturity_date> <inflation_index_code> "
+        "<base_cpi> <lag_convention> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <instrument_id> <trade_type_code> <trade_id> <start_date> "
-        "<maturity_date> <inflation_index_code> <base_cpi> <lag_convention> <description> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <trade_type_code> <start_date> <maturity_date> "
+        "<inflation_index_code> <base_cpi> <lag_convention> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <instrument_id> <reason> <commentary> [--version <n>]");
+        "delete <trade_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <instrument_id> <reason> <commentary>");
+        "delete-many <trade_id> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <instrument_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <instrument_id> --version <n>");
+        "version <trade_id> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -271,6 +269,7 @@ void inflation_swap_instrument_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -315,7 +314,7 @@ void inflation_swap_instrument_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::inflation_swap_instrument_key key;
-            read_token(key.instrument_id, parsed->positionals[i + 0], "instrument_id");
+            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -360,10 +359,9 @@ void inflation_swap_instrument_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        req.change.write.instrument_id = boost::uuids::random_generator()();
+        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
         read_token(req.change.write.inflation_index_code,
@@ -414,15 +412,14 @@ void inflation_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.maturity_date, parsed->positionals[next++], "maturity_date");
         read_token(req.change.write.inflation_index_code,
@@ -485,17 +482,16 @@ void inflation_swap_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::inflation_swap_instrument_change change;
-            read_token(change.write.instrument_id, parsed->positionals[next++], "instrument_id");
+            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(change.write.start_date, parsed->positionals[next++], "start_date");
             read_token(change.write.maturity_date, parsed->positionals[next++], "maturity_date");
             read_token(change.write.inflation_index_code,
@@ -553,6 +549,7 @@ void inflation_swap_instrument_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -606,7 +603,7 @@ void inflation_swap_instrument_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::inflation_swap_instrument_key key;
-            read_token(key.instrument_id, parsed->positionals[i * 1 + 0], "instrument_id");
+            read_token(key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
             req.removals.push_back(
                 messaging::inflation_swap_instrument_removal{.key = std::move(key)});
         }
@@ -659,6 +656,7 @@ void inflation_swap_instrument_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -704,6 +702,8 @@ void inflation_swap_instrument_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
+        read_token(
+            req.key.inflation_swap_instrument.trade_id, parsed->positionals[next++], "trade_id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

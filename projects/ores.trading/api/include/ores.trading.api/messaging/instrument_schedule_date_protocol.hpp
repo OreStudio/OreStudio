@@ -36,7 +36,7 @@
 namespace ores::trading::messaging {
 
 struct instrument_schedule_date_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string owner_role;
     int owner_number;
     std::string schedule_role;
@@ -45,7 +45,7 @@ struct instrument_schedule_date_key {
 };
 
 struct instrument_schedule_date_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string owner_role;
     int owner_number;
     std::string schedule_role;

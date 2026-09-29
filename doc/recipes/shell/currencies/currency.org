@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-currencies add <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary>
+currencies add <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.currencies.put=.
 
 #+name: currencies-add
 #+begin_src ores-shell :tangle currencies-add.ores :exports none
-currencies add __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - 0 __none__ 0 system.new_record generated_script
+currencies add __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - - 0 __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-currencies set <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary> [--version <n>]
+currencies set <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.currencies.put=.
 
 #+name: currencies-set
 #+begin_src ores-shell :tangle currencies-set.ores :exports none
-currencies set __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - 0 __none__ 0 system.new_record generated_script
+currencies set __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - - 0 __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-currencies put-many --count <n> <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary>
+currencies put-many --count <n> <iso_code> <name> <numeric_code> <symbol> <fraction_symbol> <fractions_per_unit> <rounding_type> <rounding_precision> <format> <monetary_nature> <market_tier> <ore_currency_type> <image_id> <spot_days> <day_basis> <base_precedence> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.currencies.put_many=.
 
 #+name: currencies-put-many
 #+begin_src ores-shell :tangle currencies-put-many.ores :exports none
-currencies put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - 0 __none__ 0 system.new_record generated_script
+currencies put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 __none__ 0 __none__ __none__ __none__ - - 0 __none__ 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

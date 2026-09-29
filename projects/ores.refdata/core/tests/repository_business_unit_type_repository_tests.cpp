@@ -26,8 +26,8 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -77,9 +77,8 @@ TEST_CASE("write_multiple_business_unit_types", tags) {
 
     const auto rows = repo.read_latest(h.context());
     for (const auto& written : unit_types) {
-        const auto it = std::ranges::find_if(rows, [&](const business_unit_type& t) {
-            return t.id == written.id;
-        });
+        const auto it = std::ranges::find_if(
+            rows, [&](const business_unit_type& t) { return t.id == written.id; });
         REQUIRE(it != rows.end());
         CHECK(it->name == written.name);
     }
@@ -103,9 +102,8 @@ TEST_CASE("read_latest_business_unit_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read business unit types: " << read_types;
 
     for (const auto& expected : written_types) {
-        const auto it = std::ranges::find_if(read_types, [&](const business_unit_type& t) {
-            return t.id == expected.id;
-        });
+        const auto it = std::ranges::find_if(
+            read_types, [&](const business_unit_type& t) { return t.id == expected.id; });
         REQUIRE(it != read_types.end());
         CHECK(it->name == expected.name);
     }
@@ -156,15 +154,13 @@ TEST_CASE("read_all_business_unit_type_versions", tags) {
     auto all_versions = repo.read_all(h.context(), id_str);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all_versions;
 
-    const auto v1 = std::ranges::find_if(all_versions, [](const business_unit_type& t) {
-        return t.version == 1;
-    });
+    const auto v1 = std::ranges::find_if(
+        all_versions, [](const business_unit_type& t) { return t.version == 1; });
     REQUIRE(v1 != all_versions.end());
     CHECK(v1->name == original_name);
 
-    const auto v2 = std::ranges::find_if(all_versions, [](const business_unit_type& t) {
-        return t.version == 2;
-    });
+    const auto v2 = std::ranges::find_if(
+        all_versions, [](const business_unit_type& t) { return t.version == 2; });
     REQUIRE(v2 != all_versions.end());
     CHECK(v2->name == original_name + " v2");
 }
@@ -232,8 +228,8 @@ TEST_CASE("remove_multiple_business_unit_types", tags) {
     // Each removed row is gone from the read.
     for (const auto& id_str : ids) {
         auto after_remove = repo.read_latest(h.context(), id_str);
-        const auto removed_still_present = std::ranges::any_of(
-            after_remove, [&](const business_unit_type& t) {
+        const auto removed_still_present =
+            std::ranges::any_of(after_remove, [&](const business_unit_type& t) {
                 return boost::uuids::to_string(t.id) == id_str;
             });
         CHECK_FALSE(removed_still_present);

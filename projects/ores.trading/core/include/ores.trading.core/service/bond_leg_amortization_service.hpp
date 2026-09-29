@@ -122,7 +122,7 @@ public:
      * @return The bond leg amortization at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::bond_leg_amortization>
-    get_bond_leg_amortization_at_version(const std::string& instrument_id,
+    get_bond_leg_amortization_at_version(const std::string& trade_id,
                                          const std::string& leg_role,
                                          const std::string& leg_number,
                                          const std::string& sequence_number,
@@ -134,7 +134,7 @@ public:
      * @return The bond leg amortization if found, std::nullopt otherwise.
      */
     std::optional<domain::bond_leg_amortization>
-    get_bond_leg_amortization(const std::string& instrument_id,
+    get_bond_leg_amortization(const std::string& trade_id,
                               const std::string& leg_role,
                               const std::string& leg_number,
                               const std::string& sequence_number);
@@ -143,7 +143,7 @@ public:
      * @brief Retrieves a batch of bond leg amortizations by primary key.
      */
     std::vector<domain::bond_leg_amortization>
-    get_bond_leg_amortizations(const std::vector<std::string>& instrument_ids,
+    get_bond_leg_amortizations(const std::vector<std::string>& trade_ids,
                                const std::vector<std::string>& leg_roles,
                                const std::vector<std::string>& leg_numbers,
                                const std::vector<std::string>& sequence_numbers);
@@ -170,7 +170,7 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_bond_leg_amortization(const std::string& instrument_id,
+    void delete_bond_leg_amortization(const std::string& trade_id,
                                       const std::string& leg_role,
                                       const std::string& leg_number,
                                       const std::string& sequence_number);
@@ -178,7 +178,7 @@ public:
     /**
      * @brief Deletes bond leg amortizations by their primary keys.
      */
-    void delete_bond_leg_amortizations(const std::vector<std::string>& instrument_ids,
+    void delete_bond_leg_amortizations(const std::vector<std::string>& trade_ids,
                                        const std::vector<std::string>& leg_roles,
                                        const std::vector<std::string>& leg_numbers,
                                        const std::vector<std::string>& sequence_numbers);
@@ -189,7 +189,7 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::bond_leg_amortization>
-    get_bond_leg_amortization_history(const std::string& instrument_id,
+    get_bond_leg_amortization_history(const std::string& trade_id,
                                       const std::string& leg_role,
                                       const std::string& leg_number,
                                       const std::string& sequence_number);

@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 8A0973B9-A595-45D1-97EC-E83ECCCF5B27
+:END:
+#+title: Task: Round trip the conventions configuration
+#+description: conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Sixteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip.
+#+type: task
+#+level: s1
+#+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/round-trip-the-conventions-configuration
+#+pr: 2354
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-28
+#+updated: 2026-09-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every conventions document in the corpus imports, exports and matches, with the two normalisations the mapper performs on purpose stated in the kind's comparison rather than hidden.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The mapper reads and writes every field the modelled categories carry, so no element is dropped.
+- Each convention category the corpus uses has an entity in ores.refdata and a mapper in both directions.
+- The conventions kind is registered with the round-trip harness and all seventy-two corpus files round trip.
+- The mapper reports any category it does not model, and a test asserts that it reports none.
+
+* Plan
+
+1. Make the skip countable before changing anything. The mapper dropped
+   seventeen categories in silence, which is why seventy-two files went
+   unmeasured: nothing could say which categories the documents use. It now
+   fills =mapped_conventions::unmodelled= and warns per category.
+2. Measure which categories the corpus needs, and which files use only modelled
+   categories. The probes are hidden tests, because the kind does not round trip
+   and a test that passes while a document loses a category is worse than a
+   measurement a person reads.
+3. Fix the modelled categories first, because they are the cheap half and they
+   are why nine files fail for a reason unrelated to the unmodelled categories.
+4. Then model the sixteen categories, most used first, each with a refdata
+   entity, both mappers, and its own round trip.
+5. State the two normalisations the mapper performs on purpose in the kind's
+   comparison, and only once the categories are modelled, because until then the
+   kind cannot pass whatever the comparison says.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files of the conventions kind | 72 | =ores.ore.core.tests "[.][conventions]" -s= | =8215ab6253= |
+| Files using a category the mapper does not model | 63 | the same | =8215ab6253= |
+| Categories the document carries | 26, of which 9 are modelled | =grep -A 30 "struct conventions {" domain.hpp= | =8215ab6253= |
+| Categories the corpus uses and the mapper does not model | 14 | the same | =8215ab6253= |
+| Files using only modelled categories that round trip | 9 of 9, was 0 of 9 | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =8215ab6253= |
+| The per-category counts and the field-level causes | =evidence/round_trip_conventions_gap.md= | the same | =8215ab6253= |
+
+* Notes
+
+- The nine files that carry only modelled categories round trip, and are
+  asserted green. The rest cannot, because a category the mapper does not model
+  is content the export cannot write.
+- The failure on those nine was a value spelling, not a lost element. A boolean
+  comes back as =True= for =true=, and a day counter as =A365F= for =A365=,
+  because the mapper collapses ORE's boolean spellings and enum aliases to the
+  canonical codes the refdata columns hold. That is deliberate and carries the
+  same information, so the kind's comparison states it. An earlier note here
+  claimed =<IndexBased>= was dropped; dumping the export showed it present and
+  respelled, and that note is corrected.
+- The comparison is sound because it checks two things: no element appears fewer
+  times in the export than in the document, and the same mapper reads the same
+  conventions out of both. The first catches a category the mapper reads and
+  does not model; the second tolerates the canonicalisation and still catches a
+  value the mapper got wrong, because such a value survives neither direction.
+- The mapper warns once per unmodelled category on every import, which will be
+  noisy for the corpus until the categories land. That noise is the point: the
+  skip was invisible for as long as it was silent.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2354][#2354]] | [ore] Scope the conventions round trip |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered in [[https://github.com/OreStudio/OreStudio/pull/2354][PR #2354]], which
+closes this task with the modelled half of conventions proven and the unmodelled
+half scoped. The task's third acceptance bullet, that all seventy-two files
+round trip, is not met; the sixteen categories that stand between the corpus
+and it are carried by
+[[id:A436B63F-778C-4EE5-BD9C-9BAB5133316A][Model the convention categories the
+mapper skips]], which continues this work.
+
+*What the mapper did.* It ignored seventeen of the document's twenty-six
+categories without saying so, which is why seventy-two files passed a
+round-trip test that only compared element counts. It now counts what it skips
+into =mapped_conventions::unmodelled= and warns per category.
+
+*What now round trips.* The nine files that carry only modelled categories do.
+They failed on a value spelling rather than a lost element: =true= came back as
+=True= and =A365= as =A365F=, because the mapper collapses ORE's boolean
+spellings and enum aliases to the canonical codes the refdata columns hold. The
+kind's comparison answers it in two parts, and it is sound because the first
+part refuses a lost element and the second cannot hide one.
+
+*What does not.* The other sixty-three files each carry at least one of the
+sixteen categories the mapper does not model, from =CrossCurrencyBasis= in
+forty-nine files to =IntradayPowerLoad= in one. A category the mapper cannot
+write is content the export cannot hold, so those files stay measured by a
+hidden probe rather than asserted.
+
+*A correction this task had to make.* An earlier note claimed the export dropped
+=<IndexBased>=. It does not: the comparison quotes a window starting forty bytes
+before the difference, so the element at the top of the imported side was
+context rather than the difference. Dumping the export settled it, and the fix
+the claim implied, a mapper line and a new column, was not needed.

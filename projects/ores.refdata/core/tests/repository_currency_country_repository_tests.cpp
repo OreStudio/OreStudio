@@ -211,8 +211,8 @@ TEST_CASE("remove_currency_country", tags) {
     repo.remove(currencies[5].iso_code, countries[5].alpha2_code);
 
     const auto removed_rows = repo.read_latest(cc.currency_iso_code, cc.country_alpha2_code);
-    const auto answered_with_removed_key = std::ranges::any_of(
-        removed_rows, [&](const currency_country& r) {
+    const auto answered_with_removed_key =
+        std::ranges::any_of(removed_rows, [&](const currency_country& r) {
             return r.country_alpha2_code == cc.country_alpha2_code;
         });
     CHECK_FALSE(answered_with_removed_key);
@@ -248,8 +248,8 @@ TEST_CASE("remove_by_currency_currency_country", tags) {
     repo.remove_by_currency(currencies[6].iso_code);
 
     const auto remaining = repo.read_latest_by_currency(currencies[6].iso_code);
-    const auto answered_with_removed_currency = std::ranges::any_of(
-        remaining, [&](const currency_country& r) {
+    const auto answered_with_removed_currency =
+        std::ranges::any_of(remaining, [&](const currency_country& r) {
             return r.currency_iso_code == currencies[6].iso_code;
         });
     CHECK_FALSE(answered_with_removed_currency);

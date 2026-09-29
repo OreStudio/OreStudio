@@ -46,7 +46,7 @@ generate_synthetic_fx_asian_forward_instrument(utility::generation::generation_c
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.identity.workspace_id = utility::uuid::live_workspace_id();
-    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxAverageForward");
     r.identity.party_id = ctx.generate_uuid();
     r.fx_index = std::string("FX-TR20H-EUR-USD");

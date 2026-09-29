@@ -34,7 +34,7 @@ render_instrument_schedule_fields(const domain::instrument_schedule& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "Instrument ID", .value = boost::uuids::to_string(v.instrument_id)});
+    fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back({.name = "Schedule Kind", .value = v.schedule_kind});
     fields.push_back({.name = "Start Date",
                       .value = v.start_date ?

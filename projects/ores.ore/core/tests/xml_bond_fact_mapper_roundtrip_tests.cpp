@@ -628,7 +628,8 @@ TEST_CASE("a_bonds_second_leg_survives_the_round_trip", tags) {
     const auto r = map_inline(xml);
     REQUIRE(r.bond_legs.size() == 2);
     CHECK(r.issue.currency == "EUR");
-    CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() == Approx(1000000.0));
+    CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() ==
+          Approx(1000000.0));
     CHECK(r.issue.coupon_rate == Approx(0.03));
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);

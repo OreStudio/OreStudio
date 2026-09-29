@@ -36,11 +36,11 @@
 namespace ores::trading::messaging {
 
 struct bond_option_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct bond_option_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string option_type;
     ores::utility::decimal::decimal option_strike;
     std::optional<std::string> redemption;

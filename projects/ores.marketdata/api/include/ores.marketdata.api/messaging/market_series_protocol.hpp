@@ -45,6 +45,7 @@ struct market_series_write {
     std::string series_type;
     std::string metric;
     std::string qualifier;
+    std::string oresmd_uri;
     std::string series_subclass;
     std::string derivation_kind;
     boost::uuids::uuid derivation_config_id;

@@ -6,14 +6,14 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: The forward block a document states on a forward bond, keyed to the instrument.
+#+brief: The forward block a document states on a forward bond, keyed to the trade it belongs to.
 #+entity_singular: bond_forward
 #+entity_plural: bond_forwards
 #+entity_title: Bond Forward
 #+created: 2026-09-11
 #+updated: 2026-09-11
 
-One row per forward bond instrument, keyed to the instrument.
+One row per forward bond instrument, keyed to the trade.
 
 A forward bond states a bond block, a settlement block, an optional
 premium block and a long-in-forward flag. The bond block is the issue
@@ -35,14 +35,15 @@ null.
 
 * Columns
 
-** instrument_id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:supplied_by:  user
 :END:
 
-UUID of the forward bond instrument this row extends.
+The trade the forward bond fact row belongs to.
 
 ** long_in_forward
 :PROPERTIES:
@@ -163,6 +164,20 @@ both not null, because the schema declares the two required together.
 :END:
 
 Date the forward's premium pays on.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
 
 * SQL
 

@@ -244,6 +244,25 @@ std::string first_segment(const boost::urls::url_view& u) {
     BOOST_THROW_EXCEPTION(oresmd_exception("oresmd URI is missing its entity path segment."));
 }
 
+/*
+ * The inflation index codes the model carries. A fixing's name is the code alone,
+ * so a fixing whose code this class does not carry has no index name to write back:
+ * it is refused here rather than accepted and dropped. A quote's key names its code
+ * in the middle of the key, and every code is accepted for one.
+ */
+bool inflation_index_code_is_known(std::string_view name) {
+    static const std::string_view codes[] = {
+        "AUCPI",
+        "EUHICP",
+        "EUHICPXT",
+        "FRHICP",
+        "UKRPI",
+        "USCPI",
+        "ZACPI",
+    };
+    return std::ranges::any_of(codes, [name](std::string_view known) { return known == name; });
+}
+
 market_data_identifier parse_fx(const boost::urls::url_view& u, const query_params& qp) {
     validate_fx(qp);
     fx_market_data_identifier id;
@@ -586,6 +605,11 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
+    if (id.type == instrument_type::fixing && !inflation_index_code_is_known(id.index_code))
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://inflation/... '{}' is not an index code the model carries, so it has no "
+            "index name to write back.",
+            id.index_code)));
     // An inflation cap/floor's surface point is the maturity, the cap-or-floor
     // flag and the strike. Which surface it is -- a price or a normal vol --
     // arrives as the model, matching the metric segment the projection emits.
@@ -650,8 +674,16 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     }
     if (qp.point)
         id.point = to_lower(*qp.point);
-    if (qp.delivery)
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://commodity/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
+    }
     // A commodity option's surface point carries the same coordinates the equity
     // option's does, and the count says which of the three shapes it is:
     // expiry,strike; expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
@@ -702,7 +734,6 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
     reject_if_present("security", "metric", qp.metric);
     reject_if_present("security", "source", qp.source);
     reject_if_present("security", "source_spelling", qp.source_spelling);
-    reject_if_present("security", "delivery", qp.delivery);
     reject_if_present("security", "name_spelling", qp.name_spelling);
     security_market_data_identifier id;
     id.security_id = to_upper(first_segment(u));
@@ -716,6 +747,16 @@ market_data_identifier parse_security(const boost::urls::url_view& u, const quer
             BOOST_THROW_EXCEPTION(oresmd_exception(
                 "oresmd://security/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<security_quote_type>("quote", *qp.quote);
+    }
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://security/... 'delivery' is only meaningful when type=fixing."));
+        id.delivery = to_lower(*qp.delivery);
     }
     return id;
 }
@@ -818,8 +859,16 @@ market_data_identifier parse_power(const boost::urls::url_view& u, const query_p
     id.commodity_code = to_upper(first_segment(u));
     id.type = parse_type(qp);
     reject_if_present("power", "model", qp.model);
-    if (qp.delivery)
+    if (qp.delivery) {
+        // A delivery coordinate is a fixing's: a commodity future's or a bond
+        // future's contract month, or an intraday power index's window. A quote
+        // carries that period in the name it is quoted under, so a delivery on one
+        // names nothing and is refused rather than accepted and dropped.
+        if (id.type != instrument_type::fixing)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://power/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
+    }
     return id;
 }
 
@@ -1080,6 +1129,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.security_id));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "delivery", id.delivery);
             } else if constexpr (std::is_same_v<T, shape_profile_market_data_identifier>) {
                 u.set_host("shape_profile");
                 u.segments().push_back(to_lower(id.profile_id));
@@ -1113,6 +1163,42 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                                          const canonical_values& canonical) {
     validate_canonical(identifier, canonical);
     return to_uri(identifier);
+}
+
+domain::oresmd_uri oresmd_parser::to_series_uri(const domain::market_data_identifier& identifier) {
+    // The point is the observation's coordinate and the surface is its vol point, so
+    // a series is the identifier with both dropped. The visitor asks each variant
+    // whether it has the fields at all: the security, power and generic classes carry
+    // neither, and a fixing's are unset, so those identifiers come back unchanged.
+    auto series = identifier;
+    std::visit(
+        [](auto& id) {
+            if constexpr (requires { id.point; })
+                id.point.reset();
+            if constexpr (requires { id.vol; })
+                id.vol.reset();
+            // Three IR families keep their coordinate in fields the surface drop above
+            // does not reach, and the decomposition's own split says which fields: a
+            // discount curve's series is the currency and the curve, so its maturity
+            // is the tenor; a money-market future's series is the currency and the
+            // contract month, so its coordinate is the contract code and the
+            // underlying tenor; and an overnight-index future's series is the currency
+            // alone, so the contract month is part of its coordinate too.
+            if constexpr (std::is_same_v<std::decay_t<decltype(id)>, ir_market_data_identifier>) {
+                if (id.quote_type == ir_quote_type::discount) {
+                    id.tenor.reset();
+                } else if (id.quote_type == ir_quote_type::mm_future) {
+                    id.contract_code.reset();
+                    id.tenor.reset();
+                } else if (id.quote_type == ir_quote_type::oi_future) {
+                    id.contract_month.reset();
+                    id.contract_code.reset();
+                    id.tenor.reset();
+                }
+            }
+        },
+        series);
+    return to_uri(series);
 }
 
 }

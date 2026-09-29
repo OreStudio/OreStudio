@@ -55,11 +55,6 @@ struct trade_classification {
     domain::product_type product_type = domain::product_type::unknown;
 
     /**
-     * @brief Optional instrument (soft FK to ores_refdata_instruments_tbl).
-     */
-    std::optional<boost::uuids::uuid> instrument_id;
-
-    /**
      * @brief Optional asset class override (e.g. Rates, Credit, FX).
      */
     std::optional<std::string> asset_class;

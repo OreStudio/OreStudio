@@ -36,13 +36,12 @@
 namespace ores::trading::messaging {
 
 struct equity_digital_option_instrument_key {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
 };
 
 struct equity_digital_option_instrument_write {
-    boost::uuids::uuid instrument_id;
+    boost::uuids::uuid trade_id;
     std::string trade_type_code;
-    std::optional<boost::uuids::uuid> trade_id;
     std::string underlying_name;
     std::string currency;
     ores::utility::decimal::decimal notional;

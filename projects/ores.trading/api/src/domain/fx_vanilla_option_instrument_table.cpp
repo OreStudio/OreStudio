@@ -38,7 +38,7 @@ std::string convert_to_table(const std::vector<fx_vanilla_option_instrument>& v)
           << fort::endr;
 
     for ([[maybe_unused]] const auto& fxvoi : v) {
-        table << fxvoi.identity.instrument_id << fxvoi.identity.trade_type_code << fxvoi.option_type
+        table << fxvoi.identity.trade_id << fxvoi.identity.trade_type_code << fxvoi.option_type
               << fxvoi.expiry_date << fxvoi.bought_currency << fxvoi.bought_amount
               << fxvoi.sold_currency << fxvoi.sold_amount << fxvoi.exercise_style
               << fxvoi.audit.recorded_at << fort::endr;

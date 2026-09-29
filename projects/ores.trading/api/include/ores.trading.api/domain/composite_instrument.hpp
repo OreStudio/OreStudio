@@ -39,7 +39,7 @@ namespace ores::trading::domain {
  *
  * Represents the composite product types ORE states. trade_type_code
  * discriminates the exact product, and the constituent trades live in the
- * composite_legs child table keyed by this instrument's instrument_id.
+ * composite_legs child table keyed by this instrument's trade_id.
  *
  * The parent row carries only the basket identity and its optional free-text
  * description: the basket's constituents are child rows, so there is no

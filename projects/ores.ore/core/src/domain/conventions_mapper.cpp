@@ -411,6 +411,24 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
+tenorBasisTwoSwapType reverse_tenor_basis_two_swap(
+    const refdata::domain::tenor_basis_two_swap_convention& v) {
+    tenorBasisTwoSwapType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Calendar) = v.calendar;
+    r.LongFixedFrequency = parse_frequency(v.long_fixed_frequency);
+    r.LongFixedConvention = parse_bdc(v.long_fixed_convention);
+    r.LongFixedDayCounter = parse_day_counter(v.long_fixed_day_count_fraction);
+    static_cast<std::string&>(r.LongIndex) = v.long_index;
+    r.ShortFixedFrequency = parse_frequency(v.short_fixed_frequency);
+    r.ShortFixedConvention = parse_bdc(v.short_fixed_convention);
+    r.ShortFixedDayCounter = parse_day_counter(v.short_fixed_day_count_fraction);
+    static_cast<std::string&>(r.ShortIndex) = v.short_index;
+    if (v.long_minus_short)
+        r.LongMinusShort = make_bool(*v.long_minus_short);
+    return r;
+}
+
 crossCurrencyBasisType reverse_cross_currency_basis(
     const refdata::domain::cross_currency_basis_convention& v) {
     crossCurrencyBasisType r;
@@ -1014,6 +1032,27 @@ refdata::domain::future_convention conventions_mapper::map_future(const futureTy
     return r;
 }
 
+refdata::domain::tenor_basis_two_swap_convention
+conventions_mapper::map_tenor_basis_two_swap(const tenorBasisTwoSwapType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping two-tenor basis swap convention: " << std::string(v.Id);
+
+    refdata::domain::tenor_basis_two_swap_convention r;
+    r.id = std::string(v.Id);
+    r.calendar = std::string(v.Calendar);
+    r.long_fixed_frequency = normalize_frequency(v.LongFixedFrequency);
+    r.long_fixed_convention = normalize_bdc(v.LongFixedConvention);
+    r.long_fixed_day_count_fraction = normalize_day_counter(v.LongFixedDayCounter);
+    r.long_index = std::string(v.LongIndex);
+    r.short_fixed_frequency = normalize_frequency(v.ShortFixedFrequency);
+    r.short_fixed_convention = normalize_bdc(v.ShortFixedConvention);
+    r.short_fixed_day_count_fraction = normalize_day_counter(v.ShortFixedDayCounter);
+    r.short_index = std::string(v.ShortIndex);
+    if (v.LongMinusShort)
+        r.long_minus_short = parse_bool(*v.LongMinusShort);
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::cross_currency_basis_convention
 conventions_mapper::map_cross_currency_basis(const crossCurrencyBasisType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping cross-currency basis convention: " << std::string(v.Id);
@@ -1320,6 +1359,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
+    r.tenor_basis_two_swap.reserve(v.TenorBasisTwoSwap.size());
+    std::ranges::transform(v.TenorBasisTwoSwap,
+                           std::back_inserter(r.tenor_basis_two_swap),
+                           [](const auto& x) { return map_tenor_basis_two_swap(x); });
+
     r.cross_currency_basis.reserve(v.CrossCurrencyBasis.size());
     std::ranges::transform(v.CrossCurrencyBasis,
                            std::back_inserter(r.cross_currency_basis),
@@ -1354,7 +1398,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
             r.unmodelled.emplace(std::string(name), count);
     };
     count_unmodelled("TenorBasisSwap", v.TenorBasisSwap.size());
-    count_unmodelled("TenorBasisTwoSwap", v.TenorBasisTwoSwap.size());
     count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
     count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
     count_unmodelled("InflationSwap", v.InflationSwap.size());
@@ -1431,6 +1474,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CDS.reserve(v.cds.size());
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
+
+    r.TenorBasisTwoSwap.reserve(v.tenor_basis_two_swap.size());
+    for (const auto& x : v.tenor_basis_two_swap)
+        r.TenorBasisTwoSwap.push_back(reverse_tenor_basis_two_swap(x));
 
     r.CrossCurrencyBasis.reserve(v.cross_currency_basis.size());
     for (const auto& x : v.cross_currency_basis)

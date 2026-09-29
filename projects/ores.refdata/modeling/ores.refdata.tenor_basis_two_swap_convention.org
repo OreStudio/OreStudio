@@ -1,0 +1,275 @@
+:PROPERTIES:
+:ID: 1D38308E-676C-458B-B1DD-694B79AC420B
+:END:
+#+title: ores.refdata.tenor_basis_two_swap_convention
+#+description: Codegen entity model for the refdata =tenor_basis_two_swap_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a two-tenor basis swap, whose two legs pay different frequencies off different indices.
+#+entity_singular: tenor_basis_two_swap_convention
+#+entity_plural: tenor_basis_two_swap_conventions
+#+entity_title: Two-Tenor Basis Swap Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds both legs of a two-tenor basis swap, where a long leg
+and a short leg pay different frequencies off different indices, and which of
+the two the quoted spread is measured from. Corresponds to the
+<TenorBasisTwoSwap> element in ORE conventions.xml. The id field is the natural
+key (ORE <Id> element).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique two-tenor basis swap identifier.
+
+#+begin_src cpp :name generator
+std::string("EUR-3M-6M-TENOR-BASIS")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar both legs' schedules roll on (e.g. 'TARGET').
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** long_fixed_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Payment frequency of the long leg, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Semiannual")
+#+end_src
+
+** long_fixed_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention of the long leg.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** long_fixed_day_count_fraction
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Day count fraction of the long leg.
+
+#+begin_src cpp :name generator
+std::string("30/360")
+#+end_src
+
+** long_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the long leg pays.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-6M")
+#+end_src
+
+** short_fixed_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Payment frequency of the short leg.
+
+#+begin_src cpp :name generator
+std::string("Quarterly")
+#+end_src
+
+** short_fixed_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention of the short leg.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** short_fixed_day_count_fraction
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Day count fraction of the short leg.
+
+#+begin_src cpp :name generator
+std::string("ACT/360")
+#+end_src
+
+** short_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Index the short leg pays.
+
+#+begin_src cpp :name generator
+std::string("EUR-EURIBOR-3M")
+#+end_src
+
+** long_minus_short
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the quoted spread is the long leg's rate minus the short leg's rather than the other way round.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenor_basis_two_swap_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: tenor_basis_two_swap_convention
+:entity_plural_short:   tenor_basis_two_swap_conventions
+:entity_singular_words: two-tenor basis swap convention
+:entity_plural_words:   two-tenor basis swap conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tbt
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | Id           |
+| long_index   | Long Index   |
+| short_index  | Short Index  |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           tenor_basis_two_swap_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   tenor_basis_two_swap_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter two-tenor basis id |
+| calendar | Calendar | calendarEdit | line_edit |  | true | e.g. TARGET |
+| long_fixed_frequency | Long Frequency | longFixedFrequencyEdit | line_edit |  | true | e.g. Semiannual |
+| long_fixed_convention | Long Convention | longFixedConventionEdit | line_edit |  | true | e.g. ModifiedFollowing |
+| long_fixed_day_count_fraction | Long DCF | longFixedDayCountFractionEdit | line_edit |  | true | e.g. 30/360 |
+| long_index | Long Index | longIndexEdit | line_edit |  | true | e.g. EUR-EURIBOR-6M |
+| short_fixed_frequency | Short Frequency | shortFixedFrequencyEdit | line_edit |  | true | e.g. Quarterly |
+| short_fixed_convention | Short Convention | shortFixedConventionEdit | line_edit |  | true | e.g. ModifiedFollowing |
+| short_fixed_day_count_fraction | Short DCF | shortFixedDayCountFractionEdit | line_edit |  | true | e.g. ACT/360 |
+| short_index | Short Index | shortIndexEdit | line_edit |  | true | e.g. EUR-EURIBOR-3M |
+| long_minus_short | Long Minus Short | longMinusShortEdit | checkbox |  |  |  |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 180 |
+| Calendar | calendar | Calendar | string | 180 |
+| LongFixedFrequency | long_fixed_frequency | Long Frequency | string | 180 |
+| LongFixedConvention | long_fixed_convention | Long Convention | string | 180 |
+| LongFixedDayCountFraction | long_fixed_day_count_fraction | Long DCF | string | 180 |
+| LongIndex | long_index | Long Index | string | 180 |
+| ShortFixedFrequency | short_fixed_frequency | Short Frequency | string | 180 |
+| ShortFixedConvention | short_fixed_convention | Short Convention | string | 180 |
+| ShortFixedDayCountFraction | short_fixed_day_count_fraction | Short DCF | string | 180 |
+| ShortIndex | short_index | Short Index | string | 180 |
+| LongMinusShort | long_minus_short | Long Minus Short | bool | 80 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

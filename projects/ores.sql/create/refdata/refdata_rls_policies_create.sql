@@ -192,6 +192,23 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Two-Tenor Basis Swap Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_tenor_basis_two_swap_conventions_tbl enable row level security;
+
+drop policy if exists tenor_basis_two_swap_conventions_tenant_isolation_policy
+    on ores_refdata_tenor_basis_two_swap_conventions_tbl;
+
+create policy tenor_basis_two_swap_conventions_tenant_isolation_policy
+    on ores_refdata_tenor_basis_two_swap_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- OIS Conventions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ois_conventions_tbl enable row level security;

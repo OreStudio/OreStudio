@@ -204,6 +204,8 @@
 \ir ./refdata_average_ois_conventions_notify_trigger_create.sql
 \ir ./refdata_cross_currency_basis_conventions_create.sql
 \ir ./refdata_cross_currency_basis_conventions_notify_trigger_create.sql
+\ir ./refdata_tenor_basis_two_swap_conventions_create.sql
+\ir ./refdata_tenor_basis_two_swap_conventions_notify_trigger_create.sql
 \ir ./refdata_ois_conventions_create.sql
 \ir ./refdata_ois_conventions_notify_trigger_create.sql
 \ir ./refdata_fra_conventions_create.sql

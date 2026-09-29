@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T10:35:10.894794Z
+' Generated: 2026-09-29T10:56:36.111380Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3375,6 +3375,42 @@ package "refdata" #FFF3E0 {
     curve or ladder's own quoting-basis override (see
     [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is
     out of scope for this model and lives on the curve/ladder entity instead.
+    end note
+
+    entity ores_refdata_tenor_basis_two_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * calendar : text
+        * long_fixed_frequency : text
+        * long_fixed_convention : text
+        * long_fixed_day_count_fraction : text
+        * long_index : text
+        * short_fixed_frequency : text
+        * short_fixed_convention : text
+        * short_fixed_day_count_fraction : text
+        * short_index : text
+          long_minus_short : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_basis_two_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Two-Tenor Basis Swap Convention Table
+    Describes how ORE builds both legs of a two-tenor basis swap, where a long leg
+    and a short leg pay different frequencies off different indices, and which of
+    the two the quoted spread is measured from. Corresponds to the
+    <TenorBasisTwoSwap> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
     end note
 
     entity ores_refdata_tenor_convention_resolutions_tbl <<temporal>> #C6F0D8 {

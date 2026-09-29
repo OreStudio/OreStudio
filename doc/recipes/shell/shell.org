@@ -1035,3 +1035,7 @@ tangled into the runnable script library
 * Cross Currency Basis Conventions
 
 - [[id:15F5D765-33EA-5B26-8005-D711223E6A18][How do I run the cross_currency_basis_conventions commands from the shell?]]
+
+* Tenor Basis Two Swap Conventions
+
+- [[id:2F45F265-10AF-505E-9FE5-5A24BFE2B4CB][How do I run the tenor_basis_two_swap_conventions commands from the shell?]]

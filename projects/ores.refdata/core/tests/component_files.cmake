@@ -110,6 +110,7 @@ set(files
     "swap_convention_eventing_integration_tests.cpp"
     "swap_index_convention_eventing_integration_tests.cpp"
     "tenor_anchor_eventing_integration_tests.cpp"
+    "tenor_basis_two_swap_convention_eventing_integration_tests.cpp"
     "tenor_convention_eventing_integration_tests.cpp"
     "tenor_eventing_integration_tests.cpp"
     "tenor_kind_eventing_integration_tests.cpp"

@@ -32,10 +32,10 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * nine. The files that use only those nine round trip. The rest do not, because
- * a category the mapper does not model is content the export cannot write, and
- * the measurement below says which categories those are and how many files each
- * one costs.
+ * fifteen. The files that use only those fifteen round trip. The rest do not,
+ * because a category the mapper does not model is content the export cannot
+ * write, and the measurement below says which categories those are and how many
+ * files each one costs.
  */
 
 namespace {
@@ -250,6 +250,54 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     CHECK(files_with_basis == 49);
 }
 
+TEST_CASE("conventions_tenor_basis_two_swap_round_trips", tags) {
+    int files_with_two_swap = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.TenorBasisTwoSwap.empty())
+            continue;
+
+        ++files_with_two_swap;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.tenor_basis_two_swap.size() == document.TenorBasisTwoSwap.size());
+
+        for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
+            const auto& in = document.TenorBasisTwoSwap[i];
+            const auto& out = mapped.tenor_basis_two_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.calendar == std::string(in.Calendar));
+            CHECK(out.long_index == std::string(in.LongIndex));
+            CHECK(out.short_index == std::string(in.ShortIndex));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "TenorBasisTwoSwap");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.TenorBasisTwoSwap.size()) +
+             " TenorBasisTwoSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.TenorBasisTwoSwap.size()));
+
+        // The mapper stores a canonical spelling of each frequency, convention
+        // and day counter, so the export writes a spelling the document may not
+        // have used. What has to survive is the value: reading the export back
+        // and mapping it again must land on the same entity, field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.TenorBasisTwoSwap.size() == document.TenorBasisTwoSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
+            INFO(path.string() + ": TenorBasisTwoSwap element " + std::to_string(i));
+            CHECK(remapped.tenor_basis_two_swap[i] == mapped.tenor_basis_two_swap[i]);
+        }
+    }
+
+    // The largest single category left when it went in: it is what stood between
+    // twelve files and a clean round trip on its own.
+    CHECK(files_with_two_swap == 46);
+}
+
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
     const auto kind = conventions_kind();
     int walked = 0;
@@ -267,10 +315,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Twenty-two of the seventy-two once CrossCurrencyBasis landed, nineteen
-    // before it, twelve before AverageOIS and nine before those. The count is
-    // asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 22);
+    // Thirty-four of the seventy-two once TenorBasisTwoSwap landed: the twelve
+    // files it cleared on its own on top of the twenty-two already clean. The
+    // count is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 34);
 }
 
 // Hidden by default, and run on demand:

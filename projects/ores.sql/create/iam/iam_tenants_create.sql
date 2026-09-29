@@ -30,7 +30,9 @@
  * its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff).
  *
  * Tenants are identified by:
- * - id: UUID primary key (SQL also has tenant_id = id for self-reference)
+ * - id: UUID primary key, which is the row's own identity. The tenant_id column
+ *   is the system tenant's, because the registry belongs to it and its check
+ *   requires that of every row.
  * - code: Unique text code for stable referencing (e.g., 'system', 'acme')
  * - hostname: Unique hostname for tenant routing during login
  */

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-30T10:27:23.131173Z
+' Generated: 2026-09-30T10:27:28.823738Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9500,6 +9500,44 @@ package "reporting" #E0F7FA {
     leaves the entity type unresolved and the generator writes files called
     unknown_* rather than reporting the bad line. Check the header first when a
     model generates unknown.
+    end note
+
+    entity ores_reporting_report_analytic_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_analytic_id : uuid <<FK>>
+        * parameter_definition_id : uuid <<FK>>
+        * value : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_analytic_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Analytic Parameter Table
+    One Parameter element inside one Analytic of a run document: the value, and
+    the definition that says what it means. The corpus writes eighteen hundred and
+    seventy-four analytics whose parameters barely overlap -- xva takes around
+    seventy, simulation sixty, sensitivity thirty, and several types one flag -- so
+    the parameters cannot be columns on the analytic.
+    They are held the way the reporting registry already holds a configuration's
+    parameters: a row per value, keyed to a definition in parameter_definition
+    whose scope is the analytic and whose subtype is the analytic type code,
+    and whose value domain supplies the type. Adding a parameter is a lookup row,
+    never a column, and no analytic type needs a table of its own. That is the
+    decision this entity records, and it replaces the plan's table-per-type with the
+    registry's own pattern, which was built for this shape.
+    Each row belongs to exactly one analytic and has many parameters, in the order
+    the document wrote them.
     end note
 
     entity ores_reporting_report_analytics_tbl <<temporal>> #C6F0D8 {

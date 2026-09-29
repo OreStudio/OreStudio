@@ -39,6 +39,8 @@
 \ir ./reporting_report_run_setups_notify_trigger_create.sql
 \ir ./reporting_report_analytics_create.sql
 \ir ./reporting_report_analytics_notify_trigger_create.sql
+\ir ./reporting_report_analytic_parameters_create.sql
+\ir ./reporting_report_analytic_parameters_notify_trigger_create.sql
 \ir ./reporting_parameter_value_domains_create.sql
 \ir ./reporting_parameter_value_domains_notify_trigger_create.sql
 \ir ./reporting_parameter_definitions_create.sql

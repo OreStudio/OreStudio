@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: BFDAC96E-3774-45F8-9013-DFDDF0EE7335
+:END:
+#+title: ores.reporting.report_analytic_parameter
+#+description: Codegen entity model for the reporting =report_analytic_parameter= table. One parameter of one analytic in a run document.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One parameter of one analytic in a run document.
+#+entity_singular: report_analytic_parameter
+#+entity_plural: report_analytic_parameters
+#+entity_title: Report Analytic Parameter
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One =Parameter= element inside one =Analytic= of a run document: the value, and
+the definition that says what it means. The corpus writes eighteen hundred and
+seventy-four analytics whose parameters barely overlap -- xva takes around
+seventy, simulation sixty, sensitivity thirty, and several types one flag -- so
+the parameters cannot be columns on the analytic.
+
+They are held the way the reporting registry already holds a configuration's
+parameters: a row per value, keyed to a definition in =parameter_definition=
+whose =scope= is the analytic and whose =subtype= is the analytic type code,
+and whose value domain supplies the type. Adding a parameter is a lookup row,
+never a column, and no analytic type needs a table of its own. That is the
+decision this entity records, and it replaces the plan's table-per-type with the
+registry's own pattern, which was built for this shape.
+
+Each row belongs to exactly one analytic and has many parameters, in the order
+the document wrote them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this parameter.
+
+** report_analytic_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The analytic this parameter belongs to.
+
+** parameter_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The definition that says what this value means.
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The value, whose type comes from the definition's value domain.
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the parameter in.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_analytic_parameters_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** report_analytic_id
+:PROPERTIES:
+:table:         ores_reporting_report_analytics_tbl
+:target_column: id
+:parent_entity: report_analytic
+:nullable:      false
+:error_message: Invalid report_analytic_id: %. No active analytic found with this id.
+:list_by:       true
+:END:
+
+** parameter_definition_id
+:PROPERTIES:
+:table:         ores_reporting_parameter_definitions_tbl
+:target_column: id
+:parent_entity: parameter_definition
+:nullable:      false
+:error_message: Invalid parameter_definition_id: %. No active parameter definition found with this id.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parameter_value
+:entity_plural_short:   parameter_values
+:entity_singular_words: analytic parameter
+:entity_plural_words:   analytic parameters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rap
+:END:
+
+** Table display
+
+| column     | header     |
+|------------+------------|
+| value      | Value      |
+| position   | Position   |
+| modified_by | Modified By |
+| version    | Version    |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        report_analytic_parameters
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: report_analytic_parameter
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|
+| value | Value | line_edit |  | true | Enter value |
+| position | Position | spin_edit |  | true | Enter position |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Value | value | Value | string | 260 |
+| Position | position | Position | int | 80 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

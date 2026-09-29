@@ -57,9 +57,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Categories the mapper does not model | 14 at the start, 12 after SwapIndex and Future | =ores.ore.core.tests "[.][conventions]" -s= | =70fc69007d= |
+| Files carrying an unmodelled category | 63 at the start, 60 after the two | the same | =70fc69007d= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 12 after the two | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =70fc69007d= |
+| Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
+
+- =SwapIndex= is modelled: three fields, and it appears in forty-seven files.
+  Its case asserts 1451 times over that corpus.
+- =Future= is modelled: six fields, and it appears in thirty-nine files. Three of
+  those carried no other unmodelled category, so the count of files that round
+  trip outright went from nine to twelve. Its two enumerations are stored in
+  ORE's own spelling, because they are closed enumerations with no aliases and
+  the token is what an export has to write back.
+- Each category costs one entity, its create, drop, notify trigger and row-level
+  security, its seeded permissions, its component file-list entries, and a
+  mapper in both directions. Twelve remain, and the expensive ones are
+  =CrossCurrencyBasis= at twenty-five fields across forty-nine files and
+  =CommodityFuture= at thirty-four fields.
 
 * Test Scenarios
 

@@ -29,8 +29,8 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
-| Waiting on   | Nothing now that the FOMC segment's identity is decided: the raw grid is re-keyed onto the ORE instruments it simulates and the republish curve onto ORE's =DISCOUNT= key, both before the constraints move. |
-| Next         | Re-key the FOMC segment: the synthetic feed publishes the grid under the instruments' ORE keys, the bootstrap reads them from its own pillars, and the seed and its tests follow. Then the not-null and unique constraints, then the deletion against the census, which is the fourth acceptance and is not done. |
+| Waiting on   | The re-keying unit's own first step: the roles the two configs give the FOMC instruments must be reconciled before a key can be derived from a pillar. Nothing outside the task holds it up. |
+| Next         | Reconcile the two role vocabularies, then re-key the FOMC segment: the synthetic feed publishes the grid under the instruments' ORE keys, the bootstrap reads them from its own pillars, and the seed and its tests follow. Then the not-null and unique constraints, then the deletion against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -39,6 +39,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 - import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
 - The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
 - series_type, metric, qualifier, ore_key and the import classification table are deleted, and every consumer reads the URI.
+- The FOMC segment's instruments carry ORE identities: the raw grid is one series per instrument, named by the key of the instrument the feed simulates -- the deposit pillar's dated spelling settled against the corpus -- and the republish curve carries ORE's DISCOUNT key.
 
 * Scope, measured before the column
 
@@ -120,12 +121,14 @@ compiler and the suites and by nothing else: it has no sender anywhere in the tr
 and no case exercises it, which is worth knowing before the cutover leans on it.
 
 **Not every series row in the table can be given an identity, and the constraint
-says so.** Measured on the live database at =ca23d34ef2=, and re-read on the FOMC rows
-at =3632865c32=: of 5,864 series rows, **4,431** carry a series type the ORE key
-grammar knows, and **1,433 across 28 types do not**. All but two of the second
-population is test-data generator output -- =CD-0= to =CD-25=, 1,431 rows, whose
-=series_type=, =metric= and =qualifier= are all the same string and whose subclass
-cycles through the list the model's generated generator draws from.
+says so.** Read on the live database at =ca23d34ef2=: of 5,864 series rows, **4,431**
+carry a series type the ORE key grammar knows, and **1,433 across 28 types do not**.
+Re-read at =3632865c32=, after the generator had been run again: of 5,971 rows,
+**4,569** are nameable -- by =from_ore_key()=, or by =from_index_name()= for the 188
+=FIXING= rows, which the quote grammar has no type for -- and **1,402 are not**. All
+but two of the unnameable set is test-data generator output: =CD-0= to =CD-25=, 1,400
+rows, whose =series_type=, =metric= and =qualifier= are all the same string and whose
+subclass cycles through the list the model's generated generator draws from.
 
 The remaining **two rows are the FOMC segment**, both seeded by
 =marketdata_market_series_fomc_populate.sql=, and both production: they carry the
@@ -181,9 +184,10 @@ config's nine pillars are a =DEPOSIT= and eight =SWAP=s. Nothing notices today,
 because the feed writes each tick under the end tenor's point id and the bootstrap
 reads by that point id alone, so the families never meet. A key derived from the
 pillar would pick a different family on the two sides, so the unit reconciles the
-vocabularies before it derives anything. The column stays nullable until the feed and the seed
-agree, and the identity is what a row gets *if it has one*: the constraint would not
-catch the generator output anyway, since random text satisfies a not null column.
+vocabularies before it derives anything. The column stays nullable until the feed and
+the seed agree, and the identity is what a row gets *if it has one*: the constraint
+would not catch the generator output anyway, since random text satisfies a not null
+column.
 
 * Plan
 
@@ -201,9 +205,9 @@ plan itself stays — it is the historical record of what we did.)
 | Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
 | Production readers left on the triple alone | 2: the curve snapshot handler's two lookups; the import's and the ingest loop's calls ask by identity first and fall back to the triple | =grep -rn "read_latest_by_type" projects/ --include=*.cpp --include=*.hpp=, less the repository's own definition and the tests | =664cae095d= |
 | =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
-| Series rows that carry an ORE series type | 4431 of 5864 | =select series_type, count(*) from ores_marketdata_market_series_tbl= against the 42 registry types | =ca23d34ef2= |
-| Series rows that do not | 1433 across 28 types, 1431 of them =CD-0= to =CD-25= generator output | same | =ca23d34ef2= |
-| Production rows no projection can name | 1: =RATES / YIELD / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =ca23d34ef2= |
+| Series rows that carry an identity | 4569 of 5971; the 188 =FIXING= rows are named by =from_index_name()= | =count(*) filter (where series_type in (<the grammar's token table>) or series_type = 'FIXING')= over =ores_marketdata_market_series_tbl= | =3632865c32= |
+| Series rows that do not | 1402: 1400 =CD-0= to =CD-25= generator rows plus the two FOMC rows | the same query, negated | =3632865c32= |
+| Production rows no projection can name | 2: =RATES / YIELD / 'USD/SOFR-FOMC'= and =YieldCurve / DISCOUNT / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =3632865c32= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 

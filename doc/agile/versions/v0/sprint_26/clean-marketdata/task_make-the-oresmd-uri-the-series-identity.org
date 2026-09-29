@@ -458,6 +458,11 @@ via its "Verifies task" field.
 | 40 | =std::format= with a chrono calendar needs C++20 chrono formatting | =ir_curve_template_resolver.cpp= | answered | The same call is already in =ir_curve_feed.cpp= for its schedule, so the toolchain's support is what the component already builds on. |
 | 41 | The new case's name does not match the file's own style | =feed_factory_tests.cpp= | recorded | The case reads as a sentence because it asserts a rule rather than a factory dispatch; renaming it is cosmetic and belongs with the next touch. |
 | 42 | Nothing tests the whole feed path, so no tick is shown landing in a per-pillar series | the feed | recorded | The reader step is where that path is exercised end to end, and the record says so in the plan. |
+| 43 | =currency_code= is free text, so a typo fails only when the reader builds a key | the model | recorded | The reader step owns the validation, as it does for the convention code; the model already says the field references =currency.iso_code=. |
+| 44 | The migration's backfill is USD for every row | the migration | answered | The migration's own comment says so, and the seeded config is the only row a database built here carries. |
+| 45 | The generator's fixed =USD= gives no variety | the model's generator | recorded | Generated configs are not data; a currency that varies would need the generator to read the currency table. |
+| 46 | Other consumers of the config need no change | =curve_republish_service.cpp= | confirmed | They read it rather than write it, and the reader that uses the column lands next. |
+| 47 | The shell tests' arity change deserves a comment | =ir_curve_bootstrap_config_commands_tests.cpp= | recorded | Cosmetic; the assertion's order is what the test file's own convention carries. |
 
 * Result
 

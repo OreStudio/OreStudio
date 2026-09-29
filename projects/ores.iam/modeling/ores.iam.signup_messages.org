@@ -75,3 +75,19 @@ tells a screen whether to offer the form at all is a separate subject,
 :cpp_type: std::string
 :END:
 
+*** error_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stable code a client branches on.
+ *
+ * Empty when the registration succeeded. The message beside it is for a
+ * person and may change; this is what a screen branches on, so a refusal is
+ * a value rather than a sentence to match. The codes a registration can
+ * answer with are collected on the Entry journeys page.
+ */
+#+end_src
+

@@ -48,6 +48,15 @@ struct signup_response {
     bool success = false;
     std::string message;
     std::string account_id;
+    /**
+     * @brief The stable code a client branches on.
+     *
+     * Empty when the registration succeeded. The message beside it is for a
+     * person and may change; this is what a screen branches on, so a refusal is
+     * a value rather than a sentence to match. The codes a registration can
+     * answer with are collected on the Entry journeys page.
+     */
+    std::string error_code;
 };
 
 }

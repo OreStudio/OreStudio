@@ -32,6 +32,15 @@ export interface SignupResponse {
     success: boolean;
     message: string;
     account_id: string;
+    /**
+     * @brief The stable code a client branches on.
+     *
+     * Empty when the registration succeeded. The message beside it is for a
+     * person and may change; this is what a screen branches on, so a refusal is
+     * a value rather than a sentence to match. The codes a registration can
+     * answer with are collected on the Entry journeys page.
+     */
+    error_code: string;
 }
 
 export const subjects = {

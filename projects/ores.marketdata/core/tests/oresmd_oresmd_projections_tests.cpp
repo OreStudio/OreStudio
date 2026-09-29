@@ -1671,3 +1671,30 @@ TEST_CASE("a_keys_points_project_to_one_series_identity", tags) {
     CHECK(surface.find("point=") == std::string::npos);
     CHECK(oresmd_parser::to_uri(*atm).value != oresmd_parser::to_uri(*strike).value);
 }
+
+TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags) {
+    // A series is the key without the segments the decomposition calls the point, and
+    // which identifier fields hold those segments is a fact about each family: the
+    // swap, money-market and FRA families hold the coordinate in point, a discount
+    // curve's maturity is its tenor, and a future's coordinate is the contract code
+    // and the underlying tenor. Each pair below is two points of one series, so the
+    // two must project to one identity.
+    const std::pair<const char*, const char*> pairs[] = {
+        {"MM/RATE/CHF/2D/1M", "MM/RATE/CHF/2D/2M"},
+        {"FRA/RATE/EUR/3M/6M", "FRA/RATE/EUR/3M/12M"},
+        {"IR_SWAP/RATE/USD/0D/1D/5Y", "IR_SWAP/RATE/USD/0D/1D/10Y"},
+        {"SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM", "SWAPTION/RATE_LNVOL/EUR/5Y/2Y/0.02"},
+        {"COMMODITY_FWD/PRICE/GOLD/USD/2016-02-29", "COMMODITY_FWD/PRICE/GOLD/USD/2016-03-31"},
+        {"DISCOUNT/RATE/EUR/EUR/1D", "DISCOUNT/RATE/EUR/EUR/10Y"},
+        {"MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M", "MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/6M"},
+    };
+    for (const auto& [one, other] : pairs) {
+        const auto first = oresmd_projections::from_ore_key(one);
+        const auto second = oresmd_projections::from_ore_key(other);
+        REQUIRE(first);
+        REQUIRE(second);
+        CHECK(oresmd_parser::to_series_uri(*first).value ==
+              oresmd_parser::to_series_uri(*second).value);
+        CHECK(oresmd_parser::to_series_uri(*first).value.find("point=") == std::string::npos);
+    }
+}

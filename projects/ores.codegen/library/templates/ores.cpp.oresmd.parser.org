@@ -763,6 +763,21 @@ domain::oresmd_uri oresmd_parser::to_series_uri(
                 id.point.reset();
             if constexpr (requires { id.vol; })
                 id.vol.reset();
+            // Two IR families keep their coordinate in fields the surface drop above
+            // does not reach, and the decomposition's own split says which: a discount
+            // curve's maturity is the identifier's tenor, because its series is the
+            // currency and the curve, and a future's coordinate is the contract code
+            // and the underlying tenor, because its series is the currency and the
+            // contract month.
+            if constexpr (std::is_same_v<std::decay_t<decltype(id)>,
+                                         ir_market_data_identifier>) {
+                if (id.quote_type == ir_quote_type::discount ||
+                    id.quote_type == ir_quote_type::mm_future ||
+                    id.quote_type == ir_quote_type::oi_future) {
+                    id.tenor.reset();
+                    id.contract_code.reset();
+                }
+            }
         },
         series);
     return to_uri(series);

@@ -66,7 +66,14 @@ public:
 
     /**
      * @brief Serialises @p identifier as the series it belongs to rather than as the
-     * datum it is: the same URI with the point, and a volatility surface, dropped.
+     * datum it is: the same URI with the observation's coordinate dropped.
+     *
+     * Which fields hold that coordinate is a fact about each family, and the
+     * decomposition's own split is the authority for it: a quote's point and a
+     * surface's expiry and strike are dropped, a discount curve's maturity is dropped
+     * because its series is the currency and the curve, and a future's contract code
+     * and underlying tenor are dropped because its series is the currency and the
+     * contract month. Every point of one series therefore projects to one identity.
      *
      * A series is what a market_series row holds, and its points are the observation
      * rows beneath it (see the market_series model's oresmd_uri column). A datum's key

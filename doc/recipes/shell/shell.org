@@ -1051,3 +1051,7 @@ tangled into the runnable script library
 * Bma Basis Swap Conventions
 
 - [[id:D6E604E5-7090-541E-9BC5-017EC2C8485D][How do I run the bma_basis_swap_conventions commands from the shell?]]
+
+* Inflation Swap Conventions
+
+- [[id:52E34F2C-24D6-5926-AB27-39D8C0CB03DC][How do I run the inflation_swap_conventions commands from the shell?]]

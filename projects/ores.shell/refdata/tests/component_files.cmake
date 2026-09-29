@@ -66,6 +66,7 @@ set(files
     "future_convention_commands_tests.cpp"
     "fx_option_convention_commands_tests.cpp"
     "ibor_index_convention_commands_tests.cpp"
+    "inflation_swap_convention_commands_tests.cpp"
     "instrument_code_commands_tests.cpp"
     "ir_curve_bootstrap_config_commands_tests.cpp"
     "ir_curve_bootstrap_pillar_commands_tests.cpp"

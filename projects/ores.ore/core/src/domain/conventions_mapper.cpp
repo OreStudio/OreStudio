@@ -402,6 +402,39 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
+inflationswapType reverse_inflation_swap(const refdata::domain::inflation_swap_convention& v) {
+    inflationswapType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.FixCalendar) = v.fix_calendar;
+    r.FixConvention = parse_bdc(v.fix_convention);
+    r.DayCounter = parse_day_counter(v.day_count_fraction);
+    static_cast<std::string&>(r.Index) = v.index;
+    r.Interpolated = make_bool(v.interpolated);
+    static_cast<std::string&>(r.ObservationLag) = v.observation_lag;
+    r.AdjustInflationObservationDates = make_bool(v.adjust_inflation_observation_dates);
+    static_cast<std::string&>(r.InflationCalendar) = v.inflation_calendar;
+    r.InflationConvention = parse_bdc(v.inflation_convention);
+    if (v.publication_roll) {
+        const auto& s = *v.publication_roll;
+        if (s == "None")
+            r.PublicationRoll = publicationRoll::None;
+        else if (s == "OnPublicationDate")
+            r.PublicationRoll = publicationRoll::OnPublicationDate;
+        else if (s == "AfterPublicationDate")
+            r.PublicationRoll = publicationRoll::AfterPublicationDate;
+        else
+            throw std::runtime_error("reverse_inflation_swap: unknown publication_roll: " + s);
+    }
+    if (v.start_delay) {
+        inflationswapType_StartDelay_t x;
+        static_cast<std::string&>(x) = *v.start_delay;
+        r.StartDelay = x;
+    }
+    if (v.start_delay_convention)
+        r.StartDelayConvention = parse_bdc(*v.start_delay_convention);
+    return r;
+}
+
 bmaBasisSwapType reverse_bma_basis_swap(const refdata::domain::bma_basis_swap_convention& v) {
     bmaBasisSwapType r;
     static_cast<std::string&>(r.Id) = v.id;
@@ -1381,6 +1414,49 @@ refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const 
     return r;
 }
 
+refdata::domain::inflation_swap_convention
+conventions_mapper::map_inflation_swap(const inflationswapType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping inflation swap convention: " << std::string(v.Id);
+
+    refdata::domain::inflation_swap_convention r;
+    r.id = std::string(v.Id);
+    r.fix_calendar = std::string(v.FixCalendar);
+    r.fix_convention = normalize_bdc(v.FixConvention);
+    r.day_count_fraction = normalize_day_counter(v.DayCounter);
+    r.index = std::string(v.Index);
+    r.interpolated = parse_bool(v.Interpolated);
+    r.observation_lag = std::string(v.ObservationLag);
+    r.adjust_inflation_observation_dates = parse_bool(v.AdjustInflationObservationDates);
+    r.inflation_calendar = std::string(v.InflationCalendar);
+    r.inflation_convention = normalize_bdc(v.InflationConvention);
+
+    if (v.PublicationRoll) {
+        using pr = domain::publicationRoll;
+        switch (*v.PublicationRoll) {
+            case pr::None:
+                r.publication_roll = "None";
+                break;
+            case pr::OnPublicationDate:
+                r.publication_roll = "OnPublicationDate";
+                break;
+            case pr::AfterPublicationDate:
+                r.publication_roll = "AfterPublicationDate";
+                break;
+            default:
+                throw std::runtime_error("Unknown publication roll enum value");
+        }
+    }
+
+    if (v.StartDelay)
+        r.start_delay = std::string(*v.StartDelay);
+
+    if (v.StartDelayConvention)
+        r.start_delay_convention = normalize_bdc(*v.StartDelayConvention);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::bma_basis_swap_convention
 conventions_mapper::map_bma_basis_swap(const bmaBasisSwapType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping BMA basis swap convention: " << std::string(v.Id);
@@ -1568,6 +1644,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_ibor_index(x);
     });
 
+    r.inflation_swap.reserve(v.InflationSwap.size());
+    std::ranges::transform(v.InflationSwap,
+                           std::back_inserter(r.inflation_swap),
+                           [](const auto& x) { return map_inflation_swap(x); });
+
     r.bma_basis_swap.reserve(v.BMABasisSwap.size());
     std::ranges::transform(v.BMABasisSwap,
                            std::back_inserter(r.bma_basis_swap),
@@ -1634,7 +1715,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
             r.unmodelled.emplace(std::string(name), count);
     };
     count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
-    count_unmodelled("InflationSwap", v.InflationSwap.size());
     count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
     count_unmodelled("CommodityForward", v.CommodityForward.size());
     count_unmodelled("CommodityFuture", v.CommodityFuture.size());
@@ -1647,6 +1727,12 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (x.RebasingEvents)
             ++rebasing_events;
     count_unmodelled("ZeroInflationIndex.RebasingEvents", rebasing_events);
+
+    std::size_t publication_schedules = 0;
+    for (const auto& x : v.InflationSwap)
+        if (x.PublicationSchedule)
+            ++publication_schedules;
+    count_unmodelled("InflationSwap.PublicationSchedule", publication_schedules);
 
     for (const auto& [name, count] : r.unmodelled) {
         BOOST_LOG_SEV(lg(), warn)
@@ -1701,6 +1787,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.IborIndex.reserve(v.ibor_index.size());
     for (const auto& x : v.ibor_index)
         r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.InflationSwap.reserve(v.inflation_swap.size());
+    for (const auto& x : v.inflation_swap)
+        r.InflationSwap.push_back(reverse_inflation_swap(x));
 
     r.BMABasisSwap.reserve(v.bma_basis_swap.size());
     for (const auto& x : v.bma_basis_swap)

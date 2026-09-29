@@ -32,7 +32,7 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * eighteen. The files that use only those eighteen round trip. The rest do
+ * nineteen. The files that use only those nineteen round trip. The rest do
  * not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
@@ -252,6 +252,68 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     // Forty-nine of the seventy-two at the commit this was written at. It is the
     // largest category in the document, and three files carried nothing else.
     CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_inflation_swap_round_trips", tags) {
+    int files_with_inflation_swap = 0;
+    int files_with_a_publication_schedule = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.InflationSwap.empty())
+            continue;
+
+        ++files_with_inflation_swap;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.inflation_swap.size() == document.InflationSwap.size());
+
+        bool carries_a_schedule = false;
+        for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
+            const auto& in = document.InflationSwap[i];
+            const auto& out = mapped.inflation_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.index == std::string(in.Index));
+            CHECK(out.fix_calendar == std::string(in.FixCalendar));
+            CHECK(out.inflation_calendar == std::string(in.InflationCalendar));
+            if (in.PublicationSchedule)
+                carries_a_schedule = true;
+        }
+
+        // A schedule of rules, dates and derived groups has no column to hold
+        // it, so the mapper counts it. A file that carries one must therefore
+        // name it, and must not be in the round-trip set.
+        if (carries_a_schedule) {
+            ++files_with_a_publication_schedule;
+            CHECK(mapped.unmodelled.count("InflationSwap.PublicationSchedule") == 1);
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "InflationSwap");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.InflationSwap.size()) +
+             " InflationSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.InflationSwap.size()));
+
+        // The mapper stores canonical spellings of the conventions and the day
+        // count, so the export may differ from the document in those. What has
+        // to survive is the value: read the export back, map it again, and
+        // require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.InflationSwap.size() == document.InflationSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
+            INFO(path.string() + ": InflationSwap element " + std::to_string(i));
+            CHECK(remapped.inflation_swap[i] == mapped.inflation_swap[i]);
+        }
+    }
+
+    // Twenty-two of the seventy-two files carry it, and three of them carried
+    // nothing else unmodelled when it went in. Two carry a publication
+    // schedule, and both carry other unmodelled categories as well.
+    CHECK(files_with_inflation_swap == 22);
+    CHECK(files_with_a_publication_schedule == 2);
 }
 
 TEST_CASE("conventions_bma_basis_swap_round_trips", tags) {
@@ -499,10 +561,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Forty-seven of the seventy-two once BMABasisSwap landed: the three files
-    // it cleared on its own on top of the forty-four already clean. The count
-    // is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 47);
+    // Fifty of the seventy-two once InflationSwap landed: the three files it
+    // cleared on its own on top of the forty-seven already clean. The count is
+    // asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 50);
 }
 
 // Hidden by default, and run on demand:

@@ -1,0 +1,317 @@
+:PROPERTIES:
+:ID: 5F2F7697-C770-488C-85E4-CF0AE709EFB8
+:END:
+#+title: ores.refdata.inflation_swap_convention
+#+description: Codegen entity model for the refdata =inflation_swap_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for an inflation swap, where a leg pays a fixed rate against a zero-coupon inflation index.
+#+entity_singular: inflation_swap_convention
+#+entity_plural: inflation_swap_conventions
+#+entity_title: Inflation Swap Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds an inflation swap: the calendars and conventions its
+legs roll on, the day count it accrues on, the zero-coupon inflation index it
+references, and how the index's observations are lagged and adjusted.
+Corresponds to the <InflationSwap> element in ORE conventions.xml. The id field
+is the natural key (ORE <Id> element).
+
+Ten fields are required and the rest are optional. The corpus sets all ten in
+all one hundred and one elements. Of the optional fields it sets only
+=PublicationRoll=, in two elements.
+
+The element carries one field this table does not model, =PublicationSchedule=,
+which ORE types as a schedule of rules, dates and derived schedule groups. No
+column can hold it. Two shipped files set it, and both carry other unmodelled
+categories as well. The mapper counts every element that carries one into
+=mapped_conventions::unmodelled= under =InflationSwap.PublicationSchedule=, so
+the file stays out of the round-trip set and the measurement names the field
+rather than dropping it.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique inflation swap identifier.
+
+#+begin_src cpp :name generator
+std::string("UKRPI_INFLATIONSWAP")
+#+end_src
+
+** fix_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar the fixed leg's fixings are read on.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** fix_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention of the fixed leg, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** day_count_fraction
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Day count fraction the swap accrues on.
+
+#+begin_src cpp :name generator
+std::string("30/360")
+#+end_src
+
+** index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Zero-coupon inflation index the swap references.
+
+#+begin_src cpp :name generator
+std::string("UKRPI")
+#+end_src
+
+** interpolated
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable:    false
+:END:
+
+Whether the index is interpolated between publication dates.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** observation_lag
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Lag between an observation date and the index value used for it, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::string("3M")
+#+end_src
+
+** adjust_inflation_observation_dates
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable:    false
+:END:
+
+Whether an observation date that falls on a holiday moves to the next business day.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** inflation_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar the index's observation dates roll on.
+
+#+begin_src cpp :name generator
+std::string("UK")
+#+end_src
+
+** inflation_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Business day convention of the index's observation dates.
+
+#+begin_src cpp :name generator
+std::string("ModifiedFollowing")
+#+end_src
+
+** publication_roll
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+How a payment date moves when it falls between the index's observation and its publication, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** start_delay
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Delay between the swap's start and its first observation, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** start_delay_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention applied to the start delay.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_inflation_swap_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: inflation_swap_convention
+:entity_plural_short:   inflation_swap_conventions
+:entity_singular_words: inflation swap convention
+:entity_plural_words:   inflation swap conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: isw
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | Id           |
+| index        | Index        |
+| fix_calendar | Fix Calendar |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           inflation_swap_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   inflation_swap_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter inflation swap id |
+| fix_calendar | Fix Calendar | fixCalendarEdit | line_edit |  | true | e.g. TARGET |
+| fix_convention | Fix Convention | fixConventionEdit | line_edit |  | true | e.g. ModifiedFollowing |
+| day_count_fraction | DCF | dayCountFractionEdit | line_edit |  | true | e.g. 30/360 |
+| index | Index | indexEdit | line_edit |  | true | e.g. UKRPI |
+| interpolated | Interpolated | interpolatedEdit | checkbox |  | true |  |
+| observation_lag | Observation Lag | observationLagEdit | line_edit |  | true | e.g. 3M |
+| adjust_inflation_observation_dates | Adjust Observation Dates | adjustInflationObservationDatesEdit | checkbox |  | true |  |
+| inflation_calendar | Inflation Calendar | inflationCalendarEdit | line_edit |  | true | e.g. UK |
+| inflation_convention | Inflation Convention | inflationConventionEdit | line_edit |  | true | e.g. ModifiedFollowing |
+| publication_roll | Publication Roll | publicationRollEdit | line_edit |  |  | e.g. AfterPublicationDate |
+| start_delay | Start Delay | startDelayEdit | line_edit |  |  | e.g. 1M |
+| start_delay_convention | Start Delay Convention | startDelayConventionEdit | line_edit |  |  | e.g. ModifiedFollowing |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 200 |
+| FixCalendar | fix_calendar | Fix Calendar | string | 140 |
+| FixConvention | fix_convention | Fix Convention | string | 160 |
+| DayCounter | day_count_fraction | DCF | string | 120 |
+| Index | index | Index | string | 160 |
+| Interpolated | interpolated | Interpolated | bool | 100 |
+| ObservationLag | observation_lag | Observation Lag | string | 140 |
+| AdjustInflationObservationDates | adjust_inflation_observation_dates | Adjust Observation Dates | bool | 160 |
+| InflationCalendar | inflation_calendar | Inflation Calendar | string | 160 |
+| InflationConvention | inflation_convention | Inflation Convention | string | 170 |
+| PublicationRoll | publication_roll | Publication Roll | string | 160 |
+| StartDelay | start_delay | Start Delay | string | 120 |
+| StartDelayConvention | start_delay_convention | Start Delay Convention | string | 180 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

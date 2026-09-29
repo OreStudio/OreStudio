@@ -1,0 +1,136 @@
+The three provisioning recipes, each from its own empty installation
+====================================================================
+
+Run on 2026-09-29 in eager_maxwell, at branch feature/line-up-the-shell-provisioning
+(the shell and iam service built from the working tree, commit aa4fe8dcc8 plus the
+completing step's party-scope fix).
+
+Each recipe begins with `provision system`, which refuses an installation that is
+not in bootstrap mode, so each one needs its own recreate. The cycle for each:
+
+  compass services stop
+  sleep 60                       # the fleet's pools take a while to let go
+  compass db recreate -y -k
+  compass services start
+  compass shell -l projects/ores.shell/scripts/library/provisioning/<recipe>.ores
+
+The wait matters: a recreate started too soon after the stop aborts with active
+connections, which is captured in
+doc/agile/product_backlog/inbox/a_recreate_fails_while_the_pools_are_still_closing.org.
+
+
+1. barclays_system_provision.ores -- the GLEIF path
+---------------------------------------------------
+
+  > provision system super_admin ... --tenant-code barclays --tenant-name "Barclays Plc"
+      --tenant-hostname barclays_plc --profile gleif_entity
+      --param root_lei=213800LBQA1Y9L22JB70 --param counterparty_size=small
+  [1/3] Creating initial admin account 'super_admin'...
+  [2/3] Logging in as 'super_admin'...
+  [3/3] Provisioning tenant 'barclays' from 'gleif_entity'...
+    Run started: 0f2fa89d-773d-4dc4-a600-18772feb6905
+    [1/3] publish_bundle: completed
+    [2/3] import_lei_hierarchy: completed
+    [3/3] provision_party: completed
+    [4/4] complete_provisioning: completed
+  ✓ All 4 step(s) completed.
+  ✓ System provisioned. Tenant 'Barclays Plc'.
+  > login tenant_admin@barclays_plc ...
+  ✓ Login successful!  Party: FIRSTPLUS FINANCIAL GROUP LIMITED
+  > provision party "BARCLAYS PLC"
+    Run started: 7efb3918-1f2e-4a66-9ca5-e134090b562f
+    [1/1] provision_party: completed
+  ✓ Party 'BARCLAYS PLC' provisioned.
+  > accounts set-default-party "BARCLAYS PLC"
+  ✓ Default party set to 'BARCLAYS PLC'.
+  Script complete: 7 commands executed.
+
+Checked afterwards:
+
+  select t.code, s.name, s.value from ores_variability_system_settings_tbl s ...
+   barclays | onboarding.tenant     | true
+   barclays | system.bootstrap_mode | false
+
+  select count(*) from ores_refdata_counterparties_tbl where tenant_id <> system
+   12959
+
+
+2. acme_system_provision.ores -- the synthetic path
+---------------------------------------------------
+
+  > provision system super_admin ... --tenant-code acme --tenant-name "Acme Corp"
+      --tenant-hostname acme --profile empty_operational
+    [1/4] publish_bundle: completed
+    [2/4] import_lei_hierarchy: completed_with_warnings
+        warn: The starting point names no legal entity, so there was nothing to import.
+    [3/4] provision_party: completed
+    [4/4] complete_provisioning: completed
+  ✓ All 4 step(s) completed.
+  > login tenant_admin@acme ...; synthetic generate --seed 42
+  ✓ Synthetic organisation generated (seed 42):
+    parties: 5  counterparties: 10  business units: 10  portfolios: 20  books: 16
+  > provision party "Lloyds Wealth Management Ltd"
+    [1/1] provision_party: completed
+  ✓ Party 'Lloyds Wealth Management Ltd' provisioned.
+  > accounts set-default-party "Lloyds Wealth Management Ltd"
+  Script complete: 10 commands executed.
+
+The warning is the starting point's own: the operational card may leave the legal
+entity out, and the step says so rather than stopping a run whose tenant is built
+from the party it creates for itself. The generating tool is a recipe step here and
+not provisioning's, which is what the seed profile contract decided.
+
+
+3. how_do_i_provision_the_system_with_acme_corporation_holding_group.ores -- the demonstration path
+---------------------------------------------------------------------------------------------------
+
+  > provision system super_admin ... --tenant-code acme_corporation
+      --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_demo
+    Run started: 1f87dc93-6fd0-4be3-87c3-5eb6af6ead97
+    [1/3] publish_bundle: completed
+    [2/3] import_lei_hierarchy: completed
+    [3/3] provision_party: completed
+    [4/4] load_staff: completed
+    [5/6] attach_photos: completed
+    [6/7] start_market_feeds: completed
+    [7/7] complete_provisioning: completed
+  ✓ All 7 step(s) completed.
+  > compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux ...
+  Published ORE 1.8.16.0-4-g3b62ba248 (x64-linux) successfully.
+  > compute publish-package ORE 1.8.17.0 x64-linux ...
+  Published ORE 1.8.17.0 (x64-linux) successfully.
+  Script complete: 5 commands executed.
+
+Checked afterwards: acme_corporation holds system.bootstrap_mode = false and
+onboarding.tenant = true.
+
+
+What the runs found
+-------------------
+
+The first runs of recipes 1 and 3 left their tenant reporting bootstrap mode, with
+onboarding.tenant false:
+
+  barclays         | onboarding.tenant     | false
+  barclays         | system.bootstrap_mode | true
+
+and the completing step said so:
+
+  [4/4] complete_provisioning: completed_with_warnings
+      warn: The bootstrap mode flag was not cleared: Repository error: Executing
+      INSERT failed: ERROR:  Row already exists: a create cannot replace it. State
+      the version you read to replace the row, or ask for a version replace.
+
+The cause: the completing step acted as the administrator, whose party is one the
+provisioning created, while the tenant's flags live under the tenant's system party.
+The settings write reads the row it replaces back under the scope it writes in, so
+the read found nothing, the write claimed a create, and the insert trigger refused a
+row that was already there. The step now acts as the tenant's system party, and both
+recipes end with the flags the checks above show, one row each and no warning. The
+`empty_operational` path never showed it because its administrator's party is the
+system party; the demonstration and GLEIF paths associate the administrator with the
+parties they create first.
+
+Stated honestly: this defect was on the browser's path too. A tenant provisioned
+from the first run journey with the demonstration card was left reporting bootstrap
+mode with its onboarding incomplete.

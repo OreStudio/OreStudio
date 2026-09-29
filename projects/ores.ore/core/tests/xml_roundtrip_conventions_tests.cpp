@@ -32,8 +32,8 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * twenty-two. The files that use only those twenty-two round trip. The rest do
- * not,
+ * twenty-four. The files that use only those twenty-four round trip. The rest
+ * do not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -252,6 +252,109 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     // Forty-nine of the seventy-two at the commit this was written at. It is the
     // largest category in the document, and three files carried nothing else.
     CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_commodity_forward_round_trips", tags) {
+    int files_with_commodity_forward = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CommodityForward.empty())
+            continue;
+
+        ++files_with_commodity_forward;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.commodity_forward.size() == document.CommodityForward.size());
+
+        for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
+            const auto& in = document.CommodityForward[i];
+            const auto& out = mapped.commodity_forward[i];
+            CHECK(out.id == std::string(in.Id));
+            if (in.SpotDays)
+                CHECK(out.spot_days == static_cast<int>(*in.SpotDays));
+            if (in.PointsFactor)
+                CHECK(out.points_factor == static_cast<double>(*in.PointsFactor));
+            if (in.AdvanceCalendar)
+                CHECK(out.advance_calendar == std::string(*in.AdvanceCalendar));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CommodityForward");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CommodityForward.size()) +
+             " CommodityForward element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CommodityForward.size()));
+
+        // The mapper stores a canonical spelling of the business day convention,
+        // so the export may differ from the document in that. What has to
+        // survive is the value: read the export back, map it again, and require
+        // the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CommodityForward.size() == document.CommodityForward.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
+            INFO(path.string() + ": CommodityForward element " + std::to_string(i));
+            CHECK(remapped.commodity_forward[i] == mapped.commodity_forward[i]);
+        }
+    }
+
+    // Two of the seventy-two files carry it, in five elements between them.
+    CHECK(files_with_commodity_forward == 2);
+}
+
+TEST_CASE("conventions_bond_yield_round_trips", tags) {
+    int files_with_bond_yield = 0;
+    std::size_t elements_with_bond_yield = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.BondYield.empty())
+            continue;
+
+        ++files_with_bond_yield;
+        elements_with_bond_yield += document.BondYield.size();
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.bond_yield.size() == document.BondYield.size());
+
+        for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
+            const auto& in = document.BondYield[i];
+            const auto& out = mapped.bond_yield[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.compounding == std::string(in.Compounding));
+            if (in.PriceType)
+                CHECK(out.price_type == std::string(*in.PriceType));
+            if (in.Accuracy)
+                CHECK(out.accuracy == static_cast<double>(*in.Accuracy));
+            if (in.Guess)
+                CHECK(out.guess == static_cast<double>(*in.Guess));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "BondYield");
+        INFO(path.string() + ": the document has " + std::to_string(document.BondYield.size()) +
+             " BondYield element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.BondYield.size()));
+
+        // The frequency is normalised to the canonical code the other tables
+        // hold, so the export may differ from the document there. What has to
+        // survive is the value: read the export back, map it again, and require
+        // the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.BondYield.size() == document.BondYield.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
+            INFO(path.string() + ": BondYield element " + std::to_string(i));
+            CHECK(remapped.bond_yield[i] == mapped.bond_yield[i]);
+        }
+    }
+
+    // One of the seventy-two files carries it, in five elements.
+    CHECK(files_with_bond_yield == 1);
+    CHECK(elements_with_bond_yield == 5);
 }
 
 TEST_CASE("conventions_commodity_future_round_trips", tags) {

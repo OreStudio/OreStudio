@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T15:12:18.426819Z
+' Generated: 2026-09-29T15:39:21.079608Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -955,6 +955,41 @@ package "refdata" #FFF3E0 {
     either payment convention.
     end note
 
+    entity ores_refdata_bond_yield_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * compounding : text
+          frequency : text
+          price_type : text
+          accuracy : double
+          max_evaluations : integer
+          guess : double
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bond_yield_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Yield Convention Table
+    Describes how ORE builds a bond yield: the compounding it is quoted on, the
+    frequency it pays at, whether the price is clean or dirty, and the tolerances
+    its solver runs to. Corresponds to the <BondYield> element in ORE conventions.xml.
+    The id field is the natural key (ORE <Id> element).
+    One field is required and six are optional. One file carries five elements and
+    sets all six optional fields. The accuracy and the guess are floats in ORE and
+    travel through a double column, because the refdata schema has no float type;
+    a float widens to a double and narrows back with no loss.
+    end note
+
     entity ores_refdata_book_purpose_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1514,6 +1549,42 @@ package "refdata" #FFF3E0 {
     The two period fields and the spot days stay in ORE's spelling, because they
     are tenors rather than frequency enumerations; the day count and the roll
     convention are normalised to the canonical codes the other tables hold.
+    end note
+
+    entity ores_refdata_commodity_forward_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          spot_days : integer
+          points_factor : double
+          advance_calendar : text
+          spot_relative : boolean
+          delivery_location : text
+          business_day_convention : text
+          outright : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_forward_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Forward Convention Table
+    Describes how ORE builds a commodity forward: how many days after the trade it
+    starts, how its points are scaled, the calendar it advances on, and whether it
+    is quoted outright or as a spread to spot. Corresponds to the
+    <CommodityForward> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    One field is required and seven are optional. Two files carry five elements
+    between them, and every one sets all seven optional fields except the delivery
+    location, which none sets.
     end note
 
     entity ores_refdata_commodity_future_conventions_tbl <<temporal>> #C6F0D8 {

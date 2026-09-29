@@ -451,6 +451,53 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
+commodityForwardType
+reverse_commodity_forward(const refdata::domain::commodity_forward_convention& v) {
+    commodityForwardType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    if (v.spot_days)
+        r.SpotDays = static_cast<int64_t>(*v.spot_days);
+    if (v.points_factor)
+        r.PointsFactor = *v.points_factor;
+    if (v.advance_calendar) {
+        commodityForwardType_AdvanceCalendar_t x;
+        static_cast<std::string&>(x) = *v.advance_calendar;
+        r.AdvanceCalendar = x;
+    }
+    if (v.spot_relative)
+        r.SpotRelative = make_bool(*v.spot_relative);
+    if (v.delivery_location) {
+        commodityForwardType_DeliveryLocation_t x;
+        static_cast<std::string&>(x) = *v.delivery_location;
+        r.DeliveryLocation = x;
+    }
+    if (v.business_day_convention)
+        r.BusinessDayConvention = parse_bdc(*v.business_day_convention);
+    if (v.outright)
+        r.Outright = make_bool(*v.outright);
+    return r;
+}
+
+bondYield reverse_bond_yield(const refdata::domain::bond_yield_convention& v) {
+    bondYield r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Compounding) = v.compounding;
+    if (v.frequency)
+        r.Frequency = parse_frequency(*v.frequency);
+    if (v.price_type) {
+        bondYield_PriceType_t x;
+        static_cast<std::string&>(x) = *v.price_type;
+        r.PriceType = x;
+    }
+    if (v.accuracy)
+        r.Accuracy = static_cast<float>(*v.accuracy);
+    if (v.max_evaluations)
+        r.MaxEvaluations = static_cast<int64_t>(*v.max_evaluations);
+    if (v.guess)
+        r.Guess = static_cast<float>(*v.guess);
+    return r;
+}
+
 commodityFutureType
 reverse_commodity_future(const refdata::domain::commodity_future_convention& v) {
     commodityFutureType r;
@@ -1631,6 +1678,65 @@ refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const 
     return r;
 }
 
+refdata::domain::commodity_forward_convention
+conventions_mapper::map_commodity_forward(const commodityForwardType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping commodity forward convention: " << std::string(v.Id);
+
+    refdata::domain::commodity_forward_convention r;
+    r.id = std::string(v.Id);
+
+    if (v.SpotDays)
+        r.spot_days = static_cast<int>(*v.SpotDays);
+
+    if (v.PointsFactor)
+        r.points_factor = *v.PointsFactor;
+
+    if (v.AdvanceCalendar)
+        r.advance_calendar = std::string(*v.AdvanceCalendar);
+
+    if (v.SpotRelative)
+        r.spot_relative = parse_bool(*v.SpotRelative);
+
+    if (v.DeliveryLocation)
+        r.delivery_location = std::string(*v.DeliveryLocation);
+
+    if (v.BusinessDayConvention)
+        r.business_day_convention = normalize_bdc(*v.BusinessDayConvention);
+
+    if (v.Outright)
+        r.outright = parse_bool(*v.Outright);
+
+    set_audit(r);
+    return r;
+}
+
+refdata::domain::bond_yield_convention
+conventions_mapper::map_bond_yield(const bondYield& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << std::string(v.Id);
+
+    refdata::domain::bond_yield_convention r;
+    r.id = std::string(v.Id);
+    r.compounding = std::string(v.Compounding);
+
+    if (v.Frequency)
+        r.frequency = normalize_frequency(*v.Frequency);
+
+    if (v.PriceType)
+        r.price_type = std::string(*v.PriceType);
+
+    if (v.Accuracy)
+        r.accuracy = static_cast<double>(*v.Accuracy);
+
+    if (v.MaxEvaluations)
+        r.max_evaluations = static_cast<int>(*v.MaxEvaluations);
+
+    if (v.Guess)
+        r.guess = static_cast<double>(*v.Guess);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::commodity_future_convention
 conventions_mapper::map_commodity_future(const commodityFutureType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping commodity future convention: " << std::string(v.Id);
@@ -2049,6 +2155,16 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_ibor_index(x);
     });
 
+    r.commodity_forward.reserve(v.CommodityForward.size());
+    std::ranges::transform(v.CommodityForward,
+                           std::back_inserter(r.commodity_forward),
+                           [](const auto& x) { return map_commodity_forward(x); });
+
+    r.bond_yield.reserve(v.BondYield.size());
+    std::ranges::transform(v.BondYield,
+                           std::back_inserter(r.bond_yield),
+                           [](const auto& x) { return map_bond_yield(x); });
+
     r.commodity_future.reserve(v.CommodityFuture.size());
     std::ranges::transform(v.CommodityFuture,
                            std::back_inserter(r.commodity_future),
@@ -2134,9 +2250,7 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("CommodityForward", v.CommodityForward.size());
     count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
-    count_unmodelled("BondYield", v.BondYield.size());
     count_unmodelled("IntradayPowerLoad", v.IntradayPowerLoad.size());
 
     std::size_t rebasing_events = 0;
@@ -2223,6 +2337,14 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.IborIndex.reserve(v.ibor_index.size());
     for (const auto& x : v.ibor_index)
         r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.CommodityForward.reserve(v.commodity_forward.size());
+    for (const auto& x : v.commodity_forward)
+        r.CommodityForward.push_back(reverse_commodity_forward(x));
+
+    r.BondYield.reserve(v.bond_yield.size());
+    for (const auto& x : v.bond_yield)
+        r.BondYield.push_back(reverse_bond_yield(x));
 
     r.CommodityFuture.reserve(v.commodity_future.size());
     for (const auto& x : v.commodity_future)

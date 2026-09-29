@@ -226,6 +226,10 @@
 \ir ./refdata_cms_spread_option_conventions_notify_trigger_create.sql
 \ir ./refdata_commodity_future_conventions_create.sql
 \ir ./refdata_commodity_future_conventions_notify_trigger_create.sql
+\ir ./refdata_commodity_forward_conventions_create.sql
+\ir ./refdata_commodity_forward_conventions_notify_trigger_create.sql
+\ir ./refdata_bond_yield_conventions_create.sql
+\ir ./refdata_bond_yield_conventions_notify_trigger_create.sql
 \ir ./refdata_overnight_index_conventions_create.sql
 \ir ./refdata_overnight_index_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql

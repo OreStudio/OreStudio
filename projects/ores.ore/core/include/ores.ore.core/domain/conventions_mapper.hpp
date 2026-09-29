@@ -25,6 +25,8 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/bond_yield_convention.hpp"
+#include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
@@ -107,6 +109,8 @@ struct mapped_conventions {
     std::vector<refdata::domain::cds_convention> cds;
     std::vector<refdata::domain::cms_spread_option_convention> cms_spread_option;
     std::vector<refdata::domain::commodity_future_convention> commodity_future;
+    std::vector<refdata::domain::commodity_forward_convention> commodity_forward;
+    std::vector<refdata::domain::bond_yield_convention> bond_yield;
 
     /**
      * @brief The categories the mapper read but does not model, and how many
@@ -206,6 +210,11 @@ public:
 
     static refdata::domain::commodity_future_convention
     map_commodity_future(const commodityFutureType& v);
+
+    static refdata::domain::commodity_forward_convention
+    map_commodity_forward(const commodityForwardType& v);
+
+    static refdata::domain::bond_yield_convention map_bond_yield(const bondYield& v);
 
     /**
      * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.

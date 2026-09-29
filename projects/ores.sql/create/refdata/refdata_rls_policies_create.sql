@@ -386,6 +386,37 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Commodity Forward Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_commodity_forward_conventions_tbl enable row level security;
+
+drop policy if exists commodity_forward_conventions_tenant_isolation_policy
+    on ores_refdata_commodity_forward_conventions_tbl;
+
+create policy commodity_forward_conventions_tenant_isolation_policy on ores_refdata_commodity_forward_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Bond Yield Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_bond_yield_conventions_tbl enable row level security;
+
+drop policy if exists bond_yield_conventions_tenant_isolation_policy on ores_refdata_bond_yield_conventions_tbl;
+
+create policy bond_yield_conventions_tenant_isolation_policy on ores_refdata_bond_yield_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currency Pair Classifications
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_pair_classifications_tbl enable row level security;

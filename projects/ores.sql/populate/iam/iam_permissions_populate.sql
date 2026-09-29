@@ -479,6 +479,16 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:write',        'Create and modify commodity future conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:delete',       'Delete commodity future conventions');
 
+    -- Commodity forward conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_forward_conventions:read',        'View commodity forward conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_forward_conventions:write',       'Create and modify commodity forward conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_forward_conventions:delete',      'Delete commodity forward conventions');
+
+    -- Bond yield conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bond_yield_conventions:read',               'View bond yield conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bond_yield_conventions:write',              'Create and modify bond yield conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bond_yield_conventions:delete',             'Delete bond yield conventions');
+
     -- Tenor anchors permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:read',                       'View tenor anchors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:write',                      'Create and modify tenor anchors');

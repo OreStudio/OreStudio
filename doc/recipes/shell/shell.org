@@ -1067,3 +1067,11 @@ tangled into the runnable script library
 * Commodity Future Conventions
 
 - [[id:8C685BAC-85D1-548F-B146-098C60CA78BF][How do I run the commodity_future_conventions commands from the shell?]]
+
+* Bond Yield Conventions
+
+- [[id:B973BF1A-336E-5EE6-B8CF-6010AF70C38D][How do I run the bond_yield_conventions commands from the shell?]]
+
+* Commodity Forward Conventions
+
+- [[id:91F7757D-D3E0-553C-A4F5-BFE8484E8A43][How do I run the commodity_forward_conventions commands from the shell?]]

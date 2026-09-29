@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: 677F74C5-3792-4497-A277-8A2AAB30555A
+:END:
+#+title: ores.refdata.commodity_forward_convention
+#+description: Codegen entity model for the refdata =commodity_forward_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a commodity forward, where one leg pays a fixed price and the other the spot price.
+#+entity_singular: commodity_forward_convention
+#+entity_plural: commodity_forward_conventions
+#+entity_title: Commodity Forward Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds a commodity forward: how many days after the trade it
+starts, how its points are scaled, the calendar it advances on, and whether it
+is quoted outright or as a spread to spot. Corresponds to the
+<CommodityForward> element in ORE conventions.xml. The id field is the natural
+key (ORE <Id> element).
+
+One field is required and seven are optional. Two files carry five elements
+between them, and every one sets all seven optional fields except the delivery
+location, which none sets.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique commodity forward identifier.
+
+#+begin_src cpp :name generator
+std::string("PM:XAUUSD")
+#+end_src
+
+** spot_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Number of business days between the trade and the forward's start.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** points_factor
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+Factor the quoted points are multiplied by to give a price.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** advance_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the forward's start date advances on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spot_relative
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the forward is quoted relative to spot rather than outright.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** delivery_location
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Location the underlying is delivered to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention the start date rolls on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** outright
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the forward trades outright rather than as a spread.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_forward_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_forward_convention
+:entity_plural_short:   commodity_forward_conventions
+:entity_singular_words: commodity forward convention
+:entity_plural_words:   commodity forward conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cmfw
+:END:
+
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| id              | Id              |
+| advance_calendar | Advance Calendar |
+| modified_by     | Modified By     |
+| version         | Version         |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           commodity_forward_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   commodity_forward_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|| id | Id | idEdit | line_edit | true | true |  || spot_days | Spot Days | spot_daysEdit | line_edit |  |  |  || points_factor | Points Factor | points_factorEdit | line_edit |  |  |  || advance_calendar | Advance Calendar | advance_calendarEdit | line_edit |  |  |  || spot_relative | Spot Relative | spot_relativeEdit | checkbox |  |  |  || delivery_location | Delivery Location | delivery_locationEdit | line_edit |  |  |  || business_day_convention | Business Day Convention | business_day_conventionEdit | line_edit |  |  |  || outright | Outright | outrightEdit | checkbox |  |  |  |
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|| Id | id | Id | string | 180 || SpotDays | spot_days | Spot Days | int | 100 || PointsFactor | points_factor | Points Factor | double | 110 || AdvanceCalendar | advance_calendar | Advance Calendar | string | 180 || SpotRelative | spot_relative | Spot Relative | bool | 80 || DeliveryLocation | delivery_location | Delivery Location | string | 180 || BusinessDayConvention | business_day_convention | Business Day Convention | string | 180 || Outright | outright | Outright | bool | 80 || Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

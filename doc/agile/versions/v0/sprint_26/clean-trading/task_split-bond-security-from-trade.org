@@ -226,3 +226,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** Unit 1 delivered (2026-09-29)
+
+The six fields ORE has and we lacked are on =bond_issue= -- =credit_group=,
+=volatility_curve_id=, =price_quote_method=, =price_quote_base_value=,
+=sub_type= and =price_type=, the last a checked {Clean, Dirty} code with a
+soft foreign key to the price-type reference table -- and
+=bond_notional= moved to =bond_instrument.notional= by decision D18.
+
+Measured on the rebase onto =0d9d99cb7e=: the whole-tree build exits 0 with
+zero =error:=; =check_component_drift.py --component trading-cpp= reports
+no drift; =compass db recreate -y -k= exits 0 with =price_type= and
+=notional= live and =bond_notional= gone; =ctest= is 89 of 89 on the
+recreated database; =pytest projects/ores.codegen/tests= is 997 passed. No
+generator capability was needed.
+
+Committed as =ab15b141e3= with the ER diagram in =bbaf77d3c8=, on
+=feature/split-bond-security-from-trade=.

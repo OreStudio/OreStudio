@@ -128,13 +128,14 @@ function statusBanner() {
 
 function closedPanel() {
     return `
-        <div class="panel">
+        <div class="card">
+            <div class="stepheader">${header()}</div>
             <h2>Registration is closed</h2>
-            <p class="lede">This deployment does not accept self-registration. Ask an administrator to create your account.</p>
+            <p class="lead">This deployment does not accept self-registration. Ask an administrator to create your account.</p>
             <div class="panel-soft">
                 <span class="code">signup_disabled</span>
             </div>
-            <div class="actions">
+            <div class="stepfoot">
                 <button class="btn" data-act="to-door">Back to sign in</button>
             </div>
         </div>`;
@@ -178,7 +179,7 @@ function outcomePanel(withSummary) {
 
 function renderA() {
     if (ui.state === 'closed') {
-        return `<div class="page narrow">${header()}${closedPanel()}</div>`;
+        return `<div class="page narrow">${closedPanel()}</div>`;
     }
     if (ui.state === 'created' || ui.state === 'waiting') {
         return `<div class="page narrow">${header()}${outcomePanel(true)}</div>`;
@@ -209,11 +210,11 @@ function renderA() {
 /* ---------------------------------------------------------------- */
 
 function renderB() {
-    const closed = ui.state === 'closed';
+    if (ui.state === 'closed') {
+        return `<div class="page narrow">${closedPanel()}</div>`;
+    }
     const done = ui.state === 'created' || ui.state === 'waiting';
-    const left = closed
-        ? closedPanel()
-        : done
+    const left = done
           ? `<div class="panel">
                  <div class="outcome">
                      <div class="mark ${ui.state === 'waiting' ? 'warn' : 'ok'}">${ui.state === 'waiting' ? '&#9203;' : '&#10003;'}</div>
@@ -247,12 +248,7 @@ function renderB() {
                 <div>${left}</div>
                 <div class="panel">
                     <h2>Where this account will land</h2>
-                    ${closed
-                        ? `<div class="status-banner warn">
-                               <div class="head">Not available</div>
-                               <p>This deployment accepts no registrations, so there is nowhere for an account to land.</p>
-                           </div>`
-                        : statusBanner()}
+                    ${statusBanner()}
                     ${destinationRows()}
                 </div>
             </div>
@@ -281,7 +277,7 @@ function railEntry(label, index, current) {
 
 function renderC() {
     if (ui.state === 'closed') {
-        return `<div class="page narrow">${header()}${closedPanel()}</div>`;
+        return `<div class="page narrow">${closedPanel()}</div>`;
     }
 
     const step = ui.state === 'created' || ui.state === 'waiting' ? 3 : ui.state === 'refused' ? 2 : ui.step;

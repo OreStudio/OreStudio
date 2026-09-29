@@ -28,9 +28,9 @@ A report definition's run is configured by typed entities for its setup, its mar
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | The analytic type lookup and the run setup entity have landed; the analytic list and its parameter entities follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Model =report_analytic= and its first parameter entities, then the market bindings. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -57,7 +57,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Analytic types a run can ask for | 35 in the corpus, seeded | =psql -f projects/ores.sql/populate/reporting/reporting_analytic_types_populate.sql= | =86dacf950d= |
+| Setup parameters in use | 40, of which asofDate, inputPath, outputPath and logFile appear in all 416 run documents | =python3= census over =external/ore/examples/= | =69f11695db= |
+| Run documents in the corpus | 416 | the same | =69f11695db= |
 
 * Notes
 

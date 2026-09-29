@@ -23,9 +23,9 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The sign-up analysis is done: the live registration path reads neither flag, so the deployment's self-registration switch is advisory, and a registration that names no hostname lands in the system tenant. The record lists the six decisions the target state must settle. |
+| Now           | The survey and the target state are both written. The live registration path reads neither flag, so the deployment's switch is advisory; the target state puts a default on the row its actor may write, makes waiting an account status, and gives the door one policy read. No registration code has changed. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the target state as a knowledge document, then schedule the implementation tasks from it. |
+| Next          | Review the target state, prototype the registration door, then schedule the implementation from the document's change table. |
 | Last touched  | 2026-09-29                               |
 
 * Acceptance
@@ -42,9 +42,32 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8F35000B-95D7-4FA6-92DF-915981CD17FA][Analyse the sign-up process end to end]] | DONE | 2026-09-29 | 2026-09-29 | Record what self-registration does today, where a new account lands, and every decision the sign-up journey waits on, so the target state can be written before any code changes. |
+| [[id:70FF2285-2801-42FA-9BC8-9AEFB05DEDF1][Define the registration target state]] | DONE | | 2026-09-29 | Write the knowledge document that settles where a self-registered account lands: the default tenant, party and role flags, the pending state, the policy read and the settings write path. |
 
 * Decisions
 
+- *A default lives on the row its actor may write.* Row-level security decides who may set a value, so a default nobody can set is not a default. The tenant flag belongs to the super administrator, because only a system-tenant session may write a tenant row; the party and role flags belong to the tenant administrator, because those tables are tenant-isolated.
+- *A boolean stays a setting; a reference becomes a flag.* The two registration flags have no referent and stay in the variability settings, where they already live. A default party or role is a reference, and stored as a string it can name a row that does not exist — which is the failure mode of the hard-coded =Viewer= it replaces.
+- *Waiting is a state, not an absence.* A new =account_status= of =pending= is written when the tenant nominates no default party, read by the roster, and refused by sign-in with its own code and its own words.
+- *The door asks one policy read,* =iam.v1.auth.registration-policy=, separate from the bootstrap read: one answers what the deployment offers a person who is not in it, the other whether the deployment has been set up.
+- *The address names the tenant.* Both Entry journeys resolve the tenant from the address they are served at, so the person types a username and not a =user@hostname=. A registration that resolves to no tenant is refused with a reason; it never falls back to the system tenant by omission.
+- *A refusal is a code.* Both responses gain =error_code=, so a screen branches on a value rather than on English prose.
+- *The authorisation flag closes the door honestly.* Until the approval workflow exists, =system.signup_requires_authorization= closes registration and the policy read states why. It must not claim an approval that nothing performs.
+- *The target state lands with the fix, by the product owner's choice.* The open registration door stays open until the implementation lands. That is a known and accepted risk for the duration of the work, and it is the reason the flag enforcement is the first implementation task rather than the last.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] | knowledge | The target state: where a registration lands, what it receives, and who may change each. |
+| [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] | investigation | The survey the target state answers: what exists, and the two defects it found. |
+| [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] | user_journey | The two journeys this story implements. |
+| [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] | knowledge | How a pre-authentication request resolves its tenant, which both journeys follow. |
+| [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] | knowledge | The checklist the Entry-journey section is worked against. |
+
 * Out of scope
 
--
+- The approval workflow behind =system.signup_requires_authorization=, which is a workflow in =ores.workflow=.
+- Email verification, invitation delivery and the notification that tells an administrator somebody is waiting.
+- Self-service password recovery from the door, which needs a delivery mechanism outside IAM.
+- The Directory screens that release a pending account and show it on the roster. The target state states the requirement; [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]] owns the screen.

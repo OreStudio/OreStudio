@@ -33,6 +33,14 @@ authorisation, and the vocabulary the rest of the cluster uses. The
 authentication and authorisation distinction is worth slowing down on:
 almost every access bug is one being mistaken for the other.
 
+** How an identity comes into being
+
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding
+Defaults]] — the three questions a registration answers, the tenant a new
+account lands in, the party it joins and the role it receives, and who may change
+each. Read it before the role model below, because a default role is the first
+role an account ever holds.
+
 ** What a role grants
 
 [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] —

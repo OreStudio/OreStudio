@@ -41,6 +41,12 @@ account lands in, the party it joins and the role it receives, and who may chang
 each. Read it before the role model below, because a default role is the first
 role an account ever holds.
 
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][Entry Journeys: Server-Side Target
+State]] — the interaction that carries the policy out: the layers, the order in
+which a sign-in is refused, the branch a registration takes, and the code each
+refusal carries. Read it with the page above, because one decides and the other
+carries it out.
+
 ** What a role grants
 
 [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] —

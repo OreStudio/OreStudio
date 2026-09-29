@@ -1,0 +1,69 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Sign up: an account that works, or an account that waits
+
+actor Person
+participant "ores.web" as web
+participant BFF as bff
+participant "IAM auth handler" as auth
+participant "account service" as acct
+participant "authorization service" as rbac
+database "PostgreSQL\n(tenant and party RLS)" as db
+
+Person -> web : username, email and password,\nagainst the rules the policy read stated
+web -> bff : POST /api/signup
+bff -> bff : rate limit the attempt
+bff -> auth : iam.v1.auth.signup {principal, email, hostname}
+
+auth -> db : read system.user_signups at system scope
+alt sign-ups are closed, or need an approval nothing performs
+    auth --> bff : refusal signup_disabled,\nor signup_requires_authorization
+else the door is open
+    auth -> db : resolve the tenant by the address,\nelse the tenant flagged is_registration_default
+    alt no tenant resolves
+        auth --> bff : refusal no_registration_destination
+    else a tenant is named
+        auth -> db : is the username free, the email well formed and unused
+        auth -> db : does the password meet the policy
+        auth -> db : read the tenant's flagged role
+        alt no role is nominated
+            auth --> bff : refusal no_default_role
+        else a role is nominated
+            acct -> db : create the account of type user, and its login record
+            rbac -> db : assign the nominated role
+            auth -> db : read the tenant's flagged party
+            alt a party is nominated
+                auth -> db : write the association,\naccount_status = active
+                auth --> bff : success, active,\nwith the party and the role named
+            else no party is nominated
+                auth --> bff : success, pending, with the role named
+            end
+        end
+    end
+end
+
+bff --> web : the answer, with its code
+web --> Person : the confirmation: what the account holds,\nand what it still waits for
+note over Person, web
+  A pending account is refused at the door with
+  account_pending, and the refusal says what it waits for.
+end note
+
+@enduml

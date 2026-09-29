@@ -290,7 +290,7 @@ English prose. Both responses gain an =error_code=, drawn from the existing
 | Subject | Codes |
 |---------+-------|
 | =signup_response= | =signup_disabled=, =signup_requires_authorization=, =no_registration_destination=, =no_default_role=, =username_taken=, =email_taken=, =weak_password=, =invalid_request= |
-| =login_response= | =invalid_credentials=, =account_locked=, =account_pending=, =no_party_assignment=, =bootstrap_mode= |
+| =login_response= | =invalid_credentials=, =account_locked=, =account_pending=, =no_party_assignment=, =tenant_inactive=, =bootstrap_mode= |
 
 The message stays for a human and may change; the code is what a screen branches
 on, which is what makes each branch a screen state rather than a guess.

@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 504863AB-C45A-47E8-BB77-AADCB620A305
+:END:
+#+title: Entry Journeys: Server-Side Target State
+#+description: How the server handles sign in and sign up: the layers, the interactions, the refusals, where the state lives, and the branch each journey takes.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:security:identity:journeys:entry:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+* Summary
+
+[[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] and [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] are two conversations with one
+door, and almost all of the work behind them is the server's. This page is the
+target state for that work: which layer owns what, the order in which the server
+refuses a sign-in, the branch a registration takes, the code each refusal
+carries, and where every piece of state lives.
+
+It is the companion to [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]], which settles
+the *policy*: the default tenant, party and role, the pending state, and the
+switch. This page settles the *interaction* — how a request reaches those
+decisions and what comes back. The survey both answer to is
+[[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]].
+
+* The layers, and what each one owns
+
+| Layer | What it is | What it owns |
+|-------+------------+--------------|
+| =ores.web= | The browser application | The screens. It holds an opaque cookie and never a token, so it cannot decide by itself whether it is signed in: it asks. |
+| The BFF | The browser's only HTTP surface, and one NATS connection per session | The token, the party the session is scoped to, and the translation of a cookie into an authenticated NATS call. It forwards the address the request arrived at, so the service can resolve the tenant. |
+| NATS subjects | =iam.v1.auth.*=, =iam.v1.accounts.select-party=, and the entity writes the defaults use | The contract. A step reaches the server through one subject, and the browser names none of them directly: the BFF has one route per step. |
+| The IAM auth handler | =iam.v1.auth.login=, =.signup=, =.logout=, =.refresh= and the policy read | The door: resolving the tenant, reading the flags and the defaults, taking the branch, issuing the token, and stating the refusal. |
+| The account service | The credential check and the security state | The password comparison, the failed-attempt counter, the lock at five, the last sign-in, and the session row. |
+| The authorization service | Roles and assignments | Granting the nominated role at registration, and the role assignments the access journeys read. |
+| PostgreSQL, with RLS | Tenant and party isolation, and the settings | The account, login record, session and account-party rows; the settings; and the flags the defaults live on. |
+
+* Where the state lives
+
+| State | Home | Survives a reload |
+|-------+------+-------------------|
+| Whether the browser is signed in | An opaque cookie, held by the browser | Yes, until it expires |
+| The token, the tenant, the party, the build, =passwordResetRequired= | The BFF's session map, keyed by a hash of the cookie | Yes, while the BFF runs; a BFF restart ends every session |
+| The session itself: account, tenant, start and end time, client address | The IAM session row | Yes |
+| Failed attempts and the lock | The login record | Yes |
+| The switch, the default tenant, the default party, the default role | The settings and the flags on the tenant, party and role rows | Yes |
+| A provisioning run, and any journey that waits on a person | A workflow instance in =ores.workflow= | Yes; see [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] |
+
+The browser holds no truth about the session. That is why a screen that needs to
+know asks the BFF, and why the door can be re-entered by a person who has not
+signed in at all.
+
+* The door asks the policy before it asks for anything
+
+The one unauthenticated read the door makes. It answers the switch, the
+destination and whether a registration can be used at once, so the screen knows
+whether to offer a form before anybody types.
+
+#+caption: Registration: what the deployment offers the door.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/entry_registration_policy_sequence.png]]
+
+Source: [[./entry_registration_policy_sequence.puml][=entry_registration_policy_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/entry_registration_policy_sequence.puml=.
+
+The read is separate from =iam.v1.bootstrap.status=. The bootstrap read answers
+whether the deployment has been set up; this one answers what it offers a person
+who is not in it yet, and they change for different reasons.
+
+* Sign in
+
+The server's order is the screen's order, and it is deliberate: the lock is
+tested before the password, the account's state before the party, and the party
+before the workspace. Each branch is a refusal the screen states in its own
+words, which is why the reply carries a code.
+
+#+caption: Sign in: the door to the session.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/entry_sign_in_sequence.png]]
+
+Source: [[./entry_sign_in_sequence.puml][=entry_sign_in_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/entry_sign_in_sequence.puml=.
+
+** The order of the branch
+
+1. *A locked account is refused first,* before the password is compared, so a
+   correct password does not open it and the person is told what is actually
+   wrong.
+2. *A wrong password is refused* after the counter is incremented, and the
+   counter locks the account at five. The reply does not say how many attempts
+   remain, so the screen cannot leak the counter to somebody guessing.
+3. *A pending account is refused* with its own code. This branch is new: it is
+   the state a registration leaves when its tenant nominates no default party.
+4. *An account with no association at all* is refused, and the refusal asks the
+   person to contact an administrator.
+5. *Exactly one party is bound without asking,* and the token carries it,
+   together with the visible party set that party-level RLS reads.
+6. *Several parties return a short-lived token* that can do nothing but choose
+   one. The reply names each party and marks the stored default.
+
+Nothing here holds server state beyond the session row and the login record, so
+the journey keeps no state of its own. A person who closes the page and comes
+back starts a new session rather than resuming the old one.
+
+** The two clients reach the same subject
+
+The =ores.shell= drives the same subjects, so a screen-only change here is a
+change to one caller and not to the capability. What differs is who resolves the
+tenant: the browser's address does it, and the shell states it.
+
+* Sign up
+
+Registration is the one path where an unauthenticated caller creates a row, so
+it reads its own gate first and refuses before it writes anything.
+
+#+caption: Sign up: an account that works, or an account that waits.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/entry_sign_up_sequence.png]]
+
+Source: [[./entry_sign_up_sequence.puml][=entry_sign_up_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/entry_sign_up_sequence.puml=.
+
+Three properties are worth stating plainly, because each is the opposite of what
+the code does today:
+
+- *The gate is read before anything is created.* The switch is the deployment's,
+  read at system scope, and it is seeded =false=; a deployment nobody has asked
+  refuses registration. Today the live path reads neither flag, so the switch is
+  advisory and the door is open.
+- *The tenant is resolved, never assumed.* The address names it; failing that
+  the flagged default tenant does; failing both, the registration is refused
+  with =no_registration_destination= rather than landing in the system tenant by
+  omission.
+- *The account's state is written, not inferred.* A tenant that nominates a
+  party gets an active account with the association. One that does not gets a
+  =pending= account, which the roster can find and the door refuses with
+  =account_pending=.
+
+The person is never signed in by the registration. A pending account cannot open
+a session, and an active one should arrive at the door deliberately.
+
+* The refusal codes
+
+A refusal is a value the screen branches on, not a sentence it matches. Both
+Entry responses carry =error_code=, drawn from the existing error-code
+vocabulary where it already fits.
+
+#+ATTR_HTML: :class hug-leading
+| Subject | Code | What happened |
+|---------+------+---------------|
+| =login_response= | =invalid_credentials= | No such account, a wrong password, or a tenant that cannot be resolved. The one sentence is deliberate: it says nothing about which account exists. |
+| =login_response= | =account_locked= | Five failed attempts have locked the account. Only an administrator clears it. |
+| =login_response= | =account_pending= | The account exists and an administrator has not finished setting it up. |
+| =login_response= | =no_party_assignment= | The account works in no party. |
+| =login_response= | =tenant_inactive= | The account's tenant is suspended or terminated. |
+| =login_response= | =bootstrap_mode= | The deployment has no account to sign in with yet. |
+| =signup_response= | =signup_disabled= | The deployment does not accept registrations. |
+| =signup_response= | =signup_requires_authorization= | The deployment asks for an approval nothing performs yet, so the door closes rather than pretending. |
+| =signup_response= | =no_registration_destination= | No tenant resolves for this address and none is flagged as the default. |
+| =signup_response= | =no_default_role= | The tenant nominates no role, so the account would hold nothing. |
+| =signup_response= | =username_taken=, =email_taken= | The name or the address is already in use. |
+| =signup_response= | =weak_password= | The password does not meet the policy the server enforces. |
+| =signup_response= | =invalid_request= | A field is missing or malformed. |
+
+The message stays for a human and may change; the code is the contract. A screen
+that branches on the message breaks the first time a sentence is improved.
+
+* What this changes
+
+The change table is [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]]. Read against
+this page, the parts that touch the interaction are:
+
+- =iam.v1.auth.registration-policy= is a new read, and the door asks it first.
+- =iam.v1.auth.signup= gains the flag reads, the tenant resolution, the status
+  write and the codes, and stops creating an account in the system tenant.
+- =iam.v1.auth.login= gains =error_code=, the pending refusal, and the tenant
+  resolved from the address rather than typed into the username.
+- The BFF gains two routes, =GET /api/registration-policy= and
+  =POST /api/signup=, the second under the same limiter family as the first, and
+  forwards the hostname on both Entry paths.
+- The wire protocol gains the exports and the operation entries those calls
+  need. It has the sign-up schemas generated already; the browser cannot reach
+  them.
+- Every Entry dialog carries the [[id:7B32CA43-239F-4553-8849-3FA3F499B254][rail and the splash header]], and the
+  registration door is drawn on =JourneyPage= rather than on a rail of its own.
+
+* See also
+
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — the policy this page's interactions carry out.
+- [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] and [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the journeys.
+- [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] — the survey, and the two defects these flows correct.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how a pre-authentication request resolves its tenant.
+- [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — the party branch, and the visible party set the token carries.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — where a journey that does wait on somebody keeps its state.
+- [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] and [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]] — the subjects whose replies gain a code.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster this page belongs to.

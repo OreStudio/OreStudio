@@ -28,14 +28,14 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Six of the sixteen categories are modelled, so thirty-four of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Model =TenorBasisSwap=, which clears five files on its own, then =ZeroInflationIndex=, which clears five. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
 
-- Each of the sixteen categories has an entity, a create and a drop script, and a row in the RLS policies., a create and a drop script, and a row in the RLS policies.
+- Each of the sixteen categories has an entity, a create and a drop script, and a row in the RLS policies.
 - The mapper reads and writes each category, and its count of what it skips is zero.
 - The conventions kind is registered with the harness and all seventy-two files round trip.
 
@@ -57,10 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 11 after five | =ores.ore.core.tests "[.][conventions]" -s= | =6ceed07fc8= |
-| Files carrying an unmodelled category | 63 at the start, 50 after five | the same | =6ceed07fc8= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 22 after five | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =6ceed07fc8= |
-| Files a single category would clear, now | TenorBasisTwoSwap 12, and one each for CommodityFuture, InflationSwap and TenorBasisSwap | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =6ceed07fc8= |
+| Categories the mapper does not model | 16 at the start, 10 after six | =ores.ore.core.tests "[.][conventions]" -s= | =06353affc7= |
+| Files carrying an unmodelled category | 63 at the start, 38 after six | the same | =06353affc7= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 34 after six | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =06353affc7= |
+| Files a single category would clear, now | TenorBasisSwap 5 and ZeroInflationIndex 5, then one each for CmsSpreadOption, CommodityFuture and InflationSwap | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =06353affc7= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -86,12 +86,19 @@ task and name that file in the Command column.
   trip outright went from nine to twelve. Its two enumerations are stored in
   ORE's own spelling, because they are closed enumerations with no aliases and
   the token is what an export has to write back.
+- =TenorBasisTwoSwap= is modelled: eleven fields across forty-six files, the
+  largest single category left when it went in. It is the first convention whose
+  legs differ from each other rather than from one quoted leg, so each leg
+  carries its own frequency, convention, day count and index and the mapper
+  normalises three enumerations per leg. Twelve files carried it and nothing
+  else unmodelled, more than the rest of the corpus put together, which is why
+  it took the round-trip count from twenty-two to thirty-four in one category.
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Sixteen were unmodelled and three have landed, so
-  thirteen remain. The expensive ones are
-  =CrossCurrencyBasis= at twenty-five fields across forty-nine files and
-  =CommodityFuture= at thirty-four fields.
+  mapper in both directions. Sixteen were unmodelled and six have landed, so ten
+  remain. The expensive one left is =CommodityFuture= at thirty-four fields
+  across five files; =TenorBasisSwap= at fifteen fields across twenty-nine files
+  is the next-best win, because it clears five files on its own.
 
 * Test Scenarios
 
@@ -108,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2357][#2357]] | [refdata] Model the swap index convention |
+| [[https://github.com/OreStudio/OreStudio/pull/2357][#2357]] | [refdata] Model the convention categories the mapper skips |
 
 * Review
 

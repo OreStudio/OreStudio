@@ -14,8 +14,12 @@ it skips into `mapped_conventions::unmodelled` and logs a warning per category.
 
 ## The categories the corpus uses and the mapper does not model
 
-Sixteen of the seventeen unmodelled categories appear in the corpus.
-`TenorBasisTwoSwap`, `FxOptionTimeWeighting` and `ZeroInflationIndex` do not.
+Sixteen of the seventeen unmodelled categories appear in the corpus; only
+`FxOptionTimeWeighting` does not.
+
+**Correction.** An earlier version of this sentence named `TenorBasisTwoSwap`
+and `ZeroInflationIndex` as absent. Both appear, in forty-six and six files, and
+the table below has always shown them.
 
 | Category | Files | Elements |
 |----------|-------|----------|
@@ -48,8 +52,11 @@ Seventeen categories were unmodelled between them. Sixteen appear in the corpus;
 only `FxOptionTimeWeighting` does not.
 
 Sixty-three of the seventy-two files carry at least one of them, and the list
-above is as it stood before any category was modelled. Three have since landed,
-so the live numbers are on the task.
+above is as it stood before any category was modelled. Six of the sixteen have
+since landed -- SwapIndex, Future, FxOption, AverageOIS, CrossCurrencyBasis and
+TenorBasisTwoSwap -- so the live numbers are on the task. At `06353affc7` the
+mapper models fifteen of the twenty-six categories, ten remain unmodelled,
+thirty-eight files still carry one, and thirty-four round trip outright.
 
 ## What the nine files that use only modelled categories fail on
 
@@ -95,8 +102,10 @@ catches a category the mapper reads and does not model; the second tolerates the
 canonicalisation while still catching a value the mapper got wrong, because a
 value the mapper got wrong survives neither direction.
 
-With that in place the nine files that carry only modelled categories round
-trip, and they are asserted green rather than measured.
+With that in place the files that carry only modelled categories round trip,
+and they are asserted green rather than measured. The count was nine when this
+was written and is thirty-four once the sixth category landed; the per-category
+case asserts each one as it lands, and the whole-kind case asserts the count.
 
 ## What this means for the work
 
@@ -111,5 +120,6 @@ Two kinds of change remain, in order of how much they buy:
 
 Until the categories land the kind stays measured by a hidden probe rather than
 asserted green, because a test that passes while a document loses a category is
-worse than a measurement a person reads. The nine files that do not lose one are
-asserted.
+worse than a measurement a person reads. The files that do not lose one are
+asserted, and the count of them is asserted with them so that it cannot grow
+quietly.

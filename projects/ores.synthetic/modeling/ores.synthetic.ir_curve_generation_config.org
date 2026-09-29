@@ -314,6 +314,30 @@ required) when =price_source= is "vintage"; empty when "fixed" -- see
 std::string("")
 #+end_src
 
+** vintage_series_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Identity of the market-data series this curve's vintage observation is
+read from, as an oresmd URI (e.g.
+"oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm"). Only
+populated (and required) when =price_source= is "vintage"; empty when
+"fixed" -- see =price_source=.
+
+The series is named by the config rather than looked up by the
+registry's decomposition of its key: the dataset that publishes the
+vintage -- the IR deposit grid or the FX driver rates -- names its rows'
+own ORE keys, and a series' identity is what the catalog is keyed by, so
+the config is where the coupling belongs. =vintage_source= and
+=vintage_date= say which observation, this says which series.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -407,7 +431,7 @@ std::nullopt
 | "source_name" <> ''                                       |
 | "ticks_per_hour" > 0                                       |
 | "price_source" in ('fixed', 'vintage')                    |
-| ("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '') |
+| ("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '' and "vintage_series_uri" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '' and "vintage_series_uri" <> '') |
 
 * Foreign keys
 
@@ -522,6 +546,7 @@ std::nullopt
 | price_source                       | Price Source                   | priceSourceEdit                | line_edit     |        | true        | fixed, or vintage                         |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | vintage_source                     | Vintage Source                 | vintageSourceEdit              | line_edit     |        |             | Required if Price Source is vintage, e.g. ore.reference |            |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | vintage_date                       | Vintage Date                   | vintageDateEdit                | line_edit     |        |             | Required if Price Source is vintage, YYYY-MM-DD |          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| vintage_series_uri                 | Vintage Series URI             | vintageSeriesUriEdit           | line_edit     |        |             | Required if Price Source is vintage, e.g. oresmd://ir/usd?tenor=2d&quote=mm |                |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | description                        | Description                    | descriptionEdit                | plain_text_edit |      |             | What this configuration represents        |                        |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 
 *** Columns
@@ -540,6 +565,7 @@ std::nullopt
 | PriceSource                  | price_source                        | Price Source                 | string    | 100   |
 | VintageSource                | vintage_source                      | Vintage Source                | string    | 140   |
 | VintageDate                  | vintage_date                        | Vintage Date                  | string    | 110   |
+| VintageSeriesUri             | vintage_series_uri                  | Vintage Series URI            | string    | 320   |
 | Version      | version        | Version        | int       | 70    |
 | ModifiedBy   | modified_by    | Modified By    | string    | 120   |
 | RecordedAt   | recorded_at    | Recorded At    | timestamp | 150   |

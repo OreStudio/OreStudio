@@ -103,28 +103,6 @@ public:
     find_series_by_uri(const std::string& oresmd_uri, const std::string& party_id = {});
 
     /**
-     * @brief Find an existing market series by the registry's decomposition of its
-     * key.
-     *
-     * Superseded by find_series_by_uri() for every caller but the IR curve feed's
-     * vintage seeding, which reads a DQ-published series whose identity the cutover
-     * cannot name yet; that caller goes when the synthetic config names the series
-     * it seeds from.
-     *
-     * When @p party_id is non-empty the scan is restricted to that party's
-     * series. Without it the first id-ordered match wins, which is arbitrary
-     * when the same decomposition exists for several parties (e.g. FX spot
-     * series are materialised per party).
-     *
-     * @return The matching series, std::nullopt if none found, or an error.
-     */
-    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string>
-    find_series(const std::string& series_type,
-                const std::string& metric,
-                const std::string& qualifier,
-                const std::string& party_id = {});
-
-    /**
      * @brief List observations for a series (limit 10000, first page).
      *
      * Sends marketdata.v1.market_observations.list_by_series_id, which returns

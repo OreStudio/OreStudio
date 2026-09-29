@@ -212,22 +212,17 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                ", date=" + cfg.vintage_date + ", point_id=" + anchor->point_id + ".";
     };
 
-    const auto qualifier = ir_curve_qualifier(cfg);
-
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-    // The last lookup in the tree that asks for a series by the registry's
-    // decomposition. The series here is the DQ deposit grid the vintage dataset
-    // published, whose key is RATES/YIELD rather than an ORE market-data key, so the
-    // cutover cannot name it: the DQ publish gives it a generic identity, and this
-    // path cannot construct that name. Moving it means the synthetic config naming
-    // the series it seeds from, or the dataset carrying the ORE key its own source
-    // names -- the task's record holds the decision.
+    // The series is the one the config names, looked up by its identity: the dataset
+    // that publishes the vintage names its rows' own ORE keys, so the deposit grid
+    // the config reads is a real MM series rather than a name no projection can
+    // rebuild. Which observation of it is the vintage is vintage_source/vintage_date.
     auto series =
-        md_client.find_series("RATES", "YIELD", qualifier, boost::uuids::to_string(cfg.party_id));
+        md_client.find_series_by_uri(cfg.vintage_series_uri, boost::uuids::to_string(cfg.party_id));
     if (!series)
-        throw vintage_data_missing_error("Failed to look up series for '" + qualifier +
+        throw vintage_data_missing_error("Failed to look up series '" + cfg.vintage_series_uri +
                                          "': " + series.error());
     if (!series->has_value())
         throw vintage_data_missing_error(missing_message());
@@ -240,8 +235,8 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
     for (;;) {
         auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
         if (!observations) {
-            throw vintage_data_missing_error("Failed to look up observations for '" + qualifier +
-                                             "': " + observations.error());
+            throw vintage_data_missing_error("Failed to look up observations for '" +
+                                             cfg.vintage_series_uri + "': " + observations.error());
         }
         for (const auto& obs : *observations) {
             if (obs.source == cfg.vintage_source && obs.point_id == anchor->point_id &&

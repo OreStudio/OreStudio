@@ -99,7 +99,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date
+        price_source, vintage_source, vintage_date, vintage_series_uri
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -117,19 +117,21 @@ begin
         true, true, c.currency_code, c.index_family, c.tenor, 'VASICEK',
         0.4, c.theta, 0.006, c.theta,
         60, 'Quarterly',
-        c.price_source, c.vintage_source, c.vintage_date
+        c.price_source, c.vintage_source, c.vintage_date, c.vintage_series_uri
     from (values
         -- currency, index_family, tenor, theta (representative pre-cessation level),
-        -- retirement note, price_source, vintage_source, vintage_date. USD is seeded as
+        -- retirement note, price_source, vintage_source, vintage_date,
+        -- vintage_series_uri. USD is seeded as
         -- the vintage exemplar -- its DEPOSIT tenor (3M) has a real observation from
         -- ORE's own bundled Legacy/Example_56 vintage (see
-        -- marketdata_ir_deposit_rates_populate.sql); the other three stay 'fixed'
+        -- marketdata_ir_deposit_rates_populate.sql), whose MM/RATE/USD/2D/3M key names
+        -- the series below; the other three stay 'fixed'
         -- pending their own real DEPOSIT-tenor observations.
-        ('USD', 'libor',    '3M', 0.0025, 'USD LIBOR ceased 30 June 2023 (most tenors); superseded by SOFR.', 'vintage', 'ore.samples.2016-02-05', '2016-02-05'),
-        ('EUR', 'euribor',  '3M', 0.0000, 'EURIBOR was never fully retired, unlike LIBOR, but €STR (since Oct 2019) is now EUR''s primary risk-free reference.', 'fixed', '', ''),
-        ('GBP', 'libor',    '6M', 0.0050, 'GBP LIBOR ceased 31 December 2021; superseded by SONIA.', 'fixed', '', ''),
-        ('JPY', 'libor',    '6M', 0.0010, 'JPY LIBOR ceased end 2021; superseded by TONA/TONAR.', 'fixed', '', '')
-    ) as c(currency_code, index_family, tenor, theta, retirement_note, price_source, vintage_source, vintage_date);
+        ('USD', 'libor',    '3M', 0.0025, 'USD LIBOR ceased 30 June 2023 (most tenors); superseded by SOFR.', 'vintage', 'ore.samples.2016-02-05', '2016-02-05', 'oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm'),
+        ('EUR', 'euribor',  '3M', 0.0000, 'EURIBOR was never fully retired, unlike LIBOR, but €STR (since Oct 2019) is now EUR''s primary risk-free reference.', 'fixed', '', '', ''),
+        ('GBP', 'libor',    '6M', 0.0050, 'GBP LIBOR ceased 31 December 2021; superseded by SONIA.', 'fixed', '', '', ''),
+        ('JPY', 'libor',    '6M', 0.0010, 'JPY LIBOR ceased end 2021; superseded by TONA/TONAR.', 'fixed', '', '', '')
+    ) as c(currency_code, index_family, tenor, theta, retirement_note, price_source, vintage_source, vintage_date, vintage_series_uri);
 
     -- Legacy curve templates: fuller LIBOR-style construction -- the spot
     -- fixing, an FRA strip bridging to the 2Y swap point (3x6/6x9/9x12 for

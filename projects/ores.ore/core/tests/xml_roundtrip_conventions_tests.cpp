@@ -32,10 +32,11 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * nine. The files that use only those nine round trip. The rest do not, because
- * a category the mapper does not model is content the export cannot write, and
- * the measurement below says which categories those are and how many files each
- * one costs.
+ * seventeen. The files that use only those seventeen round trip. The rest do
+ * not,
+ * because a category the mapper does not model is content the export cannot
+ * write, and the measurement below says which categories those are and how many
+ * files each one costs.
  */
 
 namespace {
@@ -70,6 +71,369 @@ ores::ore::xml::roundtrip_kind conventions_kind() {
         conventions_difference);
 }
 
+int element_count(const std::string& xml, const std::string& name) {
+    const std::string open = "<" + name;
+    int count = 0;
+    std::size_t at = 0;
+    while ((at = xml.find(open, at)) != std::string::npos) {
+        const auto next = at + open.size();
+        if (next < xml.size() && (xml[next] == '>' || xml[next] == ' ' || xml[next] == '/'))
+            ++count;
+        at = next;
+    }
+    return count;
+}
+
+}
+
+// A category lands one at a time, and each one asserts its own elements survive
+// the export. The whole kind cannot be asserted until every category has, so a
+// case per category is how the work is proven as it goes.
+TEST_CASE("conventions_swap_index_round_trips", tags) {
+    int files_with_swap_index = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.SwapIndex.empty())
+            continue;
+
+        ++files_with_swap_index;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.swap_index.size() == document.SwapIndex.size());
+
+        for (std::size_t i = 0; i < document.SwapIndex.size(); ++i) {
+            const std::string id(document.SwapIndex[i].Id);
+            CHECK(mapped.swap_index[i].id == id);
+            CHECK(mapped.swap_index[i].conventions ==
+                  std::string(document.SwapIndex[i].Conventions));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "SwapIndex");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.SwapIndex.size()) + " SwapIndex element(s), the export " +
+             std::to_string(written));
+        CHECK(written == static_cast<int>(document.SwapIndex.size()));
+    }
+
+    // Forty-seven of the seventy-two at the commit this was written at.
+    CHECK(files_with_swap_index == 47);
+}
+
+TEST_CASE("conventions_future_round_trips", tags) {
+    int files_with_future = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.Future.empty())
+            continue;
+
+        ++files_with_future;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.future.size() == document.Future.size());
+
+        for (std::size_t i = 0; i < document.Future.size(); ++i) {
+            const std::string id(document.Future[i].Id);
+            CHECK(mapped.future[i].id == id);
+            CHECK(mapped.future[i].index == std::string(document.Future[i].Index));
+            if (document.Future[i].DateGenerationRule)
+                CHECK(mapped.future[i].date_generation_rule ==
+                      to_string(*document.Future[i].DateGenerationRule));
+            if (document.Future[i].OvernightIndexFutureNettingType)
+                CHECK(mapped.future[i].netting_type ==
+                      to_string(*document.Future[i].OvernightIndexFutureNettingType));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "Future");
+        INFO(path.string() + ": the document has " + std::to_string(document.Future.size()) +
+             " Future element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.Future.size()));
+    }
+
+    // Thirty-nine of the seventy-two at the commit this was written at.
+    CHECK(files_with_future == 39);
+}
+
+TEST_CASE("conventions_fx_option_round_trips", tags) {
+    int files_with_fx_option = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.FxOption.empty())
+            continue;
+
+        ++files_with_fx_option;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.fx_option.size() == document.FxOption.size());
+
+        for (std::size_t i = 0; i < document.FxOption.size(); ++i) {
+            CHECK(mapped.fx_option[i].id == std::string(document.FxOption[i].Id));
+            CHECK(mapped.fx_option[i].atm_type == std::string(document.FxOption[i].AtmType));
+            CHECK(mapped.fx_option[i].delta_type == std::string(document.FxOption[i].DeltaType));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "FxOption");
+        INFO(path.string() + ": the document has " + std::to_string(document.FxOption.size()) +
+             " FxOption element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.FxOption.size()));
+    }
+
+    // Thirty-six of the seventy-two at the commit this was written at.
+    CHECK(files_with_fx_option == 36);
+}
+
+TEST_CASE("conventions_average_ois_round_trips", tags) {
+    int files_with_average_ois = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.AverageOIS.empty())
+            continue;
+
+        ++files_with_average_ois;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.average_ois.size() == document.AverageOIS.size());
+
+        for (std::size_t i = 0; i < document.AverageOIS.size(); ++i) {
+            CHECK(mapped.average_ois[i].id == std::string(document.AverageOIS[i].Id));
+            CHECK(mapped.average_ois[i].index == std::string(document.AverageOIS[i].Index));
+            CHECK(mapped.average_ois[i].spot_lag ==
+                  static_cast<int>(document.AverageOIS[i].SpotLag));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "AverageOIS");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.AverageOIS.size()) + " AverageOIS element(s), the export " +
+             std::to_string(written));
+        CHECK(written == static_cast<int>(document.AverageOIS.size()));
+    }
+
+    // Thirty-six of the seventy-two at the commit this was written at, and the
+    // seven that carried nothing else unmodelled are why it went in first.
+    CHECK(files_with_average_ois == 36);
+}
+
+TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
+    int files_with_basis = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CrossCurrencyBasis.empty())
+            continue;
+
+        ++files_with_basis;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.cross_currency_basis.size() == document.CrossCurrencyBasis.size());
+
+        for (std::size_t i = 0; i < document.CrossCurrencyBasis.size(); ++i) {
+            const auto& in = document.CrossCurrencyBasis[i];
+            const auto& out = mapped.cross_currency_basis[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.flat_index == std::string(in.FlatIndex));
+            CHECK(out.spread_index == std::string(in.SpreadIndex));
+            CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
+            if (in.SpreadFixingDays)
+                CHECK(out.spread_fixing_days == static_cast<int>(*in.SpreadFixingDays));
+            if (in.FlatRateCutoff)
+                CHECK(out.flat_rate_cutoff == static_cast<int>(*in.FlatRateCutoff));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CrossCurrencyBasis");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CrossCurrencyBasis.size()) +
+             " CrossCurrencyBasis element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CrossCurrencyBasis.size()));
+    }
+
+    // Forty-nine of the seventy-two at the commit this was written at. It is the
+    // largest category in the document, and three files carried nothing else.
+    CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
+    int files_with_inflation_index = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.ZeroInflationIndex.empty())
+            continue;
+
+        ++files_with_inflation_index;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.zero_inflation_index.size() == document.ZeroInflationIndex.size());
+
+        for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
+            const auto& in = document.ZeroInflationIndex[i];
+            const auto& out = mapped.zero_inflation_index[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.region_name == std::string(in.RegionName));
+            CHECK(out.region_code == std::string(in.RegionCode));
+            CHECK(out.frequency == to_string(in.Frequency));
+            CHECK(out.availability_lag == std::string(in.AvailabilityLag));
+            CHECK(out.currency == to_string(in.Currency));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "ZeroInflationIndex");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.ZeroInflationIndex.size()) +
+             " ZeroInflationIndex element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.ZeroInflationIndex.size()));
+
+        // The document spells a boolean thirteen ways, so the stored flag is
+        // compared the only way that does not restate the mapper's spelling
+        // table: read the export back, map it again, and require the same
+        // entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.ZeroInflationIndex.size() == document.ZeroInflationIndex.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
+            INFO(path.string() + ": ZeroInflationIndex element " + std::to_string(i));
+            CHECK(remapped.zero_inflation_index[i] == mapped.zero_inflation_index[i]);
+        }
+    }
+
+    // Six of the seventy-two files carry it, and five of them carried nothing
+    // else unmodelled when it went in.
+    CHECK(files_with_inflation_index == 6);
+}
+
+// The entity holds the index's seven scalar fields and not its rebasing events,
+// which ORE types as a list of doubles and the refdata schema has no column
+// for. No shipped file sets one, so the corpus walk above cannot show what
+// happens when one appears. This case builds that document and asserts the
+// mapper counts the field instead of dropping it: a skip that is counted keeps
+// the file out of the round-trip set, and a skip that is silent loses content.
+TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) {
+    zeroInflationIndexType index;
+    static_cast<std::string&>(index.Id) = "UKRPI";
+    static_cast<std::string&>(index.RegionName) = "UK";
+    static_cast<std::string&>(index.RegionCode) = "UK";
+    index.Revised = bool_::False;
+    index.Frequency = frequencyType::Monthly;
+    static_cast<std::string&>(index.AvailabilityLag) = "1M";
+    index.Currency = currencyCode::GBP;
+
+    conventions document;
+    document.ZeroInflationIndex.push_back(index);
+    CHECK(conventions_mapper::map(document).unmodelled.empty());
+
+    zeroInflationIndexType_RebasingEvents_t events;
+    events.Event.push_back(zeroInflationIndexType_RebasingEvents_t_Event_t(1.5));
+    index.RebasingEvents = events;
+    document.ZeroInflationIndex.clear();
+    document.ZeroInflationIndex.push_back(index);
+
+    const auto mapped = conventions_mapper::map(document);
+    REQUIRE(mapped.unmodelled.count("ZeroInflationIndex.RebasingEvents") == 1);
+    CHECK(mapped.unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
+}
+
+TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
+    int files_with_basis_swap = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.TenorBasisSwap.empty())
+            continue;
+
+        ++files_with_basis_swap;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.tenor_basis_swap.size() == document.TenorBasisSwap.size());
+
+        for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
+            const auto& in = document.TenorBasisSwap[i];
+            const auto& out = mapped.tenor_basis_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            if (in.PayIndex)
+                CHECK(out.pay_index == std::string(*in.PayIndex));
+            if (in.ReceiveIndex)
+                CHECK(out.receive_index == std::string(*in.ReceiveIndex));
+            if (in.LongIndex)
+                CHECK(out.long_index == std::string(*in.LongIndex));
+            if (in.ShortIndex)
+                CHECK(out.short_index == std::string(*in.ShortIndex));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "TenorBasisSwap");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.TenorBasisSwap.size()) +
+             " TenorBasisSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.TenorBasisSwap.size()));
+
+        // The mapper stores a canonical spelling of the sub-periods coupon
+        // type, so the export writes a spelling the document may not have used.
+        // What has to survive is the value: reading the export back and mapping
+        // it again must land on the same entity, field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.TenorBasisSwap.size() == document.TenorBasisSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
+            INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
+            CHECK(remapped.tenor_basis_swap[i] == mapped.tenor_basis_swap[i]);
+        }
+    }
+
+    // Twenty-nine of the seventy-two files carry it, and five of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_basis_swap == 29);
+}
+
+TEST_CASE("conventions_tenor_basis_two_swap_round_trips", tags) {
+    int files_with_two_swap = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.TenorBasisTwoSwap.empty())
+            continue;
+
+        ++files_with_two_swap;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.tenor_basis_two_swap.size() == document.TenorBasisTwoSwap.size());
+
+        for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
+            const auto& in = document.TenorBasisTwoSwap[i];
+            const auto& out = mapped.tenor_basis_two_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.calendar == std::string(in.Calendar));
+            CHECK(out.long_index == std::string(in.LongIndex));
+            CHECK(out.short_index == std::string(in.ShortIndex));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "TenorBasisTwoSwap");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.TenorBasisTwoSwap.size()) +
+             " TenorBasisTwoSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.TenorBasisTwoSwap.size()));
+
+        // The mapper stores a canonical spelling of each frequency, convention
+        // and day counter, so the export writes a spelling the document may not
+        // have used. What has to survive is the value: reading the export back
+        // and mapping it again must land on the same entity, field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.TenorBasisTwoSwap.size() == document.TenorBasisTwoSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
+            INFO(path.string() + ": TenorBasisTwoSwap element " + std::to_string(i));
+            CHECK(remapped.tenor_basis_two_swap[i] == mapped.tenor_basis_two_swap[i]);
+        }
+    }
+
+    // The largest single category left when it went in: it is what stood between
+    // twelve files and a clean round trip on its own.
+    CHECK(files_with_two_swap == 46);
 }
 
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
@@ -89,15 +453,44 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Nine of the seventy-two at the commit this was written at. The count is
-    // asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 9);
+    // Forty-four of the seventy-two once ZeroInflationIndex landed: the five
+    // files it cleared on its own on top of the thirty-nine already clean. The
+    // count is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 44);
 }
 
 // Hidden by default, and run on demand:
 //   ores.ore.core.tests "[.][conventions]"
 // The categories below are the ones the corpus needs, ordered by how many files
 // use them. Modelling starts at the top of that list.
+// Which category, modelled next, would clear the most files outright. A file
+// round trips only when every one of its categories is modelled, so the
+// shortest path is the category that appears alone most often.
+TEST_CASE("conventions_files_cleared_by_each_category", "[.][conventions][measurement]") {
+    std::map<std::string, int> cleared_by;
+    std::map<int, int> files_by_category_count;
+    int files = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto mapped = conventions_mapper::map(load(path));
+        ++files;
+        ++files_by_category_count[static_cast<int>(mapped.unmodelled.size())];
+        if (mapped.unmodelled.size() == 1)
+            ++cleared_by[mapped.unmodelled.begin()->first];
+    }
+
+    WARN("conventions files=" + std::to_string(files));
+    for (const auto& [count, file_count] : files_by_category_count) {
+        WARN("  " + std::to_string(count) + " unmodelled category(ies) in " +
+             std::to_string(file_count) + " file(s)");
+    }
+    for (const auto& [name, file_count] : cleared_by) {
+        WARN("  " + name + " alone would clear " + std::to_string(file_count) + " file(s)");
+    }
+
+    CHECK(files == 72);
+}
+
 TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][measurement]") {
     std::map<std::string, int> files_by_category;
     std::map<std::string, int> elements_by_category;

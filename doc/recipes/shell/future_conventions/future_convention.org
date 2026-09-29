@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6A85018B-DF01-5809-97DE-6B6D31554088
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the future_conventions commands from the shell?
+#+description: Every command the future_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:future_conventions:
+
+This file documents the future_conventions resource at the shell, one section per command. Every command is a subcommand of =future_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E824150F-F3A1-5A34-8279-C83DD699B6CD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.list=.
+
+#+name: future_conventions-list
+#+begin_src ores-shell :tangle future_conventions-list.ores :exports none
+future_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 9833E497-094F-5414-9D08-560595598FAE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.get=.
+
+#+name: future_conventions-get
+#+begin_src ores-shell :tangle future_conventions-get.ores :exports none
+future_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DEA14078-3BF2-5620-A59D-2C6D21C29E8B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.get_many=.
+
+#+name: future_conventions-get-many
+#+begin_src ores-shell :tangle future_conventions-get-many.ores :exports none
+future_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D1138195-A33F-5147-B640-3BE120BDD754
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions add <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.put=.
+
+#+name: future_conventions-add
+#+begin_src ores-shell :tangle future_conventions-add.ores :exports none
+future_conventions add __none__ __none__ - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F5FE4043-3D54-56EB-995B-3D54DAF64701
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions set <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.put=.
+
+#+name: future_conventions-set
+#+begin_src ores-shell :tangle future_conventions-set.ores :exports none
+future_conventions set __none__ __none__ - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 36440E80-20CA-5C1A-9E71-67D9A827DF1D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions put-many --count <n> <id> <index> <date_generation_rule> <netting_type> <calendar> <overnight_index_tenor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.put_many=.
+
+#+name: future_conventions-put-many
+#+begin_src ores-shell :tangle future_conventions-put-many.ores :exports none
+future_conventions put-many --count 1 __none__ __none__ - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 813DC1EE-4169-5C00-87C7-947BB2029D72
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.delete=.
+
+#+name: future_conventions-delete
+#+begin_src ores-shell :tangle future_conventions-delete.ores :exports none
+future_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 78BC52EC-2414-5964-935A-6868AF147B3A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions.delete_many=.
+
+#+name: future_conventions-delete-many
+#+begin_src ores-shell :tangle future_conventions-delete-many.ores :exports none
+future_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A6A9F8CF-6F9D-5D8F-A51B-0DDE3D0EB37D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions_versions.list=.
+
+#+name: future_conventions-versions
+#+begin_src ores-shell :tangle future_conventions-versions.ores :exports none
+future_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F20255B8-115B-553C-BDDA-460592486B25
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+future_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.future_conventions_versions.get=.
+
+#+name: future_conventions-version
+#+begin_src ores-shell :tangle future_conventions-version.ores :exports none
+future_conventions version __none__ --version 1
+#+end_src
+

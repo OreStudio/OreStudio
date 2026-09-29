@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 1F1CD75E-CC99-5C2A-9667-BCAD83093001
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the tenor_basis_swap_conventions commands from the shell?
+#+description: Every command the tenor_basis_swap_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenor_basis_swap_conventions:
+
+This file documents the tenor_basis_swap_conventions resource at the shell, one section per command. Every command is a subcommand of =tenor_basis_swap_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5C19735E-1311-59D5-ADB1-B835AEA2B80F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.list=.
+
+#+name: tenor_basis_swap_conventions-list
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-list.ores :exports none
+tenor_basis_swap_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7C452E20-FCFB-53B4-8BDC-08DA2B0E56CB
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.get=.
+
+#+name: tenor_basis_swap_conventions-get
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-get.ores :exports none
+tenor_basis_swap_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 463FB0DF-13C6-5342-91A9-F3939E003B69
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.get_many=.
+
+#+name: tenor_basis_swap_conventions-get-many
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-get-many.ores :exports none
+tenor_basis_swap_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 9187185A-68D9-545D-BA36-7416C6A9111F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions add <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.put=.
+
+#+name: tenor_basis_swap_conventions-add
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-add.ores :exports none
+tenor_basis_swap_conventions add __none__ - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F2CB2817-3907-5C00-927B-4BF6C502FF3D
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions set <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.put=.
+
+#+name: tenor_basis_swap_conventions-set
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-set.ores :exports none
+tenor_basis_swap_conventions set __none__ - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 05876A1D-A48E-5F57-9B78-DF92D0BD6837
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions put-many --count <n> <id> <pay_index> <pay_frequency> <receive_index> <receive_frequency> <spread_on_rec> <include_spread> <sub_periods_coupon_type> <pay_is_averaged> <rec_is_averaged> <long_index> <long_pay_tenor> <short_index> <short_pay_tenor> <spread_on_short> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.put_many=.
+
+#+name: tenor_basis_swap_conventions-put-many
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-put-many.ores :exports none
+tenor_basis_swap_conventions put-many --count 1 __none__ - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E965B945-0F2E-59E5-AE9A-496145B916E6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.delete=.
+
+#+name: tenor_basis_swap_conventions-delete
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-delete.ores :exports none
+tenor_basis_swap_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 44AB9084-1288-55CF-B916-4A7786C7372D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions.delete_many=.
+
+#+name: tenor_basis_swap_conventions-delete-many
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-delete-many.ores :exports none
+tenor_basis_swap_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C09B92C6-217B-5C5B-8BDD-83F985B2FE95
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions_versions.list=.
+
+#+name: tenor_basis_swap_conventions-versions
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-versions.ores :exports none
+tenor_basis_swap_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 92AEBE8B-7DA4-54F9-B9E1-62C8AAA05CAD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenor_basis_swap_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.tenor_basis_swap_conventions_versions.get=.
+
+#+name: tenor_basis_swap_conventions-version
+#+begin_src ores-shell :tangle tenor_basis_swap_conventions-version.ores :exports none
+tenor_basis_swap_conventions version __none__ --version 1
+#+end_src
+

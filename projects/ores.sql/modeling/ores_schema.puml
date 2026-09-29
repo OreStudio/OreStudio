@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T00:10:13.045093Z
+' Generated: 2026-09-29T11:53:27.527611Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -858,6 +858,41 @@ package "refdata" #FFF3E0 {
     The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.
     end note
 
+    entity ores_refdata_average_ois_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * spot_lag : integer
+        * fixed_tenor : text
+        * fixed_day_count_fraction : text
+          fixed_calendar : text
+          fixed_convention : text
+          fixed_payment_convention : text
+          fixed_frequency : text
+        * index : text
+        * on_tenor : text
+        * rate_cutoff : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_average_ois_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Averaging OIS Convention Table
+    Describes how ORE averages the floating leg of an overnight index swap over a
+    tenor, and how the fixed leg pays against it. Corresponds to the <AverageOIS>
+    element in ORE conventions.xml. The id field is the natural key (ORE <Id>
+    element).
+    end note
+
     entity ores_refdata_benchmark_rates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1644,6 +1679,56 @@ package "refdata" #FFF3E0 {
     topologies and never share an engine.
     end note
 
+    entity ores_refdata_cross_currency_basis_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * settlement_days : integer
+          settlement_calendar : text
+        * roll_convention : text
+        * flat_index : text
+        * spread_index : text
+          eom : boolean
+          is_resettable : boolean
+          flat_index_is_resettable : boolean
+          flat_tenor : text
+          spread_tenor : text
+          spread_payment_lag : integer
+          flat_payment_lag : integer
+          spread_include_spread : boolean
+          spread_lookback : text
+          spread_fixing_days : integer
+          spread_rate_cutoff : integer
+          spread_is_averaged : boolean
+          spread_observation_shift : boolean
+          flat_include_spread : boolean
+          flat_lookback : text
+          flat_fixing_days : integer
+          flat_rate_cutoff : integer
+          flat_is_averaged : boolean
+          flat_observation_shift : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cross_currency_basis_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cross-Currency Basis Convention Table
+    Describes how ORE builds both legs of a cross-currency basis swap: the two
+    indices, their tenors, their payment lags and their fixing and cutoff rules, and
+    whether the spread is included in a leg's coupons. Corresponds to the
+    <CrossCurrencyBasis> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    end note
+
     entity ores_refdata_currencies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * iso_code : text <<PK>>
@@ -2183,6 +2268,68 @@ package "refdata" #FFF3E0 {
     A FRA convention ties a FRA instrument to an IBOR index whose own
     conventions (calendar, day count, settlement) govern the FRA.
     Corresponds to the <FRA> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_future_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * index : text
+          date_generation_rule : text
+          netting_type : text
+          calendar : text
+          overnight_index_tenor : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_future_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Future Convention Table
+    Describes how ORE builds the dates and settles the fixings of a future.
+    Corresponds to the <Future> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    end note
+
+    entity ores_refdata_fx_option_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          fx_convention_id : text <<FK>>
+        * atm_type : text
+        * delta_type : text
+          switch_tenor : text
+          long_term_atm_type : text
+          long_term_delta_type : text
+          risk_reversal_in_favor_of : text
+          butterfly_style : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_option_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Option Convention Table
+    Describes how ORE quotes an FX option: which strike counts as at the money, how
+    the delta is measured, and what happens beyond a switch tenor. Corresponds to
+    the <FxOption> element in ORE conventions.xml. The id field is the natural key
+    (ORE <Id> element).
     end note
 
     entity ores_refdata_ibor_index_conventions_tbl <<temporal>> #C6F0D8 {
@@ -3174,6 +3321,33 @@ package "refdata" #FFF3E0 {
     curve. Corresponds to the <Swap> element in ORE conventions.xml.
     end note
 
+    entity ores_refdata_swap_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * conventions : text
+          fixing_calendar : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swap_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Index Convention Table
+    A named swap index, which ORE describes by pointing at the swap convention it
+    follows rather than by restating that convention's fields. Corresponds to the
+    <SwapIndex> element in ORE conventions.xml. The id field is the natural key
+    (ORE <Id> element).
+    end note
+
     entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -3201,6 +3375,87 @@ package "refdata" #FFF3E0 {
     curve or ladder's own quoting-basis override (see
     [[id:8582E7E9-D975-46D5-B61B-93B9EA3DECC0][Out Of Convention]]), which is
     out of scope for this model and lives on the curve/ladder entity instead.
+    end note
+
+    entity ores_refdata_tenor_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+          pay_index : text
+          pay_frequency : text
+          receive_index : text
+          receive_frequency : text
+          spread_on_rec : boolean
+          include_spread : boolean
+          sub_periods_coupon_type : text
+          pay_is_averaged : boolean
+          rec_is_averaged : boolean
+          long_index : text
+          long_pay_tenor : text
+          short_index : text
+          short_pay_tenor : text
+          spread_on_short : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_basis_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenor Basis Swap Convention Table
+    Describes how ORE builds the two legs of a tenor basis swap, where each leg
+    pays a different tenor off its own index and the two legs may differ in more
+    than the tenor. Corresponds to the <TenorBasisSwap> element in ORE
+    conventions.xml. The id field is the natural key (ORE <Id> element).
+    ORE lets a tenor basis swap be written two ways, and the corpus uses both. The
+    paying and receiving form names PayIndex and ReceiveIndex with an optional
+    frequency each, and adds the averaging and sub-periods fields. The long and
+    short form names LongIndex and ShortIndex with an optional payment tenor
+    each, and adds the spread flags. The two forms do not share a field, so the
+    table carries every field of both and each row fills one form.
+    end note
+
+    entity ores_refdata_tenor_basis_two_swap_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * calendar : text
+        * long_fixed_frequency : text
+        * long_fixed_convention : text
+        * long_fixed_day_count_fraction : text
+        * long_index : text
+        * short_fixed_frequency : text
+        * short_fixed_convention : text
+        * short_fixed_day_count_fraction : text
+        * short_index : text
+          long_minus_short : boolean
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_tenor_basis_two_swap_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Two-Tenor Basis Swap Convention Table
+    Describes how ORE builds both legs of a two-tenor basis swap, where a long leg
+    and a short leg pay different frequencies off different indices, and which of
+    the two the quoted spread is measured from. Corresponds to the
+    <TenorBasisTwoSwap> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
     end note
 
     entity ores_refdata_tenor_convention_resolutions_tbl <<temporal>> #C6F0D8 {
@@ -3494,6 +3749,47 @@ package "refdata" #FFF3E0 {
     Specifies the day count fraction and compounding method used when bootstrapping
     a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in
     ORE conventions.xml. The id field is the natural key (ORE <Id> element).
+    end note
+
+    entity ores_refdata_zero_inflation_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * region_name : text
+        * region_code : text
+        * revised : boolean
+        * frequency : text
+        * availability_lag : text
+        * currency : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_zero_inflation_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Zero Inflation Index Convention Table
+    Describes a zero-coupon inflation index: the region it is published for, how
+    often it is published, how far behind its publication date it becomes
+    available, and the currency it is quoted in. Corresponds to the
+    <ZeroInflationIndex> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    Every field is required. The corpus sets all seven in all fifty-four elements,
+    and ORE's schema holds them by value, so an element without one does not parse.
+    The element carries one more field, RebasingEvents, and this table does not
+    model it: the ORE type holds it as a list of doubles, and the refdata schema has
+    no array column. No shipped file sets it. Rather than drop it silently the
+    mapper counts every element that carries one into
+    mapped_conventions::unmodelled under ZeroInflationIndex.RebasingEvents, so a
+    document that uses it is excluded from the round-trip set and named in the
+    measurement.
     end note
 
 }

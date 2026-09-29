@@ -23,15 +23,23 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
+#include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.api/domain/future_convention.hpp"
+#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.refdata.api/domain/swap_index_convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include <cstddef>
 #include <map>
@@ -73,12 +81,20 @@ struct mapped_fx {
  */
 struct mapped_conventions {
     std::vector<refdata::domain::zero_convention> zero;
+    std::vector<refdata::domain::average_ois_convention> average_ois;
+    std::vector<refdata::domain::cross_currency_basis_convention> cross_currency_basis;
+    std::vector<refdata::domain::tenor_basis_swap_convention> tenor_basis_swap;
+    std::vector<refdata::domain::tenor_basis_two_swap_convention> tenor_basis_two_swap;
     std::vector<refdata::domain::deposit_convention> deposit;
     std::vector<refdata::domain::swap_convention> swap;
+    std::vector<refdata::domain::swap_index_convention> swap_index;
+    std::vector<refdata::domain::future_convention> future;
+    std::vector<refdata::domain::fx_option_convention> fx_option;
     std::vector<refdata::domain::ois_convention> ois;
     std::vector<refdata::domain::fra_convention> fra;
     std::vector<refdata::domain::ibor_index_convention> ibor_index;
     std::vector<refdata::domain::overnight_index_convention> overnight_index;
+    std::vector<refdata::domain::zero_inflation_index_convention> zero_inflation_index;
     std::vector<mapped_fx> fx;
     std::vector<refdata::domain::cds_convention> cds;
 
@@ -133,6 +149,23 @@ public:
 
     static refdata::domain::swap_convention map_swap(const swapType& v);
 
+    static refdata::domain::swap_index_convention map_swap_index(const swapIndexType& v);
+
+    static refdata::domain::future_convention map_future(const futureType& v);
+
+    static refdata::domain::fx_option_convention map_fx_option(const fxOption& v);
+
+    static refdata::domain::average_ois_convention map_average_ois(const averageOISType& v);
+
+    static refdata::domain::cross_currency_basis_convention
+    map_cross_currency_basis(const crossCurrencyBasisType& v);
+
+    static refdata::domain::tenor_basis_swap_convention
+    map_tenor_basis_swap(const tenorBasisSwapType& v);
+
+    static refdata::domain::tenor_basis_two_swap_convention
+    map_tenor_basis_two_swap(const tenorBasisTwoSwapType& v);
+
     static refdata::domain::ois_convention map_ois(const oisType& v);
 
     static refdata::domain::fra_convention map_fra(const fraType& v);
@@ -141,6 +174,9 @@ public:
 
     static refdata::domain::overnight_index_convention
     map_overnight_index(const overnightIndexType& v);
+
+    static refdata::domain::zero_inflation_index_convention
+    map_zero_inflation_index(const zeroInflationIndexType& v);
 
     static mapped_fx map_fx(const fxType& v);
 

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 15F5D765-33EA-5B26-8005-D711223E6A18
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cross_currency_basis_conventions commands from the shell?
+#+description: Every command the cross_currency_basis_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cross_currency_basis_conventions:
+
+This file documents the cross_currency_basis_conventions resource at the shell, one section per command. Every command is a subcommand of =cross_currency_basis_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4875208E-8616-540F-9A50-68D49F68AE9F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.list=.
+
+#+name: cross_currency_basis_conventions-list
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-list.ores :exports none
+cross_currency_basis_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B8F720F6-40A1-534E-827F-F53AFFC1E39A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.get=.
+
+#+name: cross_currency_basis_conventions-get
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-get.ores :exports none
+cross_currency_basis_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4572FCC7-73B3-5BCD-91E3-2A7E65612F3C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.get_many=.
+
+#+name: cross_currency_basis_conventions-get-many
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-get-many.ores :exports none
+cross_currency_basis_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3FB5F102-50AF-595F-A0FA-F0E885002C36
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions add <id> <settlement_days> <settlement_calendar> <roll_convention> <flat_index> <spread_index> <eom> <is_resettable> <flat_index_is_resettable> <flat_tenor> <spread_tenor> <spread_payment_lag> <flat_payment_lag> <spread_include_spread> <spread_lookback> <spread_fixing_days> <spread_rate_cutoff> <spread_is_averaged> <spread_observation_shift> <flat_include_spread> <flat_lookback> <flat_fixing_days> <flat_rate_cutoff> <flat_is_averaged> <flat_observation_shift> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.put=.
+
+#+name: cross_currency_basis_conventions-add
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-add.ores :exports none
+cross_currency_basis_conventions add __none__ 0 - __none__ __none__ __none__ - - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 64EEB1AE-4A37-5C9A-B497-1D0B607CC8B4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions set <id> <settlement_days> <settlement_calendar> <roll_convention> <flat_index> <spread_index> <eom> <is_resettable> <flat_index_is_resettable> <flat_tenor> <spread_tenor> <spread_payment_lag> <flat_payment_lag> <spread_include_spread> <spread_lookback> <spread_fixing_days> <spread_rate_cutoff> <spread_is_averaged> <spread_observation_shift> <flat_include_spread> <flat_lookback> <flat_fixing_days> <flat_rate_cutoff> <flat_is_averaged> <flat_observation_shift> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.put=.
+
+#+name: cross_currency_basis_conventions-set
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-set.ores :exports none
+cross_currency_basis_conventions set __none__ 0 - __none__ __none__ __none__ - - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7BCF5787-D708-5727-98F9-F3022DD74BA3
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions put-many --count <n> <id> <settlement_days> <settlement_calendar> <roll_convention> <flat_index> <spread_index> <eom> <is_resettable> <flat_index_is_resettable> <flat_tenor> <spread_tenor> <spread_payment_lag> <flat_payment_lag> <spread_include_spread> <spread_lookback> <spread_fixing_days> <spread_rate_cutoff> <spread_is_averaged> <spread_observation_shift> <flat_include_spread> <flat_lookback> <flat_fixing_days> <flat_rate_cutoff> <flat_is_averaged> <flat_observation_shift> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.put_many=.
+
+#+name: cross_currency_basis_conventions-put-many
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-put-many.ores :exports none
+cross_currency_basis_conventions put-many --count 1 __none__ 0 - __none__ __none__ __none__ - - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 72F70E13-5993-5812-B868-AEC7F35592FF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.delete=.
+
+#+name: cross_currency_basis_conventions-delete
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-delete.ores :exports none
+cross_currency_basis_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 9A1021E3-4AC5-5438-81C2-5B2A93722816
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions.delete_many=.
+
+#+name: cross_currency_basis_conventions-delete-many
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-delete-many.ores :exports none
+cross_currency_basis_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 5FFBF4F3-8FF2-591C-9E01-90F6C832B448
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions_versions.list=.
+
+#+name: cross_currency_basis_conventions-versions
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-versions.ores :exports none
+cross_currency_basis_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: EF3CF174-D58F-5260-87CE-3482DE43926B
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cross_currency_basis_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cross_currency_basis_conventions_versions.get=.
+
+#+name: cross_currency_basis_conventions-version
+#+begin_src ores-shell :tangle cross_currency_basis_conventions-version.ores :exports none
+cross_currency_basis_conventions version __none__ --version 1
+#+end_src
+

@@ -2,18 +2,18 @@
 :ID: A436B63F-778C-4EE5-BD9C-9BAB5133316A
 :END:
 #+title: Task: Model the convention categories the mapper skips
-#+description: Fourteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip.
+#+description: Sixteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip.
 #+type: task
 #+level: s1
 #+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-the-convention-categories
+#+pr: 2357
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
 #+updated: 2026-09-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,16 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Eight of the sixteen categories are modelled, so forty-four of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Model =BMABasisSwap= and =InflationSwap=, which clear three files each, then =CmsSpreadOption= and =CommodityFuture=, which clear one each. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
 
-- Each of the fourteen categories has an entity, a create and a drop script, and a row in the RLS policies.
+- Each of the sixteen categories has an entity, a create and a drop script, and a row in the RLS policies.
 - The mapper reads and writes each category, and its count of what it skips is zero.
 - The conventions kind is registered with the harness and all seventy-two files round trip.
 
@@ -57,9 +57,64 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Categories the mapper does not model | 16 at the start, 8 after eight | =ores.ore.core.tests "[.][conventions]" -s= | =552d66b646= |
+| Files carrying an unmodelled category | 63 at the start, 28 after eight | the same | =552d66b646= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 44 after eight | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =552d66b646= |
+| Files a single category would clear, now | BMABasisSwap 3 and InflationSwap 3, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =552d66b646= |
+| Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
+
+- =SwapIndex= is modelled: three fields, and it appears in forty-seven files.
+  Its case asserts 1451 times over that corpus.
+- =CrossCurrencyBasis= is modelled: twenty-five fields across forty-nine files,
+  the largest category in the document, and it clears three files. Every field
+  is a text, an integer, a boolean or a business day convention, so it needed no
+  new kind of mapping; the size was the only thing that made it look expensive.
+  It went in before smaller categories because the clearing measurement named it
+  as the second-best win, and because leaving the largest one until last is how
+  a plan runs out of room.
+- =AverageOIS= is modelled: eleven fields across thirty-six files. It went in
+  before the cheaper categories because it is the one that clears files: seven of
+  the thirteen files with exactly one unmodelled category name it, so modelling
+  it took the count of files that round trip outright from twelve to nineteen.
+  The corpus makes three of its fields required and never sets its frequency, so
+  the mapper reads the three unconditionally and the frequency only when present.
+- =FxOption= is modelled: nine text fields across thirty-six files.
+- =Future= is modelled: six fields, and it appears in thirty-nine files. Three of
+  those carried no other unmodelled category, so the count of files that round
+  trip outright went from nine to twelve. Its two enumerations are stored in
+  ORE's own spelling, because they are closed enumerations with no aliases and
+  the token is what an export has to write back.
+- =TenorBasisTwoSwap= is modelled: eleven fields across forty-six files, the
+  largest single category left when it went in. It is the first convention whose
+  legs differ from each other rather than from one quoted leg, so each leg
+  carries its own frequency, convention, day count and index and the mapper
+  normalises three enumerations per leg. Twelve files carried it and nothing
+  else unmodelled, more than the rest of the corpus put together, which is why
+  it took the round-trip count from twenty-two to thirty-four in one category.
+- =TenorBasisSwap= is modelled: fifteen fields across twenty-nine files, and the
+  only convention the corpus writes in two alternative forms. The paying and
+  receiving form names =PayIndex= and =ReceiveIndex=; the long and short form
+  names =LongIndex= and =ShortIndex=. The forms share no field, so the table
+  carries both sets and each row fills one. The periods stay in ORE's spelling
+  because they are tenors rather than frequency enumerations, and =12M= and =1Y=
+  are distinct tokens an export has to write back exactly.
+- =ZeroInflationIndex= is modelled: seven fields across six files, and the first
+  category whose ORE type carries a field the table cannot hold. =RebasingEvents=
+  is a list of doubles and the refdata schema has no array column, so the mapper
+  counts each element that carries one into =unmodelled= under
+  =ZeroInflationIndex.RebasingEvents=. No shipped file sets one, and a case
+  builds that document by hand to assert the count, because the corpus walk
+  cannot reach it. That is the rule the story settled on: a skip that is counted
+  keeps the file out of the round-trip set, and a skip that is silent loses
+  content.
+- Each category costs one entity, its create, drop, notify trigger and row-level
+  security, its seeded permissions, its component file-list entries, and a
+  mapper in both directions. Sixteen were unmodelled and eight have landed, so
+  eight remain. The expensive one left is =CommodityFuture= at thirty-four fields
+  across five files. The next-best win is =BMABasisSwap=, which clears three
+  files on its own.
 
 * Test Scenarios
 
@@ -76,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2357][#2357]] | [refdata] Model the convention categories the mapper skips |
 
 * Review
 
@@ -85,3 +140,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Eight of the sixteen categories landed, in one pull request: SwapIndex, Future,
+FxOption, AverageOIS, CrossCurrencyBasis, TenorBasisTwoSwap, TenorBasisSwap and
+ZeroInflationIndex. They took the count of files that round trip outright from
+nine to forty-four and the count carrying an unmodelled category from sixty-three
+to twenty-eight.
+
+The acceptance is not met, so the task stays STARTED. Eight categories remain
+unmodelled -- BMABasisSwap, CrossCurrencyFixFloat, InflationSwap,
+CmsSpreadOption, CommodityForward, CommodityFuture, BondYield and
+IntradayPowerLoad -- so the mapper's count of what it skips is eight rather than
+zero, and twenty-eight of the seventy-two files still carry one. The work
+continues on a new branch, because this branch's pull request is merged and the
+acceptance asks for all sixteen.
+
+Two decisions the work settled, for whoever picks up the rest:
+
+- A category lands one at a time, and the next is chosen by how many files it
+  clears alone rather than by how few fields it has. The hidden case
+  =conventions_files_cleared_by_each_category= ranks the candidates, and the
+  Measurements table records the ranking each round. The next two are
+  =BMABasisSwap= and =InflationSwap=, at three files each.
+- A field the refdata schema cannot hold is counted, not dropped.
+  =ZeroInflationIndex.RebasingEvents= is the first: a list of doubles with no
+  array column to hold it, counted into =unmodelled= under that name, so a file
+  that ever sets one leaves the round-trip set and is named in the measurement.

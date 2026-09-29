@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: D59EFB24-02C4-4C04-ADF3-028EFA94A7F7
+:END:
+#+title: Task: Answer the registration policy and land the account it describes
+#+description: Build the server side the door reads before it offers a form: the tenant resolution from the address, the three registration-default flags, the pending account state, the registration-policy read, and a code on every sign-in refusal.
+#+type: task
+#+level: s1
+#+filetags: :implement-entry-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The door reads one policy before it offers a form, and the server cannot answer
+it yet. =iam.v1.auth.registration-policy= is a new unauthenticated read that
+returns the deployment's switch, whether a registration needs authorisation, the
+tenant a registration lands in, the party and role it receives, and whether the
+result is usable at once.
+
+Answering it needs four things the tree does not have:
+
+1. *The tenant an address names.* The handler must parse the hostname, look the
+   tenant up by it, and fall back to the tenant flagged
+   =is_registration_default=. Today neither a sign-up nor a sign-in request
+   carries a hostname, and the sign-up path lands every account in the system
+   tenant by omission.
+2. *The three defaults.* A flag, =is_registration_default=, on the tenant, the
+   party and the role, each with a partial unique index over the live rows, so a
+   default points at a row that exists and only one row can hold it.
+3. *The pending state.* A second value beside =active= on a new
+   =account_status= lookup, held by an account that has no party yet.
+4. *A code on every refusal.* =login_response= gains =error_code=, and the
+   sign-in path refuses a pending account with its own code before it refuses a
+   party-less one.
+
+The policy target state is
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding
+defaults]]; the interactions are
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]].
+
+The door's screen, the BFF route and the settings write that turns the switch on
+are *not* in this task: this is the server the screen will call.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- =iam.v1.auth.registration-policy= answers, unauthenticated, with
+  =signups_enabled=, =authorization_required=, the resolved tenant, the
+  nominated party and role, =usable_now=, and a reason when it cannot.
+- The tenant is resolved from the hostname on the request; when the address
+  names no tenant the tenant flagged =is_registration_default= is used, and
+  when neither exists the read refuses with =no_registration_destination=
+  rather than naming the system tenant.
+- A registration lands in the resolved tenant, not the system tenant, and
+  carries the nominated role.
+- An account whose tenant nominates no default party is created with
+  =account_status= =pending=; one whose tenant nominates the defaults is
+  =active= and receives the association at once.
+- =login_response= carries =error_code=, and the sign-in path refuses a pending
+  account with =account_pending= before it refuses a party-less one.
+- Every model change is regenerated across the layers its entity drives, and
+  the changed entity suite passes.
+
+* Plan
+
+1. Model and SQL first, in the order the references require: the
+   =account_status= lookup, then =is_registration_default= on the tenant, the
+   party and the role with their partial unique indexes, then
+   =account.account_status=. Regenerate each entity with
+   =compass codegen entity generate=.
+2. Add the hostname to =signup_request=, and the destination fields, the
+   status and the =error_code= to =signup_response=; add =error_code= to
+   =login_response=. Regenerate both operation models.
+3. Teach =signup_service= to take a resolved context and the destination, so the
+   account lands in the tenant the address names with the status the defaults
+   allow.
+4. Write the registration-policy handler over the settings service and the
+   three default reads, and wire it in the registrar.
+5. Give every sign-in refusal a code and refuse the pending state.
+6. Test: the policy read's destination rule, the pending transition, and the
+   refusal codes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The policy read is separate from =iam.v1.bootstrap.status=: one answers
+  whether the deployment has been set up, the other what it offers a person who
+  is not in it. They change for different reasons, so a client that wants one
+  rarely wants the other.
+- The flags are read at *system scope*, because =system.user_signups= is the
+  deployment's answer and not a tenant's. The three defaults are read in the
+  resolved tenant's scope, because that is where the flagged rows live.
+- The settings *write* is a later task. Until it exists the switch can only be
+  turned on by seeding it, which is the setup journeys' job.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

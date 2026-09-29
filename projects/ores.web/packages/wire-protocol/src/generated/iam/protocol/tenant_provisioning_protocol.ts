@@ -144,8 +144,28 @@ export interface ProvisionPartyCommand {
      * a row: the bundles a party is published from are the profile's
      * "provision_party" step arguments. An unknown code is refused, and so is a
      * profile that orders no party step.
+     *
+     * An empty code means the deployment's own party starting point, which is the
+     * first profile that orders a party step. A tenant administrator cannot name a
+     * profile: the profiles are the system tenant's rows, and a tenant reads only
+     * its own, so the service that holds both is the one that chooses.
      */
     profile_code: string;
+    /**
+     * @brief The legal entity the party was built from, or empty for one that is
+     * not in the register.
+     *
+     * A person who adds a party either finds the legal entity among those the
+     * deployment holds or names the party by hand, and the LEI is what tells the
+     * two apart: the register's identifier of the entity the party is, or nothing
+     * at all.
+     *
+     * The run records it, because a party identifier carries the party the writing
+     * session acts in and the person who adds a party works in another one. An
+     * empty value leaves the party without an LEI, which is the party a person
+     * described by hand.
+     */
+    lei: string;
 }
 
 export interface ProvisionPartyCommandResponse {

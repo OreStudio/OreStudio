@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0E027DAE-A708-4DEB-A6E6-7FEB1410572E
+:END:
+#+title: A service dies on one failed query, and nothing says so
+#+description: A repository error escapes the handler and the service runner to main(), so ores.marketdata.service exited EXIT_FAILURE on the first select naming a column its stale schema lacked. The fleet keeps reading as healthy: telemetry records heartbeats but no check flags a service that stopped sending them, and compass services status is the only place the failure appears.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -25,6 +25,7 @@ import {
     loginResultSchema,
     leiEntitiesResponseSchema,
     passwordPolicySchema,
+    provisionPartyResultSchema,
     provisionTenantResultSchema,
     retryWorkflowInstanceResultSchema,
     seedProfilesResponseSchema,
@@ -36,6 +37,8 @@ import {
     type LeiEntityChoice,
     type LoginResult,
     type PasswordPolicy,
+    type ProvisionPartyRequest,
+    type ProvisionPartyResult,
     type ProvisionTenantRequest,
     type ProvisionTenantResult,
     type RetryWorkflowInstanceResult,
@@ -174,10 +177,41 @@ export const api = {
         return provisionTenantResultSchema.parse(payload);
     },
 
+    /**
+     * Re-scopes the open session to another of the account's parties.
+     *
+     * A party added during this session is not in the list the login answered
+     * with, so the server reads the tenant's parties and states the chosen one
+     * in the session rather than taking the caller's word for it.
+     */
+    async switchParty(partyId: string): Promise<SessionView> {
+        const payload = await request('/api/session/switch-party', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ partyId }),
+        });
+        return sessionViewSchema.parse(payload);
+    },
+
+    /**
+     * Adds a party to the tenant the person works in.
+     *
+     * The party exists when this answers, and the run that publishes its data,
+     * activates it and joins the person to it is followed by the id it carries.
+     */
+    async provisionParty(input: ProvisionPartyRequest): Promise<ProvisionPartyResult> {
+        const payload = await request('/api/provision-party', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+        return provisionPartyResultSchema.parse(payload);
+    },
+
     /** The state of a provisioning run, as its journey's rail renders it. */
     async provisionTenantProgress(instanceId: string): Promise<WorkflowProgress> {
         return workflowProgressSchema.parse(
-            await request(`/api/provision-tenant/${encodeURIComponent(instanceId)}`, {
+            await request(`/api/workflow/${encodeURIComponent(instanceId)}`, {
                 method: 'GET',
             }),
         );
@@ -193,14 +227,11 @@ export const api = {
         instanceId: string,
         stepName = '',
     ): Promise<RetryWorkflowInstanceResult> {
-        const payload = await request(
-            `/api/provision-tenant/${encodeURIComponent(instanceId)}/retry`,
-            {
-                method: 'POST',
-                headers: JSON_HEADERS,
-                body: JSON.stringify({ stepName }),
-            },
-        );
+        const payload = await request(`/api/workflow/${encodeURIComponent(instanceId)}/retry`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ stepName }),
+        });
         return retryWorkflowInstanceResultSchema.parse(payload);
     },
 

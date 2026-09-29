@@ -47,6 +47,8 @@ import {
     toWireTimestamp,
     loginResultSchema,
     passwordPolicySchema,
+    provisionPartyRequestSchema,
+    provisionPartyResultSchema,
     provisionTenantRequestSchema,
     provisionTenantResultSchema,
     retryWorkflowInstanceResultSchema,
@@ -473,6 +475,55 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
+     * Re-scopes an open session to another of the account's parties.
+     *
+     * The session's list of parties is the login's answer, so a party added
+     * since then is not in it. This route reads the tenant's parties, states
+     * the chosen one in the session, and asks the server for a token scoped to
+     * it. The server decides whether the account may work in the party: an
+     * account that is not a member is refused here, which is what a party
+     * journey that has not finished its run will see.
+     */
+    server.post('/api/session/switch-party', async (request) => {
+        const session = requireSession(request);
+        const parsed = selectPartyRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('A partyId is required.');
+        }
+
+        const parties = await session.client.listParties();
+        const wanted = parties.find((party) => party.id === parsed.data.partyId);
+        if (wanted === undefined) {
+            throw invalidRequest('The tenant holds no such party.');
+        }
+        const summary: PartySummary = {
+            id: wanted.id,
+            name: wanted.full_name,
+            partyCategory: wanted.party_category,
+            businessCenterCode: wanted.business_center_code,
+        };
+        const availableParties = [
+            ...session.availableParties.filter((party) => party.id !== summary.id),
+            summary,
+        ];
+
+        const outcome = await session.client.switchParty({
+            partyId: summary.id,
+            availableParties,
+        });
+        const switched = sessions.switchParty(
+            session.id,
+            summary,
+            availableParties,
+            outcome.accessLifetimeSeconds,
+        );
+        if (switched === undefined) {
+            throw new NotAuthenticatedError('Session ended during party switch');
+        }
+        return sessionResponse(switched);
+    });
+
+    /**
      * The signed-in account's own password.
      *
      * A person who must change their password has a session already: they
@@ -572,6 +623,66 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
+     * Adds one party to the tenant the caller works in, and starts the run that
+     * brings it to life.
+     *
+     * Two writes in one act, in the order they depend on each other: the party
+     * row, and the run that publishes the party's data, activates it, records
+     * the legal entity it was built from and joins the caller to it. Nothing is
+     * created until the person confirms, and the answer states the run rather
+     * than waiting for it, because the stage takes minutes.
+     *
+     * Where the party sits is the deployment's answer and not the person's. A
+     * party hangs under another and exactly one of a tenant's parties sits at
+     * the top, so the row whose parent is unset and which is not the system
+     * party is what a new party is placed under; a tenant that has none yet
+     * gets the party it has just added as its root.
+     */
+    server.post('/api/provision-party', async (request) => {
+        const session = requireSession(request);
+        const parsed = provisionPartyRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('The legal name and a short code are required.');
+        }
+
+        const parties = await session.client.listParties();
+        const root = parties.find(
+            (party) => party.parent_party_id === null && party.party_category !== 'System',
+        );
+        const created = await session.client.createParty({
+            shortCode: parsed.data.shortCode,
+            fullName: parsed.data.fullName,
+            parentPartyId: root?.id ?? null,
+        });
+        if (!created.success) {
+            return provisionPartyResultSchema.parse({
+                success: false,
+                message: created.message,
+                instanceId: '',
+                partyId: '',
+            });
+        }
+
+        return provisionPartyResultSchema.parse(
+            await session.client.provisionParty({
+                party: created.partyId,
+                /*
+                 * No starting point: the profiles are the system tenant's rows
+                 * and this caller reads only its own, so the service that holds
+                 * both chooses the deployment's party stage.
+                 */
+                profileCode: '',
+                /*
+                 * The entity the person chose, which the run records against
+                 * the party: a party identifier carries the party its writing
+                 * session acts in, and this session works in another one.
+                 */
+                lei: parsed.data.lei,
+            }),
+        );
+    });
+
+    /**
      * Provisions a tenant from a starting point.
      *
      * The tenant and its administrator exist by the time this answers, and the
@@ -591,15 +702,19 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * A run's progress, as the journey's rail renders it.
+     * A run's progress, as a journey's rail renders it.
      *
      * The page follows the run by asking this again while it is open: the
      * answer carries the run's status, the step it is executing and one
      * summary per step, so the rail is a rendering of the answer rather than a
      * state the page keeps. The engine's change event is not the progress
-     * contract, which is why this read is what the journey follows.
+     * contract, which is why this read is what a journey follows.
+     *
+     * The route names the run and not the journey that started it: a tenant's
+     * stages and a party's are the same record, and a route named for one of
+     * them would say a party's run was a tenant's.
      */
-    server.get('/api/provision-tenant/:instanceId', async (request) => {
+    server.get('/api/workflow/:instanceId', async (request) => {
         const session = requireSession(request);
         const { instanceId } = request.params as { instanceId: string };
         return workflowProgressSchema.parse(await session.client.workflowProgress(instanceId));
@@ -613,7 +728,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * it re-dispatched or why it refused, and the page re-reads the progress
      * either way.
      */
-    server.post('/api/provision-tenant/:instanceId/retry', async (request) => {
+    server.post('/api/workflow/:instanceId/retry', async (request) => {
         const session = requireSession(request);
         const { instanceId } = request.params as { instanceId: string };
         const body = z.object({ stepName: z.string().default('') }).parse(request.body ?? {});

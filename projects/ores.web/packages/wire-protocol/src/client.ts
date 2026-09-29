@@ -48,6 +48,13 @@ import {
     logoutResponseSchema,
     partyRequestSchema,
     partyResponseSchema,
+    listPartiesReplySchema,
+    provisionPartyReplySchema,
+    putPartyReplySchema,
+    toProvisionPartyCommand,
+    toProvisionPartyResult,
+    toPutPartyChange,
+    toPutPartyResult,
     provisionTenantReplySchema,
     provisionTenantRequestSchema,
     refreshResponseSchema,
@@ -66,8 +73,11 @@ import {
     workflowStepsRequestSchema,
     type LoginResponse,
     type PasswordPolicy,
+    type PartyRow,
+    type ProvisionPartyResult,
     type ProvisionTenantRequest,
     type ProvisionTenantResult,
+    type PutPartyResult,
     type RetryWorkflowInstanceRequest,
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
@@ -78,7 +88,7 @@ import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstra
 import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
-import { nodeIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
+import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
 import { LIVE_WORKSPACE_ID } from './primitives.js';
 
 /** How long the client waits for each kind of call. */
@@ -374,6 +384,91 @@ export class OresClient {
             { timeoutMs: this.#timeouts.slowMs },
         );
         return toProvisionTenantResult(reply);
+    }
+
+    /**
+     * Every party of the caller's own tenant.
+     *
+     * The page is read to the end rather than once, because what this answers
+     * is a question about all of them: which party sits at the top of the
+     * tenant's hierarchy, and whether the tenant holds the one a session is
+     * being scoped to. A tenant's parties are its own structure and not its
+     * trading data, so reading them all is the small read it looks like.
+     */
+    async listParties(): Promise<readonly PartyRow[]> {
+        const PAGE_SIZE = 500;
+        const parties: PartyRow[] = [];
+        for (let offset = 0; ; offset += PAGE_SIZE) {
+            const reply = await this.#authenticatedCall(
+                SUBJECTS.listParties,
+                { offset, limit: PAGE_SIZE, order: { field: '', descending: false } },
+                listPartiesReplySchema,
+                { timeoutMs: this.#timeouts.fastMs },
+            );
+            if (reply.result.outcome !== 'ok') {
+                throw new OperationFailedError(SUBJECTS.listParties, reply.result.message);
+            }
+            parties.push(...reply.parties);
+            if (reply.parties.length === 0 || parties.length >= reply.total) {
+                return parties;
+            }
+        }
+    }
+
+    /**
+     * Adds one party to the caller's own tenant.
+     *
+     * The identifier is minted here, because the row is written with it and
+     * the caller needs it before the answer: the party stage that follows names
+     * the party by that identifier.
+     *
+     * A refusal the server states, such as a short code the tenant already
+     * uses, comes back as a result with `success` false rather than as a thrown
+     * error: it is an answer to the write, and the person who asked can act on
+     * it.
+     */
+    async createParty(input: {
+        readonly shortCode: string;
+        readonly fullName: string;
+        readonly parentPartyId: string | null;
+    }): Promise<PutPartyResult> {
+        const id = portableIdGenerator();
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.putParty,
+            {
+                change: toPutPartyChange({
+                    id,
+                    shortCode: input.shortCode,
+                    fullName: input.fullName,
+                    parentPartyId: input.parentPartyId,
+                }),
+                intent: { reason_code: '', commentary: '' },
+            },
+            putPartyReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        return toPutPartyResult(reply, id);
+    }
+
+    /**
+     * Runs the party stage of a starting point against one party.
+     *
+     * The party exists by the time this is called, and the answer carries the
+     * id of the run that publishes its data, activates it and joins the caller
+     * to it. The run is followed by that id rather than by waiting here.
+     */
+    async provisionParty(input: {
+        readonly party: string;
+        readonly profileCode: string;
+        readonly lei: string;
+    }): Promise<ProvisionPartyResult> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.provisionParty,
+            toProvisionPartyCommand(input),
+            provisionPartyReplySchema,
+            { timeoutMs: this.#timeouts.slowMs },
+        );
+        return toProvisionPartyResult(reply);
     }
 
     /**

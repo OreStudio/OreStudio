@@ -28,7 +28,12 @@ import { subjects as seedProfileSubjects } from './generated/iam/protocol/seed_p
 import { subjects as seedProfileParameterSubjects } from './generated/iam/protocol/seed_profile_parameter_protocol.js';
 import { subjects as seedProfileStepSubjects } from './generated/iam/protocol/seed_profile_step_protocol.js';
 import { subjects as tenantProvisioningSubjects } from './generated/iam/protocol/tenant_provisioning_protocol.js';
-import type { ProvisionTenantCommand } from './generated/iam/protocol/tenant_provisioning_protocol.js';
+import type {
+    ProvisionPartyCommand,
+    ProvisionTenantCommand,
+} from './generated/iam/protocol/tenant_provisioning_protocol.js';
+import { subjects as partySubjects } from './generated/refdata/protocol/party_protocol.js';
+import type { PartyChange } from './generated/refdata/protocol/party_protocol.js';
 import type { Uuid } from './primitives.js';
 
 /**
@@ -60,6 +65,9 @@ export const SUBJECTS = {
     listSeedProfileParameters:
         seedProfileParameterSubjects.list_by_seed_profile_id_seed_profile_parameters_request,
     provisionTenant: tenantProvisioningSubjects.provision_tenant_command,
+    provisionParty: tenantProvisioningSubjects.provision_party_command,
+    listParties: partySubjects.list_parties_request,
+    putParty: partySubjects.put_party_request,
     // ores.workflow generates no TypeScript contract yet, so the two subjects
     // its journey speaks are mirrored here, and the shapes they carry with
     // them. A rename in C++ must be mirrored here or the boundary test fails.
@@ -749,6 +757,182 @@ export const searchLeiEntitiesResponseSchema = z.object({
 });
 
 export type SearchLeiEntitiesResponse = z.infer<typeof searchLeiEntitiesResponseSchema>;
+
+/**
+ * A party of the caller's tenant, as a screen or a route reads it.
+ *
+ * The identifier the parent column carries is the one that decides where the
+ * party sits: a party hangs under another, and exactly one party of a tenant
+ * sits at the top. The audit tail and the image are not here, because nothing
+ * that reads a party to place it may act on them.
+ */
+const optionalUuidSchema = z
+    .string()
+    .nullish()
+    .transform((value) => (value === null || value === undefined || value === '' ? null : value));
+
+export const partyWireRowSchema = z.object({
+    id: uuidSchema,
+    short_code: z.string().default(''),
+    full_name: z.string().default(''),
+    party_category: z.string().default(''),
+    party_type: z.string().default(''),
+    parent_party_id: optionalUuidSchema,
+    business_center_code: z.string().default(''),
+    status: z.string().default(''),
+});
+
+export type PartyRow = z.infer<typeof partyWireRowSchema>;
+
+/** The server's answer to a party page read, before it is read in one's terms. */
+export const listPartiesReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    parties: z.array(partyWireRowSchema).default([]),
+    total: z.int().nonnegative().default(0),
+});
+
+/**
+ * One party a party journey needs placed, and the request that places it.
+ *
+ * A party write states what the row is and what the writer believes about it.
+ * A party being added believes nothing exists yet, which is the precondition
+ * that makes a second attempt at the same short code a refusal rather than a
+ * second row.
+ */
+export function toPutPartyChange(input: {
+    readonly id: string;
+    readonly shortCode: string;
+    readonly fullName: string;
+    readonly parentPartyId: string | null;
+}): PartyChange {
+    return {
+        write: {
+            id: input.id,
+            short_code: input.shortCode,
+            full_name: input.fullName,
+            /*
+             * Left blank so the server generates it: the codename is the
+             * party's queue prefix and is immutable once assigned, which is a
+             * rule about the deployment and not about this screen.
+             */
+            codename: '',
+            transliterated_name: null,
+            /* A party a person adds is an operational one, never the system's. */
+            party_category: 'Operational',
+            party_type: 'Corporate',
+            parent_party_id: input.parentPartyId,
+            /* The global sentinel business centre, which every tenant seeds. */
+            business_center_code: 'WRLD',
+            /*
+             * Inactive until the run reaches its activate step. A party born
+             * active would make that step a step that does nothing.
+             */
+            status: 'Inactive',
+            image_id: null,
+        },
+        precondition: { kind: 'must_not_exist', version: null },
+    };
+}
+
+/** What a party write answered, as the interface reads it. */
+export const putPartyResultSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    partyId: z.string().default(''),
+});
+
+export type PutPartyResult = z.infer<typeof putPartyResultSchema>;
+
+/** The server's own answer to a party write, before it is read as a result. */
+export const putPartyReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    party: partyWireRowSchema.nullish(),
+});
+
+/** The interface's result, read from the server's answer. */
+export function toPutPartyResult(
+    reply: z.infer<typeof putPartyReplySchema>,
+    partyId: string,
+): PutPartyResult {
+    return {
+        success: reply.result.outcome === 'ok',
+        message: reply.result.message,
+        partyId: reply.result.outcome === 'ok' ? partyId : '',
+    };
+}
+
+/**
+ * A request to add one party of the caller's own tenant.
+ *
+ * The legal name is what the party is called and the short code is what people
+ * type to reach it. The LEI is carried only when the party was built from a
+ * legal entity the deployment holds: a party that is not one of them has no
+ * LEI, and an empty value is what says so rather than a flag beside it.
+ *
+ * The starting point is not here. A party's data is the deployment's own, the
+ * profiles that state it are the system tenant's rows, and a tenant
+ * administrator reads only its own; the service that holds both is the one that
+ * decides which stage a party is published by.
+ */
+export const provisionPartyRequestSchema = z.object({
+    fullName: z.string().min(1),
+    shortCode: z.string().min(1),
+    lei: z.string().default(''),
+});
+
+export type ProvisionPartyRequest = z.infer<typeof provisionPartyRequestSchema>;
+
+/**
+ * What adding a party answered, as the interface reads it.
+ *
+ * The party exists and the run that publishes its data exists by the time this
+ * answers, so both identifiers travel: the party is what the screen names and
+ * the run is what it follows.
+ */
+export const provisionPartyResultSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    instanceId: z.string().default(''),
+    partyId: z.string().default(''),
+});
+
+export type ProvisionPartyResult = z.infer<typeof provisionPartyResultSchema>;
+
+/** The server's own answer to the party stage, before it is read as a result. */
+export const provisionPartyReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    instance_id: z.string().default(''),
+    party_id: z.string().default(''),
+});
+
+/**
+ * The wire command one party-stage request becomes.
+ *
+ * The LEI travels with it when the party was built from an entity the
+ * deployment holds, and the run records it against the party: a party
+ * identifier carries the party its writing session acts in, so the person who
+ * adds a party cannot write it from the session they are in.
+ */
+export function toProvisionPartyCommand(input: {
+    readonly party: string;
+    readonly profileCode: string;
+    readonly lei: string;
+}): ProvisionPartyCommand {
+    return { party: input.party, profile_code: input.profileCode, lei: input.lei };
+}
+
+/** The interface's result, read from the server's answer. */
+export function toProvisionPartyResult(
+    reply: z.infer<typeof provisionPartyReplySchema>,
+): ProvisionPartyResult {
+    return {
+        success: reply.success,
+        message: reply.message,
+        instanceId: reply.instance_id,
+        partyId: reply.party_id,
+    };
+}
 
 /**
  * A request to provision one tenant from a starting point.

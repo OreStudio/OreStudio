@@ -288,6 +288,15 @@ struct provision_party_step_arguments {
     /// Empty means every party the tenant holds, which is what a tenant's own
     /// run asks for: the parties its hierarchy import created.
     std::string party;
+    /**
+     * The legal entity the party was built from, when it was built from one the
+     * deployment holds.
+     *
+     * Empty for a party a person described by hand, which is a party the
+     * register has no LEI for; a run that records none is the same run as one
+     * whose party is not in the register.
+     */
+    std::string lei;
 };
 
 /**
@@ -295,7 +304,9 @@ struct provision_party_step_arguments {
  *
  * A profile names the bundles. A row that names no party provisions every party
  * the tenant holds, which is the tenant run's reading; a row that names one, or
- * a request that names one, provisions that party alone.
+ * a request that names one, provisions that party alone. The LEI is the
+ * request's and never the profile's: the entity is chosen by the person who
+ * adds the party, not by the starting point it is added from.
  */
 [[nodiscard]] inline provision_party_step_arguments
 parse_provision_party_arguments(const std::string& arguments_json) {
@@ -304,6 +315,7 @@ parse_provision_party_arguments(const std::string& arguments_json) {
 
     const auto arguments = detail::read_step_arguments(arguments_json);
     result.party = detail::read_string(arguments, "party");
+    result.lei = detail::read_string(arguments, "lei");
     return result;
 }
 

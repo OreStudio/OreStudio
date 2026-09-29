@@ -51,11 +51,15 @@ export function HomePage({ username, email, tenantName, partyName }: HomePagePro
                 <Detail label={t('home.party')} value={partyName} />
             </dl>
             {/*
-             * The way into the journey a signed-in administrator runs: a tenant
-             * is added from here until the Tenants page is its permanent home.
+             * The ways into the journeys a signed-in person runs. A tenant is
+             * added from here until the Tenants page is its permanent home, and
+             * a party until the Parties page is.
              */}
-            <div className="mt-6">
+            <div className="mt-6 flex flex-wrap gap-3">
                 <LinkButton to="/tenants/new">{t('home.newTenant')}</LinkButton>
+                <LinkButton to="/parties/new" variant="secondary">
+                    {t('home.newParty')}
+                </LinkButton>
             </div>
         </div>
     );

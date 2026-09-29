@@ -107,3 +107,105 @@ export function emailFromPrincipal(principal: string, hostname: string): string 
     }
     return `${principal}@${hostname}`;
 }
+
+/**
+ * The corporate suffixes a registered name may end with.
+ *
+ * Mirrored from `ores_utility_strip_corporate_suffix_fn`, which is the rule the
+ * deployment applies when it generates a short code for an imported legal
+ * entity. A name is stripped of these before a code is proposed from it, so
+ * "BARCLAYS PLC" proposes the code of "BARCLAYS" rather than of the two words.
+ */
+const DOTTED_CORPORATE_SUFFIXES = [
+    'S.C.A.',
+    'S.R.L.',
+    'S.P.A.',
+    'S.A.',
+    'B.V.',
+    'N.V.',
+    'K.K.',
+    'S.E.',
+] as const;
+
+const WORD_CORPORATE_SUFFIXES = [
+    'AND CO.',
+    '& CO.',
+    'CO.',
+    'PLC',
+    'LLC',
+    'LLP',
+    'LTD',
+    'INC',
+    'CORP',
+    'AG',
+    'NV',
+    'AB',
+    'ASA',
+    'GMBH',
+    'MBH',
+    'BV',
+    'BHD',
+    'SRL',
+    'SPA',
+    'SARL',
+    'KG',
+    'OYJ',
+    'TBK',
+    'LP',
+    'SE',
+    'SA',
+    'AS',
+] as const;
+
+function escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function stripCorporateSuffix(name: string): string {
+    let result = name.trim();
+    for (const suffix of DOTTED_CORPORATE_SUFFIXES) {
+        if (result.toUpperCase().endsWith(` ${suffix.toUpperCase()}`)) {
+            result = result.slice(0, result.length - suffix.length).trim();
+        }
+    }
+    for (const suffix of WORD_CORPORATE_SUFFIXES) {
+        result = result.replace(new RegExp(`\\s+${escapeRegExp(suffix)}\\s*$`, 'i'), '');
+    }
+    return result.trim();
+}
+
+/**
+ * The short code a registered name proposes.
+ *
+ * A party's short code is a mnemonic that has to be unique within the tenant,
+ * so this proposes one and the person changes it: a single word contributes its
+ * first letter and then its consonants, two words contribute three letters
+ * each, and three or more contribute two each. The rule is the deployment's own
+ * — the codes its imported parties carry were made by it — so a party added
+ * here is named the same way as one the deployment already holds.
+ */
+export function partyCodeFromName(name: string): string {
+    const cleaned = stripCorporateSuffix(name)
+        .toUpperCase()
+        .replace(/[^A-Z ]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (cleaned === '') {
+        return 'UNKNWN';
+    }
+    const words = cleaned.split(' ');
+    let code: string;
+    if (words.length === 1) {
+        const word = words[0] ?? '';
+        const consonants = word.replace(/[AEIOU]/g, '');
+        code = word.slice(0, 1) + consonants.slice(1);
+    } else if (words.length === 2) {
+        code = (words[0] ?? '').slice(0, 3) + (words[1] ?? '').slice(0, 3);
+    } else {
+        code = words
+            .slice(0, 3)
+            .map((word) => word.slice(0, 2))
+            .join('');
+    }
+    return code.slice(0, 6).padEnd(3, 'X');
+}

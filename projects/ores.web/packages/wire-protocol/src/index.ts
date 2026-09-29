@@ -150,6 +150,22 @@ export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';
 export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
 export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
 
+export {
+    listPartiesReplySchema,
+    partyWireRowSchema,
+    provisionPartyReplySchema,
+    provisionPartyRequestSchema,
+    provisionPartyResultSchema,
+    putPartyResultSchema,
+    toPutPartyChange,
+} from './operations.js';
+export type {
+    PartyRow,
+    ProvisionPartyRequest,
+    ProvisionPartyResult,
+    PutPartyResult,
+} from './operations.js';
+
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
 

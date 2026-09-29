@@ -92,6 +92,12 @@ export type { LeiEntityChoice, LeiEntitiesResponse } from './operations.js';
 export { provisionTenantRequestSchema, provisionTenantResultSchema } from './operations.js';
 export type { ProvisionTenantRequest, ProvisionTenantResult } from './operations.js';
 
+// Adding one party of the tenant the person already works in, and the run its
+// data is published by. The party row itself is not here: the browser describes
+// a party and the BFF places it, so no screen needs the tenant's hierarchy.
+export { provisionPartyRequestSchema, provisionPartyResultSchema } from './operations.js';
+export type { ProvisionPartyRequest, ProvisionPartyResult } from './operations.js';
+
 // The run a provision starts, which its journey follows by asking again, and
 // the retry that resumes it from the step that failed.
 export { retryWorkflowInstanceResultSchema, workflowProgressSchema } from './operations.js';

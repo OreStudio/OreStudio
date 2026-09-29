@@ -37,6 +37,8 @@ import type {
     CreateAdministratorRequest,
     PasswordPolicy,
     PartySummary,
+    ProvisionPartyRequest,
+    ProvisionPartyResult,
     ProvisionTenantRequest,
     ProvisionTenantResult,
     RetryWorkflowInstanceResult,
@@ -54,12 +56,15 @@ export interface JourneyServer {
         readonly password: string;
     }) => Promise<SignInOutcome>;
     readonly chooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
+    /** Re-scopes the open session to a party the account may work in. */
+    readonly switchParty: (partyId: string) => Promise<void>;
     readonly signOut: () => Promise<void>;
     readonly passwordPolicy: () => Promise<PasswordPolicy>;
     readonly seedProfiles: () => Promise<readonly SeedProfileChoice[]>;
     /** The entities matching what a person typed, which the read matches. */
     readonly leiEntities: (search: string) => Promise<readonly LeiEntityChoice[]>;
     readonly provision: (request: ProvisionTenantRequest) => Promise<ProvisionTenantResult>;
+    readonly provisionParty: (request: ProvisionPartyRequest) => Promise<ProvisionPartyResult>;
     readonly progress: (instanceId: string) => Promise<WorkflowProgress>;
     readonly retry: (instanceId: string, stepName?: string) => Promise<RetryWorkflowInstanceResult>;
     readonly changePassword: (currentPassword: string, nextPassword: string) => Promise<void>;
@@ -68,7 +73,7 @@ export interface JourneyServer {
 /** The deployment's own server, as a journey reaches it. */
 export function useJourneyServer(): JourneyServer {
     const { recheck } = useBootstrap();
-    const { signIn, chooseParty, signOut } = useSession();
+    const { signIn, chooseParty, switchParty, signOut } = useSession();
 
     return useMemo<JourneyServer>(
         () => ({
@@ -78,15 +83,17 @@ export function useJourneyServer(): JourneyServer {
             recheckBootstrap: recheck,
             signIn,
             chooseParty,
+            switchParty,
             signOut,
             passwordPolicy: api.passwordPolicy,
             seedProfiles: api.seedProfiles,
             leiEntities: api.leiEntities,
             provision: api.provisionTenant,
+            provisionParty: api.provisionParty,
             progress: api.provisionTenantProgress,
             retry: api.retryProvisionTenant,
             changePassword: api.changePassword,
         }),
-        [recheck, signIn, chooseParty, signOut],
+        [recheck, signIn, chooseParty, switchParty, signOut],
     );
 }

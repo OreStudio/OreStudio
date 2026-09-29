@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-new-tenant-and-new-party-journeys
-#+pr: 2396
+#+pr: 2405
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -30,9 +30,9 @@ and a scripted end-to-end run proves the browser's path on a fresh database.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The *New tenant* journey is built and walked in a browser: `/tenants/new` renders the five tenant steps on their own rail for a signed-in administrator, and the home screen is the way in. The *New party* journey is not built, and no scripted run proves the browser's path. |
+| Now          | Both journeys are built and walked in a browser. `/tenants/new` renders the five tenant steps on their own rail for a signed-in administrator, `/parties/new` renders the five party steps for a tenant administrator, and the home screen is the way into both. The scripted end-to-end proof is still owed. |
 | Waiting on   | Nothing.                               |
-| Next         | The *New party* journey, with both cases the product owner states: a party built from a legal entity the deployment holds, and a party that is not one of them and is therefore described by hand. It needs the BFF route and the wire call for `iam.v1.parties.provision`, the party write, and then its screens. Then the scripted proof. |
+| Next         | The scripted end-to-end run the last acceptance line asks for, in the shape of `projects/ores.web/scripts/verify-login.ts`, walking the first-run path against the real server on a fresh database. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -70,9 +70,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tests in the web workspace | 146 passing, 13 files | =npm run test --workspace @ores/web= | branch tip |
+| Tests in the wire protocol | 51 passing, 7 files | =npm run test --workspace @ores/wire-protocol= | branch tip |
+| Tests in the BFF | 64 passing, 14 files | =npm run test --workspace @ores/bff= | branch tip |
+| A party the run provisions | Active, LEI recorded, caller joined, onboarding complete | =evidence/new_party_journey_live.txt= | branch tip |
+| A party the run provisions that the register does not hold | Active, no identifier | =evidence/new_party_journey_live.txt= | branch tip |
 
 * Notes
+
+- The first walk of the party journey failed at the run's only step: the LEI was
+  recorded before the party was activated, and an identifier's insert bumps the
+  version of the party it belongs to, so the activation was refused as a party
+  that had moved on. The LEI is now written last.
+- Two defects this work ran into are captured rather than fixed here, and
+  neither is this journey's:
+  [[id:0E027DAE-A708-4DEB-A6E6-7FEB1410572E][a service dies on one failed query,
+  and nothing says so]] and [[id:252C3441-D862-4862-9A7A-EE548AC5A799][a run
+  whose dependency is dead reports a timeout, not the cause]]. The second is
+  what turned a dead marketdata service into a 25-minute wait whose failure
+  named a step instead of a cause.
 
 * Test Scenarios
 
@@ -89,6 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2405][#2405]] | [web,iam] Add a party to the tenant, as a journey |
 | [[https://github.com/OreStudio/OreStudio/pull/2396][#2396]] | [web] Run the new tenant journey on its own rail |
 
 * Review
@@ -99,35 +116,59 @@ via its "Verifies task" field.
 
 * Result
 
+Both journeys run as journeys of their own, on the runtime and the step library
+the first run inlines, and both were walked in a headless browser.
+
 The *New tenant* journey runs at =/tenants/new=, and it is a route rather than
 a gate: the installation is already set up, so a signed-in administrator adds a
 tenant beside the ones the deployment has. The rail is the same five steps the
 first run inlines, from the same library, so the two journeys cannot describe a
 tenant differently; what the new journey does not carry is the administrator to
-create and the first sign-in, because both already happened.
+create and the first sign-in, because both already happened. Two things differ
+from the first run and both come from who the person is: the browser does not
+hold the signed-in administrator's password, so a starting point that hands that
+password to the tenant's administrator asks for one instead, and the hand-over
+is the journey's end. That walk is recorded in
+=evidence/new_tenant_journey_live.txt=.
 
-Two things differ from the first run and both come from who the person is. The
-browser does not hold the signed-in administrator's password, so a starting
-point that hands that password to the tenant's administrator asks for one
-instead -- the form already warns when it has none to hand on -- and the
-hand-over is the journey's end: the person either becomes the new tenant's
-administrator, which signs out and back in as them, or passes the account on,
-which signs out and stops.
+The *New party* journey runs at =/parties/new= for a tenant administrator, who
+is the person this journey belongs to: the session already names the tenant, so
+the five steps are find the legal entity, describe the party, review, follow the
+run, and the next steps. It carries both cases the product owner states, and
+they converge after the first step. A legal entity the deployment holds brings
+its own legal name and its LEI, which the search reads from the deployment's own
+register; a party that is not one of them is named by hand and has no LEI. The
+walk is recorded in =evidence/new_party_journey_live.txt= with two screenshots,
+and it goes all the way through: the run finished, the party came back /active/,
+the caller is joined to it, its onboarding is complete, and *Work in it now*
+re-scoped the session to it. The party the register does not hold ended in the
+same place with no identifier, which is what such a party looks like.
 
-The walk in a headless browser is recorded in
-=evidence/new_tenant_journey_live.txt= with a screenshot: the five-step rail,
-the three starting points read from the server, the form built from the chosen
-profile's settings with the shared password field and the deployment's policy,
-and the review summary before anything is created. The run itself was not
-walked to its end in the browser, and the file says so.
+Three things had to be built before the screens could be honest. The BFF gained
+=POST /api/provision-party=, which adds the party row and starts the run, and
+=POST /api/session/switch-party=, because the party a person adds during a
+session is not in the list the login answered with. The progress and retry reads
+became =/api/workflow/:instanceId=: they were named after the tenant, and a
+party's run is the same record. And the party stage now records the legal entity
+the party was built from, which the browser cannot do: a party identifier is
+stamped with the party its writing session acts in, and the person adding a
+party works in another one, so the run writes it with a client scoped to the
+party it is provisioning. The LEI field travels on =iam.v1.parties.provision=
+for the same reason.
 
-What this task still owes is the *New party* journey and the scripted browser
-proof. The party journey is the larger half, and it carries two cases the
-product owner states: a party built from a legal entity the deployment holds,
-found through the search, and a party that is not one of them, described by
-hand. Both end at the same place -- the party exists, and
-=iam.v1.parties.provision= runs the stage that publishes its data, activates
-it, completes its onboarding and joins the person who asked to it -- but
-nothing in the browser reaches that request today, and nothing creates the
-party row, so the journey needs a BFF route and a wire call of its own before
-its screens can be honest.
+The starting point a party stage runs from is the deployment's, and neither
+client names it: the profiles are the system tenant's rows, a tenant reads only
+its own, and the service that holds both is the one that chooses. The shell's
+=provision party= therefore names none by default, and the browser names none at
+all.
+
+What this task still owes is the scripted end-to-end proof, the last acceptance
+line: a run in the shape of =projects/ores.web/scripts/verify-login.ts= walking
+the first-run path against the real server on a fresh database. The two walks
+recorded here are manual.
+
+The party journey also does not carry the accounts picker the prototype showed.
+Nothing writes the chosen associations -- the run joins the caller alone -- and a
+picker whose choices went nowhere would be worse than no picker. The journey
+document records it under *What is missing*, with the placement of a party under
+the tenant's own party and the parent a person does not choose.

@@ -262,7 +262,9 @@ export function TenantForm({
                             server={server}
                             value={details.parameters[parameter.name] ?? ''}
                             label={parameter.label}
-                            hint={parameter.hint}
+                            hint={[parameter.hint, t('journey.details.leiHowItWorks')]
+                                .filter((sentence) => sentence !== '')
+                                .join(' ')}
                             onChoose={(entity) =>
                                 chooseEntity(parameter.name, entity.legalName, entity.lei)
                             }

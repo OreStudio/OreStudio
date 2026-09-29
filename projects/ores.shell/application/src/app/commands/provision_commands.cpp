@@ -43,11 +43,10 @@ using ores::nats::service::nats_client;
 namespace {
 
 /**
- * @brief The starting point a provisioning command runs from when the caller
- * names none.
+ * @brief The starting point a tenant is created from when the caller names none.
  *
  * The operational row, which creates the tenant's real data and no test data.
- * Every command that provisions states its starting point as a flag, so a
+ * Both commands that create a tenant state their starting point as a flag, so a
  * caller that wants the demonstration says so.
  */
 constexpr std::string_view default_profile_code = "empty_operational";
@@ -250,7 +249,6 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
 
     ores::shell::app::insert_menu(root_menu, std::move(provision_menu));
 }
-
 void provision_commands::process_setup(std::ostream& out,
                                         nats_client& session,
                                         const std::vector<std::string>& args) {
@@ -369,6 +367,16 @@ void provision_commands::process_tenant(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; " << fields->code;
 }
 
+/**
+ * @brief The starting point a party stage runs from when the caller names none.
+ *
+ * Empty, which asks the service for the deployment's own party starting point:
+ * the first profile that orders a party step. Every profile orders the same
+ * party stage, and a tenant administrator cannot read the profile rows at all,
+ * so the service that holds them is the one that chooses.
+ */
+constexpr std::string_view default_party_profile_code = "";
+
 void provision_commands::process_party(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
@@ -376,7 +384,7 @@ void provision_commands::process_party(std::ostream& out,
         args,
         {{.name = "profile",
           .requires_value = true,
-          .default_value = std::string(default_profile_code)},
+          .default_value = std::string(default_party_profile_code)},
          {.name = "timeout",
           .requires_value = true,
           .default_value = std::to_string(default_run_timeout.count())}});

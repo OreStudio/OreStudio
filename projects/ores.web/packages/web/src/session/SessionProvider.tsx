@@ -71,6 +71,14 @@ interface SessionContextValue {
         password: string;
     }) => Promise<SignInOutcome>;
     readonly chooseParty: (partyId: string, parties: readonly PartySummary[]) => Promise<void>;
+    /**
+     * Re-scopes the open session to another of the account's own parties.
+     *
+     * The party list is the server's answer here rather than a list the caller
+     * passes, because the party may have been added after the login and no
+     * caller holds a complete list.
+     */
+    readonly switchParty: (partyId: string) => Promise<void>;
     readonly signOut: () => Promise<void>;
 }
 
@@ -176,6 +184,15 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
         [queryClient],
     );
 
+    const switchParty = useCallback<SessionContextValue['switchParty']>(
+        async (partyId) => {
+            const session = await api.switchParty(partyId);
+            queryClient.setQueryData(SESSION_QUERY_KEY, session);
+            setState({ status: 'authenticated', session });
+        },
+        [queryClient],
+    );
+
     const signOut = useCallback<SessionContextValue['signOut']>(async () => {
         await api.logout();
         queryClient.setQueryData(SESSION_QUERY_KEY, null);
@@ -184,8 +201,8 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
     }, [queryClient]);
 
     const value = useMemo<SessionContextValue>(
-        () => ({ state, signIn, chooseParty, signOut }),
-        [state, signIn, chooseParty, signOut],
+        () => ({ state, signIn, chooseParty, switchParty, signOut }),
+        [state, signIn, chooseParty, switchParty, signOut],
     );
 
     return <SessionContext value={value}>{children}</SessionContext>;

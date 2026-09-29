@@ -27,6 +27,7 @@ import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
+import { NewPartyJourney } from './journeys/NewPartyJourney.js';
 import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
@@ -64,6 +65,14 @@ export interface AppRoutesProps {
      * the person arrives at it from a screen and leaves it for one.
      */
     readonly newTenantJourney: ReactNode;
+    /**
+     * The new party journey, which a tenant administrator runs.
+     *
+     * It is a route for the same reason, and it is the tenant's own: the
+     * session already names the tenant, so the journey adds a party to it
+     * rather than asking which one.
+     */
+    readonly newPartyJourney: ReactNode;
     /** Whether that journey is running, which keeps the browser on its rail. */
     readonly journeyInProgress: boolean;
     readonly onSignIn: SignInPageProps['onSignIn'];
@@ -77,6 +86,7 @@ export function AppRoutes({
     session,
     journey,
     newTenantJourney,
+    newPartyJourney,
     journeyInProgress,
     onSignIn,
     onChooseParty,
@@ -148,6 +158,10 @@ export function AppRoutes({
                 path="/tenants/new"
                 element={signedIn(gate.version, session, onSignOut, () => newTenantJourney)}
             />
+            <Route
+                path="/parties/new"
+                element={signedIn(gate.version, session, onSignOut, () => newPartyJourney)}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -190,6 +204,16 @@ export function ConnectedApp(): ReactNode {
                      * The journey ends either inside the new tenant or signed
                      * out, and both are places the route table already knows:
                      * the home page sends a signed-out visitor to sign in.
+                     */
+                    onFinished={() => navigate('/')}
+                />
+            }
+            newPartyJourney={
+                <NewPartyJourney
+                    server={server}
+                    /*
+                     * The journey ends working as the new party, or at the
+                     * screen the person came from; both are the home page.
                      */
                     onFinished={() => navigate('/')}
                 />

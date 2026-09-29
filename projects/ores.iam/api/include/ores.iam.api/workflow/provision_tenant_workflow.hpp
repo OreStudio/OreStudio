@@ -111,9 +111,9 @@ struct step_kind_words {
                 "Reads the legal entity the starting point names by its LEI and the entities it "
                 "consolidates, and publishes them as the tenant's parties."};
     if (kind == provision_party_step_kind)
-        return {"Create the tenant's parties",
-                "Creates the party that represents the tenant itself, with the reference data a "
-                "party needs."};
+        return {"Provision the parties",
+                "Publishes each party's reference data, records the legal entity it was built "
+                "from, activates it, marks its onboarding complete and joins the caller to it."};
     if (kind == load_staff_step_kind)
         return {"Load the staff",
                 "Creates an account for each person the starting point lists, each in its own "

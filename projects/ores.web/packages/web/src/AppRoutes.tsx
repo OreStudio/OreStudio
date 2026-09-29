@@ -95,7 +95,7 @@ export function AppRoutes({
     if (gate.inBootstrapMode || journeyInProgress) {
         return (
             <Routes>
-                <Route path="*" element={<PublicShell>{journey}</PublicShell>} />
+                <Route path="*" element={<PublicShell wide>{journey}</PublicShell>} />
             </Routes>
         );
     }

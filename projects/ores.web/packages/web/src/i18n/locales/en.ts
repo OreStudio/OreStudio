@@ -455,15 +455,16 @@ export const en: SourceCatalogue = {
 
         welcome: {
             title: 'Welcome to ORE Studio',
-            lead: 'This installation is empty. Set it up in three stages.',
+            lead: 'This installation is empty. Set it up in three stages; the list on the left names every step.',
             start: 'Get started',
             stage: {
                 admin: 'Create the administrator',
                 adminBody: 'The account that owns this installation.',
                 tenant: 'Create the first tenant',
-                tenantBody: 'Choose a starting point and provision the tenant.',
+                tenantBody: 'The first tenant, built from a starting point on the server.',
                 signIn: 'Sign in',
-                signInBody: 'The tenant administrator sets a password of their own.',
+                signInBody:
+                    "The tenant administrator's first sign-in, with a password of their own.",
             },
         },
 

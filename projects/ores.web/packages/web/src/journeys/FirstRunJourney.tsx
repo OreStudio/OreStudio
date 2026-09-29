@@ -46,7 +46,7 @@ import { indexOfStep } from './runtime.js';
 import { firstRunSteps, type AdministratorDraft } from './firstRunSteps.js';
 import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
-import { administratorPassword, tenantPrincipal, useNewTenant } from './state.js';
+import { administratorPassword, tenantPrincipal, useNewTenant, type NewTenant } from './state.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 /** What a fresh installation's administrator is almost always called. */
@@ -65,7 +65,43 @@ function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
-/** The splash, and what the three stages of the journey are. */
+/**
+ * What the panel says above every step.
+ *
+ * The splash frames the panel, and once a starting point is chosen the tenant
+ * being described stands beside it: the form, the review, the run and the
+ * hand-over are all about that tenant, and a person who looked away should not
+ * have to walk back up the rail to remember which one it is.
+ */
+function JourneyHeader({ tenant }: { readonly tenant: NewTenant }): ReactNode {
+    return (
+        <div>
+            <img
+                src={heroSplash}
+                alt=""
+                className="h-24 w-full rounded-md border border-line object-cover"
+            />
+            {tenant.profile !== undefined && (
+                <div className="mt-3 flex items-baseline justify-between gap-3 text-sm">
+                    <span className="font-medium">
+                        {tenant.details?.name !== undefined && tenant.details.name !== ''
+                            ? tenant.details.name
+                            : tenant.profile.name}
+                    </span>
+                    <span className="text-xs text-ink-faint">{tenant.profile.name}</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
+ * The three stages, and what each one leaves behind.
+ *
+ * The rail already names all nine steps, so these cards say what a stage
+ * produces rather than repeating the step titles: a person who counts the rail
+ * and reads "three stages" should find both statements true.
+ */
 function Welcome(): ReactNode {
     const { t } = useTranslation();
     const stages: readonly (readonly [string, string])[] = [
@@ -74,17 +110,14 @@ function Welcome(): ReactNode {
         ['journey.welcome.stage.signIn', 'journey.welcome.stage.signInBody'],
     ];
     return (
-        <div>
-            <img src={heroSplash} alt="" className="mb-6 w-full rounded-md border border-line" />
-            <ul className="grid gap-3 sm:grid-cols-3">
-                {stages.map(([title, body]) => (
-                    <li key={title} className="rounded-md border border-line p-3">
-                        <p className="text-sm font-medium">{t(title)}</p>
-                        <p className="mt-1 text-sm text-ink-muted">{t(body)}</p>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <ul className="grid gap-4 sm:grid-cols-3">
+            {stages.map(([title, body]) => (
+                <li key={title} className="rounded-md border border-line p-4">
+                    <p className="text-sm font-medium">{t(title)}</p>
+                    <p className="mt-1 text-sm text-ink-muted">{t(body)}</p>
+                </li>
+            ))}
+        </ul>
     );
 }
 
@@ -288,5 +321,12 @@ export function FirstRunJourney({
         onFinished: () => onFinished(),
     });
 
-    return <JourneyPage steps={steps} at={at} onMove={setAt} />;
+    return (
+        <JourneyPage
+            steps={steps}
+            at={at}
+            onMove={setAt}
+            header={<JourneyHeader tenant={tenant} />}
+        />
+    );
 }

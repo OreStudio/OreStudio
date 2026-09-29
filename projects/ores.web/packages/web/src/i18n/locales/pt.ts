@@ -457,15 +457,17 @@ const pt: SourceCatalogue = {
 
         welcome: {
             title: 'Bem-vindo ao ORE Studio',
-            lead: 'Esta instalação está vazia. Configure-a em três fases.',
+            lead: 'Esta instalação está vazia. Configure-a em três etapas. A lista à esquerda indica cada passo.',
             start: 'Começar',
             stage: {
                 admin: 'Criar o administrador',
                 adminBody: 'A conta proprietária desta instalação.',
                 tenant: 'Criar o primeiro inquilino',
-                tenantBody: 'Escolha um ponto de partida e aprovisione o inquilino.',
+                tenantBody:
+                    'O primeiro inquilino, criado no servidor a partir de um ponto de partida.',
                 signIn: 'Iniciar sessão',
-                signInBody: 'O administrador do inquilino define a sua própria palavra-passe.',
+                signInBody:
+                    'O primeiro início de sessão do administrador do inquilino, com uma palavra-passe própria.',
             },
         },
 

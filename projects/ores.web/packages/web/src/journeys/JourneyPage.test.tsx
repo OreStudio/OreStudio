@@ -41,10 +41,10 @@ const administrator = step('administrator', 'Create the administrator', {
 });
 const ready = step('ready', 'Ready');
 
-function render(steps: readonly JourneyStep<ReactNode>[], at: number): string {
+function render(steps: readonly JourneyStep<ReactNode>[], at: number, header?: ReactNode): string {
     return renderToStaticMarkup(
         <TranslationProvider>
-            <JourneyPage steps={steps} at={at} onMove={() => undefined} />
+            <JourneyPage steps={steps} at={at} onMove={() => undefined} header={header} />
         </TranslationProvider>,
     );
 }
@@ -140,5 +140,14 @@ describe('the journey page', () => {
 
         expect(() => render(steps, 2)).toThrow(RangeError);
         expect(() => render(steps, -1)).toThrow(RangeError);
+    });
+
+    it('stands what the person is working on above every step, not inside one', () => {
+        const steps = defineJourney([welcome, administrator, ready]);
+        const header = <p>Northwind Capital</p>;
+
+        for (const at of [0, 1, 2]) {
+            expect(render(steps, at, header)).toContain('Northwind Capital');
+        }
     });
 });

@@ -25,7 +25,6 @@ runnable script library (=projects/ores.shell/scripts/library/=).
 - [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]]
 - [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]]
 - [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
-- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
 - [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
 
@@ -190,10 +189,6 @@ tangled into the runnable script library
 * Signup
 
 - [[id:84CA2C80-6E6A-5384-AF4B-0904CD1394F1][How do I run the signup commands from the shell?]]
-
-* Tenant Provisioning
-
-- [[id:7640B5F6-3480-5422-9EB5-F12B9609B724][How do I run the tenant_provisioning commands from the shell?]]
 
 * Tenant Statuses
 

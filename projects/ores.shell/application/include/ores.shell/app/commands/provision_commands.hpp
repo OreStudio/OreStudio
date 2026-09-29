@@ -67,19 +67,21 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief Set an empty installation up: provision system <username>
+     * @brief Set an empty installation up: bootstrap setup <username>
      * <password> <email> --tenant-admin-password <pw> [--profile <code>]
      * [--param <name=value>] [--tenant-code <c>] [--tenant-name <n>]
      * [--tenant-hostname <h>] [--tenant-description <d>] [--tenant-admin
      * <user>] [--tenant-admin-email <email>] [--timeout <seconds>].
      *
-     * Requires bootstrap mode and no login. Reads the deployment's own
-     * bootstrap answer, creates the initial administrator, signs in as it,
-     * and provisions the first tenant with one request, whose run the command
-     * then follows. The session is left signed in as the system
-     * administrator.
+     * Registered in the bootstrap menu, beside the generated verbs that
+     * answer the installation and give it an administrator, because this is
+     * the act that brings the installation to life. Requires bootstrap mode
+     * and no login. Reads the deployment's own bootstrap answer, creates the
+     * initial administrator, signs in as it, and provisions the first tenant
+     * with one request, whose run the command then follows. The session is
+     * left signed in as the system administrator.
      */
-    static void process_system(std::ostream& out,
+    static void process_setup(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 

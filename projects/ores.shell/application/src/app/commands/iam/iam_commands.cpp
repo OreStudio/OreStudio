@@ -37,7 +37,6 @@
 #include "ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/signup_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_commands.hpp"
-#include "ores.shell/app/commands/iam/tenant_provisioning_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_status_commands.hpp"
 #include "ores.shell/app/commands/iam/tenant_type_commands.hpp"
 
@@ -66,7 +65,6 @@ void iam_commands::register_commands(cli::Menu& root_menu,
     session_samples_operations_commands::register_commands(root_menu, session);
     session_commands::register_commands(root_menu, session);
     reset_operations_commands::register_commands(root_menu, session);
-    tenant_provisioning_operations_commands::register_commands(root_menu, session);
     account_contact_information_commands::register_commands(root_menu, session);
     account_party_commands::register_commands(root_menu, session);
     account_type_commands::register_commands(root_menu, session);

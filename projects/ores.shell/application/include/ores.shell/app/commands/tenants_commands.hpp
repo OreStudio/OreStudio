@@ -70,14 +70,6 @@ public:
                                        ores::nats::service::nats_client& session,
                                        std::string tenant_id);
 
-    /**
-     * @brief Mark the logged-in tenant's provisioning as complete.
-     *
-     * Sends iam.v1.tenants.complete-provisioning, the finalize step
-     * of the tenant provisioning flow.
-     */
-    static void process_complete_provisioning(std::ostream& out,
-                                              ores::nats::service::nats_client& session);
 };
 
 }

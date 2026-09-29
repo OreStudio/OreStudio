@@ -22,13 +22,6 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-export interface CompleteTenantProvisioningCommand {}
-
-export interface CompleteTenantProvisioningResponse {
-    success: boolean;
-    message: string;
-}
-
 /**
  * @brief Provisions a tenant from a seed profile.
  *
@@ -171,7 +164,6 @@ export interface ProvisionPartyCommandResponse {
 }
 
 export const subjects = {
-    complete_tenant_provisioning_command: 'iam.v1.tenants.complete-provisioning',
     provision_tenant_command: 'iam.v1.tenants.provision',
     provision_party_command: 'iam.v1.parties.provision',
 } as const;
@@ -181,7 +173,6 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    complete_tenant_provisioning_command: true,
     provision_tenant_command: true,
     provision_party_command: true,
 } as const;

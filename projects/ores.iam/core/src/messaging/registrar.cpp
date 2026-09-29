@@ -330,13 +330,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         });
     // --- Tenant provisioning ---
     // The provisioning commands are hand-written, so they are wired here
-    // beside the handler that serves them.
+    // beside the handler that serves them. Completing a tenant is not one of
+    // them: it is the last step of the run the provision request starts, so it
+    // acts on the tenant the run provisions rather than on the caller's own.
     auto tph =
         std::make_shared<tenant_provisioning_handler>(nats, ctx, signer, std::move(impersonation));
-    subs.push_back(nats.queue_subscribe(
-        complete_tenant_provisioning_command::nats_subject, qg, [tph](ores::nats::message msg) {
-            tph->complete_provisioning(std::move(msg));
-        }));
     subs.push_back(nats.queue_subscribe(
         provision_tenant_command::nats_subject, qg, [tph](ores::nats::message msg) {
             tph->provision_tenant(std::move(msg));

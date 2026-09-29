@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The identity is the natural key with =party_id= -- not null, non-empty, unique per party -- and the triple no longer keys the row, though its columns stay for the readers that still ask by it. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing. |
-| Next         | Migrate the marketdata client's =find_series()= off the triple -- the synthetic service's vintage lookups are its callers, and what a DQ-published series should be named belongs with it -- then delete =series_type=, =metric= and =qualifier= from =market_series=, and the import classification table that classifies by them, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. |
+| Next         | Decide who names the series the IR curve's vintage seeding reads -- either the synthetic config gains the identity it seeds from, or the DQ dataset carries the ORE key its own source names -- and then delete =series_type=, =metric= and =qualifier= from =market_series=, and the import classification table that classifies by them, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -323,15 +323,16 @@ is left is the cutover the task takes its name from.
 4. *The constraints and the deletion.* Started, and most of the reading half is done:
    =oresmd_uri= is not null and is the natural key with =party_id=, the triple no longer
    keys the row, the import and the ingest loop read by identity alone, the curve
-   snapshot's requests carry the identity, and =feed_binding= carries it rather than an
-   =ore_key= (see the identity note below). One reader remains: the marketdata client's
-   =find_series()=, which filters a whole series list by the triple and is what the
-   synthetic service's vintage paths call -- a grep for the repository's own
-   =read_latest_by_type= does not see it, which is how an earlier reading of this step
-   came out at zero. What is left is that reader migrating, and then =series_type=,
-   =metric=, =qualifier=, =ore_key= and the import classification table going, with the
-   census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents as
-   the checklist. The generated =read_latest_by_type= goes with the columns it reads.
+   snapshot's requests carry the identity, =feed_binding= carries it rather than an
+   =ore_key=, and the client's triple lookup has one caller left where it had three --
+   the FX feed's vintage seeding and the feed controller's vintage check read by
+   identity now (see the identity note below). That one caller is the IR curve's vintage
+   seeding, and it cannot move the same way: it reads the DQ deposit grid, whose series
+   the cutover names generically, so the synthetic config has to name the series it seeds
+   from or the path retires. What is left is that decision and then =series_type=,
+   =metric=, =qualifier= and the import classification table going, with the census's
+   21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents as the
+   checklist. The generated =read_latest_by_type= goes with the columns it reads.
 
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
@@ -479,6 +480,11 @@ which is the same reason the identity lookups fall back to the triple.
 | Production readers the same unit missed | 1: =market_data_client::find_series()= filters a whole series list by =series_type=, =metric= and =qualifier= in the client, and the synthetic service's vintage paths call it -- a grep for the repository method cannot see it, and the claim above reads as zero readers only because of that | =grep -rn "find_series" projects/ --include=*.cpp --include=*.hpp= | =467c13f73a= |
 | Series the dq publish path could create under the identity's constraint | 0 before the repair: the live publish function inserted a =market_series= with no identity, so #2387's not-null refused every dataset | =select * from ores_marketdata_publish_market_data_observations_from_dq_fn('31776ec1-d39f-474e-8423-17e47442d06e', ores_utility_system_tenant_id_fn(), 'upsert', jsonb_build_object('party_id', ...))=, which failed with =null value in column "oresmd_uri" ... violates not-null constraint= | =467c13f73a= |
 | Series the same call creates after the repair | 1: =inserted=, with the generic identity the function now writes | the same call | =467c13f73a= |
+| Callers of the client's triple lookup | 1: the IR curve's vintage seeding; the FX feed's vintage seeding and the feed controller's vintage check read by identity, where three called it | =grep -rn "find_series(" projects/ --include=*.cpp=, less =find_series_by_uri= and the tests | =eba20b1d9d= |
+| The client's identity lookup | 1 new method, =find_series_by_uri()=, matching the identity the list carries | =grep -n "find_series_by_uri" projects/ores.marketdata/client/= | =eba20b1d9d= |
+| =ores.marketdata.core=, =client=, =synthetic.service= and =synthetic.api= suites | 1893 in 414, 6 in 6, 297 in 46 and 65 in 22 assertions and cases | the four test binaries | =eba20b1d9d= |
+| Why =synthetic.api= counts fewer cases than the identity unit measured | 7 cases gone with two test files: another environment's merge deleted the organisation generator and its tests (=04f6092cfd=), not this change | =git show --stat 04f6092cfd= | =eba20b1d9d= |
+| =reachability=, with the one caller left | 7739 declared cases in 952 sources | =check_test_case_reachability.py= | =eba20b1d9d= |
 | Fields a curve snapshot request names a series by | 1: =oresmd_uri=, where it carried the registry's three | =grep -n "std::string" projects/ores.marketdata/api/include/ores.marketdata.api/messaging/curve_snapshot_protocol.hpp= | =ac4e03519b= |
 | =ores.marketdata.core=, =service= and =api= suites with the retirement | 1879 in 412, 176 in 28 and 71 in 14 assertions and cases | the three test binaries | =ac4e03519b= |
 | =reachability=, with the retirement | 7780 declared cases in 956 sources | =check_test_case_reachability.py= | =ac4e03519b= |
@@ -709,6 +715,20 @@ series per writer. Measured on the rebuilt tree: 1879 core assertions in 412 cas
 28 service cases, 102 in 29 synthetic-api cases and 297 in 46 synthetic-service cases,
 with marketdata and synthetic component drift clean for the former and a pre-existing
 trunk drift in seven synthetic shell recipes for the latter.
+
+**An eighth unit left the client's triple lookup with one caller.** Three called it; the
+FX feed's vintage seeding and the feed controller's vintage check hold keys the grammar
+names, so they project them and ask for the identity through a new
+=find_series_by_uri()=. The caller left is the IR curve's vintage seeding, and it is the
+one that cannot move the same way: the series it reads is the DQ deposit grid, whose key
+is =RATES/YIELD= rather than an ORE market-data key, so the cutover names it generically
+and this path cannot construct that name. Moving it means the synthetic config naming the
+series it seeds from, or the dataset carrying the ORE key its own source names; the call
+site says so and the handover carries it as the next decision. Measured on the rebuilt
+tree: 1893 core assertions in 414 cases, 6 client cases, and 297 in 46 with 65 in 22 for
+the synthetic suites -- smaller than the seventh unit measured because another
+environment's merge deleted the organisation generator and its two test files
+(=04f6092cfd=), not because this change removed anything.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

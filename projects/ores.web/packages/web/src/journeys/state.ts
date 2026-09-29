@@ -121,10 +121,13 @@ export interface NewTenant {
     /** Whether the password typed for the tenant administrator may be sent. */
     readonly passwordAcceptable: boolean;
     readonly instanceId: string | undefined;
+    /** Whether the run has reached its end, so the person may move on. */
+    readonly runComplete: boolean;
     chooseProfile(profile: SeedProfileChoice): void;
     describe(details: TenantDetails): void;
     acceptPassword(acceptable: boolean): void;
     recordRun(instanceId: string): void;
+    recordRunComplete(): void;
 }
 
 export function useNewTenant(): NewTenant {
@@ -132,12 +135,14 @@ export function useNewTenant(): NewTenant {
     const [details, setDetails] = useState<TenantDetails>();
     const [passwordAcceptable, setPasswordAcceptable] = useState(false);
     const [instanceId, setInstanceId] = useState<string>();
+    const [runComplete, setRunComplete] = useState(false);
 
     return {
         profile,
         details,
         passwordAcceptable,
         instanceId,
+        runComplete,
         chooseProfile: (chosen) => {
             setProfile(chosen);
             setDetails(detailsFor(chosen));
@@ -148,5 +153,6 @@ export function useNewTenant(): NewTenant {
         describe: setDetails,
         acceptPassword: setPasswordAcceptable,
         recordRun: setInstanceId,
+        recordRunComplete: () => setRunComplete(true),
     };
 }

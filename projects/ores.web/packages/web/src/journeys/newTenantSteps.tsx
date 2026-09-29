@@ -49,8 +49,6 @@ export interface NewTenantStepsInput {
     readonly state: NewTenant;
     /** The password the creating administrator typed, which a profile may reuse. */
     readonly creatingPassword: string;
-    /** Moves past the run once it completes. */
-    readonly onProvisioned: () => void;
     /** Signs the creating administrator out, and into the tenant when asked. */
     readonly onHandOff: (continueAsAdmin: boolean) => Promise<void>;
 }
@@ -211,9 +209,13 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
                     <RunProgress
                         server={server}
                         instanceId={state.instanceId}
-                        onComplete={input.onProvisioned}
+                        onCompleted={state.recordRunComplete}
                     />
                 ) : null,
+            next: {
+                label: t('common.continue'),
+                enabled: state.runComplete,
+            },
         },
         {
             id: 'handOff',

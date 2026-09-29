@@ -103,10 +103,12 @@ function tenantState(overrides: Partial<NewTenant> = {}): NewTenant {
         details: undefined,
         passwordAcceptable: false,
         instanceId: undefined,
+        runComplete: false,
         chooseProfile: vi.fn(),
         describe: vi.fn(),
         acceptPassword: vi.fn(),
         recordRun: vi.fn(),
+        recordRunComplete: vi.fn(),
         ...overrides,
     };
 }
@@ -116,6 +118,8 @@ function steps(
         readonly tenant?: NewTenant;
         readonly acceptable?: boolean;
         readonly creatingPassword?: string;
+        /** Whether the run has reached its end. */
+        readonly runComplete?: boolean;
     } = {},
 ) {
     return firstRunSteps({
@@ -123,7 +127,10 @@ function steps(
         server: fakeServer(),
         policy,
         profiles: [profile],
-        tenant: overrides.tenant ?? tenantState(),
+        tenant: {
+            ...(overrides.tenant ?? tenantState()),
+            runComplete: overrides.runComplete ?? overrides.tenant?.runComplete ?? false,
+        },
         administrator: {
             principal: 'super_admin',
             email: 'super_admin@system.ores',
@@ -207,6 +214,16 @@ describe('the first run rail', () => {
 
         expect(profileStep?.next?.enabled).toBe(true);
         expect(details?.next?.enabled).toBe(true);
+    });
+
+    it('offers no way past the run until the run has finished', () => {
+        const running = steps();
+        const finished = steps({ runComplete: true });
+        const provisioning = (all: ReturnType<typeof steps>) =>
+            all.find((step) => step.id === 'provisioning');
+
+        expect(provisioning(running)?.next?.enabled).toBe(false);
+        expect(provisioning(finished)?.next?.enabled).toBe(true);
     });
 
     it('runs the shared tenant steps in the order the library declares them', () => {

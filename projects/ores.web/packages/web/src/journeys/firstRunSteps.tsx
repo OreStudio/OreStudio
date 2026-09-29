@@ -134,7 +134,6 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
             profiles: input.profiles,
             state: input.tenant,
             creatingPassword: input.creatingPassword,
-            onProvisioned: () => input.goTo('handOff'),
             onHandOff: input.onHandOff,
         }),
         {

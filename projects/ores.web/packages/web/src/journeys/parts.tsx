@@ -447,18 +447,25 @@ export function RunStep({
 export function RunProgress({
     server,
     instanceId,
-    onComplete,
+    onCompleted,
 }: {
     readonly server: JourneyServer;
     readonly instanceId: string;
-    readonly onComplete: () => void;
+    /**
+     * Called once the run has completed.
+     *
+     * The step does not move the rail itself: the person has just watched work
+     * happen and may want to read what it did, so the step reports the outcome
+     * and the panel's own action is what carries them on.
+     */
+    readonly onCompleted: () => void;
 }): ReactNode {
     const { t, text } = useTranslation();
     const [progress, setProgress] = useState<WorkflowProgress>();
     const [failure, setFailure] = useState<string>();
     const [retryNote, setRetryNote] = useState<string>();
     const [attempt, setAttempt] = useState(0);
-    const advanced = useRef(false);
+    const reported = useRef(false);
 
     const status = progress?.status ?? '';
     const open = OPEN_RUN.has(status);
@@ -492,11 +499,11 @@ export function RunProgress({
     }, [server, instanceId, open, attempt]);
 
     useEffect(() => {
-        if (status === 'completed' && !advanced.current) {
-            advanced.current = true;
-            onComplete();
+        if (status === 'completed' && !reported.current) {
+            reported.current = true;
+            onCompleted();
         }
-    }, [status, onComplete]);
+    }, [status, onCompleted]);
 
     const retry = async (): Promise<void> => {
         setRetryNote(undefined);

@@ -291,6 +291,11 @@ with the site chrome."
   ;; so the gallery, the description and the app share one tree.
   (ores-deploy-web-app
    "./doc/prototypes/trade-entry" site-dir "doc/prototypes/trade-entry"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Registration door prototype: the same body reset. Three structural
+  ;; variants of the Entry story's registration screen, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/registration-door" site-dir "doc/prototypes/registration-door"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

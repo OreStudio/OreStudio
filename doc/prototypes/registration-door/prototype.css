@@ -1,0 +1,199 @@
+/* Registration door prototype. Self-contained: the site build publishes this
+ * file through its existing css project, so there is no import to wire. */
+
+:root {
+    --bg: #12161c;
+    --panel: #1a2029;
+    --panel-2: #212936;
+    --line: #2d3748;
+    --line-soft: #232c39;
+    --ink: #e6ebf2;
+    --ink-dim: #98a4b5;
+    --ink-faint: #6b7688;
+    --accent: #4da3ff;
+    --accent-dim: #1f4a75;
+    --ok: #3fbf7f;
+    --warn: #e8b13a;
+    --bad: #e2604f;
+    --radius: 6px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#app { min-height: 100vh; }
+
+/* The prototype's own chrome, deliberately unlike the design on trial. */
+.proto-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: 6px 14px;
+    background: repeating-linear-gradient(45deg, #2a2113, #2a2113 10px, #241d11 10px, #241d11 20px);
+    border-bottom: 1px solid #4a3a17;
+    color: var(--warn);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.proto-bar {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 7px;
+    background: #0b0e13;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+}
+
+.proto-bar button {
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 16px;
+    line-height: 1;
+    padding: 5px 11px;
+    cursor: pointer;
+    border-radius: 999px;
+}
+
+.proto-bar button:hover { background: var(--panel-2); color: var(--ink); }
+.proto-bar .label { padding: 0 10px; color: var(--ink); white-space: nowrap; }
+.proto-bar .label b { color: var(--accent); }
+
+/* States control, top right, also prototype chrome. */
+.proto-states {
+    position: fixed;
+    top: 32px;
+    right: 14px;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 260px;
+    justify-content: flex-end;
+}
+
+.proto-states button {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.proto-states button.on { background: var(--accent-dim); border-color: var(--accent); color: var(--ink); }
+
+/* ------------------------------------------------------------------ */
+/* Shared page furniture                                               */
+/* ------------------------------------------------------------------ */
+
+.page { padding: 78px 24px 90px; max-width: 1080px; margin: 0 auto; }
+.page.narrow { max-width: 660px; }
+.page.wide { max-width: 1140px; }
+
+.brand { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.tenant { margin-top: 6px; color: var(--ink-dim); font-size: 13px; }
+.tenant b { color: var(--ink); font-weight: 600; }
+
+h1 { font-size: 26px; margin: 18px 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 15px; margin: 0 0 12px; }
+.lede { color: var(--ink-dim); margin: 0 0 24px; max-width: 62ch; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.panel + .panel { margin-top: 14px; }
+.panel h2 { color: var(--ink); font-weight: 600; }
+.panel-soft { background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 16px 18px; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+.field input {
+    width: 100%;
+    background: #0e1218;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    padding: 10px 12px;
+    font: inherit;
+}
+.field input:focus { outline: none; border-color: var(--accent); }
+.hint { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+
+.rules { margin: 8px 0 0; padding-left: 18px; color: var(--ink-faint); font-size: 12px; }
+.rules li { margin: 2px 0; }
+.rules li.met { color: var(--ok); }
+
+.btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    font: inherit;
+    cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+.btn.ghost { background: none; border-color: transparent; color: var(--ink-dim); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.actions { display: flex; align-items: center; gap: 12px; margin-top: 22px; }
+
+.notice { border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-bottom: 18px; }
+.notice.bad { background: #2b1614; border: 1px solid #5c2a24; color: #f0b7ae; }
+.notice.warn { background: #2a2113; border: 1px solid #4a3a17; color: #efd39a; }
+.notice.ok { background: #12281d; border: 1px solid #23543a; color: #a8e6c4; }
+
+.kv { width: 100%; border-collapse: collapse; }
+.kv td { padding: 9px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.kv tr:last-child td { border-bottom: none; }
+.kv td:first-child { color: var(--ink-faint); width: 40%; }
+.kv td:last-child { color: var(--ink); }
+.kv .none { color: var(--warn); }
+.kv .given { color: var(--ok); }
+
+.code { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--ink-faint); background: #0e1218; border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+
+/* Variant B: the two columns. */
+.split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .proto-states { max-width: 160px; } }
+
+.status-banner { border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px; }
+.status-banner.ok { background: #12281d; border: 1px solid #23543a; }
+.status-banner.warn { background: #2a2113; border: 1px solid #4a3a17; }
+.status-banner .head { font-size: 15px; font-weight: 600; }
+.status-banner.ok .head { color: var(--ok); }
+.status-banner.warn .head { color: var(--warn); }
+.status-banner p { margin: 6px 0 0; color: var(--ink-dim); font-size: 13px; }
+
+/* Variant C: the rail. */
+.railwrap { display: grid; grid-template-columns: 230px 1fr; gap: 30px; align-items: start; }
+@media (max-width: 800px) { .railwrap { grid-template-columns: 1fr; } }
+.rail { list-style: none; margin: 0; padding: 0; }
+.rail li { display: flex; gap: 10px; align-items: baseline; padding: 10px 0; color: var(--ink-faint); border-left: 2px solid var(--line); padding-left: 14px; }
+.rail li .n { font-size: 11px; color: var(--ink-faint); min-width: 14px; }
+.rail li.done { color: var(--ink-dim); border-left-color: var(--ok); }
+.rail li.current { color: var(--ink); border-left-color: var(--accent); font-weight: 600; }
+
+.outcome { text-align: center; padding: 10px 0 4px; }
+.outcome .mark { font-size: 34px; line-height: 1; }
+.outcome .mark.ok { color: var(--ok); }
+.outcome .mark.warn { color: var(--warn); }

@@ -43,6 +43,7 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 |------+-------+-------+-----+-------------|
 | [[id:8F35000B-95D7-4FA6-92DF-915981CD17FA][Analyse the sign-up process end to end]] | DONE | 2026-09-29 | 2026-09-29 | Record what self-registration does today, where a new account lands, and every decision the sign-up journey waits on, so the target state can be written before any code changes. |
 | [[id:70FF2285-2801-42FA-9BC8-9AEFB05DEDF1][Define the registration target state]] | DONE | | 2026-09-29 | Write the knowledge document that settles where a self-registered account lands: the default tenant, party and role flags, the pending state, the policy read and the settings write path. |
+| [[id:97B54096-7FB5-42A7-BCDA-CA523C145E9C][Prototype the registration door]] | STARTED | 2026-09-29 | | Build the throwaway static prototype that argues the registration door's layout: the closed notice, the form, the refusals, and the usable and pending confirmations, in three structural variants. |
 
 * Decisions
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7B32CA43-239F-4553-8849-3FA3F499B254
 :END:
-#+title: Task: Give every Entry screen the ORE Studio banner
+#+title: Task: Use one rail and one splash header on every setup screen
 #+description: Carry the project's banner on the sign-in and sign-up dialogs, as the setup screen already does, so every door into the deployment looks like the same product.
 #+type: task
 #+level: s1
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every door into a deployment carries the same banner. The setup screen already leads with the project's artwork; the sign-in dialog does not, and the registration door the Entry story adds must. A person arriving at a deployment for the first time sees the same product whether they are being set up, signing in or registering.
+Every screen that sets something up draws the same chrome. The rail comes from =JourneyPage= and the splash header from =JourneyHeader=, and the setup journeys, the registration door and the sign-in dialog all use them unchanged. The setup screen already leads with the project's artwork; the sign-in dialog does not, and the registration door the Entry story adds must. A screen that draws its own rail, or its own banner, is the defect this task exists to prevent.
 
 * Status
 
@@ -28,18 +28,19 @@ Every door into a deployment carries the same banner. The setup screen already l
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | Not yet started. The prototype shows where the banner sits on all three variants. |
+| Now          | Not yet started. The prototype now draws the application's own rail and keeps the splash at its own ratio, so the shape to copy is visible to a reviewer. |
 | Waiting on   | Nothing.                               |
-| Next         | Put the banner on the sign-in dialog, then on the registration door as it is built. |
+| Next         | Put the banner on the sign-in dialog, then build the registration door on =JourneyPage= rather than on a rail of its own. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
 
-- The sign-in dialog carries the banner.
-- The registration door carries it on every step, not only the first.
-- The banner is the artwork the setup screen and the main site already use, reached through =assets/brand.ts= rather than a second copy of the file.
-- The banner does not crowd the party picker, the forced password change panel, or the refusal notices: it is above the work, and the work still reads.
-- A test asserts the banner renders on both dialogs, so a future layout change cannot drop it silently.
+- The registration door renders on =JourneyPage='s rail, unchanged: the same entry classes, the same three states, the same circled mark with a tick behind the person, and the same footer.
+- The splash is the header =JourneyPage= is given, and it stands on every step rather than only the first.
+- The splash keeps its own 964:323 ratio: the element states its width and height, and nothing crops it or states a height that is not the ratio's, because that is what cut the top and the foot off the wordmark before.
+- The sign-in dialog carries the same banner element above its form.
+- The banner does not crowd the party picker, the forced password change panel, or the refusal notices: it stands above the work, and the work still reads.
+- A test asserts both the rail and the banner render on the screens that carry them, so a future layout change cannot drop either silently.
 
 * Plan
 
@@ -58,7 +59,9 @@ Every door into a deployment carries the same banner. The setup screen already l
 * Notes
 
 - The artwork is =heroSplash= in =projects/ores.web/packages/web/src/assets/brand.ts=, which the site publishes at =/OreStudio/projects/ores.web/packages/web/src/assets/ore-studio-splash.png=; the prototype uses that URL so what a reviewer sees is the real banner and not a drawing of one.
-- =PublicShell= already draws the header mark and the application name for a visitor. The banner is the larger artwork above the work, so it is a second element rather than a replacement for the header.
+- The rule the setup screen follows, and this task carries: the image states width 964 and height 323, the class is =h-auto w-full rounded-md border border-line=, and no height is declared anywhere. =JourneyHeader= renders it as the step header, which =JourneyPage= wraps in =mb-5 border-b border-line pb-5=.
+- =PublicShell= already draws the header mark and the application name for a visitor. The splash is the larger artwork above the work, so it is a second element rather than a replacement for the header.
+- The prototype needed both corrections and both are now in it. It drew a rail of its own, and it cropped the splash with =max-height= and =object-fit: cover= — the exact failure the setup screen's comment records. The prototype now borrows the application's tokens from =styles.css= as well, because a prototype in a palette of its own answers the wrong question.
 
 * Test Scenarios
 

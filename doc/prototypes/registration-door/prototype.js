@@ -53,8 +53,13 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 function header() {
     return `
-        <div class="banner"><img src="${SPLASH}" alt="ORE Studio"></div>
-        <div class="tenant">You are at <b>${esc(deployment.tenant.name)}</b> &middot; ${esc(deployment.tenant.hostname)}</div>`;
+        <div class="banner">
+            <img src="${SPLASH}" alt="" width="964" height="323">
+            <div class="banner-caption">
+                <span class="name">${esc(deployment.tenant.name)}</span>
+                <span class="from">${esc(deployment.tenant.hostname)}</span>
+            </div>
+        </div>`;
 }
 
 function rulesList() {
@@ -315,13 +320,12 @@ function renderC() {
 
     return `
         <div class="page">
-            ${header()}
-            <h1>Create your account</h1>
             <div class="journey">
-                <nav aria-label="Steps" class="railnav">
+                <nav aria-label="Journey steps" class="railnav">
                     <ol>${RAIL.map((label, i) => railEntry(label, i, step)).join('')}</ol>
                 </nav>
                 <section class="card">
+                    <div class="stepheader">${header()}</div>
                     <h2>${esc(RAIL[step])}</h2>
                     <p class="lead">${esc(RAIL_LEAD[step])}</p>
                     ${body}

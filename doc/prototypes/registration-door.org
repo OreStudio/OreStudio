@@ -93,6 +93,14 @@ shape the new-system provisioning journeys use, so the rail is the same rail a
 person meets when they stand up a tenant. *A* and *B* stay on the page as the
 record, and a panel from either may still be borrowed.
 
+The page was corrected after the first review. It drew a rail of its own and
+cropped the splash with =max-height= and =object-fit: cover=, which is the exact
+failure the setup screen's own comment records; it now borrows =JourneyPage='s
+rail classes and =JourneyHeader='s ratio, and the splash states its 964:323
+dimensions so nothing clips the wordmark. The tokens are copied from the
+application's =styles.css= rather than the trade-entry palette, because a
+prototype in a theme of its own answers the wrong question.
+
 Every variant now carries the ORE Studio banner, which is a requirement of its
 own: [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Give every Entry screen the ORE Studio banner]] covers the sign-in
 dialog and the door alike.

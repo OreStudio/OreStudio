@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T14:42:23.451194Z
+' Generated: 2026-09-29T15:12:18.426819Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1514,6 +1514,85 @@ package "refdata" #FFF3E0 {
     The two period fields and the spot days stay in ORE's spelling, because they
     are tenors rather than frequency enumerations; the day count and the roll
     convention are normalised to the canonical codes the other tables hold.
+    end note
+
+    entity ores_refdata_commodity_future_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * contract_frequency : text
+        * calendar : text
+          expiry_calendar : text
+          expiry_month_lag : integer
+          one_contract_month : text
+          offset_days : integer
+          business_day_convention : text
+          adjust_before_offset : boolean
+          is_averaging : boolean
+          valid_contract_months : text
+          anchor_day_of_month : integer
+          anchor_calendar_days_before : integer
+          anchor_business_days_after : integer
+          anchor_nth_nth : integer
+          anchor_nth_weekday : text
+          anchor_last_weekday : text
+          anchor_weekly_day_of_the_week : text
+          option_expiry_month_lag : integer
+          option_contract_frequency : text
+          option_expiry_offset : integer
+          option_calendar_days_before : integer
+          option_min_business_days_before : integer
+          option_expiry_day : integer
+          option_nth_nth : integer
+          option_nth_weekday : text
+          option_expiry_last_weekday_of_month : text
+          option_expiry_weekly_day_of_the_week : text
+          option_business_day_convention : text
+          hours_per_day : integer
+          off_peak_index : text
+          peak_index : text
+          off_peak_hours : double
+          peak_calendar : text
+          index_name : text
+          savings_time : text
+          delivery_location : text
+          balance_of_the_month : boolean
+          balance_of_the_month_pricing_calendar : text
+          option_underlying_future_convention : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_future_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Future Convention Table
+    Describes how ORE builds a commodity future: when it expires, which contract
+    months it lists, how its expiry anchors to a day of the month or a weekday, and
+    the schedule of the options written on it. Corresponds to the
+    <CommodityFuture> element in ORE conventions.xml. The id field is the natural
+    key (ORE <Id> element).
+    Thirty of the element's thirty-four fields are modelled here, as forty columns,
+    because the element's nested structs are flattened rather than given tables of
+    their own.
+    AnchorDay becomes seven columns, OptionNthWeekday two more, and
+    OffPeakPowerIndexData four. The corpus uses all six of AnchorDay's variants,
+    so flattening it is what lets a commodity future round trip at all.
+    Five files carry the element, in eight hundred and eight elements, and two of
+    them carried nothing else unmodelled when it landed.
+    Four fields are not modelled and are counted instead: ProhibitedExpiries,
+    FutureContinuationMappings, OptionContinuationMappings and AveragingData.
+    Each holds a list of structs, and no column can hold one. Every shipped file
+    that sets one also carries another unmodelled category, so counting them costs
+    no file its round trip today; a file that sets one is named in the measurement
+    rather than losing the field quietly.
     end note
 
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {

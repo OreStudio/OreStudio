@@ -1063,3 +1063,7 @@ tangled into the runnable script library
 * Cms Spread Option Conventions
 
 - [[id:55FFB4C3-FE61-5C22-B71A-1C823D96BF65][How do I run the cms_spread_option_conventions commands from the shell?]]
+
+* Commodity Future Conventions
+
+- [[id:8C685BAC-85D1-548F-B146-098C60CA78BF][How do I run the commodity_future_conventions commands from the shell?]]

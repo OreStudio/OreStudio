@@ -1,0 +1,645 @@
+:PROPERTIES:
+:ID: 5B1B2D2B-6B2A-4C6B-9C25-9E1D1F4A7C31
+:END:
+#+title: ores.refdata.commodity_future_convention
+#+description: Codegen entity model for the refdata =commodity_future_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Conventions for a commodity future, its expiry schedule and the options written on it.
+#+entity_singular: commodity_future_convention
+#+entity_plural: commodity_future_conventions
+#+entity_title: Commodity Future Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes how ORE builds a commodity future: when it expires, which contract
+months it lists, how its expiry anchors to a day of the month or a weekday, and
+the schedule of the options written on it. Corresponds to the
+<CommodityFuture> element in ORE conventions.xml. The id field is the natural
+key (ORE <Id> element).
+
+Thirty of the element's thirty-four fields are modelled here, as forty columns,
+because the element's nested structs are flattened rather than given tables of
+their own.
+=AnchorDay= becomes seven columns, =OptionNthWeekday= two more, and
+=OffPeakPowerIndexData= four. The corpus uses all six of =AnchorDay='s variants,
+so flattening it is what lets a commodity future round trip at all.
+
+Five files carry the element, in eight hundred and eight elements, and two of
+them carried nothing else unmodelled when it landed.
+
+Four fields are not modelled and are counted instead: =ProhibitedExpiries=,
+=FutureContinuationMappings=, =OptionContinuationMappings= and =AveragingData=.
+Each holds a list of structs, and no column can hold one. Every shipped file
+that sets one also carries another unmodelled category, so counting them costs
+no file its round trip today; a file that sets one is named in the measurement
+rather than losing the field quietly.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique commodity future identifier.
+
+#+begin_src cpp :name generator
+std::string("COMDTY_WTI_USD")
+#+end_src
+
+** contract_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Frequency at which contracts are listed, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Monthly")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Calendar the contract's expiry rolls on.
+
+#+begin_src cpp :name generator
+std::string("ICE_FuturesUS")
+#+end_src
+
+** expiry_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the expiry date rolls on, when it differs from the contract calendar.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** expiry_month_lag
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Months between the contract month and its expiry.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** one_contract_month
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+The single contract month, for a future that lists only one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** offset_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Days between the expiry and the contract's start.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention the expiry rolls on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** adjust_before_offset
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the offset is applied before the business day adjustment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** is_averaging
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the contract settles on an average of prices.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** valid_contract_months
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Contract months the future lists, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_day_of_month
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Day of the month the contract anchors on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_calendar_days_before
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Calendar days before the anchor that the contract starts.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_business_days_after
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Business days after the anchor that the contract starts.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_nth_nth
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Position of the anchor's weekday within its month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_nth_weekday
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Weekday the anchor falls on, when it is the nth of them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_last_weekday
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Last weekday of the month the contract anchors on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** anchor_weekly_day_of_the_week
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Day of the week the contract anchors on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_expiry_month_lag
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Months between the option's contract month and its expiry.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_contract_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Frequency at which the underlying future's contracts are listed.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_expiry_offset
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Offset in days between the option's expiry and its underlying's.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_calendar_days_before
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Calendar days before its anchor that the option expires.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_min_business_days_before
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Minimum business days before its anchor that the option expires.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_expiry_day
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Day of the month the option expires on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_nth_nth
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Position of the option's expiry weekday within its month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_nth_weekday
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Weekday the option expires on, when it is the nth of them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_expiry_last_weekday_of_month
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Last weekday of the month the option expires on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_expiry_weekly_day_of_the_week
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Day of the week the option expires on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_business_day_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Business day convention the option's expiry rolls on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** hours_per_day
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Hours in a delivery day, for a power future.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** off_peak_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Index the off-peak hours price.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** peak_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Index the peak hours price.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** off_peak_hours
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+Hours of the day that count as off-peak.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** peak_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the peak hours are read on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** index_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Name of the index the future references.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** savings_time
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Daylight savings time zone the contract follows.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** delivery_location
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Location the contract delivers to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** balance_of_the_month
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the contract includes the balance of the current month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** balance_of_the_month_pricing_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the balance of the month prices on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_underlying_future_convention
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Convention of the future the option is written on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_future_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_future_convention
+:entity_plural_short:   commodity_future_conventions
+:entity_singular_words: commodity future convention
+:entity_plural_words:   commodity future conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cmf
+:END:
+
+** Table display
+
+| column             | header             |
+|--------------------+--------------------|
+| id                 | Id                 |
+| contract_frequency | Contract Frequency |
+| calendar           | Calendar           |
+| modified_by        | Modified By        |
+| version            | Version            |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           commodity_future_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   commodity_future_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|| id | Id | idEdit | line_edit | true | true |  || contract_frequency | Contract Frequency | contract_frequencyEdit | line_edit |  | true |  || calendar | Calendar | calendarEdit | line_edit |  | true |  || expiry_calendar | Expiry Calendar | expiry_calendarEdit | line_edit |  |  |  || expiry_month_lag | Expiry Month Lag | expiry_month_lagEdit | line_edit |  |  |  || one_contract_month | One Contract Month | one_contract_monthEdit | line_edit |  |  |  || offset_days | Offset Days | offset_daysEdit | line_edit |  |  |  || business_day_convention | Business Day Convention | business_day_conventionEdit | line_edit |  |  |  || adjust_before_offset | Adjust Before Offset | adjust_before_offsetEdit | checkbox |  |  |  || is_averaging | Is Averaging | is_averagingEdit | checkbox |  |  |  || valid_contract_months | Valid Contract Months | valid_contract_monthsEdit | line_edit |  |  |  || anchor_day_of_month | Anchor Day Of Month | anchor_day_of_monthEdit | line_edit |  |  |  || anchor_calendar_days_before | Anchor Calendar Days Before | anchor_calendar_days_beforeEdit | line_edit |  |  |  || anchor_business_days_after | Anchor Business Days After | anchor_business_days_afterEdit | line_edit |  |  |  || anchor_nth_nth | Anchor Nth Nth | anchor_nth_nthEdit | line_edit |  |  |  || anchor_nth_weekday | Anchor Nth Weekday | anchor_nth_weekdayEdit | line_edit |  |  |  || anchor_last_weekday | Anchor Last Weekday | anchor_last_weekdayEdit | line_edit |  |  |  || anchor_weekly_day_of_the_week | Anchor Weekly Day Of The Week | anchor_weekly_day_of_the_weekEdit | line_edit |  |  |  || option_expiry_month_lag | Option Expiry Month Lag | option_expiry_month_lagEdit | line_edit |  |  |  || option_contract_frequency | Option Contract Frequency | option_contract_frequencyEdit | line_edit |  |  |  || option_expiry_offset | Option Expiry Offset | option_expiry_offsetEdit | line_edit |  |  |  || option_calendar_days_before | Option Calendar Days Before | option_calendar_days_beforeEdit | line_edit |  |  |  || option_min_business_days_before | Option Min Business Days Before | option_min_business_days_beforeEdit | line_edit |  |  |  || option_expiry_day | Option Expiry Day | option_expiry_dayEdit | line_edit |  |  |  || option_nth_nth | Option Nth Nth | option_nth_nthEdit | line_edit |  |  |  || option_nth_weekday | Option Nth Weekday | option_nth_weekdayEdit | line_edit |  |  |  || option_expiry_last_weekday_of_month | Option Expiry Last Weekday Of Month | option_expiry_last_weekday_of_monthEdit | line_edit |  |  |  || option_expiry_weekly_day_of_the_week | Option Expiry Weekly Day Of The Week | option_expiry_weekly_day_of_the_weekEdit | line_edit |  |  |  || option_business_day_convention | Option Business Day Convention | option_business_day_conventionEdit | line_edit |  |  |  || hours_per_day | Hours Per Day | hours_per_dayEdit | line_edit |  |  |  || off_peak_index | Off Peak Index | off_peak_indexEdit | line_edit |  |  |  || peak_index | Peak Index | peak_indexEdit | line_edit |  |  |  || off_peak_hours | Off Peak Hours | off_peak_hoursEdit | line_edit |  |  |  || peak_calendar | Peak Calendar | peak_calendarEdit | line_edit |  |  |  || index_name | Index Name | index_nameEdit | line_edit |  |  |  || savings_time | Savings Time | savings_timeEdit | line_edit |  |  |  || delivery_location | Delivery Location | delivery_locationEdit | line_edit |  |  |  || balance_of_the_month | Balance Of The Month | balance_of_the_monthEdit | checkbox |  |  |  || balance_of_the_month_pricing_calendar | Balance Of The Month Pricing Calendar | balance_of_the_month_pricing_calendarEdit | line_edit |  |  |  || option_underlying_future_convention | Option Underlying Future Convention | option_underlying_future_conventionEdit | line_edit |  |  |  |
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|| Id | id | Id | string | 180 || ContractFrequency | contract_frequency | Contract Frequency | string | 180 || Calendar | calendar | Calendar | string | 180 || ExpiryCalendar | expiry_calendar | Expiry Calendar | string | 180 || ExpiryMonthLag | expiry_month_lag | Expiry Month Lag | int | 100 || OneContractMonth | one_contract_month | One Contract Month | string | 180 || OffsetDays | offset_days | Offset Days | int | 100 || BusinessDayConvention | business_day_convention | Business Day Convention | string | 180 || AdjustBeforeOffset | adjust_before_offset | Adjust Before Offset | bool | 80 || IsAveraging | is_averaging | Is Averaging | bool | 80 || ValidContractMonths | valid_contract_months | Valid Contract Months | string | 180 || AnchorDayOfMonth | anchor_day_of_month | Anchor Day Of Month | int | 100 || AnchorCalendarDaysBefore | anchor_calendar_days_before | Anchor Calendar Days Before | int | 100 || AnchorBusinessDaysAfter | anchor_business_days_after | Anchor Business Days After | int | 100 || AnchorNthNth | anchor_nth_nth | Anchor Nth Nth | int | 100 || AnchorNthWeekday | anchor_nth_weekday | Anchor Nth Weekday | string | 180 || AnchorLastWeekday | anchor_last_weekday | Anchor Last Weekday | string | 180 || AnchorWeeklyDayOfTheWeek | anchor_weekly_day_of_the_week | Anchor Weekly Day Of The Week | string | 180 || OptionExpiryMonthLag | option_expiry_month_lag | Option Expiry Month Lag | int | 100 || OptionContractFrequency | option_contract_frequency | Option Contract Frequency | string | 180 || OptionExpiryOffset | option_expiry_offset | Option Expiry Offset | int | 100 || OptionCalendarDaysBefore | option_calendar_days_before | Option Calendar Days Before | int | 100 || OptionMinBusinessDaysBefore | option_min_business_days_before | Option Min Business Days Before | int | 100 || OptionExpiryDay | option_expiry_day | Option Expiry Day | int | 100 || OptionNthNth | option_nth_nth | Option Nth Nth | int | 100 || OptionNthWeekday | option_nth_weekday | Option Nth Weekday | string | 180 || OptionExpiryLastWeekdayOfMonth | option_expiry_last_weekday_of_month | Option Expiry Last Weekday Of Month | string | 180 || OptionExpiryWeeklyDayOfTheWeek | option_expiry_weekly_day_of_the_week | Option Expiry Weekly Day Of The Week | string | 180 || OptionBusinessDayConvention | option_business_day_convention | Option Business Day Convention | string | 180 || HoursPerDay | hours_per_day | Hours Per Day | int | 100 || OffPeakIndex | off_peak_index | Off Peak Index | string | 180 || PeakIndex | peak_index | Peak Index | string | 180 || OffPeakHours | off_peak_hours | Off Peak Hours | string | 180 || PeakCalendar | peak_calendar | Peak Calendar | string | 180 || IndexName | index_name | Index Name | string | 180 || SavingsTime | savings_time | Savings Time | string | 180 || DeliveryLocation | delivery_location | Delivery Location | string | 180 || BalanceOfTheMonth | balance_of_the_month | Balance Of The Month | bool | 80 || BalanceOfTheMonthPricingCalendar | balance_of_the_month_pricing_calendar | Balance Of The Month Pricing Calendar | string | 180 || OptionUnderlyingFutureConvention | option_underlying_future_convention | Option Underlying Future Convention | string | 180 || Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

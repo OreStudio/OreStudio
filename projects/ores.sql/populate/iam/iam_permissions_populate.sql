@@ -474,6 +474,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cms_spread_option_conventions:write',       'Create and modify CMS spread option conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cms_spread_option_conventions:delete',      'Delete CMS spread option conventions');
 
+    -- Commodity future conventions permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:read',         'View commodity future conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:write',        'Create and modify commodity future conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_future_conventions:delete',       'Delete commodity future conventions');
+
     -- Tenor anchors permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:read',                       'View tenor anchors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::tenor_anchors:write',                      'Create and modify tenor anchors');

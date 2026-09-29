@@ -32,7 +32,7 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * twenty-one. The files that use only those twenty-one round trip. The rest do
+ * twenty-two. The files that use only those twenty-two round trip. The rest do
  * not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
@@ -252,6 +252,67 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     // Forty-nine of the seventy-two at the commit this was written at. It is the
     // largest category in the document, and three files carried nothing else.
     CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_commodity_future_round_trips", tags) {
+    int files_with_commodity_future = 0;
+    int files_with_an_unmodelled_field = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.CommodityFuture.empty())
+            continue;
+
+        ++files_with_commodity_future;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.commodity_future.size() == document.CommodityFuture.size());
+
+        bool carries_an_unmodelled_field = false;
+        for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
+            const auto& in = document.CommodityFuture[i];
+            const auto& out = mapped.commodity_future[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.contract_frequency == to_string(in.ContractFrequency));
+            CHECK(out.calendar == std::string(in.Calendar));
+            if (in.ProhibitedExpiries || in.FutureContinuationMappings ||
+                in.OptionContinuationMappings || in.AveragingData)
+                carries_an_unmodelled_field = true;
+        }
+
+        // Four of the element's fields hold lists of structs and no column can
+        // hold one, so the mapper counts them. A file that carries one must
+        // name it, and must not be in the round-trip set.
+        if (carries_an_unmodelled_field) {
+            ++files_with_an_unmodelled_field;
+            CHECK(mapped.unmodelled.size() >= 1);
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "CommodityFuture");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.CommodityFuture.size()) +
+             " CommodityFuture element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.CommodityFuture.size()));
+
+        // The mapper stores canonical spellings of the frequency and the
+        // business day conventions, so the export may differ from the document
+        // in those. What has to survive is the value: read the export back, map
+        // it again, and require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.CommodityFuture.size() == document.CommodityFuture.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
+            INFO(path.string() + ": CommodityFuture element " + std::to_string(i));
+            CHECK(remapped.commodity_future[i] == mapped.commodity_future[i]);
+        }
+    }
+
+    // Five of the seventy-two files carry it, and two of them carried nothing
+    // else unmodelled when it went in.
+    CHECK(files_with_commodity_future == 5);
+    CHECK(files_with_an_unmodelled_field == 3);
 }
 
 TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
@@ -717,10 +778,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Sixty-seven of the seventy-two once CmsSpreadOption landed: the eleven
-    // files it cleared on its own on top of the fifty-six already clean. The
-    // count is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 67);
+    // Sixty-nine of the seventy-two once CommodityFuture landed: the two files
+    // it cleared on its own on top of the sixty-seven already clean. The count
+    // is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 69);
 }
 
 // Hidden by default, and run on demand:

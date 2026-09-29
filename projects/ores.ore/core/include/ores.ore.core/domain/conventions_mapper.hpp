@@ -27,6 +27,7 @@
 #include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
+#include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
@@ -105,6 +106,7 @@ struct mapped_conventions {
     std::vector<mapped_fx> fx;
     std::vector<refdata::domain::cds_convention> cds;
     std::vector<refdata::domain::cms_spread_option_convention> cms_spread_option;
+    std::vector<refdata::domain::commodity_future_convention> commodity_future;
 
     /**
      * @brief The categories the mapper read but does not model, and how many
@@ -201,6 +203,9 @@ public:
 
     static refdata::domain::cms_spread_option_convention
     map_cms_spread_option(const cmsSpreadOptionType& v);
+
+    static refdata::domain::commodity_future_convention
+    map_commodity_future(const commodityFutureType& v);
 
     /**
      * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.

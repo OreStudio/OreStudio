@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/commodity_future_conventions/commodity_future_convention.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+commodity_future_conventions list --limit 1

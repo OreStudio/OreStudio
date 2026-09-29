@@ -224,6 +224,8 @@
 \ir ./refdata_cross_currency_fix_float_conventions_notify_trigger_create.sql
 \ir ./refdata_cms_spread_option_conventions_create.sql
 \ir ./refdata_cms_spread_option_conventions_notify_trigger_create.sql
+\ir ./refdata_commodity_future_conventions_create.sql
+\ir ./refdata_commodity_future_conventions_notify_trigger_create.sql
 \ir ./refdata_overnight_index_conventions_create.sql
 \ir ./refdata_overnight_index_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql

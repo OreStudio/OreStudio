@@ -216,6 +216,26 @@ Early detection, in this order: a reader test holding two BondTRS trades on
 one ISIN and asserting each container keeps its own funding leg; the bond
 leg's schedules surviving the move; then the corpus round trip.
 
+** Unit 2a delivered (2026-09-29)
+
+The security-keyed leg family exists: =bond_issue_leg=, =bond_issue_leg_rate=,
+=bond_issue_leg_amount= and =bond_issue_leg_amortization=, keyed by
+=issue_id= with a real foreign key to =ores_trading_bond_issues_tbl= and
+with =leg_role= gone. The existing =bond_leg*= family and its callers are
+untouched, so the replacement exists before the move that removes it.
+
+Measured: drift no drift; whole-tree build exit 0 with zero =error:=;
+=compass db recreate -y -k= exit 0 with the four tables, their triggers and
+their policies; =ctest= 89 of 89; =pytest= 997 passed;
+=check_sql_hygiene.py= 1693 files, 0 problems. Committed as =e85b7903ff=,
+with the ER diagram in =3bbbd544c3=.
+
+Two tooling facts to carry into every later entity addition: the drift
+command does not regenerate the per-directory CMake file lists -- a
+separate script does, and without it new sources never compile -- and the
+create and drop aggregates and the RLS policy file are hand-maintained, so
+a new table is invisible to =db recreate= and un-policed until wired.
+
 ** Branch
 
 Cut from =main= after PR 4 merges, so the split reshapes the collapsed

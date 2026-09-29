@@ -362,6 +362,18 @@ name; the grid is gone, so both requests carry the identity and the handler read
 it. Nothing in production called the generated =read_latest_by_type=, which a later unit
 deleted outright rather than waiting for the columns it reads.
 
+**The rename crossed a component the pull-request checks cannot see.** =feed_binding.ore_key=
+became =oresmd_uri= in the binding unit, and =ores.iam='s tenant provisioning handler still
+read and wrote the old field; =ores.iam.core='s registrar includes that header, so the tree
+stopped compiling and the break survived sixteen green PR checks. The check named =tests=
+runs =pytest projects/ores.codegen/tests= -- the codegen suite -- and every other job is a
+Python gate over generated output, so no pull request compiles C++ at all; the C++ build
+lives in the continuous and nightly workflows. Locally I built subsets of targets chosen
+by me, and the grep for the renamed field listed the iam header and I did not open it,
+reading the remaining hits as the synthetic config's own =ore_key= and the wire ticks.
+The whole tree builds again with the handler projecting the config's key to the identity,
+and the whole-tree build is now what a rename's evidence rests on.
+
 **The export cannot rebuild a datum's key from the identity, and that was worth finding
 before the columns go.** The export writes an observation under the key it was given when
 the row carries one, and rebuilds it from the series' registry columns when it does not.
@@ -496,6 +508,10 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.marketdata.core=, =client=, =synthetic.service= and =synthetic.api= suites | 1893 in 414, 6 in 6, 297 in 46 and 65 in 22 assertions and cases | the four test binaries | =eba20b1d9d= |
 | Why =synthetic.api= counts fewer cases than the identity unit measured | 7 cases gone with two test files: another environment's merge deleted the organisation generator and its tests (=04f6092cfd=), not this change | =git show --stat 04f6092cfd= | =eba20b1d9d= |
 | =reachability=, with the one caller left | 7739 declared cases in 952 sources | =check_test_case_reachability.py= | =eba20b1d9d= |
+| Targets built before merging the binding rename | the marketdata core, service, api and client suites and the synthetic api and service suites: no target that compiles =ores.iam='s registrar, and no whole-tree build | =cmake --build --preset linux-clang-debug-make --target <subset>= | =467c13f73a= |
+| The tree after the rename, built whole | a hard error in =tenant_provisioning_handler.hpp=: =no member named 'ore_key'= in the binding and in its write, on the commit that merged as #2392 | =cmake --build --preset linux-clang-debug-make= with no target | =599a1a06db= |
+| Pull-request checks that compile C++ | 0: =tests= runs the codegen suite, and the rest are Python gates; the C++ build is in the continuous and nightly workflows | =sed -n '/^  tests:/,/^  [a-z-]*:$/p' .github/workflows/codegen-drift.yml= | =599a1a06db= |
+| The tree after the fix | builds whole, no error and no warning | the same whole-tree command | =599a1a06db= |
 | Datum keys the ingest loop stores | 1 per tick now, where it stored none; the rule is the export's own rebuild rule | =grep -n "obs.key = series_key_registry_" projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= | =b3f8c1194f= |
 | The export experiment's failure | the corpus import-export case fails when the export rebuilds a key from the identity, because a datum's point sits in a per-family field | =ores.marketdata.core.tests "[ore_export]"=, on the reverted branch | =b3f8c1194f= |
 | =ores.marketdata.service= and =core= suites with the stored key | 176 in 28 and 1893 in 414 assertions and cases | the two binaries | =b3f8c1194f= |

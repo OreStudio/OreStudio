@@ -30,11 +30,11 @@ went with its recipe.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Landed. =bootstrap setup= replaced =provision system= and sits in the bootstrap menu beside the verbs that answer the installation and give it an administrator. The generated =tenant_provisioning= command unit and the =iam.v1.tenants.complete-provisioning= verb retired, and with them the =tenants complete-provisioning= porcelain command. =provision tenant= and =provision party= keep the browser's words. The synthetic organisation generator is deleted, its recipe with it, and the two journey documents and the manual describe the surface as it is. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. The story's remaining acceptance is its own task: the New tenant and New party journeys, and the scripted browser proof. |
+| Next         | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance

@@ -139,7 +139,10 @@ read_pillar_rates(ores::database::context ctx,
                                                      p.start_tenor_code,
                                                      resolve_tenor_date(refctx, p.start_tenor_code),
                                                      resolve_tenor_date(refctx, p.end_tenor_code));
-        const auto series = series_repo.read_latest_by_uri(ctx, core::pillar_series_uri(key));
+        // The config's own party, as the ingest loop scopes the series it writes:
+        // the curve is bootstrapped for that party, so its quotes come from it.
+        const auto series = series_repo.read_latest_by_uri(
+            ctx, core::pillar_series_uri(key), boost::uuids::to_string(config.party_id));
         if (series.empty()) {
             unresolved.push_back(&p);
             continue;

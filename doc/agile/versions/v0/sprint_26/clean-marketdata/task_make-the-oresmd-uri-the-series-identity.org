@@ -386,7 +386,12 @@ attempts were reverted, because a key that comes out wrong is worse than one tha
 come out at all: a reader would write it to a file. The fact that decides it -- which
 identifier field holds which class's coordinate -- belongs in the oresmd family tables, so
 the grammar exposes one projection from a series identifier and a point, and a hand-written
-helper cannot know it. Until that exists the writers that hold a producer key store it (the
+helper cannot know it. The column that fact needs is already modelled and nobody reads it:
+each family's row in =ir_quote_type.org= and its siblings carries =point_semantics=, =tenor=
+for the discount curve, the money market, the FRA and the swaps and =surface= for a capfloor,
+and neither the loader nor a template mentions it. So the next unit starts by reading that
+column in =org_loader.py= and generating the per-family arm from it -- not by inventing a
+rule, and not by extending a hand-written helper. Until that exists the writers that hold a producer key store it (the
 import and the ingest loop do; the republish service does not), and the export's rebuild
 stays.
 

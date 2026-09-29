@@ -310,6 +310,41 @@ re-run of the same database, on leftover rows of their own. A green
 suite therefore needs the recreation as part of the run, which is how
 every earlier gate measured it.
 
+** Unit 3 delivered (2026-09-29): the coupon terms held once
+
+=bond_issue= carried =currency=, =coupon_rate=, =coupon_frequency_code=
+and =day_count_fraction_code= as a denormalised copy of the first leg.
+The XSD is decisive: =bondReferenceDatum= (referencedata.xsd lines
+97-113) states none of the four. They are =legData= members alone, and
+the security's legs are now =bond_issue_leg= and its children, so the
+issue row was holding a second copy of what the leg already states.
+
+The four columns leave =bond_issue=, and with them the forward mapper's
+"the issue mirrors the first leg" block and the reverse mapper's use of
+the issue as the fallback when a leg stated none. That fallback could
+only fire for a payload built from a row set holding an issue and no leg
+rows; after unit 2b a stored bond's legs are written with its issue, so
+no such row set exists.
+
+=face_value= stays, and its prose now says why: a row set with no legs
+still has to export a leg, and the face value is what that leg's
+notional is built from.
+
+Tests moved with it. The two ORE round-trip suites assert the coupon
+terms on the leg rather than on the issue, and
+=xml_bond_fact_mapper_roundtrip_tests.cpp='s case that proved the
+removed fallback becomes the case that proves its absence: a leg-less
+row set exports no leg at all, and the issue's face value alone stands
+in for the notional.
+
+Measured on =ecc39aa3f7=: whole-tree build exit 0 with zero =error:=;
+=check_component_drift.py --all --dry-run= no drift; =compass db
+recreate -y -k= exit 0; =ctest -j 1= 89 of 89 on the recreated
+database; =pytest projects/ores.codegen/tests -q= 997 passed;
+=check_sql_hygiene.py= 1733 files, 0 problems; =validate_docs.sh= 40
+components. Committed as =ecc39aa3f7=, with the ER diagram in
+=01555cc2fa=.
+
 ** Branch
 
 Cut from =main= after PR 4 merges, so the split reshapes the collapsed

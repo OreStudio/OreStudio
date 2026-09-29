@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2395
+#+pr: 2399
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -362,6 +362,29 @@ name; the grid is gone, so both requests carry the identity and the handler read
 it. Nothing in production called the generated =read_latest_by_type=, which a later unit
 deleted outright rather than waiting for the columns it reads.
 
+**The rename crossed a component the pull-request checks cannot see.** =feed_binding.ore_key=
+became =oresmd_uri= in the binding unit, and =ores.iam='s tenant provisioning handler still
+read and wrote the old field; =ores.iam.core='s registrar includes that header, so the tree
+stopped compiling and the break survived sixteen green PR checks. The check named =tests=
+runs =pytest projects/ores.codegen/tests= -- the codegen suite -- and every other job is a
+Python gate over generated output, so no pull request compiles C++ at all; the C++ build
+lives in the continuous and nightly workflows. Locally I built subsets of targets chosen
+by me, and the grep for the renamed field listed the iam header and I did not open it,
+reading the remaining hits as the synthetic config's own =ore_key= and the wire ticks.
+The whole tree builds again with the handler projecting the config's key to the identity,
+and the whole-tree build is now what a rename's evidence rests on.
+
+**The export cannot rebuild a datum's key from the identity, and that was worth finding
+before the columns go.** The export writes an observation under the key it was given when
+the row carries one, and rebuilds it from the series' registry columns when it does not.
+The rebuild was tried the other way -- read the identity, project it back to a key -- and
+the corpus case fails: the identity is the *series'* key, and a datum's key needs its
+point placed in a field that differs per family, because a future's coordinate is a
+contract code and a tenor rather than the URI's =point=. The experiment was reverted.
+What the deletion needs instead is for every writer to store the key with the datum, the
+way the import already does; the ingest loop does now, and the republish service is the
+one left, which can build it from the output series it already reads.
+
 That also closes the identity review's other recorded prerequisite. With the fallback
 gone there is no contest to settle: the import finds a series by the real identity when
 one holds it, and creates one when none does, so a synthetic row is never preferred and
@@ -485,6 +508,13 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.marketdata.core=, =client=, =synthetic.service= and =synthetic.api= suites | 1893 in 414, 6 in 6, 297 in 46 and 65 in 22 assertions and cases | the four test binaries | =eba20b1d9d= |
 | Why =synthetic.api= counts fewer cases than the identity unit measured | 7 cases gone with two test files: another environment's merge deleted the organisation generator and its tests (=04f6092cfd=), not this change | =git show --stat 04f6092cfd= | =eba20b1d9d= |
 | =reachability=, with the one caller left | 7739 declared cases in 952 sources | =check_test_case_reachability.py= | =eba20b1d9d= |
+| Targets built before merging the binding rename | the marketdata core, service, api and client suites and the synthetic api and service suites: no target that compiles =ores.iam='s registrar, and no whole-tree build | =cmake --build --preset linux-clang-debug-make --target <subset>= | =467c13f73a= |
+| The tree after the rename, built whole | a hard error in =tenant_provisioning_handler.hpp=: =no member named 'ore_key'= in the binding and in its write, on the commit that merged as #2392 | =cmake --build --preset linux-clang-debug-make= with no target | =599a1a06db= |
+| Pull-request checks that compile C++ | 0: =tests= runs the codegen suite, and the rest are Python gates; the C++ build is in the continuous and nightly workflows | =sed -n '/^  tests:/,/^  [a-z-]*:$/p' .github/workflows/codegen-drift.yml= | =599a1a06db= |
+| The tree after the fix | builds whole, no error and no warning | the same whole-tree command | =599a1a06db= |
+| Datum keys the ingest loop stores | 1 per tick now, where it stored none; the rule is the export's own rebuild rule | =grep -n "obs.key = series_key_registry_" projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= | =b3f8c1194f= |
+| The export experiment's failure | the corpus import-export case fails when the export rebuilds a key from the identity, because a datum's point sits in a per-family field | =ores.marketdata.core.tests "[ore_export]"=, on the reverted branch | =b3f8c1194f= |
+| =ores.marketdata.service= and =core= suites with the stored key | 176 in 28 and 1893 in 414 assertions and cases | the two binaries | =b3f8c1194f= |
 | References to =read_latest_by_type= left in the tree | 0: gone from the model, the generated repository and the tests, where nothing in production called it | =grep -rn "read_latest_by_type" projects/ --include=*.cpp --include=*.hpp --include=*.org= | =9db9a2ac3d= |
 | =ores.marketdata.core= suite, with the dead reader gone | 1893 assertions in 414 cases, the by-type repository case become a by-identity one | =ores.marketdata.core.tests= | =9db9a2ac3d= |
 | Fields a curve snapshot request names a series by | 1: =oresmd_uri=, where it carried the registry's three | =grep -n "std::string" projects/ores.marketdata/api/include/ores.marketdata.api/messaging/curve_snapshot_protocol.hpp= | =ac4e03519b= |
@@ -522,6 +552,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2399][#2399]] | [iam] Build the provisioning handler against the binding's identity |
+| [[https://github.com/OreStudio/OreStudio/pull/2397][#2397]] | [marketdata] Keep the key a tick's datum is written under |
 | [[https://github.com/OreStudio/OreStudio/pull/2395][#2395]] | [marketdata] Delete the reader nothing calls |
 | [[https://github.com/OreStudio/OreStudio/pull/2394][#2394]] | [marketdata,synthetic] Read a series by identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2392][#2392]] | [marketdata,synthetic] Name the binding by identity, and repair the dq publish |
@@ -749,6 +781,13 @@ alive, so it went from the model and the generated repository with them. The imp
 tests keep every assertion -- a helper filters the list for the key the import was given
 -- and the repository's own by-type case became a by-identity one. Measured on the
 rebuilt tree: 1893 core assertions in 414 cases, and no reference to the method left.
+
+**A tenth unit stored the key a tick's datum is written under.** The import keeps the
+file's own key on every observation; the ingest loop did not, which is why the export had
+to rebuild one for every feed row from the registry columns. It stores it now, by the
+export's own rule, so nothing the export writes changes and the row carries the key the
+deletion needs it to carry. Measured on the rebuilt tree: 176 service assertions in 28
+cases and 1893 core assertions in 414.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

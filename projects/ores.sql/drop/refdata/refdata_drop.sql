@@ -67,6 +67,8 @@
 \ir ./refdata_ibor_index_conventions_drop.sql
 \ir ./refdata_zero_inflation_index_conventions_notify_trigger_drop.sql
 \ir ./refdata_zero_inflation_index_conventions_drop.sql
+\ir ./refdata_bma_basis_swap_conventions_notify_trigger_drop.sql
+\ir ./refdata_bma_basis_swap_conventions_drop.sql
 \ir ./refdata_fra_conventions_notify_trigger_drop.sql
 \ir ./refdata_fra_conventions_drop.sql
 \ir ./refdata_ois_conventions_notify_trigger_drop.sql

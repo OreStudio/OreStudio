@@ -306,6 +306,22 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- BMA Basis Swap Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_bma_basis_swap_conventions_tbl enable row level security;
+
+drop policy if exists bma_basis_swap_conventions_tenant_isolation_policy
+    on ores_refdata_bma_basis_swap_conventions_tbl;
+
+create policy bma_basis_swap_conventions_tenant_isolation_policy on ores_refdata_bma_basis_swap_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currency Pair Classifications
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_pair_classifications_tbl enable row level security;

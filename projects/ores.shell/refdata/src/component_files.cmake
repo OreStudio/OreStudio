@@ -22,6 +22,7 @@
 set(files
     "app/commands/refdata/asset_class_code_commands.cpp"
     "app/commands/refdata/average_ois_convention_commands.cpp"
+    "app/commands/refdata/bma_basis_swap_convention_commands.cpp"
     "app/commands/refdata/book_commands.cpp"
     "app/commands/refdata/book_purpose_type_commands.cpp"
     "app/commands/refdata/book_status_commands.cpp"
@@ -108,6 +109,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/average_ois_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/bma_basis_swap_convention_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/book_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/book_status_commands.hpp"

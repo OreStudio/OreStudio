@@ -216,6 +216,8 @@
 \ir ./refdata_ibor_index_conventions_notify_trigger_create.sql
 \ir ./refdata_zero_inflation_index_conventions_create.sql
 \ir ./refdata_zero_inflation_index_conventions_notify_trigger_create.sql
+\ir ./refdata_bma_basis_swap_conventions_create.sql
+\ir ./refdata_bma_basis_swap_conventions_notify_trigger_create.sql
 \ir ./refdata_overnight_index_conventions_create.sql
 \ir ./refdata_overnight_index_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql

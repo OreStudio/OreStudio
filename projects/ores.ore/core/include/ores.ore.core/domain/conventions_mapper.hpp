@@ -24,6 +24,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
+#include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
@@ -82,6 +83,7 @@ struct mapped_fx {
 struct mapped_conventions {
     std::vector<refdata::domain::zero_convention> zero;
     std::vector<refdata::domain::average_ois_convention> average_ois;
+    std::vector<refdata::domain::bma_basis_swap_convention> bma_basis_swap;
     std::vector<refdata::domain::cross_currency_basis_convention> cross_currency_basis;
     std::vector<refdata::domain::tenor_basis_swap_convention> tenor_basis_swap;
     std::vector<refdata::domain::tenor_basis_two_swap_convention> tenor_basis_two_swap;
@@ -177,6 +179,9 @@ public:
 
     static refdata::domain::zero_inflation_index_convention
     map_zero_inflation_index(const zeroInflationIndexType& v);
+
+    static refdata::domain::bma_basis_swap_convention
+    map_bma_basis_swap(const bmaBasisSwapType& v);
 
     static mapped_fx map_fx(const fxType& v);
 

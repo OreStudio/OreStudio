@@ -22,6 +22,7 @@
 set(files
     "asset_class_code_eventing_integration_tests.cpp"
     "average_ois_convention_eventing_integration_tests.cpp"
+    "bma_basis_swap_convention_eventing_integration_tests.cpp"
     "book_eventing_integration_tests.cpp"
     "book_purpose_type_eventing_integration_tests.cpp"
     "book_status_eventing_integration_tests.cpp"

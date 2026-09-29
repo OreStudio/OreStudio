@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D6E604E5-7090-541E-9BC5-017EC2C8485D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the bma_basis_swap_conventions commands from the shell?
+#+description: Every command the bma_basis_swap_conventions submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:bma_basis_swap_conventions:
+
+This file documents the bma_basis_swap_conventions resource at the shell, one section per command. Every command is a subcommand of =bma_basis_swap_conventions=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 090F607F-209B-5B88-8F55-F0D7E7729D6A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.list=.
+
+#+name: bma_basis_swap_conventions-list
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-list.ores :exports none
+bma_basis_swap_conventions list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2D4B6F49-2F78-5059-8006-F005F94BFE49
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions get <id>
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.get=.
+
+#+name: bma_basis_swap_conventions-get
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-get.ores :exports none
+bma_basis_swap_conventions get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A04FF360-0DE1-5956-9B5D-93AFC18447FC
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.get_many=.
+
+#+name: bma_basis_swap_conventions-get-many
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-get-many.ores :exports none
+bma_basis_swap_conventions get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A21146DE-43BC-5B08-A5A8-F44C4C7B75F7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions add <id> <index> <bma_index> <bma_payment_calendar> <bma_payment_convention> <bma_payment_lag> <index_payment_calendar> <index_payment_convention> <index_payment_lag> <index_settlement_days> <index_payment_period> <overnight_lockout_days> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.put=.
+
+#+name: bma_basis_swap_conventions-add
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-add.ores :exports none
+bma_basis_swap_conventions add __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 7DAC3F23-AB02-5034-A995-E1E68E77CA47
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions set <id> <index> <bma_index> <bma_payment_calendar> <bma_payment_convention> <bma_payment_lag> <index_payment_calendar> <index_payment_convention> <index_payment_lag> <index_settlement_days> <index_payment_period> <overnight_lockout_days> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.put=.
+
+#+name: bma_basis_swap_conventions-set
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-set.ores :exports none
+bma_basis_swap_conventions set __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0D05C3B5-F492-5729-BE70-D07818770DC4
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions put-many --count <n> <id> <index> <bma_index> <bma_payment_calendar> <bma_payment_convention> <bma_payment_lag> <index_payment_calendar> <index_payment_convention> <index_payment_lag> <index_settlement_days> <index_payment_period> <overnight_lockout_days> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.put_many=.
+
+#+name: bma_basis_swap_conventions-put-many
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-put-many.ores :exports none
+bma_basis_swap_conventions put-many --count 1 __none__ __none__ __none__ - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BD0C8E00-DD84-59AB-9574-93984DD20278
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.delete=.
+
+#+name: bma_basis_swap_conventions-delete
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-delete.ores :exports none
+bma_basis_swap_conventions delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2F61BFF9-0A5C-5103-85C7-483C936683CE
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions.delete_many=.
+
+#+name: bma_basis_swap_conventions-delete-many
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-delete-many.ores :exports none
+bma_basis_swap_conventions delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0F8CFC76-9DE1-5ADC-98F3-796C29078AD5
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions_versions.list=.
+
+#+name: bma_basis_swap_conventions-versions
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-versions.ores :exports none
+bma_basis_swap_conventions versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F05CCC32-6974-59A9-8AF2-E26E0BB6F295
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bma_basis_swap_conventions version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.bma_basis_swap_conventions_versions.get=.
+
+#+name: bma_basis_swap_conventions-version
+#+begin_src ores-shell :tangle bma_basis_swap_conventions-version.ores :exports none
+bma_basis_swap_conventions version __none__ --version 1
+#+end_src
+

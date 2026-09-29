@@ -402,6 +402,38 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
+bmaBasisSwapType reverse_bma_basis_swap(const refdata::domain::bma_basis_swap_convention& v) {
+    bmaBasisSwapType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Index) = v.index;
+    static_cast<std::string&>(r.BMAIndex) = v.bma_index;
+    if (v.bma_payment_calendar) {
+        bmaBasisSwapType_BMAPaymentCalendar_t x;
+        static_cast<std::string&>(x) = *v.bma_payment_calendar;
+        r.BMAPaymentCalendar = x;
+    }
+    if (v.bma_payment_convention)
+        r.BMAPaymentConvention = parse_bdc(*v.bma_payment_convention);
+    if (v.bma_payment_lag)
+        r.BMAPaymentLag = static_cast<int64_t>(*v.bma_payment_lag);
+    if (v.index_payment_calendar) {
+        bmaBasisSwapType_IndexPaymentCalendar_t x;
+        static_cast<std::string&>(x) = *v.index_payment_calendar;
+        r.IndexPaymentCalendar = x;
+    }
+    if (v.index_payment_convention)
+        r.IndexPaymentConvention = parse_bdc(*v.index_payment_convention);
+    if (v.index_payment_lag)
+        r.IndexPaymentLag = static_cast<int64_t>(*v.index_payment_lag);
+    if (v.index_settlement_days)
+        r.IndexSettlementDays = static_cast<int64_t>(*v.index_settlement_days);
+    if (v.index_payment_period)
+        r.IndexPaymentPeriod = *v.index_payment_period;
+    if (v.overnight_lockout_days)
+        r.OvernightLockoutDays = static_cast<int64_t>(*v.overnight_lockout_days);
+    return r;
+}
+
 zeroInflationIndexType
 reverse_zero_inflation_index(const refdata::domain::zero_inflation_index_convention& v) {
     zeroInflationIndexType r;
@@ -1349,6 +1381,46 @@ refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const 
     return r;
 }
 
+refdata::domain::bma_basis_swap_convention
+conventions_mapper::map_bma_basis_swap(const bmaBasisSwapType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping BMA basis swap convention: " << std::string(v.Id);
+
+    refdata::domain::bma_basis_swap_convention r;
+    r.id = std::string(v.Id);
+    r.index = std::string(v.Index);
+    r.bma_index = std::string(v.BMAIndex);
+
+    if (v.BMAPaymentCalendar)
+        r.bma_payment_calendar = std::string(*v.BMAPaymentCalendar);
+
+    if (v.BMAPaymentConvention)
+        r.bma_payment_convention = normalize_bdc(*v.BMAPaymentConvention);
+
+    if (v.BMAPaymentLag)
+        r.bma_payment_lag = static_cast<int>(*v.BMAPaymentLag);
+
+    if (v.IndexPaymentCalendar)
+        r.index_payment_calendar = std::string(*v.IndexPaymentCalendar);
+
+    if (v.IndexPaymentConvention)
+        r.index_payment_convention = normalize_bdc(*v.IndexPaymentConvention);
+
+    if (v.IndexPaymentLag)
+        r.index_payment_lag = static_cast<int>(*v.IndexPaymentLag);
+
+    if (v.IndexSettlementDays)
+        r.index_settlement_days = static_cast<int>(*v.IndexSettlementDays);
+
+    if (v.IndexPaymentPeriod)
+        r.index_payment_period = std::string(*v.IndexPaymentPeriod);
+
+    if (v.OvernightLockoutDays)
+        r.overnight_lockout_days = static_cast<int>(*v.OvernightLockoutDays);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::zero_inflation_index_convention
 conventions_mapper::map_zero_inflation_index(const zeroInflationIndexType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping zero inflation index convention: "
@@ -1496,6 +1568,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_ibor_index(x);
     });
 
+    r.bma_basis_swap.reserve(v.BMABasisSwap.size());
+    std::ranges::transform(v.BMABasisSwap,
+                           std::back_inserter(r.bma_basis_swap),
+                           [](const auto& x) { return map_bma_basis_swap(x); });
+
     r.zero_inflation_index.reserve(v.ZeroInflationIndex.size());
     std::ranges::transform(v.ZeroInflationIndex,
                            std::back_inserter(r.zero_inflation_index),
@@ -1556,7 +1633,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (count != 0)
             r.unmodelled.emplace(std::string(name), count);
     };
-    count_unmodelled("BMABasisSwap", v.BMABasisSwap.size());
     count_unmodelled("CrossCurrencyFixFloat", v.CrossCurrencyFixFloat.size());
     count_unmodelled("InflationSwap", v.InflationSwap.size());
     count_unmodelled("CmsSpreadOption", v.CmsSpreadOption.size());
@@ -1625,6 +1701,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.IborIndex.reserve(v.ibor_index.size());
     for (const auto& x : v.ibor_index)
         r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.BMABasisSwap.reserve(v.bma_basis_swap.size());
+    for (const auto& x : v.bma_basis_swap)
+        r.BMABasisSwap.push_back(reverse_bma_basis_swap(x));
 
     r.ZeroInflationIndex.reserve(v.zero_inflation_index.size());
     for (const auto& x : v.zero_inflation_index)

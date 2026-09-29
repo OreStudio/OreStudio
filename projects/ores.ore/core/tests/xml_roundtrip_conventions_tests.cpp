@@ -32,7 +32,7 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * seventeen. The files that use only those seventeen round trip. The rest do
+ * eighteen. The files that use only those eighteen round trip. The rest do
  * not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
@@ -254,6 +254,52 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     CHECK(files_with_basis == 49);
 }
 
+TEST_CASE("conventions_bma_basis_swap_round_trips", tags) {
+    int files_with_bma = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.BMABasisSwap.empty())
+            continue;
+
+        ++files_with_bma;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.bma_basis_swap.size() == document.BMABasisSwap.size());
+
+        for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
+            const auto& in = document.BMABasisSwap[i];
+            const auto& out = mapped.bma_basis_swap[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.index == std::string(in.Index));
+            CHECK(out.bma_index == std::string(in.BMAIndex));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "BMABasisSwap");
+        INFO(path.string() + ": the document has " + std::to_string(document.BMABasisSwap.size()) +
+             " BMABasisSwap element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.BMABasisSwap.size()));
+
+        // The mapper stores a canonical spelling of the two payment
+        // conventions, so the export writes a spelling the document may not
+        // have used. What has to survive is the value: read the export back,
+        // map it again, and require the same entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.BMABasisSwap.size() == document.BMABasisSwap.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
+            INFO(path.string() + ": BMABasisSwap element " + std::to_string(i));
+            CHECK(remapped.bma_basis_swap[i] == mapped.bma_basis_swap[i]);
+        }
+    }
+
+    // Sixteen of the seventy-two files carry it, and three of them carried
+    // nothing else unmodelled when it went in.
+    CHECK(files_with_bma == 16);
+}
+
 TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
     int files_with_inflation_index = 0;
 
@@ -453,10 +499,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Forty-four of the seventy-two once ZeroInflationIndex landed: the five
-    // files it cleared on its own on top of the thirty-nine already clean. The
-    // count is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 44);
+    // Forty-seven of the seventy-two once BMABasisSwap landed: the three files
+    // it cleared on its own on top of the forty-four already clean. The count
+    // is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 47);
 }
 
 // Hidden by default, and run on demand:

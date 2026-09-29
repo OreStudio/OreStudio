@@ -96,6 +96,18 @@ task and name that file in the Command column.
   person starts one again from the application, and it is the place to
   carry that.
 
+- *The tenant answer was read from the wrong column.* The first cut asked the
+  tenant row's =tenant_id= whether it was the system tenant, and the registry's
+  own check requires every row to carry the system tenant there, so the answer
+  was "no tenant" for a deployment that had one. Nobody saw it until the walk
+  reached *Ready* and *Go home* did nothing: the gate read the deployment as
+  unset up and kept the screen it had just finished with. The predicate asks
+  =id=, a unit test builds rows in the shape the table holds — every row owned
+  by the system tenant, only the ids differing — and the test fails against the
+  old predicate, which was checked by reverting it and running the suite.
+  The tenant model's prose claimed =tenant_id = id for tenant records=, which
+  is what misled the first cut; it now states what the table's check requires.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

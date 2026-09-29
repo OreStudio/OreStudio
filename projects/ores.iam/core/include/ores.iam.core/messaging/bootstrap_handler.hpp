@@ -29,6 +29,7 @@
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
+#include "ores.iam.core/service/tenant_presence.hpp"
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -38,7 +39,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/version/version.hpp"
-#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -85,9 +85,8 @@ public:
              * comes back. The system tenant is the deployment's own bookkeeping
              * and is not a tenant somebody set up.
              */
-            const auto tenants = repository::read_all_active_tenants(ctx_);
-            const bool has_tenant = std::ranges::any_of(
-                tenants, [](const auto& tenant) { return !tenant.tenant_id.is_system(); });
+            const bool has_tenant =
+                service::has_tenant_of_its_own(repository::read_all_active_tenants(ctx_));
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
             /*
              * The version travels with this read because it is the one a

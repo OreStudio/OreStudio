@@ -43,7 +43,9 @@ namespace ores::iam::domain {
  * its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff).
  *
  * Tenants are identified by:
- * - id: UUID primary key (SQL also has tenant_id = id for self-reference)
+ * - id: UUID primary key, which is the row's own identity. The tenant_id column
+ *   is the system tenant's, because the registry belongs to it and its check
+ *   requires that of every row.
  * - code: Unique text code for stable referencing (e.g., 'system', 'acme')
  * - hostname: Unique hostname for tenant routing during login
  */
@@ -61,8 +63,11 @@ struct tenant final {
     /**
      * @brief UUID uniquely identifying this tenant.
      *
-     * The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffffff. In SQL,
-     * tenant_id = id for tenant records.
+     * The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffffff. A tenant
+     * row's own identity is this column and never tenant_id: the registry is the system tenant's,
+     * so the table's check requires every row, this one included, to carry the system tenant in
+     * tenant_id. A predicate that asks tenant_id which tenant a row describes therefore answers
+     * "the system tenant" for all of them.
      */
     boost::uuids::uuid id;
 

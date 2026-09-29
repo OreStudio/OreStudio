@@ -1241,11 +1241,7 @@ save_bond_instrument(Nats& nats,
         issue_req.change.write.issue_id = issue.issue_id;
         issue_req.change.write.security_id = issue.security_id;
         issue_req.change.write.issuer = issue.issuer;
-        issue_req.change.write.currency = issue.currency;
         issue_req.change.write.face_value = issue.face_value;
-        issue_req.change.write.coupon_rate = issue.coupon_rate;
-        issue_req.change.write.coupon_frequency_code = issue.coupon_frequency_code;
-        issue_req.change.write.day_count_fraction_code = issue.day_count_fraction_code;
         issue_req.change.write.issue_date = issue.issue_date;
         issue_req.change.write.settlement_days = issue.settlement_days;
         issue_req.change.write.calendar = issue.calendar;

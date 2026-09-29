@@ -36,12 +36,8 @@ std::vector<ores::diff::domain::field_value> render_bond_issue_fields(const doma
     fields.push_back({.name = "Issue ID", .value = boost::uuids::to_string(v.issue_id)});
     fields.push_back({.name = "Security ID", .value = v.security_id});
     fields.push_back({.name = "Issuer", .value = v.issuer});
-    fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back(
         {.name = "Face Value", .value = v.face_value ? v.face_value->to_string() : std::string{}});
-    fields.push_back({.name = "Coupon Rate", .value = std::to_string(v.coupon_rate)});
-    fields.push_back({.name = "Coupon Frequency Code", .value = v.coupon_frequency_code});
-    fields.push_back({.name = "Day Count Fraction Code", .value = v.day_count_fraction_code});
     fields.push_back({.name = "Issue Date",
                       .value = v.issue_date ?
                                    ores::platform::time::datetime::to_iso8601_date(*v.issue_date) :

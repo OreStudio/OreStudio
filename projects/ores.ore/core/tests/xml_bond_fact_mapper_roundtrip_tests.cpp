@@ -149,10 +149,11 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
 )";
     const auto r = map_inline(xml);
     CHECK(ore_iso(r.issue.issue_date) == "2025-02-01");
-    CHECK(r.issue.coupon_frequency_code == "1Y");
 
     REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
     const auto& carried = r.bond_legs.front().schedule.rules.front();
+    // The coupon frequency is the leg's, not the issue's.
+    CHECK(carried.tenor == "1Y");
     CHECK(carried.start_date == "2025-02-03");
     CHECK(carried.end_date == "2035-02-03");
     CHECK(carried.calendar == "EUR");
@@ -335,12 +336,12 @@ TEST_CASE("a_legs_payment_terms_survive_the_round_trip", tags) {
     BOOST_LOG_SEV(lg, info) << "A leg's payment terms survive the round trip.";
 }
 
-TEST_CASE("the_issue_row_stands_in_for_a_leg_a_row_set_holds", tags) {
+TEST_CASE("a_row_set_with_no_legs_keeps_the_coupon_terms_out_of_the_issue", tags) {
     auto lg(make_logger(test_suite));
 
-    // The issue row mirrors the coupon leg's currency and day counter, and
-    // the document's own statement wins when there is one. A payload built
-    // from a row set holds no leg, so the row is all there is to go on.
+    // The coupon terms are the leg's, which is where ORE states them: the
+    // issue row holds none of its own. A payload built from a row set
+    // holds no leg, so there is nothing to state them from.
     const std::string xml = R"(
 <Portfolio>
   <Trade id="Bond_From_Row">
@@ -366,16 +367,25 @@ TEST_CASE("the_issue_row_stands_in_for_a_leg_a_row_set_holds", tags) {
     auto from_row = r;
     from_row.bond_legs.clear();
 
-    const auto rt = bond_instrument_mapper::reverse_bond(from_row);
+    const auto bare = bond_instrument_mapper::reverse_bond(from_row);
+    REQUIRE(bare.BondData);
+    CHECK(bare.BondData->LegData.empty());
+
+    // The issue's own face value is the one bond term the row still
+    // states, so it stands in for the leg's notional -- and nothing else.
+    auto with_face = from_row;
+    with_face.issue.face_value = ores::utility::decimal::decimal::from_string("1000").value();
+    const auto rt = bond_instrument_mapper::reverse_bond(with_face);
     REQUIRE(rt.BondData);
     REQUIRE(rt.BondData->LegData.size() == 1);
     const auto& leg = rt.BondData->LegData.front();
-    REQUIRE(leg.Currency);
-    CHECK(std::string(*leg.Currency) == "SEK");
-    REQUIRE(leg.DayCounter);
-    CHECK(to_string(*leg.DayCounter) == "A365");
+    REQUIRE(leg.Notionals);
+    REQUIRE(leg.Notionals->Notional.size() == 1);
+    CHECK(static_cast<double>(leg.Notionals->Notional.front()) == Approx(1000.0).epsilon(0.001));
+    CHECK(!leg.Currency);
+    CHECK(!leg.DayCounter);
 
-    BOOST_LOG_SEV(lg, info) << "The issue row stands in for a leg a row set holds.";
+    BOOST_LOG_SEV(lg, info) << "A row set with no legs keeps the coupon terms out of the issue.";
 }
 
 // =============================================================================
@@ -627,10 +637,8 @@ TEST_CASE("a_bonds_second_leg_survives_the_round_trip", tags) {
 )";
     const auto r = map_inline(xml);
     REQUIRE(r.bond_legs.size() == 2);
-    CHECK(r.issue.currency == "EUR");
     CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() ==
           Approx(1000000.0));
-    CHECK(r.issue.coupon_rate == Approx(0.03));
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -733,11 +741,8 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondRepo");
     CHECK(r.issue.security_id == "ISIN:US912828X703");
 
-    // The repo leg's schedule is not the issue's coupon frequency. The
-    // issue states no terms of its own here, so it takes none from the
-    // leg either.
-    CHECK(r.issue.coupon_frequency_code.empty());
-    CHECK(r.issue.currency.empty());
+    // An instrument outside the bond family states no bond terms, so the
+    // container's issue carries no face value.
     CHECK(r.issue.face_value.value_or(ores::utility::decimal::decimal{}).to_double() == 0.0);
 
     REQUIRE(r.repo);

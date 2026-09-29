@@ -25,17 +25,23 @@
  * Bond Issue Table
  *
  * One row per bond issue (ISIN), the stable row every instrument of the
- * family references. The columns map one to one from bondData
- * (instruments.xsd lines 382-403): security_id, issuer, currency,
- * face_value, coupon_rate, coupon_frequency_code, day_count_fraction_code,
- * issue_date and settlement_days. Only SecurityId is required by that
- * schema; every other element is optional, so every other column is
- * nullable and an absent element is stored as NULL rather than as an
- * empty string or a zero.
+ * family references. The columns map from bondReferenceDatum
+ * (referencedata.xsd lines 97-113): security_id, issuer, the three curve
+ * identifiers, the six fields beside them, issue date, settlement days and
+ * calendar. Only IssuerId is required by that schema; every other
+ * element is optional, so every other column is nullable and an absent
+ * element is stored as NULL rather than as an empty string or a zero.
  *
- * The coupon terms denormalise the first leg of the issue's LegData,
- * which is itself optional: a document may identify a bond by its ISIN
- * alone.
+ * The bond's coupon terms are not here. ORE states them on legData
+ * alone -- bondReferenceDatum carries no coupon rate, coupon frequency,
+ * day counter or currency -- and the security's legs are
+ * bond_issue_leg and its children, so the leg holds them once and this
+ * row is not a second copy.
+ *
+ * face_value is the issue's per-unit value and repeats the first leg's
+ * notional. It stays because a row set that holds an issue and no legs
+ * still has to export a leg, and it is what that leg's notional is built
+ * from.
  */
 
 create table if not exists "ores_trading_bond_issues_tbl" (
@@ -44,11 +50,7 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "version" integer not null,
     "security_id" text not null,
     "issuer" text null,
-    "currency" text null,
     "face_value" numeric(28, 10) null,
-    "coupon_rate" numeric(28, 10) null,
-    "coupon_frequency_code" text null,
-    "day_count_fraction_code" text null,
     "issue_date" date null,
     "settlement_days" integer null,
     "calendar" text null,
@@ -77,7 +79,6 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     check ("valid_from" < "valid_to"),
     check ("issue_id" <> ores_utility_nil_uuid_fn()),
     check ("face_value" > 0),
-    check ("coupon_rate" >= 0),
     check ("price_type" is null or "price_type" in ('Clean', 'Dirty'))
 );
 

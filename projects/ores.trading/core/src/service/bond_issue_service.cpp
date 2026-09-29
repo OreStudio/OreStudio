@@ -85,11 +85,7 @@ domain::bond_issue to_domain(const messaging::bond_issue_write& write) {
     v.issue_id = write.issue_id;
     v.security_id = write.security_id;
     v.issuer = write.issuer;
-    v.currency = write.currency;
     v.face_value = write.face_value;
-    v.coupon_rate = write.coupon_rate;
-    v.coupon_frequency_code = write.coupon_frequency_code;
-    v.day_count_fraction_code = write.day_count_fraction_code;
     v.issue_date = write.issue_date;
     v.settlement_days = write.settlement_days;
     v.calendar = write.calendar;

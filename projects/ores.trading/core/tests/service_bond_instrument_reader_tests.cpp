@@ -149,11 +149,7 @@ bond_issue make_issue(const stamps& s, const std::string& security_id) {
     r.issue_id = boost::uuids::random_generator()();
     r.security_id = security_id;
     r.issuer = "ACME";
-    r.currency = "EUR";
     r.face_value = ores::utility::decimal::decimal::from_string("1000").value();
-    r.coupon_rate = 5.0;
-    r.coupon_frequency_code = "Annual";
-    r.day_count_fraction_code = "ACT/365";
     r.issue_date = ores::platform::time::datetime::from_iso8601_date("2024-01-15");
     r.settlement_days = 2;
     return r;

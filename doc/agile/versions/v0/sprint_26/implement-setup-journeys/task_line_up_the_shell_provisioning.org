@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/line-up-the-shell-provisioning
-#+pr:
+#+pr: 2382
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -205,7 +205,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2382][#2382]] | [shell] Line the provisioning commands up with the journey contract |
 
 * Review
 

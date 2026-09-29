@@ -36,6 +36,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/version/version.hpp"
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -75,14 +76,22 @@ public:
             service::bootstrap_mode_service bms(
                 ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
+            /*
+             * The version travels with this read because it is the one a
+             * browser makes before it has a session, and a screen states it
+             * whether or not the deployment still needs an administrator.
+             */
             reply(nats_,
                   msg,
-                  bootstrap_status_response{.is_in_bootstrap_mode = bms.is_in_bootstrap_mode()});
+                  bootstrap_status_response{.is_in_bootstrap_mode = bms.is_in_bootstrap_mode(),
+                                            .version = utility::version::full_version_string()});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
-                  bootstrap_status_response{.is_in_bootstrap_mode = false, .message = e.what()});
+                  bootstrap_status_response{.is_in_bootstrap_mode = false,
+                                            .message = e.what(),
+                                            .version = utility::version::full_version_string()});
         }
     }
 

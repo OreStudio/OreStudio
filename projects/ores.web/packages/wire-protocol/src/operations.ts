@@ -78,6 +78,13 @@ export const SUBJECTS = {
 export const bootstrapStatusResponseSchema = z.object({
     is_in_bootstrap_mode: z.boolean().default(false),
     message: z.string().default(''),
+    /*
+     * The build the answering service runs. It travels with this read because
+     * this is the read a browser makes before it has a session, and a screen
+     * states the deployment's version whether or not it still needs an
+     * administrator.
+     */
+    version: z.string().default(''),
 });
 
 /**

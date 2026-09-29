@@ -219,6 +219,7 @@ export class OresClient {
     async bootstrapStatus(): Promise<{
         isInBootstrapMode: boolean;
         message: string;
+        version: string;
     }> {
         const reply = await this.#call(
             bootstrapSubjects.bootstrap_status_request,
@@ -229,6 +230,7 @@ export class OresClient {
         return {
             isInBootstrapMode: reply.is_in_bootstrap_mode,
             message: reply.message,
+            version: reply.version,
         };
     }
 

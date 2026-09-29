@@ -91,6 +91,8 @@ export type LoginResult = z.infer<typeof loginResultSchema>;
 export const bootstrapStatusSchema = z.object({
     isInBootstrapMode: z.boolean(),
     message: z.string(),
+    /** The build the deployment runs, as the deployment states it. */
+    version: z.string(),
 });
 export type BootstrapStatus = z.infer<typeof bootstrapStatusSchema>;
 

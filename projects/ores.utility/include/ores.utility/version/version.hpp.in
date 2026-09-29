@@ -65,6 +65,17 @@ ORES_UTILITY_EXPORT const char* platform_triplet();
 ORES_UTILITY_EXPORT std::string format_startup_message(const std::string& service_name);
 
 /**
+ * @brief Returns the version this binary was built from, in full.
+ *
+ * One line naming the release, the platform it was built for and the commit
+ * it was built from, which is what a screen states about the deployment it is
+ * talking to and what a service logs at startup. A client that reports the
+ * same composition of its own build lets a reader tell a stale screen from a
+ * stale server.
+ */
+ORES_UTILITY_EXPORT std::string full_version_string();
+
+/**
  * @brief Formats a startup message with version, protocol, and build info.
  */
 ORES_UTILITY_EXPORT std::string format_startup_message(const std::string& service_name,

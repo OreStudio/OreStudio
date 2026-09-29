@@ -32,5 +32,6 @@ is part of [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]].
 * Related
 
 - [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — the server side of both: the layers, the order a sign-in is refused in, the branch a registration takes, and a sequence diagram per interaction
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — the policy both journeys read: the switch, the tenant a registration lands in, and the party and role it receives
 - [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]]
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

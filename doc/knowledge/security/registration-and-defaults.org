@@ -357,6 +357,8 @@ administrator can, which does not make the other two theirs.
 - [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] — the story this page is the target state for.
 - [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] — the survey this page answers, and the evidence for the defects it corrects.
 - [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the journeys that read this policy.
+- [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — the same policy carried out: the layers, the order a sign-in is refused in, the refusal codes, and a sequence diagram per interaction.
+- [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry journeys]] — the group the door belongs to.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how the address resolves to a tenant.
 - [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — why an account with no party is refused.
 - [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — what the default role grants.

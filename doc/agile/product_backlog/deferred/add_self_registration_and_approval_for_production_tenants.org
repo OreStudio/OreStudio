@@ -21,3 +21,12 @@ is created with a system party and the registrant becomes the tenant admin.
 - Registration enters authorisation queue for super admin approval.
 - Approved registration creates tenant, system party, and admin account.
 - Rejected registration logged with reason.
+
+Related: self-registration into a tenant that already exists is settled in
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding
+defaults]], which keeps
+=system.signup_requires_authorization= closing the door until the approval step
+this capture describes exists. What the person without a tenant needs is a
+different journey again: [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][the
+role-request journey]] is the neighbouring case, where an account exists and
+needs more than its default access.

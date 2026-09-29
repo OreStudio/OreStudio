@@ -204,8 +204,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Three starting points are rows: the manual card, the register card and the
 demo. The register card leads with the entity the tenant is built around,
 derives the tenant's name, code, hostname, administrator and legal entity from

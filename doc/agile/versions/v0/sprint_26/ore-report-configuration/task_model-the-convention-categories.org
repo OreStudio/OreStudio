@@ -26,11 +26,11 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Fifteen of the sixteen categories are modelled, so sixty-nine of the seventy-two files round trip outright. |
+| Now          | All sixteen categories are modelled and all seventy-two files round trip. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =IntradayPowerLoad= and =InflationSwap.PublicationSchedule=. They are the last two items: two files need the schedule and one needs the load, so the kind reaches seventy-two of seventy-two when both land. |
+| Next         | Nothing: the task's acceptance is met. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -57,11 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 1 after fifteen that the corpus uses (IntradayPowerLoad), plus FxOptionTimeWeighting, which no file uses | =ores.ore.core.tests "[.][conventions]" -s= | =bdfa9d11e6= |
-| Files carrying an unmodelled category | 63 at the start, 3 after fifteen | the same | =bdfa9d11e6= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 69 after fifteen | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =bdfa9d11e6= |
-| Files a single category would clear, now | none: the three files left each carry more than one unmodelled item | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =bdfa9d11e6= |
-| The whole remaining gap | InflationSwap.PublicationSchedule 2 files and IntradayPowerLoad 1 file, and nothing else | =ores.ore.core.tests "conventions_unmodelled_categories_measurement" -s= | =d2bd5eb9b8= |
+| Categories the mapper does not model | 16 at the start, 0 that the corpus uses; only FxOptionTimeWeighting is unmodelled, and no file uses it | =ores.ore.core.tests "[.][conventions]" -s= | =906407e559= |
+| Files carrying an unmodelled category | 63 at the start, 0 | the same | =906407e559= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 72 of 72 -- the whole corpus | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =906407e559= |
+| The whole remaining gap | none. Two guards remain for shapes no shipped file uses: FxOptionTimeWeighting and ZeroInflationIndex.RebasingEvents | =ores.ore.core.tests "conventions_unmodelled_categories_measurement" -s= | =906407e559= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -150,13 +149,18 @@ task and name that file in the Command column.
   column each, holding comma-separated dates and =from:to= pairs. A text column
   is a weaker home than a table and it is the one that keeps the field in the
   element's round trip; the alternative was to exclude the file.
-- The gap left in the conventions kind is two items, and the measurement names
-  both: =InflationSwap.PublicationSchedule=, which two files set, and
-  =IntradayPowerLoad=, which one file carries. Two files need only the schedule
-  and one needs only the load, so the kind reaches seventy-two of seventy-two
-  when both land. Each is a list of structs nested two deep -- a schedule of
-  rule blocks and date blocks, a load profile of dated entries each with its own
-  load factors -- so each needs either a child table or a stated text form.
+- =IntradayPowerLoad= and =InflationSwap.PublicationSchedule= are modelled, and
+  they were the last two items. Both are lists of structs nested two deep and
+  both are written as text columns in a stated form rather than given tables of
+  their own: blocks separated by semicolons, a block's fields by pipes, and a
+  load factor as =from:to:unit:dst:value=. The one subtlety is that ORE writes
+  an element a document leaves blank -- =<FirstDate/>= -- so an empty field means
+  absent and a field of =~= means present but empty.
+- The kind is complete: all seventy-two files round trip, asserted with the count
+  so that a change in it is noticed rather than absorbed. Two guards remain in
+  the mapper for shapes no shipped file uses -- =FxOptionTimeWeighting=, a
+  category with no entity, and =ZeroInflationIndex.RebasingEvents=, a list of
+  doubles -- and the measurement reports zero files carrying either.
 
 * Test Scenarios
 
@@ -184,21 +188,17 @@ via its "Verifies task" field.
 
 * Result
 
-Eight of the sixteen categories landed, in one pull request: SwapIndex, Future,
-FxOption, AverageOIS, CrossCurrencyBasis, TenorBasisTwoSwap, TenorBasisSwap and
-ZeroInflationIndex. They took the count of files that round trip outright from
-nine to forty-four and the count carrying an unmodelled category from sixty-three
-to twenty-eight.
+The acceptance is met. All sixteen categories have an entity, a create and a
+drop script and a row in the RLS policies; the mapper reads and writes each one;
+and the conventions kind round trips over its whole corpus, all seventy-two
+files, asserted as a case.
 
-The acceptance is not met, so the task stays STARTED. Eight categories remain
-unmodelled -- BMABasisSwap, CrossCurrencyFixFloat, InflationSwap,
-CmsSpreadOption, CommodityForward, CommodityFuture, BondYield and
-IntradayPowerLoad -- so the mapper's count of what it skips is eight rather than
-zero, and twenty-eight of the seventy-two files still carry one. The work
-continues on a new branch, because this branch's pull request is merged and the
-acceptance asks for all sixteen.
+The first eight categories landed in [[https://github.com/OreStudio/OreStudio/pull/2357][#2357]] and the other eight on this
+branch: BMABasisSwap, InflationSwap, CrossCurrencyFixFloat, CmsSpreadOption,
+CommodityFuture, CommodityForward, BondYield and IntradayPowerLoad. The
+round-trip count went from nine files to seventy-two.
 
-Two decisions the work settled, for whoever picks up the rest:
+Decisions the work settled, for the kinds that follow:
 
 - A category lands one at a time, and the next is chosen by how many files it
   clears alone rather than by how few fields it has. The hidden case

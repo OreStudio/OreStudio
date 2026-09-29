@@ -364,6 +364,9 @@ via its "Verifies task" field.
 | 27 | The curve's second maturity is compared but not round-tripped | the FOMC shapes case | accepted, fixed | Both maturities now round-trip to their own keys, so the point is pinned as surviving the key as well as leaving the identity. |
 | 28 | The case name says one series per pillar, but half of it is one series per curve | the FOMC shapes case | accepted, fixed | Renamed =the_fomc_segments_shapes_name_their_series=. |
 | 29 | The comment claims the republish service writes the curve | the FOMC shapes case | accepted, fixed | The comment now says only what the case can show: the curve keeps ORE's discount shape. |
+| 30 | A generated name is not percent-encoded, so a reserved character in a faker noun would not parse | the model's generator | recorded | The limitation stands: the not-null unit is where a generated row's identity meets the parser, and a case there parses a few of them. |
+| 31 | The URI is unique only if the generator's counter never repeats | the model's generator | recorded | The unique index belongs to the cutover, and that unit has to say whether the counter is enough. |
+| 32 | The model's paragraph was dense | the model's generator | accepted, fixed | Reworded: the generator sets the identity explicitly, so the not-null is met by design rather than by a default value. |
 
 * Result
 

@@ -115,9 +115,9 @@ struct market_series final {
      * supply it, a caller updating a series has to carry the identity it read.
      *
      * The test-data generator writes a generic index name, the one oresmd URI that names a series
-     * with nothing but a name, so a generated row carries an identity the grammar reads rather than
-     * an empty string. Generated rows are not data; the point is that the constraint the cutover
-     * adds cannot be satisfied by an accident of the generator's default.
+     * with nothing but a name, so a generated row carries an identity the grammar reads. The
+     * generator sets it explicitly, so the not-null the cutover adds is met by design rather than
+     * by a default value.
      */
     std::string oresmd_uri;
 

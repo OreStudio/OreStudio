@@ -268,6 +268,7 @@ const fr: SourceCatalogue = {
         email: 'Courriel',
         tenant: 'Locataire',
         party: 'Partie',
+        newTenant: 'Nouveau locataire',
     },
 
     component: {
@@ -566,6 +567,8 @@ const fr: SourceCatalogue = {
                 "Déconnectez-vous et transmettez le nom d'utilisateur et le mot de passe.",
             elsewhereHintForced:
                 "Déconnectez-vous et transmettez le nom d'utilisateur. La personne définit son propre mot de passe à la première connexion.",
+            partyChoice:
+                "L'administrateur du locataire travaille dans plusieurs parties ; celle à ouvrir ne peut pas être choisie ici. Connectez-vous en tant que lui et choisissez-en une.",
         },
 
         signIn: {

@@ -276,6 +276,7 @@ export const en: SourceCatalogue = {
         email: 'Email',
         tenant: 'Tenant',
         party: 'Party',
+        newTenant: 'New tenant',
     },
 
     component: {
@@ -566,6 +567,8 @@ export const en: SourceCatalogue = {
             elsewhereHint: 'Sign out and pass the username and the password on.',
             elsewhereHintForced:
                 'Sign out and pass the username on. They set their own password at first sign-in.',
+            partyChoice:
+                'The tenant administrator works in more than one party, so the one to open cannot be chosen here. Sign in as them and choose one.',
         },
 
         signIn: {

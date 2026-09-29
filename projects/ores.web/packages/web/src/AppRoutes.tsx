@@ -20,12 +20,13 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useNavigate } from 'react-router';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
+import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
@@ -56,6 +57,13 @@ export interface AppRoutesProps {
     readonly session: SessionState;
     /** The first run journey, which only the wiring can reach the server for. */
     readonly journey: ReactNode;
+    /**
+     * The new tenant journey, which a signed-in administrator runs.
+     *
+     * It is a route rather than a gate: the installation is already set up, so
+     * the person arrives at it from a screen and leaves it for one.
+     */
+    readonly newTenantJourney: ReactNode;
     /** Whether that journey is running, which keeps the browser on its rail. */
     readonly journeyInProgress: boolean;
     readonly onSignIn: SignInPageProps['onSignIn'];
@@ -68,6 +76,7 @@ export function AppRoutes({
     gate,
     session,
     journey,
+    newTenantJourney,
     journeyInProgress,
     onSignIn,
     onChooseParty,
@@ -135,6 +144,10 @@ export function AppRoutes({
                     />
                 ))}
             />
+            <Route
+                path="/tenants/new"
+                element={signedIn(gate.version, session, onSignOut, () => newTenantJourney)}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
@@ -145,6 +158,7 @@ export function ConnectedApp(): ReactNode {
     const { state: gate, recheck } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
     const server = useJourneyServer();
+    const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
 
     return (
@@ -167,6 +181,17 @@ export function ConnectedApp(): ReactNode {
                          */
                         void recheck();
                     }}
+                />
+            }
+            newTenantJourney={
+                <NewTenantJourney
+                    server={server}
+                    /*
+                     * The journey ends either inside the new tenant or signed
+                     * out, and both are places the route table already knows:
+                     * the home page sends a signed-out visitor to sign in.
+                     */
+                    onFinished={() => navigate('/')}
                 />
             }
             journeyInProgress={journeyInProgress}

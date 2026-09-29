@@ -272,6 +272,7 @@ const pt: SourceCatalogue = {
         email: 'Email',
         tenant: 'Inquilino',
         party: 'Parte',
+        newTenant: 'Novo inquilino',
     },
 
     component: {
@@ -570,6 +571,8 @@ const pt: SourceCatalogue = {
             elsewhereHint: 'Termine a sessão e entregue o nome de utilizador e a palavra-passe.',
             elsewhereHintForced:
                 'Termine a sessão e entregue o nome de utilizador. A pessoa define a sua própria palavra-passe no primeiro início de sessão.',
+            partyChoice:
+                'O administrador do inquilino trabalha em mais de uma parte, por isso a parte a abrir não pode ser escolhida aqui. Inicie sessão como ele e escolha uma.',
         },
 
         signIn: {

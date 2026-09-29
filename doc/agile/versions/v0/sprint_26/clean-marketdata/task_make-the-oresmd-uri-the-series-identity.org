@@ -386,12 +386,16 @@ attempts were reverted, because a key that comes out wrong is worse than one tha
 come out at all: a reader would write it to a file. The fact that decides it -- which
 identifier field holds which class's coordinate -- belongs in the oresmd family tables, so
 the grammar exposes one projection from a series identifier and a point, and a hand-written
-helper cannot know it. The column that fact needs is already modelled and nobody reads it:
-each family's row in =ir_quote_type.org= and its siblings carries =point_semantics=, =tenor=
-for the discount curve, the money market, the FRA and the swaps and =surface= for a capfloor,
-and neither the loader nor a template mentions it. So the next unit starts by reading that
-column in =org_loader.py= and generating the per-family arm from it -- not by inventing a
-rule, and not by extending a hand-written helper. Until that exists the writers that hold a producer key store it (the
+helper cannot know it. Two things about that fact were checked and one of them surprises. The loader
+already hands every family row's columns to the templates verbatim, so nothing has to be
+parsed to reach them; and the row's =point_semantics= names the coordinate's *kind* rather
+than the field that holds it -- =tenor= for both the discount curve and the money market,
+which store their maturity in different fields. What does know the field is the generator's
+own key emission: =ores.cpp.oresmd.projections.org= writes each family's key out of the
+identifier's members, so which member is the coordinate is written down there, per family,
+already. The next unit therefore adds a per-family arm beside that emission -- a setter the
+writer calls to place a point before projecting -- rather than reading =point_semantics=,
+inventing a rule, or extending a hand-written helper that cannot know it. Until that exists the writers that hold a producer key store it (the
 import and the ingest loop do; the republish service does not), and the export's rebuild
 stays.
 

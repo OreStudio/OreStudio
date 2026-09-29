@@ -38,10 +38,9 @@ namespace ores::marketdata::messaging {
 struct get_curve_snapshot_request {
     using response_type = struct get_curve_snapshot_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.curve-snapshot.get";
-    // The series is named by its oresmd identity rather than by the registry's
-    // (series_type, metric, qualifier) triple, so a caller asks for the series it
-    // means without knowing how the key was decomposed.
-    std::string oresmd_uri;
+    std::string series_type;
+    std::string metric;
+    std::string qualifier;
 };
 
 struct get_curve_snapshot_response {
@@ -57,8 +56,9 @@ struct get_curve_snapshot_response {
 struct get_curve_snapshot_buckets_request {
     using response_type = struct get_curve_snapshot_buckets_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.curve-snapshot.buckets";
-    /// The series' oresmd identity, as above.
-    std::string oresmd_uri;
+    std::string series_type;
+    std::string metric;
+    std::string qualifier;
     std::int64_t bucket_seconds = 1800;
     std::uint32_t bucket_count = 5;
 };

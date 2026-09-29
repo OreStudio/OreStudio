@@ -82,7 +82,8 @@ public:
         if (auto req = decode<get_curve_snapshot_request>(msg)) {
             try {
                 repository::market_series_repository series_repo;
-                auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
+                auto series = series_repo.read_latest_by_type(
+                    req_ctx, req->series_type, req->metric, req->qualifier);
                 if (!series.empty()) {
                     repository::market_observations_repository obs_repo;
                     resp.observations = obs_repo.read_as_of(
@@ -125,7 +126,8 @@ public:
             }
             try {
                 repository::market_series_repository series_repo;
-                auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
+                auto series = series_repo.read_latest_by_type(
+                    req_ctx, req->series_type, req->metric, req->qualifier);
                 if (!series.empty()) {
                     repository::market_observations_repository obs_repo;
                     resp.buckets =

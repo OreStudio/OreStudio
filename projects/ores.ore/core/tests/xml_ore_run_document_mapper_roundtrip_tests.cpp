@@ -112,3 +112,59 @@ TEST_CASE("ore_run_document_setup_round_trips_over_the_corpus", tags) {
     CHECK(files == 416);
     CHECK(ignored_parameters == 0);
 }
+
+TEST_CASE("ore_run_document_analytics_round_trip_over_the_corpus", tags) {
+    using namespace ores::ore::domain;
+
+    int files = 0;
+    int analytics = 0;
+    int without_a_type = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("ore", corpus_root())) {
+        ++files;
+        const auto document = load(path);
+
+        const auto mapped = run_document_mapper::map_analytics(document);
+        REQUIRE(mapped.size() == document.Analytics.Analytic.size());
+
+        const auto reversed = run_document_mapper::reverse_analytics(mapped);
+        REQUIRE(reversed.Analytic.size() == document.Analytics.Analytic.size());
+
+        for (std::size_t i = 0; i < mapped.size(); ++i) {
+            ++analytics;
+            const auto& in = document.Analytics.Analytic.at(i);
+            const auto& out = reversed.Analytic.at(i);
+            const auto& row = mapped.at(i);
+
+            INFO(path.string() + ": analytic " + std::to_string(i));
+            CHECK(row.analytic.display_order == static_cast<int>(i) + 1);
+            if (!in.type)
+                ++without_a_type;
+            CHECK(row.analytic.analytic_type_code ==
+                  std::string(in.type ? *in.type : ""));
+
+            // The active flag moves to the column and back to the head of the
+            // parameter list, so the two parameter sets are compared without
+            // it on both sides.
+            auto original = parameters_of(parameterListType{in.Parameter});
+            const auto exported = parameters_of(parameterListType{out.Parameter});
+            original.erase("active");
+            REQUIRE(exported.size() == original.size() + 1);
+            CHECK(exported.at("active") == row.analytic.active);
+            for (const auto& [name, value] : original) {
+                const auto it = exported.find(name);
+                if (it == exported.end()) {
+                    INFO(path.string() + ": the export is missing " + name);
+                    CHECK(false);
+                    continue;
+                }
+                INFO(path.string() + ": " + name);
+                CHECK(it->second == value);
+            }
+        }
+    }
+
+    CHECK(files == 416);
+    CHECK(analytics == 1874);
+    CHECK(without_a_type == 0);
+}

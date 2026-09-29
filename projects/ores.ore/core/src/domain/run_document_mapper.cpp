@@ -126,6 +126,60 @@ reporting::domain::report_run_setup run_document_mapper::map_setup(const ore& v)
     return r;
 }
 
+std::vector<mapped_run_analytic> run_document_mapper::map_analytics(const ore& v) {
+    std::vector<mapped_run_analytic> r;
+    r.reserve(v.Analytics.Analytic.size());
+
+    int order = 0;
+    for (const auto& element : v.Analytics.Analytic) {
+        ++order;
+        mapped_run_analytic mapped;
+        mapped.analytic.display_order = order;
+        if (element.type)
+            mapped.analytic.analytic_type_code = std::string(*element.type);
+
+        for (const auto& parameter : element.Parameter) {
+            const std::string name(parameter.name);
+            const std::string value(parameter);
+            if (name == "active") {
+                mapped.analytic.active = value;
+                continue;
+            }
+            mapped.parameters.push_back({name, value});
+        }
+
+        r.push_back(std::move(mapped));
+    }
+
+    return r;
+}
+
+analyticsType
+run_document_mapper::reverse_analytics(const std::vector<mapped_run_analytic>& v) {
+    analyticsType r;
+
+    for (const auto& mapped : v) {
+        analyticsType_Analytic_t element;
+        element.type = mapped.analytic.analytic_type_code;
+
+        parameterListType_Parameter_t active;
+        active.name = "active";
+        static_cast<std::string&>(active) = mapped.analytic.active;
+        element.Parameter.push_back(active);
+
+        for (const auto& parameter : mapped.parameters) {
+            parameterListType_Parameter_t x;
+            x.name = parameter.name;
+            static_cast<std::string&>(x) = parameter.value;
+            element.Parameter.push_back(x);
+        }
+
+        r.Analytic.push_back(element);
+    }
+
+    return r;
+}
+
 parameterListType run_document_mapper::reverse_setup(const reporting::domain::report_run_setup& v) {
     parameterListType r;
 

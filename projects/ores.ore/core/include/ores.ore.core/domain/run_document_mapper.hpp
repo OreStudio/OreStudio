@@ -22,10 +22,42 @@
 
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.reporting.api/domain/report_analytic.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::ore::domain {
+
+/**
+ * @brief One Parameter of one Analytic, before it is resolved to a definition.
+ *
+ * The entity holds a parameter as a definition id and a value, and the id is a
+ * database concern. The mapper works one step earlier, where the parameter is
+ * still the name ORE wrote, so the name rides beside the value and a later step
+ * resolves it.
+ */
+struct mapped_run_parameter {
+    std::string name;
+    std::string value;
+
+    friend bool operator==(const mapped_run_parameter&, const mapped_run_parameter&) = default;
+};
+
+/**
+ * @brief One Analytic of a run document: its type, its place in the list, and
+ * the parameters it takes.
+ *
+ * The active flag is a parameter in ORE's schema and a column on the entity, so
+ * the mapper moves it out of the parameter list and into the analytic. The
+ * remaining parameters stay beside it, in the order the document wrote them.
+ */
+struct mapped_run_analytic {
+    reporting::domain::report_analytic analytic;
+    std::vector<mapped_run_parameter> parameters;
+
+    friend bool operator==(const mapped_run_analytic&, const mapped_run_analytic&) = default;
+};
 
 /**
  * @brief Maps between an ORE run document and the reporting run entities.
@@ -58,6 +90,23 @@ public:
      * name and the entity has no order of its own.
      */
     static parameterListType reverse_setup(const reporting::domain::report_run_setup& v);
+
+    /**
+     * @brief Maps a run document's ordered analytic list to the entities.
+     *
+     * The order is the order the document wrote, counting from one, and it is
+     * what ORE runs the analytics in. Every element carries an active flag,
+     * which becomes a column rather than a parameter.
+     */
+    static std::vector<mapped_run_analytic> map_analytics(const ore& v);
+
+    /**
+     * @brief Reconstructs a run document's ordered analytic list.
+     *
+     * The active flag is written back as the first parameter, which is where
+     * ORE writes it, and the rest follow in order.
+     */
+    static analyticsType reverse_analytics(const std::vector<mapped_run_analytic>& v);
 };
 
 }

@@ -345,6 +345,54 @@ database; =pytest projects/ores.codegen/tests -q= 997 passed;
 components. Committed as =ecc39aa3f7=, with the ER diagram in
 =01555cc2fa=.
 
+** Decision (D21): the underlyings are decided here and built in the
+   pilot (2026-09-29)
+
+Defect 15, "an underlying is an unqualified name", is owned by this
+task by the story's table. Its fix is the shared underlyings table of
+the sprint 25 design, and that reshape is not a bond one: it takes
+=underlying_name= out of nine equity tables, =commodity_code= and
+=basket_json= out of commodity and the basket products, and it reworks
+the hand-written mapper across about sixteen trade types. By the owner's
+ruling of 2026-09-29 the table is built in the bond pilot, which already
+carries it in its acceptance; this task settles the shape and records
+the evidence, so the defect is decided rather than left open.
+
+*What ORE states.* =underlyingTypes= is a substitution group
+(=instruments.xsd=:2163-2166): a bare =Name= (an =xs:string=), a
+structured =Underlying=, or an =Underlyings= list. Nine instrument types
+carry it: =varianceSwapData=, =cliquetOptionData=, =equityOptionData=,
+=eqBarrierOptionData=, =equityFutureOptionData=, =eqDigitalOptionData=,
+=eqTouchOptionData=, =equityForwardData= and =genericBarrierOptionData=.
+
+*What the corpus does.* Forty example documents hold 241 structured
+=Underlying= elements, and seven hold an =Underlyings= list. Their
+=Type= is Equity 51, FX 40, Commodity 6 and Bond 4; 132 state no type at
+all. The names are sometimes scheme-bearing already (=RIC:.ABCD=) and
+sometimes bare (=.SPX=, =ECB-EUR-USD=), which is the defect in one line:
+nothing says which scheme a name is in.
+
+*The shape decided.* The design's table, keyed by the trade after the
+collapse rather than by an instrument id: =(tenant_id, trade_id,
+sequence_number)=, holding =underlying_uri= (text, an oresmd URI,
+validated at the write boundary) and an optional =weight=. An oresmd URI
+carries exactly what the defect says is missing -- the authority is the
+asset class, the path the name and the currency a query parameter -- so
+the same column serves equity, commodity and fx. A resolved identifier
+is not registered in a table: the URI is the identity, and a registry
+would add a second name for the same thing.
+
+*What the evidence adds, and what stays open.* The 132 untertyped
+underlyings are not quoted names at all: their =Underlying= block
+carries =OptionData= or =LegData=, so the underlying is itself a
+product. An oresmd URI addresses market data and cannot address a nested
+product, so the row needs a second arm -- an enumerated kind that says
+whether it holds a URI or a product reference. Which arm and how the
+product is named is the pilot's to settle against the mapper; recording
+it here is the point of deciding rather than deferring.
+
+
+
 ** Branch
 
 Cut from =main= after PR 4 merges, so the split reshapes the collapsed

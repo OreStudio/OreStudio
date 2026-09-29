@@ -71,6 +71,7 @@ set(files
     "xml_ir_mapper_roundtrip_tests.cpp"
     "xml_nettingsetdefinitions_roundtrip_tests.cpp"
     "xml_ore_roundtrip_tests.cpp"
+    "xml_ore_run_document_mapper_roundtrip_tests.cpp"
     "xml_portfolio_roundtrip_tests.cpp"
     "xml_pricingengines_roundtrip_tests.cpp"
     "xml_remaining_phases_mapper_roundtrip_tests.cpp"

@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:setup:iam:v0:sprint_26:implement-setup-journeys:
 #+owner: marco
 #+branch: feature/start-a-tenant-from-a-gleif-entity
-#+pr:
+#+pr: 2379
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -186,7 +186,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2379][#2379]] | [iam] Hold a tenant's code and hostname to their stated shapes |
 
 * Review
 

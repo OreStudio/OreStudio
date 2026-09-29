@@ -1450,13 +1450,13 @@ TEST_CASE("every_family_that_carries_a_point_projects_one_series_identity", tags
     }
 }
 
-TEST_CASE("the_fomc_segments_shapes_name_one_series_per_pillar", tags) {
+TEST_CASE("the_fomc_segments_shapes_name_their_series", tags) {
     // The FOMC segment's raw grid is a set of meeting-dated OIS quotes, and the record
     // decides their spelling: an ORE swap whose start slot holds 0D for the pillar that
     // starts at spot and a meeting date for the rest, the overnight index tenor beside
     // it, and the end date last. The seed and the feed will write these, so the grammar
     // is pinned here before either does: a pillar is one series, two pillars are two,
-    // and the curve the republish service writes keeps ORE's discount shape.
+    // and the curve keeps ORE's discount shape.
     const auto spot = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/0D/1D/20260128");
     const auto first = oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/20260128/1D/20260319");
     REQUIRE(spot);
@@ -1477,6 +1477,7 @@ TEST_CASE("the_fomc_segments_shapes_name_one_series_per_pillar", tags) {
     REQUIRE(one_day);
     REQUIRE(ten_year);
     CHECK(oresmd_projections::to_quote_key(*one_day) == "DISCOUNT/RATE/USD/USD-SOFR-FOMC/1D");
+    CHECK(oresmd_projections::to_quote_key(*ten_year) == "DISCOUNT/RATE/USD/USD-SOFR-FOMC/10Y");
     const auto curve = oresmd_parser::to_series_uri(*one_day).value;
     CHECK(curve == oresmd_parser::to_series_uri(*ten_year).value);
     CHECK(curve == "oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount");

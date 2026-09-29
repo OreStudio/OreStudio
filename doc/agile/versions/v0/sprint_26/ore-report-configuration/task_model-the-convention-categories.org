@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/model-the-convention-categories
-#+pr: 2357
+#+branch: feature/model-the-remaining-conventions
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29

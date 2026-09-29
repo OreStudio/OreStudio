@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing. |
-| Next         | Read the FOMC pillars by identity: the feed keys each pillar now (see the plan's step one), so the bootstrap resolves each of its nine pillars to the series that key projects to, with the grid series as the fallback a database written before the change still holds, and then the seed drops the grid row and the config's =source_series_id= column goes with its last reader. Only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
+| Next         | Name the config's currency, then read the FOMC pillars by identity: the feed keys each pillar now (see the plan's step one), so the bootstrap resolves each of its nine pillars to the series that key projects to, with the grid series as the fallback a database written before the change still holds, and then the seed drops the grid row and the config's =source_series_id= column goes with its last reader. Only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -303,7 +303,11 @@ grid's own identity and then the cutover the task takes its name from.
 2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
    =source_series_id= and reads, per pillar, the series the key above projects to:
    resolve the pillar's start and end tenor codes to dates through =refctx=, call the
-   same builder, find the series by identity, and take its observation. The rate map is
+   same builder -- which needs the pillar's currency, and **neither the config nor the
+   pillar carries one**: the reader is looking for a series keyed by the currency and
+   has nowhere to read it, so this step adds a =currency_code= column the way the
+   convention column landed, seeded from the FOMC config's own currency. Then it finds
+   the series by identity and takes its observation. The rate map is
    keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
    already matches on, so its contract does not change. The grid series stays readable
    as a fallback, and the reader prefers the pillar's series wherever it exists: a
@@ -348,6 +352,7 @@ which is the same reason the identity lookups fall back to the triple.
 | Production rows no projection can name | 1: the FOMC raw grid =RATES / YIELD / 'USD/SOFR-FOMC'=; the curve row now reads =DISCOUNT / RATE / 'USD/USD-SOFR-FOMC'= with its ORE identity | =marketdata_market_series_fomc_populate.sql= and a read of the live rows | =48ab31abc8= |
 | Where the bootstrap's tenor convention comes from | the source series' qualifier, through =tenor_convention_code_for()= | =grep -n "tenor_convention_code_for" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =07d9052523= |
 | Pillars the feed keys | nine per FOMC config, one series each: =IR_SWAP/RATE/<CCY>/<start>/1D= | =ores.synthetic.api.tests "a_pillar_key_names_the_instrument_the_feed_simulates"= | =ff3b5a9e2c= |
+| Where the reader would get the pillar's currency | nowhere: the config has no currency column and a pillar carries none | =grep -in currency projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_config.org= | =3767255a5b= |
 | =ores.synthetic.api= suite, with the pillar key | 109 assertions in 30 cases | =ores.synthetic.api.tests= | =ff3b5a9e2c= |
 | Identity the test-data generator writes | =oresmd://generic/<noun>-<idx>?type=fixing=, where it wrote nothing | =grep -n oresmd_uri projects/ores.marketdata/api/src/generators/market_series_generator.cpp= | =c9bbfb7923= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |

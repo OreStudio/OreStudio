@@ -70,9 +70,8 @@ start the client?
    the Acme Corporation holding-group tenant, the system's reference
    fully-populated test/demo entity (parties, business units,
    portfolios, books, staff accounts with photos, GLEIF
-   counterparties). Unless the user asks for a different tenant (e.g.
-   the synthetic Acme provisioner, see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with
-   Acme (synthetic)?]]), run this yourself — never hand it to the user:
+   counterparties). Unless the user asks for a different tenant, run
+   this yourself — never hand it to the user:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh shell -f \
@@ -121,7 +120,6 @@ shell logs in and lists Acme Corporation party data.
 - [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]]
 - [[id:4342B077-85EA-4C6A-9BDF-D38560C80B37][How do I recreate the database?]]
 - [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
-- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]]
 - [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
 - [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][Devops Run Shell]] — the interactive surface step 6 launches.

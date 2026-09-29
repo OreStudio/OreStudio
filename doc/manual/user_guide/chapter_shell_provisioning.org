@@ -7,20 +7,19 @@
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2026-06-07
-#+updated: 2026-06-29
+#+updated: 2026-09-29
 
 #+startup: inlineimages
-@@latex:\lettrine[lines=2,nindent=0em]{E}{verything} \textsc{the wizards do}, @@@@html:Everything the wizards do, @@the shell can do too. This
-chapter covers the same ground as the provisioning wizards from the
-command line, where a complete system can be provisioned with three
-commands — or with one script, run end to end without touching the
-desktop application. It sets out the =provision= commands and how each
-maps onto its wizard, the supporting commands they are built from, the
-script library that ties them together, and two complete worked
-examples — the fast Acme Corporation path and the generic path for
-building your own organisation — showing that scripted provisioning
-is repeatable: the same script against a fresh installation always
-produces the same system.
+@@latex:\lettrine[lines=2,nindent=0em]{E}{verything} \textsc{the browser's setup journeys do}, @@@@html:Everything the browser's setup journeys do, @@the shell can do too. This
+chapter covers the same ground from the command line, where a complete
+system can be set up with three commands — or with one script, run end
+to end from a file. It sets out the =bootstrap setup=, =provision
+tenant= and =provision party= commands, the supporting commands they
+are built from, the script library that ties them together, and two
+complete worked examples — the fast Acme Corporation path and the
+GLEIF path — showing that scripted provisioning is repeatable: the
+same script against a fresh installation always produces the same
+system.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
@@ -36,66 +35,75 @@ It begins by establishing the client and the rules it enforces in
 [[*The shell and provisioning][The shell and provisioning]], which explains how the shell speaks to the
 backend and why provisioning follows a fixed sequence; this is the
 premise the rest of the chapter builds on. From there it walks the
-sequence one stage at a time — [[*Provisioning the system][Provisioning the system]], then
-[[*Provisioning a tenant][Provisioning a tenant]], then [[*Provisioning a party][Provisioning a party]] — each command standing
-in for the wizard it replaces. It then opens up the machinery in
-[[*The supporting commands][The supporting commands]], the smaller commands the =provision= phases
-call and that you can run by hand to inspect the system or recover a
-failed run, before showing in [[*Scripts][Scripts]] how the shell runs those commands
-unattended from a file. Finally [[*A complete example][A complete example]] runs the fast
-Acme Corporation path from a single shipped script, and [[*A custom example: your own organisation][A custom
-example: your own organisation]] points to the equivalent script for
-building your own house instead, before the [[*Conclusion][Conclusion]] draws these
-steps together.
+sequence one stage at a time — [[*Setting up the system][Setting up the system]], then
+[[*Provisioning a tenant][Provisioning a tenant]], then [[*Provisioning a party][Provisioning a party]] — each command
+sending one provision request and following the run that request
+starts. It then opens up the machinery in [[*The supporting commands][The supporting commands]], the
+smaller commands a run can be inspected or recovered with, before
+showing in [[*Scripts][Scripts]] how the shell runs those commands unattended from a
+file. Finally [[*A complete example][A complete example]] runs the fast Acme Corporation path
+from a single shipped script, and [[*A custom example: your own organisation][A custom example: your own
+organisation]] points to the equivalent script for building your own
+house instead, before the [[*Conclusion][Conclusion]] draws these steps together.
 
 ** The shell and provisioning
 
 =ores.shell= is ORE Studio's interactive command-line client. Like
-the desktop application it speaks to the backend services over the
-message bus, so anything it does respects the same validation, audit
-trail, and permissions. Start it, connect, and type =help= to see the
-available commands; every command described here also explains its
-own arguments through the shell's built-in help.
+the browser it speaks to the backend services over the message bus, so
+anything it does respects the same validation, audit trail, and
+permissions. Start it, connect, and type =help= to see the available
+commands; every command described here also explains its own arguments
+through the shell's built-in help.
 
-Provisioning from the shell follows exactly the sequence described in
-the previous chapter — system, then tenant, then party — including
-the logouts and logins between the stages, because each login is what
-refreshes your session's view of the system's state. The difference
-is that each wizard collapses into a single command whose options
-carry the same defaults the wizard pre-fills, so the common case
-needs very few of them.
+Provisioning from the shell follows the same sequence as the browser's
+setup journeys — system, then tenant, then party. The session is
+refreshed by a logout and a login between the stages where the
+administrator changes, because a session created before a tenant
+exists does not see it. Each stage is one command: the command sends
+one provision request, which answers with a workflow instance id, and
+then follows the run through the same progress read the browser's
+journey renders. The command holds no sequence of its own beyond the
+order the two clients share, and the starting point it runs from is a
+flag naming a registered row rather than a profile the shell knows
+anything about.
 
-** Provisioning the system
+** Setting up the system
 
-=provision system= performs the System Provisioner's work: it checks
-the installation is in bootstrap mode, creates the platform
-administrator, logs in as that account, and provisions the first
-tenant together with its tenant administrator.
+=bootstrap setup= is the first-run act. It is registered in the
+generated =bootstrap= menu, beside =bootstrap-status= and
+=create-initial-admin=, because it is what brings the installation to
+life. It requires bootstrap mode and no login.
 
-#+name: shellprov-system
+#+name: shellprov-setup
 #+begin_src ores-shell :exports code
-provision system super_admin Secure-Password-123 admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-hostname default
+bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code default --tenant-name "Default Tenant" --tenant-hostname localhost --profile empty_operational --param counterparty_size=small
 logout
 exit
 #+end_src
 
-The tenant administrator's password is the only option without a
-default — everything else mirrors the wizard's single-tenant mode:
-tenant code =default=, name /Default Tenant/, type =evaluation=, and
-the tenant administrator named =tenant_admin= with the e-mail address
-=admin@<code>.com=. To provision a custom tenant instead — what the
-wizard calls multi-tenant mode — override what you need with
-=--tenant-code=, =--tenant-name=, =--tenant-type=,
-=--tenant-hostname=, =--tenant-description=, =--tenant-admin= and
-=--tenant-admin-email=.
+The administrator's password is the only value the command requires:
+it offers no default it could invent. It reads the installation's
+bootstrap answer, creates the system administrator, signs in as it, and
+sends one provision request for the first tenant. It then follows the
+run to its end.
 
-The command validates everything before touching the backend, refuses
-to run when you are already logged in or the system is not in
-bootstrap mode, and on success prints the login for the next stage:
+Tenant code =default=, name /Default Tenant/, hostname =localhost= and
+administrator =tenant_admin= are the tenant defaults; the
+administrator's e-mail address defaults to =admin@<code>.com=.
+Override any of them with =--tenant-code=, =--tenant-name=,
+=--tenant-hostname=, =--tenant-description=, =--tenant-admin= and
+=--tenant-admin-email=. =--profile= names the starting point (default
+=empty_operational=) and =--param name=value= supplies one parameter
+the starting point declares; the flag is repeatable. =--timeout= is
+how long the command follows the run (default 3600 seconds).
+
+The command refuses to run when you are already logged in or the
+system is not in bootstrap mode, and on success prints the login for
+the next stage:
 
 #+begin_src sh :noweb yes :results output :wrap example :exports results
 ./projects/ores.compass/compass.sh shell << 'EOF'
-<<shellprov-system>>
+<<shellprov-setup>>
 EOF
 #+end_src
 
@@ -107,27 +115,33 @@ ores-shell> [1/3] Creating initial admin account 'super_admin'...
   Account created (ID: b88d04ec-ac25-4137-981a-ddefb1d92592).
 [2/3] Logging in as 'super_admin'...
 ✓ Login successful!
-[3/3] Provisioning tenant 'default'...
-✓ System provisioned. Tenant 'Default Tenant' (ID: 93b5d425-...), admin 'tenant_admin'.
-Next: logout, then: login tenant_admin@default <password>  — the tenant is in bootstrap mode; run provision tenant.
+[3/3] Provisioning tenant 'default' from 'empty_operational'...
+  Run started: 7c059b7f-...
+  [1/3] publish_bundle: completed
+  [2/3] import_lei_hierarchy: completed
+  [3/3] provision_party: completed
+✓ All 3 step(s) completed.
+✓ System provisioned. Tenant 'Default Tenant'.
+Next: logout, then: login tenant_admin@localhost <password>  — the tenant is ready to work in.
 ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
 
 Note the login principal is the username at the tenant's /hostname/
-(=tenant_admin@default= above), not its display name.
+(=tenant_admin@localhost= above), not its display name.
 
 ** Provisioning a tenant
 
-=provision tenant= performs the Tenant Provisioner's work for the
-tenant you are logged in to. Log in as the tenant administrator the
-previous stage created — the tenant is in bootstrap mode, which is
-exactly what the command requires — and run:
+=provision tenant= creates a tenant under the tenant the signed-in
+administrator works in. Every tenant is created the same way, the
+first included; the only difference from =bootstrap setup= is that the
+administrator and the session already exist. Log in as an
+administrator and run:
 
 #+name: shellprov-tenant
 #+begin_src ores-shell :exports code
-login tenant_admin@default Secure-Password-123
-provision tenant --source synthetic --seed 42
+login super_admin Secure-Password-123
+provision tenant --tenant-code example --tenant-name "Example Corp" --tenant-hostname example --tenant-admin-password Secure-Password-123 --profile empty_operational --param counterparty_size=small
 logout
 exit
 #+end_src
@@ -141,71 +155,64 @@ EOF
 #+RESULTS:
 #+begin_example
 ores-shell> ✓ Login successful!
-ores-shell> Using bundle 'base' (first available).
-[1/4] Publishing bundle 'base'...
-  Dispatched 31 dataset(s); workflow instance: 7c059b7f-...
-✓ All 31 step(s) completed.
-[2/4] Generating synthetic organisation...
-✓ Synthetic organisation generated (seed 42):
-  parties:             5
-  counterparties:      10
-  ...
-[3/4] Associating 'tenant_admin' with the operational parties...
-  5 parties associated.
-[4/4] Finalizing tenant provisioning...
-✓ Tenant provisioned: bundle 'base', 5 parties associated.
+ores-shell> Provisioning tenant 'example' from 'empty_operational'...
+  Run started: 3a9d2c1e-...
+  [1/3] publish_bundle: completed
+  [2/3] import_lei_hierarchy: completed
+  [3/3] provision_party: completed
+✓ All 3 step(s) completed.
+✓ Tenant 'Example Corp' provisioned.
+Next: logout, then: login tenant_admin@example <password>  — the tenant is ready to work in.
 ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
 
-With no options this publishes the first available reference data
-catalogue and uses the GLEIF registry as the data source, just as the
-wizard's defaults do. The options mirror the wizard's Welcome-page
-fork and its Manual sub-pages:
+The new tenant administrator's password is the only value the command
+requires. The command prints the login for the new tenant when the run
+completes.
 
-- =--source acme= — the fastest path to a fully populated, realistic
-  installation, matching the wizard's /Acme Corporation (full sample
-  bank)/ choice. Ignores every other option below: it imports Acme
-  Corporation's four-entity LEI hierarchy and publishes all of its
-  business units, portfolios, books, and staff accounts server-side
-  in one command. See the [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] chapter for what this
-  produces, and [[*A complete example][A complete example]] below for the full worked run.
-- =--bundle <code>= selects a specific reference-data catalogue for
-  the Manual path (=bundles list= shows what is available).
-- =--source gleif= (the default when =--source= is omitted) optionally
-  takes =--root-lei <lei>= to build your own house hierarchy from a
-  real organisation; find the LEI with =lei countries= and =lei
-  entities <country> --filter <text>=.
-- =--source synthetic= generates a realistic but fictional
-  organisation instead, for evaluation or testing without importing
-  real data. All the generation controls from the wizard's synthetic
-  page are available as options with the same defaults
-  (=--party-count=, =--counterparty-count=, =--portfolio-leaf-count=
-  and so on); =--seed <n>= makes the result reproducible — the same
-  seed always generates the same organisation, names included.
+A starting point ("seed profile") is registered data: a row naming the
+tenant's type, the ordered steps, and the parameters its form
+declares. The shell holds no profile of its own, so a new starting
+point is a row rather than a shell change. Three starting points ship
+today:
 
-Choose =--source acme= to explore ORE Studio quickly; choose =gleif=
-or =synthetic= when you want to model your own organisation instead.
+- =empty_operational= (the default) — the production starting point.
+  It publishes the base reference data and the counterparty set, takes
+  a GLEIF root LEI, and creates no test data.
+- =gleif_entity= — a tenant built around a public registry hierarchy.
+  The root LEI names the parent legal entity whose hierarchy becomes
+  the tenant's parties.
+- =acme_demo= — the demonstration, the Acme Corporation holding group
+  with its legal entities, staff, books and market data.
 
-The command publishes the catalogue and waits while the backend works
-through its datasets, printing each step as it completes; generates
-the synthetic organisation when selected; associates your
-administrator account with every operational party; and finally marks
-the tenant active. As with the wizard, log out and back in afterwards
-so your session picks up the now-active tenant.
+=--profile= names the starting point and =--param name=value= supplies
+one parameter it declares, for example =--param root_lei=<lei>= or
+=--param counterparty_size=small=. The flag is repeatable. The
+counterparty set is published once for the tenant. =--timeout= is how
+long the command follows the run (default 3600 seconds).
+
+The request answers with a workflow instance id at once, and the
+command follows the run through the progress read the browser's
+journey renders. On failure the run stops on the failing step, and the
+workflow commands read it by the instance id the command prints.
+
+After the run completes, log out and back in as the new tenant's
+administrator so the session picks up the now-active tenant.
 
 ** Provisioning a party
 
-=provision party= performs the Party Provisioner's work for one
-party. Unlike the wizard — which runs for the party you selected at
-login — the command always names its target explicitly, either by its
-full name or by its identifier; =parties list --category Operational=
-shows the candidates:
+=provision party= runs the party stage against one party of the
+signed-in tenant. It publishes the bundles the starting point orders
+for a party, activates the party, marks its onboarding complete, and
+joins the administrator who asked to it. The party is named by its
+identifier or its exact full name; =parties list= shows the
+candidates:
 
 #+name: shellprov-party
 #+begin_src ores-shell :exports code
-login tenant_admin@default Secure-Password-123
-provision party "Lloyds Wealth Management Ltd"
+login tenant_admin@barclays_plc Secure-Password-123
+provision party "BARCLAYS PLC"
 logout
 exit
 #+end_src
@@ -219,55 +226,43 @@ EOF
 #+RESULTS:
 #+begin_example
 ores-shell> ✓ Login successful!
-ores-shell> [1/5] Importing counterparties (dataset small)...
+ores-shell> Provisioning party 'BARCLAYS PLC' from 'empty_operational'...
+  Run started: 5f6e1b02-...
+  [1/1] provision_party: completed
 ✓ All 1 step(s) completed.
-[2/5] Publishing organisation structure and risk reporting...
-✓ All 4 step(s) completed.
-[3/5] Publishing synthetic market data configuration...
-✓ All 2 step(s) completed.
-[4/5] Publishing FX driver rates...
-✓ All 1 step(s) completed.
-[5/5] Activating party 'Lloyds Wealth Management Ltd'...
-✓ Party 'Lloyds Wealth Management Ltd' provisioned and active.
+✓ Party 'BARCLAYS PLC' provisioned.
+Next: accounts set-default-party "BARCLAYS PLC" to work in it.
 ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
 #+end_example
 
-The only option is =--dataset-size small|large=, selecting the
-counterparty import size (small is the default). The command imports
-the counterparties, then publishes every party-scoped bundle in turn
--- risk management (business units, portfolios, books, and report
-definitions; reports reference the book/portfolio tree, so both
-publish together), synthetic market data configuration (FX, IR curve,
-and any future asset class -- adding one is a data change in
-=dq_dataset_bundle_member_populate.sql=, never a shell code change),
-and the curated FX driver-rate dataset -- and finally activates the
-party.
+=--profile= names the starting point (default =empty_operational=) and
+=--timeout= is how long the command follows the run (default 3600
+seconds). The counterparties a party works against are the tenant's,
+published once by the tenant's starting point and not here. The run's
+last step marks the party's onboarding complete.
 
 ** The supporting commands
 
-The =provision= commands are built from smaller commands you can use
-on their own — to inspect the system, to recover when a step fails,
-or to assemble a custom flow. Each =provision= phase prints which of
-these it is performing, so a failed run tells you where to pick up by
-hand.
+The provision commands send one request each, and the server
+orchestrates the work, so these smaller commands are not steps the
+provision commands call in sequence. They remain useful on their own —
+to inspect the system, to recover when a step fails, or to assemble a
+custom flow. A failed run names the step it stopped on, and the
+workflow commands read that run by the instance id the provision
+command printed.
 
 #+attr_latex: :environment tabularx :width \linewidth :align p{5.2cm}X
 | Command | Purpose |
 |---------+---------|
 | =bundles list= | The reference data catalogues available for publication. |
 | =bundles publish <code> [--wait]= | Publish a catalogue; =--wait= blocks until the backend finishes. |
-| =workflow_steps by-workflow-id <id>= / =workflow wait <id>= | Inspect or wait on a long-running backend operation. |
-| =lei countries= / =lei entities <country>= | Browse the GLEIF registry for a =--root-lei= value. |
-| =synthetic generate= | Generate a synthetic organisation (all controls as options). |
-| =parties list= | List parties, with =--category= and =--status= filters. |
-| =account-parties add <account> <party>= | Grant an account access to a party. |
-| =tenants complete-provisioning= | Mark the logged-in tenant's provisioning complete. |
-| =reports templates= | The standard report definitions seeded in the risk_management bundle. |
-
-The =provision= commands call these in sequence; you can call them
-individually to inspect the system or to recover a failed run from
-where it stopped.
+| =workflow wait <instance_id> [--timeout <seconds>] [--expect-steps <n>] [--expect-state <state>]= | Follow a run, or assert the terminal state a run that is meant to fail must reach. |
+| =workflow_steps by-workflow-id <id>= | Read a run's steps by the instance id the provision command printed. |
+| =lei countries= / =lei entities <country> [--filter <text>]= / =lei search <name or LEI>= | Browse the GLEIF registry for a root LEI. |
+| =parties list= | List the parties of the signed-in tenant. |
+| =accounts set-default-party <party-uuid-or-full-name>= | Set the logged-in account's default party. |
+| =reports templates= | The standard report definitions seeded in a bundle. |
 
 ** Scripts
 
@@ -284,22 +279,24 @@ load my_script.ores --continue-on-error
 #+end_src
 
 ORE Studio ships a small library of provisioning scripts in
-=projects/ores.shell/scripts/=. Each =.ores= script in the library is
-generated from a documentation file alongside it that explains, step
-by step, what the script does and what it expects of the system —
-read that file before running a script for the first time. Treat the
-shipped scripts as templates: copy one and adjust the copy rather
-than editing the original, which the build regenerates.
+=projects/ores.shell/scripts/library/provisioning/=. Each =.ores=
+script in the library is generated from a recipe under
+=doc/recipes/shell/provisioning/= that explains, step by step, what the
+script does and what it expects of the system — read that file before
+running a script for the first time. Treat the shipped scripts as
+templates: copy one and adjust the copy rather than editing the
+original, which the build regenerates.
 
 ** A complete example
 
 The library's
 =how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
-provisions a complete system from a fresh installation with a single
-=--source acme= call: platform administrator, an Acme Corporation
-tenant, and all four of its legal entities — business units,
-portfolios, books, staff accounts, and market data — server-side
-orchestrated in one step. It is the quickest way to a fully populated
+sets up a complete system from a fresh installation. It runs
+=bootstrap setup= with the demonstration starting point, =acme_demo=,
+which imports the Acme Corporation hierarchy, publishes each party's
+data, attaches the staff photographs and starts the market feeds,
+server-side in one run. The script then publishes the vendored compute
+packages and logs out. It is the quickest way to a fully populated
 installation and the recommended starting point for exploring ORE
 Studio; see the [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] chapter for what it produces. It
 expects a fresh installation in bootstrap mode, all services running,
@@ -311,10 +308,7 @@ load projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_sys
 exit
 #+end_src
 
-An error-free run ends with all four legal entities active (the
-excerpt below elides most of the per-entity dataset/bundle detail —
-the full output reports every step for all four companies as it
-lands):
+An error-free run ends with all four legal entities active:
 
 #+begin_src sh :noweb yes :results output :wrap example :exports results
 ./projects/ores.compass/compass.sh shell << 'EOF'
@@ -325,49 +319,55 @@ EOF
 #+RESULTS:
 #+begin_example
 ores-shell> Loading script: .../how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
-> provision system super_admin Secure-Password-123 super_admin@localhost.com ...
-✓ System provisioned. Tenant 'Acme Corporation' ...
-> login tenant_admin@acme_corporation Secure-Password-123
+> connect $ORES_NATS_URL
+> bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_demo
+[1/3] Creating initial admin account 'super_admin'...
+  Account created (ID: ...).
+[2/3] Logging in as 'super_admin'...
 ✓ Login successful!
-> provision tenant --source acme
-Step 1: Publishing base reference data: ... completed
-Step 2: Importing Acme Corporation LEI hierarchy: ... completed
-Step 3: Publishing group-level staff: ... completed
-Step 4: Publishing ACME Corporation UK plc: ... completed
-Step 5: Publishing ACME Corporation US Inc: ... completed
-Step 6: Publishing ACME Corporation HK Ltd: ... completed
-Step 7: Granting cross-entity access: ... completed
-✓ Acme Corporation holding group provisioned.
+[3/3] Provisioning tenant 'acme_corporation' from 'acme_demo'...
+  Run started: ...
+  [1/6] publish_bundle: completed
+  [2/6] import_lei_hierarchy: completed
+  [3/6] provision_party: completed
+  [4/6] load_staff: completed
+  [5/6] attach_photos: completed
+  [6/6] start_market_feeds: completed
+✓ All 6 step(s) completed.
+✓ System provisioned. Tenant 'Acme Corporation'.
+Next: logout, then: login tenant_admin@acme_corporation <password>  — the tenant is ready to work in.
+> compute publish-package ORE ...
+> compute publish-package ORE ...
 > logout
 ✓ Logged out successfully.
-Script complete: 6 commands executed.
+Script complete: 5 commands executed.
 #+end_example
 
-Unlike the generic =provision party= flow, =--source acme= handles
-every one of Acme's four legal entities internally — there is no
-per-party stage to call separately, and no seed to track: the same
-script against a fresh installation always produces the same four
-entities, the same fifty-eight staff, and the same structure.
+The starting point handles every one of Acme's four legal entities
+inside its own run — there is no per-party stage to call separately —
+and the same script against a fresh installation always produces the
+same system.
 
-Log in — from the shell or the desktop application — as
+Log in — from the shell or the browser — as
 =tenant_admin@acme_corporation=, select one of the four operating
 companies, and daily use begins, just as at the end of the previous
 chapter.
 
 ** A custom example: your own organisation
 
-Where the Acme Corporation script above is the fast path, building
-your own house from scratch — modelling a real organisation, or a
-synthetic one shaped to your own testing needs — uses the generic
-three-stage sequence [[*Provisioning the system][Provisioning the system]] through [[*Provisioning a party][Provisioning a
-party]] set out earlier: =provision system=, then =provision tenant
---source gleif= (or =--source synthetic=), then =provision party= for
-each party that needs its own counterparties and bundles. The
-library's =barclays_system_provision.ores= is the worked example of
-this path — real GLEIF-imported data rather than Acme's curated
-dataset — and follows exactly the same =load=/logout/login shape as
-the Acme example above, just with more stages since each party is
-provisioned individually.
+Where the Acme Corporation script above is the fast path, building your
+own house from scratch — modelling a real organisation — uses the
+generic sequence [[*Setting up the system][Setting up the system]] through [[*Provisioning a party][Provisioning a
+party]] set out earlier: =bootstrap setup= with the GLEIF starting
+point, then =provision party= for each party that needs its own
+reference data. The library's =barclays_system_provision.ores= is the
+worked example of this path — a tenant built around a real GLEIF
+hierarchy — and follows the same =load=/logout/login shape as the Acme
+example above, just with a party stage for the hierarchy's root after
+the tenant stage. The library's =tenant_provision.ores= covers the
+tenant stage on its own, for adding a tenant to a system that is
+already set up, and =party_provision.ores= covers the party stage on
+its own.
 
 ** Conclusion
 
@@ -375,20 +375,20 @@ The chapter set out to show that a complete system can be provisioned
 from the command line by understanding the client, the provisioning
 commands in sequence, the supporting commands beneath them, and the
 scripts that tie them together, and it has traced exactly that path.
-The shell speaks to the same backend services as the desktop
-application, so it enforces the same validation, audit trail, and
-permissions, and provisioning follows the same fixed sequence — system,
-then tenant, then party — with the logouts and logins between stages
-that refresh the session's view of the system. Each =provision= command
-collapses a wizard into a single line whose options carry the same
-defaults, and each is built from smaller supporting commands that can be
-run by hand to inspect the system or recover a failed run. The =load=
-command then runs those commands unattended from a file, and the
-shipped script library showed both paths executing end to end from a
-fresh installation: =--source acme= for the fast, fully populated
-Acme Corporation entity, and the generic =gleif=/=synthetic= sequence
-for building a house of your own. Because the same script against the
-same starting point always produces the same system, scripted
-provisioning is the natural tool for development environments,
-testing, and automation — everything the wizards do, reproducibly and
-without the desktop.
+The shell speaks to the same backend services as the browser, so it
+enforces the same validation, audit trail, and permissions, and
+provisioning follows the same sequence — system, then tenant, then
+party — with the logout and login between stages that refresh the
+session's view of the system. =bootstrap setup= sets up an empty
+installation, =provision tenant= creates every tenant after the first,
+and =provision party= runs the party stage; each sends one provision
+request and follows the run through the progress read the browser's
+journey renders. A starting point is registered data, so the shell
+holds no profile of its own, and the shipped script library showed
+both paths executing end to end from a fresh installation: =acme_demo=
+for the fast, fully populated Acme Corporation tenant, and
+=gleif_entity= for building a house around a real GLEIF hierarchy.
+Because the same script against the same starting point always
+produces the same system, scripted provisioning is the natural tool
+for development environments, testing, and automation — everything the
+browser's setup journeys do, reproducibly and without the browser.

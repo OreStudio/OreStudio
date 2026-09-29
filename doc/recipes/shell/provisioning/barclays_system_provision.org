@@ -50,7 +50,7 @@ is hard-coded to an environment.
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays_plc --profile gleif_entity --param root_lei=213800LBQA1Y9L22JB70 --param counterparty_size=small
+bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays_plc --profile gleif_entity --param root_lei=213800LBQA1Y9L22JB70 --param counterparty_size=small
 logout
 
 login tenant_admin@barclays_plc Secure-Password-123

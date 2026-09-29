@@ -35,9 +35,12 @@ template resolver.
   variability profile. Codegen generates the domain types, table and JSON I/O,
   the per-entity test data generators, the changed-event types, and the NATS
   protocol headers from them.
-- Hand-written code: the feed classes, the template resolver, and the
-  organisation and catalog generation types from the component's original
-  purpose (=generated_organisation.hpp=, =synthetic_catalog.hpp= and kin).
+- Hand-written code: the feed classes, the template resolver, and the catalog
+  generation types from the component's original purpose
+  (=synthetic_catalog.hpp= and kin). The organisation generator that stood
+  beside them is gone: what it built -- parties, counterparties, business
+  units, portfolios, books and contacts for a tenant -- is not supported any
+  more, and synthetic tenants and parties are their own work when they return.
 
 * Outputs
 

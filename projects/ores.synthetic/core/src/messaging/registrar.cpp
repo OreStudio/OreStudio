@@ -21,7 +21,6 @@
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.synthetic.core/messaging/folder_history_provider_registrar.hpp"
@@ -38,7 +37,6 @@
 #include "ores.synthetic.core/messaging/ir_curve_template_entry_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_registrar.hpp"
-#include "ores.synthetic.core/messaging/organisation_handler.hpp"
 #include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_registrar.hpp"
@@ -66,15 +64,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-
-    // ----------------------------------------------------------------
-    // Organisation
-    // ----------------------------------------------------------------
-    auto oh = std::make_shared<organisation_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(generate_organisation_request::nats_subject,
-                             "ores.synthetic.service",
-                             [oh](ores::nats::message msg) { oh->generate(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Market data generation config, FX spot generation config and GMM

@@ -27,7 +27,6 @@
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -52,7 +51,6 @@ namespace {
 
 // Generation walks the whole organisation tree server-side; mirror the
 // wizard's generous timeout.
-constexpr std::chrono::minutes generate_timeout(10);
 
 std::optional<boost::uuids::uuid>
 parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
@@ -490,21 +488,6 @@ std::size_t print_folder_tree(std::ostream& out,
 void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto synthetic_menu = std::make_unique<cli::Menu>("synthetic");
 
-    synthetic_menu->Insert(
-        "generate",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_generate(std::ref(out), std::ref(session), args);
-        },
-        "Generate a synthetic organisation (parties, counterparties, portfolios, "
-        "books, business units)",
-        {"[--country GB|US] [--party-count N] [--party-max-depth N] "
-         "[--counterparty-count N] [--counterparty-max-depth N] "
-         "[--portfolio-leaf-count N] [--portfolio-max-depth N] "
-         "[--books-per-portfolio N] [--business-unit-count N] "
-         "[--business-unit-max-depth N] [--contacts-per-party N] "
-         "[--contacts-per-counterparty N] [--no-addresses] [--no-identifiers] "
-         "[--seed N]"});
-
     // Market simulator operations, mirroring the Qt Market Simulator window.
     auto list_menu = std::make_unique<cli::Menu>("list");
     list_menu->Insert("folders",
@@ -549,151 +532,6 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            {"feed <feed-id|ore-key|source-name>"});
 
     ores::shell::app::insert_menu(root_menu, std::move(synthetic_menu));
-}
-
-std::vector<flag_spec> synthetic_commands::generate_flag_specs() {
-    // Defaults mirror generate_organisation_request, which mirrors the
-    // tenant provisioning wizard's synthetic page.
-    synthetic::messaging::generate_organisation_request defaults;
-    return {{.name = "country", .requires_value = true, .default_value = defaults.country},
-            {.name = "party-count",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.party_count)},
-            {.name = "party-max-depth",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.party_max_depth)},
-            {.name = "counterparty-count",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.counterparty_count)},
-            {.name = "counterparty-max-depth",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.counterparty_max_depth)},
-            {.name = "portfolio-leaf-count",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.portfolio_leaf_count)},
-            {.name = "portfolio-max-depth",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.portfolio_max_depth)},
-            {.name = "books-per-portfolio",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.books_per_leaf_portfolio)},
-            {.name = "business-unit-count",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.business_unit_count)},
-            {.name = "business-unit-max-depth",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.business_unit_max_depth)},
-            {.name = "contacts-per-party",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.contacts_per_party)},
-            {.name = "contacts-per-counterparty",
-             .requires_value = true,
-             .default_value = std::to_string(defaults.contacts_per_counterparty)},
-            {.name = "no-addresses"},
-            {.name = "no-identifiers"},
-            {.name = "seed", .requires_value = true, .default_value = ""}};
-}
-
-std::optional<synthetic::messaging::generate_organisation_request>
-synthetic_commands::build_generate_request(std::ostream& out, const parsed_args& parsed) {
-    synthetic::messaging::generate_organisation_request req;
-    req.country = parsed.flag("country");
-
-    // Numeric knobs: validate each as an unsigned integer.
-    const std::vector<std::pair<std::string, std::uint32_t*>> knobs = {
-        {"party-count", &req.party_count},
-        {"party-max-depth", &req.party_max_depth},
-        {"counterparty-count", &req.counterparty_count},
-        {"counterparty-max-depth", &req.counterparty_max_depth},
-        {"portfolio-leaf-count", &req.portfolio_leaf_count},
-        {"portfolio-max-depth", &req.portfolio_max_depth},
-        {"books-per-portfolio", &req.books_per_leaf_portfolio},
-        {"business-unit-count", &req.business_unit_count},
-        {"business-unit-max-depth", &req.business_unit_max_depth},
-        {"contacts-per-party", &req.contacts_per_party},
-        {"contacts-per-counterparty", &req.contacts_per_counterparty}};
-    for (const auto& [name, target] : knobs) {
-        auto v = parse_uint32(parsed.flag(name));
-        if (!v) {
-            fail(out) << "Flag --" << name << " must be an unsigned integer: " << parsed.flag(name)
-                      << std::endl;
-            return std::nullopt;
-        }
-        *target = *v;
-    }
-
-    req.generate_addresses = !parsed.flag_set("no-addresses");
-    req.generate_identifiers = !parsed.flag_set("no-identifiers");
-
-    if (!parsed.flag("seed").empty()) {
-        auto seed = parse_uint64(parsed.flag("seed"));
-        if (!seed) {
-            fail(out) << "Flag --seed must be an unsigned integer: " << parsed.flag("seed")
-                      << std::endl;
-            return std::nullopt;
-        }
-        req.seed = *seed;
-    }
-    return req;
-}
-
-bool synthetic_commands::generate(std::ostream& out,
-                                  nats_client& session,
-                                  const synthetic::messaging::generate_organisation_request& req) {
-    BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation: " << rfl::json::write(req);
-    out << "Generating synthetic organisation (country " << req.country << ", " << req.party_count
-        << " parties)..." << std::endl;
-
-    try {
-        auto result = do_auth_request<synthetic::messaging::generate_organisation_response>(
-            out, session, std::string(req.nats_subject), req, generate_timeout);
-        if (!result)
-            return false;
-        if (!result->success) {
-            fail(out) << "Generation failed: " << result->error_message << std::endl;
-            return false;
-        }
-
-        out << "✓ Synthetic organisation generated (seed " << result->seed << "):" << std::endl;
-        out << "  parties:             " << result->parties_count << std::endl;
-        out << "  counterparties:      " << result->counterparties_count << std::endl;
-        out << "  business unit types: " << result->business_unit_types_count << std::endl;
-        out << "  business units:      " << result->business_units_count << std::endl;
-        out << "  portfolios:          " << result->portfolios_count << std::endl;
-        out << "  books:               " << result->books_count << std::endl;
-        out << "  contacts:            " << result->contacts_count << std::endl;
-        out << "  identifiers:         " << result->identifiers_count << std::endl;
-        out << "Reproduce with: synthetic generate --seed " << result->seed << std::endl;
-        BOOST_LOG_SEV(lg(), info) << "Synthetic generation complete; seed " << result->seed;
-        return true;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return false;
-    }
-}
-
-void synthetic_commands::process_generate(std::ostream& out,
-                                          nats_client& session,
-                                          const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, generate_flag_specs());
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (!parsed->positionals.empty()) {
-        fail(out) << "synthetic generate takes no positional arguments; see help." << std::endl;
-        return;
-    }
-
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    auto req = build_generate_request(out, *parsed);
-    if (!req)
-        return;
-    generate(out, session, *req);
 }
 
 void synthetic_commands::process_list_folders(std::ostream& out,

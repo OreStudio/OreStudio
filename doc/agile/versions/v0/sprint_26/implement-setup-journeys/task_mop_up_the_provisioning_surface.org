@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: C7487AE2-CC23-4FF3-AAB1-E4FF30F331CD
+:END:
+#+title: Task: Mop up the provisioning surface and the synthetic organisation
+#+description: Rename the first-run command to bootstrap setup, retire the generated duplicates of the provision verbs, delete the synthetic organisation generator and its recipe, and close the story with its documents brought up to date.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/mop-up-the-provisioning-surface
+#+pr: 2390
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell says one thing per act, and the provisioning the wizards did has no
+remnant left in it. The command that brings an installation to life is named
+for what it does; the generated duplicates of the porcelain provision verbs are
+gone; and the synthetic organisation generator, whose only caller was a recipe,
+went with its recipe.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- The shell's provisioning surface is one command per act: =bootstrap setup=
+  for the first run, =provision tenant= for every tenant, =provision party= for
+  the party stage, and no second spelling of any of them.
+- The verbs nothing calls are gone: =iam.v1.tenants.complete-provisioning=, the
+  generated =tenant_provisioning= commands, and the =tenants
+  complete-provisioning= porcelain command.
+- The synthetic organisation generator and the recipe that drove it are gone,
+  and what is left of the =synthetic= menu is the market simulator.
+- The recipes and the scripts they tangle to call the commands that exist, and
+  the journey documents and the manual describe the surface that exists.
+- Every gate green and every affected suite passing.
+
+* Plan
+
+1. Rename the first-run command and move it into the bootstrap menu, where the
+   verbs that answer the installation and give it an administrator already are.
+2. Retire the generated =tenant_provisioning= unit and the completing verb it
+   carries: the run's own completing step is what completes a tenant, and the
+   standalone verb is dead weight with a defect of its own.
+3. Delete the synthetic organisation generator and its recipe, and take its
+   consumers -- the registrar, the shell command group, the component overview,
+   the seeder note and the recipes -- with it.
+4. Bring the documents up to date: the story's Status, acceptance and
+   decisions, the three journey documents, the manual chapter, and the captures
+   the deletions leave behind.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2390][#2390]] | [shell] Say one thing per provisioning act, and delete the synthetic generator |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The shell says one thing per act. =bootstrap setup= is what =provision system=
+became, and it sits in the bootstrap menu with =bootstrap-status= and
+=create-initial-admin=, because those three are one story: what the installation
+answers, how it is given an administrator, and how it is brought to life. It
+does what it did before — reads the bootstrap answer, creates the administrator,
+signs in, sends one provision request for the first tenant, follows the run —
+and its name now says so. =provision tenant= and =provision party= keep the
+words the browser's routes use, and =provision tenant= means one thing for every
+tenant, the first included.
+
+The duplicates are gone. The generated =tenant_provisioning= command unit
+carried a second spelling of both porcelain requests, one that could not wait
+for a run, resolve a party or refuse before it started, and the journey's own
+recipes never called it. =tenants complete-provisioning= and the verb it called,
+=iam.v1.tenants.complete-provisioning=, are gone too: completing a tenant is the
+last step of the run the provision request starts, and that step acts on the
+tenant the run provisions rather than on the caller's own tenant. The standalone
+verb cleared a tenant's flags in the caller's party scope — the defect this
+branch found in the previous task's work — so retiring it removed the defect
+instead of fixing it.
+
+The synthetic organisation generator is deleted, and its recipe with it. It
+built a randomised organisation inside an existing tenant and only the shell's
+=synthetic generate= command drove it, which only the deleted recipe called, so
+nothing drives it now. Its four failures are recorded as the requirement list
+for whoever builds synthetic tenants and parties again: a fixed shape where a
+dataset needs one, staff accounts, locale coverage, and ISO 17442 checksum-valid
+identifiers. The =synthetic= menu keeps the market simulator, which is a
+different subsystem.
+
+The documents describe the surface that exists. The manual's provisioning
+chapter and the Acme chapter say =bootstrap setup= and offer no =--source= flag
+and no synthetic organisation. The three journey documents' subject tables and
+gap lists match the wire surface: one provision verb for every tenant, a party
+request that is no longer partial, and the gaps that are genuinely left. The
+story's Status records what landed and, more importantly, the two acceptance
+lines that did NOT: the *New tenant* and *New party* journeys are not routes of
+their own, and no scripted run proves the browser's path on a fresh database.
+Both are filed as their own task, so the story stays open rather than closing
+on a claim it cannot support.
+
+The work leaves two records behind rather than losing them: a capture for
+synthetic tenants and parties when they return, and a task for the codegen
+template that leaves the parent row the generated eventing integration tests
+seed, which is why =ores.iam.core.tests= fails on a second run against one
+database.
+
+Every codegen gate passed on the committed tree — drift, sweep, the twin
+coverage, the menu collisions (263 root names, none owned twice), the registry,
+the permissions, the route declarations, the reachability, the paste blocks, the
+populate references, the model drift, the SQL hygiene and the org lint — and the
+affected suites passed: =ores.iam.api.tests=, =ores.iam.core.tests=,
+=ores.shell.api.tests=, =ores.shell.application.tests=, =ores.synthetic.api.tests=
+and =ores.synthetic.core.tests=.

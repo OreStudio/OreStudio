@@ -418,7 +418,7 @@ repeatable provisioning: bootstrap the platform, then provision the
 tenant with =--source acme=.
 
 #+begin_src sh
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
+bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
 logout
 
 login tenant_admin@acme_corporation Secure-Password-123

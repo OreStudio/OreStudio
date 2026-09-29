@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: E37DCAAC-30A3-4E7E-890D-EBD226538690
 :END:
 #+title: ores.iam.tenant_provisioning_messages
@@ -26,25 +25,6 @@ The tenant_provisioning protocol messages.
 #+end_src
 
 * Messages
-
-** complete_tenant_provisioning_command
-:PROPERTIES:
-:subject: iam.v1.tenants.complete-provisioning
-:response: complete_tenant_provisioning_response
-:END:
-
-** complete_tenant_provisioning_response
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
 
 ** provision_tenant_command
 :PROPERTIES:

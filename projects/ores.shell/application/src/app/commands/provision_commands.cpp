@@ -202,19 +202,29 @@ std::optional<std::chrono::seconds> read_timeout(std::ostream& out, const parsed
 }
 
 void provision_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
-    auto provision_menu = std::make_unique<cli::Menu>("provision");
+    // The setup act belongs in the menu the generated bootstrap unit owns, so
+    // the shell's bootstrap verbs read together: what the installation answers,
+    // how it is given an administrator, and how it is brought to life. The
+    // extension is recorded rather than inserted, because that unit registers
+    // in its own call and the two halves of one menu are two of repl.cpp's.
+    ores::shell::app::extend_menu(
+        root_menu, "bootstrap", [&session](cli::Menu& menu) {
+            menu.Insert(
+                "setup",
+                [&session](std::ostream& out, std::vector<std::string> args) {
+                    process_setup(std::ref(out), std::ref(session), args);
+                },
+                "Set an empty installation up from a starting point: create the "
+                "system administrator, sign in as it, and provision the first "
+                "tenant",
+                {"<username> <password> <email> --tenant-admin-password <pw> "
+                 "[--profile <code>] [--param <name=value>] [--tenant-code <c>] "
+                 "[--tenant-name <n>] [--tenant-hostname <h>] [--tenant-description <d>] "
+                 "[--tenant-admin <user>] [--tenant-admin-email <email>] "
+                 "[--timeout <seconds>]"});
+        });
 
-    provision_menu->Insert(
-        "system",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_system(std::ref(out), std::ref(session), args);
-        },
-        "Set an empty installation up from a starting point: create the system "
-        "administrator, sign in as it, and provision the first tenant",
-        {"<username> <password> <email> --tenant-admin-password <pw> "
-         "[--profile <code>] [--param <name=value>] [--tenant-code <c>] "
-         "[--tenant-name <n>] [--tenant-hostname <h>] [--tenant-description <d>] "
-         "[--tenant-admin <user>] [--tenant-admin-email <email>] [--timeout <seconds>]"});
+    auto provision_menu = std::make_unique<cli::Menu>("provision");
 
     provision_menu->Insert(
         "tenant",
@@ -241,7 +251,7 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
     ores::shell::app::insert_menu(root_menu, std::move(provision_menu));
 }
 
-void provision_commands::process_system(std::ostream& out,
+void provision_commands::process_setup(std::ostream& out,
                                         nats_client& session,
                                         const std::vector<std::string>& args) {
     auto parsed = parse_args(
@@ -251,7 +261,7 @@ void provision_commands::process_system(std::ostream& out,
         return;
     }
     if (parsed->positionals.size() != 3) {
-        fail(out) << "Usage: provision system <username> <password> <email> "
+        fail(out) << "Usage: bootstrap setup <username> <password> <email> "
                      "--tenant-admin-password <pw> [--profile <code>] "
                      "[--param <name=value>] [--tenant-* flags]"
                   << std::endl;
@@ -270,7 +280,7 @@ void provision_commands::process_system(std::ostream& out,
         return;
 
     if (session.is_logged_in()) {
-        fail(out) << "Already logged in; provision system runs against a fresh, "
+        fail(out) << "Already logged in; bootstrap setup runs against a fresh, "
                      "bootstrap-mode system. Log out first."
                   << std::endl;
         return;

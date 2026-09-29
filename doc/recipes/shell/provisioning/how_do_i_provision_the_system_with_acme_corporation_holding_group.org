@@ -9,18 +9,17 @@
 #+created: 2026-07-29
 #+updated: 2026-07-29
 
-The real-data counterpart to the [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][Acme Corp (synthetic) provision]]: same
-three-stage shell flow, but =provision tenant= is called with
-=--source acme=, which drives the actual request/handler pipeline
-(LEI import, per-party dataset-bundle publish, activation, onboarding)
-server-side via internal actor impersonation — see the [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme
-provisioning]] task in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]]. The tenant itself is named
-=Acme Corporation= (=acme_corporation=), matching the seeded dataset
-and the one-click provisioning wizard's naming (that wizard went with
-the removed desktop client), not =Acme Bank= — an earlier
-name that was renamed away from everywhere it could be found at the
-time. The =ores-shell= block is tangled into the runnable script
-library as
+The shell's demonstration provision: the GLEIF recipe's flow with the
+demonstration starting point in place of a GLEIF hierarchy. The starting
+point's own steps do the work server-side — the LEI import, each party's
+bundle, the staff photographs and the market feeds — so the shell sends
+one request and follows the run. See the
+[[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning]] task
+in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]] for where that work came from. The tenant
+is named =Acme Corporation= (=acme_corporation=), matching the seeded
+dataset, and not =Acme Bank= — an earlier name that was renamed away from
+everywhere it could be found at the time. The =ores-shell= block is tangled
+into the runnable script library as
 =how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
 
 * Question
@@ -76,7 +75,7 @@ same way =$ORES_NATS_URL= already does above, from whatever preset
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_demo
+bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_demo
 compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
 compute publish-package ORE 1.8.17.0 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.17.0-x64-linux.tar.gz
 logout
@@ -104,8 +103,5 @@ against a freshly recreated database.
 
 * See also
 
-- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]] — the
-  =--source synthetic= variant, unrelated data despite the similar
-  tenant name.
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the GLEIF
   variant.

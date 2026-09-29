@@ -22,7 +22,7 @@ How do I add a tenant to a system that is already set up?
 
 Log in as an administrator — the tenant is created under the tenant
 that administrator works in, which is why the first tenant is created
-by =provision system= and every one after it by this command. Name the
+by =bootstrap setup= and every one after it by this command. Name the
 tenant, its hostname, and its first administrator's password, and name
 the starting point the tenant is built from with =--profile=: the
 starting point's own steps then publish the tenant's reference data,
@@ -30,7 +30,7 @@ import its legal entities, and provision its parties, server-side. The
 command follows the run to its end.
 
 Every tenant after the first is created the way the first one is, so
-this is the same request =provision system= sends once the installation
+this is the same request =bootstrap setup= sends once the installation
 has an administrator.
 
 #+name: tenant-provision

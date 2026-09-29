@@ -32,8 +32,10 @@ command. The provisioning recipe to invoke should be selectable (e.g.
 =--recipe acme= or =--recipe barclays=) with =acme= as the default.
 
 The standard provisioning recipes are:
-- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]] — the canonical
-  synthetic recipe; deterministic (=--seed 42=), no external data required.
+- =how_do_i_provision_the_system_with_acme_corporation_holding_group.org= —
+  the canonical demonstration recipe, deterministic, no external data
+  required. (The synthetic recipe this line named was deleted with the
+  synthetic organisation generator.)
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the GLEIF
   variant; requires LEI data.
 - [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]] — the lightweight multi-tenant

@@ -49,9 +49,9 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
 void tenants_commands::register_commands(cli::Menu& root_menu,
                                          nats_client& session,
                                          pagination_context& /*pagination*/) {
-    // The generated tenant unit owns the tenants menu. The two verbs below are
-    // provisioning steps the model cannot express, so they join it rather than
-    // registering a second tenants menu beside it.
+    // The generated tenant unit owns the tenants menu. The verb below is one
+    // the model cannot express, so it joins that menu rather than registering a
+    // second tenants menu beside it.
     ores::shell::app::extend_menu(root_menu, "tenants", [&session](cli::Menu& tenants_menu) {
         tenants_menu.Insert(
             "history",
@@ -59,13 +59,6 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
                 process_tenant_history(std::ref(out), std::ref(session), std::move(tenant_id));
             },
             "Show history for a tenant (tenant_code)");
-
-        tenants_menu.Insert(
-            "complete-provisioning",
-            [&session](std::ostream& out) {
-                process_complete_provisioning(std::ref(out), std::ref(session));
-            },
-            "Mark the logged-in tenant's provisioning as complete (clears bootstrap state)");
     });
 }
 
@@ -126,29 +119,6 @@ void tenants_commands::process_tenant_history(std::ostream& out,
         }
         out << std::endl;
     }
-}
-
-
-void tenants_commands::process_complete_provisioning(std::ostream& out, nats_client& session) {
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Completing tenant provisioning.";
-
-    iam::messaging::complete_tenant_provisioning_command req;
-    auto result = do_auth_request<iam::messaging::complete_tenant_provisioning_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    if (!result->success) {
-        fail(out) << "Failed to complete tenant provisioning: " << result->message << std::endl;
-        return;
-    }
-    out << "✓ Tenant provisioning completed." << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Tenant provisioning completed.";
 }
 
 }

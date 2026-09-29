@@ -86,42 +86,37 @@ scheme either. Concretely:
   counterparties — Acme is the one net-new entity, everything it
   interacts with is real.
 
-* Relationship to the existing ores.synthetic generator
+* Relationship to ores.synthetic's organisation generator
 
-=ores.synthetic='s =organisation_generator_service= already generates,
-deterministically from a seed, a party hierarchy, GB/US-locale
-contacts (addresses, postcodes, phone formats), party/counterparty LEI
-and BIC identifiers, and typed business units
-(=DIVISION=/=BUSINESS_AREA=/=DESK=/=COST_CENTRE=), plus portfolios and
-books — wired into shell provisioning today via =provision tenant
---source synthetic --seed 42= against a tenant named =acme=/"Acme
-Corp" ([[proj:doc/recipes/shell/provisioning/acme_system_provision.org][How do I provision the system with Acme (synthetic)?]]). This
-overlaps with a meaningful slice of what's proposed here, so it's
-worth being explicit about why Acme Bank doesn't just reuse it:
+This analysis was written while =ores.synthetic= still carried
+=organisation_generator_service=, which built a randomised organisation from a
+seed: a party hierarchy, GB/US-locale contacts (addresses, postcodes, phone
+formats), party and counterparty LEI and BIC identifiers, typed business units
+(=DIVISION=/=BUSINESS_AREA=/=DESK=/=COST_CENTRE=), portfolios and books. Shell
+provisioning drove it through =provision tenant --source synthetic --seed 42=.
 
-- *Shape*: the existing generator builds a randomised tree from a
-  seed; Acme Bank needs a specific, hand-authored org chart (fixed
-  branches, fixed desks, fixed headcounts) that reads as a coherent,
-  recognisable bank rather than an arbitrary structure.
-- *Staff*: the existing generator stops at business units — it has no
-  concept of accounts/staff sitting on a desk, which is the core new
-  thing this story needs.
-- *Locale*: GB/US contact generation exists; Hong Kong does not, and
-  none of it covers *person* names (only company/address data).
-- *LEIs*: the existing generator's LEI is =ctx.alphanumeric(20)= — a
-  plain random 20-character string, not ISO 17442 mod-97 checksum-valid
-  and not on GLEIF's =9695= test-prefix range. Acme Bank's identifiers
-  need to be well-formed enough to look like real LEIs, which the
-  current generator does not attempt.
+The generator is gone: provisioning creates no synthetic organisations any
+more, and synthetic tenants and parties are their own work when they return.
+The comparison this section made is kept because it is that work's requirement
+list, not because it describes anything in the tree:
 
-Given that, the follow-up "build the generator" task should be scoped
-as *extending* =ores.synthetic= (reusing its contact/LEI-storage
-plumbing where it fits, fixing the LEI checksum gap, adding a
-staff/account layer and HK locale) rather than a from-scratch
-Python/Faker script, unless the fixed-shape requirement turns out to
-fight the generator's random-tree design too much — that's a call for
-the generator task itself to make once it's scoped in code, not this
-analysis.
+- *Shape*: a randomised tree from a seed cannot serve a dataset that needs a
+  specific, hand-authored org chart -- fixed branches, fixed desks, fixed
+  headcounts -- that reads as a recognisable bank rather than an arbitrary
+  structure.
+- *Staff*: the generator stopped at business units. It had no concept of
+  accounts or staff sitting on a desk, which is what these datasets are about.
+- *Locale*: GB and US contact generation existed; Hong Kong did not, and none
+  of it covered person names.
+- *LEIs*: the generator's identifier was a random 20-character string, not an
+  ISO 17442 mod-97 checksum-valid LEI and not on GLEIF's =9695= test-prefix
+  range. These datasets need identifiers well-formed enough to read as real.
+
+Whoever builds synthetic tenants and parties again should read those four
+points as requirements rather than as a comparison against code that exists.
+
+The tenant code the deleted recipe claimed (=acme= / "Acme Corp") is free
+again, so a curated entity may take it if that is still wanted.
 
 *Naming collision*: the existing synthetic-provisioning recipe already
 claims the tenant code =acme= / name "Acme Corp" for its generic,

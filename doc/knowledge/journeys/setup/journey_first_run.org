@@ -179,9 +179,10 @@ a person on the path it takes:
 - the provision request has no field for reusing the creating administrator's
   password, so a profile that wants the hand-over is a profile the request
   cannot state;
-- the *Operational* card's LEI import has no staged GLEIF data to read on a
-  fresh installation, which is
-  [[id:F6C38DC8-5DEB-4EC1-ABD0-FDBB517E174B][captured in the inbox]];
+- the root LEI the *Operational* card asks for is typed rather than chosen, so
+  a person has to know a code the deployment can check nothing about, and the
+  failure of a code it does not hold arrives as the publication's own SQL
+  error rather than as a sentence about the entity;
 - the engine's change event carries an =entity_change_event= that no one
   schema can read for every entity, so the page follows the progress read
   instead, which
@@ -228,11 +229,13 @@ record of what each part turned out to be.
 
 What remains is the rest of the plan: the *New tenant* and *New party*
 journeys, the shell's move to the same contract, and the proof of all three
-journeys on a fresh installation. One gap is already found and captured: the
-*Operational* card's own LEI import does not complete on a fresh installation,
-because the derived GLEIF dataset is not staged for the new tenant. The
-journey behaves as designed there — the rail shows the failed step, the retry
-is offered, and the tenant stays in =bootstrapping=.
+journeys on a fresh installation. One thing the first proof found has since
+been corrected: the *Operational* card's LEI import was said to have no staged
+GLEIF data to read, and it has. The code that failed was a mistyped LEI, and
+the publication inserts 668 parties for a correct one against the same tenant.
+The journey behaved as designed either way — the rail showed the failed step
+and the retry was offered — and what remains wrong is that the form takes any
+string and the failure arrives as SQL.
 
 * Related journeys
 

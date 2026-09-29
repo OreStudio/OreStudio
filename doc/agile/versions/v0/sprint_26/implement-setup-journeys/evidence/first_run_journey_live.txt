@@ -88,18 +88,21 @@ Each answer below is the BFF's, verbatim. The walk script is
    state it came to rest in. The run stopped on its own failed step, with
    the completed step kept, which is the state the retry resumes from.
 
-   The failure is the deployment's data, not the journey: the profile's
-   LEI import publishes the derived `gleif.lei_parties.small` dataset for
-   the new tenant, and the publication answered
+   Corrected on 2026-09-29, after the walk was read again: the failure is
+   the walk's input, not the deployment's data. The LEI above is mistyped
+   — the code the deployment holds is `9DJT3UXIJIZJI4WXO774`, not
+   `9DJT3UXIJZI4WXO774` — so the publication was right to refuse it:
 
      Query execution failed: ERROR: Root LEI not found in staging data:
      9DJT3UXIJZI4WXO774
 
-   The tenant holds no staged GLEIF rows, so the derived dataset has
-   nothing to read. The same walk through the ACME demo card, whose LEI
-   dataset is part of the deployment's own seed, completed every step it
-   orders; the capture that owns this gap is
-   `a_derived_lei_dataset_is_not_staged_for_a_new_tenant.org`.
+   Publishing the same dataset for the same tenant with the correct code,
+   inside a transaction that was rolled back, inserts 668 parties, 668
+   identifiers and 57 BIC identifiers. The import reads what the
+   deployment holds, and the card works. The capture that recorded a data
+   gap has been withdrawn; what the walk did find is that the form takes
+   any string, and that a code the deployment does not hold arrives as the
+   publication's SQL rather than as a sentence about the entity.
 
 9. hand over: the administrator signs out
    {"ok":true}

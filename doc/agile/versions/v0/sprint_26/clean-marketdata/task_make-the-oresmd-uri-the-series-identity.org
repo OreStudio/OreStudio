@@ -29,8 +29,8 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
-| Waiting on   | A series-level inverse projection: the families whose coordinate is the tenor (=MM=, =FRA=, =DISCOUNT=) still store one point's identity, and the FOMC curve is a =DISCOUNT= series, so it has to land before the re-key. Nothing outside the task holds it up. |
-| Next         | Give the projections a series-level inverse beside =from_ore_key()= and move both writers onto it, so every family's series identity is the series key's projection; that unit carries the shapes' tests. Then re-key the FOMC segment onto the shapes recorded above -- the feed publishing per pillar, the bootstrap reading from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
+| Waiting on   | Nothing. The projection now drops the coordinate for every family the decomposition gives one to, and a case walks them all. |
+| Next         | Re-key the FOMC segment onto the shapes recorded above -- the synthetic feed publishing one series per pillar, the bootstrap reading them from its own pillars, the seed and its tests following -- and only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -217,24 +217,34 @@ and the seed agree, and the identity is what a row gets *if it has one*: the con
 would not catch the generator output anyway, since random text satisfies a not null
 column.
 
-**The series projection is too fine for the families whose coordinate is the tenor.**
-The decomposition gives the coordinate of an =MM= or =FRA= key to the point while the
-identifier holds it in =tenor=: the FRA series =EUR/3M= carries points =1M= through
-=12M=, and the MM series =CHF/2D= carries =1D= through =1M=. =to_series_uri()= drops
-the identifier's point and its surface but not its tenor, so those families' identities
-still carry one observation's tenor -- the defect the last unit closed for the swap
-family, one family group over. The triple fallback keeps a row reachable and stops
-duplicates, so nothing breaks today; what is wrong is the value stored. At =5e48f41fea=
-the live table held 232 series in the no-index families (=MM=, =FRA=, =IMM_FRA=,
-=BMA_SWAP=) and 36 =DISCOUNT= rows.
+**Two IR families keep their coordinate where the projection did not look, and the
+rest do not.** The decomposition splits a datum key into the series and the point, and
+=to_series_uri()= was written to drop the identifier's =point= and its surface. That is
+the whole of the coordinate for the swap, money-market, FRA, vol and commodity families
+-- the MM series =CHF/2D= carries its maturities in =point=, the FRA series =EUR/3M=
+likewise -- but not for two IR families:
 
-The fix belongs with the rule rather than with its callers: the series identity is the
-projection of the *series key*, which is the ORE key without the segments the
-decomposition calls the point. That wants a series-level inverse generated per class
-beside =from_ore_key()=, from the same tables that drive it, and both writers hold the
-decomposition already. A shortcut that clears whichever identifier field spells the
-point was considered and refused: it guesses which field holds the coordinate, and it
-can clear a series field that happens to carry the point's spelling.
+- a =DISCOUNT= curve's maturity is the identifier's =tenor=, because the series is the
+  currency and the curve: =DISCOUNT/RATE/EUR/EUR= carries =1D= through =35Y= as points;
+- a future's coordinate is its =contract_code= and its =tenor=, because the series is
+  the currency and the contract month: =MM_FUTURE/PRICE/EUR/2024-04= carries
+  =XICE:FEI/3M= as its point.
+
+So those two families' series identities carried one observation's coordinate while the
+rest were right. The triple fallback keeps a row reachable and stops duplicates, so
+nothing broke; what was wrong was the value stored. At =94e2d8645d= the live table held
+36 =DISCOUNT= series and 70 in the two future families.
+
+**The fix is in the projection, and the survey is a test.** Which fields hold the
+coordinate is a fact about each family, so =to_series_uri()= now clears the discount
+tenor and the future's contract code and tenor as well. A case walks one two-point pair
+per family -- MM, FRA, swap, swaption, commodity forward, discount and future -- and
+asserts that the two points project to one identity with no point in it, so a family
+that regresses fails the case rather than the cutover. The earlier reading of this
+defect named the no-index families too, which the case disproves: their coordinate is
+the =point=, and 232 of their series were never affected. The series-level inverse this
+record first asked for is not needed, because the identifier already holds every field
+the series needs.
 
 * Plan
 
@@ -259,8 +269,9 @@ plan itself stays — it is the historical record of what we did.)
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
 | A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
 | =ores.marketdata.core= suite, with the series projection | 1798 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
-| Series in the families whose series key drops the tenor | 232 of 6,260: =MM=, =FRA=, =IMM_FRA= and =BMA_SWAP= | =count(*) filter (where series_type in ('MM','FRA','IMM_FRA','BMA_SWAP'))= over =ores_marketdata_market_series_tbl= | =5e48f41fea=, the merge of #2362 |
-| =DISCOUNT= series, whose key drops the maturity the same way | 36 | the same query with =series_type = 'DISCOUNT'= | =5e48f41fea=, the merge of #2362 |
+| Families whose projection dropped the coordinate, and now do not | 36 =DISCOUNT= series and 70 in =MM_FUTURE=/=OI_FUTURE=; the 232 no-index series were never affected | =count(*) filter (where series_type = 'DISCOUNT')= and =... in ('MM_FUTURE','OI_FUTURE')= over =ores_marketdata_market_series_tbl= | =94e2d8645d=, the merge of #2363 |
+| Families the case walks, two points each | seven: =MM=, =FRA=, =IR_SWAP=, =SWAPTION=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= | =ores.marketdata.core.tests "every_family_that_carries_a_point_projects_one_series_identity"= | =0819a6d9b6= |
+| =ores.marketdata.core= suite, with the family survey | 1826 assertions in 403 cases | =ores.marketdata.core.tests= | =0819a6d9b6= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -320,7 +331,7 @@ via its "Verifies task" field.
 | 17 | The =DISCOUNT= count is not covered by the row's command | the measurements table | accepted | It has its own row and its own command. |
 | 18 | The corpus claims carry no path | the FOMC shapes | accepted | Both spellings name =external/ore/examples=, and the dated-OIS count is given. |
 | 19 | The =DISCOUNT= shape could read as the tenor-in-identifier defect | the FOMC shapes | accepted | A sentence says the curve is the series and the =TENOR= is the coordinate, which is why the family is in the defect list rather than the shape being wrong. |
-| 20 | Which unit adds the shapes' tests is not stated | Status | accepted | =Next= says the series-inverse unit carries them. |
+| 20 | Which unit adds the shapes' tests is not stated | Status | accepted | =Next= named the series-inverse unit at the time; the case landed with the projection fix instead, and the body records why the inverse is not needed. |
 
 * Result
 
@@ -345,8 +356,10 @@ datum.** The import projected the file's whole key and the ingest loop projected
 triple alone, so a series' identity carried whichever of its points arrived first and
 a swap series got none from a live tick at all. =to_series_uri()= projects the
 identifier with its point dropped, both writers call it, and the ingest loop builds
-the datum's full key before falling back to the triple. Measured on the rebuilt tree:
-1798 assertions in 402 cases.
+the datum's full key before falling back to the triple. Two IR families kept their
+coordinate where that projection did not look -- a discount curve's maturity and a
+future's contract code and tenor -- and it now drops those too, with a case walking one
+two-point pair per family. Measured on the rebuilt tree: 1826 assertions in 403 cases.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

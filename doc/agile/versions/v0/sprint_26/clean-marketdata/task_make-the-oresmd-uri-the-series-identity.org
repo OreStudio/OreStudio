@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2369
+#+pr: 2370
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -338,6 +338,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2370][#2370]] | [refdata,marketdata] Let the config name its tenor convention |
 | [[https://github.com/OreStudio/OreStudio/pull/2369][#2369]] | [agile] Record where the bootstrap gets its tenor convention |
 | [[https://github.com/OreStudio/OreStudio/pull/2368][#2368]] | [marketdata] Have the generator name the rows it writes |
 | [[https://github.com/OreStudio/OreStudio/pull/2366][#2366]] | [sql,agile] Give the FOMC curve row its ORE identity |

@@ -8,7 +8,7 @@
 #+filetags: :valgrind:codegen:models:analytics:trading:compute:sprint_26:v0:valgrind-uninitialised-members-hotfix:
 #+owner: marco
 #+branch: feature/address-valgrind-findings
-#+pr:
+#+pr: 2380
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -73,14 +73,14 @@ and the commit it was measured at.
 | =ores.analytics.core.tests=, before | 190 uninitialised reads (111 conditional, 79 value) in =std::to_string(double)= from the sqlgen INSERT | same | this branch, before the fix |
 | =ores.ore.core.tests=, before | 43 defects: 40 in yyjson writing =bond_trs::funding_rate=, 3 in the date reflector reading =bond_future='s dates | =tmp/ores.ore.core.tests.valgrind= (CDash page) | main at 3632865c |
 | =ores.trading.api.tests=, after | valgrind log empty, 426 assertions in 99 test cases pass | =valgrind ... ores.trading.api.tests= | this branch |
-| The 3329 CI leak stacks against the final suppression file | 0 unmatched, of 202 rules | =build/hotfix_red/suppression_matcher.py= | this branch |
+| The 3329 CI leak stacks against the final suppression file | 0 unmatched, of 203 rules | =build/scripts/check_valgrind_suppressions.py= | this branch |
 | =ores.analytics.core.tests=, after | valgrind log empty, 140 assertions in 39 test cases pass | same | this branch |
 | =ores.ore.core.tests=, after | valgrind log empty, 436970 assertions in 576 test cases pass | same | this branch |
 | =ores.refdata.core.tests=, after | valgrind log empty, 4085 assertions in 243 test cases pass | same | this branch |
 | Full suite on a recreated database | 89 of 89 pass; a second run on the same database fails =ores.iam.core.tests= on residue its first run left | =ctest --preset linux-clang-debug-make -j 4= | this branch |
 | Codegen suite | 1001 passed | =pytest projects/ores.codegen/tests -q= | this branch |
 | Catalogue sweep | no file this branch touched would change | =check_component_drift.py --sweep --dry-run= | this branch |
-| Census after the fix | 236 non-nullable columns declare no default; 149 are =int= (synthesised by codegen), 87 are not | =build/hotfix_red/census_defaults.py= | this branch |
+| Census after the fix | 236 non-nullable columns declare no default; 149 are =int= (synthesised by codegen), 87 are not | =build/scripts/census_generated_defaults.py= | this branch |
 
 * Notes
 
@@ -115,18 +115,23 @@ and the commit it was measured at.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2380][#2380]] | Address the valgrind findings: indeterminate members and library leaks |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =t1= defaults to 0.0 although the model's own text says the upper bound is 1.0 in every shipped example, so the synthetic interval is degenerate. | =ores.analytics.credit_simulation_matrix_config.org= | Fixed | =t1= declares 1.0 now, the component is regenerated, and the analytics valgrind run was repeated against the new value. |
+| 2 | The gate's type set includes =std::int16_t=, =std::int32_t=, =std::uint16_t= and =std::uint32_t=, which the generated mapper's nullable-numeric convention does not cover, so for those the rule demands a default for a shape nothing implements. | =org_loader.py= | Fixed | The set is now exactly the types =is_nullable_numeric= maps zero to nullopt for, plus the two chrono value types. A nullable bare type outside it is a modelling question this rule cannot answer, and the comment says so. |
+| 3 | The two libpq suppression rules carried no allocator anchor and wildcards on both sides, so they would hide any still-reachable allocation in a =PQexec= stack, including a =PGresult= the caller never clears. | =custom.supp= | Fixed | Both rules pin the allocator (=malloc=, =calloc=) and the libpq entry point, and their comments state the width: they match reachable blocks only, so a block that becomes unreachable is definitely lost and still surfaces. The matcher still covers all 3329 reported stacks. |
+| 4 | The task says fifteen model columns where the diff adds twenty-four. | this file | Fixed | Corrected to twenty-four, in the task and in the pull request body. |
+| 5 | The measurements cite scripts under =build/hotfix_red/=, which the branch does not carry, so the census and the suppression coverage are not reproducible from the pull request. | this file, the census capture | Fixed | Both are now committed: =build/scripts/census_generated_defaults.py= and =build/scripts/check_valgrind_suppressions.py=, and every reference points at them. |
+| 6 | The gate's comment and its test attribute the analytics reads to =credit_simulation_config.seed=, a column the truncated CDash page does not name. | =org_loader.py=, the test | Declined | The attribution is from the local run rather than the page: the valgrind log names that test's frame as the origin of the reads, and the census lists =seed= and =paths= as its nullable bare ints. The comment names it as an example among others. |
 
 * Result
 
 The four suites the nightly reported are clean under valgrind: each log
-holds no error and no leak record. Fifteen model columns declare the default
+holds no error and no leak record. Twenty-four model columns declare the default
 their generated member needs, the nullable shape that caused several of them
 is refused by =org_loader=, and the still-reachable library allocations are
 suppressed with the reason each is not a leak.

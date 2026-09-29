@@ -74,8 +74,5 @@ trap impossible without touching 87 columns.
 
 * See also
 
-- The census walks =projects/*/modeling/*.org=, reads each column's property
-  drawer, and counts the columns whose =:cpp_type:= is an arithmetic or
-  chrono value type with no =:default_value:= and =:nullable: false=. It
-  deserves a home in =build/scripts/= beside the other gates when the
-  decision is taken.
+- =build/scripts/census_generated_defaults.py= prints the table above; run it
+  before and after the decision to check the count.

@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 01CF4ADC-404E-4CEA-8594-C033245A7342
+:END:
+#+title: Task: Start a tenant from a GLEIF entity
+#+description: The starting points become three: build the tenant by hand, build it around a parent legal entity the deployment holds in its GLEIF data, or take the prefilled demo. The GLEIF card opens on a search over those entities and derives the tenant from the one chosen; the manual card may leave the legal entity out altogether.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:setup:iam:v0:sprint_26:implement-setup-journeys:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person starting a tenant has three ways to do it rather than two. They can
+build it by hand, build it around a parent legal entity the deployment already
+holds in its GLEIF data, or take the prefilled demo. The second is a search
+first and a filled form afterwards, and the first may leave the legal entity
+out, because a person provisioning their first tenant may not have an LEI yet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- The starting points are three, each a seed profile row: manual, from a GLEIF entity, and the prefilled demo.
+- The manual card's legal entity is optional: a person who has no LEI can leave it empty and still creates the tenant with its own party.
+- The GLEIF card opens on a search over the parent legal entities the deployment holds, and each result states the legal name, the LEI, the country, and how many parties its hierarchy would create.
+- Choosing an entity derives the tenant's name, code, hostname, administrator and legal entity, every derived field stays editable, and choosing another entity derives them again.
+- The code's shape is stated and enforced by the server, and the field applies the same shape while the person types.
+- The GLEIF card states that it builds a tenant around a public registry hierarchy, and the tenant it creates is an evaluation one.
+- No profile's name or shape is written in the browser: the third card is a row and the search follows the parameter type the row declares.
+
+* Plan
+
+*Three starting points, which are three rows.* The cards a person chooses from
+are seed profiles, so the GLEIF way of starting is a row and not a branch in
+the browser: the same executed step kinds as the manual card, its own copy,
+and its own declared parameters. Its tenant is an evaluation one, like the
+demo's, because a tenant holding a real entity's public hierarchy is a
+simulation of that entity and not the entity itself, and its card says so
+rather than implying otherwise.
+
+*A legal entity is not required.* The parameter schema already tells an omitted
+parameter from one the person cleared, and refuses only the ones a profile
+declares as required, so a profile that declares its legal entity as optional
+accepts an empty one. The import step has the same shape on the other side: the
+publication returns =skipped= when it is given no root entity, which is the
+branch the function already carries. So the manual card declares the entity
+optional, a person without an LEI leaves it empty, and the run reports that it
+had nothing to import rather than failing. A well-known placeholder LEI is
+deliberately not used: it would put a fiction into a table derived from a
+public registry, it would appear in the tenant's party hierarchy, and it would
+make a step claim work it did not do.
+
+*The GLEIF layout is the search.* Its details step opens on a search over the
+parent legal entities the deployment holds — the read that already lists them,
+the one the shell's =lei entities= command uses — and each result states the
+legal name, the LEI, the country and how many parties its hierarchy would
+create. Once one is chosen the step collapses to a summary of what it derived:
+the tenant's name, its code, its hostname, its administrator and the entity
+itself, with *Change settings* opening the form. Every derived field stays
+editable, and choosing another entity derives them all again. The form's shape
+follows the type the parameter is declared as, so the browser holds no
+profile's name: a setting declared as a legal entity is searched for, and one
+declared as a string is typed.
+
+*The code is the server's shape.* The code a person types ends up in the
+hostname and in the administrator's principal, so its shape belongs to the
+tenant model rather than to a form: the server states it, the provision
+request refuses a code that does not match it and says why, and the field
+applies the same shape while the person types so a screen never offers a value
+the server will refuse. The rule the old client applied, and the one to state,
+is a lowercase letter first, then lowercase letters, digits and underscores, up
+to fifty characters. The derivation from a name is a way of proposing a code,
+not a rule: the name is lowercased, runs of spaces and hyphens become
+underscores, anything else is dropped, a leading non-letter is stripped, and
+the result is truncated. Typing in the code stops the name deriving it, and
+typing in the hostname stops the code deriving that; the hostname's default is
+the code itself, which is what the old client did.
+
+*What this task leaves.* The filtering the search needs, if the read cannot do
+it yet, is captured rather than built here; and the legal entity the manual
+card may now leave out is added later through the *New party* journey.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

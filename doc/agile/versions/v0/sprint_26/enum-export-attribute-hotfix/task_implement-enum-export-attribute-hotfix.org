@@ -8,7 +8,7 @@
 #+filetags: :hotfix:ores.workflow:windows:ci:utility:sprint_26:v0:enum-export-attribute-hotfix:
 #+owner: marco
 #+branch: hotfix/enum-export-attribute
-#+pr:
+#+pr: 2367
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -68,6 +68,9 @@ and the commit it was measured at.
 | Visibility macros on an enum, before | 1 (=workflow_definition.hpp:149=) | =grep -rnE "enum( +class)? +[A-Za-z_]+_EXPORT" projects/ --include=*.hpp= | 8eb2cd0576 |
 | Visibility macros on an enum, after | 0, exit 0 | =python3 build/scripts/check_enum_export_attributes.py= | this branch |
 | The check on a tree with the macro restored | exit 1, naming the file and the line | same, with the macro added under a scratch root | this branch |
+| The check on the review fixture | exit 1, two offending declarations, each at its real line: one below a three-line block comment, one behind a backslash-continued macro definition | fixture under a temporary root, =--root= | this branch |
+| The same fixture's non-violations | not reported: a string literal that spells the shape, a =using enum=, an elaborated type, and an enum with no macro | same | this branch |
+| The check on a bare Boost macro split across lines | exit 1, reported at the =enum= keyword's line | second fixture, =enum class=/=BOOST_SYMBOL_EXPORT= on separate lines | this branch |
 | =BOOST_SYMBOL_IMPORT= on Linux | =__attribute__((__visibility__("default")))= | =clang++ -E= on a file that includes =boost/config.hpp= | this branch |
 | clang and gcc on Linux on the declaration | both exit 0, no diagnostic | =-Wall -Wextra -Werror= on the enum with that attribute | this branch |
 | clang on Linux on the Windows spelling | exit 1, =-Wunknown-attributes= | =-Wignored-attributes -Werror= on =__attribute__((__dllimport__))= | this branch |
@@ -111,13 +114,21 @@ and the commit it was measured at.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2367][#2367]] | Hotfix: a visibility macro on an enum breaks the Windows build |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The reported line number shrinks when a multi-line block comment precedes the declaration, because the comment is removed with its newlines. | =check_enum_export_attributes.py= | Fixed | The erasure blanks characters in place, newlines included, so the offsets still map to source lines. A fixture with a three-line block comment ahead of the declaration reports the declaration's real line. |
+| 2 | The scan is line by line, so an =enum class= whose macro sits on the next line is missed, and a macro definition continued with a backslash is not read. | =check_enum_export_attributes.py= | Fixed | One pass over the whole file; continuation lines are joined before the definitions are read. Both shapes are in the fixture and both are reported. |
+| 3 | A string literal that spells the forbidden shape is reported. | =check_enum_export_attributes.py= | Fixed | String and character literals are erased by the same in-place pass. The fixture carries such a string and it is not reported. |
+| 4 | The declaration grammar the count uses and the one the rule enforces accept different sets, so the printed count describes another population. | =check_enum_export_attributes.py= | Fixed | One pass, one grammar: the count and the rule read the same sites. An elaborated type or a =using enum= is neither counted nor reported. |
+| 5 | A visibility macro used directly -- =enum class BOOST_SYMBOL_EXPORT foo= -- is not in the set, because Boost defines that name and the check reads =projects/= only. | =check_enum_export_attributes.py= | Fixed | The two names every component macro expands to are seeded into the set, and the fixture proves the direct use is reported. |
+| 6 | The workflow does not list itself in its path filters, which four sibling pull-request workflows do. | =header-hygiene.yml= | Fixed | Both path lists name the workflow file, so an edit to it is checked. |
+| 7 | The branch rewrites the workflow inventory, fills a backlog capture and deletes a duplicate task row in the Boost story, none of which the task plan asks for. | several | Accepted | All three correct a record that is wrong: the inventory claimed four pull-request workflows and listed them, the capture was a placeholder, and the Boost story listed one task twice, as DONE and as BACKLOG. The commit message states each. |
+| 8 | The workflow also runs on a push to =main= and on =workflow_dispatch=, and the acceptance asks only for pull requests. | =header-hygiene.yml= | Accepted | Every check workflow in the estate carries the same three triggers. The pull request is the one the acceptance names; the other two are the house shape. |
+| 9 | Long sentences in the descriptions, the check's docstring and the workflow comment, against the simplified-technical-English rule. | several | Declined | The descriptions follow the sibling stories in this sprint, the incident narrative is the reasoning the comment rules preserve rather than edit history, and no tool enforces the rule on org metadata. |
 
 * Result
 

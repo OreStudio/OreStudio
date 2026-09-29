@@ -159,10 +159,16 @@ begin
             -- that is unique per key and nothing more. The unit that migrates the
             -- vintage lookup decides whether the dataset should carry the ORE key
             -- its own source names (MM/RATE/USD/2D for the deposit grid) instead.
+            -- The name is the key lowercased to characters a URI path can carry,
+            -- with a hash of the key's own components appended: collapsing every
+            -- character outside that set would otherwise let two keys that differ
+            -- only there share one name, and the identity's unique index would fail
+            -- the whole publish.
             v_oresmd_uri :=
                 'oresmd://generic/dq-' ||
-                lower(replace(replace(r.series_type || '~' || r.metric || '~' || r.qualifier,
-                                      '/', '~'), ' ', '-')) ||
+                lower(regexp_replace(r.series_type || '-' || r.metric || '-' || r.qualifier,
+                                     '[^A-Za-z0-9.-]', '-', 'g')) ||
+                '-' || substr(md5(r.series_type || '~' || r.metric || '~' || r.qualifier), 1, 16) ||
                 '?type=fixing';
 
             insert into ores_marketdata_market_series_tbl (

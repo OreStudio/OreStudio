@@ -29,14 +29,25 @@
  * The projection from a key to its identity is the C++ grammar's, not SQL's, so
  * an existing binding cannot be converted here. A binding is a runtime artifact,
  * re-created from the feed it was made for -- the synthetic service's feed
- * controller makes one whenever a bound feed starts -- so the migration clears
- * the table and drops the column rather than keeping keys in a column that no
- * longer means what it says. A database that held bindings must start its bound
- * feeds again to re-create them.
+ * controller makes one whenever a bound feed starts -- so this migration closes
+ * every binding and gives the rows a generic name, one derived from each row's own
+ * uuid. The closed rows are inert: the readers of this table look at current rows,
+ * and a binding under a generic name is one whose feed must be started again.
+ *
+ * A DELETE on this table is ruled to a validity close, so the rows stay and the not
+ * null applies to them too; that is why the backfill covers every row rather than
+ * the current ones.
+ *
+ * Two generated scripts must be applied after this one:
+ * marketdata_feed_bindings_create.sql and
+ * marketdata_feed_bindings_notify_trigger_create.sql. They install the reshaped
+ * insert trigger, the delete rule and the notify trigger. Until they run, every
+ * write to the table fails loudly, because the installed notify function reads the
+ * ore_key column this migration drops.
  *
  * On a freshly recreated database the create script already emits the identity,
- * its check and its index, so this migration is unnecessary. It exists for
- * databases created before the change.
+ * its check and its index, and the notify function reads the identity, so this
+ * migration is unnecessary. It exists for databases created before the change.
  */
 
 begin;
@@ -48,6 +59,12 @@ alter table ores_marketdata_feed_bindings_tbl
 
 alter table ores_marketdata_feed_bindings_tbl
     add column if not exists "oresmd_uri" text;
+
+update ores_marketdata_feed_bindings_tbl
+set oresmd_uri = 'oresmd://generic/binding-migrated-' || replace(id::text, '-', '') ||
+                 '?type=fixing'
+where oresmd_uri is null
+   or oresmd_uri = '';
 
 alter table ores_marketdata_feed_bindings_tbl
     alter column "oresmd_uri" set not null;

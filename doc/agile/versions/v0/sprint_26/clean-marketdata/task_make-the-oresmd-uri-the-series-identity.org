@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2358
+#+pr: 2359
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -26,11 +26,11 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; each lookup asks by identity first and by the triple after it, for rows written before the column existed. |
-| Waiting on   | Nothing.                               |
-| Next         | Settle the internal series' identity, which is what the not-null cutover waits on, then delete the triple against the census. |
+| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
+| Waiting on   | The internal series' identity: the FOMC grid is a row no projection can name, and it blocks the not-null and unique constraints the deletion needs. |
+| Next         | Settle the internal series' identity, which is what the not-null cutover waits on, then delete the triple against the census. That deletion is the fourth acceptance and it is not done, so the task stays open past the merge of its first unit. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -108,12 +108,16 @@ fallback exists for a database that does have one, and it is the thing the delet
 removes -- at which point a series with no identity is unreachable, which is why the
 create scripts and the writers have to agree before the columns go.
 
-**The curve snapshot requests name the series by identity now.** Both of them
-carried the triple, which made the handler the last production reader that could
-not read a URI. The change is two hand edits, because neither the protocol header
-nor the handler is generated. It is verified by the compiler and the suites and by
-nothing else: this path has no sender anywhere in the tree and no case exercises it,
-which is worth knowing before the cutover leans on it.
+**The curve snapshot requests name the series by the triple, and the identity move
+was taken back.** Making them carry the identity is two hand edits, because neither
+the protocol header nor the handler is generated, and the edit was made and then
+reverted before the merge: a request carrying only an identity cannot reach a row
+that has none, and this path must read the FOMC grid, which no projection can name.
+So the handler's two lookups are the production readers left on the triple **alone**;
+the import's and the ingest loop's calls ask by identity first and fall back to the
+triple. The move waits for the rows to have identities. The path is verified by the
+compiler and the suites and by nothing else: it has no sender anywhere in the tree
+and no case exercises it, which is worth knowing before the cutover leans on it.
 
 **Not every series row in the table can be given an identity, and the constraint
 says so.** Measured on the live database at =ca23d34ef2=: of 5,864 series rows,
@@ -163,7 +167,7 @@ plan itself stays — it is the historical record of what we did.)
 | Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
 | =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
 | Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
-| Production readers left on the triple alone | 0; the two remaining calls are the import's and the ingest loop's fallbacks | grep for =read_latest_by_type= beyond those | =47327e935b= |
+| Production readers left on the triple alone | 2: the curve snapshot handler's two lookups; the import's and the ingest loop's calls ask by identity first and fall back to the triple | =grep -rn "read_latest_by_type" projects/ --include=*.cpp --include=*.hpp=, less the repository's own definition and the tests | =664cae095d= |
 | =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
 | Series rows that carry an ORE series type | 4431 of 5864 | =select series_type, count(*) from ores_marketdata_market_series_tbl= against the 42 registry types | =ca23d34ef2= |
 | Series rows that do not | 1433 across 28 types, 1431 of them =CD-0= to =CD-25= generator output | same | =ca23d34ef2= |
@@ -200,13 +204,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2359][#2359]] | [marketdata,agile] Settle the cutover's review record |
 | [[https://github.com/OreStudio/OreStudio/pull/2358][#2358]] | [marketdata] Write the market series' oresmd identity |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A series with no identity is unreachable through the curve snapshot handler, which reads by identity alone | =curve_snapshot_protocol.hpp=, =curve_snapshot_handler.hpp= | taken back | The requests and the handler carry the triple again: a request with only an identity has no fallback for a row that has none, and this path must read the FOMC grid. The move waits for the rows to have identities. The handler's two lookups are the production readers left on the triple alone. |
+| 2 | Legacy rows are never backfilled, so the not-null unit needs a data step | =import_service.cpp=, =feed_ingest_loop.cpp=, the migration | recorded | The not-null unit's prerequisites carry it, with a recreated database as the alternative: the schema is applied by recreation, so a rebuilt database holds no row written before the column, and the triple fallback exists for one that does. |
+| 3 | A write that omits =oresmd_uri= clears an existing identity | the market series model | accepted, documented | The model's description of the column now says that a write leaving it empty clears it, because the generated service copies the write's fields straight through. The structural fix is the not-null unit, where the column stops being optional. |
+| 4 | The three shell commands gained a required positional argument | the market series recipe, the shell library | accepted, fixed | The recipe and the three tangled library scripts carry the new argument (=1cfba6cc49=). The commands have no other caller: no CI workflow, script or recipe names them beyond the recipe and the shell's own tests. |
+| 5 | Two different keys can resolve to one series | =import_service.cpp= | recorded | Intended: the cache is keyed by the triple and the lookup is by the identity, so a key that projects to an identity another key already holds finds that series, and the reversed-pair warning still reports the difference. The unique index on the identity belongs to the cutover, and a case pinning the collision belongs with it. |
+| 6 | The identity column has no index, while the triple is indexed | =marketdata_market_series_create.sql= | recorded | The triple's index is the natural key's unique index. The column is not the natural key yet; the cutover moves the key onto it, and the same generated index follows. |
+| 7 | Three small points: a line over the column limit, a doc-comment sentence that overstates, and mixed comment styles | =feed_ingest_loop.cpp=, the market series model, =curve_snapshot_protocol.hpp= | accepted, fixed in part | The over-long line, and the same shape the change wrote in =import_service.cpp= and in its case, are reformatted by =clang-format= (=d0d56cfc4e=); the files carry older violations this change leaves alone. The model's sentence already qualifies itself in the same breath, and the regenerated header carries it. The comment styles stay as they are: the pair is cosmetic and the path is hand-written. |
+| 8 | The census row cites =664cae095d= while the review rows cite =1cfba6cc49= and =d0d56cfc4e=, and the reviewer could not resolve them | the measurements and review tables | answered | All three resolve. =664cae095d= is the tip of the branch that merged as =0989e6f243=, and =1cfba6cc49= is on the trunk; =d0d56cfc4e= is the formatting commit on this branch, which the merge brings in. |
+| 9 | =#+pr:= names 2359 while =#+branch:= still names the branch of #2358 | this task | answered | The task spans two units and each has its own branch, so the field can only name one; it keeps the branch its first unit was built on, and the =* PRs= table carries both, newest first. |
+| 10 | The row about the model's doc sentence cannot be checked from this diff | the market series model | answered | The model is in the merged tree rather than in this diff. The sentence it names is the column's description, which qualifies "every row the corpus import writes" in the same breath. |
 
 * Result
 
@@ -216,8 +230,8 @@ The additive half of the identity cutover is delivered. =market_series= carries
 index name -- the latter's first production call site -- and the ingest loop, which
 derives it from the =ore_key= it already builds. The repository reads by identity
 through =read_latest_by_uri=, declared in the model beside the triple reader, and
-each lookup asks by identity first and by the triple after it, for a row written
-before the column existed.
+the import's and the ingest loop's lookups ask by identity first and by the triple
+after it, for a row written before the column existed.
 
 Nothing is deleted. The triple still keys the row, so a series with no identity is
 still reachable and the component cannot be stranded by this change. Measured on the

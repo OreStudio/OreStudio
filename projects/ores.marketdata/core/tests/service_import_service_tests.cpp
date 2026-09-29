@@ -326,8 +326,8 @@ TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
     req.source = "test.import_service";
     REQUIRE(svc.import(req).success);
 
-    const auto by_identity = series_repo.read_latest_by_uri(
-        h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
+    const auto by_identity =
+        series_repo.read_latest_by_uri(h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE(by_identity.size() == 1);
     CHECK(by_identity.front().qualifier == "EUR/USD");
     CHECK(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD").size() == 1);

@@ -51,6 +51,7 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
 
     r.qualifier = v.qualifier;
 
+    r.oresmd_uri = v.oresmd_uri.value_or("");
     r.series_subclass = v.series_subclass;
     r.derivation_kind = v.derivation_kind;
     r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
@@ -83,6 +84,7 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
 
     r.qualifier = v.qualifier;
 
+    r.oresmd_uri = v.oresmd_uri.empty() ? std::nullopt : std::optional(v.oresmd_uri);
     r.series_subclass = v.series_subclass;
     r.derivation_kind = v.derivation_kind;
     r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);

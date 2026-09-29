@@ -275,3 +275,60 @@ TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable"
     const auto series = series_repo.read_latest_by_type(h.context(), "FX", "RATE", "USD/GBP");
     REQUIRE(series.size() == 1);
 }
+
+TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A market-data key and a fixing index name are different key spaces, and each
+    // has its own inverse: from_ore_key() for the ORE key grammar, from_index_name()
+    // for the index names the fixing boundary carries. Both write what they project
+    // to onto the series, so a row can be reached by the identity ORE wrote rather
+    // than by the registry's (series_type, metric, qualifier) triple alone.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/EUR/USD 1.09\n";
+    req.fixings_content = "2016-02-05 UKRPI 263.4\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 1);
+    CHECK(resp.fixing_count == 1);
+
+    const auto fx = series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD");
+    REQUIRE(fx.size() == 1);
+    CHECK(fx.front().oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
+
+    const auto inflation = series_repo.read_latest_by_type(
+        h.context(), std::string(import_service::fixing_series_type), "RATE", "UKRPI");
+    REQUIRE(inflation.size() == 1);
+    CHECK(inflation.front().oresmd_uri == "oresmd://inflation/ukrpi?type=fixing");
+}
+
+TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The identity is a lookup in its own right, so a reader finds a series without
+    // knowing how the registry decomposed its key. The triple reader still finds the
+    // same row, which is what carries a series written before the column existed.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX/RATE/EUR/USD 1.09\n";
+    req.source = "test.import_service";
+    REQUIRE(svc.import(req).success);
+
+    const auto by_identity = series_repo.read_latest_by_uri(
+        h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
+    REQUIRE(by_identity.size() == 1);
+    CHECK(by_identity.front().qualifier == "EUR/USD");
+    CHECK(series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD").size() == 1);
+}

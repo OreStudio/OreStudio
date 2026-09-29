@@ -98,6 +98,22 @@ struct market_series final {
     std::string qualifier;
 
     /**
+     * @brief The oresmd identifier this series is, written as a URI: the canonical form of the key
+     * or the index name the row arrived under, and the identity the series is meant to be read by.
+     *
+     * Nullable, and not yet the natural key, because the triple above still keys the row: the
+     * cutover that deletes series_type, metric and qualifier is what makes this not null and
+     * unique. Every row the corpus import writes carries one, and a row whose key the grammar
+     * cannot name carries none rather than a guessed identity.
+     *
+     * A write that leaves this empty **clears** it rather than keeping it: the generated service
+     * copies the write's fields straight through, so a caller that omits the identity stores a
+     * version without one. Until the column is not null, which is what forces every writer to
+     * supply it, a caller updating a series has to carry the identity it read.
+     */
+    std::string oresmd_uri;
+
+    /**
      * @brief Subclass within the asset class, as a code from refdata.series_subclass_code
      * (referenced series_subclass_code.code). Validated by
      * ores_refdata_validate_series_subclass_code_fn, the same cross-table reference mechanism the

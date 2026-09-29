@@ -178,6 +178,10 @@ public:
                                                            const std::string& qualifier,
                                                            const std::string& party_id = {});
 
+    std::vector<domain::market_series> read_latest_by_uri(context ctx,
+                                                          const std::string& oresmd_uri,
+                                                          const std::string& party_id = {});
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

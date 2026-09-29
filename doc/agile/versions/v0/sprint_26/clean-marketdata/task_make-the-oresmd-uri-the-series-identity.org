@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 4050BF6C-DBC3-4E75-A204-A75CE4AFA323
+:END:
+#+title: Task: Make the oresmd URI the series identity
+#+description: Cut the market series identity over to the oresmd URI: the column on market_series and feed_binding, the import writing it, and the registry triple gone.
+#+type: task
+#+level: s1
+#+filetags: :clean-marketdata:sprint_26:v0:
+#+owner: marco
+#+branch: feature/market-series-uri-identity
+#+pr: 2358
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every identity-bearing market-data row carries the oresmd_uri that its key or its index name projects to, so the series identity is the URI rather than the registry's (series_type, metric, qualifier) triple, and the import creates a series for every row ORE's own examples carry -- the fixing half included.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
+| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; each lookup asks by identity first and by the triple after it, for rows written before the column existed. |
+| Waiting on   | Nothing.                               |
+| Next         | Settle the internal series' identity, which is what the not-null cutover waits on, then delete the triple against the census. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- market_series and feed_binding carry oresmd_uri, and it is the natural key for a series and for a feed binding.
+- import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
+- The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
+- series_type, metric, qualifier, ore_key and the import classification table are deleted, and every consumer reads the URI.
+
+* Scope, measured before the column
+
+Read at =00c9cdd711= on the merged trunk. Nothing here is a claim about the
+abandoned branch; the two write paths are the code as it stands.
+
+**Neither import path stores an identity today.**
+
+- *Market data.* =import_service.cpp='s =canonical_key()= already computes the
+  identifier: it calls =from_ore_key()=, projects it back with =to_quote_key()=, and
+  returns the canonical spelling and the registry's decomposition of it. The
+  identifier itself is **discarded**. The series is found or created on
+  =(series_type, metric, qualifier)=, and the observation keeps the file's own text
+  in =obs.key=, because the rows above hold the canonical spelling rather than it.
+- *Fixings.* The series is created as
+  =find_or_create_series("FIXING", "RATE", f.qualifier)=, where the qualifier **is**
+  the index name. =from_index_name()= has no production call site at all: zero
+  outside the projections and their tests. A fixing series therefore has no
+  identifier to store, and the index name is the whole of its identity.
+
+**Both identity-bearing tables are known, and the blast radius is measured.**
+=market_series= keys on the triple; =feed_binding= keys on =ore_key= and
+=source_name=. 63 files across =ores.marketdata=, =ores.synthetic=, =ores.shell= and
+=ores.ore= name =qualifier=, which is the set the deletion has to carry. The value
+the new column needs is in hand on the market-data path and one call away on the
+fixing path, so this task is the cutover and its consumers rather than a new
+projection.
+
+* What the deletion has to carry, counted
+
+Counted at =ce3c6f32bd= on this branch, with member-access and column patterns
+rather than the bare word, because =metric= alone matches 481 files and most of
+them are somebody else's metric:
+
+| What | Count | Pattern |
+|------+-------+---------|
+| C++ files reaching a series' =qualifier= | 21 | =\.qualifier\b= |
+| C++ files reaching a series' =series_type= or =metric= | 32 | =\.(series_type\|metric)\b=, in the three components that hold series |
+| SQL files naming the ="qualifier"= column | 2 | the market series create and populate scripts |
+| SQL files naming the ="ore_key"= column | 2 | the feed binding create and populate scripts |
+| Generated TypeScript carrying the field | 2 | the market series domain and protocol twins |
+| Org documents naming =qualifier= | 80 | models, recipes and manuals |
+
+The organs split by component: =ores.marketdata= 33, =ores.synthetic= 16,
+=ores.ore= 12, then two in the shell and one each in =ores.trading= and
+=ores.testing=. The deletion is therefore a cross-component change, which is why
+the plan kept it as its own acceptance rather than folding it into the column's.
+
+**=feed_binding='s column is deferred, and the reason is structural.** The plan
+gives the binding an =oresmd_uri= beside its =ore_key=, and the column was added and
+regenerated: =ores_marketdata_feed_bindings_tbl= took it and the entity's layers
+followed. It was then taken back out, because nothing can write it today. The row is
+assembled by the generated service -- =feed_binding_service.cpp= carries the
+AUTO-GENERATED banner -- and the service template has no per-column derivation hook;
+the =#+begin_src cpp :name generator= blocks a model can declare feed the test-data
+generators under =api/src/generators/=, not a real write. Every other writer is a
+generated shell command. So the binding's identity arrives with the unit that
+replaces =ore_key=, where the same code that supplies the key today supplies the URI;
+until then the column would be null in every row, which is worse than absent. The
+natural key stays =ore_key= and =source_name= meanwhile.
+
+**The deletion needs no backfill, and the fallback is what says so.** The plan
+records a hard cutover with no backfill, which only works because this schema is
+applied by recreation rather than by migration: a database is built from the create
+scripts, so it holds no series written before the identity column. The triple
+fallback exists for a database that does have one, and it is the thing the deletion
+removes -- at which point a series with no identity is unreachable, which is why the
+create scripts and the writers have to agree before the columns go.
+
+**The curve snapshot requests name the series by identity now.** Both of them
+carried the triple, which made the handler the last production reader that could
+not read a URI. The change is two hand edits, because neither the protocol header
+nor the handler is generated. It is verified by the compiler and the suites and by
+nothing else: this path has no sender anywhere in the tree and no case exercises it,
+which is worth knowing before the cutover leans on it.
+
+**Not every series row in the table can be given an identity, and the constraint
+says so.** Measured on the live database at =ca23d34ef2=: of 5,864 series rows,
+**4,431** carry a series type the ORE key grammar knows, and **1,433 across 28
+types do not**. Almost all of the second population is test-data generator output --
+=CD-0= to =CD-25=, 1,431 rows, whose =series_type=, =metric= and =qualifier= are all
+the same string and whose subclass cycles through the generator's list -- plus one
+=YieldCurve= row the model's own example generator emits. Neither is data.
+
+The population that matters is one row: the FOMC bootstrap's raw grid, seeded by
+=marketdata_market_series_fomc_populate.sql= as =RATES / YIELD / 'USD/SOFR-FOMC'=,
+"the identity the ingest loop resolves the ir_curve_feed's ticks by". =RATES= and
+=YIELD= are not ORE series types, so =from_ore_key()= cannot name that row, and
+neither can any other projection: the synthetic pipeline invented a vocabulary of
+its own.
+
+So the plan's phase one -- the column not null, the natural key moved onto it --
+cannot proceed as written, and this is the third time the same shape has appeared:
+the premise "every identity-bearing row can be given an =oresmd_uri=" holds for what
+ORE's files carry, and fails for what the system invents. =GENERIC-MD= was the first,
+the generated feed binding writer the second. The options, recorded rather than
+chosen:
+
+- the synthetic feed publishes its raw grid under a real ORE key, the way its daily
+  average price already publishes under =COMMODITY_FWD/PRICE/ICE:PDQ/USD/<date>=.
+  This is the least invention and the one that makes the cutover's premise true;
+- oresmd grows a namespace for internally derived series, which is a grammar
+  extension and wants its own decision;
+- derived series keep the triple and the URI stays the key for observed ones, which
+  leaves two keys in one table and defeats the point of the cutover.
+
+The column stays nullable meanwhile, and the identity is what a row gets *if it has
+one*: the constraint would not catch the generator output anyway, since random text
+satisfies a not null column.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Corpus instrument keys that name | 485606 of 485606 | =ores.marketdata.core.tests "[oresmd]"= | =00c9cdd711= |
+| Fixing index names that name | 156 of 156 | =ores.marketdata.core.tests "[fixing]"= | =00c9cdd711= |
+| =from_index_name()= production call sites | 0 | grep over =projects/=, excluding the projections and their tests | =00c9cdd711= |
+| Files that name =qualifier= | 63 | grep over =ores.marketdata=, =ores.synthetic=, =ores.shell=, =ores.ore= | =00c9cdd711= |
+| Production readers left on the triple alone | 0; the two remaining calls are the import's and the ingest loop's fallbacks | grep for =read_latest_by_type= beyond those | =47327e935b= |
+| =ores.marketdata.core= suite, with the identity reader | 1782 assertions in 400 cases | =ores.marketdata.core.tests= | =47327e935b= |
+| Series rows that carry an ORE series type | 4431 of 5864 | =select series_type, count(*) from ores_marketdata_market_series_tbl= against the 42 registry types | =ca23d34ef2= |
+| Series rows that do not | 1433 across 28 types, 1431 of them =CD-0= to =CD-25= generator output | same | =ca23d34ef2= |
+| Production rows no projection can name | 1: =RATES / YIELD / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =ca23d34ef2= |
+| =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
+| Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2358][#2358]] | [marketdata] Write the market series' oresmd identity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The additive half of the identity cutover is delivered. =market_series= carries
+=oresmd_uri=, and both writers of series rows supply it: the import, from
+=from_ore_key()= for a market-data key and from =from_index_name()= for a fixing's
+index name -- the latter's first production call site -- and the ingest loop, which
+derives it from the =ore_key= it already builds. The repository reads by identity
+through =read_latest_by_uri=, declared in the model beside the triple reader, and
+each lookup asks by identity first and by the triple after it, for a row written
+before the column existed.
+
+Nothing is deleted. The triple still keys the row, so a series with no identity is
+still reachable and the component cannot be stranded by this change. Measured on the
+rebuilt tree: 1782 assertions in 400 cases, including a case that imports one key
+from each space and reads the series back by its identity and by its triple, both
+agreeing. Component drift is clean for =marketdata= at all eight addresses,
+including the entity that gained the column.
+
+Three measurements taken here changed the plan rather than the code, and each is
+recorded with its number:
+
+- the =feed_binding= column cannot be written, because its only writer is a generated
+  service with no derivation hook and a model's generator block feeds test data;
+- the column cannot be made =not null= yet, because the FOMC bootstrap seeds a series
+  under the synthetic pipeline's own vocabulary, which no projection can name;
+- =marketdata= is one modelling pass short of =COMPONENTS_UNDER_TEST=, because seven
+  hand-written protocol headers carry no TypeScript twin and a twin is generated from
+  an operation model. Listing the component was tried and reverted, and the modelling
+  pattern to follow is read off =ores.variability.operations=.
+
+What the deletion still owes is recorded where it belongs: the internal series'
+identity, a backfill or a recreated database, the unique index on the identity, and
+the behaviour that a write omitting the identity clears it until the column is
+=not null=.

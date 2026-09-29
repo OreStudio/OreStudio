@@ -53,6 +53,7 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "series_type" text not null,
     "metric" text not null,
     "qualifier" text not null,
+    "oresmd_uri" text null,
     "series_subclass" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,

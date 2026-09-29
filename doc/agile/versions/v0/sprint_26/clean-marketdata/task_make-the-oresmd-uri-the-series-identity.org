@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2402
+#+pr: 2403
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -386,7 +386,16 @@ attempts were reverted, because a key that comes out wrong is worse than one tha
 come out at all: a reader would write it to a file. The fact that decides it -- which
 identifier field holds which class's coordinate -- belongs in the oresmd family tables, so
 the grammar exposes one projection from a series identifier and a point, and a hand-written
-helper cannot know it. Until that exists the writers that hold a producer key store it (the
+helper cannot know it. Two things about that fact were checked and one of them surprises. The loader
+already hands every family row's columns to the templates verbatim, so nothing has to be
+parsed to reach them; and the row's =point_semantics= names the coordinate's *kind* rather
+than the field that holds it -- =tenor= for both the discount curve and the money market,
+which store their maturity in different fields. What does know the field is the generator's
+own key emission: =ores.cpp.oresmd.projections.org= writes each family's key out of the
+identifier's members, so which member is the coordinate is written down there, per family,
+already. The next unit therefore adds a per-family arm beside that emission -- a setter the
+writer calls to place a point before projecting -- rather than reading =point_semantics=,
+inventing a rule, or extending a hand-written helper that cannot know it. Until that exists the writers that hold a producer key store it (the
 import and the ingest loop do; the republish service does not), and the export's rebuild
 stays.
 
@@ -570,6 +579,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2403][#2403]] | [agile] Record where the coordinate's field is modelled |
 | [[https://github.com/OreStudio/OreStudio/pull/2402][#2402]] | [agile] Record what the datum-key projection cannot do |
 | [[https://github.com/OreStudio/OreStudio/pull/2400][#2400]] | [iam] Let a written binding join the freshness list |
 | [[https://github.com/OreStudio/OreStudio/pull/2399][#2399]] | [iam] Build the provisioning handler against the binding's identity |

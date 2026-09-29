@@ -303,11 +303,12 @@ grid's own identity and then the cutover the task takes its name from.
 2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
    =source_series_id= and reads, per pillar, the series the key above projects to:
    resolve the pillar's start and end tenor codes to dates through =refctx=, call the
-   same builder -- which needs the pillar's currency, and **neither the config nor the
-   pillar carries one**: the reader is looking for a series keyed by the currency and
-   has nowhere to read it, so this step adds a =currency_code= column the way the
-   convention column landed, seeded from the FOMC config's own currency. Then it finds
-   the series by identity and takes its observation. The rate map is
+   same builder, and that builder needs the pillar's currency. **Neither the config nor
+   the pillar carries one**: the reader looks for a series keyed by the currency and has
+   nowhere to read it. So this step adds a =currency_code= column the way the convention
+   column landed, seeded as =USD= for the FOMC config -- the currency the synthetic
+   config that publishes into it carries. Then the reader finds the series by identity
+   and takes its observation. The rate map is
    keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
    already matches on, so its contract does not change. The grid series stays readable
    as a fallback, and the reader prefers the pillar's series wherever it exists: a

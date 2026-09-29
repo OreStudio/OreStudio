@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2370
+#+pr: 2372
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -280,9 +280,58 @@ the series needs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The additive half is delivered (#2358), the identity is a series rather than a datum
+for every family (#2362, #2364), the FOMC shapes are pinned (#2365), the curve's seed
+row carries its identity (#2366), the generator writes one (#2368), and the config
+names the tenor convention its pillars resolve under (#2370). What is left is the
+grid's own identity and then the cutover the task takes its name from.
+
+**The re-key, in four steps.** Each step ends green on its own.
+
+1. *The feed keys each pillar.* =ir_curve_resolved_entry= gains the entry's
+   =start_date= and =end_date= strings, which =resolve()= already computes for the
+   year fraction. A pillar is spot-starting when its =start_tenor_code= is =SPOT= --
+   the config's own first entry -- and meeting-dated otherwise, and that one rule
+   lives in a single builder both sides call rather than being written twice.
+   =ir_curve_feed= publishes one tick per entry with =series_type="IR_SWAP"=,
+   =metric="RATE"=, =qualifier= =<CCY>/<start>= (the start slot holding =0D= for the
+   spot-starting pillar and the start date for the rest), =1D= as the index tenor, and
+   =point_id= the entry's end date. The ingest loop already derives the series identity
+   from a tick's full key, so the series appear with their ORE identities and nothing
+   else in the pipeline moves. =ores.synthetic= is where this step's test belongs: a
+   tick per pillar carrying the shape above.
+2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
+   =source_series_id= and reads, per pillar, the series the key above projects to:
+   resolve the pillar's start and end tenor codes to dates through =refctx=, call the
+   same builder, find the series by identity, and take its observation. The rate map is
+   keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
+   already matches on, so its contract does not change. The grid series stays readable
+   as a fallback, and the reader prefers the pillar's series wherever it exists: a
+   database with some pillars written under the new keys and some under the grid
+   resolves each pillar from whichever holds it. That is the same shape as the triple
+   fallback the readers already carry, and it goes with the column below. The lineage
+   lists the nine series the reader took rather than the grid, and its own
+   =source_series_id= column is untouched -- the column step three drops is the
+   config's. =curve_republish_resolver_fomc_tests= is this step's proof.
+3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
+   drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
+   the bootstrap config's =source_series_id= loses its reader. Dropping the config's
+   column is a refdata change, not one file: the model, the regenerated domain,
+   protocol, entity, mapper, history field mapper, service and shell command, the
+   generate artefact's TypeScript twin, the populate and a migration. The lineage's
+   column of the same name stays.
+4. *The constraints and the deletion.* With every writer supplying an identity and no
+   row without one, =oresmd_uri= becomes not-null and unique, the natural key moves
+   onto it, and then =series_type=, =metric=, =qualifier=, =ore_key= and the import
+   classification table go, with the census's 21 + 32 C++ files, 4 SQL files, 2
+   TypeScript twins and 80 org documents as the checklist. The triple readers and
+   their fallbacks go last, because they are what keeps a half-migrated database
+   reachable in the meantime.
+
+The one thing the plan does not do is keep two writers: the feed either publishes the
+grid's key or the pillars' keys, never both. The fallback above is a *reader*
+tolerance, so a database written before step one is still readable after step three,
+which is the same reason the identity lookups fall back to the triple.
 
 * Measurements
 
@@ -338,6 +387,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2372][#2372]] | [agile] Write the re-key's plan |
 | [[https://github.com/OreStudio/OreStudio/pull/2370][#2370]] | [refdata,marketdata] Let the config name its tenor convention |
 | [[https://github.com/OreStudio/OreStudio/pull/2369][#2369]] | [agile] Record where the bootstrap gets its tenor convention |
 | [[https://github.com/OreStudio/OreStudio/pull/2368][#2368]] | [marketdata] Have the generator name the rows it writes |

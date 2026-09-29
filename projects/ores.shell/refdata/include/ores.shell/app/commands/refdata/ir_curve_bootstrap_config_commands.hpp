@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <output_series_id> <source_series_id> <curve_family_role>
-     * <discount_curve_config_id> <interpolation_method> <day_count_convention> <split_tenor_code>
-     * <reason> <commentary>
+     * <discount_curve_config_id> <interpolation_method> <day_count_convention>
+     * <tenor_convention_code> <split_tenor_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <id> <output_series_id> <source_series_id> <curve_family_role>
-     * <discount_curve_config_id> <interpolation_method> <day_count_convention> <split_tenor_code>
-     * <reason> <commentary> [--version <n>]
+     * <discount_curve_config_id> <interpolation_method> <day_count_convention>
+     * <tenor_convention_code> <split_tenor_code> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,8 +106,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <output_series_id> <source_series_id> <curve_family_role>
-     * <discount_curve_config_id> <interpolation_method> <day_count_convention> <split_tenor_code>
-     * <reason> <commentary>
+     * <discount_curve_config_id> <interpolation_method> <day_count_convention>
+     * <tenor_convention_code> <split_tenor_code> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

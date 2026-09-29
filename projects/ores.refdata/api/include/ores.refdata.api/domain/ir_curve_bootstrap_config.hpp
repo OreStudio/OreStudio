@@ -166,6 +166,19 @@ struct ir_curve_bootstrap_config final {
     std::string day_count_convention;
 
     /**
+     * @brief References tenor_convention.code -- the convention this curve's pillars resolve their
+     * dates under (e.g. RATES_SPOT_FOMC for the meeting-dated short end, whose tenors step through
+     * a schedule, and RATES_SPOT_FORWARD for a curve that steps by anchor offsets).
+     *
+     * The config that owns the pillars owns the convention. It used to be guessed from the source
+     * series' qualifier, where a -FOMC suffix meant the schedule-step convention: that put how a
+     * curve is built at the mercy of how one of its series happens to be spelled, and it stopped
+     * working when the series' identity became the ORE key its points project to. A config whose
+     * series carry no such suffix still has to name it.
+     */
+    std::string tenor_convention_code;
+
+    /**
      * @brief References tenor.code -- the pillar tenor at which this curve transitions from a
      * short-end interpolation segment to a continuous long-end one. For a single-segment
      * interpolation_method, this equals the curve's own last pillar's end_tenor_code (a genuine

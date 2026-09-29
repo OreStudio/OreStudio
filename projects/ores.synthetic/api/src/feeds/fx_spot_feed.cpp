@@ -22,6 +22,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
@@ -65,16 +66,20 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
                ", date=" + cfg.vintage_date + ", point_id=SPOT.";
     };
 
-    const auto key =
-        ores::marketdata::core::oresmd_projections::split_market_series_key(cfg.ore_key);
-    if (!key)
-        throw vintage_data_missing_error("Cannot parse ORE key '" + cfg.ore_key + "'.");
+    // The series is found by the identity its key projects to: the projection the
+    // marketdata service's ingest loop applies to a tick's key, so the vintage read
+    // and the tick that follows it name one series.
+    const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(cfg.ore_key);
+    if (!identifier)
+        throw vintage_data_missing_error("oresmd names no series for ORE key '" + cfg.ore_key +
+                                         "'.");
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-    auto series = md_client.find_series(
-        key->series_type, key->metric, key->qualifier, boost::uuids::to_string(cfg.party_id));
+    auto series = md_client.find_series_by_uri(
+        ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value,
+        boost::uuids::to_string(cfg.party_id));
     if (!series)
         throw vintage_data_missing_error("Failed to look up series for '" + cfg.ore_key +
                                          "': " + series.error());

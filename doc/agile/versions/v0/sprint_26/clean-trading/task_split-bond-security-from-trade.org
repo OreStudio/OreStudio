@@ -118,6 +118,57 @@ mapper and tests move together; no commit removes a column before its
 replacement exists. The corpus round trip runs before the task closes,
 as it did for the collapse.
 
+** Unit 1: the issue fields, inventoried (2026-09-29)
+
+The first slice, measured on the branch cut from =cd00344ddb=. It is the
+smallest green unit: =bond_issue= is already shared and keyed by
+=security_id=, so the six fields are additive and independent of the datum
+keying and of the leg move.
+
+| Field | ORE type | Our shape |
+|-------+----------+-----------|
+| =CreditGroup= | xs:string optional | text, optional string, nullable |
+| =VolatilityCurveId= | xs:string optional | same |
+| =PriceQuoteMethod= | xs:string optional | same |
+| =PriceQuoteBaseValue= | xs:string optional | same |
+| =SubType= | xs:string optional | same |
+| =PriceType= | =bondPriceType= {Clean, Dirty} | text code, checked, soft FK to =ores_trading_price_types_tbl=, following =bond_option= |
+
+ORE carries all six on =bondData= (instruments.xsd: 392, 396, 400, 401,
+403, 407) and on =bondReferenceDatum= (referencedata.xsd: 101, 104, 108,
+109, 111, 112). No =ores.ore= code maps =BondReferenceData=, so only the
+=bondData= path matters. Five are =xsd::string=; =PriceType= is the
+exception: the reverse needs a local string-to-enum parse, since only
+=to_string= is public.
+
+No template needs a new capability: nullable text, a checked code and a
+soft FK all have precedents in =bond_option=, and none of the six is a
+decimal.
+
+=Decision (D18): the notional's home.= =bond_notional= leaves =bond_issue=
+and lands on =bond_instrument=, as an optional decimal. ORE holds
+=BondNotional= on =bondData=, which is the trade's own bond data: which
+security, how much, which side. The generic trade envelope carries every
+product, so a bond-only amount belongs on the bond instrument row, next to
+=issue_id=, not on =trade=. =bond_future.contract_notional= is the same
+shape for the future.
+
+Consumers to retarget with it, all measured:
+
+| Where | What |
+|-------+------|
+| =bond_instrument_mapper.cpp=:1088-1089, :1142 | reads =bd.BondNotional= into the issue, writes it back |
+| =ore_import_execute_handler.cpp=:965 | copies it into the bond issue request |
+| =xml_bond_fact_mapper_roundtrip_tests.cpp=:1714, :1726-1727, :1738-1739 | the only test that pins it |
+| =bond_instrument_data.hpp= | the hand-written container that holds the issue |
+| =bond_issue.org=:222, :229-233, :246 | the column, its prose and the stale notional Checks prose |
+
+The generated surfacing is mechanical (domain, protocol, entity, mapper,
+service, history mapper, create SQL, ER diagram); the drop SQL, notify
+trigger, json, table, event, handler, registrar and generator are stable.
+The generated TypeScript twins are declared but absent, so nothing to
+regenerate there.
+
 ** Branch
 
 Cut from =main= after PR 4 merges, so the split reshapes the collapsed

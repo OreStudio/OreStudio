@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing. |
-| Next         | Name the config's currency, then read the FOMC pillars by identity: the feed keys each pillar now (see the plan's step one), so the bootstrap resolves each of its nine pillars to the series that key projects to, with the grid series as the fallback a database written before the change still holds, and then the seed drops the grid row and the config's =source_series_id= column goes with its last reader. Only then move the not-null and unique constraints onto the column and delete the triple against the census, which is the fourth acceptance and is not done. |
+| Next         | Drop the grid's own row from the FOMC seed, so the pillars are the only spelling the segment has: =marketdata_market_series_fomc_populate.sql= loses the =RATES/YIELD= row and the asset-class junction row that goes with it, and the bootstrap config's =source_series_id= loses its last reader. Then the not-null and unique constraints move onto the identity and the triple is deleted, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -282,9 +282,12 @@ the series needs.
 
 The additive half is delivered (#2358), the identity is a series rather than a datum
 for every family (#2362, #2364), the FOMC shapes are pinned (#2365), the curve's seed
-row carries its identity (#2366), the generator writes one (#2368), and the config
-names the tenor convention its pillars resolve under (#2370). What is left is the
-grid's own identity and then the cutover the task takes its name from.
+row carries its identity (#2366), the generator writes one (#2368), the config names
+the tenor convention its pillars resolve under (#2370) and the currency they are
+quoted in (#2375), and the feed keys every pillar as the OIS quote it simulates
+(#2373) while the bootstrap reads those keys per pillar, falling back to the grid a
+database written before the re-key still holds. What is left is the seed the grid
+row lives in and then the cutover the task takes its name from.
 
 **The re-key, in four steps.** Each step ends green on its own.
 
@@ -307,7 +310,8 @@ grid's own identity and then the cutover the task takes its name from.
    the series by identity and takes its observation. The rate map is
    keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
    already matches on, so its contract does not change. The fallback and the lineage
-   are in the note below. =curve_republish_resolver_fomc_tests= is this step's proof.
+   are in the note below, which also records what this step's proof is and what it is
+   not.
 3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
    drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
    the bootstrap config's =source_series_id= loses its reader. Dropping the config's
@@ -323,27 +327,35 @@ grid's own identity and then the cutover the task takes its name from.
    their fallbacks go last, because they are what keeps a half-migrated database
    reachable in the meantime.
 
-**Step two, in detail, for whoever takes it next.** The reader stands on four things,
-and only two of them exist today.
+**Step two, delivered.** The reader stands on four things, and all four exist now.
 
-- The key builder sits in =ores.marketdata.core=, added as a hand-written source and
+- The key builder sits in =ores.marketdata.core=, as a hand-written source
+  (=oresmd/pillar_quote_key.cpp=) beside the parser and the projections it goes through,
   registered with =regenerate_cmake_component_files.py --component ores.marketdata.core=.
-  =ores.synthetic.api= already links =ores.marketdata.core.lib=
-  (=projects/ores.synthetic/api/src/CMakeLists.txt=), so both sides can reach the builder.
-  The =reachability= check is green on this tree with that link in it, so the dependency is
-  permitted rather than merely present. The feed's own copy goes when the shared one
-  arrives.
-- The currency exists now: the config names it (#2375).
-- The dates exist now: =refctx= resolves a tenor code to a calendar date, which is the
-  path the discount curve's own points already take.
-- The fallback does not exist and is what keeps this step green: read each pillar's
-  series by the identity its key projects to, and where that series is absent read the
-  grid series by =source_series_id= and match on point id exactly as the code does
-  today. =curve_republish_resolver_fomc_tests= then passes unchanged -- it seeds the
-  grid -- and a database written before #2373 stays readable.
+  It returns the pillar's ORE key and, beside it, the series identity that key projects
+  to, so the feed's writer and the bootstrap's reader cannot disagree about the spelling.
+  The feed's own copy is gone: =ir_curve_feed= calls the shared builder.
+  =ores.synthetic.api= links =ores.marketdata.core.lib=
+  (=projects/ores.synthetic/api/src/CMakeLists.txt=), and the =reachability= gate is green
+  on this tree with that link in it.
+- The currency exists now: the config names it (#2375), and the reader takes it from
+  there rather than from a series' spelling.
+- The dates exist now: =resolve_tenor_date()= turns a pillar's start and end tenor codes
+  into calendar dates, which is the path the discount curve's own points already take.
+- The fallback is in the reader: a pillar whose series the identity lookup does not find
+  is taken from the grid the config still points at, matched on point id. The plan said
+  =curve_republish_resolver_fomc_tests= seeds the grid and would prove that path. It does
+  not, and the correction matters: the case is a unit test of
+  =resolve_bootstrap_pillars()= that hands the resolver an in-memory rate map, so it never
+  reads a series at all and passes unchanged for that reason rather than because the
+  fallback works. No case exercises the reader's database path today; that is a limitation
+  of this unit, not a proof of it, and it is recorded as one.
 
 The lineage follows the reader: it lists the series each pillar was taken from, so a
-curve's provenance names its quotes rather than the grid they used to land in.
+curve's provenance names its quotes rather than the grid they used to land in. A
+PROJECTION config names its discount curve's own output series there too -- the row the
+discount points are read from -- where the earlier form named that curve's *config* id,
+which is not a series.
 
 The one thing the plan does not do is keep two writers: the feed either publishes the
 grid's key or the pillars' keys, never both. The fallback above is a *reader*
@@ -378,6 +390,13 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.marketdata.core= suite, with the family survey | 1839 assertions in 403 cases | =ores.marketdata.core.tests= | =0819a6d9b6= |
 | FOMC shapes the seed and the feed will write, pinned ahead of them | three: the spot-starting pillar, a dated pillar, and the curve | =ores.marketdata.core.tests "the_fomc_segments_shapes_name_their_series"= | =960a6d81c0= |
 | =ores.marketdata.core= suite, with the FOMC shapes | 1852 assertions in 404 cases | =ores.marketdata.core.tests= | =960a6d81c0= |
+| Where the pillar's key and its identity are built | =ores.marketdata.core=, one hand-written source the feed and the bootstrap both call | =grep -rn "make_pillar_quote_key" projects/ --include=*.cpp --include=*.hpp= | =e3e237ded1= |
+| Identity a pillar's key projects to | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for the spot pillar and =...settle=20260128...= for a dated one, with the end date leaving the identity | =ores.marketdata.core.tests "[pillar]"= | =e3e237ded1= |
+| =ores.marketdata.core= suite, with the builder's cases | 1865 assertions in 408 cases | =ores.marketdata.core.tests= | =e3e237ded1= |
+| =ores.synthetic.api= suite, with the moved case gone | 102 assertions in 29 cases | =ores.synthetic.api.tests= | =e3e237ded1= |
+| =ores.marketdata.service= suite, with the resolver untouched | 164 assertions in 24 cases | =ores.marketdata.service.tests= | =e3e237ded1= |
+| Grid readers left in the reader | 1, the fallback in =read_pillar_rates=; no case exercises it | =grep -n "read_grid_rates" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =e3e237ded1= |
+| Component file lists stale on the trunk this branch sits on | 2, =ores.iam/api/src= and =ores.workflow/api/src=, neither of them this change's | =regenerate_cmake_component_files.py --all --check= | =e3e237ded1= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -508,6 +527,16 @@ future's contract code and tenor -- and it now drops those too, with a case walk
 two-point pair per family and three pairs that must stay apart, which is what guards
 the drop against over-clearing. Measured on the rebuilt tree: 1839 assertions in 403
 cases.
+
+**A third unit put the grid's pillars on their own identities.** The builder that spells
+a pillar as the OIS quote the feed simulates moved into =ores.marketdata.core=, beside
+the parser its identity goes through, and the bootstrap reads each pillar's observation
+from the series that key names; the grid the config still points at is the fallback for
+a database the feed has not published into. The lineage names the series each pillar was
+read from, in place of the grid they used to land in. Measured on the rebuilt tree: 1865
+assertions in 408 cases. The plan's claim that the resolver's FOMC case seeds the grid
+was wrong and is corrected in place; the reader's own database path has no case, which
+the record states as a limitation of the unit.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

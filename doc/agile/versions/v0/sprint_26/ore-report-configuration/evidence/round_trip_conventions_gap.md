@@ -52,15 +52,16 @@ Seventeen categories were unmodelled between them. Sixteen appear in the corpus;
 only `FxOptionTimeWeighting` does not.
 
 Sixty-three of the seventy-two files carry at least one of them, and the list
-above is as it stood before any category was modelled. Thirteen of the sixteen
+above is as it stood before any category was modelled. Fifteen of the sixteen
 have since landed -- SwapIndex, Future, FxOption, AverageOIS, CrossCurrencyBasis,
 TenorBasisTwoSwap, TenorBasisSwap, ZeroInflationIndex, BMABasisSwap,
-InflationSwap, CrossCurrencyFixFloat, CmsSpreadOption and CommodityFuture -- so
-the live numbers are on the task. At `7e6793fa2c` the mapper models twenty-two
-of the twenty-six categories, three remain unmodelled, three files still carry
-one, and sixty-nine round trip outright. The three that do not each carry more
-than one unmodelled item, so no single category left clears a file on its own:
-finishing the kind means the three categories and the counted sub-fields
+InflationSwap, CrossCurrencyFixFloat, CmsSpreadOption, CommodityFuture,
+CommodityForward and BondYield -- so the live numbers are on the task. At
+`bdfa9d11e6` the mapper models twenty-four of the twenty-six categories, one
+remains unmodelled that any file uses, three files still carry one, and
+sixty-nine round trip outright. The three that do not each carry more than one
+unmodelled item, so no single category left clears a file on its own: finishing
+the kind means IntradayPowerLoad and the five counted list-bearing fields
 together.
 
 ## What the nine files that use only modelled categories fail on
@@ -109,7 +110,7 @@ value the mapper got wrong survives neither direction.
 
 With that in place the files that carry only modelled categories round trip,
 and they are asserted green rather than measured. The count was nine when this
-was written and is sixty-nine once the thirteenth category landed; the
+was written and is sixty-nine once the fifteenth category landed; the
 per-category case asserts each one as it lands, and the whole-kind case asserts
 the count.
 

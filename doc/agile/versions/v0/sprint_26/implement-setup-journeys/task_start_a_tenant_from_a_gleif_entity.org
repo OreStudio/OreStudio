@@ -107,10 +107,13 @@ the result is truncated. Typing in the code stops the name deriving it, and
 typing in the hostname stops the code deriving that; the hostname's default is
 the code itself, which is what the old client did.
 
-*What this task leaves.* The legal entity the manual card may now leave out is
-added later through the *New party* journey. The shape of a tenant code is
-stated by the provision request today and not yet by the database itself, so a
-row written by another caller could still hold a code the screen would refuse.
+*The code is the server's shape, and the check has a test.* The rule lives in
+=ores.iam.core/service/tenant_code_check.hpp=, the provision request applies it
+before the row is written, and a unit test asserts it directly: the accepted
+shape, each way of breaking it, and the sentence the caller shows for each.
+What the task leaves is the database applying the same rule, so a row written by
+another caller cannot hold a code the screen would refuse. The legal entity the
+manual card may now leave out is added later through the *New party* journey.
 
 * Measurements
 

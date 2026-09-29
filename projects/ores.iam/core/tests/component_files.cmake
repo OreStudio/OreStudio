@@ -45,6 +45,7 @@ set(files
     "service_authorization_check_permission_tests.cpp"
     "service_internal_impersonation_service_tests.cpp"
     "service_seed_profile_parameter_check_tests.cpp"
+    "service_tenant_code_check_tests.cpp"
     "service_tenant_presence_tests.cpp"
     "tenant_eventing_integration_tests.cpp"
     "tenant_status_eventing_integration_tests.cpp"

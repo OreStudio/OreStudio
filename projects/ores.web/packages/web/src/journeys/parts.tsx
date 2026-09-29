@@ -185,6 +185,59 @@ export function TenantForm({
     const setParameter = (name: string, value: string): void =>
         onChange({ ...details, parameters: { ...details.parameters, [name]: value } });
 
+    /*
+     * The section a profile's settings are stated in. It leads when one of them
+     * chooses the entity the tenant is built around, because everything else on
+     * the form follows from that choice; the manual card states the tenant
+     * first and its settings after, because there the tenant is the person's own.
+     */
+    const settings = profile.parameters.length > 0 && (
+        <fieldset className="grid gap-4 sm:grid-cols-2">
+            <legend className="mb-2 text-sm font-semibold">
+                {t('journey.details.settings', { profile: profile.name })}
+            </legend>
+            {profile.parameters.map((parameter) => (
+                <Field
+                    key={parameter.name}
+                    className={parameter.dataType === 'legal_entity' ? 'sm:col-span-2' : ''}
+                    label={parameter.dataType === 'legal_entity' ? '' : parameter.label}
+                    {...(parameter.dataType !== 'legal_entity' &&
+                        parameter.hint !== '' && { hint: parameter.hint })}
+                >
+                    {parameter.dataType === 'legal_entity' ? (
+                        <LegalEntitySearch
+                            server={server}
+                            value={details.parameters[parameter.name] ?? ''}
+                            label={parameter.label}
+                            hint={parameter.hint}
+                            onChoose={(entity) =>
+                                chooseEntity(parameter.name, entity.legalName, entity.lei)
+                            }
+                        />
+                    ) : parameter.choices.length > 0 ? (
+                        <Select
+                            value={details.parameters[parameter.name] ?? ''}
+                            onChange={(event) => setParameter(parameter.name, event.target.value)}
+                        >
+                            {parameter.choices.map((choice) => (
+                                <option key={choice}>{choice}</option>
+                            ))}
+                        </Select>
+                    ) : (
+                        <Input
+                            value={details.parameters[parameter.name] ?? ''}
+                            onChange={(event) => setParameter(parameter.name, event.target.value)}
+                        />
+                    )}
+                </Field>
+            ))}
+        </fieldset>
+    );
+
+    const settingsLead = profile.parameters.some(
+        (parameter) => parameter.dataType === 'legal_entity',
+    );
+
     const passwordHint = profile.forcePasswordChange
         ? t('journey.details.passwordForced')
         : undefined;
@@ -242,6 +295,8 @@ export function TenantForm({
 
     return (
         <div className="space-y-6">
+            {settingsLead && settings}
+
             <fieldset className="grid gap-4 sm:grid-cols-2">
                 <legend className="mb-2 text-sm font-semibold">
                     {t('journey.details.tenant')}
@@ -266,52 +321,7 @@ export function TenantForm({
                 </Field>
             </fieldset>
 
-            {profile.parameters.length > 0 && (
-                <fieldset className="grid gap-4 sm:grid-cols-2">
-                    <legend className="mb-2 text-sm font-semibold">
-                        {t('journey.details.settings', { profile: profile.name })}
-                    </legend>
-                    {profile.parameters.map((parameter) => (
-                        <Field
-                            key={parameter.name}
-                            className={parameter.dataType === 'legal_entity' ? 'sm:col-span-2' : ''}
-                            label={parameter.dataType === 'legal_entity' ? '' : parameter.label}
-                            {...(parameter.dataType !== 'legal_entity' &&
-                                parameter.hint !== '' && { hint: parameter.hint })}
-                        >
-                            {parameter.dataType === 'legal_entity' ? (
-                                <LegalEntitySearch
-                                    server={server}
-                                    value={details.parameters[parameter.name] ?? ''}
-                                    label={parameter.label}
-                                    hint={parameter.hint}
-                                    onChoose={(entity) =>
-                                        chooseEntity(parameter.name, entity.legalName, entity.lei)
-                                    }
-                                />
-                            ) : parameter.choices.length > 0 ? (
-                                <Select
-                                    value={details.parameters[parameter.name] ?? ''}
-                                    onChange={(event) =>
-                                        setParameter(parameter.name, event.target.value)
-                                    }
-                                >
-                                    {parameter.choices.map((choice) => (
-                                        <option key={choice}>{choice}</option>
-                                    ))}
-                                </Select>
-                            ) : (
-                                <Input
-                                    value={details.parameters[parameter.name] ?? ''}
-                                    onChange={(event) =>
-                                        setParameter(parameter.name, event.target.value)
-                                    }
-                                />
-                            )}
-                        </Field>
-                    ))}
-                </fieldset>
-            )}
+            {!settingsLead && settings}
 
             <fieldset className="grid gap-4 sm:grid-cols-2">
                 <legend className="mb-2 text-sm font-semibold">

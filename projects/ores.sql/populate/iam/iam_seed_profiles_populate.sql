@@ -95,7 +95,7 @@ insert into ores_iam_seed_profiles_tbl (
     'For demos and testing',
     '["A parent entity the deployment holds, from GLEIF", "Its hierarchy becomes the tenant''s parties", "The tenant is not that entity"]'::jsonb,
     'evaluation', '', '', null, 'tenant_admin', '',
-    false, false, 5,
+    false, false, 15,
     0, current_user, current_user, 'system.initial_load',
     'Initial population of seed profiles'
 )

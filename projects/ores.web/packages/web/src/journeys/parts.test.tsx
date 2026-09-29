@@ -82,6 +82,29 @@ const blank: SeedProfileChoice = {
     tenant: { name: '', code: '', hostname: '', adminUsername: '', adminEmail: '' },
 };
 
+/**
+ * The register-built profile. Its one setting chooses the entity the tenant is
+ * built around, so the form states that setting before the tenant's own fields.
+ */
+const gleif: SeedProfileChoice = {
+    ...profile,
+    code: 'gleif_entity',
+    name: 'GLEIF entity',
+    tenant: { name: '', code: '', hostname: '', adminUsername: '', adminEmail: '' },
+    parameters: [
+        {
+            name: 'root_lei',
+            label: 'Parent legal entity',
+            dataType: 'legal_entity',
+            choices: [],
+            defaultValue: '',
+            required: true,
+            hint: '',
+            order: 1,
+        },
+    ],
+};
+
 /** The demo profile, whose code names the artwork the bundle carries. */
 const acmeProfile: SeedProfileChoice = {
     ...profile,
@@ -188,6 +211,39 @@ describe('the tenant form', () => {
         expect(html).toContain('value="9695ACMEGROUP0000030"');
         expect(html).toContain('Name');
         expect(html).toContain('Hostname');
+    });
+
+    it('states the entity a tenant is built around before the tenant it names', () => {
+        const html = render(
+            <TenantForm
+                server={fakeServer()}
+                profile={gleif}
+                details={detailsFor(gleif)}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Parent legal entity');
+        expect(html.indexOf('Parent legal entity')).toBeLessThan(html.indexOf('Hostname'));
+    });
+
+    it('states the tenant first when the person names it themselves', () => {
+        const html = render(
+            <TenantForm
+                server={fakeServer()}
+                profile={blank}
+                details={detailsFor(blank)}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html.indexOf('Hostname')).toBeLessThan(html.indexOf('Root LEI'));
     });
 
     it('opens as a summary, and asks for no settings, when the profile states its own', () => {

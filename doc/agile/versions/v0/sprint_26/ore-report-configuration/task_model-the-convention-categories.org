@@ -8,7 +8,7 @@
 #+filetags: :refdata:ore:model:round-trip:conventions:ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-the-remaining-conventions
-#+pr:
+#+pr: 2371
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -136,6 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2371][#2371]] | [refdata] Model the remaining convention categories |
 | [[https://github.com/OreStudio/OreStudio/pull/2357][#2357]] | [refdata] Model the convention categories the mapper skips |
 
 * Review

@@ -103,6 +103,7 @@ std::string(faker::word::noun()) + "-host-" + std::to_string(idx)
 :type:     timestamp with time zone
 :cpp_type: std::chrono::system_clock::time_point
 :nullable: true
+:default_value: {}
 :END:
 
 Timestamp of the last heartbeat received from this node.

@@ -97,6 +97,7 @@ std::string("Floating")
 :type:     numeric(28, 10)
 :cpp_type: double
 :nullable: true
+:default_value: 0.0
 :END:
 
 Fixed rate of the funding leg, when the leg is fixed.

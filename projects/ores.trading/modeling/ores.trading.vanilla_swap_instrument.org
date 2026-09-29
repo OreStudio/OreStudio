@@ -76,6 +76,7 @@ trade it names gives the instrument its scope.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:default_value: {}
 :END:
 
 Swap effective/start date.
@@ -91,6 +92,7 @@ std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timep
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:default_value: {}
 :END:
 
 Swap maturity/termination date.

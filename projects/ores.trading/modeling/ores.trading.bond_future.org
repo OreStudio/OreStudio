@@ -238,6 +238,7 @@ Lag in days between the expiry basis and the settlement basis.
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:default_value: {}
 :END:
 
 Last trading date of the contract (ISO 8601 date string).
@@ -251,6 +252,7 @@ std::chrono::year_month_day{std::chrono::year{2029}/9/27}
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :nullable: false
+:default_value: {}
 :END:
 
 Last delivery date of the contract (ISO 8601 date string). The ER

@@ -79,7 +79,7 @@ struct bond_repo final {
     /**
      * @brief Rate of the repo leg, when the leg is fixed.
      */
-    double repo_rate;
+    double repo_rate = 0.0;
 
     /**
      * @brief Index code of the repo leg, when the leg is floating.

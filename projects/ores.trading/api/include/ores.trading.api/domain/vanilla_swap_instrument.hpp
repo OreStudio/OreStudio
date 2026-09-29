@@ -47,14 +47,14 @@ struct vanilla_swap_instrument final {
      *
      * ISO 8601 date string (YYYY-MM-DD).
      */
-    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day start_date = {};
 
     /**
      * @brief Swap maturity/termination date.
      *
      * Must be after start_date.
      */
-    std::chrono::year_month_day maturity_date;
+    std::chrono::year_month_day maturity_date = {};
 
     /**
      * @brief Optional settlement lag in business days.

@@ -145,13 +145,13 @@ struct bond_future final {
     /**
      * @brief Last trading date of the contract (ISO 8601 date string).
      */
-    std::chrono::year_month_day last_trading_date;
+    std::chrono::year_month_day last_trading_date = {};
 
     /**
      * @brief Last delivery date of the contract (ISO 8601 date string). The ER names this the
      * delivery date of the fact row.
      */
-    std::chrono::year_month_day last_delivery_date;
+    std::chrono::year_month_day last_delivery_date = {};
 
     /**
      * @brief Username of the person who last modified this bond future.

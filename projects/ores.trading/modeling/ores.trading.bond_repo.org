@@ -70,6 +70,7 @@ std::string("Fixed")
 :type:     numeric(28, 10)
 :cpp_type: double
 :nullable: true
+:default_value: 0.0
 :END:
 
 Rate of the repo leg, when the leg is fixed.

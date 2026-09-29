@@ -159,7 +159,7 @@ page, the parts that touch the interaction are:
   forwards the hostname on both Entry paths.
 - The wire protocol gains the exports and the operation entries those calls need.
   It has the sign-up schemas generated already; the browser cannot reach them.
-- Every Entry dialog carries the [[id:7B32CA43-239F-4553-8849-3FA3F499B254][rail and the splash header]], and the
+- Every Entry dialog carries the same rail and the same splash header, and the
   registration door is drawn on =JourneyPage= rather than on a rail of its own.
 
 * See also

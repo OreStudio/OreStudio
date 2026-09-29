@@ -102,12 +102,10 @@ application's =styles.css= rather than the trade-entry palette, because a
 prototype in a theme of its own answers the wrong question.
 
 Every variant now carries the ORE Studio banner, which is a requirement of its
-own: [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Give every Entry screen the ORE Studio banner]] covers the sign-in
-dialog and the door alike.
+own: the sign-in dialog and the door alike carry it.
 
 Registration grants one default role, and the question that raises — how a person
-asks for more — is its own journey,
-[[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]], deliberately separate from this door.
+asks for more — is its own journey, deliberately separate from this door.
 
 ** What it does not settle
 
@@ -120,6 +118,4 @@ that document's change table rather than from here.
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
 - [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — the target state this prototype renders.
 - [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the journey the screen belongs to.
-- [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] — the story it was built under.
-- [[id:97B54096-7FB5-42A7-BCDA-CA523C145E9C][Prototype the registration door]] — the task that built it.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster this screen belongs to.

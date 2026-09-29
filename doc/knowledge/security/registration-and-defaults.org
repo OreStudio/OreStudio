@@ -18,8 +18,10 @@ account holds while an administrator has not finished setting it up, and who is
 allowed to change each of those. The rule the rest of the page follows is that a
 default lives as a flag on the row it points at, because row-level security
 decides which actor may write that row, and a default nobody can set is not a
-default. The page is the target state for [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][the Entry story]]; the survey it
-answers is [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]].
+default. The interactions that carry it out are
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]], and the survey
+this page answers is
+[[id:9700E01F-B582-4984-AF2F-81E2BA880544][analyse the sign-up process]].
 
 * The three questions a registration answers
 
@@ -161,7 +163,7 @@ is closed with that reason rather than creating an account that holds nothing.
 A default role is a floor and not a ceiling. A person who needs more than it
 grants asks for it, and that request is its own journey rather than part of the
 door: it happens after registration, it may be refused, and somebody else answers
-it. [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] owns that document.
+it. That journey belongs to the Access group and is documented there, not here.
 
 * The waiting state
 
@@ -354,7 +356,6 @@ administrator can, which does not make the other two theirs.
 
 * See also
 
-- [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] — the story this page is the target state for.
 - [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] — the survey this page answers, and the evidence for the defects it corrects.
 - [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the journeys that read this policy.
 - [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — the same policy carried out: the layers, the order a sign-in is refused in, the refusal codes, and a sequence diagram per interaction.

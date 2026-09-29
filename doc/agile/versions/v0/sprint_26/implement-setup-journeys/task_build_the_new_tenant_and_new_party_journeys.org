@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-new-tenant-and-new-party-journeys
-#+pr: 2396
+#+pr: 2405
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -105,6 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2405][#2405]] | [web,iam] Add a party to the tenant, as a journey |
 | [[https://github.com/OreStudio/OreStudio/pull/2396][#2396]] | [web] Run the new tenant journey on its own rail |
 
 * Review

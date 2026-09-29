@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2373
+#+pr: 2374
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -394,6 +394,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2374][#2374]] | [agile] Record that the reader has no currency to key with |
 | [[https://github.com/OreStudio/OreStudio/pull/2373][#2373]] | [synthetic] Key every pillar as the OIS quote it simulates |
 | [[https://github.com/OreStudio/OreStudio/pull/2372][#2372]] | [agile] Write the re-key's plan |
 | [[https://github.com/OreStudio/OreStudio/pull/2370][#2370]] | [refdata,marketdata] Let the config name its tenor convention |

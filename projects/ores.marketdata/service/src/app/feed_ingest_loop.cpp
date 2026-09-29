@@ -481,6 +481,16 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.point_id = point_id;
         if (obs.point_id.empty() && series_key_registry_)
             obs.point_id = series_key_registry_->default_point_for(series_type);
+        // The key the datum is written under, kept with the row the way the import
+        // keeps the file's. A series type with no point dimension is named by the
+        // series key alone, which is why an FX rate is FX/RATE/EUR/USD and not
+        // .../SPOT; the rest carry the point, whether the producer named it or the
+        // grammar answered for it. That is the same rule the export rebuilds a key
+        // by today, so storing it changes nothing it writes and leaves it a key to
+        // emit rather than one to reconstruct.
+        obs.key = series_key_registry_ && series_key_registry_->has_point_dimension(series_type) ?
+                      ore_key + "/" + obs.point_id :
+                      ore_key;
 
         repository::market_observations_repository obs_repo;
         obs_repo.write(tenant_ctx, obs);

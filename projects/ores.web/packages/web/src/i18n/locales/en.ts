@@ -493,7 +493,8 @@ export const en: SourceCatalogue = {
             tenant: 'Tenant',
             name: 'Name',
             code: 'Code',
-            codeHint: 'Short and unique. It names the tenant in a username.',
+            codeHint:
+                'Lowercase letters, digits and underscores, starting with a letter. It names the tenant in a username.',
             hostname: 'Hostname',
             settings: '{profile} settings',
             administrator: 'Tenant administrator',

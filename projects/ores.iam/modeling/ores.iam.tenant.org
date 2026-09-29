@@ -68,17 +68,31 @@ The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffff
 
 ** code
 :PROPERTIES:
-:type:        text
-:cpp_type:    std::string
-:natural_key: true
+:type:                text
+:cpp_type:            std::string
+:natural_key:         true
+:no_generator_suffix: true
 :END:
 
-Unique code for stable referencing.
+Unique code for stable referencing. Its shape is the deployment's and not a
+form's: a lowercase letter first, then lowercase letters, digits and
+underscores, at most fifty characters. =check_tenant_code= states that to a
+caller as a sentence, and the table's check holds every other writer to it.
 
 Examples: 'system', 'acme', 'demo'.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun()) + "_tenant"
+// no_generator_suffix: the "-<idx>" the template appends is not a shape this
+// code may have, so the index that keeps it unique is joined with an
+// underscore instead, and the noun is lowercased because a faker noun can be
+// an abbreviation such as "CD".
+[idx]{
+    std::string code(faker::word::noun());
+    for (auto& character : code)
+        if (character >= 'A' && character <= 'Z')
+            character = static_cast<char>(character - 'A' + 'a');
+    return code + "_tenant_" + std::to_string(idx);
+}()
 #+end_src
 
 ** name
@@ -161,13 +175,21 @@ Tenant lifecycle status (FK to tenant_statuses).
 
 ** Checks
 
+The code and the hostname are shapes the deployment states, and the table says
+so as well as the service that provisions a tenant: =check_tenant_code= and
+=check_tenant_hostname= refuse a request with a sentence a person can read, and
+these hold every other caller to the same rule. A code whose shape is only
+checked by one caller is a code the deployment does not really state; a
+hostname that states a port is a principal the login cannot resolve.
+
 | expression                                                                  |
 |-----------------------------------------------------------------------------|
 | "id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'   |
 | "id" <> ores_utility_system_tenant_id_fn() or "status" = 'active'           |
 | "tenant_id" = ores_utility_system_tenant_id_fn()                            |
-| "code" <> ''                                                                |
+| "code" ~ '^[a-z][a-z0-9_]{0,49}$'                                           |
 | "hostname" <> ''                                                            |
+| position(':' in "hostname") = 0                                             |
 
 ** Delete sets
 

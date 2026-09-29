@@ -492,7 +492,8 @@ const fr: SourceCatalogue = {
             tenant: 'Locataire',
             name: 'Nom',
             code: 'Code',
-            codeHint: "Court et unique. Il nomme le locataire dans un nom d'utilisateur.",
+            codeHint:
+                "Lettres minuscules, chiffres et traits de soulignement, en commençant par une lettre. Il nomme le locataire dans un nom d'utilisateur.",
             hostname: "Nom d'hôte",
             settings: '{profile} paramètres',
             administrator: 'Administrateur du locataire',

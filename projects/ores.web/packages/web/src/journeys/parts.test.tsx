@@ -463,6 +463,28 @@ describe("a run's step", () => {
         log: [],
     };
 
+    it('states why a step finished with a warning, beside it', () => {
+        const html = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'completed_with_warnings',
+                    log: [
+                        {
+                            level: 'warn',
+                            message:
+                                'The starting point names no legal entity, so there was nothing to import.',
+                            context: '',
+                        },
+                    ],
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+
+        expect(html).toContain('there was nothing to import');
+    });
+
     it('states the step in the words the server sent for it', () => {
         const html = render(<RunStep step={step} words={(sentence) => sentence} />);
 

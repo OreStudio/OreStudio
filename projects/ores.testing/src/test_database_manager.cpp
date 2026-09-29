@@ -35,6 +35,41 @@ namespace {
 
 const std::string prefix = "ORES_TEST_DB_";
 
+/// The longest tenant code the deployment accepts, which a suite's tenant is
+/// held to like any other.
+constexpr std::size_t tenant_code_max_length = 50;
+
+/**
+ * A test suite's name as a tenant code.
+ *
+ * A suite is named like "ores.iam.core.tests", and the code a tenant is
+ * created under is a slug: a lowercase letter first, then lowercase letters,
+ * digits and underscores. So the name is lowercased, anything else becomes an
+ * underscore, and a name that would start with a digit or an underscore gains
+ * a leading letter. A suite tenant is a tenant like any other and the table
+ * holds it to the same shape, which is the point: a harness that could write
+ * what the product refuses would test a deployment nobody has.
+ */
+std::string as_tenant_code(const std::string& name) {
+    std::string code;
+    code.reserve(name.size());
+    for (const auto character : name) {
+        const auto value = static_cast<unsigned char>(character);
+        if (value >= 'A' && value <= 'Z') {
+            code.push_back(static_cast<char>(value - 'A' + 'a'));
+        } else if ((value >= 'a' && value <= 'z') || (value >= '0' && value <= '9') ||
+                   value == '_') {
+            code.push_back(static_cast<char>(value));
+        } else {
+            code.push_back('_');
+        }
+    }
+    if (code.empty() || code.front() < 'a' || code.front() > 'z') {
+        code.insert(0, "tenant_");
+    }
+    return code;
+}
+
 }
 
 namespace ores::testing {
@@ -90,11 +125,23 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
     std::uniform_int_distribution<> dis(1000, 9999);
     const auto random_suffix = dis(gen);
 
-    std::ostringstream oss;
-    oss << test_suite_name << "_" << std::put_time(&tm_now, "%Y%m%d_%H%M%S") << "_" << pid << "_"
-        << random_suffix;
+    /*
+     * The suffix identifies the run and the process, so it is what has to
+     * survive the length limit; the suite's name is shortened to fit around it.
+     */
+    std::ostringstream suffix;
+    suffix << "_" << std::put_time(&tm_now, "%Y%m%d_%H%M%S") << "_" << pid << "_" << random_suffix;
 
-    const auto tenant_code = oss.str();
+    const auto suffix_text = suffix.str();
+    const auto room = suffix_text.size() < tenant_code_max_length
+                          ? tenant_code_max_length - suffix_text.size()
+                          : 0;
+    auto suite = as_tenant_code(test_suite_name);
+    if (suite.size() > room) {
+        suite.resize(room);
+    }
+
+    const auto tenant_code = suite + suffix_text;
     BOOST_LOG_SEV(lg(), info) << "Generated test tenant code: " << tenant_code;
 
     return tenant_code;

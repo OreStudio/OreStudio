@@ -62,8 +62,9 @@ create table if not exists "ores_iam_tenants_tbl" (
     check ("id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'),
     check ("id" <> ores_utility_system_tenant_id_fn() or "status" = 'active'),
     check ("tenant_id" = ores_utility_system_tenant_id_fn()),
-    check ("code" <> ''),
-    check ("hostname" <> '')
+    check ("code" ~ '^[a-z][a-z0-9_]{0,49}$'),
+    check ("hostname" <> ''),
+    check (position(':' in "hostname") = 0)
 );
 
 -- Unique code for active records

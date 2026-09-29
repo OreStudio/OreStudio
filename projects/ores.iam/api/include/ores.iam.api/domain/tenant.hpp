@@ -72,7 +72,10 @@ struct tenant final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Unique code for stable referencing.
+     * @brief Unique code for stable referencing. Its shape is the deployment's and not a form's: a
+     * lowercase letter first, then lowercase letters, digits and underscores, at most fifty
+     * characters. check_tenant_code states that to a caller as a sentence, and the table's check
+     * holds every other writer to it.
      *
      * Examples: 'system', 'acme', 'demo'.
      */

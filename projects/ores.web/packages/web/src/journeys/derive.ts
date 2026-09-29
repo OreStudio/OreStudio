@@ -55,6 +55,29 @@ export function codeFromName(name: string): string {
     return (first < 0 ? '' : slug.slice(first)).slice(0, TENANT_CODE_MAX_LENGTH);
 }
 
+/**
+ * What a code becomes while somebody types it.
+ *
+ * The same shape `isTenantCode` states, applied rather than judged: the value
+ * is lowercased, everything outside lowercase letters, digits and underscores
+ * is dropped, a leading non-letter is dropped because a code starts with a
+ * letter, and the result stops at the length the server accepts. A field that
+ * let somebody type what the server refuses would offer them a value that
+ * cannot be created, and the refusal would arrive a screen later.
+ */
+export function codeAsTyped(value: string): string {
+    const kept = [...value.toLowerCase()].filter(
+        (character) =>
+            (character >= 'a' && character <= 'z') ||
+            (character >= '0' && character <= '9') ||
+            character === '_',
+    );
+    while (kept.length > 0 && kept[0] !== undefined && kept[0] < 'a') {
+        kept.shift();
+    }
+    return kept.join('').slice(0, TENANT_CODE_MAX_LENGTH);
+}
+
 /** The hostname a code proposes. A deployment serves the tenant on its code. */
 export function hostnameFromCode(code: string): string {
     return code;

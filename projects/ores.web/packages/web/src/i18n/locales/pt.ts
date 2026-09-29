@@ -496,7 +496,8 @@ const pt: SourceCatalogue = {
             tenant: 'Inquilino',
             name: 'Nome',
             code: 'Código',
-            codeHint: 'Curto e único. Dá nome ao inquilino num nome de utilizador.',
+            codeHint:
+                'Letras minúsculas, dígitos e underscores, começando por uma letra. Dá nome ao inquilino num nome de utilizador.',
             hostname: 'Nome do anfitrião',
             settings: '{profile} definições',
             administrator: 'Administrador do inquilino',

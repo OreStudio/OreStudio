@@ -1,0 +1,124 @@
+The shape of a tenant code and a tenant hostname, held by the database.
+
+Environment: eager_maxwell. Branch: feature/start-a-tenant-from-a-gleif-entity.
+
+The rule is stated in the model
+(projects/ores.iam/modeling/ores.iam.tenant.org, ** Checks) and rendered into
+projects/ores.sql/create/iam/iam_tenants_create.sql:
+
+    check ("code" ~ '^[a-z][a-z0-9_]{0,49}$'),
+    check ("hostname" <> ''),
+    check (position(':' in "hostname") = 0)
+
+It is the same rule check_tenant_code and check_tenant_hostname state to a
+caller, so the sentence a person reads and the row the database holds agree.
+
+-------------------------------------------------------------------------------
+On the live table
+-------------------------------------------------------------------------------
+
+Applied with add constraint ... not valid and proved inside a transaction that
+is rolled back. On a recreated database the constraints arrive with the table;
+the live one already holds closed versions an earlier integration run left
+behind, which a recreate never creates.
+
+    ./compass.sh sql -- -f build/evidence/tenant_shape_probe.sql
+
+    begin;
+    alter table ores_iam_tenants_tbl add constraint tenants_code_shape_ck
+        check ("code" ~ '^[a-z][a-z0-9_]{0,49}$') not valid;
+    alter table ores_iam_tenants_tbl add constraint tenants_hostname_shape_ck
+        check (position(':' in "hostname") = 0) not valid;
+
+    savepoint bad_code;
+    update ores_iam_tenants_tbl set code = 'Barclays PLC' where code = 'barclays_plc';
+      ERROR:  new row for relation "ores_iam_tenants_tbl" violates check constraint
+              "tenants_code_shape_ck"
+    rollback to savepoint bad_code;
+
+    savepoint bad_length;
+    update ores_iam_tenants_tbl set code = repeat('a', 51) where code = 'barclays_plc';
+      ERROR:  new row for relation "ores_iam_tenants_tbl" violates check constraint
+              "tenants_code_shape_ck"
+    rollback to savepoint bad_length;
+
+    savepoint bad_hostname;
+    update ores_iam_tenants_tbl set hostname = 'barclaysplc.com:8080' where code = 'barclays_plc';
+      ERROR:  new row for relation "ores_iam_tenants_tbl" violates check constraint
+              "tenants_hostname_shape_ck"
+    rollback to savepoint bad_hostname;
+
+    savepoint good;
+    update ores_iam_tenants_tbl set code = 'barclays_plc_2', hostname = 'barclaysplc2.com'
+        where code = 'barclays_plc';
+      UPDATE 2
+      code           | hostname
+      ---------------+-----------------
+      barclays_plc_2 | barclaysplc2.com
+    rollback to savepoint good;
+    rollback;
+
+An add of the constraint *without* not valid is refused for a different and
+honest reason: an earlier integration run left closed rows whose suite tenant
+code carried dots, and the constraint is validated against every row when it is
+added. A recreate holds no such row.
+
+-------------------------------------------------------------------------------
+The two writers that had to move with the rule
+-------------------------------------------------------------------------------
+
+Both were writing what the rule refuses, and both were found by the constraint
+rather than by reading:
+
+1. The synthetic generator. `std::string(faker::word::noun()) + "_tenant"` plus
+   the template's "-<idx>" suffix produced codes like CD_tenant-3. Measured
+   against the model's own generator, with the template's logic reproduced
+   beside faker-cxx:
+
+       codes generated: 20000, breaking the rule: 20000, distinct: 20000
+
+   The code field now states :no_generator_suffix: with a snippet that
+   lowercases the noun and joins the index with an underscore, the way the
+   refdata models state a natural key whose value has a shape:
+
+       codes generated: 20000, breaking the rule: 0, distinct: 20000
+
+2. The test harness's suite tenant. generate_test_tenant_code used the suite
+   name verbatim, so "ores.iam.core.tests" produced
+   ores.iam.core.tests_20260929_132513_3_3295 with dots in it. The name is now
+   lowercased, anything outside the shape becomes an underscore, and the run
+   suffix — the part that has to stay unique — is what the fifty-character limit
+   is measured from, so the suite's name is shortened to fit around it.
+
+How many tenant rows the deployment had, and what each was, when this was
+measured:
+
+    select code, hostname, valid_to = ores_utility_infinity_timestamp_fn() as live
+    from ores_iam_tenants_tbl order by code, valid_to;
+
+      code      | hostname         | live
+      ----------+------------------+------
+      barclays_plc | barclaysplc.com | t
+      system       | localhost       | t
+      (six closed rows from earlier integration runs)
+
+-------------------------------------------------------------------------------
+The import step a run with no legal entity takes
+-------------------------------------------------------------------------------
+
+The second half of this task: the manual card leaves the legal entity out, and
+the import step used to stop the run with "The step states no 'root_lei'
+argument and the run supplies no 'root_lei' parameter." It now reads as empty,
+completes with a warning, and says so in the step's log:
+
+    The starting point names no legal entity, so there was nothing to import.
+
+The browser shows that sentence beside the warned step on the rail, so a run
+that did nothing where the card promised work says so rather than looking
+finished.
+
+    build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests "an LEI import*"
+    All tests passed (10 assertions in 7 test cases)
+
+    ... "check_tenant*"
+    All tests passed (21 assertions in 6 test cases)

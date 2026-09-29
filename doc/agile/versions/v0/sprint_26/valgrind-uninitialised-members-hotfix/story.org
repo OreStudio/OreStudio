@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: C6FA1B77-DA25-4878-9819-5091E8932312
+:END:
+#+title: Story: Hotfix: the nightly Valgrind run reports uninitialised members and library leaks
+#+description: The 2026-09-29 nightly dynamic analysis reports defects for four suites: ores.trading.api.tests (4), ores.refdata.core.tests (3329), ores.ore.core.tests (99) and ores.analytics.core.tests (214). The uninitialised-value defects are generated struct members with no in-class initialiser, read by the write path that stringifies an entity for its INSERT; the 3329 are still-reachable allocations in the coverage runtime, glibc's atexit registration, libpq's connection state and the Catch2 reporter. The models declare the defaults, a codegen gate refuses the nullable shape, and the suppressions carry the library allocations.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:valgrind:codegen:models:analytics:trading:compute:sprint_26:v0:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The nightly memcheck run reports defects in four suites, and the outputs
+under =tmp/= are the CDash pages for them:
+
+#+begin_src text
+52/87 MemCheck: #55: ores.trading.api.tests ...........   Defects: 4
+58/87 MemCheck: #52: ores.refdata.core.tests ..........   Defects: 3329
+83/87 MemCheck: #69: ores.ore.core.tests ..............   Defects: 99
+85/87 MemCheck: #85: ores.analytics.core.tests ........   Defects: 214
+#+end_src
+
+Two different defects wear the same number.
+
+The uninitialised-value defects are one class: a generated struct member
+with no in-class initialiser. Only =:default_value:= reaches the member
+initialiser the class template emits, and a model that declares none leaves
+a default-constructed object indeterminate. Nothing detects that until a
+write path reads the member, and sqlgen reads every member when it
+stringifies an entity for its INSERT:
+
+- =ores.analytics.core.tests=: =credit_simulation_matrix_config.t0= and
+  =t1=, and the eight =p_*= probabilities of
+  =credit_simulation_matrix_row_config=, are =double= columns with no
+  default. The generated generator cannot fill them, so a synthetic row
+  reaches the INSERT with eight indeterminate members.
+- =ores.ore.core.tests=: 40 of the 43 defects are =yyjson= reading
+  =bond_trs::funding_rate= while the roundtrip test writes the payload, and
+  3 are the date reflector reading =bond_future='s two unset dates.
+  =funding_rate= is =nullable: true= with a bare =double=, so the entity
+  wraps it and the mapper maps zero to NULL; the domain member was
+  indeterminate instead of zero.
+- =ores.trading.api.tests=: the test builds a =vanilla_swap_instrument= by
+  default-initialising it and writing it out, which reads both dates.
+- =ores.analytics.core.tests= again, for =credit_simulation_config='s
+  nullable bare =bool= and =int= members, which the generated entity
+  config test builds and inserts.
+
+The 3329 records for =ores.refdata.core.tests= are all *still reachable*,
+not lost: 3254 are the coverage runtime registering every translation
+unit's counters at load, and the rest are glibc's atexit handler nodes,
+libpq's per-connection state (the pool lives for the process), and the
+Catch2 reporter's output stream. =build/valgrind/custom.supp= already
+carries 196 rules of exactly that kind; these categories were missing.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-29                               |
+
+* Acceptance
+
+- The four suites report no defect under valgrind: each log holds no error
+  and no leak record.
+- Every uninitialised member is initialised by a =:default_value:= its model
+  declares, and the affected components are regenerated.
+- =org_loader= refuses a nullable column whose =:cpp_type:= is a bare value
+  type and that declares no default, so the shape that caused several of
+  these cannot be merged again.
+- =build/valgrind/custom.supp= gains a rule per library category, each
+  naming why the allocation is still reachable rather than lost.
+- The full suite, the codegen suite and the catalogue sweep pass on this
+  branch.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:28FF0CDE-BF9A-461D-AA3A-F46D79CF4F06][Implement Hotfix: the nightly Valgrind run reports uninitialised members and library leaks]] | DONE | 2026-09-29 | 2026-09-29 | Reproduce every defect locally with origins, declare the model defaults and regenerate, extend the suppressions with the library categories, add the codegen gate, and prove the four suites and the full suite clean. |
+
+* Decisions
+
+- The defaults are declared in the models rather than synthesised in the
+  templates. The estate's mechanism for this is =:default_value:=, the sprint
+  25 compute-host fix used it for the same defect, and the value that means
+  "absent" is the model's to state. The alternative -- synthesising a default
+  for every arithmetic and chrono type in =core.py= -- closes the whole class
+  at once but decides a semantic value on the model's behalf; it is filed as
+  a capture with the census so the decision is taken with the size known.
+- The gate refuses the nullable half of the shape and not the non-nullable
+  half. A nullable column with a bare =double= cannot carry NULL, so the
+  convention that zero is the absence has to be stated; that is the shape
+  that produced =bond_trs::funding_rate=. The non-nullable half is 87 columns
+  today and refusing it would make this branch a catalogue-wide model change.
+- The suppressions name the allocation site's library frame, not the loader.
+  A rule anchored on =llvm_gcov_init=, =__cxa_atexit=, =PQconnectdb= or the
+  Catch2 reporter suppresses the category and leaves any allocation through
+  another path visible.
+- Each finding was reproduced locally with =--track-origins=yes= before it
+  was fixed. The saved CDash pages are truncated at about a megabyte, and the
+  first version of this work fixed 64 of the 214 analytics defects because it
+  trusted the page; the second entity's 146 only appeared when the binary was
+  re-run.
+
+* Out of scope
+
+- The 87 non-nullable columns across the catalogue that still declare no
+  default and generate an indeterminate member. The census is filed as
+  [[id:F1523C7D-5DA9-42C1-8928-45C1642D4B64][87 non-nullable columns still generate an indeterminate member]].
+- The pre-existing generated drift in components outside the drift gate.
+  Regenerating =trading-cpp= to update the models rewrote one unrelated
+  line of =trade_service.cpp=, a clang-format wrapping difference; it was
+  reverted so this branch carries only its own change.
+- The seed-profile eventing tests of =ores.iam.core.tests=, which leave the
+  profile they insert in the database and so only pass once per database.
+  Found while verifying, unrelated to this change, and filed as
+  [[id:96828FAA-1F22-4F18-AB56-81C0C8EBE33E][The iam seed-profile eventing tests only pass once per database]].

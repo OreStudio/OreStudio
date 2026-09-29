@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 28FF0CDE-BF9A-461D-AA3A-F46D79CF4F06
+:END:
+#+title: Task: Implement Hotfix: the nightly Valgrind run reports uninitialised members and library leaks
+#+description: Declare the C++ default on the model columns whose generated members the nightly memcheck run found indeterminate, extend build/valgrind/custom.supp for the still-reachable library allocations, add the codegen gate for the nullable shape, and prove the four affected suites run clean under valgrind.
+#+type: task
+#+level: s1
+#+filetags: :valgrind:codegen:models:analytics:trading:compute:sprint_26:v0:valgrind-uninitialised-members-hotfix:
+#+owner: marco
+#+branch: feature/address-valgrind-findings
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C6FA1B77-DA25-4878-9819-5091E8932312][Hotfix: the nightly Valgrind run reports uninitialised members and library leaks]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take the four suites the nightly dynamic analysis reports defects for to
+zero: =ores.trading.api.tests= (4), =ores.refdata.core.tests= (3329),
+=ores.ore.core.tests= (99) and =ores.analytics.core.tests= (214). Fix the
+defects that are ours and suppress the allocations that are the libraries'.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                          |
+| Parent story | [[id:C6FA1B77-DA25-4878-9819-5091E8932312][Hotfix: the nightly Valgrind run reports uninitialised members and library leaks]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- Every uninitialised-value defect the four suites reported is gone, and the
+  member that caused it is initialised by its model's =:default_value:=.
+- The 3329 still-reachable leak records for =ores.refdata.core.tests= are
+  suppressed by rules anchored on the allocating library, each with the
+  reason it is not a leak.
+- A nullable column whose =:cpp_type:= is a bare value type can no longer be
+  merged without a declared default: =org_loader= refuses it.
+- The full test suite passes, the codegen suite passes, and the sweep over
+  every catalogue component reports no file this branch changed as drifted.
+
+* Plan
+
+1. Reproduce each reported defect locally with =--track-origins=yes= so the
+   member and the site that leaves it unset are named, rather than inferred
+   from a truncated CDash page.
+2. Fix each at the model: =:default_value:= on the column, then regenerate
+   the component.
+3. Census the rest of the class so the size of what is left is on record.
+4. Extend =build/valgrind/custom.supp= for the library allocations, and add
+   the codegen gate for the nullable shape.
+5. Re-run the four binaries under valgrind until the logs are empty, and run
+   the whole suite and the drift gates before raising the pull request.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Nightly baseline, 2026-09-29 linux-clang-debug | 1 test failed of 87; defects: =trading.api= 4, =refdata.core= 3329, =ore.core= 99, =analytics.core= 214 | =gh run view --job 109252162647 --log= | main at 3632865c |
+| =ores.trading.api.tests=, before | 3 conditional jumps on an uninitialised date | =valgrind ... ores.trading.api.tests= | this branch, before the fix |
+| =ores.analytics.core.tests=, before | 190 uninitialised reads (111 conditional, 79 value) in =std::to_string(double)= from the sqlgen INSERT | same | this branch, before the fix |
+| =ores.ore.core.tests=, before | 43 defects: 40 in yyjson writing =bond_trs::funding_rate=, 3 in the date reflector reading =bond_future='s dates | =tmp/ores.ore.core.tests.valgrind= (CDash page) | main at 3632865c |
+| =ores.trading.api.tests=, after | valgrind log empty, 426 assertions in 99 test cases pass | =valgrind ... ores.trading.api.tests= | this branch |
+| The 3329 CI leak stacks against the final suppression file | 0 unmatched, of 202 rules | =build/hotfix_red/suppression_matcher.py= | this branch |
+| =ores.analytics.core.tests=, after | valgrind log empty, 140 assertions in 39 test cases pass | same | this branch |
+| =ores.ore.core.tests=, after | valgrind log empty, 436970 assertions in 576 test cases pass | same | this branch |
+| =ores.refdata.core.tests=, after | valgrind log empty, 4085 assertions in 243 test cases pass | same | this branch |
+| Full suite on a recreated database | 89 of 89 pass; a second run on the same database fails =ores.iam.core.tests= on residue its first run left | =ctest --preset linux-clang-debug-make -j 4= | this branch |
+| Codegen suite | 1001 passed | =pytest projects/ores.codegen/tests -q= | this branch |
+| Catalogue sweep | no file this branch touched would change | =check_component_drift.py --sweep --dry-run= | this branch |
+| Census after the fix | 236 non-nullable columns declare no default; 149 are =int= (synthesised by codegen), 87 are not | =build/hotfix_red/census_defaults.py= | this branch |
+
+* Notes
+
+- The CDash pages saved under =tmp/= are truncated at about a megabyte, so
+  the analytics page listed 64 of the 214 defects and the first fix left 146
+  behind in a second entity. The complete set came from re-running each
+  binary locally, which is also what proves the fix.
+- The uninitialised values are all created by a stack frame in the test or
+  the generated generator, and read in a write path: sqlgen stringifies every
+  entity member to build the INSERT, so an entity built by a generated
+  generator that skips a column is read whole.
+- =bond_trs::funding_rate= and =bond_repo::repo_rate= are =nullable: true=
+  with a bare =double=, so the generated entity wraps them in
+  =std::optional= and the generated mapper maps zero to =nullopt=. The
+  declared default of =0.0= is that convention, not a value the domain
+  intends.
+- The full suite passes on a recreated database, and only on a recreated
+  database: =ores.iam.core.tests= is not idempotent. Its first run leaves
+  three seed profiles open, and the second run fails three cases on
+  =seed_profiles_code_uniq_idx=. That is a pre-existing defect of the tests
+  rather than of this change, and it is filed as
+  [[id:96828FAA-1F22-4F18-AB56-81C0C8EBE33E][The iam seed-profile eventing tests only pass once per database]]. It also
+  cost this task two verification runs: the residue was misread at first as
+  damage the valgrind runs had done.
+- The gate refuses the nullable shape rather than synthesising a default,
+  because the value that means "absent" is the model's to state. For the
+  non-nullable shape the same choice is open and is filed as a capture; this
+  task declares the defaults the reported instances needed and records the
+  census, so the decision is taken with the size known.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The four suites the nightly reported are clean under valgrind: each log
+holds no error and no leak record. Fifteen model columns declare the default
+their generated member needs, the nullable shape that caused several of them
+is refused by =org_loader=, and the still-reachable library allocations are
+suppressed with the reason each is not a leak.
+
+The full suite passes 89 of 89 on a recreated database, the codegen suite
+passes 1001 tests, and the sweep over the catalogue reports no file this
+branch changed as drifted. What is left of the class is filed as a capture
+with the census: 87 non-nullable columns still generate an indeterminate
+member.

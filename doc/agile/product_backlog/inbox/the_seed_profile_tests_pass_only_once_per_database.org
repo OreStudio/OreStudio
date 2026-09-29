@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 96828FAA-1F22-4F18-AB56-81C0C8EBE33E
+:END:
+#+title: The iam seed-profile eventing tests only pass once per database
+#+description: Three of the seed-profile eventing integration tests insert a seed profile and never remove it, so ores.iam.core.tests passes on a fresh database and fails on the second run with a duplicate key on seed_profiles_code_uniq_idx. CI never sees it because every job recreates the database first, but any second run in a worktree hits it, and the residue is what made two full-suite runs on this branch fail after four valgrind runs had touched the same database.
+#+type: capture
+#+level: cross
+#+filetags: :iam:tests:hygiene:isolation:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the seed-profile eventing tests clean up the profile they create, or
+make them use a code unique to the run, so =ores.iam.core.tests= is
+idempotent.
+
+* Why
+
+The evidence, measured on branch =feature/address-valgrind-findings=:
+
+#+begin_src text
+--- first run
+100% tests passed, 0 tests failed out of 1
+--- second run
+0% tests passed, 1 tests failed out of 1
+#+end_src
+
+The second run fails three cases, all on the same constraint:
+
+#+begin_src text
+seed_profile_eventing_integration_tests.cpp:118: duplicate key value violates
+  unique constraint "seed_profiles_code_uniq_idx"
+seed_profile_parameter_eventing_integration_tests.cpp:122: same
+seed_profile_step_eventing_integration_tests.cpp:122: same
+#+end_src
+
+After the first run, three profiles are open in the database:
+
+#+begin_src text
+ CD_profile-0 | 9999-12-31 23:59:59+00
+ CD_profile-1 | 9999-12-31 23:59:59+00
+ CD_profile-2 | 9999-12-31 23:59:59+00
+#+end_src
+
+They are test residue rather than seed data: the database's own profiles are
+=acme_demo= and =empty_operational=. One =DELETE= on the codes clears them and
+the suite passes again, which is how the two runs above were produced.
+
+CI does not see this because every job recreates its database before running
+the suite (=compass db recreate -y -D ores_ci=), so the first run is always
+the first run. Locally it is easy to hit: it took a worktree full of
+valgrind runs to expose it, and it was misread at first as damage the
+valgrind runs had done.
+
+The same class already has a capture,
+[[id:0F5115A5-05FA-4A0E-A24B-1305F6DBC41B][Workflow tests leave in-progress runs behind in every database they touch]];
+this is the same defect in another component, and the fix is the same shape:
+either clean up, or make the identifier unique to the run.
+
+* References
+
+- =projects/ores.iam/core/tests/seed_profile_eventing_integration_tests.cpp=
+  and its two siblings, at the lines above.
+- Story [[id:C6FA1B77-DA25-4878-9819-5091E8932312][Hotfix: the nightly Valgrind run reports uninitialised members and library leaks]]
+  — where the residue was found while verifying, and named as the reason the
+  full suite passes only on a recreated database.
+
+* See also
+
+- [[id:0F5115A5-05FA-4A0E-A24B-1305F6DBC41B][Workflow tests leave in-progress runs behind in every database they touch]]

@@ -140,3 +140,122 @@ begin
     offset p_offset;
 end;
 $$ language plpgsql stable;
+
+-- =============================================================================
+-- Search Function
+-- =============================================================================
+
+/**
+ * Returns the root legal entities whose name or LEI matches a search, each with
+ * the number of parties importing its hierarchy would create.
+ *
+ * This is the read a search uses. Both filters are optional and an empty one
+ * means every value, because a person looking for the entity a tenant is built
+ * around knows its name, not the page it happens to fall on: the deployment
+ * holds tens of thousands of entities, so a page over them answers the wrong
+ * question. The LEI is matched from its start, which is how somebody who knows
+ * it types it, and the name anywhere in it.
+ *
+ * The count walks the same IS_DIRECTLY_CONSOLIDATED_BY relationships the
+ * publication walks, so a starting point can state how much work choosing an
+ * entity is before the choice is made. It counts the entities the deployment
+ * holds, and an entity a relationship names but the deployment does not hold is
+ * not a party the import would create.
+ */
+create or replace function ores_dq_lei_entities_search_fn(
+    p_search  text default '',
+    p_country text default '',
+    p_limit   integer default 20,
+    p_offset  integer default 0
+)
+returns table (
+    lei               text,
+    entity_legal_name text,
+    entity_category   text,
+    country           text,
+    party_count       bigint
+) as $$
+begin
+    return query
+    with recursive matched as (
+        select distinct on (e.lei)
+            e.lei,
+            e.entity_legal_name,
+            e.entity_entity_category,
+            e.entity_legal_address_country
+        from ores_dq_lei_entities_artefact_tbl e
+        where e.tenant_id in (
+                  ores_iam_current_tenant_id_fn(),
+                  ores_utility_system_tenant_id_fn()
+              )
+          and e.entity_entity_status = 'ACTIVE'
+          and (p_country = '' or e.entity_legal_address_country = p_country)
+          and (
+              p_search = ''
+              or e.entity_legal_name ilike '%' || p_search || '%'
+              or e.lei ilike p_search || '%'
+          )
+          and not exists (
+              select 1
+              from ores_dq_lei_relationships_artefact_tbl r
+              where r.tenant_id in (
+                        ores_iam_current_tenant_id_fn(),
+                        ores_utility_system_tenant_id_fn()
+                    )
+                and r.relationship_start_node_node_id = e.lei
+                and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
+                and r.relationship_relationship_status = 'ACTIVE'
+          )
+        order by e.lei
+    ),
+    page as (
+        select m.lei,
+               m.entity_legal_name,
+               m.entity_entity_category,
+               m.entity_legal_address_country
+        from matched m
+        order by m.entity_legal_name, m.lei
+        limit p_limit
+        offset p_offset
+    ),
+    subtree as (
+        select p.lei as node, p.lei as root
+        from page p
+
+        union
+
+        select distinct r.relationship_start_node_node_id, s.root
+        from ores_dq_lei_relationships_artefact_tbl r
+        join subtree s on s.node = r.relationship_end_node_node_id
+        where r.tenant_id in (
+                  ores_iam_current_tenant_id_fn(),
+                  ores_utility_system_tenant_id_fn()
+              )
+          and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
+          and r.relationship_relationship_status = 'ACTIVE'
+    ),
+    sizes as (
+        select s.root, count(*) as party_count
+        from subtree s
+        where exists (
+            select 1
+            from ores_dq_lei_entities_artefact_tbl e
+            where e.lei = s.node
+              and e.tenant_id in (
+                        ores_iam_current_tenant_id_fn(),
+                        ores_utility_system_tenant_id_fn()
+                    )
+              and e.entity_entity_status = 'ACTIVE'
+        )
+        group by s.root
+    )
+    select p.lei,
+           p.entity_legal_name,
+           p.entity_entity_category,
+           p.entity_legal_address_country,
+           coalesce(sizes.party_count, 0)
+    from page p
+    left join sizes on sizes.root = p.lei
+    order by p.entity_legal_name, p.lei;
+end;
+$$ language plpgsql stable;

@@ -67,6 +67,7 @@ export const SUBJECTS = {
     retryWorkflowInstance: 'workflow.v1.instances.retry',
     passwordPolicy: 'iam.v1.auth.password-policy',
     leiEntitiesSummary: 'dq.v1.lei-entities.summary',
+    leiEntitiesSearch: 'dq.v1.lei-entities.search',
 } as const;
 
 /**
@@ -690,15 +691,17 @@ export type SeedProfilesResponse = z.infer<typeof seedProfilesResponseSchema>;
 /**
  * One legal entity a deployment can start a tenant from, as a screen reads it.
  *
- * The read behind it lists the root legal entities the deployment holds, and
- * this is the part of that answer a screen needs: the LEI that names the
- * entity, the name a person recognises it by, and the country it is registered
- * in.
+ * The read behind it matches the root legal entities the deployment holds
+ * against what a person typed, and this is the part of that answer a screen
+ * needs: the LEI that names the entity, the name a person recognises it by, the
+ * country it is registered in, and how many parties its hierarchy would create,
+ * which is the work choosing it starts.
  */
 export const leiEntityChoiceSchema = z.object({
     lei: z.string().default(''),
     legalName: z.string().default(''),
     country: z.string().default(''),
+    partyCount: z.number().default(0),
 });
 
 export type LeiEntityChoice = z.infer<typeof leiEntityChoiceSchema>;
@@ -727,6 +730,25 @@ export const leiEntitySummaryResponseSchema = z.object({
 });
 
 export type LeiEntitySummaryResponse = z.infer<typeof leiEntitySummaryResponseSchema>;
+
+/** The server's answer to a legal-entity search, before it is read. */
+export const searchLeiEntitiesResponseSchema = z.object({
+    success: z.boolean().default(false),
+    error_message: z.string().default(''),
+    entities: z
+        .array(
+            z.object({
+                lei: z.string().default(''),
+                entity_legal_name: z.string().default(''),
+                entity_category: z.string().default(''),
+                country: z.string().default(''),
+                party_count: z.number().default(0),
+            }),
+        )
+        .default([]),
+});
+
+export type SearchLeiEntitiesResponse = z.infer<typeof searchLeiEntitiesResponseSchema>;
 
 /**
  * A request to provision one tenant from a starting point.

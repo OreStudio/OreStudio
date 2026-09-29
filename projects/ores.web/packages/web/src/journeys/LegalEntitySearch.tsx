@@ -24,14 +24,18 @@
  *
  * A person who has an LEI knows it; a person who does not cannot guess one, so
  * the field is a search over the entities the deployment holds rather than a
- * text box. The list is read once, when the field first appears, and the search
- * filters it here: the read answers a country and a page, so a name filter is
- * the caller's, and the shortcoming that a set larger than one page cannot be
- * searched honestly is captured rather than hidden.
+ * text box. The matching belongs to the read: the deployment holds tens of
+ * thousands of entities, so the one somebody is looking for is not on any page
+ * a screen could fetch, and a search that fetched one page and filtered it
+ * answered "no match" for entities that were there.
+ *
+ * Typing asks the read again, once the person stops for a moment, and a match
+ * states how many parties its hierarchy would create, because that is the work
+ * choosing it starts.
  *
  * What the screen states about a match is only what the read answered: the
- * legal name, the LEI and the country. Nothing about the entity's hierarchy is
- * invented here.
+ * legal name, the LEI, the country and the count. Nothing about the entity's
+ * hierarchy is invented here.
  */
 
 import { useEffect, useState, type ReactNode } from 'react';
@@ -40,8 +44,8 @@ import { Input, Notice, cx } from '../ui/Primitives.js';
 import type { JourneyServer } from './server.js';
 import type { LeiEntityChoice } from '@ores/wire-protocol/browser';
 
-/** How many matches a search offers before it asks for a narrower one. */
-const MAX_MATCHES = 20;
+/** How long the typing has to stop before the read is asked. */
+export const SEARCH_SETTLE_MS = 250;
 
 function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
@@ -61,42 +65,52 @@ export function LegalEntitySearch({
     readonly hint: string | undefined;
     readonly onChoose: (entity: LeiEntityChoice) => void;
 }): ReactNode {
-    const { t } = useTranslation();
-    const [entities, setEntities] = useState<readonly LeiEntityChoice[]>([]);
+    const { t, plural } = useTranslation();
+    const [matches, setMatches] = useState<readonly LeiEntityChoice[]>([]);
     const [query, setQuery] = useState('');
+    const [searched, setSearched] = useState('');
     const [failure, setFailure] = useState<string>();
 
+    /*
+     * The entity the person picked, held here rather than looked up among the
+     * matches: the query that found it is usually no longer the one in the box,
+     * and the summary of what was chosen has to survive that.
+     */
+    const [picked, setPicked] = useState<LeiEntityChoice>();
+    const chosen = picked?.lei === value ? picked : undefined;
+
     useEffect(() => {
+        const text = query.trim();
+        if (text === '') {
+            setMatches([]);
+            setSearched('');
+            setFailure(undefined);
+            return;
+        }
         let cancelled = false;
-        void (async () => {
-            try {
-                const answer = await server.leiEntities();
-                if (!cancelled) {
-                    setEntities(answer);
+        const timer = setTimeout(() => {
+            void (async () => {
+                try {
+                    const answer = await server.leiEntities(text);
+                    if (!cancelled) {
+                        setMatches(answer);
+                        setSearched(text);
+                        setFailure(undefined);
+                    }
+                } catch (error) {
+                    if (!cancelled) {
+                        setMatches([]);
+                        setSearched(text);
+                        setFailure(reasonOf(error));
+                    }
                 }
-            } catch (error) {
-                if (!cancelled) {
-                    setFailure(reasonOf(error));
-                }
-            }
-        })();
+            })();
+        }, SEARCH_SETTLE_MS);
         return () => {
             cancelled = true;
+            clearTimeout(timer);
         };
-    }, [server]);
-
-    const needle = query.trim().toLowerCase();
-    const matches =
-        needle === ''
-            ? []
-            : entities
-                  .filter(
-                      (entity) =>
-                          entity.legalName.toLowerCase().includes(needle) ||
-                          entity.lei.toLowerCase().startsWith(needle),
-                  )
-                  .slice(0, MAX_MATCHES);
-    const chosen = entities.find((entity) => entity.lei === value);
+    }, [server, query]);
 
     return (
         <div className="sm:col-span-2">
@@ -125,10 +139,13 @@ export function LegalEntitySearch({
                     <span className="font-medium">{chosen.legalName}</span>
                     <span className="ml-2 font-mono text-xs text-ink-faint">{chosen.lei}</span>
                     <span className="ml-2 text-xs text-ink-faint">{chosen.country}</span>
+                    <span className="ml-2 text-xs text-ink-faint">
+                        {plural('journey.details.leiParties', chosen.partyCount)}
+                    </span>
                 </p>
             )}
 
-            {needle !== '' && matches.length === 0 && failure === undefined && (
+            {searched !== '' && matches.length === 0 && failure === undefined && (
                 <p className="mt-3 text-sm text-ink-muted">{t('journey.details.leiNoMatch')}</p>
             )}
 
@@ -138,7 +155,10 @@ export function LegalEntitySearch({
                         <li key={entity.lei}>
                             <button
                                 type="button"
-                                onClick={() => onChoose(entity)}
+                                onClick={() => {
+                                    setPicked(entity);
+                                    onChoose(entity);
+                                }}
                                 className={cx(
                                     'w-full rounded-md border border-line p-2 text-left text-sm hover:border-accent',
                                     entity.lei === value && 'border-accent',
@@ -148,6 +168,9 @@ export function LegalEntitySearch({
                                 <span className="block font-mono text-xs text-ink-faint">
                                     {entity.lei}
                                     {entity.country === '' ? '' : ` · ${entity.country}`}
+                                </span>
+                                <span className="block text-xs text-ink-faint">
+                                    {plural('journey.details.leiParties', entity.partyCount)}
                                 </span>
                             </button>
                         </li>

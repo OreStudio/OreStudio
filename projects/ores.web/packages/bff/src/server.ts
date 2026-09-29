@@ -39,7 +39,7 @@ import {
     createAdministratorRequestSchema,
     getImagesRequestSchema,
     initialAdministratorSchema,
-    leiEntitySummaryResponseSchema,
+    searchLeiEntitiesResponseSchema,
     listImagesRequestSchema,
     listImagesResponseSchema,
     getImagesResponseSchema,
@@ -532,26 +532,30 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * The root legal entities a tenant can be started from.
+     * The root legal entities a tenant can be started from, matched against a
+     * search.
      *
      * The list a screen searches when it builds a tenant around a real legal
-     * entity. The read answers a country and a page, so the search itself
-     * happens in the caller; the deployment holds about two thousand of them,
-     * which is more than one page, and that shortcoming is captured rather
-     * than hidden here.
+     * entity. The deployment holds tens of thousands of them, so the matching
+     * and the size of the answer are the read's: a screen sends what the person
+     * typed rather than fetching a page and filtering it, because the entity
+     * somebody is looking for is not on any one page. Each match states how
+     * many parties its hierarchy would create, which is the work the choice
+     * starts.
      */
     server.get('/api/lei-entities', async (request) => {
         const session = requireSession(request);
         const query = request.query as Record<string, string | undefined>;
-        const response = leiEntitySummaryResponseSchema.parse(
+        const response = searchLeiEntitiesResponseSchema.parse(
             await session.client.callAuthenticated(
-                SUBJECTS.leiEntitiesSummary,
+                SUBJECTS.leiEntitiesSearch,
                 {
+                    search: query['search'] ?? '',
                     country_filter: query['country'] ?? '',
                     offset: 0,
-                    limit: Number(query['limit'] ?? 1000),
+                    limit: Number(query['limit'] ?? 20),
                 },
-                leiEntitySummaryResponseSchema,
+                searchLeiEntitiesResponseSchema,
             ),
         );
         if (!response.success) {
@@ -562,6 +566,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 lei: entity.lei,
                 legalName: entity.entity_legal_name,
                 country: entity.country,
+                partyCount: entity.party_count,
             })),
         };
     });

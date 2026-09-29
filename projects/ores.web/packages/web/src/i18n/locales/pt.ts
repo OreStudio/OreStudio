@@ -507,6 +507,10 @@ const pt: SourceCatalogue = {
             passwordForced: 'Terá de a alterar no primeiro início de sessão.',
             standard: 'O {profile} usa as suas definições padrão.',
             leiSearch: 'Pesquisar por nome ou LEI',
+            leiParties: {
+                one: '1 entidade na sua hierarquia',
+                other: '{count} entidades na sua hierarquia',
+            },
             leiNoMatch: 'Nenhuma entidade corresponde.',
             leiReadFailed: 'Não foi possível ler as entidades jurídicas. {message}',
             changeSettings: 'Alterar definições',

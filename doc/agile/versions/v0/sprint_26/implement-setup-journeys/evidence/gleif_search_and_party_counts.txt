@@ -1,0 +1,97 @@
+The search read and the size of a hierarchy, measured on the live deployment.
+
+Environment: eager_maxwell. Commit: 2232df3c9c, with the search function
+applied to the live database from the working tree:
+
+  ./compass.sh sql -- -v ON_ERROR_STOP=1 \
+      -f projects/ores.sql/create/dq/dq_lei_entities_query_functions_create.sql
+
+-------------------------------------------------------------------------------
+The read answers a search rather than a page
+-------------------------------------------------------------------------------
+
+Before, with the country the browser sent (empty, because a person searching a
+name has no country in mind):
+
+  select count(*) from ores_dq_lei_entities_summary_by_country_fn('', 1000, 0);
+   with_empty_country
+  --------------------
+                    0
+
+  select count(*) from ores_dq_lei_entities_summary_by_country_fn('GB', 1000, 0);
+   with_gb
+  ---------
+       693
+
+An empty country was not "every country": the handler answered the distinct
+countries instead, so the browser received one "entity" per country, each with
+an empty name, and no entity ever matched.
+
+How many root entities a search covers, and where a familiar name falls in an
+alphabetical page of them:
+
+  with roots as (
+    select distinct on (e.lei) e.lei, e.entity_legal_name
+    from ores_dq_lei_entities_artefact_tbl e
+    where e.tenant_id in (ores_iam_current_tenant_id_fn(),
+                          ores_utility_system_tenant_id_fn())
+      and e.entity_entity_status = 'ACTIVE'
+      and not exists (
+        select 1 from ores_dq_lei_relationships_artefact_tbl r
+        where r.tenant_id in (ores_iam_current_tenant_id_fn(),
+                              ores_utility_system_tenant_id_fn())
+          and r.relationship_start_node_node_id = e.lei
+          and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
+          and r.relationship_relationship_status = 'ACTIVE')
+    order by e.lei),
+  ranked as (select entity_legal_name,
+             row_number() over (order by entity_legal_name) as rn from roots)
+  select (select count(*) from roots) as roots,
+         (select min(rn) from ranked where entity_legal_name = 'BARCLAYS PLC') as barclays_rank,
+         (select min(rn) from ranked where entity_legal_name ilike '%DEUTSCHE BANK%') as deutsche_rank;
+
+   roots | barclays_rank | deutsche_rank
+  -------+---------------+---------------
+   18348 |          2169 |          4556
+
+So a page of a thousand could not hold either name, which is why the matching
+had to move to the read.
+
+After:
+
+  select lei, entity_legal_name, country, party_count
+  from ores_dq_lei_entities_search_fn('BARCLAYS', '', 10, 0);
+
+           lei          |                     entity_legal_name                      | country | party_count
+  ----------------------+------------------------------------------------------------+---------+-------------
+   213800LBQA1Y9L22JB70 | BARCLAYS PLC                                               | GB      |          81
+   636700Z1VAKUC3AIMJ25 | Ossiam Shiller Barclays CAPE US Sector Screened UCITS ETF | IE      |           1
+
+-------------------------------------------------------------------------------
+The count is the hierarchy the publication would insert
+-------------------------------------------------------------------------------
+
+BARCLAYS PLC, counted over the deployment and over the small dataset the
+starting point publishes:
+
+  select count(*) from subtree ... ;
+   in_small_dataset | across_the_deployment
+  ------------------+-----------------------
+                   81 |                    81
+
+BANK OF AMERICA CORPORATION, searched by its LEI:
+
+  select entity_legal_name, party_count
+  from ores_dq_lei_entities_search_fn('9DJT3UXIJIZJI4WXO774', '', 3, 0);
+
+      entity_legal_name      | party_count
+  -----------------------------+-------------
+   BANK OF AMERICA CORPORATION |         668
+
+668 is the number the publication inserted when the same hierarchy was
+published for a tenant inside a transaction that was rolled back: 668 parties,
+668 identifiers and 57 BIC identifiers. The count a card states is the work the
+run does.
+
+The search costs about a fifth of a second for a name and the counts together,
+which is what the 250 ms the screen waits before asking is measured against.

@@ -136,11 +136,13 @@ export {
     leiEntityChoiceSchema,
     leiEntitiesResponseSchema,
     leiEntitySummaryResponseSchema,
+    searchLeiEntitiesResponseSchema,
 } from './operations.js';
 export type {
     LeiEntityChoice,
     LeiEntitiesResponse,
     LeiEntitySummaryResponse,
+    SearchLeiEntitiesResponse,
 } from './operations.js';
 export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';
 export type { SeedProfileChoice, SeedProfilesResponse } from './operations.js';

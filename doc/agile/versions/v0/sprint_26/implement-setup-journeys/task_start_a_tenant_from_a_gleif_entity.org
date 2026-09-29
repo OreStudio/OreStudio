@@ -30,11 +30,11 @@ out, because a person provisioning their first tenant may not have an LEI yet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Three starting points are rows, the register card leads with the entity it is built around and derives the tenant from the one chosen, the manual card leaves the entity out, and the search matches a name or an LEI in the read and states how many parties the hierarchy would create. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The shape of a tenant code, enforced by the database rather than only by the provision request. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -70,16 +70,28 @@ public registry, it would appear in the tenant's party hierarchy, and it would
 make a step claim work it did not do.
 
 *The GLEIF layout is the search.* Its details step opens on a search over the
-parent legal entities the deployment holds — the read that already lists them,
-the one the shell's =lei entities= command uses — and each result states the
-legal name, the LEI, the country and how many parties its hierarchy would
-create. Once one is chosen the step collapses to a summary of what it derived:
-the tenant's name, its code, its hostname, its administrator and the entity
-itself, with *Change settings* opening the form. Every derived field stays
-editable, and choosing another entity derives them all again. The form's shape
-follows the type the parameter is declared as, so the browser holds no
-profile's name: a setting declared as a legal entity is searched for, and one
-declared as a string is typed.
+parent legal entities the deployment holds, and each result states the legal
+name, the LEI, the country and how many parties its hierarchy would create.
+Once one is chosen the step collapses to a summary of what it derived: the
+tenant's name, its code, its hostname, its administrator and the entity itself,
+with *Change settings* opening the form. Every derived field stays editable, and
+choosing another entity derives them all again. The form's shape follows the
+type the parameter is declared as, so the browser holds no profile's name: a
+setting declared as a legal entity is searched for, and one declared as a string
+is typed.
+
+*The matching belongs to the read.* The country browser the shell already had
+answers one country's page, which cannot serve a search: the deployment holds
+18348 root entities, and neither BARCLAYS PLC nor DEUTSCHE BANK falls inside a
+page of a thousand of them. So the read gained a second question beside the
+first — =dq.v1.lei-entities.search=, matched on the legal name or on the start
+of an LEI, across countries, with the size of the answer stated by the caller —
+and the count of parties travels with every match, computed by walking the same
+IS_DIRECTLY_CONSOLIDATED_BY relationships the publication walks. A screen
+therefore sends what the person typed rather than fetching a page and filtering
+it, and the shell gained =lei search= for the same read. The count was checked
+against the publication: BANK OF AMERICA CORPORATION's hierarchy counts 668,
+which is what publishing it for a tenant inserted.
 
 *The code is the server's shape.* The code a person types ends up in the
 hostname and in the administrator's principal, so its shape belongs to the
@@ -95,9 +107,10 @@ the result is truncated. Typing in the code stops the name deriving it, and
 typing in the hostname stops the code deriving that; the hostname's default is
 the code itself, which is what the old client did.
 
-*What this task leaves.* The filtering the search needs, if the read cannot do
-it yet, is captured rather than built here; and the legal entity the manual
-card may now leave out is added later through the *New party* journey.
+*What this task leaves.* The legal entity the manual card may now leave out is
+added later through the *New party* journey. The shape of a tenant code is
+stated by the provision request today and not yet by the database itself, so a
+row written by another caller could still hold a code the screen would refuse.
 
 * Measurements
 
@@ -111,9 +124,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Root legal entities the deployment holds | 18348 | [[file:evidence/gleif_search_and_party_counts.txt][gleif_search_and_party_counts.txt]] | 2232df3c9c |
+| Parties BARCLAYS PLC's hierarchy would create | 81 | [[file:evidence/gleif_search_and_party_counts.txt][gleif_search_and_party_counts.txt]] | 2232df3c9c |
+| Parties BANK OF AMERICA CORPORATION's hierarchy would create | 668 | [[file:evidence/gleif_search_and_party_counts.txt][gleif_search_and_party_counts.txt]] | 2232df3c9c |
 
 * Notes
+
+- The search read was found broken before it was built on: the browser sent no
+  country, the handler read that as "list the countries", and every answer was
+  a country with no name, so no entity ever matched. The new question answers a
+  search instead, and the country browser keeps the behaviour the shell's
+  =lei countries= command depends on.
+- The party count a match states is the work the run does, not an estimate:
+  668 for BANK OF AMERICA CORPORATION is the number of parties the publication
+  inserted for the same hierarchy. See
+  [[file:evidence/gleif_search_and_party_counts.txt][the evidence file]].
+- The =legal_entity= parameter type is what the browser keys the search on, so
+  the card carries no profile's name; a profile that declares a string keeps a
+  text field.
 
 * Test Scenarios
 

@@ -504,6 +504,10 @@ export const en: SourceCatalogue = {
             passwordForced: 'They must change it at first sign-in.',
             standard: '{profile} uses its standard settings.',
             leiSearch: 'Search by name or LEI',
+            leiParties: {
+                one: '1 party in its hierarchy',
+                other: '{count} parties in its hierarchy',
+            },
             leiNoMatch: 'No entity matches that.',
             leiReadFailed: 'The legal entities could not be read. {message}',
             changeSettings: 'Change settings',

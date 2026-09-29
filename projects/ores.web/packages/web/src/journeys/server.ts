@@ -57,7 +57,8 @@ export interface JourneyServer {
     readonly signOut: () => Promise<void>;
     readonly passwordPolicy: () => Promise<PasswordPolicy>;
     readonly seedProfiles: () => Promise<readonly SeedProfileChoice[]>;
-    readonly leiEntities: () => Promise<readonly LeiEntityChoice[]>;
+    /** The entities matching what a person typed, which the read matches. */
+    readonly leiEntities: (search: string) => Promise<readonly LeiEntityChoice[]>;
     readonly provision: (request: ProvisionTenantRequest) => Promise<ProvisionTenantResult>;
     readonly progress: (instanceId: string) => Promise<WorkflowProgress>;
     readonly retry: (instanceId: string, stepName?: string) => Promise<RetryWorkflowInstanceResult>;

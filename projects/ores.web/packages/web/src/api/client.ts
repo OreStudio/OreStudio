@@ -134,10 +134,18 @@ export const api = {
         return passwordPolicySchema.parse(await request('/api/password-policy', { method: 'GET' }));
     },
 
-    /** The root legal entities a tenant can be started from. */
-    async leiEntities(): Promise<readonly LeiEntityChoice[]> {
+    /**
+     * The root legal entities a tenant can be started from, matched against
+     * what a person typed.
+     *
+     * The matching is the read's, because the deployment holds far more
+     * entities than one answer can carry: a screen sends the text rather than
+     * fetching a page and filtering it here.
+     */
+    async leiEntities(search: string): Promise<readonly LeiEntityChoice[]> {
+        const query = new URLSearchParams({ search });
         const payload = leiEntitiesResponseSchema.parse(
-            await request('/api/lei-entities', { method: 'GET' }),
+            await request(`/api/lei-entities?${query.toString()}`, { method: 'GET' }),
         );
         return payload.entities;
     },

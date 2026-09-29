@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: E156DD8A-327F-4B7E-B7FE-A2DE8559002F
+:END:
+#+title: Story: Implement the entry journeys in ores.web
+#+description: The door: sign in and sign up run in ores.web, on the refusals, the defaults and the registration state the platform needs.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:entry:v0:sprint_26:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The two Entry journeys run in ores.web against the real server. Sign in is finished: every refusal says which refusal it is, the forced password change blocks the workspace until the member sets a password of their own, the party step names the places a person works and marks their default, and a lapsed party-selection token returns them to the door with words rather than a generic failure. Sign up is added end to end: the deployment states whether it accepts self-registration, the screen reads that answer before it offers a form, the server refuses the registration it should never have accepted, and the person is told exactly what their new account has and what it still waits for. Registration's end state is the subject of the analysis this story opens with, because where a new account lands is a platform decision, not a screen decision.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The sign-up analysis is done: the live registration path reads neither flag, so the deployment's self-registration switch is advisory, and a registration that names no hostname lands in the system tenant. The record lists the six decisions the target state must settle. |
+| Waiting on    | Nothing.                               |
+| Next          | Write the target state as a knowledge document, then schedule the implementation tasks from it. |
+| Last touched  | 2026-09-29                               |
+
+* Acceptance
+
+- Every item of the User Journey Extraction Standard's Entry-journey section passes, with its evidence recorded.
+- The sign-up process is analysed end to end, and the target state it lands on is recorded in a knowledge document before any registration code changes.
+- The server refuses a registration when the deployment's self-registration flag is off, and every refusal carries a code the client can branch on.
+- Sign in runs against the real server from an empty installation through to the workspace, and every branch the journey document names has a screen state.
+- Sign up runs against the real server, and the confirmation states what the new account received and what it still waits for.
+- Both journeys are reachable and behaved on the shell as well as the browser, or the difference is stated and recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8F35000B-95D7-4FA6-92DF-915981CD17FA][Analyse the sign-up process end to end]] | DONE | 2026-09-29 | 2026-09-29 | Record what self-registration does today, where a new account lands, and every decision the sign-up journey waits on, so the target state can be written before any code changes. |
+
+* Decisions
+
+* Out of scope
+
+-

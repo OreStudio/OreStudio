@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 9700E01F-B582-4984-AF2F-81E2BA880544
+:END:
+#+title: Investigation: Analyse the sign-up process end to end
+#+description: What self-registration does today, where a new account lands, and what has to be decided before the sign-up journey can be built.
+#+type: investigation
+#+level: s1
+#+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into
+what self-registration does today, where a new account lands, and what has to be decided before the [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] journey is built.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The story [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] opens with sign in and sign up. Sign in is understood: the login reply already carries almost every field its screen needs, and the work is to finish the screen and close four server gaps. Sign up is not understood. The journey document stops one step short of work and says so — registration creates an account, it does not give the person a place to work, and sign-in refuses an account with no party.
+
+That leaves three questions the journey document cannot answer on its own, and the product owner answered them before this survey started:
+
+- Where does a self-registered account land? The answer is both halves. A deployment with no nominated default stays in a waiting state until an administrator acts; a deployment that nominates a default tenant, and a tenant that nominates a default party, can let the person in without one.
+- What does the new account receive? A default role, and one the deployment can state rather than a name hard-coded in a service.
+- Who may open and close the door? A super administrator enables or disables self-registration.
+
+None of the three has an implementation today. This investigation records what does exist, because the target state is written next and it has to be written against the system rather than against the journey document, which is wrong in one place.
+
+* Methodology
+
+A read-only survey of the checkout, on branch =feature/implement-entry-journeys= cut from =origin/main= =67493fae8e=, on 2026-09-29. No database was written, no service restarted, and no generated file was edited.
+
+The path followed the subject rather than the folders: from the journey document's coverage table to the NATS subject, to the handler that serves it, to the service the handler calls, to the models and SQL behind that service, and then to the browser through the BFF and the wire protocol. The tenancy and party architecture notes were read as the authority on how a pre-authentication request finds its tenant. The variability settings were read to find the flags and the interface that sets them.
+
+* Paths taken
+
+- *The journey document first.* [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] lists seven gaps and a coverage table. Six of the seven reproduce exactly. Gap 5, which says the sign-up service refuses registration outright when =system.signup_requires_authorization= is on, describes a service that is never called — see the conclusions.
+- *The subject.* =iam.v1.auth.signup= is modelled in [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]], generated to C++ and TypeScript, subscribed in =projects/ores.iam/core/src/messaging/registrar.cpp= (lines 140-143), and exposed over HTTP at =POST /api/v1/iam/auth/signup= in =projects/ores.http/iam/src/routes/iam/signup_routes.cpp= with =auth_optional()=.
+- *The handler and the service.* =auth_handler::signup= (=projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp=, lines 222-253) decodes the request and calls =account_setup_service::create_account=. That service (lines 35-43) creates the account and assigns the =Viewer= role.
+- *The flag-aware service, and the dead end.* =projects/ores.iam/core/src/service/signup_service.cpp= checks =system.user_signups=, checks the authorisation flag, validates the username, the email and the password, and returns an =ores::utility::serialization::error_code= for each refusal. A search for its constructor across the tree finds nothing outside its own header and source: no component builds it, no handler calls it. It is dead code, and the live path is the one that checks nothing. The search was the point at which the investigation stopped treating the journey document as current.
+- *The flags.* They live in the variability settings. =system_settings_service= (=projects/ores.variability/core/include/ores.variability.core/service/system_settings_service.hpp=, lines 127-142) exposes =is_user_signups_enabled()= and =is_signup_requires_authorization_enabled()=, reading the rows seeded by =projects/ores.sql/populate/variability/variability_system_settings_populate.sql=. The variability operation model [[id:D4A00A97-BD2C-4871-B1A5-318EFDAFD907][ores.variability.operations]] carries two subjects only, =clear_bootstrap_mode= and =complete_party_onboarding=. There is no subject that reads or writes a setting by name, so no interface sets either flag.
+- *Tenancy.* [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] records the rule for a pre-authentication request: parse =user@hostname=, look the tenant up by hostname when there is one, and use the handler's own tenant when there is not. =projects/ores.database/src/service/context_factory.cpp= (lines 68-76) defaults that tenant to the system tenant.
+- *The browser.* The BFF route table was read end to end. It holds no sign-up route. =wire-protocol/src/browser.ts= exports no sign-up schema, and =operations.ts= has no entry for the subject. =SignUpPage.tsx= was deleted by =e47043269f=.
+- *The unaudited paths.* The rate limiter was read to see what a sign-up route would have to reuse, and the session model was read to see whether an account can be represented as waiting.
+
+* Conclusions
+
+** The deployment's self-registration switch does nothing
+
+=iam.v1.auth.signup= serves through =account_setup_service=, which never reads =system.user_signups=. The flag-aware =signup_service= is dead. The consequence is exact: *a deployment that has turned self-registration off still accepts registrations*, over NATS and over the HTTP gateway, from any caller who can reach the subject. The journey document's gap 1 ("the web client cannot sign up at all") is what kept this invisible — the door was closed in the browser, and the room behind it was open.
+
+The same dead end removes the refusal codes. =signup_service= assigns a code to each refusal; the live handler catches =std::exception= and answers with the exception text alone. =signup_response= (=ores.iam.signup_messages=) carries =success=, =message= and =account_id= and has no code field, so a client that wants to distinguish "sign-ups are closed" from "username taken" must match English prose.
+
+** A self-registered account lands in the system tenant
+
+The sign-up handler never parses a hostname. It writes with =ctx_=, the IAM service's own context, which =context_factory.cpp= defaults to the system tenant. The browser cannot help it: the BFF sends ={username, password}= to =/api/session= and would send the same shape to a sign-up route, and =SignInPage.tsx= has no hostname field. The setup journey is the only client that forms a full principal, as =admin@<hostname>= (=projects/ores.web/packages/web/src/journeys/state.ts=, lines 106-115).
+
+So the target state cannot be a screen change. Registration has to name its tenant, and the door has to resolve it from the address the deployment is served at, exactly as the sign-in journey document already says the tenant is resolved. On a single-tenant deployment that resolution is trivial; on a multi-tenant one it is the difference between an account in the right tenant and an account in the platform's own.
+
+** The account is created with no party, and sign-in refuses it
+
+No =account_party= association is written. =auth_handler::login= (=auth_handler.hpp=, lines 289-294) refuses an account with no association with *Account has no party assignment. Please contact your administrator.* The refusal is a =std::runtime_error= like every other, answered by the catch-all at lines 450-465 with =error_message= and no code. So the state the journey leaves behind is real, reachable, and indistinguishable from a wrong password to a client.
+
+** The role baseline is hard-coded, and the waiting state has no representation
+
+=account_setup_service::create_account= assigns =Viewer= by name (=domain::roles::viewer=). Nothing configures it, and no other role can be nominated. The account model [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] carries =account_type= and =default_party_id=, and no status, active or pending field. =default_party_id= is the account's own stored preference, not a tenant policy, and registration leaves it empty.
+
+A person waiting for an administrator therefore has no state to wait in. Either the account is created and nothing distinguishes it from a configured one, or the target state adds something that does — and if it adds something, the roster and the sign-in path both have to read it.
+
+** Nothing nominates a tenant or a party
+
+There is no setting, column or row that says "new registrations belong to this tenant" or "new accounts in this tenant join this party". A party row has a status and a category, and a tenant row has a type; neither has a flag that a registration could read. The product owner's model — the super administrator nominates the default tenant, the tenant administrator the default party — has no home yet.
+
+** Nobody can change the flags, and nothing guards the door
+
+Both flags are set in SQL today. =compass= has no settings verb, the shell has no settings command, and the variability operation model has no read or write for a named setting. The one control the product owner asked for, a super administrator switching self-registration on and off, needs a write path that does not exist.
+
+The BFF rate-limits =POST /api/session= (=server.ts=, line 371) and nothing else. The HTTP gateway's sign-up route is =auth_optional()=. A registration door that is reachable by anyone who knows the address has no limiter, no verification and no notification: the handler records =signup_success= and =signup_failure= in the auth event table, and no person is told anything.
+
+** What the journey document gets wrong, and what it gets right
+
+Gap 5 is wrong about the live path: registration is not refused when the authorisation flag is on, because the code that reads the flag is never called. Gaps 1, 2, 3, 4, 6 and 7 reproduce exactly. Gap 4 ("the stated baseline and the built behaviour disagree") is not a defect at all — the product owner has decided the =Viewer= grant is deliberate, and the target state makes the role a stated default rather than a hard-coded name.
+
+* Recommendations
+
+*Write the target state as a knowledge document before any code changes.* It is the page that owns the answers below, and the story's tasks cite it rather than this record.
+
+The target state should settle six things:
+
+1. *The registration policy read.* One unauthenticated read that answers the door's questions together: whether sign-ups are enabled, whether they need authorisation, the tenant a registration lands in, the party a new account joins when the tenant nominates one, and the role a new account receives. The door reads it before it offers a form, and the bootstrap status read is the natural home, because the door already asks it and has no session.
+2. *The default tenant.* A super-administrator nomination, with the deployment's own tenant as the single-tenant answer. The request must carry the tenant it registers into, resolved from the address, so no registration can fall back to the system tenant by omission.
+3. *The default party.* A tenant-administrator nomination. When it is set, the new account joins it and can sign in. When it is not, the account is created and waits.
+4. *The waiting state.* A representation the roster and the sign-in path both read, so "waiting for an administrator" is a state and not an absence. The candidates are a value on the account or a pending association; the choice belongs in the target state and must not be inferred from a missing row.
+5. *The default role.* Replace the hard-coded =Viewer= with a stated default, configurable per tenant, with =Viewer= as the seeded value.
+6. *The kill switch.* A way for a super administrator to set =system.user_signups= (and read the settings that shape the door) without SQL. That is a variability subject or an administrative operation, and it is the first write path the settings have ever had, so it needs the permission model to agree with it.
+
+Three changes are prerequisites rather than target-state choices, and can be scheduled as tasks now:
+
+- The live sign-up path must read the flags, so the switch works and the refusals carry codes.
+- =signup_response= must carry an error code, so the screen branches on a value rather than on prose.
+- The BFF must expose the route, with the same limiter the sign-in route uses, and the browser must reach it.
+
+One thing is deliberately left out: the authorisation workflow itself. If the tenant wants an approval step, it is a workflow in =ores.workflow= and a story of its own. Until it exists, the flag must either close the door honestly or gate it — it must not claim an approval that nothing performs.
+
+* See also
+
+- [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] — the story this investigation was commissioned by.
+- [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the two journeys.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how a pre-authentication request finds its tenant.
+- [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — the party rule that makes the missing association a refusal.
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the component that owns all of this.
+- [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]] — the subject whose response drops the codes.
+- [[id:B0DEC846-32B2-494D-96B9-3E1F6819345D][ores.variability.system_setting]] and [[id:D4A00A97-BD2C-4871-B1A5-318EFDAFD907][ores.variability.operations]] — where the flags live and what can reach them.
+- [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] — the account the registration writes, and the state it does not carry.
+- [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] and [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] — the association nothing creates and the party nothing nominates.

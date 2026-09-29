@@ -34,11 +34,10 @@
 -- =============================================================================
 -- Market Data Observations: marketdata.v1.market-data-observations.publish-from-dq
 --
--- Generic across series_type/metric (FX spot, rates curves today; vol
--- surfaces, ... later, as more datasets are published under the same
--- market_data_observations artefact shape) - classification below covers
--- FX/RATE and RATES/YIELD; extend the case when a further asset class is
--- added.
+-- Generic across series identity (FX spot, rates curves today; vol surfaces,
+-- ... later, as more datasets are published under the same market_data_
+-- observations artefact shape) - the asset class is read off the identity's
+-- own authority, so a further class is a case arm here and nothing else.
 -- =============================================================================
 
 create or replace function ores_marketdata_publish_market_data_observations_from_dq_fn(
@@ -60,7 +59,6 @@ declare
     v_deleted bigint := 0;
     r record;
     v_series_id uuid;
-    v_oresmd_uri text;
     v_asset_class text;
     v_series_subclass text;
     v_exists boolean;
@@ -97,9 +95,7 @@ begin
               select ms.id
               from ores_marketdata_market_series_tbl ms
               join ores_dq_market_data_observations_artefact_tbl dq
-                on dq.series_type = ms.series_type
-               and dq.metric = ms.metric
-               and dq.qualifier = ms.qualifier
+                on dq.oresmd_uri = ms.oresmd_uri
               where dq.dataset_id = p_dataset_id
                 and dq.tenant_id = ores_utility_system_tenant_id_fn()
                 and ms.tenant_id = p_target_tenant_id
@@ -111,35 +107,41 @@ begin
 
     for r in
         select
-            dq.series_type, dq.metric, dq.qualifier, dq.point_id,
+            dq.oresmd_uri, dq.key, dq.point_id,
+            dq.series_type, dq.metric, dq.qualifier,
             dq.observation_date, dq.value, dq.source
         from ores_dq_market_data_observations_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
-        order by dq.series_type, dq.metric, dq.qualifier
+        order by dq.oresmd_uri, dq.point_id
     loop
-        if r.series_type = 'FX' and r.metric = 'RATE' then
-            -- 'fx', not the FpML 'ForeignExchange': asset_class is
-            -- validated against ores_refdata_asset_class_codes_tbl (the
-            -- taxonomy table itself -- see marketdata_market_series_
-            -- create.sql's insert trigger), not the unrelated FpML
-            -- Bond/Commodity/.../ForeignExchange/... taxonomy.
-            v_asset_class := 'fx';
-            v_series_subclass := 'spot';
-        elsif r.series_type = 'RATES' and r.metric = 'YIELD' then
-            v_asset_class := 'interest_rates';
-            v_series_subclass := 'yield';
-        else
-            raise exception 'Unclassified series_type/metric: %/% - extend this function', r.series_type, r.metric;
+        -- The asset class a series joins is the identity's own authority, which is
+        -- the one part of an oresmd URI every class shares: oresmd://fx/... is an FX
+        -- series and oresmd://ir/... an interest-rates one. The dataset's old
+        -- series_type/metric pair said the same thing, and the identity says it
+        -- without a vocabulary the series row no longer carries.
+        v_asset_class := case split_part(replace(r.oresmd_uri, 'oresmd://', ''), '/', 1)
+                             when 'fx' then 'fx'
+                             when 'ir' then 'interest_rates'
+                             else null
+                         end;
+        if v_asset_class is null then
+            raise exception 'Unclassified series identity: % - extend this function', r.oresmd_uri;
         end if;
+        -- 'fx', not the FpML 'ForeignExchange': asset_class is validated against
+        -- ores_refdata_asset_class_codes_tbl (the taxonomy table itself -- see
+        -- marketdata_market_series_create.sql's insert trigger), not the unrelated
+        -- FpML Bond/Commodity/.../ForeignExchange/... taxonomy.
+        v_series_subclass := case split_part(replace(r.oresmd_uri, 'oresmd://', ''), '/', 1)
+                                 when 'fx' then 'spot'
+                                 when 'ir' then 'yield'
+                             end;
 
         select id into v_series_id
         from ores_marketdata_market_series_tbl
         where tenant_id = p_target_tenant_id
           and party_id = v_target_party_id
-          and series_type = r.series_type
-          and metric = r.metric
-          and qualifier = r.qualifier
+          and oresmd_uri = r.oresmd_uri
           and valid_to = ores_utility_infinity_timestamp_fn();
 
         if v_series_id is null then
@@ -151,26 +153,13 @@ begin
             -- ores_marketdata_market_series_tbl (OBSERVED <-> nil-uuid/0,
             -- else both required).
             --
-            -- The series carries an identity, which the column requires. A DQ
-            -- dataset's key is not an ORE market-data key -- RATES/YIELD is the
-            -- deposit grid the vintage path reads, and no oresmd class names it --
-            -- and the projection from a key to its identity is the C++ grammar's
-            -- rather than SQL's, so the identity here is the generic one: a name
-            -- that is unique per key and nothing more. The unit that migrates the
-            -- vintage lookup decides whether the dataset should carry the ORE key
-            -- its own source names (MM/RATE/USD/2D for the deposit grid) instead.
-            -- The name is the key lowercased to characters a URI path can carry,
-            -- with a hash of the key's own components appended: collapsing every
-            -- character outside that set would otherwise let two keys that differ
-            -- only there share one name, and the identity's unique index would fail
-            -- the whole publish.
-            v_oresmd_uri :=
-                'oresmd://generic/dq-' ||
-                lower(regexp_replace(r.series_type || '-' || r.metric || '-' || r.qualifier,
-                                     '[^A-Za-z0-9.-]', '-', 'g')) ||
-                '-' || substr(md5(r.series_type || '~' || r.metric || '~' || r.qualifier), 1, 16) ||
-                '?type=fixing';
-
+            -- The series is named by the identity the dataset's rows carry, which
+            -- is the identity their own ORE source key projects to: the deposit
+            -- grid's MM/RATE/USD/2D/3M row names the MM/RATE/USD/2D series. The
+            -- dataset states the projection because SQL cannot make it; the
+            -- grammar in C++ is what reads a key back. The registry's
+            -- decomposition is written beside it because the series row still
+            -- requires it, and goes when that row stops carrying it.
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
                 series_type, metric, qualifier, oresmd_uri, series_subclass,
@@ -178,7 +167,7 @@ begin
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
-                r.series_type, r.metric, r.qualifier, v_oresmd_uri, v_series_subclass,
+                r.series_type, r.metric, r.qualifier, r.oresmd_uri, v_series_subclass,
                 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
@@ -212,11 +201,11 @@ begin
         end if;
 
         insert into ores_marketdata_market_observations_tbl (
-            id, tenant_id, party_id, series_id, observation_datetime, point_id, value, source,
+            id, tenant_id, party_id, series_id, observation_datetime, point_id, key, value, source,
             valid_from, valid_to
         ) values (
             gen_random_uuid(), p_target_tenant_id, v_target_party_id, v_series_id,
-            r.observation_date::timestamptz, r.point_id, r.value::text, r.source,
+            r.observation_date::timestamptz, r.point_id, r.key, r.value::text, r.source,
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 

@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2402
+#+pr: 2403
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -575,6 +575,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2403][#2403]] | [agile] Record where the coordinate's field is modelled |
 | [[https://github.com/OreStudio/OreStudio/pull/2402][#2402]] | [agile] Record what the datum-key projection cannot do |
 | [[https://github.com/OreStudio/OreStudio/pull/2400][#2400]] | [iam] Let a written binding join the freshness list |
 | [[https://github.com/OreStudio/OreStudio/pull/2399][#2399]] | [iam] Build the provisioning handler against the binding's identity |

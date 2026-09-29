@@ -402,6 +402,19 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
+zeroInflationIndexType
+reverse_zero_inflation_index(const refdata::domain::zero_inflation_index_convention& v) {
+    zeroInflationIndexType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.RegionName) = v.region_name;
+    static_cast<std::string&>(r.RegionCode) = v.region_code;
+    r.Revised = make_bool(v.revised);
+    r.Frequency = parse_frequency(v.frequency);
+    static_cast<std::string&>(r.AvailabilityLag) = v.availability_lag;
+    r.Currency = parse_currency_code(v.currency);
+    return r;
+}
+
 overnightIndexType reverse_overnight_index(const refdata::domain::overnight_index_convention& v) {
     overnightIndexType r;
     static_cast<std::string&>(r.Id) = v.id;
@@ -1336,6 +1349,24 @@ refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const 
     return r;
 }
 
+refdata::domain::zero_inflation_index_convention
+conventions_mapper::map_zero_inflation_index(const zeroInflationIndexType& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping zero inflation index convention: "
+                               << std::string(v.Id);
+
+    refdata::domain::zero_inflation_index_convention r;
+    r.id = std::string(v.Id);
+    r.region_name = std::string(v.RegionName);
+    r.region_code = std::string(v.RegionCode);
+    r.revised = parse_bool(v.Revised);
+    r.frequency = normalize_frequency(v.Frequency);
+    r.availability_lag = std::string(v.AvailabilityLag);
+    r.currency = to_string(v.Currency);
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::overnight_index_convention
 conventions_mapper::map_overnight_index(const overnightIndexType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping overnight index convention: " << std::string(v.Id);
@@ -1465,6 +1496,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_ibor_index(x);
     });
 
+    r.zero_inflation_index.reserve(v.ZeroInflationIndex.size());
+    std::ranges::transform(v.ZeroInflationIndex,
+                           std::back_inserter(r.zero_inflation_index),
+                           [](const auto& x) { return map_zero_inflation_index(x); });
+
     r.overnight_index.reserve(v.OvernightIndex.size());
     std::ranges::transform(v.OvernightIndex,
                            std::back_inserter(r.overnight_index),
@@ -1527,9 +1563,14 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     count_unmodelled("CommodityForward", v.CommodityForward.size());
     count_unmodelled("CommodityFuture", v.CommodityFuture.size());
     count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
-    count_unmodelled("ZeroInflationIndex", v.ZeroInflationIndex.size());
     count_unmodelled("BondYield", v.BondYield.size());
     count_unmodelled("IntradayPowerLoad", v.IntradayPowerLoad.size());
+
+    std::size_t rebasing_events = 0;
+    for (const auto& x : v.ZeroInflationIndex)
+        if (x.RebasingEvents)
+            ++rebasing_events;
+    count_unmodelled("ZeroInflationIndex.RebasingEvents", rebasing_events);
 
     for (const auto& [name, count] : r.unmodelled) {
         BOOST_LOG_SEV(lg(), warn)
@@ -1584,6 +1625,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.IborIndex.reserve(v.ibor_index.size());
     for (const auto& x : v.ibor_index)
         r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.ZeroInflationIndex.reserve(v.zero_inflation_index.size());
+    for (const auto& x : v.zero_inflation_index)
+        r.ZeroInflationIndex.push_back(reverse_zero_inflation_index(x));
 
     r.OvernightIndex.reserve(v.overnight_index.size());
     for (const auto& x : v.overnight_index)

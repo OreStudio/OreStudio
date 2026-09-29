@@ -102,4 +102,5 @@ set(files
     "tenor_schedule_commands_tests.cpp"
     "tenor_unit_commands_tests.cpp"
     "zero_convention_commands_tests.cpp"
+    "zero_inflation_index_convention_commands_tests.cpp"
 )

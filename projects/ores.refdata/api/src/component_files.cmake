@@ -264,6 +264,9 @@ set(files
     "domain/zero_convention_json_io.cpp"
     "domain/zero_convention_table.cpp"
     "domain/zero_convention_table_io.cpp"
+    "domain/zero_inflation_index_convention_json_io.cpp"
+    "domain/zero_inflation_index_convention_table.cpp"
+    "domain/zero_inflation_index_convention_table_io.cpp"
     "generators/asset_class_code_generator.cpp"
     "generators/average_ois_convention_generator.cpp"
     "generators/book_generator.cpp"
@@ -345,6 +348,7 @@ set(files
     "generators/tenor_schedule_generator.cpp"
     "generators/tenor_unit_generator.cpp"
     "generators/zero_convention_generator.cpp"
+    "generators/zero_inflation_index_convention_generator.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -677,6 +681,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_convention_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_convention_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_convention_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_inflation_index_convention.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_inflation_index_convention_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_inflation_index_convention_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/zero_inflation_index_convention_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/asset_class_code_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/asset_class_code_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/average_ois_convention_event.hpp"
@@ -815,6 +823,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/tenor_unit_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/zero_convention_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/zero_convention_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/zero_inflation_index_convention_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/generators/asset_class_code_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/generators/average_ois_convention_generator.hpp"
@@ -898,6 +907,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/generators/tenor_schedule_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/generators/tenor_unit_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/generators/zero_convention_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/generators/zero_inflation_index_convention_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/asset_class_code_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/asset_class_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/average_ois_convention_protocol.hpp"
@@ -982,6 +992,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/tenor_unit_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/zero_convention_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/zero_inflation_index_convention_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/ores.refdata.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/workflow/provision_parties_workflow.hpp"
 )

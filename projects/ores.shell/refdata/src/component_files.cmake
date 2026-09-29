@@ -101,6 +101,7 @@ set(files
     "app/commands/refdata/tenor_schedule_commands.cpp"
     "app/commands/refdata/tenor_unit_commands.cpp"
     "app/commands/refdata/zero_convention_commands.cpp"
+    "app/commands/refdata/zero_inflation_index_convention_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -186,4 +187,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_schedule_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/tenor_unit_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/zero_convention_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/refdata/zero_inflation_index_convention_commands.hpp"
 )

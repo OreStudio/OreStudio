@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: E060E909-0088-43EA-808E-B87A3E8286D8
+:END:
+#+title: ores.refdata.zero_inflation_index_convention
+#+description: Codegen entity model for the refdata =zero_inflation_index_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: Zero-coupon inflation indices the corpus builds inflation swaps and bonds from.
+#+entity_singular: zero_inflation_index_convention
+#+entity_plural: zero_inflation_index_conventions
+#+entity_title: Zero Inflation Index Convention
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+Describes a zero-coupon inflation index: the region it is published for, how
+often it is published, how far behind its publication date it becomes
+available, and the currency it is quoted in. Corresponds to the
+<ZeroInflationIndex> element in ORE conventions.xml. The id field is the
+natural key (ORE <Id> element).
+
+Every field is required. The corpus sets all seven in all fifty-four elements,
+and ORE's schema holds them by value, so an element without one does not parse.
+
+The element carries one more field, =RebasingEvents=, and this table does not
+model it: the ORE type holds it as a list of doubles, and the refdata schema has
+no array column. No shipped file sets it. Rather than drop it silently the
+mapper counts every element that carries one into
+=mapped_conventions::unmodelled= under =ZeroInflationIndex.RebasingEvents=, so a
+document that uses it is excluded from the round-trip set and named in the
+measurement.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:profile:   workspace-scoped-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:END:
+
+Unique zero-coupon inflation index identifier.
+
+#+begin_src cpp :name generator
+std::string("UKRPI")
+#+end_src
+
+** region_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Region the index is published for.
+
+#+begin_src cpp :name generator
+std::string("UK")
+#+end_src
+
+** region_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Short code for the region the index covers.
+
+#+begin_src cpp :name generator
+std::string("UK")
+#+end_src
+
+** revised
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable:    false
+:END:
+
+Whether the index is revised after its first publication.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Publication frequency of the index, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::string("Monthly")
+#+end_src
+
+** availability_lag
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Lag between the index's observation date and its publication, in ORE's period form.
+
+#+begin_src cpp :name generator
+std::string("1M")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+Currency the index is quoted in.
+
+#+begin_src cpp :name generator
+std::string("GBP")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_zero_inflation_index_conventions_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: zero_inflation_index_convention
+:entity_plural_short:   zero_inflation_index_conventions
+:entity_singular_words: zero inflation index convention
+:entity_plural_words:   zero inflation index conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: zii
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| id               | Id               |
+| region_name      | Region           |
+| frequency        | Frequency        |
+| currency         | Currency         |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+** Presentation
+:PROPERTIES:
+:collection_name:           zero_inflation_index_conventions
+:key_field:                 id
+:delete_request_id_field:   ids
+:save_request_item_field:   zero_inflation_index_convention
+:END:
+
+*** Detail fields
+
+| field | label | widget | type | is_key | is_required | placeholder |
+|-------+-------+--------+------+--------+-------------+-------------|
+| id | Id | idEdit | line_edit | true | true | Enter inflation index id |
+| region_name | Region | regionNameEdit | line_edit |  | true | e.g. UK |
+| region_code | Region Code | regionCodeEdit | line_edit |  | true | e.g. UK |
+| revised | Revised | revisedEdit | checkbox |  | true |  |
+| frequency | Frequency | frequencyEdit | line_edit |  | true | e.g. Monthly |
+| availability_lag | Availability Lag | availabilityLagEdit | line_edit |  | true | e.g. 1M |
+| currency | Currency | currencyEdit | line_edit |  | true | e.g. GBP |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Id | id | Id | string | 180 |
+| RegionName | region_name | Region | string | 140 |
+| RegionCode | region_code | Region Code | string | 120 |
+| Revised | revised | Revised | bool | 80 |
+| Frequency | frequency | Frequency | string | 120 |
+| AvailabilityLag | availability_lag | Availability Lag | string | 140 |
+| Currency | currency | Currency | string | 100 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

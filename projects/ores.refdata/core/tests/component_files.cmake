@@ -119,4 +119,5 @@ set(files
     "tenor_schedule_eventing_integration_tests.cpp"
     "tenor_unit_eventing_integration_tests.cpp"
     "zero_convention_eventing_integration_tests.cpp"
+    "zero_inflation_index_convention_eventing_integration_tests.cpp"
 )

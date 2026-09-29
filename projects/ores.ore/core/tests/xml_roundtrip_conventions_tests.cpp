@@ -32,7 +32,8 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * sixteen. The files that use only those sixteen round trip. The rest do not,
+ * seventeen. The files that use only those seventeen round trip. The rest do
+ * not,
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -250,6 +251,87 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     CHECK(files_with_basis == 49);
 }
 
+TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
+    int files_with_inflation_index = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.ZeroInflationIndex.empty())
+            continue;
+
+        ++files_with_inflation_index;
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.zero_inflation_index.size() == document.ZeroInflationIndex.size());
+
+        for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
+            const auto& in = document.ZeroInflationIndex[i];
+            const auto& out = mapped.zero_inflation_index[i];
+            CHECK(out.id == std::string(in.Id));
+            CHECK(out.region_name == std::string(in.RegionName));
+            CHECK(out.region_code == std::string(in.RegionCode));
+            CHECK(out.frequency == to_string(in.Frequency));
+            CHECK(out.availability_lag == std::string(in.AvailabilityLag));
+            CHECK(out.currency == to_string(in.Currency));
+        }
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "ZeroInflationIndex");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.ZeroInflationIndex.size()) +
+             " ZeroInflationIndex element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.ZeroInflationIndex.size()));
+
+        // The document spells a boolean thirteen ways, so the stored flag is
+        // compared the only way that does not restate the mapper's spelling
+        // table: read the export back, map it again, and require the same
+        // entity field for field.
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.ZeroInflationIndex.size() == document.ZeroInflationIndex.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
+            INFO(path.string() + ": ZeroInflationIndex element " + std::to_string(i));
+            CHECK(remapped.zero_inflation_index[i] == mapped.zero_inflation_index[i]);
+        }
+    }
+
+    // Six of the seventy-two files carry it, and five of them carried nothing
+    // else unmodelled when it went in.
+    CHECK(files_with_inflation_index == 6);
+}
+
+// The entity holds the index's seven scalar fields and not its rebasing events,
+// which ORE types as a list of doubles and the refdata schema has no column
+// for. No shipped file sets one, so the corpus walk above cannot show what
+// happens when one appears. This case builds that document and asserts the
+// mapper counts the field instead of dropping it: a skip that is counted keeps
+// the file out of the round-trip set, and a skip that is silent loses content.
+TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) {
+    zeroInflationIndexType index;
+    static_cast<std::string&>(index.Id) = "UKRPI";
+    static_cast<std::string&>(index.RegionName) = "UK";
+    static_cast<std::string&>(index.RegionCode) = "UK";
+    index.Revised = bool_::False;
+    index.Frequency = frequencyType::Monthly;
+    static_cast<std::string&>(index.AvailabilityLag) = "1M";
+    index.Currency = currencyCode::GBP;
+
+    conventions document;
+    document.ZeroInflationIndex.push_back(index);
+    CHECK(conventions_mapper::map(document).unmodelled.empty());
+
+    zeroInflationIndexType_RebasingEvents_t events;
+    events.Event.push_back(zeroInflationIndexType_RebasingEvents_t_Event_t(1.5));
+    index.RebasingEvents = events;
+    document.ZeroInflationIndex.clear();
+    document.ZeroInflationIndex.push_back(index);
+
+    const auto mapped = conventions_mapper::map(document);
+    REQUIRE(mapped.unmodelled.count("ZeroInflationIndex.RebasingEvents") == 1);
+    CHECK(mapped.unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
+}
+
 TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
     int files_with_basis_swap = 0;
 
@@ -368,10 +450,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Thirty-nine of the seventy-two once TenorBasisSwap landed: the five files
-    // it cleared on its own on top of the thirty-four already clean. The count
-    // is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 39);
+    // Forty-four of the seventy-two once ZeroInflationIndex landed: the five
+    // files it cleared on its own on top of the thirty-nine already clean. The
+    // count is asserted so that a change in it is noticed rather than absorbed.
+    CHECK(walked == 44);
 }
 
 // Hidden by default, and run on demand:

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T11:30:41.623001Z
+' Generated: 2026-09-29T11:53:27.527611Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3749,6 +3749,47 @@ package "refdata" #FFF3E0 {
     Specifies the day count fraction and compounding method used when bootstrapping
     a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in
     ORE conventions.xml. The id field is the natural key (ORE <Id> element).
+    end note
+
+    entity ores_refdata_zero_inflation_index_conventions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : text <<PK>>
+        --
+        * version : integer
+        * region_name : text
+        * region_code : text
+        * revised : boolean
+        * frequency : text
+        * availability_lag : text
+        * currency : text
+        * workspace_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_zero_inflation_index_conventions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Zero Inflation Index Convention Table
+    Describes a zero-coupon inflation index: the region it is published for, how
+    often it is published, how far behind its publication date it becomes
+    available, and the currency it is quoted in. Corresponds to the
+    <ZeroInflationIndex> element in ORE conventions.xml. The id field is the
+    natural key (ORE <Id> element).
+    Every field is required. The corpus sets all seven in all fifty-four elements,
+    and ORE's schema holds them by value, so an element without one does not parse.
+    The element carries one more field, RebasingEvents, and this table does not
+    model it: the ORE type holds it as a list of doubles, and the refdata schema has
+    no array column. No shipped file sets it. Rather than drop it silently the
+    mapper counts every element that carries one into
+    mapped_conventions::unmodelled under ZeroInflationIndex.RebasingEvents, so a
+    document that uses it is excluded from the round-trip set and named in the
+    measurement.
     end note
 
 }

@@ -1043,3 +1043,7 @@ tangled into the runnable script library
 * Tenor Basis Swap Conventions
 
 - [[id:1F1CD75E-CC99-5C2A-9667-BCAD83093001][How do I run the tenor_basis_swap_conventions commands from the shell?]]
+
+* Zero Inflation Index Conventions
+
+- [[id:2185C4AF-356E-5FA0-B5E3-40720A53EFE5][How do I run the zero_inflation_index_conventions commands from the shell?]]

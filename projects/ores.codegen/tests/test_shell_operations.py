@@ -26,6 +26,7 @@ from codegen.org_loader import (  # noqa: E402
     _reject_silent_shell_gap,
     _shell_field,
     entity_protocol_messages,
+    operation_http_route_plan,
     load_org_operation_model,
     parse_declared_messages,
     parse_org,
@@ -349,6 +350,7 @@ class TestTheCommandVerb:
 :PROPERTIES:
 :subject: iam.v1.bootstrap.status
 :response: bootstrap_status_response
+:http_route: true
 {verb_line}:END:
 """
 
@@ -370,6 +372,17 @@ class TestTheCommandVerb:
         # A verb a caller cannot type is a defect in the row, not a command.
         with pytest.raises(ValueError, match="lowercase words joined by hyphens"):
             _declared(self._body(f":shell_command: {value}\n"))
+
+    def test_the_verb_a_model_states_does_not_rename_the_operation(self):
+        # An HTTP route and the summary a caller reads are named after the
+        # message, so a verb stated for the shell menu must not reach them.
+        messages = _declared(self._body(":shell_command: status\n"))
+        routes = operation_http_route_plan(
+            {"entity_singular": "bootstrap", "shell_commands":
+             shell_command_projection(messages)})["routes"]
+        assert routes[0]["command"] == "bootstrap-status"
+        assert routes[0]["identifier"] == "bootstrap_status"
+        assert routes[0]["summary"] == "Bootstrap status"
 
     def test_the_bootstrap_status_command_is_status(self):
         # Measured on the model rather than restated: the command a caller

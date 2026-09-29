@@ -4101,10 +4101,17 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
         fields = [_shell_field(field) for field in message.get("fields") or []]
         positionals = [field for field in fields if not field["is_optional"]]
         flags = [field for field in fields if field["is_optional"]]
-        command = message.get("shell_command") or shell_command_name(message["name"])
+        derived = shell_command_name(message["name"])
+        command = message.get("shell_command") or derived
         commands.append({
             "command": command,
             "identifier": command.replace("-", "_"),
+            # The operation's own name, taken from the message and not from the
+            # menu. A verb a model states for the shell renames the command a
+            # person types; it must not rename the operation, because an HTTP
+            # route and the summary a caller reads are named after the message.
+            "operation": derived,
+            "operation_identifier": derived.replace("-", "_"),
             "request": message["name"],
             "response_type": response,
             "subject": subject,
@@ -4946,10 +4953,12 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
         pattern = f"/api/{version}/{component}/{resource}"
         if action:
             pattern = f"{pattern}/{action}"
-        command_name = command["command"]
+        # A projection built by a caller that predates the operation key names
+        # the operation the same way the command is named.
+        command_name = command.get("operation") or command["command"]
         routes.append({
             "command": command_name,
-            "identifier": command["identifier"],
+            "identifier": command.get("operation_identifier") or command_name.replace("-", "_"),
             # A declared operation states no verb, so the method is the one
             # that carries a body: the canonical request.
             "method": "post",

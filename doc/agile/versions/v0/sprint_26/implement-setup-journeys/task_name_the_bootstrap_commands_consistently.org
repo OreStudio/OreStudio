@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/name-the-bootstrap-commands-consistently
-#+pr:
+#+pr: 2393
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2393][#2393]] | [codegen] Let a model state its command verb |
 
 * Review
 

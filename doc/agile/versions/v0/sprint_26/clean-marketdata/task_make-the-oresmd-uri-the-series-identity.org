@@ -280,9 +280,48 @@ the series needs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The additive half is delivered (#2358), the identity is a series rather than a datum
+for every family (#2362, #2364), the FOMC shapes are pinned (#2365), the curve's seed
+row carries its identity (#2366), the generator writes one (#2368), and the config
+names the tenor convention its pillars resolve under (#2370). What is left is the
+grid's own identity and then the cutover the task takes its name from.
+
+**The re-key, in four steps.** Each step ends green on its own.
+
+1. *The feed keys each pillar.* =ir_curve_resolved_entry= gains the entry's
+   =start_date= and =end_date= strings, which =resolve()= already computes for the
+   year fraction. =ir_curve_feed= publishes one tick per entry with
+   =series_type="IR_SWAP"=, =metric="RATE"=, =qualifier= =<CCY>/<start>= (the start
+   slot holding =0D= for the pillar that starts at spot and the start date for the
+   rest), =1D= as the index tenor, and =point_id= the entry's end date. The ingest
+   loop already derives the series identity from a tick's full key, so the series
+   appear with their ORE identities and nothing else in the pipeline moves.
+2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
+   =source_series_id= and reads, per pillar, the series the key above projects to:
+   resolve the pillar's start and end tenor codes to dates through =refctx=, build
+   the same key the feed builds, find the series by identity, and take its
+   observation. The rate map is keyed by the pillar's =end_tenor_code=, which is what
+   =resolve_bootstrap_pillars()= already matches on, so its contract does not change.
+   The grid series stays readable as a fallback for a database whose ticks landed
+   there, the same shape as the triple fallback the readers already carry, and it goes
+   with the column below; the lineage lists the nine series it read rather than the
+   grid.
+3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
+   drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
+   the bootstrap config's =source_series_id= loses its reader. The refdata column is
+   dropped with it, and the populate that writes it follows.
+4. *The constraints and the deletion.* With every writer supplying an identity and no
+   row without one, =oresmd_uri= becomes not-null and unique, the natural key moves
+   onto it, and then =series_type=, =metric=, =qualifier=, =ore_key= and the import
+   classification table go, with the census's 21 + 32 C++ files, 4 SQL files, 2
+   TypeScript twins and 80 org documents as the checklist. The triple readers and
+   their fallbacks go last, because they are what keeps a half-migrated database
+   reachable in the meantime.
+
+The one thing the plan does not do is keep two writers: the feed either publishes the
+grid's key or the pillars' keys, never both. The fallback above is a *reader*
+tolerance, so a database written before step one is still readable after step three,
+which is the same reason the identity lookups fall back to the triple.
 
 * Measurements
 

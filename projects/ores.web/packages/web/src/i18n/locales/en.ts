@@ -504,6 +504,10 @@ export const en: SourceCatalogue = {
             passwordForced: 'They must change it at first sign-in.',
             standard: '{profile} uses its standard settings.',
             leiSearch: 'Search by name or LEI',
+            leiHowItWorks:
+                'Choosing an entity fills in the tenant below, and every field stays editable.',
+            leiChange: 'Change',
+            leiKeep: 'Keep',
             leiParties: {
                 one: '1 party in its hierarchy',
                 other: '{count} parties in its hierarchy',

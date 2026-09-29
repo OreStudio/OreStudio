@@ -507,6 +507,10 @@ const pt: SourceCatalogue = {
             passwordForced: 'Terá de a alterar no primeiro início de sessão.',
             standard: 'O {profile} usa as suas definições padrão.',
             leiSearch: 'Pesquisar por nome ou LEI',
+            leiHowItWorks:
+                'Escolher uma entidade preenche o locatário abaixo, e cada campo continua editável.',
+            leiChange: 'Alterar',
+            leiKeep: 'Manter',
             leiParties: {
                 one: '1 entidade na sua hierarquia',
                 other: '{count} entidades na sua hierarquia',

@@ -143,6 +143,15 @@ task and name that file in the Command column.
   the card carries no profile's name; a profile that declares a string keeps a
   text field.
 
+- The entity field is one state at a time. While nothing is chosen it is a
+  search box, with a sentence saying what choosing does. Once an entity is
+  chosen the box and the list go away and the entity stands in their place,
+  named, with its LEI, its country, the parties its hierarchy would create and
+  a *Change* action; *Change* opens the search again with a *Keep* action
+  beside it. A search box that keeps the letters somebody typed says nothing
+  about what they chose, and the walk found exactly that: the field read
+  =Barc= while the tenant had already been built around BARCLAYS PLC.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

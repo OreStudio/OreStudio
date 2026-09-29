@@ -503,6 +503,10 @@ const fr: SourceCatalogue = {
             passwordForced: 'Il devra le changer à la première connexion.',
             standard: '{profile} utilise ses paramètres standard.',
             leiSearch: 'Rechercher par nom ou LEI',
+            leiHowItWorks:
+                'Choisir une entité remplit le locataire ci-dessous, et chaque champ reste modifiable.',
+            leiChange: 'Changer',
+            leiKeep: 'Conserver',
             leiParties: {
                 one: '1 entité dans sa hiérarchie',
                 other: '{count} entités dans sa hiérarchie',

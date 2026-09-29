@@ -26,7 +26,7 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import { FirstSignIn, signInComplete } from './FirstSignIn.js';
 import { ProfileCards, RunStep, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyServer } from './server.js';
-import { detailsFor } from './state.js';
+import { detailsFor, type TenantDetails } from './state.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 function render(node: ReactNode): string {
@@ -228,6 +228,47 @@ describe('the tenant form', () => {
 
         expect(html).toContain('Parent legal entity');
         expect(html.indexOf('Parent legal entity')).toBeLessThan(html.indexOf('Hostname'));
+    });
+
+    it('asks for an entity, and says what choosing one does', () => {
+        const html = render(
+            <TenantForm
+                server={fakeServer()}
+                profile={gleif}
+                details={detailsFor(gleif)}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('Search by name or LEI');
+        expect(html).toContain('fills in the tenant below');
+    });
+
+    it('states the entity that was chosen instead of the letters that found it', () => {
+        const chosen: TenantDetails = {
+            ...detailsFor(gleif),
+            parameters: { root_lei: '213800LBQA1Y9L22JB70' },
+        };
+        const html = render(
+            <TenantForm
+                server={fakeServer()}
+                profile={gleif}
+                details={chosen}
+                policy={policy}
+                creatingPassword="Issued-Password-1"
+                onChange={() => undefined}
+                onPasswordAcceptable={() => undefined}
+            />,
+        );
+
+        expect(html).toContain('213800LBQA1Y9L22JB70');
+        expect(html).toContain('Change');
+        // The box that found it is gone, because the choice is what the field
+        // states: keeping the search text on screen says nothing about it.
+        expect(html).not.toContain('Search by name or LEI');
     });
 
     it('states the tenant first when the person names it themselves', () => {

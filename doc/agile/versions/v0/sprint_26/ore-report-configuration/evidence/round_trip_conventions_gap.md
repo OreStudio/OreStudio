@@ -60,9 +60,10 @@ CommodityForward and BondYield -- so the live numbers are on the task. At
 `bdfa9d11e6` the mapper models twenty-four of the twenty-six categories, one
 remains unmodelled that any file uses, three files still carry one, and
 sixty-nine round trip outright. The three that do not each carry more than one
-unmodelled item, so no single category left clears a file on its own: finishing
-the kind means IntradayPowerLoad and the five counted list-bearing fields
-together.
+unmodelled item, so no single category left clears a file on its own. At
+`d2bd5eb9b8` the commodity future's four list-bearing fields became columns too,
+and the gap is two items: `InflationSwap.PublicationSchedule`, which two files
+set, and `IntradayPowerLoad`, which one file carries.
 
 ## What the nine files that use only modelled categories fail on
 

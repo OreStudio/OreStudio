@@ -30,7 +30,7 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Fifteen of the sixteen categories are modelled, so sixty-nine of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =IntradayPowerLoad= and the five fields still counted: =CommodityFuture.AveragingData=, =CommodityFuture.ProhibitedExpiries=, the two continuation-mapping lists and =InflationSwap.PublicationSchedule=. Every remaining file needs more than one of them, so the kind reaches seventy-two of seventy-two only when all six land. |
+| Next         | Model =IntradayPowerLoad= and =InflationSwap.PublicationSchedule=. They are the last two items: two files need the schedule and one needs the load, so the kind reaches seventy-two of seventy-two when both land. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -61,7 +61,7 @@ task and name that file in the Command column.
 | Files carrying an unmodelled category | 63 at the start, 3 after fifteen | the same | =bdfa9d11e6= |
 | Files that carry only modelled categories, and round trip | 9 at the start, 69 after fifteen | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =bdfa9d11e6= |
 | Files a single category would clear, now | none: the three files left each carry more than one unmodelled item | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =bdfa9d11e6= |
-| The whole remaining gap | IntradayPowerLoad 1 file; CommodityFuture.AveragingData 2 files, .ProhibitedExpiries 2, .FutureContinuationMappings 1, .OptionContinuationMappings 1; InflationSwap.PublicationSchedule 2 | =ores.ore.core.tests "conventions_unmodelled_categories_measurement" -s= | =bdfa9d11e6= |
+| The whole remaining gap | InflationSwap.PublicationSchedule 2 files and IntradayPowerLoad 1 file, and nothing else | =ores.ore.core.tests "conventions_unmodelled_categories_measurement" -s= | =d2bd5eb9b8= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -145,15 +145,18 @@ task and name that file in the Command column.
   now known exactly. The bond yield's two floats travel through double precision
   columns, because the refdata schema has no float type and a float widens and
   narrows back with no loss.
-- The gap left is six items, not one: =IntradayPowerLoad=, which is one file and
-  one category, and five list-bearing fields inside categories already modelled
-  -- =CommodityFuture.AveragingData=, =CommodityFuture.ProhibitedExpiries=,
-  =CommodityFuture.FutureContinuationMappings=,
-  =CommodityFuture.OptionContinuationMappings= and
-  =InflationSwap.PublicationSchedule=. Each of the three remaining files needs
-  more than one of them, so the kind reaches seventy-two of seventy-two only when
-  all six land, and the last of them is the most complex: a publication schedule
-  is a list of rule blocks, date blocks and derived schedule groups.
+- The commodity future's four list-bearing fields are modelled rather than
+  counted. =AveragingData= became eight columns and the other three one text
+  column each, holding comma-separated dates and =from:to= pairs. A text column
+  is a weaker home than a table and it is the one that keeps the field in the
+  element's round trip; the alternative was to exclude the file.
+- The gap left in the conventions kind is two items, and the measurement names
+  both: =InflationSwap.PublicationSchedule=, which two files set, and
+  =IntradayPowerLoad=, which one file carries. Two files need only the schedule
+  and one needs only the load, so the kind reaches seventy-two of seventy-two
+  when both land. Each is a list of structs nested two deep -- a schedule of
+  rule blocks and date blocks, a load profile of dated entries each with its own
+  load factors -- so each needs either a child table or a stated text form.
 
 * Test Scenarios
 

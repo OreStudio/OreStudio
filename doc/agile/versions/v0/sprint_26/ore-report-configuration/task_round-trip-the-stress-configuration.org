@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-report-configuration
-#+pr:
+#+pr: 2398
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2398][#2398]] | [analytics] Model the stress test configuration |
 
 * Review
 

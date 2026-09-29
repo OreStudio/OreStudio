@@ -64,6 +64,25 @@ task and name that file in the Command column.
 
 * Notes
 
+- The document is modelled as a library of named scenarios, and a scenario's
+  shifts as rows of one table rather than one table per family: the fourteen
+  families in use are the same shape -- an object named by one attribute, a
+  shift type, and the shift as parallel lists of values and of tenors or
+  expiries -- so the family is a column and the object's name is =object_key=.
+  Adding a family is then a value, not a table.
+- The mapper maps the library and its scenarios over all twenty documents, and
+  =DiscountCurves= is the first family mapped end to end. The other families are
+  counted into =unmodelled= rather than dropped, and the case asserts the counts
+  for the four busiest, so the gap is measured.
+- Where the work stands, for whoever picks it up. Each family still to map needs
+  two things: reading its key attribute back into its own type, and reading its
+  extras -- =ShiftSize=, =ShiftScheme=, =ShiftingZeros=, =ParConversion= and the
+  rest -- which differ from family to family. Reading ORE's spellings back needs
+  a table per key type, and the two smallest live in =ore_code_tables.hpp=; a
+  family whose key is a currency pair or an index needs one table each.
+- An empty shift block is written back as no block, because an element with no
+  entries means the same as its absence and the corpus carries one.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

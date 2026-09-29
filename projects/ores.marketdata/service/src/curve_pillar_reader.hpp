@@ -54,10 +54,9 @@ struct ORES_MARKETDATA_SERVICE_EXPORT pillar_read final {
  * party as the ingest loop scopes the series it writes.
  *
  * A pillar whose series is absent, or whose series carries no observation at the
- * point this read derived, is taken from the grid the config names and matched on
- * point id. That is the tolerance for a database written before the feed keyed its
- * pillars individually; a pillar neither source supplies stays missing, and
- * resolve_bootstrap_pillars() fails loudly on it as it always has.
+ * point this read derived, gets no rate at all. resolve_bootstrap_pillars() then
+ * fails loudly on it, so a bootstrap never quietly runs on a grid it did not read;
+ * the config names no source series to fall back to.
  *
  * @throws std::invalid_argument if a pillar's tenor code does not resolve under
  * @p refctx, or if the key it builds is one the oresmd grammar has no series for.

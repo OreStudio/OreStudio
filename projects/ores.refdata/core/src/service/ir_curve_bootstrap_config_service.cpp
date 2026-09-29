@@ -87,7 +87,6 @@ to_domain(const messaging::ir_curve_bootstrap_config_write& write) {
     v.id = write.id;
     v.output_series_id = write.output_series_id;
     v.currency_code = write.currency_code;
-    v.source_series_id = write.source_series_id;
     v.curve_family_role = write.curve_family_role;
     v.discount_curve_config_id = write.discount_curve_config_id;
     v.interpolation_method = write.interpolation_method;

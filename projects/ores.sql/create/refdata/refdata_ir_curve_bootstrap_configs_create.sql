@@ -32,17 +32,22 @@
  * which owns only the generic value store the bootstrap output is
  * written into.
  *
- * source_series_id and output_series_id are soft, cross-component
- * references into ores.marketdata's market_series table (the raw
- * instrument grid this config bootstraps, and the official curve series
- * it publishes into) -- deliberately not hard FK constraints, matching
- * the same soft-reference principle already used for
+ * output_series_id is a soft, cross-component reference into
+ * ores.marketdata's market_series table -- the official curve series
+ * this config publishes into -- deliberately not a hard FK constraint,
+ * matching the same soft-reference principle already used for
  * market_series.derivation_config_id and ir_curve_tick's own
  * producer/config identity: the referenced table lives in a different
- * component/schema. output_series_id is minted (the market_series
- * catalog row created) at config-creation time by the owning service,
- * never left null/deferred -- there is no "not yet published" state to
- * guard against.
+ * component/schema. The column is minted (the market_series catalog row
+ * created) at config-creation time by the owning service, never left
+ * null/deferred -- there is no "not yet published" state to guard against.
+ *
+ * The config names no *input* series. Its pillars are the input: each pillar
+ * carries the start and end tenor codes of the quote that fills it, and
+ * curve_republish_service derives that quote's ORE key from the config's own
+ * currency and the pillar's resolved dates, so a pillar is read from the series
+ * the feed's tick for that pillar landed in. A raw-grid reference would be a
+ * second spelling of the same input, with nothing keeping the two in step.
  *
  * curve_family_role (FUNDING/PROJECTION) and
  * discount_curve_config_id (self-referencing, nil-uuid sentinel for
@@ -53,15 +58,6 @@
  * Multi-Curve Construction names basis-linked/cyclic Projection
  * dependencies as an explicit out-of-scope modelling gap, not something
  * this design should silently permit), and must not reference itself.
- *
- * source_series_id (the raw grid this config bootstraps from) and
- * output_series_id (the published curve it writes to) must differ.
- * Without this, curve_republish_service's first-publish step would
- * permanently reclassify the raw, externally-fed input series as this
- * config's own IR_CURVE_BOOTSTRAP-derived output, and every
- * subsequent bootstrapped observation would be written into the exact
- * series id the raw feed keeps writing ticks into -- silently
- * corrupting the raw data rather than failing loudly.
  *
  * interpolation_method and curve_family_role are small,
  * fixed-vocabulary fields intrinsic to this record (not references to
@@ -90,7 +86,6 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     "output_series_id" uuid not null,
     "party_id" uuid not null,
     "currency_code" text not null,
-    "source_series_id" uuid not null,
     "curve_family_role" text not null,
     "discount_curve_config_id" uuid not null,
     "interpolation_method" text not null,
@@ -115,8 +110,7 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     check ("day_count_convention" <> ''),
     check ("split_tenor_code" <> ''),
     check ("discount_curve_config_id" <> "id"),
-    check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn())),
-    check ("source_series_id" <> "output_series_id")
+    check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()))
 );
 
 -- Unique output_series_id for active records

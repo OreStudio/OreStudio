@@ -26,24 +26,6 @@
 
 namespace ores::marketdata::service {
 
-namespace {
-
-// The one series the segment used to be, read whole and matched on point id. A
-// database written before the feed keyed its pillars individually holds it, so it
-// stays readable until the seed stops writing it.
-std::unordered_map<std::string, double>
-read_grid_rates(ores::database::context ctx,
-                const boost::uuids::uuid& source_series_id,
-                std::chrono::system_clock::time_point as_of) {
-    repository::market_observations_repository obs_repo;
-    std::unordered_map<std::string, double> out;
-    for (const auto& obs : obs_repo.read_as_of(ctx, source_series_id, as_of))
-        out.emplace(obs.point_id, std::stod(obs.value));
-    return out;
-}
-
-}
-
 pillar_read
 read_pillar_rates(ores::database::context ctx,
                   const ores::refdata::domain::ir_curve_bootstrap_config& config,
@@ -56,7 +38,6 @@ read_pillar_rates(ores::database::context ctx,
     repository::market_observations_repository obs_repo;
 
     pillar_read out;
-    std::vector<const ores::refdata::domain::ir_curve_bootstrap_pillar*> unresolved;
     for (const auto& p : pillars) {
         const auto key = core::make_pillar_quote_key(config.currency_code,
                                                      p.start_tenor_code,
@@ -66,10 +47,8 @@ read_pillar_rates(ores::database::context ctx,
         // the curve is bootstrapped for that party, so its quotes come from it.
         const auto series = series_repo.read_latest_by_uri(
             ctx, core::pillar_series_uri(key), boost::uuids::to_string(config.party_id));
-        if (series.empty()) {
-            unresolved.push_back(&p);
+        if (series.empty())
             continue;
-        }
 
         bool found = false;
         for (const auto& obs : obs_repo.read_as_of(ctx, series.front().id, as_of))
@@ -77,24 +56,8 @@ read_pillar_rates(ores::database::context ctx,
                 out.rates_by_point_id.emplace(p.end_tenor_code, std::stod(obs.value));
                 found = true;
             }
-        if (!found) {
-            // The series exists but not at the point this read derived, which a
-            // horizon the feed did not publish under produces. The grid is then the
-            // pillar's other source, so this pillar is resolved like a missing one.
-            unresolved.push_back(&p);
-            continue;
-        }
-        out.series_ids.push_back(boost::uuids::to_string(series.front().id));
-    }
-
-    if (!unresolved.empty()) {
-        const auto grid = read_grid_rates(ctx, config.source_series_id, as_of);
-        const auto grid_id = boost::uuids::to_string(config.source_series_id);
-        for (const auto* p : unresolved) {
-            if (auto it = grid.find(p->end_tenor_code); it != grid.end())
-                out.rates_by_point_id.emplace(p->end_tenor_code, it->second);
-            out.series_ids.push_back(grid_id);
-        }
+        if (found)
+            out.series_ids.push_back(boost::uuids::to_string(series.front().id));
     }
 
     return out;

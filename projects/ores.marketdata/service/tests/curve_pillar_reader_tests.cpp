@@ -118,7 +118,6 @@ std::string pillar_point(const curve_republish_refdata_context& ctx, const std::
 struct fixture {
     database_helper h;
     boost::uuids::uuid party_id = boost::uuids::random_generator{}();
-    boost::uuids::uuid grid_id = boost::uuids::random_generator{}();
     boost::uuids::random_generator uuid_gen;
 
     ir_curve_bootstrap_config make_config() {
@@ -128,25 +127,24 @@ struct fixture {
         c.tenant_id = h.tenant_id();
         c.party_id = party_id;
         c.currency_code = "USD";
-        c.source_series_id = grid_id;
         c.tenor_convention_code = "RATES_SPOT_FORWARD";
         return c;
     }
 
-    boost::uuids::uuid write_series(const boost::uuids::uuid& id,
-                                    const std::string& series_type,
-                                    const std::string& metric,
-                                    const std::string& qualifier,
-                                    const std::string& uri) {
+    void write_pillar_series(const boost::uuids::uuid& id,
+                             const curve_republish_refdata_context& ctx,
+                             const std::string& start,
+                             const std::string& end) {
+        const auto key = pillar_key(ctx, start, end);
         market_series s;
         s.id = id;
         s.version = 0;
         s.tenant_id = h.tenant_id();
         s.party_id = party_id;
-        s.series_type = series_type;
-        s.metric = metric;
-        s.qualifier = qualifier;
-        s.oresmd_uri = uri;
+        s.series_type = key.series_type;
+        s.metric = key.metric;
+        s.qualifier = key.qualifier;
+        s.oresmd_uri = ores::marketdata::core::pillar_series_uri(key);
         s.series_subclass = "yield";
         s.derivation_kind = "OBSERVED";
         s.derivation_config_id = boost::uuids::nil_uuid();
@@ -157,7 +155,6 @@ struct fixture {
         s.change_commentary = "curve_pillar_reader test";
         market_series_repository repo;
         repo.write(h.context(), s);
-        return s.id;
     }
 
     void write_quote(const boost::uuids::uuid& series_id,
@@ -185,12 +182,7 @@ TEST_CASE("a_pillar_is_read_from_the_series_its_own_key_names", tags) {
     const auto config = f.make_config();
     const auto series_id = f.uuid_gen();
 
-    const auto key = pillar_key(ctx, "SPOT", spot_first);
-    f.write_series(series_id,
-                   key.series_type,
-                   key.metric,
-                   key.qualifier,
-                   ores::marketdata::core::pillar_series_uri(key));
+    f.write_pillar_series(series_id, ctx, "SPOT", spot_first);
     f.write_quote(series_id, pillar_point(ctx, spot_first), "0.0432");
 
     const auto read = read_pillar_rates(
@@ -202,57 +194,51 @@ TEST_CASE("a_pillar_is_read_from_the_series_its_own_key_names", tags) {
     CHECK(read.series_ids.front() == boost::uuids::to_string(series_id));
 }
 
-TEST_CASE("a_pillar_with_no_series_of_its_own_is_read_from_the_grid", tags) {
+TEST_CASE("a_pillar_with_no_series_of_its_own_gets_no_rate", tags) {
     fixture f;
     const auto ctx = make_context();
     const auto config = f.make_config();
-
-    // The grid's points are the pillars' end tenor codes, not dates.
-    f.write_series(f.grid_id, "RATES", "YIELD", "USD/SOFR-FOMC", "");
-    f.write_quote(f.grid_id, spot_first, "0.0310");
 
     const auto read = read_pillar_rates(
         f.h.context(), config, {make_pillar(0, "SPOT", spot_first)}, ctx, read_as_of);
 
-    REQUIRE(read.rates_by_point_id.size() == 1);
-    CHECK(read.rates_by_point_id.at(spot_first) == Catch::Approx(0.0310));
-    REQUIRE(read.series_ids.size() == 1);
-    CHECK(read.series_ids.front() == boost::uuids::to_string(f.grid_id));
+    CHECK(read.rates_by_point_id.empty());
+    CHECK(read.series_ids.empty());
 }
 
-TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_point_falls_back_to_the_grid", tags) {
+TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_point_gets_no_rate", tags) {
     fixture f;
     const auto ctx = make_context();
     const auto config = f.make_config();
+    const auto series_id = f.uuid_gen();
+
+    // The series is published, but not at the point this read derived, which a
+    // horizon the feed did not publish under produces.
+    f.write_pillar_series(series_id, ctx, "SPOT", spot_first);
+    f.write_quote(series_id, "19991231", "0.9999");
+
+    const auto read = read_pillar_rates(
+        f.h.context(), config, {make_pillar(0, "SPOT", spot_first)}, ctx, read_as_of);
+
+    CHECK(read.rates_by_point_id.empty());
+    CHECK(read.series_ids.empty());
+}
+
+TEST_CASE("the_lineage_names_only_the_series_a_rate_was_read_from", tags) {
+    fixture f;
+    const auto ctx = make_context();
+    const auto config = f.make_config();
+    const auto spot_id = f.uuid_gen();
 
     // The first pillar is published under its own identity; the second one's
-    // series exists but carries no quote at the point this read derives, which
-    // a horizon the feed did not publish under produces.
-    const auto spot_id = f.uuid_gen();
-    const auto first_id = f.uuid_gen();
-    const auto spot_key = pillar_key(ctx, "SPOT", spot_first);
-    f.write_series(spot_id,
-                   spot_key.series_type,
-                   spot_key.metric,
-                   spot_key.qualifier,
-                   ores::marketdata::core::pillar_series_uri(spot_key));
+    // series does not exist at all.
+    f.write_pillar_series(spot_id, ctx, "SPOT", spot_first);
     f.write_quote(spot_id, pillar_point(ctx, spot_first), "0.0432");
-    const auto first_key = pillar_key(ctx, spot_first, first_second);
-    f.write_series(first_id,
-                   first_key.series_type,
-                   first_key.metric,
-                   first_key.qualifier,
-                   ores::marketdata::core::pillar_series_uri(first_key));
-    f.write_quote(first_id, "19991231", "0.9999");
-    f.write_series(f.grid_id, "RATES", "YIELD", "USD/SOFR-FOMC", "");
-    f.write_quote(f.grid_id, first_second, "0.0510");
 
     const auto read = read_pillar_rates(f.h.context(), config, make_pillars(), ctx, read_as_of);
 
-    REQUIRE(read.rates_by_point_id.size() == 2);
+    REQUIRE(read.rates_by_point_id.size() == 1);
     CHECK(read.rates_by_point_id.at(spot_first) == Catch::Approx(0.0432));
-    CHECK(read.rates_by_point_id.at(first_second) == Catch::Approx(0.0510));
-    REQUIRE(read.series_ids.size() == 2);
-    CHECK(read.series_ids[0] == boost::uuids::to_string(spot_id));
-    CHECK(read.series_ids[1] == boost::uuids::to_string(f.grid_id));
+    REQUIRE(read.series_ids.size() == 1);
+    CHECK(read.series_ids.front() == boost::uuids::to_string(spot_id));
 }

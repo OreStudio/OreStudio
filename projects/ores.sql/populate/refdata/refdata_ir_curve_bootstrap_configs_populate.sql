@@ -36,19 +36,19 @@
  * (spot + one year) closes the segment under the RATES_SPOT_FOMC
  * convention (see refdata_tenor_convention_resolutions_populate.sql).
  *
- * The config's source_series_id and output_series_id reference the two
- * market_series rows seeded by
- * marketdata_market_series_fomc_populate.sql (a soft, cross-component
- * reference -- no FK): the raw RATES/YIELD grid the synthetic feed
- * publishes FOMC quotes into, and the DISCOUNT/RATE/USD/USD-SOFR-FOMC
- * series the bootstrapped curve is written to.
+ * The config's output_series_id references the curve's market_series row
+ * seeded by marketdata_market_series_fomc_populate.sql (a soft,
+ * cross-component reference -- no FK): the DISCOUNT/RATE/USD/USD-SOFR-FOMC
+ * series the bootstrapped curve is written to. The pillars are the config's
+ * input, so no source series is named: each pillar is read from the series
+ * the feed's tick for that instrument landed in.
  *
  * The nine pillars chain SPOT -> 1F -> 2F -> ... -> 8F -> 1Y in sequence
  * order: a DEPOSIT from spot to the first meeting, then one SWAP per
  * meeting interval whose fixed leg is the meeting-dated grid itself (the
  * FOMC-to-FOMC fixing schedule), closing with the 8F -> 1Y swap into the
- * split tenor. Each pillar's point id is its end tenor code, and the raw
- * grid must quote every one of them (1F..8F plus 1Y).
+ * split tenor. Each pillar's point id is its end tenor code, and each
+ * pillar's own series must quote it.
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE.
  */
@@ -57,7 +57,6 @@
 
 insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
     id, tenant_id, version, output_series_id, party_id, currency_code,
-    source_series_id,
     curve_family_role, discount_curve_config_id, interpolation_method,
     day_count_convention, tenor_convention_code, split_tenor_code,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -69,7 +68,6 @@ values (
     'f2d3e4a5-6c7d-4e8f-8a9b-1c2d3e4f5061',
     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
     'USD',
-    'e1c2d3f4-5b6c-4d7e-9f8a-0b1c2d3e4f50',
     'FUNDING', ores_utility_nil_uuid_fn(), 'FLAT_FORWARD_THEN_LOG_LINEAR',
     'A360', 'RATES_SPOT_FOMC', '1Y',
     current_user, current_user, 'system.initial_load',
@@ -81,7 +79,6 @@ do update set
     output_series_id = excluded.output_series_id,
     party_id = excluded.party_id,
     currency_code = excluded.currency_code,
-    source_series_id = excluded.source_series_id,
     curve_family_role = excluded.curve_family_role,
     discount_curve_config_id = excluded.discount_curve_config_id,
     interpolation_method = excluded.interpolation_method,

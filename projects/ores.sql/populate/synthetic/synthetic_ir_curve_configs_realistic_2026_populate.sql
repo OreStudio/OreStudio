@@ -187,13 +187,13 @@ begin
     ) as e(sequence_index, start_tenor_code, end_tenor_code, instrument_code);
 
     -- The FOMC-dated short end, USD only: one extra config for the same
-    -- (currency, index_family) keyed by tenor 'FOMC', so it publishes its
-    -- own distinct series identity, 'USD/SOFR-FOMC' (see ir_curve_qualifier
-    -- in ir_curve_template_resolver.cpp) -- the raw grid the bootstrap
-    -- config consumes. Only USD has FOMC-dated pillars; the 20-currency
-    -- cross-join above must not be extended. The process calibration is the
-    -- same per-currency CIR set as the main USD curve row, so the two
-    -- segments move consistently.
+    -- (currency, index_family) keyed by tenor 'FOMC'. It publishes one series
+    -- per pillar, each keyed as the meeting-dated OIS quote it simulates, so
+    -- the bootstrap reads those pillars from the series their own ORE keys
+    -- name. Only USD has FOMC-dated pillars; the 20-currency cross-join above
+    -- must not be extended. The process calibration is the same per-currency
+    -- CIR set as the main USD curve row, so the two segments move
+    -- consistently.
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
@@ -207,9 +207,9 @@ begin
         'Fixed Synthetic IR Curve (2026 Realistic): USD/USD-SOFR-FOMC',
         '2026 Realistic archetype: the FOMC-dated short end of USD-SOFR. A Cox-Ingersoll-Ross '
         || 'short-rate process (the same calibration as the main USD curve) quotes the '
-        || 'meeting-dated point ids 1F..8F and the 1Y split tenor, publishing into the '
-        || 'RATES/YIELD USD/SOFR-FOMC raw grid the bootstrap config consumes; the curve itself '
-        || 'is built by the republish chain, not by this feed.',
+        || 'meeting-dated pillars 1F..8F and the 1Y split tenor, one series per pillar, named '
+        || 'by the OIS quote each one is; the curve itself is built by the republish chain, '
+        || 'not by this feed.',
         true, true, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
         0.55, 0.04, 0.008, 0.04,
         60, 'Quarterly',

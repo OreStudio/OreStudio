@@ -45,7 +45,6 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
 
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.currency_code = v.currency_code;
-    r.source_series_id = boost::lexical_cast<boost::uuids::uuid>(v.source_series_id);
     r.curve_family_role = v.curve_family_role;
     r.discount_curve_config_id =
         boost::lexical_cast<boost::uuids::uuid>(v.discount_curve_config_id);
@@ -75,7 +74,6 @@ ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v
 
     r.party_id = boost::uuids::to_string(v.party_id);
     r.currency_code = v.currency_code;
-    r.source_series_id = boost::uuids::to_string(v.source_series_id);
     r.curve_family_role = v.curve_family_role;
     r.discount_curve_config_id = boost::uuids::to_string(v.discount_curve_config_id);
     r.interpolation_method = v.interpolation_method;

@@ -142,16 +142,16 @@ void ir_curve_bootstrap_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <output_series_id> <currency_code> <source_series_id> <curve_family_role> "
-        "<discount_curve_config_id> <interpolation_method> <day_count_convention> "
-        "<tenor_convention_code> <split_tenor_code> <reason> <commentary>");
+        "add <output_series_id> <currency_code> <curve_family_role> <discount_curve_config_id> "
+        "<interpolation_method> <day_count_convention> <tenor_convention_code> <split_tenor_code> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <output_series_id> <currency_code> <source_series_id> <curve_family_role> "
+        "set <id> <output_series_id> <currency_code> <curve_family_role> "
         "<discount_curve_config_id> <interpolation_method> <day_count_convention> "
         "<tenor_convention_code> <split_tenor_code> <reason> <commentary> [--version <n>]");
 
@@ -160,9 +160,9 @@ void ir_curve_bootstrap_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <output_series_id> <currency_code> <source_series_id> "
-        "<curve_family_role> <discount_curve_config_id> <interpolation_method> "
-        "<day_count_convention> <tenor_convention_code> <split_tenor_code> <reason> <commentary>");
+        "put-many --count <n> <id> <output_series_id> <currency_code> <curve_family_role> "
+        "<discount_curve_config_id> <interpolation_method> <day_count_convention> "
+        "<tenor_convention_code> <split_tenor_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void ir_curve_bootstrap_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -365,8 +365,6 @@ void ir_curve_bootstrap_config_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.output_series_id, parsed->positionals[next++], "output_series_id");
         read_token(req.change.write.currency_code, parsed->positionals[next++], "currency_code");
-        read_token(
-            req.change.write.source_series_id, parsed->positionals[next++], "source_series_id");
         read_token(
             req.change.write.curve_family_role, parsed->positionals[next++], "curve_family_role");
         read_token(req.change.write.discount_curve_config_id,
@@ -425,8 +423,8 @@ void ir_curve_bootstrap_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -434,8 +432,6 @@ void ir_curve_bootstrap_config_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.output_series_id, parsed->positionals[next++], "output_series_id");
         read_token(req.change.write.currency_code, parsed->positionals[next++], "currency_code");
-        read_token(
-            req.change.write.source_series_id, parsed->positionals[next++], "source_series_id");
         read_token(
             req.change.write.curve_family_role, parsed->positionals[next++], "curve_family_role");
         read_token(req.change.write.discount_curve_config_id,
@@ -506,8 +502,8 @@ void ir_curve_bootstrap_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -517,8 +513,6 @@ void ir_curve_bootstrap_config_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.output_series_id, parsed->positionals[next++], "output_series_id");
             read_token(change.write.currency_code, parsed->positionals[next++], "currency_code");
-            read_token(
-                change.write.source_series_id, parsed->positionals[next++], "source_series_id");
             read_token(
                 change.write.curve_family_role, parsed->positionals[next++], "curve_family_role");
             read_token(change.write.discount_curve_config_id,

@@ -49,7 +49,6 @@ struct ir_curve_bootstrap_config_entity {
 
     std::string party_id;
     std::string currency_code;
-    std::string source_series_id;
     std::string curve_family_role = "FUNDING";
     std::string discount_curve_config_id;
     std::string interpolation_method = "LOG_LINEAR_DISCOUNT";

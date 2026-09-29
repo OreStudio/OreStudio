@@ -45,12 +45,39 @@
  * On a freshly recreated database the create script already emits the identity's
  * index, the not null and the check, so this migration is unnecessary. It exists
  * for databases created before the change.
+ *
+ * The whole file is one transaction: a database whose rows share an identity must
+ * not be left with the triple's index dropped and the not null set. The rows that
+ * would fail the index are named before it is created, so the operator sees which
+ * ones need reconciling instead of Postgres' own message.
  */
+
+begin;
 
 update ores_marketdata_market_series_tbl
 set oresmd_uri = 'oresmd://generic/migrated-' || replace(id::text, '-', '') || '?type=fixing'
 where oresmd_uri is null
    or oresmd_uri = '';
+
+do $$
+declare
+    offenders text;
+begin
+    select string_agg(identity || ' for party ' || party_id::text || ' (' || n || ' rows)', '; ')
+    into offenders
+    from (
+        select oresmd_uri as identity, tenant_id, party_id, count(*) as n
+        from ores_marketdata_market_series_tbl
+        where valid_to = ores_utility_infinity_timestamp_fn()
+        group by oresmd_uri, tenant_id, party_id
+        having count(*) > 1
+    ) shared;
+    if offenders is not null then
+        raise exception
+            'market series rows share an identity and need reconciling before this '
+            'migration: %', offenders;
+    end if;
+end $$;
 
 alter table ores_marketdata_market_series_tbl
     alter column oresmd_uri set not null;
@@ -66,3 +93,5 @@ drop index if exists market_series_party_id_series_type_metric_qualifier_uniq_id
 create unique index if not exists market_series_party_id_oresmd_uri_uniq_idx
 on ores_marketdata_market_series_tbl (tenant_id, party_id, oresmd_uri)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+commit;

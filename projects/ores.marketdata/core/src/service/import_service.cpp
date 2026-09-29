@@ -199,9 +199,8 @@ import_service::import(const messaging::import_market_data_request& req) {
     repository::market_observations_repository obs_repo;
     repository::market_fixings_repository fixings_repo;
 
-    // Cache: (series_type, metric, qualifier) → series id.
-    using SeriesKey = std::tuple<std::string, std::string, std::string>;
-    std::map<SeriesKey, boost::uuids::uuid> series_cache;
+    // Cache: the series' oresmd identity → series id.
+    std::map<std::string, boost::uuids::uuid> series_cache;
 
     // Read the classification rules once for the whole batch, on the first
     // series that needs them. Both the market data and the fixings paths
@@ -216,7 +215,9 @@ import_service::import(const messaging::import_market_data_request& req) {
                                      const std::string& metric,
                                      const std::string& qualifier,
                                      const std::string& oresmd_uri) -> boost::uuids::uuid {
-        const auto key = std::make_tuple(series_type, metric, qualifier);
+        // The identity is what the series is, so the cache is keyed by it rather
+        // than by the triple the registry decomposed the same key into.
+        const auto key = oresmd_uri;
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
             return it->second;

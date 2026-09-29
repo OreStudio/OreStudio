@@ -369,16 +369,23 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         // projection with the point dropped: every point of one series resolves to
         // one identity. A tick that names no point, or a class whose key carries
         // none, is named by the series key alone. A tick whose key the grammar cannot
-        // name and which has no series of its own is dropped: the series is keyed by
-        // its identity, so there is nothing to file that tick under.
+        // name is dropped here, before any lookup, and reported once per key: the
+        // series is keyed by its identity, so a tick with none has nothing to be filed
+        // under, and a row that predates the identities cannot rescue it because that
+        // row has none either.
         std::optional<domain::market_data_identifier> identity;
         if (!point_id.empty())
             identity = core::oresmd_projections::from_ore_key(ore_key + "/" + point_id);
         if (!identity)
             identity = core::oresmd_projections::from_ore_key(ore_key);
         if (!identity) {
+            {
+                std::lock_guard lock(mu_);
+                if (!unnameable_warned_.insert(ore_key).second)
+                    return false;
+            }
             BOOST_LOG_SEV(lg(), warn)
-                << "Dropping tick for " << ore_key
+                << "Dropping ticks for " << ore_key
                 << ": oresmd names no series for this key, and its series is keyed by one.";
             return false;
         }

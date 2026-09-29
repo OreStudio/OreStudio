@@ -455,7 +455,7 @@ export const en: SourceCatalogue = {
 
         welcome: {
             title: 'Welcome to ORE Studio',
-            lead: 'This installation is empty. Set it up in three stages; the list on the left names every step.',
+            lead: "Set up a new installation: the administrator that owns it, the first tenant, and the tenant administrator's first sign-in.",
             start: 'Get started',
             stage: {
                 admin: 'Create the administrator',

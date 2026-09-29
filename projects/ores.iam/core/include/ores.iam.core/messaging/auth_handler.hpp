@@ -48,6 +48,7 @@
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/version/version.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -343,6 +344,11 @@ public:
                 resp.account_id = boost::uuids::to_string(acct.id);
                 resp.tenant_id = acct.tenant_id.to_string();
                 resp.tenant_name = auth_lookup_tenant_name(login_ctx, acct.tenant_id.to_uuid());
+                /*
+                 * A session is a session with a deployment, so the answer that
+                 * opens one says which build it was opened against.
+                 */
+                resp.version = utility::version::full_version_string();
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
@@ -408,6 +414,11 @@ public:
                 resp.account_id = boost::uuids::to_string(acct.id);
                 resp.tenant_id = acct.tenant_id.to_string();
                 resp.tenant_name = auth_lookup_tenant_name(login_ctx, acct.tenant_id.to_uuid());
+                /*
+                 * A session is a session with a deployment, so the answer that
+                 * opens one says which build it was opened against.
+                 */
+                resp.version = utility::version::full_version_string();
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
@@ -445,6 +456,11 @@ public:
             login_response resp;
             resp.success = false;
             resp.error_message = e.what();
+            /*
+             * A refusal still says which build refused, so a client can state
+             * the deployment's version without having signed in at all.
+             */
+            resp.version = utility::version::full_version_string();
             reply(nats_, msg, resp);
         }
     }

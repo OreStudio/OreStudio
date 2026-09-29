@@ -41,6 +41,8 @@ export const sessionViewSchema = z.object({
     accountId: z.string(),
     tenantId: z.string(),
     tenantName: z.string(),
+    /** The build the session was opened against, as the server stated it. */
+    version: z.string(),
     party: partySummarySchema,
     availableParties: z.array(partySummarySchema),
     /** Seconds the token remains valid for, so the browser can renew early. */
@@ -61,6 +63,8 @@ export const partyChoiceSchema = z.object({
     email: z.string(),
     accountId: z.string(),
     tenantName: z.string(),
+    /** The build the login was answered by. */
+    version: z.string(),
     availableParties: z.array(partySummarySchema),
     defaultPartyId: z.string().nullable(),
     passwordResetRequired: z.boolean(),

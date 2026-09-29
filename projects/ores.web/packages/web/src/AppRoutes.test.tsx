@@ -41,6 +41,7 @@ const session: SessionView = {
     accountId: '3f1e2d4c-0000-4000-8000-000000000001',
     tenantId: '3f1e2d4c-0000-4000-8000-000000000002',
     tenantName: 'Acme Corporation',
+    version: 'v0.0.25 (test)',
     party,
     availableParties: [party],
     accessLifetimeSeconds: 3600,

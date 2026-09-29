@@ -184,12 +184,18 @@ function signedIn(
         return <Navigate to="/login" replace />;
     }
     const view = session.session;
+    /*
+     * The session states the build it was opened against, which is newer than
+     * the deployment's first answer; that answer is what a screen has before
+     * anybody signs in.
+     */
+    const version = view.version !== '' ? view.version : serverVersion;
     return (
         <AppShell
             username={view.username}
             tenantName={view.tenantName}
             partyName={view.party.name}
-            serverVersion={serverVersion}
+            serverVersion={version}
             onSignOut={onSignOut}
         >
             {screen(view)}

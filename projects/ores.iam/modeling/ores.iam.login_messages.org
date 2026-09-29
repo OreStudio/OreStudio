@@ -88,6 +88,23 @@ The login protocol messages.
 :cpp_type: std::string
 :END:
 
+*** version
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The build the answering service runs, in full.
+ *
+ * A session is a session with a deployment, so the answer that opens one
+ * states which build it was opened against: a client that signs in states the
+ * deployment's version without having asked whether the deployment still
+ * needs an administrator, and a client that did ask can see whether the two
+ * answers agree.
+ */
+#+end_src
+
 *** username
 :PROPERTIES:
 :cpp_type: std::string

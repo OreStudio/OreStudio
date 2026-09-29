@@ -92,6 +92,7 @@ function buildTestServer(progress: unknown, retry: unknown): TestServer {
         accountId: '11111111-1111-1111-1111-111111111111',
         tenantId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         tenantName: 'System',
+        version: 'v0.0.25 (test)',
         availableParties: [],
         accessLifetimeSeconds: 1800,
         passwordResetRequired: false,

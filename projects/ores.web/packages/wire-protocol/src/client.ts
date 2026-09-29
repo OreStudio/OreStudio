@@ -107,6 +107,8 @@ export interface ActiveSession {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** The build the session was opened against. */
+    readonly version: string;
     readonly username: string;
     readonly email: string;
     readonly party: PartySummary;
@@ -122,6 +124,8 @@ export interface PartySelectionRequired {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** The build the login was answered by. */
+    readonly version: string;
     readonly username: string;
     readonly email: string;
     readonly availableParties: readonly PartySummary[];
@@ -135,6 +139,8 @@ export interface PartySelectionRequired {
 export interface LoginRejected {
     readonly kind: 'rejected';
     readonly message: string;
+    /** The build that refused, which a caller can still state. */
+    readonly version: string;
 }
 
 export type LoginOutcome = ActiveSession | PartySelectionRequired | LoginRejected;
@@ -439,6 +445,7 @@ export class OresClient {
             return {
                 kind: 'rejected',
                 message: reply.errorMessage.length > 0 ? reply.errorMessage : reply.message,
+                version: reply.version,
             };
         }
 
@@ -463,6 +470,7 @@ export class OresClient {
             accountId: reply.accountId,
             tenantId: reply.tenantId,
             tenantName: reply.tenantName,
+            version: reply.version,
             username: reply.username,
             email: reply.email,
             availableParties: reply.availableParties,
@@ -510,6 +518,7 @@ export class OresClient {
             accountId: input.expected.accountId,
             tenantId: input.expected.tenantId,
             tenantName: reply.tenantName.length > 0 ? reply.tenantName : input.expected.tenantName,
+            version: input.expected.version,
             username: reply.username.length > 0 ? reply.username : input.expected.username,
             email: input.expected.email,
             party,
@@ -834,6 +843,7 @@ function toActive(reply: LoginResponse, party: PartySummary): ActiveSession {
         accountId: reply.accountId,
         tenantId: reply.tenantId,
         tenantName: reply.tenantName,
+        version: reply.version,
         username: reply.username,
         email: reply.email,
         party,

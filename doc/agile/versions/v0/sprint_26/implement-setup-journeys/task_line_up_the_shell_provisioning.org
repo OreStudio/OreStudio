@@ -46,11 +46,11 @@ both clients become callers of one contract.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The three commands are thin callers and the orchestration is the server's. =provision system= reads the deployment's bootstrap answer, creates the administrator, signs in as it and provisions the first tenant; =provision tenant= creates every tenant after the first with the same request; =provision party= runs the party stage against one named party. The two verbs the shell was the last caller of — =iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme= — retire with it, and the generated recipes and scripts that named them are regenerated. All three end-to-end recipes ran from their own empty installation to a working tenant: the evidence is =evidence/three_recipes_from_empty_installations.txt=, and the runs found and fixed the completing step writing a tenant's flags under the administrator's party rather than the tenant's. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next          | Nothing. The story's last plan step, proving both clients on a fresh database, is partly done here: the shell's half is proven for all three recipes, and the browser's half runs when the browser journeys are walked again. |
+| Next          | Nothing. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance

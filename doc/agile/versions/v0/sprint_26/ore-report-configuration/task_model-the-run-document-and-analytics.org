@@ -26,18 +26,19 @@ A report definition's run is configured by typed entities for its setup, its mar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The whole run document -- setup, analytics, their parameters and the market bindings -- round trips over the corpus and through the database. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close the task and carry its decisions into the story. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
 
-- report_run_setup carries the setup parameters as typed columns and replaces the corresponding part of risk_report_config.
+- report_run_setup carries the setup parameters as typed columns.
 - report_analytic holds one row per analytic, keyed to a seeded lookup of the thirty-five analytic types.
-- An analytic with parameters has a typed parameter entity; adding a type adds a lookup row and a table, never a column on the report definition.
+- An analytic's parameters are held as values keyed to a parameter definition, so adding a parameter adds a lookup row and never a column on the report definition. The plan said a table per analytic type; the work changed that and the reason is in the notes.
+- The superseded columns on risk_report_config are still there. Retiring them is not this task: they are the run configuration the report definition carries, and the story scopes their replacement with the report kind classification in [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]], which is where the columns' consumers are decided.
 
 * Plan
 
@@ -104,3 +105,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The acceptance is met. The run document is five parameter lists, and four of
+them are modelled: the setup block as forty-three typed columns, the ordered
+analytic list as a row per analytic keyed to a seeded lookup of the thirty-five
+types, the analytics' parameters as values keyed to a parameter definition, and
+the market bindings as a role and the configuration set it names. Logging and
+Restore are not modelled and no shipped document's round trip depends on them.
+
+All four map both ways and round trip: the setup block and the analytic list
+over all four hundred and sixteen run documents, the market bindings over the
+four hundred and thirteen that carry them, and the whole document through
+PostgreSQL, with the parameters resolved back to names on the way out.
+
+Three decisions the work settled:
+
+- An analytic's parameters are rows keyed to a definition, not a table per
+  analytic type. The plan said a table per type; thirty-five tables, one of them
+  around seventy columns wide, is not a shape to maintain, and the reporting
+  registry had already solved this exact problem the same way. Adding a
+  parameter is a lookup row, which is the acceptance's own test, and the
+  vocabulary is seeded from the corpus: three hundred and sixty-five
+  definitions across the thirty-five types.
+- The setup values are held as ORE spells them. The flags are not all booleans
+  -- the fixing and cashflow flags are Y or N, the model flags are true or
+  false, and accrualDate may be the literal ASOF -- so the mapping is a rename
+  and not a conversion.
+- The mapper refuses what it cannot represent: a setup parameter the entity has
+  no column for, or a value the column cannot hold, is an error rather than a
+  silent drop. A name that appears twice is read from its last occurrence, which
+  three shipped documents need.
+
+What is left is not this task's: risk_report_config still carries the run
+parameters it held before, and retiring them belongs with the classification of
+report kinds, where their consumers are decided.

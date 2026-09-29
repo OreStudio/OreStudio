@@ -382,6 +382,221 @@ public:
     }
 
     /**
+     * @brief Provisions one party of the caller's own tenant.
+     *
+     * The party stage as one request. The starting point's row states the
+     * bundles a party is published from, so the request names a starting point
+     * and a party, and the run it starts publishes them, activates the party,
+     * marks its onboarding complete and associates the caller with it.
+     *
+     * Everything that can refuse does so before the run exists: a profile code
+     * no row answers, a starting point that orders no party step, and a party
+     * the tenant does not hold each leave no run behind, because a run that
+     * cannot do what it was asked is worse than a refusal that says why.
+     */
+    void provision_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
+
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        // Starting a party's provisioning run is a party-level capability and
+        // not a tenant-level one: a tenant administrator runs it in the tenant
+        // they already work in, and reaching for the verb that creates tenants
+        // would have made every caller who may provision a party into a caller
+        // who may create a tenant.
+        if (!has_permission(*ctx_expected, "iam::parties:provision")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        auto req = decode<provision_party_command>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  provision_party_command_response{.success = false,
+                                                   .message = "Invalid request payload."});
+            return;
+        }
+
+        const auto refuse = [&](const std::string& reason) {
+            reply(nats_,
+                  msg,
+                  provision_party_command_response{.success = false, .message = reason});
+        };
+
+        try {
+            if (req->party.empty()) {
+                refuse("The field 'party' has no value.");
+                return;
+            }
+            if (req->profile_code.empty()) {
+                refuse("The field 'profile_code' has no value.");
+                return;
+            }
+
+            const auto tenant_id = ctx_expected->tenant_id().to_string();
+
+            // The engine sends a step without the caller's token, so the run
+            // names the account its steps act as. The request context names the
+            // caller in words -- its name, its tenant and its party -- and no
+            // account identifier, so the identifier comes from the token's
+            // subject, which is the session's account.
+            const auto claims =
+                signer_.validate(ores::service::messaging::bearer_token(msg));
+            if (!claims) {
+                refuse("The authorization token could not be read.");
+                return;
+            }
+
+            // A profile is system-owned registered data, and the SQL provisioner
+            // refuses to run outside the system tenant anyway, so the read and
+            // the write share one context.
+            auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+            const auto profiles =
+                ores::iam::service::seed_profile_service(sys_ctx).list_seed_profiles(0, 1000);
+            const auto profile =
+                std::find_if(profiles.begin(), profiles.end(), [&](const auto& candidate) {
+                    return candidate.code == req->profile_code;
+                });
+            if (profile == profiles.end()) {
+                refuse("The seed profile '" + req->profile_code + "' does not exist.");
+                return;
+            }
+
+            // The party stage is the starting point's, so the row that orders it
+            // is what says which bundles a party is published from. A starting
+            // point that orders no party step has no party stage to run, and
+            // saying so is better than running a run whose one step cannot read
+            // its own arguments.
+            const auto declared_steps =
+                ores::iam::service::seed_profile_step_service(sys_ctx)
+                    .list_seed_profile_steps_by_seed_profile_id(
+                        boost::uuids::to_string(profile->id), 0, 1000);
+            const auto party_step = std::find_if(
+                declared_steps.begin(), declared_steps.end(), [](const auto& declared) {
+                    return declared.step_kind == ores::iam::workflow::provision_party_step_kind;
+                });
+            if (party_step == declared_steps.end()) {
+                refuse("The seed profile '" + profile->code +
+                       "' orders no party step, so it has no party stage to run.");
+                return;
+            }
+
+            // The tenant every step acts on is the caller's own: a party is a
+            // tenant's, and the request reaches the party through the tenant the
+            // session is already in.
+            // The party the request names: its identifier when it is one, and
+            // its exact full name when it is not. The reference is parsed here
+            // rather than compared as text, so both spellings of one identifier
+            // reach the same row, which is what the step's own lookup does.
+            auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id);
+            std::optional<boost::uuids::uuid> wanted_id;
+            try {
+                wanted_id = boost::lexical_cast<boost::uuids::uuid>(req->party);
+            } catch (const boost::bad_lexical_cast&) {
+            }
+            const auto found =
+                wanted_id ?
+                    execute_parameterized_string_query(
+                        tenant_ctx,
+                        "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
+                        "AND valid_to = ores_utility_infinity_timestamp_fn() AND id = $2::uuid",
+                        {tenant_id, boost::uuids::to_string(*wanted_id)},
+                        tenant_provisioning_handler_lg(),
+                        "provision_party") :
+                    execute_parameterized_string_query(
+                        tenant_ctx,
+                        "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
+                        "AND valid_to = ores_utility_infinity_timestamp_fn() "
+                        "AND full_name = $2",
+                        {tenant_id, req->party},
+                        tenant_provisioning_handler_lg(),
+                        "provision_party");
+            if (found.empty()) {
+                refuse("The tenant holds no party named '" + req->party + "'.");
+                return;
+            }
+            // A legal name is not unique in the register, so two of a tenant's
+            // parties can share one. A run acts on one party, so a reference
+            // that names two is refused rather than guessed at.
+            if (found.size() > 1) {
+                refuse("The tenant holds more than one party named '" + req->party +
+                       "'; name it by its identifier.");
+                return;
+            }
+
+            // The run's record says what it acted on, so it carries the tenant's
+            // own code and hostname beside the identifier.
+            auto code = tenant_id;
+            auto hostname = std::string{};
+            const auto tenant_row = execute_parameterized_multi_column_query(
+                sys_ctx,
+                "SELECT code, hostname FROM ores_iam_tenants_tbl WHERE id = $1::uuid "
+                "AND valid_to = ores_utility_infinity_timestamp_fn()",
+                {tenant_id},
+                tenant_provisioning_handler_lg(),
+                "provision_party");
+            if (!tenant_row.empty() && tenant_row.front().size() >= 2 &&
+                tenant_row.front()[0] && tenant_row.front()[1]) {
+                code = *tenant_row.front()[0];
+                hostname = *tenant_row.front()[1];
+            }
+
+            ores::iam::workflow::provision_tenant_workflow_request run;
+            run.profile_code = profile->code;
+            run.tenant_id = tenant_id;
+            run.tenant_code = code;
+            run.tenant_hostname = hostname;
+            run.admin_account_id = claims->subject;
+
+            // The party is the step's own argument: a kind reads what it acts on
+            // from its arguments, and the row that orders the kind is the one
+            // that says which bundles it acts with. The identifier the refusal
+            // above resolved travels in the argument, so the step acts on the
+            // party this answer names rather than resolving the reference a
+            // second time and possibly reaching another row.
+            auto arguments = detail::read_step_arguments(party_step->arguments_json);
+            arguments["party"] = found.front();
+            run.steps.push_back({party_step->step_kind, rfl::json::write(arguments)});
+
+            boost::uuids::random_generator generate;
+            const auto instance_id = boost::uuids::to_string(generate());
+
+            ores::workflow::messaging::start_workflow_message start;
+            start.type = std::string(ores::iam::workflow::provision_party_workflow_type);
+            start.tenant_id = tenant_id;
+            start.request_json = rfl::json::write(run);
+            start.correlation_id = correlation_id;
+            start.instance_id = instance_id;
+
+            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
+                             ores::nats::default_wire_codec().encode(start),
+                             ores::nats::service::forwarded_caller_headers(msg));
+
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "Started " << start.type << " for party " << found.front() << " of tenant "
+                << code << " (instance: " << instance_id << ")";
+
+            reply(nats_,
+                  msg,
+                  provision_party_command_response{.success = true,
+                                                   .instance_id = instance_id,
+                                                   .party_id = found.front()});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  provision_party_command_response{.success = false, .message = e.what()});
+        }
+    }
+
+    /**
      * @brief Serves one step of a provision tenant run.
      *
      * The engine dispatches every step of a run to one subject and has no
@@ -430,521 +645,6 @@ public:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: " << e.what();
             wf->fail(e.what());
-        }
-    }
-
-    // Data-driven holding-group spec: which office maps to which bundle and
-    // full_name, in publish order. Adding an office is a new row here plus
-    // the bundle/dataset registrations in acme_bundle_populate.sql /
-    // acme_dataset_populate.sql -- not a code change to the loop below.
-    struct acme_office {
-        std::string code;
-        std::string bundle_code;
-        std::string full_name;
-    };
-
-    static const std::vector<acme_office>& acme_offices() {
-        static const std::vector<acme_office> offices{
-            {"acme_uk", "acme_uk", "ACME Corporation UK plc"},
-            {"acme_us", "acme_us", "ACME Corporation US Inc"},
-            {"acme_hk", "acme_hk", "ACME Corporation HK Ltd"},
-        };
-        return offices;
-    }
-
-    void provision_acme(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_provisioning_handler_lg(), msg);
-        provision_acme_tenant_response resp;
-        resp.success = true;
-        auto add_step = [&](std::string step, std::string action, std::uint64_t count = 1) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "provision_acme: " << step << ": " << action;
-            resp.steps.push_back(provision_acme_tenant_step{
-                .step = std::move(step), .action = std::move(action), .record_count = count});
-        };
-        // Abort-path helper (F11): flips the response to failure and carries
-        // the DQ-side error detail publish_bundle recorded in the trailing
-        // <bundle>.failed step (the publication error_message on a dispatch
-        // failure, or the wait client's exact reason) into the top-level
-        // message, so a failed provisioning never replies with success=true.
-        auto fail_with = [&](const std::string& summary) {
-            resp.success = false;
-            resp.message = summary;
-            for (auto it = resp.steps.rbegin(); it != resp.steps.rend(); ++it)
-                if (it->step.ends_with(".failed")) {
-                    resp.message += " -- " + it->action;
-                    break;
-                }
-        };
-
-        try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-
-            const auto bearer = ores::nats::service::extract_actor_bearer(msg);
-            auto claims = signer_.validate(bearer);
-            if (!claims) {
-                reply(nats_,
-                      msg,
-                      provision_acme_tenant_response{.success = false,
-                                                     .message = "Invalid or expired token"});
-                return;
-            }
-
-            const auto tenant_id_str = claims->tenant_id.value_or("");
-            if (tenant_id_str.empty()) {
-                reply(nats_,
-                      msg,
-                      provision_acme_tenant_response{.success = false,
-                                                     .message = "No tenant context"});
-                return;
-            }
-
-            boost::uuids::string_generator sg;
-            const auto account_id = sg(claims->subject);
-            const auto caller_party_id = (claims->party_id && !claims->party_id->empty()) ?
-                                             sg(*claims->party_id) :
-                                             boost::uuids::nil_uuid();
-            const auto username = claims->username.value_or("");
-
-            auto mint = [&](const boost::uuids::uuid& party_id) {
-                return impersonation_.mint_token(
-                    *ctx_expected, tenant_id_str, account_id, party_id, username);
-            };
-            // Impersonation tokens are deliberately short-lived (see
-            // internal_impersonation_service::mint_token()); every client
-            // built here drives polling loops that routinely outlive that
-            // TTL, so each is wired to re-mint for the same party on
-            // expiry rather than fail once the token goes stale mid-wait.
-            auto make_client = [&](const boost::uuids::uuid& party_id) {
-                return internal_request_client(
-                    nats_, mint(party_id), [&mint, party_id] { return mint(party_id); });
-            };
-            auto progress = [&](const std::string& step) {
-                return [&, step](const std::string& line) {
-                    add_step(step, line, 0);
-                };
-            };
-
-            // Step 1: the generic 'base' bundle (countries, currencies,
-            // calendars, fpml.* reference codes, GLEIF entities/
-            // relationships, and the badge system) -- tenant-wide, same
-            // bundle Barclays' generic provision-party flow publishes, so
-            // Acme gets full reference-data parity instead of only the
-            // Acme-specific datasets below. Must run before Step 2: the
-            // fpml.business_center rows here are what acme_lei_import's
-            // LEI-imported parties are addressed against. opted_in_datasets
-            // pulls in real GLEIF counterparties (small -- ~13k rows, still
-            // the slowest single step here), mirroring Barclays' own
-            // opted_in_datasets. Best-effort: every party a tester actually
-            // cares about is created in steps 3+ regardless of whether this
-            // large, non-blocking dataset finishes within the wait window,
-            // so a slow/failed import here is logged and does not abort
-            // the rest of provisioning.
-            {
-                internal_request_client client = make_client(caller_party_id);
-                add_step("Step 1: Publishing base reference data", "starting", 0);
-                publish_bundle(client,
-                               "base",
-                               username,
-                               R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})",
-                               add_step,
-                               progress("base"),
-                               std::chrono::seconds{1500});
-            }
-
-            // Step 2: the four-party Acme Corporation LEI hierarchy --
-            // tenant-wide, so scoped to the caller's own (already-active)
-            // party rather than a not-yet-created one.
-            {
-                internal_request_client client = make_client(caller_party_id);
-                add_step("Step 2: Importing Acme Corporation LEI hierarchy", "starting", 0);
-                if (!publish_bundle(client,
-                                    "acme_lei_import",
-                                    username,
-                                    lei_import_params(),
-                                    add_step,
-                                    progress("acme_lei_import"),
-                                    std::chrono::seconds{600})) {
-                    fail_with("Step 2 failed: acme_lei_import");
-                    reply(nats_, msg, resp);
-                    return;
-                }
-            }
-
-            // Step 3: the holding company -- activation, logo, onboarding,
-            // the tenant admin's default party, and its own group-level
-            // staff (no desks/business units of its own, just a handful of
-            // group-level roles like the Group CEO).
-            {
-                internal_request_client discover = make_client(caller_party_id);
-                auto holding = find_party(discover, "Acme Corporation Plc");
-                if (!holding) {
-                    add_step("acme_group.skipped", "party_not_found", 0);
-                } else {
-                    internal_request_client client = make_client(holding->id);
-                    add_step("Step 3: Activating Acme Corporation Plc", "starting", 0);
-                    finish_party(client,
-                                 *ctx_expected,
-                                 tenant_id_str,
-                                 account_id,
-                                 username,
-                                 *holding,
-                                 /*set_default=*/true);
-                    add_step("Step 3: Activating Acme Corporation Plc", "completed");
-
-                    add_step("Step 3: Publishing group-level staff", "starting", 0);
-                    dq::messaging::publish_bundle_params groupParams;
-                    groupParams.party_id = boost::uuids::to_string(holding->id);
-                    // Aborts on failure, like Step 2 -- unlike Step 1's best-
-                    // effort base-bundle publish, this one is directly
-                    // responsible for the Group CEO account every office's
-                    // Country Head reports to; letting it fail silently would
-                    // just reproduce the "three disconnected per-office
-                    // trees" bug this dataset exists to fix, with no error
-                    // surfaced anywhere in the step log.
-                    if (!publish_bundle(client,
-                                        "acme_group",
-                                        username,
-                                        dq::messaging::build_params_json(groupParams),
-                                        add_step,
-                                        progress("acme_group"))) {
-                        fail_with("Step 3 failed: acme_group");
-                        reply(nats_, msg, resp);
-                        return;
-                    }
-
-                    add_step("acme_group.staff_photos", "starting", 0);
-                    attach_staff_photos_best_effort(
-                        client, *ctx_expected, tenant_id_str, "acme.acme_group.accounts");
-                    add_step("acme_group.staff_photos", "completed");
-
-                    // Market data for the holding party: only its own CRM
-                    // topology (Cross-Rates Matrix). The synthetic theme and
-                    // FX driver rates publish once, against the system party
-                    // (see the system-party market-data step after the office
-                    // loop below) -- offices and the holding consume the
-                    // shared stream via per-party feed bindings instead of
-                    // owning their own copies of the sim config. Without
-                    // this, the holding party has no CRM (Cross-Rates Matrix)
-                    // at all: a treasury user logged in at the
-                    // default/holding-company party saw a blank matrix with
-                    // no way to get FX visibility short of switching party
-                    // to an office.
-                    const std::vector<dq::messaging::party_bundle_publish_step> group_mkt_plan{
-                        {"crm_topology", "CRM Cross-Rates Matrix topology"}};
-                    std::string current_group_mkt_step;
-                    dq::messaging::publish_party_provisioning_plan(
-                        group_mkt_plan,
-                        holding->id,
-                        [&](const std::string& bundle_code, const std::string& params_json)
-                            -> std::optional<dq::messaging::publish_bundle_response> {
-                            dq::messaging::publish_bundle_request req;
-                            req.bundle_code = bundle_code;
-                            req.published_by = username;
-                            req.atomic = true;
-                            req.params_json = params_json;
-                            auto pub = client.request(req);
-                            const auto mkt_label = "acme_group." + bundle_code;
-                            if (!pub.success) {
-                                add_step(mkt_label + ".failed", pub.error_message, 0);
-                                return std::nullopt;
-                            }
-                            add_step(mkt_label,
-                                     "dispatched",
-                                     static_cast<std::uint64_t>(pub.datasets_dispatched));
-                            return pub;
-                        },
-                        [&](const std::string& instance_id, std::size_t expected) {
-                            const auto mkt_label = "acme_group." + current_group_mkt_step;
-                            auto wait_result =
-                                client.wait_for_workflow_instance(instance_id,
-                                                                  std::chrono::seconds{120},
-                                                                  expected,
-                                                                  progress(mkt_label));
-                            if (!wait_result.success)
-                                add_step(mkt_label + ".failed", wait_result.error, 0);
-                            return wait_result.success;
-                        },
-                        [&](const auto& step) {
-                            current_group_mkt_step = step.bundle_code;
-                            add_step("acme_group." + step.bundle_code, "starting", 0);
-                        });
-                    // Best-effort, like the per-office market-data plan is
-                    // NOT (that one aborts the whole office on failure) --
-                    // deliberately less strict here since Step 3 already
-                    // committed to activating the holding party and
-                    // publishing its group-level staff by this point; a
-                    // failed market-data publish shouldn't undo that.
-                }
-            }
-
-            // Step 4+: per-office business units/portfolios/books/accounts,
-            // then activation/logo/onboarding/membership for that party.
-            // office_parties accumulates (code, party_id) as each office is
-            // resolved, so the market-data and cross-entity steps below can
-            // reuse these NATS-resolved IDs rather than re-querying
-            // ores_refdata_parties_tbl directly.
-            std::vector<std::pair<std::string, boost::uuids::uuid>> office_parties;
-            int step_num = 4;
-            for (const auto& office : acme_offices()) {
-                internal_request_client discover = make_client(caller_party_id);
-                auto party = find_party(discover, office.full_name);
-                if (!party) {
-                    add_step(office.code + ".skipped", "party_not_found", 0);
-                    continue;
-                }
-                office_parties.emplace_back(office.code, party->id);
-
-                internal_request_client client = make_client(party->id);
-                const auto label =
-                    "Step " + std::to_string(step_num++) + ": Publishing " + office.full_name;
-                add_step(label, "starting", 0);
-                dq::messaging::publish_bundle_params params;
-                params.party_id = boost::uuids::to_string(party->id);
-                if (!publish_bundle(client,
-                                    office.bundle_code,
-                                    username,
-                                    dq::messaging::build_params_json(params),
-                                    add_step,
-                                    progress(label)))
-                    continue;
-                add_step(label, "completed");
-
-                finish_party(client,
-                             *ctx_expected,
-                             tenant_id_str,
-                             account_id,
-                             username,
-                             *party,
-                             /*set_default=*/false);
-                add_step(office.code + ".onboarding", "completed");
-
-                // Market data for the office: only its own CRM topology
-                // (Cross-Rates Matrix). The synthetic theme and FX driver
-                // rates are not published per office -- they publish once,
-                // against the system party (see the system-party market-data
-                // step after this loop), and this office consumes the shared
-                // stream via feed bindings created by that same step. Its
-                // series materialize per party from the stream, not from a
-                // per-office copy of the config. The plan-iteration loop
-                // itself (publish + wait per bundle) is shared with
-                // ores.shell's "provision party" command -- see
-                // publish_party_provisioning_plan()'s doc comment for why
-                // it's a template rather than a shared class.
-                const std::vector<dq::messaging::party_bundle_publish_step> mkt_plan{
-                    {"crm_topology", "CRM Cross-Rates Matrix topology"}};
-                std::string current_mkt_step;
-                // on_step always runs immediately before its matching
-                // publish/wait pair (guaranteed by the helper's loop body),
-                // so wait can safely rely on current_mkt_step set just above.
-                if (!dq::messaging::publish_party_provisioning_plan(
-                        mkt_plan,
-                        party->id,
-                        [&](const std::string& bundle_code, const std::string& params_json)
-                            -> std::optional<dq::messaging::publish_bundle_response> {
-                            dq::messaging::publish_bundle_request req;
-                            req.bundle_code = bundle_code;
-                            req.published_by = username;
-                            req.atomic = true;
-                            req.params_json = params_json;
-                            auto pub = client.request(req);
-                            const auto mkt_label = office.code + "." + bundle_code;
-                            if (!pub.success) {
-                                add_step(mkt_label + ".failed", pub.error_message, 0);
-                                return std::nullopt;
-                            }
-                            add_step(mkt_label,
-                                     "dispatched",
-                                     static_cast<std::uint64_t>(pub.datasets_dispatched));
-                            return pub;
-                        },
-                        [&](const std::string& instance_id, std::size_t expected) {
-                            const auto mkt_label = office.code + "." + current_mkt_step;
-                            auto wait_result =
-                                client.wait_for_workflow_instance(instance_id,
-                                                                  std::chrono::seconds{120},
-                                                                  expected,
-                                                                  progress(mkt_label));
-                            if (!wait_result.success)
-                                add_step(mkt_label + ".failed", wait_result.error, 0);
-                            return wait_result.success;
-                        },
-                        [&](const auto& step) {
-                            current_mkt_step = step.bundle_code;
-                            add_step(office.code + "." + step.bundle_code, "starting", 0);
-                        }))
-                    continue;
-
-                const auto photo_label = office.code + ".staff_photos";
-                add_step(photo_label, "starting", 0);
-                attach_staff_photos_best_effort(
-                    client, *ctx_expected, tenant_id_str, "acme." + office.code + ".accounts");
-                add_step(photo_label, "completed");
-            }
-
-            // Step 7: simulated market data, owned by the system party
-            // (consistent-world semantics -- every party sees the same
-            // market; see doc/llm/specs/simulated-market-data-strategy.allium
-            // and the F15 task). The two themes' configs and the FX
-            // driver-rate vintage publish once, against the system party;
-            // the system party, the holding and every office each get
-            // per-party feed bindings on the Live workspace, and the
-            // theme's feeds are started from the system party's folders.
-            // Offices publish no theme and start no feeds. The bindings
-            // come first so the ingest loop (which reacts to binding
-            // changes via the notify trigger) is subscribed before the
-            // first tick lands.
-            {
-                internal_request_client discover = make_client(caller_party_id);
-                auto system_party = find_system_party(discover);
-                if (!system_party) {
-                    add_step("system_market_data.skipped", "system_party_not_found", 0);
-                } else {
-                    internal_request_client system_client = make_client(system_party->id);
-                    const std::vector<dq::messaging::party_bundle_publish_step> system_mkt_plan{
-                        {"synthetic_realistic_2026", "synthetic market data configuration (2026)"},
-                        {"synthetic_ore_samples_2016",
-                         "synthetic market data configuration (legacy ORE Samples)"},
-                        {"marketdata.reference_vintage_2026_05_05", "FX driver rates"}};
-                    std::string current_sys_mkt_step;
-                    // Best-effort like the per-office market-data plan used
-                    // to be: every party is fully provisioned by this point,
-                    // so a failure here surfaces in the response's steps
-                    // rather than undoing the whole tenant.
-                    const bool mkt_ok = dq::messaging::publish_party_provisioning_plan(
-                        system_mkt_plan,
-                        system_party->id,
-                        [&](const std::string& bundle_code, const std::string& params_json)
-                            -> std::optional<dq::messaging::publish_bundle_response> {
-                            dq::messaging::publish_bundle_request req;
-                            req.bundle_code = bundle_code;
-                            req.published_by = username;
-                            req.atomic = true;
-                            req.params_json = params_json;
-                            auto pub = system_client.request(req);
-                            const auto mkt_label = "system_market_data." + bundle_code;
-                            if (!pub.success) {
-                                add_step(mkt_label + ".failed", pub.error_message, 0);
-                                return std::nullopt;
-                            }
-                            add_step(mkt_label,
-                                     "dispatched",
-                                     static_cast<std::uint64_t>(pub.datasets_dispatched));
-                            return pub;
-                        },
-                        [&](const std::string& instance_id, std::size_t expected) {
-                            const auto mkt_label = "system_market_data." + current_sys_mkt_step;
-                            auto wait_result =
-                                system_client.wait_for_workflow_instance(instance_id,
-                                                                         std::chrono::seconds{120},
-                                                                         expected,
-                                                                         progress(mkt_label));
-                            if (!wait_result.success)
-                                add_step(mkt_label + ".failed", wait_result.error, 0);
-                            return wait_result.success;
-                        },
-                        [&](const auto& step) {
-                            current_sys_mkt_step = step.bundle_code;
-                            add_step("system_market_data." + step.bundle_code, "starting", 0);
-                        });
-
-                    if (mkt_ok) {
-                        // Per-party consumption: one binding per (tenant,
-                        // party, workspace=Live, source) for the system
-                        // party, the holding and every office, so each
-                        // materializes its own observations from the shared
-                        // stream (per-party series, identical values). Each
-                        // party's bindings are saved through a client
-                        // impersonating that party: feed-binding saves stamp
-                        // the binding's party from the authenticated context
-                        // (a security boundary), so one privileged client
-                        // cannot create bindings on another party's behalf.
-                        // Resolution of the theme's configs runs through the
-                        // system party's client, because the synthetic
-                        // tables are party-isolated by RLS and the configs
-                        // live under the system party.
-                        const std::string bind_label = "system_market_data.bindings";
-                        add_step(bind_label, "starting", 0);
-                        std::vector<std::pair<std::string, boost::uuids::uuid>> binding_parties;
-                        binding_parties.emplace_back("system", system_party->id);
-                        if (auto holding = find_party(discover, "Acme Corporation Plc"))
-                            binding_parties.emplace_back("holding", holding->id);
-                        for (const auto& [code, party_id] : office_parties)
-                            binding_parties.emplace_back(code, party_id);
-
-                        bool bindings_ok = true;
-                        for (const auto& [code, party_id] : binding_parties) {
-                            internal_request_client party_client = make_client(party_id);
-                            if (!create_theme_feed_bindings(system_client,
-                                                            party_client,
-                                                            "synthetic.themes.realistic_2026",
-                                                            boost::uuids::to_string(party_id))) {
-                                add_step(bind_label + "." + code + ".failed",
-                                         "see service log for details",
-                                         0);
-                                bindings_ok = false;
-                            }
-                        }
-                        if (bindings_ok)
-                            add_step(bind_label, "completed");
-
-                        // Start the theme's feeds from the system party's
-                        // folders via one folder-scoped request the server
-                        // cascades across asset classes, so provisioning and
-                        // manual start share one path. The folder cascade
-                        // starts no feeds for offices -- they have no
-                        // configs of their own.
-                        const std::string feeds_label = "system_market_data.synthetic_feeds";
-                        add_step(feeds_label, "starting", 0);
-                        if (start_synthetic_theme_feeds(system_client,
-                                                        "synthetic.themes.realistic_2026"))
-                            add_step(feeds_label, "completed");
-                        else
-                            add_step(feeds_label + ".failed", "see service log for details", 0);
-                    }
-                }
-            }
-
-            // Step 8: cross-entity access for the "follow the sun" global-
-            // book / risk-oversight roles -- deliberately narrow: only Desk
-            // Heads on the two genuinely 24h-traded desks (IR Swaps, FX
-            // Rates) get remote-booking membership on the London ("global
-            // book") party, and only Market Risk staff get group-wide
-            // risk-oversight membership across every operating company.
-            // Credit Trading and Middle Office stay local-only, matching
-            // how real multi-entity banks restrict cross-border booking
-            // access to a narrow, individually-registered subset of staff
-            // while granting risk oversight much more broadly. See
-            // doc/knowledge/domains/acme_corporation_setup.org.
-            {
-                add_step("Step 7: Granting cross-entity access", "starting", 0);
-                grant_cross_entity_access(*ctx_expected, tenant_id_str, office_parties);
-                add_step("Step 8: Granting cross-entity access", "completed");
-            }
-
-            // Attaching the Barclays demo logo removed from here -- see the
-            // "GLEIF import should natively attach counterparty logos when
-            // available" cleanup task. The previous approach (a best-effort
-            // poll for up to 8 minutes waiting for the GLEIF import to land
-            // BARCLAYS PLC) added an unbounded-feeling silent tail to every
-            // provision_acme call for a demo-only cosmetic touch; this
-            // belongs in the GLEIF import itself, not bolted on afterwards.
-
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "Acme tenant provisioned: " << tenant_id_str << " (" << resp.steps.size()
-                << " step(s))";
-            reply(nats_, msg, resp);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(
-                nats_, msg, provision_acme_tenant_response{.success = false, .message = e.what()});
         }
     }
 
@@ -1081,21 +781,25 @@ private:
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports
-    /// only once every run has finished.
+    /// only once every run has finished. The datasets the profile opts in
+    /// travel with the publication, so a bundle that publishes a member only
+    /// when a starting point asks for it publishes it here.
     void publish_bundle_step(const ores::service::messaging::workflow_step_context& wf,
                              const ores::iam::workflow::provision_tenant_step_command& command,
                              const step_actor& actor) {
-        const auto bundles = parse_step_bundles(command.arguments_json);
+        const auto arguments =
+            parse_publish_bundle_arguments(command.arguments_json, command.parameters);
         auto client =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 
         dq::messaging::publish_bundle_params params;
+        params.opted_in_datasets = arguments.opted_in_datasets;
         const auto params_json = dq::messaging::build_params_json(params);
-        for (const auto& bundle_code : bundles)
+        for (const auto& bundle_code : arguments.bundles)
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
 
-        wf.complete(
-            rfl::json::write(provision_step_result{.kind = command.kind, .bundles = bundles}));
+        wf.complete(rfl::json::write(
+            provision_step_result{.kind = command.kind, .bundles = arguments.bundles}));
     }
 
     /// Publishes the bundles that carry the LEI hierarchy, each with the root
@@ -1136,47 +840,54 @@ private:
             .kind = command.kind, .bundles = arguments.bundles, .root_lei = arguments.root_lei}));
     }
 
-    /// Publishes each party's bundles, once per party the tenant holds. Each
-    /// party's publication runs as that party and is followed to its end, so
-    /// the step completes only once every party's data is in place.
+    /// The whole party stage: publishes each bundle the step names against the
+    /// party, activates it, marks its onboarding complete, and associates the
+    /// run's administrator with it.
+    ///
+    /// The step acts on every party the tenant holds when its arguments name
+    /// none, which is what a tenant's own run asks for, and on the one party a
+    /// request names when it names one. Both readings run the same code, so an
+    /// administrator who adds a party later gets what the tenant's first
+    /// provisioning got, and the engine gives the stage a progress record and a
+    /// retry either way.
     void provision_party_step(const ores::service::messaging::workflow_step_context& wf,
                               const ores::iam::workflow::provision_tenant_step_command& command,
                               const step_actor& actor) {
-        const auto bundles = parse_step_bundles(command.arguments_json);
+        const auto arguments = parse_provision_party_arguments(command.arguments_json);
 
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
 
+        std::vector<ores::refdata::domain::party> parties;
+        if (!arguments.party.empty()) {
+            auto found = resolve_party(discover, arguments.party);
+            if (!found)
+                throw std::runtime_error("The tenant holds no party named '" + arguments.party +
+                                         "'.");
+            parties.push_back(std::move(*found));
+        } else {
+            parties = list_all_parties(discover);
+        }
+
         std::vector<std::string> provisioned;
-        // Every party the tenant holds, one page at a time: a single page with
-        // a fixed limit would provision the first thousand and report success
-        // for the rest.
-        std::uint32_t offset = 0;
-        constexpr std::uint32_t page_size = 1000;
-        while (true) {
-            ores::refdata::messaging::list_parties_request request;
-            request.offset = offset;
-            request.limit = page_size;
-            const auto page = discover.request(request).parties;
-            for (const auto& party : page) {
-                const auto party_id = boost::uuids::to_string(party.id);
-                auto client =
-                    make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                dq::messaging::publish_bundle_params params;
-                params.party_id = party_id;
-                const auto params_json = dq::messaging::build_params_json(params);
-                for (const auto& bundle_code : bundles)
-                    publish_bundle_or_throw(
-                        client, bundle_code, actor.username, params_json, party_id);
-                provisioned.push_back(party_id);
-            }
-            if (page.size() < page_size)
-                break;
-            offset += page_size;
+        for (const auto& party : parties) {
+            const auto party_id = boost::uuids::to_string(party.id);
+            auto client =
+                make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
+            dq::messaging::publish_bundle_params params;
+            params.party_id = party_id;
+            const auto params_json = dq::messaging::build_params_json(params);
+            for (const auto& bundle_code : arguments.bundles)
+                publish_bundle_or_throw(client, bundle_code, actor.username, params_json, party_id);
+
+            activate_party(client, party);
+            complete_party_onboarding(client, party.id);
+            associate_account_with_party(client, actor.account_id, party.id);
+            provisioned.push_back(party_id);
         }
 
         wf.complete(rfl::json::write(provision_step_result{
-            .kind = command.kind, .bundles = bundles, .parties = provisioned}));
+            .kind = command.kind, .bundles = arguments.bundles, .parties = provisioned}));
     }
 
     /// Resolves each party the step names, publishes the bundles that entry
@@ -1316,6 +1027,9 @@ private:
     /// Marks the tenant active and clears bootstrap mode, the two operations
     /// the completing step performs. The tenant is active once it holds its
     /// data, so a flag that will not clear is a warning rather than a failure.
+    /// The step acts as the tenant's system party, because that is the scope
+    /// the flags it writes belong to and the scope the write reads them back
+    /// under; see the body.
     void
     complete_provisioning_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command) {
@@ -1330,8 +1044,21 @@ private:
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Tenant marked active: " << command.tenant_id;
 
-        auto client =
+        auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        // The flags this step writes belong to the tenant and live under its
+        // system party, so the step acts as that party and not as the
+        // administrator's own. The write reads the row it replaces back under
+        // the scope it writes in, and an administrator whose default party is
+        // one the provisioning created cannot see the system party's row from
+        // their own: the clear is then refused as a duplicate create, and the
+        // tenant is left reporting bootstrap mode.
+        const auto settings_party = find_system_party(discover);
+        if (!settings_party)
+            throw std::runtime_error("The tenant holds no system party to hold its own settings.");
+        auto client = make_step_client(
+            command.tenant_id, actor.account_id, settings_party->id, actor.username);
+
         const auto result = rfl::json::write(
             provision_step_result{.kind = command.kind, .tenant_id = command.tenant_id});
         const auto warn = [&](const std::string& message) {
@@ -1416,6 +1143,55 @@ private:
             if (p.full_name == full_name)
                 return p;
         return std::nullopt;
+    }
+
+    /// Every party the tenant holds, one page at a time. A single page with a
+    /// fixed limit would see the first thousand and report the rest missing.
+    static std::vector<ores::refdata::domain::party>
+    list_all_parties(internal_request_client& client) {
+        std::vector<ores::refdata::domain::party> parties;
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 1000;
+        while (true) {
+            ores::refdata::messaging::list_parties_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            const auto page = client.request(request).parties;
+            for (const auto& party : page)
+                parties.push_back(party);
+            if (page.size() < page_size)
+                return parties;
+            offset += page_size;
+        }
+    }
+
+    /// The party a reference names, by its identifier when it is one and by its
+    /// exact full name when it is not.
+    ///
+    /// A person types the name they know a party by, and a script states the
+    /// identifier it read; both reach the same party through one read, because
+    /// the party read is what answers either.
+    static std::optional<ores::refdata::domain::party>
+    resolve_party(internal_request_client& client, const std::string& reference) {
+        std::optional<boost::uuids::uuid> wanted_id;
+        try {
+            wanted_id = boost::lexical_cast<boost::uuids::uuid>(reference);
+        } catch (const boost::bad_lexical_cast&) {
+        }
+
+        std::vector<ores::refdata::domain::party> matches;
+        for (const auto& party : list_all_parties(client)) {
+            if (wanted_id ? party.id == *wanted_id : party.full_name == reference)
+                matches.push_back(party);
+        }
+        // A legal name is not unique, so a name that matches two parties is
+        // refused rather than guessed at: a step acts on one party.
+        if (matches.size() > 1)
+            throw std::runtime_error("The tenant holds more than one party named '" + reference +
+                                     "'; name it by its identifier.");
+        if (matches.empty())
+            return std::nullopt;
+        return matches.front();
     }
 
     // Starts every feed under the calling party's (client's) theme
@@ -1518,15 +1294,13 @@ private:
 
     // Finds the tenant's system party (party_category == "System", created
     // once per tenant by the IAM provisioner) -- the owner of the simulated
-    // market config in the consistent world.
+    // market config in the consistent world, and the scope a tenant's own
+    // settings live under.
     static std::optional<ores::refdata::domain::party>
     find_system_party(internal_request_client& client) {
-        ores::refdata::messaging::list_parties_request req;
-        req.limit = 1000;
-        auto resp = client.request(req);
-        for (auto& p : resp.parties)
-            if (p.party_category == "System")
-                return p;
+        for (const auto& party : list_all_parties(client))
+            if (party.party_category == "System")
+                return party;
         return std::nullopt;
     }
 

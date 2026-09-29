@@ -36,10 +36,17 @@ namespace ores::shell::app::commands {
 /**
  * @brief Porcelain provisioning commands.
  *
- * Each command spans one of the GUI provisioning wizards end-to-end,
- * with the wizard's defaults, per-phase progress and failures that
- * abort a loaded script. The wizard pages define capability coverage,
- * not the surface: a single command with flags replaces each wizard.
+ * Thin callers of the same subjects the browser's setup journeys call:
+ * =iam.v1.bootstrap.status=, =iam.v1.bootstrap.create-admin=,
+ * =iam.v1.tenants.provision= and =iam.v1.parties.provision=, each followed
+ * through the same progress read the journey's rail renders. A command holds
+ * no sequence of its own beyond the order the two clients share, and the
+ * starting point it runs from is a flag naming a seeded row rather than a
+ * profile this code knows anything about.
+ *
+ * The commands the wizards' orchestration used to live in are kept as the
+ * evidence of what those wizards did only in the recipes that run them; the
+ * orchestration itself is the server's.
  */
 class provision_commands {
 private:
@@ -60,49 +67,48 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief The system provisioner flow: provision system <username>
-     * <password> <email> --tenant-admin-password <pw> [--tenant-code
-     * <c>] [--tenant-name <n>] [--tenant-type <t>] [--tenant-hostname
-     * <h>] [--tenant-description <d>] [--tenant-admin <user>]
-     * [--tenant-admin-email <email>].
+     * @brief Set an empty installation up: provision system <username>
+     * <password> <email> --tenant-admin-password <pw> [--profile <code>]
+     * [--param <name=value>] [--tenant-code <c>] [--tenant-name <n>]
+     * [--tenant-hostname <h>] [--tenant-description <d>] [--tenant-admin
+     * <user>] [--tenant-admin-email <email>] [--timeout <seconds>].
      *
-     * Requires bootstrap mode and no login. Creates the initial admin,
-     * logs in as it, and provisions the first tenant with its admin
-     * account. Defaults reproduce the wizard's single-tenant mode;
-     * the session is left logged in as the system admin.
+     * Requires bootstrap mode and no login. Reads the deployment's own
+     * bootstrap answer, creates the initial administrator, signs in as it,
+     * and provisions the first tenant with one request, whose run the command
+     * then follows. The session is left signed in as the system
+     * administrator.
      */
     static void process_system(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief The tenant provisioner flow: provision tenant
-     * [--bundle <code>] [--source gleif|synthetic] [--root-lei <lei>]
-     * [--timeout <s>] [synthetic generation knobs].
+     * @brief Provision a tenant: provision tenant
+     * --tenant-admin-password <pw> [--tenant-code <c>] [--tenant-name <n>]
+     * [--tenant-hostname <h>] [--tenant-description <d>] [--tenant-admin
+     * <user>] [--tenant-admin-email <email>] [--profile <code>]
+     * [--param <name=value>] [--timeout <seconds>].
      *
-     * Run logged in as the tenant admin of a bootstrap-mode tenant.
-     * Publishes the selected bundle (default: first available) and
-     * waits on its workflow; generates the synthetic organisation
-     * when --source synthetic; associates the admin with all
-     * Operational parties (non-fatal, as the wizard); clears the
-     * bootstrap flag and completes provisioning. Requires logout and
-     * re-login afterwards, exactly as the wizard instructs.
+     * Run signed in as an administrator. Every tenant after the first is
+     * created the same way the first one is, so this is the same request
+     * =provision system= sends once the installation has an administrator.
+     * The command follows the run it starts to its end.
      */
     static void process_tenant(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief The party provisioner flow: provision party <party>
-     * [--dataset-size small|large] [--timeout <s>].
+     * @brief Provision a party: provision party <party-uuid-or-full-name>
+     * [--profile <code>] [--timeout <seconds>].
      *
-     * <party> is a UUID or exact full name (always explicit; no
-     * session party state). Publishes the counterparty dataset, then
-     * every party-scoped bundle in party_provisioning_bundle_plan()
-     * (risk_management, synthetic_realistic_2026, the curated FX
-     * driver-rate bundle) in full, and activates the party. Activation
-     * failure is a hard failure — deliberate divergence from the
-     * wizard.
+     * <party> is a UUID or an exact full name, resolved by the server's party
+     * read so a person who knows the name and a script that read the
+     * identifier reach the same party. The starting point named states the
+     * bundles the party's data is published from, and the run the command
+     * follows publishes them, activates the party, marks its onboarding
+     * complete and joins the signed-in administrator to it.
      */
     static void process_party(std::ostream& out,
                               ores::nats::service::nats_client& session,

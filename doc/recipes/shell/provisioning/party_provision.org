@@ -20,17 +20,19 @@ How do I provision a single root operational party from the shell?
 
 * Answer
 
-Log in as the tenant admin and =provision party=: import the GLEIF
-counterparty dataset, publish every party-scoped bundle (risk
-management, synthetic market data, FX driver rates) and activate the
-party. The party is named by its exact full name (or UUID); =BARCLAYS
-PLC= is the GLEIF root from the Barclays flow.
+Log in as the tenant admin and =provision party=: the starting point's
+party step publishes the reference data the party works from, activates
+the party, marks its onboarding complete, and joins the administrator
+who asked to it. The party is named by its exact full name (or UUID);
+=BARCLAYS PLC= is the GLEIF root from the Barclays flow. The
+counterparties a party works against are the tenant's and are published
+once by the tenant's starting point, not here.
 
 #+name: party-provision
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
-login tenant_admin@barclays Secure-Password-123
-provision party "BARCLAYS PLC" --dataset-size small
+login tenant_admin@barclays_plc Secure-Password-123
+provision party "BARCLAYS PLC"
 logout
 exit
 #+end_src

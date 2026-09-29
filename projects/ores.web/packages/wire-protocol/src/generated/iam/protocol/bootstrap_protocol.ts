@@ -64,46 +64,9 @@ export interface CreateInitialAdminResponse {
     tenant_id: string;
 }
 
-export interface ProvisionTenantRequest {
-    /*
-     * tenant type (e.g., "corporate")
-     */
-    type: string;
-    /*
-     * unique tenant code
-     */
-    code: string;
-    /*
-     * display name
-     */
-    name: string;
-    /*
-     * unique hostname
-     */
-    hostname: string;
-    /*
-     * optional description
-     */
-    description: string;
-    /*
-     * username for the admin account
-     */
-    principal: string;
-    password: string;
-    email: string;
-}
-
-export interface ProvisionTenantResponse {
-    success: boolean;
-    error_message: string;
-    account_id: string;
-    tenant_id: string;
-}
-
 export const subjects = {
     bootstrap_status_request: 'iam.v1.bootstrap.status',
     create_initial_admin_request: 'iam.v1.bootstrap.create-admin',
-    provision_tenant_request: 'iam.v1.bootstrap.provision-tenant',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -113,5 +76,4 @@ export const subjects = {
 export const requiresSession = {
     bootstrap_status_request: false,
     create_initial_admin_request: false,
-    provision_tenant_request: false,
 } as const;

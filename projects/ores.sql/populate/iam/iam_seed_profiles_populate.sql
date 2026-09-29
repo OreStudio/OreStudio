@@ -106,6 +106,12 @@ do nothing;
 -- The ordered step kinds. The arguments are the step kind's own: the kind
 -- fixes their shape in code and the profile supplies the values. The bundles
 -- differ between the two profiles, which is what makes them data.
+--
+-- A bundle publishes some of its members only when a starting point asks for
+-- them, which is what "opted_in_datasets" names. The counterparty set is one of
+-- those, and its size is the value of the profile's own "counterparty_size"
+-- parameter: the row names the parameter in braces rather than one of its
+-- values, so a person who chooses the large set gets the large set.
 insert into ores_iam_seed_profile_steps_tbl (
     id, tenant_id, seed_profile_id, step_kind, arguments_json, display_order,
     version, modified_by, performed_by, change_reason_code, change_commentary
@@ -116,13 +122,13 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
        'Initial population of seed profile steps'
 from ores_iam_seed_profiles_tbl p
 cross join (values
-    ('empty_operational', 'publish_bundle', 10, '{"bundles": ["base"]}'::jsonb),
+    ('empty_operational', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
-    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["base"]}'::jsonb),
+    ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"], "opted_in_datasets": ["gleif.lei_counterparties.small"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [

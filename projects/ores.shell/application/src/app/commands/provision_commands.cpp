@@ -18,35 +18,22 @@
  *
  */
 #include "ores.shell/app/commands/provision_commands.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
-#include "ores.dq.api/messaging/party_provisioning_plan.hpp"
-#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
-#include "ores.dq.api/messaging/publish_params.hpp"
-#include "ores.iam.api/domain/account_party.hpp"
-#include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
-#include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.variability.api/messaging/operations_protocol.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
-#include <regex>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
@@ -55,41 +42,161 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-// The wizards' generous timeouts for publish dispatch and waits.
-constexpr std::chrono::minutes publish_timeout(5);
-constexpr std::chrono::seconds default_wait_timeout(300);
+/**
+ * @brief The starting point a provisioning command runs from when the caller
+ * names none.
+ *
+ * The operational row, which creates the tenant's real data and no test data.
+ * Every command that provisions states its starting point as a flag, so a
+ * caller that wants the demonstration says so.
+ */
+constexpr std::string_view default_profile_code = "empty_operational";
 
-// The wizard's "slow" timeout for the provision-tenant request.
-constexpr std::chrono::seconds provision_timeout(120);
+/**
+ * @brief How long a command follows a provisioning run it started.
+ *
+ * Every starting point publishes bundles whose nested runs take minutes, and
+ * the longest of them publishes a dozen in one run, so the wait is generous
+ * rather than tight: a command that gave up on work that was still running
+ * would report a failure that never happened. A caller on a slow machine
+ * raises it, and one that would rather not block lowers it and follows the run
+ * with the workflow commands by the id the command prints.
+ */
+constexpr std::chrono::seconds default_run_timeout(3600);
 
-// Validation rules lifted from the SystemProvisionerWizard pages.
-const std::regex username_regex("^[a-zA-Z][a-zA-Z0-9_]{2,49}$");
-const std::regex email_regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z]{2,}$");
-const std::regex tenant_code_regex("^[a-z][a-z0-9_]{0,49}$");
-constexpr std::size_t min_password_length = 8;
+/**
+ * @brief How long the provision request itself may take to answer.
+ *
+ * The request answers with a run's id rather than the run's result, so it is
+ * quick -- but not instant: creating a tenant copies the deployment's
+ * registered data into it, its roles, its permissions and its lookup tables
+ * included, before any step is dispatched. That work outlives the transport's
+ * default request timeout, so the command states the budget the bootstrap verb
+ * this request replaces used.
+ */
+constexpr std::chrono::seconds provision_request_timeout(120);
 
-bool validate_account(std::ostream& out,
-                      std::string_view what,
-                      const std::string& username,
-                      const std::string& email,
-                      const std::string& password) {
-    if (!std::regex_match(username, username_regex)) {
-        fail(out) << what
-                  << " username must be 3-50 characters, starting with a "
-                     "letter (letters, digits, underscore): "
-                  << username << std::endl;
-        return false;
-    }
-    if (!std::regex_match(email, email_regex)) {
-        fail(out) << what << " email is not a valid address: " << email << std::endl;
-        return false;
-    }
-    if (password.size() < min_password_length) {
-        fail(out) << what << " password must be at least " << min_password_length << " characters."
+/// The flags both commands that create a tenant read. The description default
+/// is the caller's, because the command that sets a system up is making a
+/// single-tenant deployment and the one that adds a tenant is not.
+std::vector<flag_spec> tenant_flag_specs(std::string description_default) {
+    return {{.name = "profile",
+             .requires_value = true,
+             .default_value = std::string(default_profile_code)},
+            {.name = "param", .requires_value = true, .default_value = "", .repeatable = true},
+            {.name = "tenant-code", .requires_value = true, .default_value = "default"},
+            {.name = "tenant-name", .requires_value = true, .default_value = "Default Tenant"},
+            {.name = "tenant-hostname", .requires_value = true, .default_value = "localhost"},
+            {.name = "tenant-description",
+             .requires_value = true,
+             .default_value = std::move(description_default)},
+            {.name = "tenant-admin", .requires_value = true, .default_value = "tenant_admin"},
+            {.name = "tenant-admin-email", .requires_value = true, .default_value = ""},
+            {.name = "tenant-admin-password", .requires_value = true, .default_value = ""},
+            {.name = "timeout",
+             .requires_value = true,
+             .default_value = std::to_string(default_run_timeout.count())}};
+}
+
+/// The tenant a provisioning request names, and its first administrator.
+struct tenant_fields {
+    std::string code;
+    std::string name;
+    std::string hostname;
+    std::string description;
+    std::string admin_username;
+    std::string admin_email;
+    std::string admin_password;
+};
+
+/**
+ * @brief Reads the tenant fields a caller supplied.
+ *
+ * The command checks only what it can know by itself: that the administrator's
+ * password was given, because the command offers no default for it, and the
+ * derived email address, because the flag's default is computed from the code
+ * rather than stored beside it. Every rule about what a code, a hostname, a
+ * username or an address may be is the server's, so the shell states none of
+ * them: a second copy of a rule here is a copy that drifts.
+ *
+ * @return the fields, or nothing after reporting what is missing.
+ */
+std::optional<tenant_fields> read_tenant_fields(std::ostream& out, const parsed_args& parsed) {
+    tenant_fields fields;
+    fields.code = parsed.flag("tenant-code");
+    fields.name = parsed.flag("tenant-name");
+    fields.hostname = parsed.flag("tenant-hostname");
+    fields.description = parsed.flag("tenant-description");
+    fields.admin_username = parsed.flag("tenant-admin");
+    fields.admin_email = parsed.flag("tenant-admin-email");
+    fields.admin_password = parsed.flag("tenant-admin-password");
+
+    if (fields.admin_password.empty()) {
+        fail(out) << "--tenant-admin-password is required: the administrator's first "
+                     "password is not a value this command can invent."
                   << std::endl;
+        return std::nullopt;
+    }
+    if (fields.admin_email.empty())
+        fields.admin_email = "admin@" + fields.code + ".com";
+    return fields;
+}
+
+/// The generic provision request a tenant's fields and a starting point make.
+iam::messaging::provision_tenant_command build_tenant_request(const parsed_args& parsed,
+                                                              const tenant_fields& fields) {
+    iam::messaging::provision_tenant_command req;
+    req.profile_code = parsed.flag("profile");
+    req.tenant_code = fields.code;
+    req.tenant_name = fields.name;
+    req.tenant_hostname = fields.hostname;
+    req.tenant_description = fields.description;
+    req.admin_username = fields.admin_username;
+    req.admin_email = fields.admin_email;
+    req.admin_password = fields.admin_password;
+    req.parameters = parsed.values("param");
+    return req;
+}
+
+/**
+ * @brief Sends one provision request and follows the run it starts.
+ *
+ * The request answers with the run's id rather than the run's result, because
+ * the steps it orders take minutes. The run is then followed through the same
+ * progress read the browser's journey renders, so both clients watch the same
+ * record of the same work.
+ *
+ * @return true when the run ended with every step complete, false after
+ * reporting why not.
+ */
+template <typename Request>
+bool run_and_follow(std::ostream& out,
+                    nats_client& session,
+                    const Request& req,
+                    std::chrono::seconds timeout) {
+    auto started = do_request(out, session, req, provision_request_timeout, true);
+    if (!started)
+        return false;
+    if (!started->success) {
+        fail(out) << started->message << std::endl;
         return false;
     }
-    return true;
+
+    out << "  Run started: " << started->instance_id << std::endl;
+    return workflow_operation_commands::wait_for_instance(out, session, started->instance_id,
+                                                          timeout);
+}
+
+/// The timeout a command was given, or nothing after reporting a value it
+/// cannot use.
+std::optional<std::chrono::seconds> read_timeout(std::ostream& out, const parsed_args& parsed) {
+    auto timeout = parse_positive_seconds(parsed.flag("timeout"));
+    if (!timeout) {
+        fail(out) << "Timeout must be a positive number of seconds: " << parsed.flag("timeout")
+                  << std::endl;
+        return std::nullopt;
+    }
+    return timeout;
 }
 
 }
@@ -102,31 +209,33 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_system(std::ref(out), std::ref(session), args);
         },
-        "Bootstrap the system: create the initial admin, log in as it and "
-        "provision the first tenant (wizard single-tenant defaults)",
-        {"username password email --tenant-admin-password <pw> [--tenant-code <c>] "
-         "[--tenant-name <n>] [--tenant-type <t>] [--tenant-hostname <h>] "
-         "[--tenant-description <d>] [--tenant-admin <user>] [--tenant-admin-email <email>]"});
+        "Set an empty installation up from a starting point: create the system "
+        "administrator, sign in as it, and provision the first tenant",
+        {"<username> <password> <email> --tenant-admin-password <pw> "
+         "[--profile <code>] [--param <name=value>] [--tenant-code <c>] "
+         "[--tenant-name <n>] [--tenant-hostname <h>] [--tenant-description <d>] "
+         "[--tenant-admin <user>] [--tenant-admin-email <email>] [--timeout <seconds>]"});
 
     provision_menu->Insert(
         "tenant",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_tenant(std::ref(out), std::ref(session), args);
         },
-        "Provision the logged-in bootstrap-mode tenant: publish a bundle, "
-        "optionally generate synthetic data, associate the admin with the "
-        "parties and finalize",
-        {"[--bundle <code>] [--source gleif|synthetic|acme] [--root-lei <lei>] "
-         "[--timeout <seconds>] [synthetic generation knobs — see synthetic generate]"});
+        "Provision a tenant from a starting point, for every tenant after the "
+        "first",
+        {"--tenant-admin-password <pw> [--tenant-code <c>] [--tenant-name <n>] "
+         "[--tenant-hostname <h>] [--tenant-description <d>] [--tenant-admin <user>] "
+         "[--tenant-admin-email <email>] [--profile <code>] [--param <name=value>] "
+         "[--timeout <seconds>]"});
 
     provision_menu->Insert("party",
                            [&session](std::ostream& out, std::vector<std::string> args) {
                                process_party(std::ref(out), std::ref(session), args);
                            },
-                           "Provision a party: import counterparties, publish its risk "
-                           "management, synthetic market data, and FX driver-rate bundles, "
-                           "and activate it",
-                           {"party-uuid-or-full-name [--dataset-size small|large] "
+                           "Provision a party of the signed-in tenant: publish the "
+                           "reference data its starting point orders, activate it, "
+                           "and join the administrator who asked to it",
+                           {"<party-uuid-or-full-name> [--profile <code>] "
                             "[--timeout <seconds>]"});
 
     ores::shell::app::insert_menu(root_menu, std::move(provision_menu));
@@ -136,24 +245,15 @@ void provision_commands::process_system(std::ostream& out,
                                         nats_client& session,
                                         const std::vector<std::string>& args) {
     auto parsed = parse_args(
-        args,
-        {{.name = "tenant-admin-password", .requires_value = true, .default_value = ""},
-         {.name = "tenant-code", .requires_value = true, .default_value = "default"},
-         {.name = "tenant-name", .requires_value = true, .default_value = "Default Tenant"},
-         {.name = "tenant-type", .requires_value = true, .default_value = "evaluation"},
-         {.name = "tenant-hostname", .requires_value = true, .default_value = "localhost"},
-         {.name = "tenant-description",
-          .requires_value = true,
-          .default_value = "Default tenant for single-tenant deployment"},
-         {.name = "tenant-admin", .requires_value = true, .default_value = "tenant_admin"},
-         {.name = "tenant-admin-email", .requires_value = true, .default_value = ""}});
+        args, tenant_flag_specs("Default tenant for single-tenant deployment"));
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 3) {
         fail(out) << "Usage: provision system <username> <password> <email> "
-                     "--tenant-admin-password <pw> [--tenant-* flags]"
+                     "--tenant-admin-password <pw> [--profile <code>] "
+                     "[--param <name=value>] [--tenant-* flags]"
                   << std::endl;
         return;
     }
@@ -161,37 +261,14 @@ void provision_commands::process_system(std::ostream& out,
     const auto& username = parsed->positionals[0];
     const auto& password = parsed->positionals[1];
     const auto& email = parsed->positionals[2];
-    const auto& tenant_code = parsed->flag("tenant-code");
-    const auto& tenant_admin = parsed->flag("tenant-admin");
-    const auto& tenant_admin_password = parsed->flag("tenant-admin-password");
-    // The wizard pre-fills the tenant admin email from the tenant code.
-    const auto tenant_admin_email = parsed->flag("tenant-admin-email").empty() ?
-                                        "admin@" + tenant_code + ".com" :
-                                        parsed->flag("tenant-admin-email");
 
-    // Validate everything before touching the backend, as the wizard
-    // pages do.
-    if (tenant_admin_password.empty()) {
-        fail(out) << "--tenant-admin-password is required (no wizard default exists)." << std::endl;
+    auto fields = read_tenant_fields(out, *parsed);
+    if (!fields)
         return;
-    }
-    // Tenant code first: the tenant admin email derives from it, so a
-    // bad code must not surface as a confusing derived-email error.
-    if (!std::regex_match(tenant_code, tenant_code_regex)) {
-        fail(out) << "Tenant code must start with a lowercase letter (lowercase, "
-                     "digits, underscore, max 50): "
-                  << tenant_code << std::endl;
+    auto timeout = read_timeout(out, *parsed);
+    if (!timeout)
         return;
-    }
-    if (parsed->flag("tenant-name").empty() || parsed->flag("tenant-hostname").empty()) {
-        fail(out) << "Tenant name and hostname must not be empty." << std::endl;
-        return;
-    }
-    if (!validate_account(out, "Admin", username, email, password))
-        return;
-    if (!validate_account(
-            out, "Tenant admin", tenant_admin, tenant_admin_email, tenant_admin_password))
-        return;
+
     if (session.is_logged_in()) {
         fail(out) << "Already logged in; provision system runs against a fresh, "
                      "bootstrap-mode system. Log out first."
@@ -199,8 +276,9 @@ void provision_commands::process_system(std::ostream& out,
         return;
     }
 
-    // Phase 0: confirm the system is in bootstrap mode, as the GUI
-    // does before ever showing the wizard.
+    // The first run's order, which is the browser's: the installation says
+    // whether it still needs an administrator, the administrator is created
+    // with no session, and only then is there a session to provision with.
     iam::messaging::bootstrap_status_request status_req;
     auto status = do_request(out, session, status_req);
     if (!status)
@@ -211,9 +289,8 @@ void provision_commands::process_system(std::ostream& out,
     }
 
     BOOST_LOG_SEV(lg(), info) << "Provisioning system: admin " << username << ", tenant "
-                              << tenant_code;
+                              << fields->code;
 
-    // Phase 1: create the initial admin account.
     out << "[1/3] Creating initial admin account '" << username << "'..." << std::endl;
     iam::messaging::create_initial_admin_request admin_req;
     admin_req.principal = username;
@@ -228,52 +305,26 @@ void provision_commands::process_system(std::ostream& out,
     }
     out << "  Account created (ID: " << admin->account_id << ")." << std::endl;
 
-    // Phase 2: log in as the new admin, as the wizard does, so the
-    // provision-tenant request is authenticated.
     out << "[2/3] Logging in as '" << username << "'..." << std::endl;
     accounts_commands::process_login(out, session, username, password);
     if (!session.is_logged_in())
         return;
 
-    // Phase 3: provision the first tenant and its admin account.
-    out << "[3/3] Provisioning tenant '" << tenant_code << "'..." << std::endl;
-    iam::messaging::provision_tenant_request tenant_req;
-    tenant_req.type = parsed->flag("tenant-type");
-    tenant_req.code = tenant_code;
-    tenant_req.name = parsed->flag("tenant-name");
-    tenant_req.hostname = parsed->flag("tenant-hostname");
-    tenant_req.description = parsed->flag("tenant-description");
-    tenant_req.principal = tenant_admin;
-    tenant_req.password = tenant_admin_password;
-    tenant_req.email = tenant_admin_email;
-    auto tenant = do_request(out, session, tenant_req, provision_timeout, true /*authenticated*/);
-    if (!tenant)
+    out << "[3/3] Provisioning tenant '" << fields->code << "' from '"
+        << parsed->flag("profile") << "'..." << std::endl;
+    if (!run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout))
         return;
-    if (!tenant->success) {
-        fail(out) << "Failed to provision tenant: " << tenant->error_message << std::endl;
-        return;
-    }
 
-    out << "✓ System provisioned. Tenant '" << tenant_req.name << "' (ID: " << tenant->tenant_id
-        << "), admin '" << tenant_admin << "'." << std::endl;
-    out << "Next: logout, then: login " << tenant_admin << "@" << tenant_req.hostname
-        << " <password>  — the tenant is in bootstrap mode; " << "run provision tenant."
-        << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << tenant->tenant_id;
+    out << "✓ System provisioned. Tenant '" << fields->name << "'." << std::endl;
+    out << "Next: logout, then: login " << fields->admin_username << "@" << fields->hostname
+        << " <password>  — the tenant is ready to work in." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << fields->code;
 }
 
 void provision_commands::process_tenant(std::ostream& out,
                                         nats_client& session,
                                         const std::vector<std::string>& args) {
-    auto specs = synthetic_commands::generate_flag_specs();
-    specs.push_back({.name = "bundle", .requires_value = true, .default_value = ""});
-    specs.push_back({.name = "source", .requires_value = true, .default_value = "gleif"});
-    specs.push_back({.name = "root-lei", .requires_value = true, .default_value = ""});
-    specs.push_back({.name = "timeout",
-                     .requires_value = true,
-                     .default_value = std::to_string(default_wait_timeout.count())});
-
-    auto parsed = parse_args(args, specs);
+    auto parsed = parse_args(args, tenant_flag_specs(""));
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -283,414 +334,74 @@ void provision_commands::process_tenant(std::ostream& out,
         return;
     }
 
-    const auto& source = parsed->flag("source");
-    if (source != "gleif" && source != "synthetic" && source != "acme") {
-        fail(out) << "--source must be gleif, synthetic, or acme: " << source << std::endl;
+    auto fields = read_tenant_fields(out, *parsed);
+    if (!fields)
         return;
-    }
-    if (source != "gleif" && !parsed->flag("root-lei").empty()) {
-        fail(out) << "--root-lei only applies to --source gleif." << std::endl;
+    auto timeout = read_timeout(out, *parsed);
+    if (!timeout)
         return;
-    }
-    auto wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
-    if (!wait_timeout) {
-        fail(out) << "Timeout must be a positive number of seconds: " << parsed->flag("timeout")
-                  << std::endl;
-        return;
-    }
-    // Build (and validate) the generation request up front even though
-    // it only runs in synthetic mode: fail fast on bad knobs.
-    auto generate_req = synthetic_commands::build_generate_request(out, *parsed);
-    if (!generate_req)
-        return;
+
     if (!session.is_logged_in()) {
-        fail(out) << "Not logged in. Log in as the tenant admin of the "
-                     "bootstrap-mode tenant first."
+        fail(out) << "Not logged in. Log in as an administrator; the tenant is created "
+                     "under the tenant that administrator works in."
                   << std::endl;
         return;
     }
-    const auto username = session.auth().username;
 
-    // --source acme: a single server-side orchestrated request (no
-    // per-dataset bundle publishes, no synthetic generation, no
-    // client-side party-association loop -- see
-    // ores_iam_provision_acme_tenant_fn).
-    if (source == "acme") {
-        out << "[1/2] Provisioning the Acme Corporation holding group..." << std::endl;
-        iam::messaging::provision_acme_tenant_command provision_req;
-        // The single request below drives every bundle publish and party
-        // activation server-side. The server-side wait budgets: the base
-        // bundle (1500 s -- 38 sequential dataset publishes, including the
-        // ~13k-row GLEIF counterparty import, can exceed 10 minutes on a
-        // busy machine) and the acme_lei_import hierarchy (600 s); the
-        // per-party/office bundles use the 120 s default. Give the request
-        // generous headroom over that combined budget.
-        auto provisioned = do_request(out, session, provision_req, std::chrono::minutes(45), true);
-        if (!provisioned)
-            return;
-        if (!provisioned->success) {
-            fail(out) << "Failed to provision Acme tenant: " << provisioned->message << std::endl;
-            return;
-        }
-        for (const auto& step : provisioned->steps)
-            out << "  " << step.step << ": " << step.action << " (" << step.record_count << ")"
-                << std::endl;
-
-        out << "[2/2] Finalizing tenant provisioning..." << std::endl;
-        iam::messaging::complete_tenant_provisioning_command complete_req;
-        auto completed = do_request(out, session, complete_req, std::chrono::seconds(30), true);
-        if (!completed)
-            return;
-        if (!completed->success) {
-            fail(out) << "Failed to complete tenant provisioning: " << completed->message
-                      << std::endl;
-            return;
-        }
-
-        out << "✓ Acme Corporation holding group provisioned." << std::endl;
-        out << "Next: logout, then log back in — the party setup is per party; run "
-               "provision party <party>."
-            << std::endl;
-        BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; source acme";
+    out << "Provisioning tenant '" << fields->code << "' from '" << parsed->flag("profile")
+        << "'..." << std::endl;
+    if (!run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout))
         return;
-    }
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning tenant: source " << source;
-
-    // Phase 1: publish the tenant-scoped 'base' bundle (countries,
-    // currencies, business centres, calendars, fpml codes, GLEIF
-    // entities, etc. — everything synthetic generation needs).
-    // The old "first available" heuristic picked a party-scoped
-    // marketdata bundle that requires party_id, which doesn't exist
-    // yet at tenant-provisioning time; "base" is always tenant-scoped
-    // and the correct first step.
-    {
-        out << "[1/4] Publishing base reference data bundle..." << std::endl;
-        dq::messaging::publish_bundle_request publish_req;
-        publish_req.bundle_code = "base";
-        publish_req.mode = "upsert";
-        publish_req.published_by = username;
-        publish_req.atomic = true;
-        // opted_in_datasets: same subset the --source acme flow
-        // publishes — gleif.lei_counterparties.small avoids the
-        // ~500k-row large counterparty import.
-        publish_req.params_json = R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})";
-        auto published = do_request(out, session, publish_req, publish_timeout, true);
-        if (!published)
-            return;
-        if (!published->success) {
-            fail(out) << "Failed to publish base bundle: " << published->error_message << std::endl;
-            return;
-        }
-        out << "  Dispatched " << published->datasets_dispatched
-            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_operation_commands::wait_for_instance(
-                out,
-                session,
-                published->instance_id,
-                *wait_timeout,
-                static_cast<std::size_t>(published->datasets_dispatched)))
-            return;
-    }
-
-    // Phase 2: synthetic generation, when selected.
-    if (source == "synthetic") {
-        out << "[2/4] Generating synthetic organisation..." << std::endl;
-        if (!synthetic_commands::generate(out, session, *generate_req))
-            return;
-    } else {
-        out << "[2/4] GLEIF source: no generation step." << std::endl;
-    }
-
-    // Phase 3: associate the admin with every Operational party.
-    // Non-fatal, exactly as the wizard treats it.
-    out << "[3/4] Associating '" << username << "' with the operational parties..." << std::endl;
-    int linked = 0;
-    if (session.auth().account_id.empty()) {
-        out << "⚠ No account id in the session; skipping party association. "
-               "Re-login and use account-parties add to associate manually."
-            << std::endl;
-    } else {
-        refdata::messaging::list_parties_request parties_req;
-        parties_req.limit = 1000;
-        auto parties = do_request(out, session, parties_req, std::chrono::seconds(30), true);
-        if (parties) {
-            iam::messaging::put_many_account_parties_request assoc_req;
-            assoc_req.intent.reason_code =
-                std::string(dq::domain::change_reason_constants::codes::new_record);
-            assoc_req.intent.commentary = "Tenant provisioning: tenant admin associated with party";
-            try {
-                const auto account_uuid =
-                    boost::lexical_cast<boost::uuids::uuid>(session.auth().account_id);
-                for (const auto& party : parties->parties) {
-                    if (party.party_category != "Operational")
-                        continue;
-                    iam::messaging::account_party_change change;
-                    change.write.account_id = account_uuid;
-                    change.write.party_id = party.id;
-                    change.precondition.kind = ores::utility::domain::precondition_kind::any;
-                    assoc_req.changes.push_back(std::move(change));
-                }
-            } catch (const boost::bad_lexical_cast&) {
-                out << "⚠ Session account id is not a UUID; skipping association." << std::endl;
-            }
-            if (!assoc_req.changes.empty()) {
-                auto assoc = do_request(out, session, assoc_req, std::chrono::seconds(30), true);
-                if (assoc && assoc->result.outcome == ores::utility::domain::outcome::ok)
-                    linked = static_cast<int>(assoc_req.changes.size());
-                else
-                    out << "⚠ Party association failed; continuing (associate "
-                           "manually with account-parties add)."
-                        << std::endl;
-            }
-        } else {
-            out << "⚠ Could not list parties; continuing without association." << std::endl;
-        }
-        // The association phase is non-fatal: clear any failure mark
-        // its requests may have left so the script does not abort.
-        command_feedback::reset();
-    }
-    out << "  " << linked << " part" << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
-
-    // Phase 4: complete provisioning (fatal). This clears
-    // system.bootstrap_mode and sets onboarding.tenant = true server-side,
-    // over its own NATS-routed, permission-check-free path — see
-    // ores.iam.core/messaging/tenant_handler.hpp. No separate client-side
-    // save_setting_request is needed (a prior version issued one
-    // pre-emptively here, but it was redundant with the authoritative
-    // server-side clear and risked writing a party-scoped duplicate row if
-    // the acting user had a party selected).
-    out << "[4/4] Finalizing tenant provisioning..." << std::endl;
-    iam::messaging::complete_tenant_provisioning_command complete_req;
-    auto completed = do_request(out, session, complete_req, std::chrono::seconds(30), true);
-    if (!completed)
-        return;
-    if (!completed->success) {
-        fail(out) << "Failed to complete tenant provisioning: " << completed->message << std::endl;
-        return;
-    }
-
-    // Phase 1 publishes the 'base' bundle explicitly; echo that code
-    // in the completion message.
-    const std::string bundle_code = "base";
-    out << "✓ Tenant provisioned: bundle '" << bundle_code << "', " << linked << " part"
-        << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
-    out << "Next: logout, then log back in — the party setup is per party; run "
-           "provision party <party>."
-        << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; bundle " << bundle_code;
+    out << "✓ Tenant '" << fields->name << "' provisioned." << std::endl;
+    out << "Next: logout, then: login " << fields->admin_username << "@" << fields->hostname
+        << " <password>  — the tenant is ready to work in." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; " << fields->code;
 }
 
 void provision_commands::process_party(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
-    auto parsed =
-        parse_args(args,
-                   {{.name = "dataset-size", .requires_value = true, .default_value = "small"},
-                    {.name = "timeout",
-                     .requires_value = true,
-                     .default_value = std::to_string(default_wait_timeout.count())}});
+    auto parsed = parse_args(
+        args,
+        {{.name = "profile",
+          .requires_value = true,
+          .default_value = std::string(default_profile_code)},
+         {.name = "timeout",
+          .requires_value = true,
+          .default_value = std::to_string(default_run_timeout.count())}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 1) {
         fail(out) << "Usage: provision party <party-uuid-or-full-name> "
-                     "[--dataset-size small|large] [--timeout <seconds>]"
+                     "[--profile <code>] [--timeout <seconds>]"
                   << std::endl;
         return;
     }
+    auto timeout = read_timeout(out, *parsed);
+    if (!timeout)
+        return;
 
-    const auto& dataset_size = parsed->flag("dataset-size");
-    if (dataset_size != "small" && dataset_size != "large") {
-        fail(out) << "--dataset-size must be small or large: " << dataset_size << std::endl;
-        return;
-    }
-    auto wait_timeout = parse_positive_seconds(parsed->flag("timeout"));
-    if (!wait_timeout) {
-        fail(out) << "Timeout must be a positive number of seconds: " << parsed->flag("timeout")
-                  << std::endl;
-        return;
-    }
     if (!session.is_logged_in()) {
         fail(out) << "Not logged in." << std::endl;
         return;
     }
-    const auto username = session.auth().username;
-    const auto& party_ref = parsed->positionals.front();
 
-    // Resolve the party by UUID or exact full name.
-    auto find_party = [&](std::ostream& o) -> std::optional<refdata::domain::party> {
-        refdata::messaging::list_parties_request req;
-        req.limit = 1000;
-        auto parties = do_request(o, session, req, std::chrono::seconds(30), true);
-        if (!parties)
-            return std::nullopt;
-        std::optional<boost::uuids::uuid> ref_uuid;
-        try {
-            ref_uuid = boost::lexical_cast<boost::uuids::uuid>(party_ref);
-        } catch (const boost::bad_lexical_cast&) {
-        }
-        for (const auto& party : parties->parties) {
-            if ((ref_uuid && party.id == *ref_uuid) || (!ref_uuid && party.full_name == party_ref))
-                return party;
-        }
-        fail(o) << "Party not found (by UUID or exact full name): " << party_ref << std::endl;
-        return std::nullopt;
-    };
+    const auto& party = parsed->positionals.front();
+    const auto& profile = parsed->flag("profile");
+    out << "Provisioning party '" << party << "' from '" << profile << "'..." << std::endl;
 
-    auto party = find_party(out);
-    if (!party)
-        return;
-    out << "Provisioning party '" << party->full_name << "' (ID: " << party->id << ")."
-        << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Provisioning party " << party->id << " (dataset " << dataset_size
-                              << ")";
-
-    // Phase 1: publish the counterparty dataset, as the wizard's
-    // counterparty import does (bundle "base", opted-in GLEIF
-    // counterparties dataset of the requested size).
-    out << "[1/5] Importing counterparties (dataset " << dataset_size << ")..." << std::endl;
-    {
-        dq::messaging::publish_bundle_request req;
-        req.bundle_code = "base";
-        req.mode = "upsert";
-        req.published_by = username;
-        req.atomic = true;
-        dq::messaging::publish_bundle_params params;
-        params.opted_in_datasets.push_back("gleif.lei_counterparties." + dataset_size);
-        req.params_json = dq::messaging::build_params_json(params);
-        auto published = do_request(out, session, req, publish_timeout, true);
-        if (!published)
-            return;
-        if (!published->success) {
-            fail(out) << "Failed to publish counterparties: " << published->error_message
-                      << std::endl;
-            return;
-        }
-        out << "  Dispatched " << published->datasets_dispatched
-            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_operation_commands::wait_for_instance(
-                out,
-                session,
-                published->instance_id,
-                *wait_timeout,
-                static_cast<std::size_t>(published->datasets_dispatched)))
-            return;
-    }
-
-    // Phases 2-4: publish every party-scoped bundle in the shared
-    // provisioning plan, each in full (no dataset-level filter), so a
-    // new bundle member -- a new asset class under synthetic_realistic_2026,
-    // a new dataset under risk_management -- never requires a change
-    // here, only a new row in dq_dataset_bundle_member_populate.sql.
-    // risk_management (business_units, portfolios, books, and report
-    // definitions -- reports reference the book/portfolio tree, so they
-    // publish together) replaces the old organisation bundle plus the
-    // hand-written report-definition-templates RPC loop.
-    // The plan-iteration loop itself (publish + wait per bundle) is shared
-    // with provision_acme (ores.iam.core) -- see
-    // publish_party_provisioning_plan()'s doc comment for why it's a
-    // template rather than a shared class.
-    const auto& plan = dq::messaging::party_provisioning_bundle_plan();
-    std::size_t step_num = 2;
-    std::string current_step_label;
-    // on_step always runs immediately before its matching publish call
-    // (guaranteed by the helper's loop body), so publish can safely rely
-    // on current_step_label set just above.
-    bool ok = dq::messaging::publish_party_provisioning_plan(
-        plan,
-        party->id,
-        [&](const std::string& bundle_code, const std::string& params_json)
-            -> std::optional<dq::messaging::publish_bundle_response> {
-            dq::messaging::publish_bundle_request req;
-            req.bundle_code = bundle_code;
-            req.mode = "upsert";
-            req.published_by = username;
-            req.atomic = true;
-            req.params_json = params_json;
-            auto published = do_request(out, session, req, publish_timeout, true);
-            if (!published)
-                return std::nullopt;
-            if (!published->success) {
-                fail(out) << "Failed to publish " << current_step_label << ": "
-                          << published->error_message << std::endl;
-                return std::nullopt;
-            }
-            out << "  Dispatched " << published->datasets_dispatched
-                << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-            return published;
-        },
-        [&](const std::string& instance_id, std::size_t expected) {
-            return workflow_operation_commands::wait_for_instance(
-                out, session, instance_id, *wait_timeout, expected);
-        },
-        [&](const auto& step) {
-            current_step_label = step.label;
-            out << "[" << step_num++ << "/5] Publishing " << step.label << "..." << std::endl;
-        });
-    if (!ok)
+    iam::messaging::provision_party_command req;
+    req.party = party;
+    req.profile_code = profile;
+    if (!run_and_follow(out, session, req, *timeout))
         return;
 
-    // Phase 5: activate the party. Hard failure by design — a
-    // completed run must mean a provisioned party (the wizard merely
-    // warns here).
-    out << "[5/5] Activating party '" << party->full_name << "'..." << std::endl;
-    auto fresh = find_party(out);
-    if (!fresh)
-        return;
-    fresh->status = "Active";
-    fresh->modified_by = username;
-    fresh->performed_by = username;
-    fresh->change_reason_code = std::string(dq::domain::change_reason_constants::codes::new_record);
-    fresh->change_commentary = "Party provisioning completed via shell";
-
-    // The activation is a write of the row the read returned, so it states
-    // the version it read and lets the store refuse a row that moved on.
-    refdata::messaging::put_party_request save_req;
-    save_req.change.write = {.id = fresh->id,
-                             .short_code = fresh->short_code,
-                             .full_name = fresh->full_name,
-                             .codename = fresh->codename,
-                             .transliterated_name = fresh->transliterated_name,
-                             .party_category = fresh->party_category,
-                             .party_type = fresh->party_type,
-                             .parent_party_id = fresh->parent_party_id,
-                             .business_center_code = fresh->business_center_code,
-                             .status = fresh->status,
-                             .image_id = fresh->image_id};
-    save_req.change.precondition.kind =
-        ores::utility::domain::precondition_kind::must_match_version;
-    save_req.change.precondition.version = static_cast<std::uint32_t>(fresh->version);
-    save_req.intent.reason_code =
-        std::string(dq::domain::change_reason_constants::codes::new_record);
-    save_req.intent.commentary = "Party provisioning completed via shell";
-    auto saved = do_request(out, session, save_req, std::chrono::seconds(30), true);
-    if (!saved || saved->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << "Failed to activate party: " << (saved ? saved->result.message : "no response")
-                  << std::endl;
-        return;
-    }
-
-    // Write onboarding.party = true, independent of the party's own status
-    // — this is what login checks to decide whether to re-launch the party
-    // wizard, not party.status. Warn-only: the wizard's own version of this
-    // step is likewise non-fatal.
-    variability::messaging::complete_party_onboarding_request onboarding_req;
-    onboarding_req.party_id = party->id;
-    auto onboarding_result =
-        do_request(out, session, onboarding_req, std::chrono::seconds(30), true);
-    if (!onboarding_result ||
-        onboarding_result->result.outcome != ores::utility::domain::outcome::ok) {
-        out << "⚠ Could not record party onboarding completion; the party setup wizard may "
-               "reappear on next login."
-            << std::endl;
-        command_feedback::reset();
-    }
-
-    out << "✓ Party '" << party->full_name << "' provisioned and active." << std::endl;
-    out << "Next: logout and log back in to use the party." << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << party->id;
+    out << "✓ Party '" << party << "' provisioned." << std::endl;
+    out << "Next: accounts set-default-party \"" << party << "\" to work in it." << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << party;
 }
 
 }

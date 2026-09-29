@@ -95,11 +95,11 @@ void tenant_provisioning_operations_commands::register_commands(cli::Menu& root_
         "<tenant_description> <admin_username> <admin_email> <admin_password> <parameters>");
 
     menu->Insert(
-        "provision-acme-tenant",
+        "provision-party",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_provision_acme_tenant(std::ref(out), std::ref(session), std::move(args));
+            process_provision_party(std::ref(out), std::ref(session), std::move(args));
         },
-        "provision-acme-tenant");
+        "provision-party <party> <profile_code>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -203,7 +203,7 @@ void tenant_provisioning_operations_commands::process_provision_tenant(
     std::optional<ores::iam::messaging::provision_tenant_command_response> result;
     if constexpr (request_type::requires_session) {
         result = do_auth_request<ores::iam::messaging::provision_tenant_command_response>(
-            out, session, std::string(req.nats_subject), req);
+            out, session, std::string(req.nats_subject), req, std::chrono::seconds{120});
     } else {
         result = do_request<ores::iam::messaging::provision_tenant_command_response>(
             out, session, std::string(req.nats_subject), req);
@@ -214,17 +214,17 @@ void tenant_provisioning_operations_commands::process_provision_tenant(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void tenant_provisioning_operations_commands::process_provision_acme_tenant(
+void tenant_provisioning_operations_commands::process_provision_party(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating provision-acme-tenant request.";
+    BOOST_LOG_SEV(lg(), debug) << "Initiating provision-party request.";
 
-    using request_type = ores::iam::messaging::provision_acme_tenant_command;
+    using request_type = ores::iam::messaging::provision_party_command;
 
     // Whether the command presents a token is the protocol's own statement, so
     // a message that establishes the session is never asked for one.
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run provision-acme-tenant." << std::endl;
+            fail(out) << "You must be logged in to run provision-party." << std::endl;
             return;
         }
     }
@@ -236,7 +236,7 @@ void tenant_provisioning_operations_commands::process_provision_acme_tenant(
         return;
     }
 
-    constexpr std::size_t positional_count = 0;
+    constexpr std::size_t positional_count = 2;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -244,18 +244,21 @@ void tenant_provisioning_operations_commands::process_provision_acme_tenant(
     }
 
     request_type req;
+    std::size_t next = 0;
     try {
+        req.party = parsed->positionals[next++];
+        req.profile_code = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    std::optional<ores::iam::messaging::provision_acme_tenant_response> result;
+    std::optional<ores::iam::messaging::provision_party_command_response> result;
     if constexpr (request_type::requires_session) {
-        result = do_auth_request<ores::iam::messaging::provision_acme_tenant_response>(
-            out, session, std::string(req.nats_subject), req, std::chrono::seconds{1800});
+        result = do_auth_request<ores::iam::messaging::provision_party_command_response>(
+            out, session, std::string(req.nats_subject), req);
     } else {
-        result = do_request<ores::iam::messaging::provision_acme_tenant_response>(
+        result = do_request<ores::iam::messaging::provision_party_command_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

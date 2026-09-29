@@ -54,24 +54,3 @@ It is addressed at =iam.v1.bootstrap.create-admin=.
 bootstrap create-initial-admin __none__ __none__ __none__
 #+end_src
 
-** =provision-tenant=
-:PROPERTIES:
-:ID: EABE8FDD-3AC9-5040-806A-1551352FCEA9
-:END:
-
-Sends =provision_tenant_request= and prints =provision_tenant_response=, so the shape is the protocol's and the meaning is the service's. It reads =type=, =code=, =name=, =hostname=, =description=, =principal=, =password=, =email=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
-
-
-The command is shaped like this:
-
-#+begin_example
-bootstrap provision-tenant <type> <code> <name> <hostname> <description> <principal> <password> <email>
-#+end_example
-
-It is addressed at =iam.v1.bootstrap.provision-tenant=.
-
-#+name: bootstrap-provision-tenant
-#+begin_src ores-shell :tangle bootstrap-provision-tenant.ores :exports none
-bootstrap provision-tenant __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
-#+end_src
-

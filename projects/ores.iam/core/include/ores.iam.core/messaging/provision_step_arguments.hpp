@@ -212,6 +212,101 @@ parse_step_bundles(const std::string& arguments_json) {
     return detail::read_bundles(detail::read_step_arguments(arguments_json));
 }
 
+/**
+ * @brief Puts a run's parameter values in place of every @c {name} a text
+ * names.
+ *
+ * A profile's row states the data it wants, and part of that data is a value a
+ * person typed: the counterparty set a starting point publishes is the value
+ * of its @c counterparty_size parameter, so the row names the parameter rather
+ * than one of its values. This is the same reading an LEI import does when its
+ * row leaves the root LEI out, written so a code inside a longer dataset code
+ * can be built from it.
+ *
+ * A reference the run supplies no value for is refused rather than left in
+ * place: a step that published without the member its row named would leave the
+ * tenant with half the data the person asked for.
+ */
+[[nodiscard]] inline std::string
+resolve_parameter_references(std::string text,
+                             const std::vector<ores::iam::workflow::provision_tenant_parameter>&
+                                 parameters) {
+    auto opening = text.find('{');
+    while (opening != std::string::npos) {
+        const auto closing = text.find('}', opening);
+        if (closing == std::string::npos)
+            throw std::runtime_error("The step's argument '" + text +
+                                     "' names a parameter without closing its braces.");
+
+        const auto name = text.substr(opening + 1, closing - opening - 1);
+        const auto value = detail::parameter_value(parameters, name);
+        if (value.empty())
+            throw std::runtime_error("The step's argument '" + text + "' names the parameter '" +
+                                     name + "', which the run supplies no value for.");
+
+        text.replace(opening, closing - opening + 1, value);
+        opening = text.find('{', opening + value.size());
+    }
+    return text;
+}
+
+/// The bundles a publish_bundle step publishes, and the optional members of
+/// them its profile opts in.
+struct publish_bundle_step_arguments {
+    std::vector<std::string> bundles;
+    std::vector<std::string> opted_in_datasets;
+};
+
+/**
+ * @brief Reads a publish_bundle step's arguments.
+ *
+ * The bundles are the profile's data. The opted-in datasets are the members of
+ * those bundles that a bundle publishes only when a profile asks for them, so a
+ * profile that names none publishes the bundles whole and one that names a
+ * member has it published beside the rest. A code may name a run parameter in
+ * braces; see @ref resolve_parameter_references.
+ */
+[[nodiscard]] inline publish_bundle_step_arguments parse_publish_bundle_arguments(
+    const std::string& arguments_json,
+    const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters) {
+    publish_bundle_step_arguments result;
+    result.bundles = parse_step_bundles(arguments_json);
+
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    if (const auto* found = detail::member(arguments, "opted_in_datasets"))
+        result.opted_in_datasets = detail::read_string_list(*found, "opted_in_datasets");
+
+    for (auto& dataset : result.opted_in_datasets)
+        dataset = resolve_parameter_references(dataset, parameters);
+    return result;
+}
+
+/// The bundles a provision_party step publishes, and the one party it acts on.
+struct provision_party_step_arguments {
+    std::vector<std::string> bundles;
+    /// The party to provision, named by its identifier or its exact full name.
+    /// Empty means every party the tenant holds, which is what a tenant's own
+    /// run asks for: the parties its hierarchy import created.
+    std::string party;
+};
+
+/**
+ * @brief Reads a provision_party step's arguments.
+ *
+ * A profile names the bundles. A row that names no party provisions every party
+ * the tenant holds, which is the tenant run's reading; a row that names one, or
+ * a request that names one, provisions that party alone.
+ */
+[[nodiscard]] inline provision_party_step_arguments
+parse_provision_party_arguments(const std::string& arguments_json) {
+    provision_party_step_arguments result;
+    result.bundles = parse_step_bundles(arguments_json);
+
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    result.party = detail::read_string(arguments, "party");
+    return result;
+}
+
 /// The bundles an import_lei_hierarchy step publishes and the root LEI it
 /// imports under.
 struct lei_hierarchy_step_arguments {

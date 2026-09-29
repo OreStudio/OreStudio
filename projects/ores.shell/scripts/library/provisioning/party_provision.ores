@@ -5,6 +5,6 @@
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
 connect $ORES_NATS_URL
-login tenant_admin@barclays Secure-Password-123
-provision party "BARCLAYS PLC" --dataset-size small
+login tenant_admin@barclays_plc Secure-Password-123
+provision party "BARCLAYS PLC"
 logout

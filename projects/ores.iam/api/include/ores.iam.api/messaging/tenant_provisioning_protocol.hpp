@@ -57,6 +57,11 @@ struct complete_tenant_provisioning_response {
  * answer carries. This is the one verb for every tenant, the first one
  * included, and it replaces iam.v1.bootstrap.provision-tenant and
  * iam.v1.tenants.provision-acme.
+ *
+ * The answer takes longer than the transport's default request timeout,
+ * because creating the tenant copies the deployment's registered data into it
+ * -- its roles, its permissions and its lookup tables -- before the steps are
+ * dispatched. The budget is the one the bootstrap verb this replaces declared.
  */
 struct provision_tenant_command {
     using response_type = struct provision_tenant_command_response;
@@ -126,9 +131,9 @@ struct provision_tenant_command {
 /**
  * @brief The answer to a provision request.
  *
- * The name carries the verb because @c iam.v1.bootstrap.provision-tenant still
- * declares a @c provision_tenant_response of its own, and both verbs answer
- * until the shell's provisioning moves to this one.
+ * The tenant and its administrator exist by the time this answers, and the steps
+ * the starting point orders run afterwards, so the answer carries the run's id
+ * rather than waiting for work that takes minutes.
  */
 struct provision_tenant_command_response {
     bool success = false;
@@ -149,25 +154,19 @@ struct provision_tenant_command_response {
     std::string account_id;
 };
 
-// --- Acme one-click tenant provisioning (--source acme) ---
-//
-// A single server-side orchestrated request: imports the four-party Acme
-// Bank LEI hierarchy, publishes real GLEIF counterparties (small), then
-// for each operating company publishes its business units, portfolios,
-// books, accounts, and account contact informations. No repeated
-// per-party logins, no orchestration logic client-side -- driven by
-// internal actor impersonation through the real handler pipeline, see
-// ores.iam.core/messaging/tenant_provisioning_handler.hpp's provision_acme.
-//
-// The answer takes minutes, not the seconds the transport allows by
-// default: the handler waits up to 1500 seconds on the base bundle it
-// publishes. The budget this message declares is 1800 seconds --
-// deliberately larger than that wait, so the caller keeps waiting while
-// the handler is still working. At the transport default the caller gives
-// up first and reports a timeout for a run that had not finished.
-struct provision_acme_tenant_command {
-    using response_type = struct provision_acme_tenant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";
+/**
+ * @brief Provisions one party of the caller's own tenant.
+ *
+ * The tenant exists already: this request provisions one of its parties, the
+ * one an administrator names. The party stage is one request because both
+ * clients drive it and neither is the reference — the browser when a person
+ * adds a party, the shell when a script does — and the work runs as a workflow
+ * instance, whose id the answer carries, because publishing a party's data
+ * takes minutes and can fail half way.
+ */
+struct provision_party_command {
+    using response_type = struct provision_party_command_response;
+    static constexpr std::string_view nats_subject = "iam.v1.parties.provision";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -175,18 +174,38 @@ struct provision_acme_tenant_command {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+    /**
+     * @brief The party to provision, by its identifier or its exact full name.
+     *
+     * A person types the name they know the party by and a script states the
+     * identifier it read; the read that resolves either is the party read, so
+     * neither spelling is privileged.
+     */
+    std::string party;
+    /**
+     * @brief Code of the seed profile whose party stage the request runs.
+     *
+     * A party's data is the starting point's and the starting point states it as
+     * a row: the bundles a party is published from are the profile's
+     * "provision_party" step arguments. An unknown code is refused, and so is a
+     * profile that orders no party step.
+     */
+    std::string profile_code;
 };
 
-struct provision_acme_tenant_step {
-    std::string step;
-    std::string action;
-    std::uint64_t record_count = 0;
-};
-
-struct provision_acme_tenant_response {
+struct provision_party_command_response {
     bool success = false;
     std::string message;
-    std::vector<provision_acme_tenant_step> steps;
+    /**
+     * @brief Id of the workflow instance that runs the party stage.
+     *
+     * The caller follows the run, its progress and its retries by this id.
+     */
+    std::string instance_id;
+    /**
+     * @brief Id of the party the request resolved.
+     */
+    std::string party_id;
 };
 
 }

@@ -29,11 +29,14 @@ tenant and GLEIF parties and counterparties?
 
 * Answer
 
-The flow bootstraps the system with a =super_admin= account, installs
-a =Barclays Plc= tenant, provisions it with the GLEIF LEI party
-hierarchy rooted at Barclays Plc, and provisions its root party
-(importing the GLEIF counterparties). =load='s stop-on-error semantics
-guarantee an error-free run ends fully provisioned.
+The flow bootstraps the system with a =super_admin= account, installs a
+=Barclays Plc= tenant from the GLEIF starting point with the LEI of the
+hierarchy's root, and provisions that root party. The starting point's
+own steps import the LEI hierarchy as the tenant's parties and publish
+the counterparty set the =counterparty_size= parameter names, all
+server-side; the command follows the run to its end. =load='s
+stop-on-error semantics guarantee an error-free run ends fully
+provisioned.
 
 Expectations: the services are up (=compass services start=), the
 database is fresh (=compass db recreate -y -k= → bootstrap mode), and
@@ -47,15 +50,11 @@ is hard-coded to an environment.
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays_plc
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code barclays --tenant-name "Barclays Plc" --tenant-hostname barclays_plc --profile gleif_entity --param root_lei=213800LBQA1Y9L22JB70 --param counterparty_size=small
 logout
 
 login tenant_admin@barclays_plc Secure-Password-123
-provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
-logout
-
-login tenant_admin@barclays_plc Secure-Password-123
-provision party "BARCLAYS PLC" --dataset-size small
+provision party "BARCLAYS PLC"
 accounts set-default-party "BARCLAYS PLC"
 logout
 

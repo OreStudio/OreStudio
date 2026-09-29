@@ -44,12 +44,15 @@ using ores::iam::workflow::detail::unique_step_name;
 using ores::iam::workflow::is_declared_step_kind;
 using ores::iam::workflow::is_executed_step_kind;
 using ores::iam::workflow::provision_executed_step_kinds;
+using ores::iam::workflow::provision_party_step_kind;
+using ores::iam::workflow::provision_party_workflow_type;
 using ores::iam::workflow::provision_step_kinds;
 using ores::iam::workflow::provision_tenant_step;
 using ores::iam::workflow::provision_tenant_step_command;
 using ores::iam::workflow::provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_workflow_request;
 using ores::iam::workflow::provision_tenant_workflow_type;
+using ores::iam::workflow::register_provision_party_workflow;
 using ores::iam::workflow::register_provision_tenant_workflow;
 using ores::workflow::service::workflow_definition;
 using ores::workflow::service::workflow_registry;
@@ -283,4 +286,61 @@ TEST_CASE("a request that names no tenant to provision is refused", tags) {
     } catch (const std::runtime_error& e) {
         CHECK(std::string(e.what()).find("names no tenant to provision") != std::string::npos);
     }
+}
+
+namespace {
+
+workflow_definition party_definition() {
+    workflow_registry registry;
+    register_provision_party_workflow(registry);
+
+    const auto* found = registry.find(std::string(provision_party_workflow_type));
+    if (found == nullptr)
+        throw std::runtime_error("the party definition did not register under its type name");
+    return *found;
+}
+
+}
+
+TEST_CASE("the party definition registers under its own workflow type", tags) {
+    workflow_registry registry;
+    register_provision_party_workflow(registry);
+
+    const auto* found = registry.find(std::string(provision_party_workflow_type));
+    REQUIRE(found != nullptr);
+    CHECK_FALSE(found->description.empty());
+}
+
+TEST_CASE("a party run is its declared steps and nothing that completes the tenant", tags) {
+    const auto def = party_definition();
+    const auto steps = def.build_steps(
+        request_json({declared(std::string(provision_party_step_kind),
+                               R"({"bundles":["party_essentials"],"party":"BARCLAYS PLC"})")}),
+        tenant_id,
+        correlation_id);
+
+    REQUIRE(steps.size() == 1);
+    CHECK(steps.front().name == provision_party_step_kind);
+    CHECK(steps.front().command_subject == provision_tenant_step_subject);
+
+    const auto command =
+        rfl::json::read<provision_tenant_step_command>(steps.front().build_command("", {}));
+    REQUIRE(command);
+    CHECK(command->arguments_json ==
+          R"({"bundles":["party_essentials"],"party":"BARCLAYS PLC"})");
+    CHECK(command->admin_account_id == admin_account_id);
+}
+
+TEST_CASE("a party run that orders a kind this build cannot execute is refused", tags) {
+    const auto def = party_definition();
+
+    CHECK_THROWS_AS(def.build_steps(request_json({declared("publish_everything")}),
+                                    tenant_id,
+                                    correlation_id),
+                    std::runtime_error);
+    CHECK_THROWS_AS(
+        def.build_steps(request_json({declared(std::string(complete_provisioning_step_kind))}),
+                        tenant_id,
+                        correlation_id),
+        std::runtime_error);
 }

@@ -143,7 +143,7 @@ a hash server-side; no read returns one.
 | Hand off | Sign out | =iam.v1.auth.logout= | exists |
 | Hand off | Sign in as the tenant administrator | =iam.v1.auth.login= | exists |
 
-=iam.v1.tenants.provision-acme= and =iam.v1.tenants.complete-provisioning= are
+=iam.v1.tenants.provision= and =iam.v1.tenants.complete-provisioning= are
 declared in
 [[id:E37DCAAC-30A3-4E7E-890D-EBD226538690][ores.iam.tenant_provisioning_messages]];
 =iam.v1.auth.login= and =iam.v1.auth.logout= are declared in
@@ -152,11 +152,13 @@ them exist in the generated web protocol. =workflow.v1.instances.steps= does
 not: the generator emits no =workflow= package for the browser, so the BFF adds
 a route for it and the wire client parses its reply.
 
-=iam.v1.tenants.provision-acme= is a retired subject. It exists and runs the
-whole provisioning server-side through internal actor impersonation, but it is
-ACME-only, it takes no seed profile, and it returns all its steps at the end, so
-it streams no progress. The accepted contract retires it. The generic
-profile-driven request =iam.v1.tenants.provision= does not exist.
+=iam.v1.tenants.provision-acme= no longer exists: it ran the whole
+provisioning server-side through internal actor impersonation, but it was
+ACME-only, it took no seed profile, and it returned all its steps at the end, so
+it streamed no progress. The generic profile-driven request
+=iam.v1.tenants.provision= replaced it and the bootstrap request beside it, for
+every tenant the first one included, and the steps a starting point orders are
+what carries the work now.
 
 =iam.v1.system.reset-tenant= discards a half-provisioned tenant. It soft-deletes
 the admin-created data, turns the operational parties /inactive/, and sets the
@@ -189,10 +191,10 @@ that gap in full.
    request that takes the profile code and its parameters, returns a workflow
    instance id at once, and streams progress. The candidate is
    =iam.v1.tenants.provision=.
-4. *Progress is read, not pushed.* =provision_acme_tenant_response= returns its
-   steps only at the end; the shell waits up to 45 minutes with no feedback. A
-   run started through the generic request is followed instead: the reads
-   =workflow.v1.instances.steps= and =workflow.v1.instances.list= answer the
+4. *Progress is read, not pushed.* A step is followed through a read rather
+   than a pushed event. A run started through the generic request is followed
+   through the reads =workflow.v1.instances.steps= and
+   =workflow.v1.instances.list=, which answer the
    run's status, the step it is executing and one summary per step, and both
    the browser route and the wire-client method behind it exist, so the page
    renders its rail from the read and asks again while the run is open. The

@@ -434,14 +434,16 @@ class TestTheRealModels:
             )
         assert public == {
             "login", "service-login", "signup",
-            "bootstrap-status", "create-initial-admin", "provision-tenant",
+            "bootstrap-status", "create-initial-admin",
             "get-password-policy",
         }
 
-    def test_the_one_command_that_declares_a_budget_is_acme_provisioning(self):
-        # Measured, not assumed: provision-acme is the command whose work
-        # outlives the transport's default request timeout, and the model now
-        # states the budget it needs beside the subject it sends to.
+    def test_the_one_command_that_declares_a_budget_is_tenant_provisioning(self):
+        # Measured, not assumed: creating a tenant copies the deployment's
+        # registered data into it before the request answers, which outlives
+        # the transport's default request timeout, and the model states the
+        # budget it needs beside the subject it sends to. The budget is the one
+        # the bootstrap verb this command replaces used.
         declared = {}
         for path in sorted(IAM_MODELING.glob("*.org")):
             try:
@@ -451,7 +453,7 @@ class TestTheRealModels:
             for command in operation["shell_commands"]:
                 if command["request_timeout_seconds"]:
                     declared[command["command"]] = command["request_timeout_seconds"]
-        assert declared == {"provision-acme-tenant": 1800}
+        assert declared == {"provision-tenant": 120}
 
     def test_the_budget_is_rendered_into_the_unit_that_uses_it(self):
         # The unit includes <chrono> and passes the budget only because the

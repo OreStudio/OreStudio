@@ -177,10 +177,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         create_initial_admin_request::nats_subject, qg, [bh](ores::nats::message msg) {
             bh->create_admin(std::move(msg));
         }));
-    subs.push_back(nats.queue_subscribe(
-        provision_tenant_request::nats_subject, qg, [bh](ores::nats::message msg) {
-            bh->provision_tenant(std::move(msg));
-        }));
 
     // --- Accounts: the derived reads ---
     for (auto& sub : register_account_handlers(nats, ctx, signer))
@@ -346,12 +342,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
             tph->provision_tenant(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        provision_acme_tenant_command::nats_subject, qg, [tph](ores::nats::message msg) {
-            tph->provision_acme(std::move(msg));
+        provision_party_command::nats_subject, qg, [tph](ores::nats::message msg) {
+            tph->provision_party(std::move(msg));
         }));
-    // Every step of a provision tenant run is dispatched here, whatever kind it
-    // is, because the payload names the kind. The engine sends a step with no
-    // caller token, so the handler mints its own from the run's administrator.
+    // Every step of a provisioning run is dispatched here, whatever kind it is,
+    // because the payload names the kind. The engine sends a step with no caller
+    // token, so the handler mints its own from the run's administrator.
     subs.push_back(nats.queue_subscribe(
         std::string(ores::iam::workflow::provision_tenant_step_subject),
         qg,

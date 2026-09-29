@@ -21,11 +21,19 @@ and a synthetic organisation?
 
 * Answer
 
-Bootstrap =super_admin=, install an =Acme Corp= tenant, provision it
-with a synthetic organisation (fixed =--seed 42= so the party names are
-deterministic), then provision the root operational party. The party
-name below is in lock-step with the seed: change =--seed= and discover
-the new root party with =parties list --category Operational=.
+Bootstrap =super_admin= and install an =Acme Corp= tenant from the
+operational starting point, generate a synthetic organisation with a
+fixed =--seed 42= so the party names are deterministic, then provision
+the root operational party. The party name below is in lock-step with
+the seed: change =--seed= and discover the new root party with
+=parties list --category Operational=.
+
+=.synthetic generate= is a shell tool and not part of provisioning: a
+starting point publishes the reference data a tenant works from, and
+what a tenant's organisation then looks like is the generator's answer
+rather than a profile's. The starting point's own step publishes the
+base data the generator reads, which is why the command runs after
+=provision system= returns.
 
 Expectations match the Barclays recipe (services up, fresh
 bootstrap-mode database). =connect= takes the endpoint from
@@ -35,11 +43,11 @@ bootstrap-mode database). =connect= takes the endpoint from
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 
-provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme --tenant-name "Acme Corp" --tenant-hostname acme
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme --tenant-name "Acme Corp" --tenant-hostname acme --profile empty_operational
 logout
 
 login tenant_admin@acme Secure-Password-123
-provision tenant --source synthetic --seed 42
+synthetic generate --seed 42
 logout
 
 login tenant_admin@acme Secure-Password-123

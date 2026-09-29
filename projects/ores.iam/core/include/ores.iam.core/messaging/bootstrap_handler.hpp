@@ -30,7 +30,6 @@
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/tenant_presence.hpp"
-#include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -178,47 +177,6 @@ public:
             reply(nats_,
                   msg,
                   create_initial_admin_response{.success = false, .error_message = e.what()});
-        }
-    }
-
-    void provision_tenant(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);
-        auto req = decode<provision_tenant_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        try {
-            // The tenant and its administrator are created the way every
-            // provisioning verb creates them, so this verb and the generic one
-            // that replaces it (iam.v1.tenants.provision) cannot drift apart
-            // while both are reachable.
-            const auto created =
-                service::tenant_provisioning_service(ctx_).provision(req->type,
-                                                                     req->code,
-                                                                     req->name,
-                                                                     req->hostname,
-                                                                     req->description,
-                                                                     username_of(req->principal),
-                                                                     req->email,
-                                                                     req->password);
-
-            // Reload the new tenant's party cache: the SQL provisioner created
-            // the system party directly, no NATS event is published for it.
-            std::thread([pc = party_cache_, tid = created.tenant_id]() {
-                (void)pc->load(tid);
-            }).detach();
-
-            BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  provision_tenant_response{.success = true,
-                                            .account_id = created.account_id,
-                                            .tenant_id = created.tenant_id});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(
-                nats_, msg, provision_tenant_response{.success = false, .error_message = e.what()});
         }
     }
 

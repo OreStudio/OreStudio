@@ -16,22 +16,28 @@ library as =tenant_provision.ores=.
 
 * Question
 
-How do I provision the logged-in bootstrap-mode tenant from the shell?
+How do I add a tenant to a system that is already set up?
 
 * Answer
 
-Log in as the tenant admin (principals are =username@hostname=), then
-=provision tenant=: publish the first available dataset bundle, install
-the organisation (here GLEIF rooted at Barclays Plc — swap for
-=--source synthetic --seed N= for synthetic data), associate the admin
-with the operational parties and finalise. The logout afterwards is
-required: tenant state is re-evaluated at login.
+Log in as an administrator — the tenant is created under the tenant
+that administrator works in, which is why the first tenant is created
+by =provision system= and every one after it by this command. Name the
+tenant, its hostname, and its first administrator's password, and name
+the starting point the tenant is built from with =--profile=: the
+starting point's own steps then publish the tenant's reference data,
+import its legal entities, and provision its parties, server-side. The
+command follows the run to its end.
+
+Every tenant after the first is created the way the first one is, so
+this is the same request =provision system= sends once the installation
+has an administrator.
 
 #+name: tenant-provision
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
-login tenant_admin@barclays Secure-Password-123
-provision tenant --source gleif --root-lei 213800LBQA1Y9L22JB70
+login super_admin Secure-Password-123
+provision tenant --tenant-code example --tenant-name "Example Corp" --tenant-hostname example --tenant-admin-password Secure-Password-123 --profile empty_operational --param counterparty_size=small
 logout
 exit
 #+end_src

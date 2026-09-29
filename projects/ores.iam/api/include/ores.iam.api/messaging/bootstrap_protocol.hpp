@@ -90,51 +90,6 @@ struct create_initial_admin_response {
     std::string tenant_id;
 };
 
-struct provision_tenant_request {
-    using response_type = struct provision_tenant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.bootstrap.provision-tenant";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = false;
-    /*
-     * tenant type (e.g., "corporate")
-     */
-    std::string type;
-    /*
-     * unique tenant code
-     */
-    std::string code;
-    /*
-     * display name
-     */
-    std::string name;
-    /*
-     * unique hostname
-     */
-    std::string hostname;
-    /*
-     * optional description
-     */
-    std::string description;
-    /*
-     * username for the admin account
-     */
-    std::string principal;
-    std::string password;
-    std::string email;
-};
-
-struct provision_tenant_response {
-    bool success = false;
-    std::string error_message;
-    std::string account_id;
-    std::string tenant_id;
-};
-
 }
 
 #endif

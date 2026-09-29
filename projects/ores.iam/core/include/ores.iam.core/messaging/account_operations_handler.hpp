@@ -63,16 +63,6 @@ inline auto& account_handler_lg() {
     return instance;
 }
 
-inline std::string acct_extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
-    if (it == msg.headers.end())
-        return {};
-    const auto& val = it->second;
-    if (!val.starts_with(ores::nats::headers::bearer_prefix))
-        return {};
-    return val.substr(ores::nats::headers::bearer_prefix.size());
-}
-
 inline std::vector<boost::uuids::uuid>
 acct_compute_visible_party_ids(const service::cache::party_cache& cache,
                                const std::string& tenant_id,
@@ -445,7 +435,7 @@ public:
             return;
         }
         try {
-            auto token = acct_extract_bearer_token(msg);
+            auto token = ores::service::messaging::bearer_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -588,7 +578,7 @@ public:
             return;
         }
         try {
-            auto token = acct_extract_bearer_token(msg);
+            auto token = ores::service::messaging::bearer_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -635,7 +625,7 @@ public:
             return;
         }
         try {
-            auto token = acct_extract_bearer_token(msg);
+            auto token = ores::service::messaging::bearer_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -714,7 +704,7 @@ public:
             return;
         }
         try {
-            auto token = acct_extract_bearer_token(msg);
+            auto token = ores::service::messaging::bearer_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -903,7 +893,7 @@ public:
             return;
         }
         try {
-            auto token = acct_extract_bearer_token(msg);
+            auto token = ores::service::messaging::bearer_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,

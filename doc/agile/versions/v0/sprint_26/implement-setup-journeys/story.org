@@ -92,7 +92,7 @@ state and the progress are real.
 |------+-------+-------+-----+-------------|
 | [[id:6F644305-4D98-4F58-8BFF-1CF3E8B46427][Correct and add the architecture the journeys depend on]] | DONE | 2026-09-27 | 2026-09-27 | Make the architecture documents true before the first journey task starts: correct the contradictions the audit found, rewrite the stale decision record, and add the page that defines the journey runtime and the BFF boundary. |
 | [[id:8EC41D9E-757B-427B-8E3E-58BC0EA4BEEB][Decide the journey runtime and the step-call contract]] | DONE | 2026-09-27 | 2026-09-27 | Write the contract every journey is built to: what a step definition is, how one page renders the rail from the same list, and how a step reaches the server through a BFF route and a wire-client method. |
-| [[id:946954A3-23B7-43AC-A4AB-42E65698FED7][Line the shell's provisioning up with the journey contract]] | BACKLOG | | | Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the three end-to-end provisioning scripts working through them. |
+| [[id:946954A3-23B7-43AC-A4AB-42E65698FED7][Line the shell's provisioning up with the journey contract]] | DONE | 2026-09-29 | 2026-09-29 | Replace the three porcelain provisioning commands' client-side orchestration with thin calls to the same subjects the browser reaches, and keep the three end-to-end provisioning scripts working through them. |
 | [[id:ADEB07AC-11FC-44B1-958F-D542A32D8E09][Restore the UI primitives and port the journey runtime]] | DONE | 2026-09-27 | 2026-09-27 | Restore the primitives, the password field, the password policy and its test, and the brand artwork that e47043269f deleted, and port the prototype's rail and step parts onto journeys/runtime.ts with the simulation removed. |
 | [[id:804BA5B0-0025-43C9-8D58-936B279C44A9][Build the application shell, the route table and the bootstrap gate]] | DONE | 2026-09-27 | 2026-09-27 | Two shells on the primitives, the route table, and the bootstrap gate that makes /setup the only page while the system reports bootstrap mode, including the one read the gate needs. |
 | [[id:6D345419-B3C5-4B20-BE04-126807CC4641][Give the setup screen its banner and its copy]] | DONE | 2026-09-27 | 2026-09-27 | The setup screen is the first thing an empty installation shows, so it carries the ORE Studio banner, and its copy states the mode and the next action without the conversational filler. |
@@ -257,11 +257,13 @@ none of them depends on it and all of them are permanent.
   [[id:94C3AE99-8642-4418-982D-92C5FD805CCB][seed profile contract]] already
   decided this: "ores.web and ores.shell are thin callers. The shell's
   client-side orchestration is deleted." The three porcelain commands
-  are 696 lines that publish bundles, wait on workflows, generate a
-  synthetic organisation and associate parties themselves. The generic
-  request moves that work to the server, so the shell's commands become
-  thin callers of the same subjects the browser calls. This is accepted
-  scope that was never implemented, not new scope.
+  were 696 lines that published bundles, waited on workflows, generated a
+  synthetic organisation and associated parties themselves. That landing
+  left =provision system=, =provision tenant= and =provision party= as
+  thin callers of =iam.v1.tenants.provision= and =iam.v1.parties.provision=
+  -- the same subjects the browser calls -- and retired the verbs the
+  shell was their last caller of. The generator stays a shell tool: it is
+  a recipe's own step now, not provisioning's.
 - *The shell is lined up in the same group, not afterwards.* A shell
   that still drives the retired subjects while the browser uses the new
   one is two clients disagreeing about what provisioning is, and the
@@ -296,8 +298,8 @@ none of them depends on it and all of them are permanent.
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why the state is a workflow instance. |
 | [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] | knowledge | The standard the C++ work in this story is held to. |
 | [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the TypeScript work in this story is held to: the full strictness set, no unchecked escape hatch, parse at the boundary, and one gate per item. |
-| =doc/recipes/shell/provisioning/acme_system_provision.org= | recipe | End-to-end on the synthetic path: system, tenant and party, with the sign-ins between them. |
-| =doc/recipes/shell/provisioning/barclays_system_provision.org= | recipe | End-to-end on the GLEIF path: system, tenant and party, with the sign-ins between them. |
-| =doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org= | recipe | End-to-end on the =--source acme= path: system and tenant, which reaches the synchronous =provision-acme= handler that retires with the generic request. It stops after the tenant stage and publishes compute packages and a bundle, so it does not run the party journey. |
+| =doc/recipes/shell/provisioning/acme_system_provision.org= | recipe | End-to-end on the synthetic path: system and tenant from the operational starting point, a synthetic organisation from the generator, and the party stage, with the sign-ins between them. |
+| =doc/recipes/shell/provisioning/barclays_system_provision.org= | recipe | End-to-end on the GLEIF path: system and tenant from the GLEIF starting point with the hierarchy's root LEI, the counterparty set the profile's parameter names, and the party stage, with the sign-ins between them. |
+| =doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org= | recipe | End-to-end on the demonstration path: system and tenant from the =acme_demo= starting point, whose own steps import the Acme hierarchy, publish each party's data, attach the staff photographs and start the market feeds. It stops after the tenant stage and publishes the vendored compute packages, so it does not run the party stage on its own. |
 | [[id:FC08DD66-DB25-4B4F-8A26-572A513393FF][Audit the journey, provisioning and web-client architecture before the first implementation story]] | investigation | What the architecture documents say today, what is stale, and what is written nowhere. The story starts only after this is signed off. |
 | [[id:0220C2D0-1813-4175-A05C-35429F38CA74][The provisioning architecture]] | investigation | Where provisioning orchestration belongs, what a step may target, and how errors, timeouts and retries behave, so that the journeys stay click-minimal without any provider's specifics in code. |

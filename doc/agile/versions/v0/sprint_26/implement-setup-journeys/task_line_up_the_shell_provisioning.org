@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/line-up-the-shell-provisioning
+#+pr: 2382
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -46,12 +46,12 @@ both clients become callers of one contract.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Not yet started. It follows the generic provision request. |
-| Waiting on   | The generic =iam.v1.tenants.provision=, because a thin caller needs something to call. |
-| Next          | Inventory what each command orchestrates, then move each piece to the server. |
-| Last touched | 2026-09-27                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next          | Nothing. |
+| Last touched | 2026-09-29                               |
 
 * Acceptance
 
@@ -110,6 +110,10 @@ task and name that file in the Command column.
 | The porcelain provisioning command source | 696 lines | =wc -l projects/ores.shell/application/src/app/commands/provision_commands.cpp= | =ef8df25c61= |
 | The provisioning shell scripts | 8 files, 108 lines | =wc -l projects/ores.shell/scripts/library/provisioning/*.ores projects/ores.shell/scripts/library/tenant_provisioning/*.ores= | =ef8df25c61= |
 | The hand-written provisioning recipes | 6 files | =ls doc/recipes/shell/provisioning/*.org= | =ef8df25c61= |
+| The same command source, thin | 407 lines | =wc -l projects/ores.shell/application/src/app/commands/provision_commands.cpp= | =dc14694470= |
+| The provisioning handler, after the verb it served retired | 1824 lines | =wc -l projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp= | =dc14694470= |
+| The recipes' own scripts, thin | 6 files, 87 lines | =wc -l projects/ores.shell/scripts/library/provisioning/*.ores= | =dc14694470= |
+| The provisioning step kinds an executor serves | 6 of 6 | =grep -c . <(sed -n '/provision_executed_step_kinds\[\]/,/};/p' projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp)= | =d315592157= |
 
 * Notes
 
@@ -151,6 +155,49 @@ submenu, including one that calls =tenant_provisioning
 provision-acme-tenant=. It is generated, so it regenerates when the
 command changes and is never edited by hand.
 
+* The orchestration, and where each piece went
+
+The inventory of plan steps 1 and 2, kept as the record of what the
+wizards did that the journeys replace. A piece is either a request now or
+it is stated as staying where it was.
+
+| Piece the shell did | What it is now |
+|---------------------+----------------|
+| Read the system's bootstrap answer | Kept: the first run reads it before it creates anything, exactly as the browser does. =iam.v1.bootstrap.status=. |
+| Create the initial administrator, then sign in as it | Kept: the order the browser's journey takes, because a provision request needs a session. =iam.v1.bootstrap.create-admin= and =iam.v1.auth.login=. |
+| Create the tenant row and its administrator | The server's, inside the provision request: =tenant_provisioning_service::provision=. |
+| Publish the base bundle and wait on its nested run | The server's, as the =publish_bundle= step kind. The wait is the run's. |
+| Publish the party-scoped bundles, per party, and wait | The server's, as the =provision_party= step kind, which now also activates the party, marks its onboarding complete and joins the administrator to it. |
+| Import the counterparties | The starting point's parameter: the =publish_bundle= row names the dataset and the parameter whose value completes it. Nothing read =counterparty_size= before this task, so a browser-provisioned tenant held no counterparties. |
+| Generate a synthetic organisation | Stays a shell tool, which the accepted seed profile contract decided: the =synthetic generate= command is a recipe's own step and not provisioning's. |
+| Associate the administrator with the operational parties | The server's, inside the =provision_party= step kind, so a tenant's own run and a party stage alone do the same thing. |
+| Complete provisioning: mark the tenant active, clear bootstrap mode | The server's, as the =complete_provisioning= step the tenant run appends. |
+| Resolve a party by name or identifier | The server's: the party request resolves it through the party read, and refuses a reference the tenant does not hold before it starts a run. |
+
+Flags the command offered and the request cannot carry, with the reason
+each is gone: =--tenant-type= (the starting point states it, and a
+request that named it would be a second starting point), =--bundle= and
+=--source= (both are the starting point's), =--root-lei= (a parameter
+now: =--param root_lei=), =--dataset-size= (the counterparty set belongs
+to the tenant's starting point, not to one party), and the synthetic
+generator's knobs (that tool's own, and it is not provisioning's).
+
+The recipes' own runs found one defect this task did own and fixed: the
+completing step of a run wrote the tenant's flags as the run's administrator,
+whose party is one the provisioning created, while a tenant's flags live under
+the tenant's system party, so the write was refused as a duplicate create and
+the tenant was left reporting bootstrap mode with its onboarding incomplete. It
+acted as the system party after that, and the browser's path had the same
+defect: the demonstration and GLEIF cards both left a tenant that way.
+
+The work also found a defect it did not own: =ores.iam.core.tests= fails
+on a second run against one database, because the generated eventing
+integration tests seed a soft-FK parent row and close only the row under
+test. The fix is one codegen template and a regeneration of 53 files
+across five components, so it is captured rather than carried here:
+[[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][A generated eventing integration
+test leaves the parent row it seeds active]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -166,12 +213,63 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2382][#2382]] | [shell] Line the provisioning commands up with the journey contract |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A reference that names two parties is resolved twice and the two resolutions can disagree | =tenant_provisioning_handler.hpp= | Fixed | The reference is refused when it matches more than one party, and the identifier resolved travels into the step's arguments, so the run acts on the party the answer names. |
+| 2 | The handler compares an identifier as text while the step parses it, so the two accept different spellings | =tenant_provisioning_handler.hpp= | Fixed | The handler parses the reference first and matches an identifier as one; the SQL no longer compares the column's text. |
+| 3 | The party stage checks =iam::tenants:create=, which may not be the capability a tenant administrator holds | =tenant_provisioning_handler.hpp= | Fixed | It checks =iam::parties:provision=, seeded beside the tenant permissions: a party stage should not make every caller who may provision a party into a caller who may create a tenant. |
+| 4 | The parameter-substitution tests should cover two references and a brace that is not one | =messaging_provision_step_arguments_tests.cpp= | Fixed | Both cases added; a brace naming nothing is refused, because such a dataset code never publishes anything. |
+| 5 | The step's all-parties read and the reference's lookup duplicate the paging loop | =tenant_provisioning_handler.hpp= | Fixed | One =list_all_parties= helper serves both. |
+| 6 | Three separate control-plane reads | =tenant_provisioning_handler.hpp= | No change | The reviewer agreed it is fine for a control-plane call. |
+| 7 | The recipes had not been run | Evidence | Fixed | All three ran from their own empty installation; the runs found and fixed the completing step writing a tenant's flags under the administrator's party. |
+| 8 | The generated eventing test that leaves its parent active should stay visible | Capture | Recorded | [[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][the capture]] links back from the Notes. |
 
 * Result
+
+The three porcelain provisioning commands are thin callers of the same
+subjects the browser's journeys call. =provision system= reads the
+deployment's bootstrap answer, creates the administrator, signs in as it
+and sends one provision request; =provision tenant= sends the same request
+for every tenant after the first; =provision party= sends one party-stage
+request for a named party. Each follows the run through the same progress
+read the journey's rail renders. The 696 lines of client-side
+orchestration are gone from the file, which is 407 lines and holds no
+sequence of its own.
+
+The orchestration they did moved rather than vanished. Publishing bundles,
+importing the hierarchy, activating parties, joining the administrator to
+them and completing the tenant are the step kinds the run dispatches; the
+counterparty set is a starting point's parameter, which nothing read
+before, so a browser-provisioned tenant held none; and the synthetic
+generator stays a shell tool, which the seed profile contract decided. The
+inventory of plan steps 1 and 2 records every piece and every flag that is
+gone with its reason.
+
+Two verbs retired with their last caller,
+=iam.v1.bootstrap.provision-tenant= and =iam.v1.tenants.provision-acme=,
+and the generated recipes, shell units and scripts that named them
+regenerated. The generic request declares the request budget creating a
+tenant needs, which is the budget the bootstrap verb it replaced used.
+
+The proof is the three end-to-end recipes, run one recreate each from an
+empty installation to a working tenant, recorded in
+=evidence/three_recipes_from_empty_installations.txt=. The runs found a
+defect on the browser's path as well as the shell's: the completing step
+wrote a tenant's flags under the administrator's party rather than the
+tenant's system party, so a demonstration or GLEIF tenant was left
+reporting bootstrap mode with its onboarding incomplete. The step acts as
+the system party now, and both paths end with the flags right and one row
+each. The GLEIF tenant holds the 12,959 counterparties its =small=
+parameter names.
+
+What is left is the story's own last step and not this task's: the browser
+half of proving the three journeys on a fresh database, and the journey
+documents' "what is missing" lists, which still describe the state before
+the story. One defect the work found is captured rather than fixed,
+because its fix is a codegen template and 53 files across five
+components: [[id:D42BD56B-584A-4CEF-8257-64AE14850DD9][a generated eventing
+integration test leaves the parent row it seeds active]].

@@ -30,7 +30,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The identity is the natural key with =party_id= -- not null, non-empty, unique per party -- and the triple no longer keys the row, though its columns stay for the readers that still ask by it. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | Nothing. |
-| Next         | Delete =series_type=, =metric=, =qualifier= and =ore_key=, and the import classification table, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents, with the triple readers and their fallbacks last. That is the fourth acceptance and is not done. It carries one prerequisite the identity's review recorded: a row the migration named synthetically keeps that name when its real key is imported, because the triple fallback reuses the row, so the deletion decides which row wins when the real identity is already held. |
+| Next         | Delete =series_type=, =metric=, =qualifier= and =ore_key=, and the import classification table that classifies by them, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -358,6 +358,12 @@ request carrying only an identity could not reach the FOMC grid no projection co
 name; the grid is gone, so both requests carry the identity and the handler reads by
 it. Nothing in production calls the generated =read_latest_by_type= any more, which is
 what lets the deletion take it with the columns.
+
+That also closes the identity review's other recorded prerequisite. With the fallback
+gone there is no contest to settle: the import finds a series by the real identity when
+one holds it, and creates one when none does, so a synthetic row is never preferred and
+never collides -- it simply stays, as inert as the grid's row, until an operator deletes
+it. The deletion has nothing to decide about which row wins.
 
 **Step two, delivered.** The reader stands on four things, and all four exist now.
 

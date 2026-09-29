@@ -28,9 +28,9 @@ Each convention category the corpus uses has an entity in ores.refdata and a map
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Seven of the sixteen categories are modelled, so thirty-nine of the seventy-two files round trip outright. |
+| Now          | Eight of the sixteen categories are modelled, so forty-four of the seventy-two files round trip outright. |
 | Waiting on   | Nothing.                               |
-| Next         | Model =ZeroInflationIndex=, which clears five files on its own, then =BMABasisSwap= and =InflationSwap=, which clear three each. |
+| Next         | Model =BMABasisSwap= and =InflationSwap=, which clear three files each, then =CmsSpreadOption= and =CommodityFuture=, which clear one each. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -57,10 +57,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Categories the mapper does not model | 16 at the start, 9 after seven | =ores.ore.core.tests "[.][conventions]" -s= | =fa8eadc1ec= |
-| Files carrying an unmodelled category | 63 at the start, 33 after seven | the same | =fa8eadc1ec= |
-| Files that carry only modelled categories, and round trip | 9 at the start, 39 after seven | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =fa8eadc1ec= |
-| Files a single category would clear, now | ZeroInflationIndex 5, then BMABasisSwap 3 and InflationSwap 3, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =fa8eadc1ec= |
+| Categories the mapper does not model | 16 at the start, 8 after eight | =ores.ore.core.tests "[.][conventions]" -s= | =552d66b646= |
+| Files carrying an unmodelled category | 63 at the start, 28 after eight | the same | =552d66b646= |
+| Files that carry only modelled categories, and round trip | 9 at the start, 44 after eight | =ores.ore.core.tests "conventions_files_using_only_modelled_categories_round_trip"= | =552d66b646= |
+| Files a single category would clear, now | BMABasisSwap 3 and InflationSwap 3, then one each for CmsSpreadOption and CommodityFuture | =ores.ore.core.tests "conventions_files_cleared_by_each_category" -s= | =552d66b646= |
 | Per-category file and element counts | =evidence/round_trip_conventions_gap.md= | the measurement above | =70fc69007d= |
 
 * Notes
@@ -100,11 +100,20 @@ task and name that file in the Command column.
   carries both sets and each row fills one. The periods stay in ORE's spelling
   because they are tenors rather than frequency enumerations, and =12M= and =1Y=
   are distinct tokens an export has to write back exactly.
+- =ZeroInflationIndex= is modelled: seven fields across six files, and the first
+  category whose ORE type carries a field the table cannot hold. =RebasingEvents=
+  is a list of doubles and the refdata schema has no array column, so the mapper
+  counts each element that carries one into =unmodelled= under
+  =ZeroInflationIndex.RebasingEvents=. No shipped file sets one, and a case
+  builds that document by hand to assert the count, because the corpus walk
+  cannot reach it. That is the rule the story settled on: a skip that is counted
+  keeps the file out of the round-trip set, and a skip that is silent loses
+  content.
 - Each category costs one entity, its create, drop, notify trigger and row-level
   security, its seeded permissions, its component file-list entries, and a
-  mapper in both directions. Sixteen were unmodelled and seven have landed, so
-  nine remain. The expensive one left is =CommodityFuture= at thirty-four fields
-  across five files. The next-best win is =ZeroInflationIndex=, which clears five
+  mapper in both directions. Sixteen were unmodelled and eight have landed, so
+  eight remain. The expensive one left is =CommodityFuture= at thirty-four fields
+  across five files. The next-best win is =BMABasisSwap=, which clears three
   files on its own.
 
 * Test Scenarios

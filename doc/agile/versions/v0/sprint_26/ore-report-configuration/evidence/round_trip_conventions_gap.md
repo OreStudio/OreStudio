@@ -52,12 +52,12 @@ Seventeen categories were unmodelled between them. Sixteen appear in the corpus;
 only `FxOptionTimeWeighting` does not.
 
 Sixty-three of the seventy-two files carry at least one of them, and the list
-above is as it stood before any category was modelled. Seven of the sixteen have
+above is as it stood before any category was modelled. Eight of the sixteen have
 since landed -- SwapIndex, Future, FxOption, AverageOIS, CrossCurrencyBasis,
-TenorBasisTwoSwap and TenorBasisSwap -- so the live numbers are on the task. At
-`fa8eadc1ec` the mapper models sixteen of the twenty-six categories, nine remain
-unmodelled, thirty-three files still carry one, and thirty-nine round trip
-outright.
+TenorBasisTwoSwap, TenorBasisSwap and ZeroInflationIndex -- so the live numbers
+are on the task. At `552d66b646` the mapper models seventeen of the twenty-six
+categories, eight remain unmodelled, twenty-eight files still carry one, and
+forty-four round trip outright.
 
 ## What the nine files that use only modelled categories fail on
 
@@ -105,9 +105,8 @@ value the mapper got wrong survives neither direction.
 
 With that in place the files that carry only modelled categories round trip,
 and they are asserted green rather than measured. The count was nine when this
-was written and is thirty-nine once the seventh category landed; the
-per-category case asserts each one as it lands, and the whole-kind case asserts
-the count.
+was written and is forty-four once the eighth category landed; the per-category
+case asserts each one as it lands, and the whole-kind case asserts the count.
 
 ## What this means for the work
 

@@ -105,6 +105,11 @@ struct market_series final {
      * cutover that deletes series_type, metric and qualifier is what makes this not null and
      * unique. Every row the corpus import writes carries one, and a row whose key the grammar
      * cannot name carries none rather than a guessed identity.
+     *
+     * A write that leaves this empty **clears** it rather than keeping it: the generated service
+     * copies the write's fields straight through, so a caller that omits the identity stores a
+     * version without one. Until the column is not null, which is what forces every writer to
+     * supply it, a caller updating a series has to carry the identity it read.
      */
     std::string oresmd_uri;
 

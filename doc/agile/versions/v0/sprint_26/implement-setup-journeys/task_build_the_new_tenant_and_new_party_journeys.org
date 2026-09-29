@@ -32,7 +32,7 @@ and a scripted end-to-end run proves the browser's path on a fresh database.
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
 | Now          | The *New tenant* journey is built and walked in a browser: `/tenants/new` renders the five tenant steps on their own rail for a signed-in administrator, and the home screen is the way in. The *New party* journey is not built, and no scripted run proves the browser's path. |
 | Waiting on   | Nothing.                               |
-| Next         | The *New party* journey: the BFF route and the wire call for `iam.v1.parties.provision`, a way to create the party when the entity is not one the deployment holds, then its screens. Then the scripted proof. |
+| Next         | The *New party* journey, with both cases the product owner states: a party built from a legal entity the deployment holds, and a party that is not one of them and is therefore described by hand. It needs the BFF route and the wire call for `iam.v1.parties.provision`, the party write, and then its screens. Then the scripted proof. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -42,6 +42,10 @@ and a scripted end-to-end run proves the browser's path on a fresh database.
   the new tenant's administrator.
 - *New party* runs in the browser: find the legal entity, describe the party,
   review, follow the run, and the next steps.
+- A party the deployment holds no legal entity for is described by hand rather
+  than blocked: the screen finds an entity when the deployment has one and
+  takes what the person types when it does not. A legal entity is the common
+  case and not the only one.
 - Both reuse the runtime and the step library the first run uses, and first run
   inlines those same steps.
 - A scripted end-to-end run walks the first-run path against the real server on
@@ -118,8 +122,12 @@ and the review summary before anything is created. The run itself was not
 walked to its end in the browser, and the file says so.
 
 What this task still owes is the *New party* journey and the scripted browser
-proof. The party journey is the larger half: the deployment's search over its
-legal entities exists, but nothing in the browser reaches
-=iam.v1.parties.provision=, and a party that is not one of the deployment's
-legal entities has to be described by hand, so it needs a BFF route and a wire
-call of its own before its screens can be honest.
+proof. The party journey is the larger half, and it carries two cases the
+product owner states: a party built from a legal entity the deployment holds,
+found through the search, and a party that is not one of them, described by
+hand. Both end at the same place -- the party exists, and
+=iam.v1.parties.provision= runs the stage that publishes its data, activates
+it, completes its onboarding and joins the person who asked to it -- but
+nothing in the browser reaches that request today, and nothing creates the
+party row, so the journey needs a BFF route and a wire call of its own before
+its screens can be honest.

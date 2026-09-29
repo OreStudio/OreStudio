@@ -359,7 +359,6 @@ TEST_CASE("conventions_bond_yield_round_trips", tags) {
 
 TEST_CASE("conventions_commodity_future_round_trips", tags) {
     int files_with_commodity_future = 0;
-    int files_with_an_unmodelled_field = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
         const auto document = load(path);
@@ -370,24 +369,28 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
         const auto mapped = conventions_mapper::map(document);
         REQUIRE(mapped.commodity_future.size() == document.CommodityFuture.size());
 
-        bool carries_an_unmodelled_field = false;
         for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
             const auto& in = document.CommodityFuture[i];
             const auto& out = mapped.commodity_future[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.contract_frequency == to_string(in.ContractFrequency));
             CHECK(out.calendar == std::string(in.Calendar));
-            if (in.ProhibitedExpiries || in.FutureContinuationMappings ||
-                in.OptionContinuationMappings || in.AveragingData)
-                carries_an_unmodelled_field = true;
+            if (in.AveragingData)
+                CHECK(out.averaging_commodity_name ==
+                      std::string(in.AveragingData->CommodityName));
+            if (in.ProhibitedExpiries)
+                CHECK(out.prohibited_expiries.has_value());
+            if (in.FutureContinuationMappings)
+                CHECK(out.future_continuation_mappings.has_value());
+            if (in.OptionContinuationMappings)
+                CHECK(out.option_continuation_mappings.has_value());
         }
 
-        // Four of the element's fields hold lists of structs and no column can
-        // hold one, so the mapper counts them. A file that carries one must
-        // name it, and must not be in the round-trip set.
-        if (carries_an_unmodelled_field) {
-            ++files_with_an_unmodelled_field;
-            CHECK(mapped.unmodelled.size() >= 1);
+        // The four list-bearing fields are written as text columns now, so the
+        // mapper must not report any of them as skipped.
+        for (const auto& [name, count] : mapped.unmodelled) {
+            INFO(path.string() + ": unexpected skip " + name);
+            CHECK(name.rfind("CommodityFuture.", 0) != 0);
         }
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
@@ -415,7 +418,6 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
     // Five of the seventy-two files carry it, and two of them carried nothing
     // else unmodelled when it went in.
     CHECK(files_with_commodity_future == 5);
-    CHECK(files_with_an_unmodelled_field == 3);
 }
 
 TEST_CASE("conventions_cms_spread_option_round_trips", tags) {

@@ -73,6 +73,17 @@ export interface CommodityFutureConventionWrite {
     balance_of_the_month: boolean | null;
     balance_of_the_month_pricing_calendar: string | null;
     option_underlying_future_convention: string | null;
+    averaging_commodity_name: string | null;
+    averaging_period: string | null;
+    averaging_pricing_calendar: string | null;
+    averaging_conventions: string | null;
+    averaging_use_business_days: boolean | null;
+    averaging_delivery_roll_days: number | null;
+    averaging_future_month_offset: number | null;
+    averaging_daily_expiry_offset: number | null;
+    prohibited_expiries: string | null;
+    future_continuation_mappings: string | null;
+    option_continuation_mappings: string | null;
 }
 
 export interface CommodityFutureConventionChange {

@@ -87,6 +87,17 @@ generate_synthetic_commodity_future_convention(utility::generation::generation_c
     r.balance_of_the_month = std::nullopt;
     r.balance_of_the_month_pricing_calendar = std::nullopt;
     r.option_underlying_future_convention = std::nullopt;
+    r.averaging_commodity_name = std::nullopt;
+    r.averaging_period = std::nullopt;
+    r.averaging_pricing_calendar = std::nullopt;
+    r.averaging_conventions = std::nullopt;
+    r.averaging_use_business_days = std::nullopt;
+    r.averaging_delivery_roll_days = std::nullopt;
+    r.averaging_future_month_offset = std::nullopt;
+    r.averaging_daily_expiry_offset = std::nullopt;
+    r.prohibited_expiries = std::nullopt;
+    r.future_continuation_mappings = std::nullopt;
+    r.option_continuation_mappings = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

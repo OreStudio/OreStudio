@@ -51,12 +51,12 @@ namespace ores::refdata::domain {
  * Five files carry the element, in eight hundred and eight elements, and two of
  * them carried nothing else unmodelled when it landed.
  *
- * Four fields are not modelled and are counted instead: ProhibitedExpiries,
- * FutureContinuationMappings, OptionContinuationMappings and AveragingData.
- * Each holds a list of structs, and no column can hold one. Every shipped file
- * that sets one also carries another unmodelled category, so counting them costs
- * no file its round trip today; a file that sets one is named in the measurement
- * rather than losing the field quietly.
+ * Four more fields hold lists, and each is written as a text column rather than
+ * counted: AveragingData becomes eight columns, and ProhibitedExpiries,
+ * FutureContinuationMappings and OptionContinuationMappings become one text
+ * column each, holding comma-separated dates and from:to pairs. A column is a
+ * weaker home than a table, and it is what keeps the field in the element's
+ * round trip rather than excluding the file from it.
  */
 struct commodity_future_convention final {
     /**
@@ -275,6 +275,61 @@ struct commodity_future_convention final {
      * @brief Convention of the future the option is written on.
      */
     std::optional<std::string> option_underlying_future_convention;
+
+    /**
+     * @brief Commodity the averaging data prices.
+     */
+    std::optional<std::string> averaging_commodity_name;
+
+    /**
+     * @brief Period the averaging data covers, as the canonical code the mapper stores.
+     */
+    std::optional<std::string> averaging_period;
+
+    /**
+     * @brief Calendar the averaged prices are read on.
+     */
+    std::optional<std::string> averaging_pricing_calendar;
+
+    /**
+     * @brief Conventions the averaging follows, as ORE spells them.
+     */
+    std::optional<std::string> averaging_conventions;
+
+    /**
+     * @brief Whether the averaging counts business days only.
+     */
+    std::optional<bool> averaging_use_business_days;
+
+    /**
+     * @brief Days the delivery rolls by.
+     */
+    std::optional<int> averaging_delivery_roll_days;
+
+    /**
+     * @brief Months between the future and the averaged month.
+     */
+    std::optional<int> averaging_future_month_offset;
+
+    /**
+     * @brief Days between the daily expiry and the averaged date.
+     */
+    std::optional<int> averaging_daily_expiry_offset;
+
+    /**
+     * @brief Expiry dates the future may not use, comma separated.
+     */
+    std::optional<std::string> prohibited_expiries;
+
+    /**
+     * @brief Mappings from one future contract to the next, as from:to pairs, comma separated.
+     */
+    std::optional<std::string> future_continuation_mappings;
+
+    /**
+     * @brief Mappings from one option contract to the next, as from:to pairs, comma separated.
+     */
+    std::optional<std::string> option_continuation_mappings;
 
     /**
      * @brief Username of the person who last modified this commodity future convention.

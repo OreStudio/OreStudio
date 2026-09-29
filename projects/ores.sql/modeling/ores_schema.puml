@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T15:39:21.079608Z
+' Generated: 2026-09-29T16:05:44.285735Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1631,6 +1631,17 @@ package "refdata" #FFF3E0 {
           balance_of_the_month : boolean
           balance_of_the_month_pricing_calendar : text
           option_underlying_future_convention : text
+          averaging_commodity_name : text
+          averaging_period : text
+          averaging_pricing_calendar : text
+          averaging_conventions : text
+          averaging_use_business_days : boolean
+          averaging_delivery_roll_days : integer
+          averaging_future_month_offset : integer
+          averaging_daily_expiry_offset : integer
+          prohibited_expiries : text
+          future_continuation_mappings : text
+          option_continuation_mappings : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -1658,12 +1669,12 @@ package "refdata" #FFF3E0 {
     so flattening it is what lets a commodity future round trip at all.
     Five files carry the element, in eight hundred and eight elements, and two of
     them carried nothing else unmodelled when it landed.
-    Four fields are not modelled and are counted instead: ProhibitedExpiries,
-    FutureContinuationMappings, OptionContinuationMappings and AveragingData.
-    Each holds a list of structs, and no column can hold one. Every shipped file
-    that sets one also carries another unmodelled category, so counting them costs
-    no file its round trip today; a file that sets one is named in the measurement
-    rather than losing the field quietly.
+    Four more fields hold lists, and each is written as a text column rather than
+    counted: AveragingData becomes eight columns, and ProhibitedExpiries,
+    FutureContinuationMappings and OptionContinuationMappings become one text
+    column each, holding comma-separated dates and from:to pairs. A column is a
+    weaker home than a table, and it is what keeps the field in the element's
+    round trip rather than excluding the file from it.
     end note
 
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {

@@ -127,6 +127,36 @@ render_commodity_future_convention_fields(const domain::commodity_future_convent
                       .value = v.balance_of_the_month_pricing_calendar.value_or(std::string{})});
     fields.push_back({.name = "Option Underlying Future Convention",
                       .value = v.option_underlying_future_convention.value_or(std::string{})});
+    fields.push_back({.name = "Averaging Commodity Name",
+                      .value = v.averaging_commodity_name.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Averaging Period", .value = v.averaging_period.value_or(std::string{})});
+    fields.push_back({.name = "Averaging Pricing Calendar",
+                      .value = v.averaging_pricing_calendar.value_or(std::string{})});
+    fields.push_back({.name = "Averaging Conventions",
+                      .value = v.averaging_conventions.value_or(std::string{})});
+    fields.push_back({.name = "Averaging Use Business Days",
+                      .value = v.averaging_use_business_days ?
+                                   (*v.averaging_use_business_days ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Averaging Delivery Roll Days",
+                      .value = v.averaging_delivery_roll_days ?
+                                   std::to_string(*v.averaging_delivery_roll_days) :
+                                   std::string{}});
+    fields.push_back({.name = "Averaging Future Month Offset",
+                      .value = v.averaging_future_month_offset ?
+                                   std::to_string(*v.averaging_future_month_offset) :
+                                   std::string{}});
+    fields.push_back({.name = "Averaging Daily Expiry Offset",
+                      .value = v.averaging_daily_expiry_offset ?
+                                   std::to_string(*v.averaging_daily_expiry_offset) :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Prohibited Expiries", .value = v.prohibited_expiries.value_or(std::string{})});
+    fields.push_back({.name = "Future Continuation Mappings",
+                      .value = v.future_continuation_mappings.value_or(std::string{})});
+    fields.push_back({.name = "Option Continuation Mappings",
+                      .value = v.option_continuation_mappings.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

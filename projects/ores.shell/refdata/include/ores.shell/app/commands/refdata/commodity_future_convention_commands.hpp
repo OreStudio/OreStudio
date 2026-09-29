@@ -98,7 +98,11 @@ public:
      * <option_business_day_convention> <hours_per_day> <off_peak_index> <peak_index>
      * <off_peak_hours> <peak_calendar> <index_name> <savings_time> <delivery_location>
      * <balance_of_the_month> <balance_of_the_month_pricing_calendar>
-     * <option_underlying_future_convention> <reason> <commentary>
+     * <option_underlying_future_convention> <averaging_commodity_name> <averaging_period>
+     * <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days>
+     * <averaging_delivery_roll_days> <averaging_future_month_offset>
+     * <averaging_daily_expiry_offset> <prohibited_expiries> <future_continuation_mappings>
+     * <option_continuation_mappings> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -116,7 +120,11 @@ public:
      * <option_business_day_convention> <hours_per_day> <off_peak_index> <peak_index>
      * <off_peak_hours> <peak_calendar> <index_name> <savings_time> <delivery_location>
      * <balance_of_the_month> <balance_of_the_month_pricing_calendar>
-     * <option_underlying_future_convention> <reason> <commentary> [--version <n>]
+     * <option_underlying_future_convention> <averaging_commodity_name> <averaging_period>
+     * <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days>
+     * <averaging_delivery_roll_days> <averaging_future_month_offset>
+     * <averaging_daily_expiry_offset> <prohibited_expiries> <future_continuation_mappings>
+     * <option_continuation_mappings> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -134,7 +142,11 @@ public:
      * <option_expiry_weekly_day_of_the_week> <option_business_day_convention> <hours_per_day>
      * <off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <index_name> <savings_time>
      * <delivery_location> <balance_of_the_month> <balance_of_the_month_pricing_calendar>
-     * <option_underlying_future_convention> <reason> <commentary>
+     * <option_underlying_future_convention> <averaging_commodity_name> <averaging_period>
+     * <averaging_pricing_calendar> <averaging_conventions> <averaging_use_business_days>
+     * <averaging_delivery_roll_days> <averaging_future_month_offset>
+     * <averaging_daily_expiry_offset> <prohibited_expiries> <future_continuation_mappings>
+     * <option_continuation_mappings> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

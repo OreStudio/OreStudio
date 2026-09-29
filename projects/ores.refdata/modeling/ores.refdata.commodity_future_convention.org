@@ -29,12 +29,12 @@ so flattening it is what lets a commodity future round trip at all.
 Five files carry the element, in eight hundred and eight elements, and two of
 them carried nothing else unmodelled when it landed.
 
-Four fields are not modelled and are counted instead: =ProhibitedExpiries=,
-=FutureContinuationMappings=, =OptionContinuationMappings= and =AveragingData=.
-Each holds a list of structs, and no column can hold one. Every shipped file
-that sets one also carries another unmodelled category, so counting them costs
-no file its round trip today; a file that sets one is named in the measurement
-rather than losing the field quietly.
+Four more fields hold lists, and each is written as a text column rather than
+counted: =AveragingData= becomes eight columns, and =ProhibitedExpiries=,
+=FutureContinuationMappings= and =OptionContinuationMappings= become one text
+column each, holding comma-separated dates and =from:to= pairs. A column is a
+weaker home than a table, and it is what keeps the field in the element's
+round trip rather than excluding the file from it.
 
 * Flags
 :PROPERTIES:
@@ -567,6 +567,149 @@ Convention of the future the option is written on.
 std::nullopt
 #+end_src
 
+** averaging_commodity_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Commodity the averaging data prices.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_period
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Period the averaging data covers, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_pricing_calendar
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Calendar the averaged prices are read on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_conventions
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Conventions the averaging follows, as ORE spells them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_use_business_days
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the averaging counts business days only.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_delivery_roll_days
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Days the delivery rolls by.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_future_month_offset
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Months between the future and the averaged month.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** averaging_daily_expiry_offset
+:PROPERTIES:
+:type:        integer
+:cpp_type:    std::optional<int>
+:nullable:    true
+:END:
+
+Days between the daily expiry and the averaged date.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** prohibited_expiries
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Expiry dates the future may not use, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** future_continuation_mappings
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Mappings from one future contract to the next, as =from:to= pairs, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_continuation_mappings
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Mappings from one option contract to the next, as =from:to= pairs, comma separated.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -634,8 +777,18 @@ std::nullopt
 *** Columns
 
 | enum_name | field | header | type | width |
-|-----------+-------+--------+------+-------|| Id | id | Id | string | 180 || ContractFrequency | contract_frequency | Contract Frequency | string | 180 || Calendar | calendar | Calendar | string | 180 || ExpiryCalendar | expiry_calendar | Expiry Calendar | string | 180 || ExpiryMonthLag | expiry_month_lag | Expiry Month Lag | int | 100 || OneContractMonth | one_contract_month | One Contract Month | string | 180 || OffsetDays | offset_days | Offset Days | int | 100 || BusinessDayConvention | business_day_convention | Business Day Convention | string | 180 || AdjustBeforeOffset | adjust_before_offset | Adjust Before Offset | bool | 80 || IsAveraging | is_averaging | Is Averaging | bool | 80 || ValidContractMonths | valid_contract_months | Valid Contract Months | string | 180 || AnchorDayOfMonth | anchor_day_of_month | Anchor Day Of Month | int | 100 || AnchorCalendarDaysBefore | anchor_calendar_days_before | Anchor Calendar Days Before | int | 100 || AnchorBusinessDaysAfter | anchor_business_days_after | Anchor Business Days After | int | 100 || AnchorNthNth | anchor_nth_nth | Anchor Nth Nth | int | 100 || AnchorNthWeekday | anchor_nth_weekday | Anchor Nth Weekday | string | 180 || AnchorLastWeekday | anchor_last_weekday | Anchor Last Weekday | string | 180 || AnchorWeeklyDayOfTheWeek | anchor_weekly_day_of_the_week | Anchor Weekly Day Of The Week | string | 180 || OptionExpiryMonthLag | option_expiry_month_lag | Option Expiry Month Lag | int | 100 || OptionContractFrequency | option_contract_frequency | Option Contract Frequency | string | 180 || OptionExpiryOffset | option_expiry_offset | Option Expiry Offset | int | 100 || OptionCalendarDaysBefore | option_calendar_days_before | Option Calendar Days Before | int | 100 || OptionMinBusinessDaysBefore | option_min_business_days_before | Option Min Business Days Before | int | 100 || OptionExpiryDay | option_expiry_day | Option Expiry Day | int | 100 || OptionNthNth | option_nth_nth | Option Nth Nth | int | 100 || OptionNthWeekday | option_nth_weekday | Option Nth Weekday | string | 180 || OptionExpiryLastWeekdayOfMonth | option_expiry_last_weekday_of_month | Option Expiry Last Weekday Of Month | string | 180 || OptionExpiryWeeklyDayOfTheWeek | option_expiry_weekly_day_of_the_week | Option Expiry Weekly Day Of The Week | string | 180 || OptionBusinessDayConvention | option_business_day_convention | Option Business Day Convention | string | 180 || HoursPerDay | hours_per_day | Hours Per Day | int | 100 || OffPeakIndex | off_peak_index | Off Peak Index | string | 180 || PeakIndex | peak_index | Peak Index | string | 180 || OffPeakHours | off_peak_hours | Off Peak Hours | string | 180 || PeakCalendar | peak_calendar | Peak Calendar | string | 180 || IndexName | index_name | Index Name | string | 180 || SavingsTime | savings_time | Savings Time | string | 180 || DeliveryLocation | delivery_location | Delivery Location | string | 180 || BalanceOfTheMonth | balance_of_the_month | Balance Of The Month | bool | 80 || BalanceOfTheMonthPricingCalendar | balance_of_the_month_pricing_calendar | Balance Of The Month Pricing Calendar | string | 180 || OptionUnderlyingFutureConvention | option_underlying_future_convention | Option Underlying Future Convention | string | 180 || Version | version | Version | int | 80 |
-| ModifiedBy | modified_by | Modified By | string | 120 |
+|-----------+-------+--------+------+-------|| Id | id | Id | string | 180 || ContractFrequency | contract_frequency | Contract Frequency | string | 180 || Calendar | calendar | Calendar | string | 180 || ExpiryCalendar | expiry_calendar | Expiry Calendar | string | 180 || ExpiryMonthLag | expiry_month_lag | Expiry Month Lag | int | 100 || OneContractMonth | one_contract_month | One Contract Month | string | 180 || OffsetDays | offset_days | Offset Days | int | 100 || BusinessDayConvention | business_day_convention | Business Day Convention | string | 180 || AdjustBeforeOffset | adjust_before_offset | Adjust Before Offset | bool | 80 || IsAveraging | is_averaging | Is Averaging | bool | 80 || ValidContractMonths | valid_contract_months | Valid Contract Months | string | 180 || AnchorDayOfMonth | anchor_day_of_month | Anchor Day Of Month | int | 100 || AnchorCalendarDaysBefore | anchor_calendar_days_before | Anchor Calendar Days Before | int | 100 || AnchorBusinessDaysAfter | anchor_business_days_after | Anchor Business Days After | int | 100 || AnchorNthNth | anchor_nth_nth | Anchor Nth Nth | int | 100 || AnchorNthWeekday | anchor_nth_weekday | Anchor Nth Weekday | string | 180 || AnchorLastWeekday | anchor_last_weekday | Anchor Last Weekday | string | 180 || AnchorWeeklyDayOfTheWeek | anchor_weekly_day_of_the_week | Anchor Weekly Day Of The Week | string | 180 || OptionExpiryMonthLag | option_expiry_month_lag | Option Expiry Month Lag | int | 100 || OptionContractFrequency | option_contract_frequency | Option Contract Frequency | string | 180 || OptionExpiryOffset | option_expiry_offset | Option Expiry Offset | int | 100 || OptionCalendarDaysBefore | option_calendar_days_before | Option Calendar Days Before | int | 100 || OptionMinBusinessDaysBefore | option_min_business_days_before | Option Min Business Days Before | int | 100 || OptionExpiryDay | option_expiry_day | Option Expiry Day | int | 100 || OptionNthNth | option_nth_nth | Option Nth Nth | int | 100 || OptionNthWeekday | option_nth_weekday | Option Nth Weekday | string | 180 || OptionExpiryLastWeekdayOfMonth | option_expiry_last_weekday_of_month | Option Expiry Last Weekday Of Month | string | 180 || OptionExpiryWeeklyDayOfTheWeek | option_expiry_weekly_day_of_the_week | Option Expiry Weekly Day Of The Week | string | 180 || OptionBusinessDayConvention | option_business_day_convention | Option Business Day Convention | string | 180 || HoursPerDay | hours_per_day | Hours Per Day | int | 100 || OffPeakIndex | off_peak_index | Off Peak Index | string | 180 || PeakIndex | peak_index | Peak Index | string | 180 || OffPeakHours | off_peak_hours | Off Peak Hours | string | 180 || PeakCalendar | peak_calendar | Peak Calendar | string | 180 || IndexName | index_name | Index Name | string | 180 || SavingsTime | savings_time | Savings Time | string | 180 || DeliveryLocation | delivery_location | Delivery Location | string | 180 || BalanceOfTheMonth | balance_of_the_month | Balance Of The Month | bool | 80 || BalanceOfTheMonthPricingCalendar | balance_of_the_month_pricing_calendar | Balance Of The Month Pricing Calendar | string | 180 || OptionUnderlyingFutureConvention | option_underlying_future_convention | Option Underlying Future Convention | string | 180 || averaging_commodity_name | Averaging Commodity | averagingCommodityNameEdit | line_edit |  |  |  |
+| averaging_period | Averaging Period | averagingPeriodEdit | line_edit |  |  |  |
+| averaging_pricing_calendar | Averaging Calendar | averagingPricingCalendarEdit | line_edit |  |  |  |
+| averaging_conventions | Averaging Conventions | averagingConventionsEdit | line_edit |  |  |  |
+| averaging_use_business_days | Use Business Days | averagingUseBusinessDaysEdit | checkbox |  |  |  |
+| averaging_delivery_roll_days | Delivery Roll Days | averagingDeliveryRollDaysEdit | line_edit |  |  |  |
+| averaging_future_month_offset | Future Month Offset | averagingFutureMonthOffsetEdit | line_edit |  |  |  |
+| averaging_daily_expiry_offset | Daily Expiry Offset | averagingDailyExpiryOffsetEdit | line_edit |  |  |  |
+| prohibited_expiries | Prohibited Expiries | prohibitedExpiriesEdit | line_edit |  |  |  |
+| future_continuation_mappings | Future Continuations | futureContinuationMappingsEdit | line_edit |  |  |  |
+| option_continuation_mappings | Option Continuations | optionContinuationMappingsEdit | line_edit |  |  |  |
+| Version | version | Version | int | 80 || ModifiedBy | modified_by | Modified By | string | 120 |
 | RecordedAt | recorded_at | Recorded At | timestamp | 150 |
 
 ** Custom repository methods

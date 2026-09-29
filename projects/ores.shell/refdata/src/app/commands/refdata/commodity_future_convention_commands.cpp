@@ -153,8 +153,11 @@ void commodity_future_convention_commands::register_commands(cli::Menu& root_men
         "<option_expiry_weekly_day_of_the_week> <option_business_day_convention> <hours_per_day> "
         "<off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <index_name> "
         "<savings_time> <delivery_location> <balance_of_the_month> "
-        "<balance_of_the_month_pricing_calendar> <option_underlying_future_convention> <reason> "
-        "<commentary>");
+        "<balance_of_the_month_pricing_calendar> <option_underlying_future_convention> "
+        "<averaging_commodity_name> <averaging_period> <averaging_pricing_calendar> "
+        "<averaging_conventions> <averaging_use_business_days> <averaging_delivery_roll_days> "
+        "<averaging_future_month_offset> <averaging_daily_expiry_offset> <prohibited_expiries> "
+        "<future_continuation_mappings> <option_continuation_mappings> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -172,8 +175,12 @@ void commodity_future_convention_commands::register_commands(cli::Menu& root_men
         "<option_expiry_weekly_day_of_the_week> <option_business_day_convention> <hours_per_day> "
         "<off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <index_name> "
         "<savings_time> <delivery_location> <balance_of_the_month> "
-        "<balance_of_the_month_pricing_calendar> <option_underlying_future_convention> <reason> "
-        "<commentary> [--version <n>]");
+        "<balance_of_the_month_pricing_calendar> <option_underlying_future_convention> "
+        "<averaging_commodity_name> <averaging_period> <averaging_pricing_calendar> "
+        "<averaging_conventions> <averaging_use_business_days> <averaging_delivery_roll_days> "
+        "<averaging_future_month_offset> <averaging_daily_expiry_offset> <prohibited_expiries> "
+        "<future_continuation_mappings> <option_continuation_mappings> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -191,8 +198,11 @@ void commodity_future_convention_commands::register_commands(cli::Menu& root_men
         "<option_expiry_weekly_day_of_the_week> <option_business_day_convention> <hours_per_day> "
         "<off_peak_index> <peak_index> <off_peak_hours> <peak_calendar> <index_name> "
         "<savings_time> <delivery_location> <balance_of_the_month> "
-        "<balance_of_the_month_pricing_calendar> <option_underlying_future_convention> <reason> "
-        "<commentary>");
+        "<balance_of_the_month_pricing_calendar> <option_underlying_future_convention> "
+        "<averaging_commodity_name> <averaging_period> <averaging_pricing_calendar> "
+        "<averaging_conventions> <averaging_use_business_days> <averaging_delivery_roll_days> "
+        "<averaging_future_month_offset> <averaging_daily_expiry_offset> <prohibited_expiries> "
+        "<future_continuation_mappings> <option_continuation_mappings> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -387,8 +397,8 @@ void commodity_future_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 40 + 2) {
-            fail(out) << "Expected " << (40 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 51 + 2) {
+            fail(out) << "Expected " << (51 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -478,6 +488,38 @@ void commodity_future_convention_commands::process_add(std::ostream& out,
         read_token(req.change.write.option_underlying_future_convention,
                    parsed->positionals[next++],
                    "option_underlying_future_convention");
+        read_token(req.change.write.averaging_commodity_name,
+                   parsed->positionals[next++],
+                   "averaging_commodity_name");
+        read_token(
+            req.change.write.averaging_period, parsed->positionals[next++], "averaging_period");
+        read_token(req.change.write.averaging_pricing_calendar,
+                   parsed->positionals[next++],
+                   "averaging_pricing_calendar");
+        read_token(req.change.write.averaging_conventions,
+                   parsed->positionals[next++],
+                   "averaging_conventions");
+        read_token(req.change.write.averaging_use_business_days,
+                   parsed->positionals[next++],
+                   "averaging_use_business_days");
+        read_token(req.change.write.averaging_delivery_roll_days,
+                   parsed->positionals[next++],
+                   "averaging_delivery_roll_days");
+        read_token(req.change.write.averaging_future_month_offset,
+                   parsed->positionals[next++],
+                   "averaging_future_month_offset");
+        read_token(req.change.write.averaging_daily_expiry_offset,
+                   parsed->positionals[next++],
+                   "averaging_daily_expiry_offset");
+        read_token(req.change.write.prohibited_expiries,
+                   parsed->positionals[next++],
+                   "prohibited_expiries");
+        read_token(req.change.write.future_continuation_mappings,
+                   parsed->positionals[next++],
+                   "future_continuation_mappings");
+        read_token(req.change.write.option_continuation_mappings,
+                   parsed->positionals[next++],
+                   "option_continuation_mappings");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -520,8 +562,8 @@ void commodity_future_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 40 + 2) {
-            fail(out) << "Expected " << (40 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 51 + 2) {
+            fail(out) << "Expected " << (51 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -611,6 +653,38 @@ void commodity_future_convention_commands::process_set(std::ostream& out,
         read_token(req.change.write.option_underlying_future_convention,
                    parsed->positionals[next++],
                    "option_underlying_future_convention");
+        read_token(req.change.write.averaging_commodity_name,
+                   parsed->positionals[next++],
+                   "averaging_commodity_name");
+        read_token(
+            req.change.write.averaging_period, parsed->positionals[next++], "averaging_period");
+        read_token(req.change.write.averaging_pricing_calendar,
+                   parsed->positionals[next++],
+                   "averaging_pricing_calendar");
+        read_token(req.change.write.averaging_conventions,
+                   parsed->positionals[next++],
+                   "averaging_conventions");
+        read_token(req.change.write.averaging_use_business_days,
+                   parsed->positionals[next++],
+                   "averaging_use_business_days");
+        read_token(req.change.write.averaging_delivery_roll_days,
+                   parsed->positionals[next++],
+                   "averaging_delivery_roll_days");
+        read_token(req.change.write.averaging_future_month_offset,
+                   parsed->positionals[next++],
+                   "averaging_future_month_offset");
+        read_token(req.change.write.averaging_daily_expiry_offset,
+                   parsed->positionals[next++],
+                   "averaging_daily_expiry_offset");
+        read_token(req.change.write.prohibited_expiries,
+                   parsed->positionals[next++],
+                   "prohibited_expiries");
+        read_token(req.change.write.future_continuation_mappings,
+                   parsed->positionals[next++],
+                   "future_continuation_mappings");
+        read_token(req.change.write.option_continuation_mappings,
+                   parsed->positionals[next++],
+                   "option_continuation_mappings");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -665,8 +739,8 @@ void commodity_future_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 40 + 2) {
-            fail(out) << "Expected " << (change_count * 40 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 51 + 2) {
+            fail(out) << "Expected " << (change_count * 51 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -758,6 +832,38 @@ void commodity_future_convention_commands::process_put_many(std::ostream& out,
             read_token(change.write.option_underlying_future_convention,
                        parsed->positionals[next++],
                        "option_underlying_future_convention");
+            read_token(change.write.averaging_commodity_name,
+                       parsed->positionals[next++],
+                       "averaging_commodity_name");
+            read_token(
+                change.write.averaging_period, parsed->positionals[next++], "averaging_period");
+            read_token(change.write.averaging_pricing_calendar,
+                       parsed->positionals[next++],
+                       "averaging_pricing_calendar");
+            read_token(change.write.averaging_conventions,
+                       parsed->positionals[next++],
+                       "averaging_conventions");
+            read_token(change.write.averaging_use_business_days,
+                       parsed->positionals[next++],
+                       "averaging_use_business_days");
+            read_token(change.write.averaging_delivery_roll_days,
+                       parsed->positionals[next++],
+                       "averaging_delivery_roll_days");
+            read_token(change.write.averaging_future_month_offset,
+                       parsed->positionals[next++],
+                       "averaging_future_month_offset");
+            read_token(change.write.averaging_daily_expiry_offset,
+                       parsed->positionals[next++],
+                       "averaging_daily_expiry_offset");
+            read_token(change.write.prohibited_expiries,
+                       parsed->positionals[next++],
+                       "prohibited_expiries");
+            read_token(change.write.future_continuation_mappings,
+                       parsed->positionals[next++],
+                       "future_continuation_mappings");
+            read_token(change.write.option_continuation_mappings,
+                       parsed->positionals[next++],
+                       "option_continuation_mappings");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

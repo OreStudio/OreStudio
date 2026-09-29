@@ -173,6 +173,15 @@ domain::monthType parse_month(const std::string& s) {
     throw std::runtime_error("parse_month: unrecognised '" + s + "'");
 }
 
+domain::averagingDataPeriodType parse_averaging_period(const std::string& s) {
+    using p = domain::averagingDataPeriodType;
+    if (s == "PreviousMonth")
+        return p::PreviousMonth;
+    if (s == "ExpiryToExpiry")
+        return p::ExpiryToExpiry;
+    throw std::runtime_error("parse_averaging_period: unrecognised '" + s + "'");
+}
+
 domain::weekdayType parse_weekday(const std::string& s) {
     using w = domain::weekdayType;
     if (s == "Mon")
@@ -613,6 +622,66 @@ reverse_commodity_future(const refdata::domain::commodity_future_convention& v) 
         commodityFutureType_OptionUnderlyingFutureConvention_t x;
         static_cast<std::string&>(x) = *v.option_underlying_future_convention;
         r.OptionUnderlyingFutureConvention = x;
+    }
+    if (v.averaging_commodity_name && v.averaging_period && v.averaging_pricing_calendar &&
+        v.averaging_conventions) {
+        averagingDataType a;
+        static_cast<std::string&>(a.CommodityName) = *v.averaging_commodity_name;
+        a.Period = parse_averaging_period(*v.averaging_period);
+        static_cast<std::string&>(a.PricingCalendar) = *v.averaging_pricing_calendar;
+        static_cast<std::string&>(a.Conventions) = *v.averaging_conventions;
+        if (v.averaging_use_business_days)
+            a.UseBusinessDays = make_bool(*v.averaging_use_business_days);
+        if (v.averaging_delivery_roll_days)
+            a.DeliveryRollDays = static_cast<uint64_t>(*v.averaging_delivery_roll_days);
+        if (v.averaging_future_month_offset)
+            a.FutureMonthOffset = static_cast<uint64_t>(*v.averaging_future_month_offset);
+        if (v.averaging_daily_expiry_offset)
+            a.DailyExpiryOffset = static_cast<uint64_t>(*v.averaging_daily_expiry_offset);
+        r.AveragingData = a;
+    }
+    if (v.prohibited_expiries) {
+        prohibitedExpiriesType prohibited;
+        std::istringstream in(*v.prohibited_expiries);
+        std::string token;
+        while (std::getline(in, token, ',')) {
+            if (!token.empty()) {
+                prohibitedExpiriesType_Dates_t_Date_t d;
+                static_cast<std::string&>(d) = token;
+                prohibited.Dates.Date.push_back(d);
+            }
+        }
+        r.ProhibitedExpiries = prohibited;
+    }
+    if (v.future_continuation_mappings) {
+        continuationMappingsType mappings;
+        std::istringstream in(*v.future_continuation_mappings);
+        std::string token;
+        while (std::getline(in, token, ',')) {
+            const auto colon = token.find(':');
+            if (colon == std::string::npos)
+                continue;
+            continuationMappingType m;
+            m.From = static_cast<uint64_t>(std::stoull(token.substr(0, colon)));
+            m.To = static_cast<uint64_t>(std::stoull(token.substr(colon + 1)));
+            mappings.ContinuationMapping.push_back(m);
+        }
+        r.FutureContinuationMappings = mappings;
+    }
+    if (v.option_continuation_mappings) {
+        continuationMappingsType mappings;
+        std::istringstream in(*v.option_continuation_mappings);
+        std::string token;
+        while (std::getline(in, token, ',')) {
+            const auto colon = token.find(':');
+            if (colon == std::string::npos)
+                continue;
+            continuationMappingType m;
+            m.From = static_cast<uint64_t>(std::stoull(token.substr(0, colon)));
+            m.To = static_cast<uint64_t>(std::stoull(token.substr(colon + 1)));
+            mappings.ContinuationMapping.push_back(m);
+        }
+        r.OptionContinuationMappings = mappings;
     }
     return r;
 }
@@ -1856,6 +1925,52 @@ conventions_mapper::map_commodity_future(const commodityFutureType& v) {
     if (v.OptionUnderlyingFutureConvention)
         r.option_underlying_future_convention = std::string(*v.OptionUnderlyingFutureConvention);
 
+    if (v.AveragingData) {
+        const auto& a = *v.AveragingData;
+        r.averaging_commodity_name = std::string(a.CommodityName);
+        r.averaging_period = to_string(a.Period);
+        r.averaging_pricing_calendar = std::string(a.PricingCalendar);
+        r.averaging_conventions = std::string(a.Conventions);
+        if (a.UseBusinessDays)
+            r.averaging_use_business_days = parse_bool(*a.UseBusinessDays);
+        if (a.DeliveryRollDays)
+            r.averaging_delivery_roll_days = static_cast<int>(*a.DeliveryRollDays);
+        if (a.FutureMonthOffset)
+            r.averaging_future_month_offset = static_cast<int>(*a.FutureMonthOffset);
+        if (a.DailyExpiryOffset)
+            r.averaging_daily_expiry_offset = static_cast<int>(*a.DailyExpiryOffset);
+    }
+
+    if (v.ProhibitedExpiries) {
+        std::string dates;
+        for (const auto& d : v.ProhibitedExpiries->Dates.Date) {
+            if (!dates.empty())
+                dates += ",";
+            dates += static_cast<const std::string&>(d);
+        }
+        r.prohibited_expiries = dates;
+    }
+
+    if (v.FutureContinuationMappings) {
+        std::string mappings;
+        for (const auto& m : v.FutureContinuationMappings->ContinuationMapping) {
+            if (!mappings.empty())
+                mappings += ",";
+            mappings += std::to_string(m.From) + ":" + std::to_string(m.To);
+        }
+        r.future_continuation_mappings = mappings;
+    }
+
+    if (v.OptionContinuationMappings) {
+        std::string mappings;
+        for (const auto& m : v.OptionContinuationMappings->ContinuationMapping) {
+            if (!mappings.empty())
+                mappings += ",";
+            mappings += std::to_string(m.From) + ":" + std::to_string(m.To);
+        }
+        r.option_continuation_mappings = mappings;
+    }
+
     set_audit(r);
     return r;
 }
@@ -2264,25 +2379,6 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         if (x.PublicationSchedule)
             ++publication_schedules;
     count_unmodelled("InflationSwap.PublicationSchedule", publication_schedules);
-
-    std::size_t prohibited_expiries = 0;
-    std::size_t future_mappings = 0;
-    std::size_t option_mappings = 0;
-    std::size_t averaging_data = 0;
-    for (const auto& x : v.CommodityFuture) {
-        if (x.ProhibitedExpiries)
-            ++prohibited_expiries;
-        if (x.FutureContinuationMappings)
-            ++future_mappings;
-        if (x.OptionContinuationMappings)
-            ++option_mappings;
-        if (x.AveragingData)
-            ++averaging_data;
-    }
-    count_unmodelled("CommodityFuture.ProhibitedExpiries", prohibited_expiries);
-    count_unmodelled("CommodityFuture.FutureContinuationMappings", future_mappings);
-    count_unmodelled("CommodityFuture.OptionContinuationMappings", option_mappings);
-    count_unmodelled("CommodityFuture.AveragingData", averaging_data);
 
     for (const auto& [name, count] : r.unmodelled) {
         BOOST_LOG_SEV(lg(), warn)

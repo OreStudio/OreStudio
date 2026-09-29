@@ -124,6 +124,17 @@ to_domain(const messaging::commodity_future_convention_write& write) {
     v.balance_of_the_month = write.balance_of_the_month;
     v.balance_of_the_month_pricing_calendar = write.balance_of_the_month_pricing_calendar;
     v.option_underlying_future_convention = write.option_underlying_future_convention;
+    v.averaging_commodity_name = write.averaging_commodity_name;
+    v.averaging_period = write.averaging_period;
+    v.averaging_pricing_calendar = write.averaging_pricing_calendar;
+    v.averaging_conventions = write.averaging_conventions;
+    v.averaging_use_business_days = write.averaging_use_business_days;
+    v.averaging_delivery_roll_days = write.averaging_delivery_roll_days;
+    v.averaging_future_month_offset = write.averaging_future_month_offset;
+    v.averaging_daily_expiry_offset = write.averaging_daily_expiry_offset;
+    v.prohibited_expiries = write.prohibited_expiries;
+    v.future_continuation_mappings = write.future_continuation_mappings;
+    v.option_continuation_mappings = write.option_continuation_mappings;
     return v;
 }
 

@@ -40,12 +40,12 @@
  * Five files carry the element, in eight hundred and eight elements, and two of
  * them carried nothing else unmodelled when it landed.
  *
- * Four fields are not modelled and are counted instead: ProhibitedExpiries,
- * FutureContinuationMappings, OptionContinuationMappings and AveragingData.
- * Each holds a list of structs, and no column can hold one. Every shipped file
- * that sets one also carries another unmodelled category, so counting them costs
- * no file its round trip today; a file that sets one is named in the measurement
- * rather than losing the field quietly.
+ * Four more fields hold lists, and each is written as a text column rather than
+ * counted: AveragingData becomes eight columns, and ProhibitedExpiries,
+ * FutureContinuationMappings and OptionContinuationMappings become one text
+ * column each, holding comma-separated dates and from:to pairs. A column is a
+ * weaker home than a table, and it is what keeps the field in the element's
+ * round trip rather than excluding the file from it.
  */
 
 create table if not exists "ores_refdata_commodity_future_conventions_tbl" (
@@ -91,6 +91,17 @@ create table if not exists "ores_refdata_commodity_future_conventions_tbl" (
     "balance_of_the_month" boolean null,
     "balance_of_the_month_pricing_calendar" text null,
     "option_underlying_future_convention" text null,
+    "averaging_commodity_name" text null,
+    "averaging_period" text null,
+    "averaging_pricing_calendar" text null,
+    "averaging_conventions" text null,
+    "averaging_use_business_days" boolean null,
+    "averaging_delivery_roll_days" integer null,
+    "averaging_future_month_offset" integer null,
+    "averaging_daily_expiry_offset" integer null,
+    "prohibited_expiries" text null,
+    "future_continuation_mappings" text null,
+    "option_continuation_mappings" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,

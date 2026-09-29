@@ -85,6 +85,17 @@ struct commodity_future_convention_entity {
     std::optional<bool> balance_of_the_month;
     std::optional<std::string> balance_of_the_month_pricing_calendar;
     std::optional<std::string> option_underlying_future_convention;
+    std::optional<std::string> averaging_commodity_name;
+    std::optional<std::string> averaging_period;
+    std::optional<std::string> averaging_pricing_calendar;
+    std::optional<std::string> averaging_conventions;
+    std::optional<bool> averaging_use_business_days;
+    std::optional<int> averaging_delivery_roll_days;
+    std::optional<int> averaging_future_month_offset;
+    std::optional<int> averaging_daily_expiry_offset;
+    std::optional<std::string> prohibited_expiries;
+    std::optional<std::string> future_continuation_mappings;
+    std::optional<std::string> option_continuation_mappings;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

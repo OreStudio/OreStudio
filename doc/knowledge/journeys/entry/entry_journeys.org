@@ -1,29 +1,26 @@
 :PROPERTIES:
 :ID: 504863AB-C45A-47E8-BB77-AADCB620A305
 :END:
-#+title: Entry Journeys: Server-Side Target State
-#+description: How the server handles sign in and sign up: the layers, the interactions, the refusals, where the state lives, and the branch each journey takes.
+#+title: The entry journeys
+#+description: The end-to-end path through the door: what the deployment offers before anybody types, the order in which a sign-in is refused, and the branch a registration takes.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:security:identity:journeys:entry:
+#+filetags: :knowledge:security:identity:journeys:entry:
 #+created: 2026-09-29
 #+updated: 2026-09-29
 
-* Summary
+Signing in and signing up are two conversations with one door, and almost all of
+the work behind them is the server's. This note traces both: which layer owns
+what, the order in which the server refuses a sign-in, the branch a registration
+takes, the code each refusal carries, and where every piece of state lives. It
+states the design the implementation is built to; the policy those interactions
+carry out is in
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]], and the survey both answer
+to is [[id:9700E01F-B582-4984-AF2F-81E2BA880544][analysing the sign-up process]].
 
-[[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] and [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] are two conversations with one
-door, and almost all of the work behind them is the server's. This page is the
-target state for that work: which layer owns what, the order in which the server
-refuses a sign-in, the branch a registration takes, the code each refusal
-carries, and where every piece of state lives.
+* Detail
 
-It is the companion to [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]], which settles
-the *policy*: the default tenant, party and role, the pending state, and the
-switch. This page settles the *interaction* — how a request reaches those
-decisions and what comes back. The survey both answer to is
-[[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]].
-
-* The layers, and what each one owns
+** The layers, and what each one owns
 
 | Layer | What it is | What it owns |
 |-------+------------+--------------|
@@ -35,7 +32,7 @@ decisions and what comes back. The survey both answer to is
 | The authorization service | Roles and assignments | Granting the nominated role at registration, and the role assignments the access journeys read. |
 | PostgreSQL, with RLS | Tenant and party isolation, and the settings | The account, login record, session and account-party rows; the settings; and the flags the defaults live on. |
 
-* Where the state lives
+** Where the state lives
 
 | State | Home | Survives a reload |
 |-------+------+-------------------|
@@ -50,96 +47,78 @@ The browser holds no truth about the session. That is why a screen that needs to
 know asks the BFF, and why the door can be re-entered by a person who has not
 signed in at all.
 
-* The door asks the policy before it asks for anything
+** The door asks the policy before it asks for anything
 
 The one unauthenticated read the door makes. It answers the switch, the
 destination and whether a registration can be used at once, so the screen knows
 whether to offer a form before anybody types.
 
-#+caption: Registration: what the deployment offers the door.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/entry_registration_policy_sequence.png]]
+#+caption: What the deployment offers the door: the policy read that answers the switch, the destination, the defaults and whether a registration can be used at once.
+[[proj:doc/knowledge/journeys/entry/entry_registration_policy_sequence.png]]
 
-Source: [[./entry_registration_policy_sequence.puml][=entry_registration_policy_sequence.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/entry_registration_policy_sequence.puml=.
+Source: [[proj:doc/knowledge/journeys/entry/entry_registration_policy_sequence.puml][=entry_registration_policy_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/journeys/entry/entry_registration_policy_sequence.puml=.
 
 The read is separate from =iam.v1.bootstrap.status=. The bootstrap read answers
 whether the deployment has been set up; this one answers what it offers a person
 who is not in it yet, and they change for different reasons.
 
-* Sign in
+** Sign in
 
-The server's order is the screen's order, and it is deliberate: the lock is
-tested before the password, the account's state before the party, and the party
-before the workspace. Each branch is a refusal the screen states in its own
-words, which is why the reply carries a code.
+#+caption: Sign in: the credentials form, the tenant resolved from the address, the credential check, the branch on the account's state and its parties, the session, and the party picker.
+[[proj:doc/knowledge/journeys/entry/entry_sign_in_sequence.png]]
 
-#+caption: Sign in: the door to the session.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/entry_sign_in_sequence.png]]
+Source: [[proj:doc/knowledge/journeys/entry/entry_sign_in_sequence.puml][=entry_sign_in_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/journeys/entry/entry_sign_in_sequence.puml=.
 
-Source: [[./entry_sign_in_sequence.puml][=entry_sign_in_sequence.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/entry_sign_in_sequence.puml=.
+The order the server refuses in is the screen's order, and it is deliberate. A
+locked account is tested before the password, so a correct password does not open
+it and the person is told what is actually wrong. A wrong password is refused
+after the counter is incremented, and the counter locks the account at five; the
+reply does not say how many attempts remain, so the screen cannot leak the
+counter to somebody guessing. A pending account is refused next: that branch is
+new, and it is the state a registration leaves when its tenant nominates no
+default party. An account with no association at all is refused after that, and
+the refusal asks the person to contact an administrator.
 
-** The order of the branch
-
-1. *A locked account is refused first,* before the password is compared, so a
-   correct password does not open it and the person is told what is actually
-   wrong.
-2. *A wrong password is refused* after the counter is incremented, and the
-   counter locks the account at five. The reply does not say how many attempts
-   remain, so the screen cannot leak the counter to somebody guessing.
-3. *A pending account is refused* with its own code. This branch is new: it is
-   the state a registration leaves when its tenant nominates no default party.
-4. *An account with no association at all* is refused, and the refusal asks the
-   person to contact an administrator.
-5. *Exactly one party is bound without asking,* and the token carries it,
-   together with the visible party set that party-level RLS reads.
-6. *Several parties return a short-lived token* that can do nothing but choose
-   one. The reply names each party and marks the stored default.
+One party is bound without asking, and the token carries it together with the
+visible party set that party-level RLS reads. Several parties return a
+short-lived token that can do nothing but choose one, and the reply names each
+party and marks the stored default.
 
 Nothing here holds server state beyond the session row and the login record, so
 the journey keeps no state of its own. A person who closes the page and comes
 back starts a new session rather than resuming the old one.
 
-** The two clients reach the same subject
+** Sign up
 
-The =ores.shell= drives the same subjects, so a screen-only change here is a
-change to one caller and not to the capability. What differs is who resolves the
-tenant: the browser's address does it, and the shell states it.
+#+caption: Sign up: the gate read before anything is created, the tenant resolved from the address or the flagged default, the validation, the role, and the two endings, an active account with a party or a pending one without.
+[[proj:doc/knowledge/journeys/entry/entry_sign_up_sequence.png]]
 
-* Sign up
+Source: [[proj:doc/knowledge/journeys/entry/entry_sign_up_sequence.puml][=entry_sign_up_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/journeys/entry/entry_sign_up_sequence.puml=.
 
-Registration is the one path where an unauthenticated caller creates a row, so
-it reads its own gate first and refuses before it writes anything.
-
-#+caption: Sign up: an account that works, or an account that waits.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/entry_sign_up_sequence.png]]
-
-Source: [[./entry_sign_up_sequence.puml][=entry_sign_up_sequence.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/entry_sign_up_sequence.puml=.
-
-Three properties are worth stating plainly, because each is the opposite of what
-the code does today:
+Registration is the one path where an unauthenticated caller creates a row, so it
+reads its own gate first and refuses before it writes anything. Three properties
+are worth stating plainly, because each is the opposite of what the code does
+today:
 
 - *The gate is read before anything is created.* The switch is the deployment's,
   read at system scope, and it is seeded =false=; a deployment nobody has asked
   refuses registration. Today the live path reads neither flag, so the switch is
   advisory and the door is open.
-- *The tenant is resolved, never assumed.* The address names it; failing that
-  the flagged default tenant does; failing both, the registration is refused
-  with =no_registration_destination= rather than landing in the system tenant by
+- *The tenant is resolved, never assumed.* The address names it; failing that the
+  flagged default tenant does; failing both, the registration is refused with
+  =no_registration_destination= rather than landing in the system tenant by
   omission.
-- *The account's state is written, not inferred.* A tenant that nominates a
-  party gets an active account with the association. One that does not gets a
-  =pending= account, which the roster can find and the door refuses with
-  =account_pending=.
+- *The account's state is written, not inferred.* A tenant that nominates a party
+  gets an active account with the association. One that does not gets a =pending=
+  account, which the roster can find and the door refuses with =account_pending=.
 
 The person is never signed in by the registration. A pending account cannot open
 a session, and an active one should arrive at the door deliberately.
 
-* The refusal codes
+** The refusal codes
 
 A refusal is a value the screen branches on, not a sentence it matches. Both
 Entry responses carry =error_code=, drawn from the existing error-code
@@ -165,10 +144,10 @@ vocabulary where it already fits.
 The message stays for a human and may change; the code is the contract. A screen
 that branches on the message breaks the first time a sentence is improved.
 
-* What this changes
+** What this note commits the implementation to
 
-The change table is [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]]. Read against
-this page, the parts that touch the interaction are:
+The change table is [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]]. Read against this
+page, the parts that touch the interaction are:
 
 - =iam.v1.auth.registration-policy= is a new read, and the door asks it first.
 - =iam.v1.auth.signup= gains the flag reads, the tenant resolution, the status
@@ -178,19 +157,19 @@ this page, the parts that touch the interaction are:
 - The BFF gains two routes, =GET /api/registration-policy= and
   =POST /api/signup=, the second under the same limiter family as the first, and
   forwards the hostname on both Entry paths.
-- The wire protocol gains the exports and the operation entries those calls
-  need. It has the sign-up schemas generated already; the browser cannot reach
-  them.
+- The wire protocol gains the exports and the operation entries those calls need.
+  It has the sign-up schemas generated already; the browser cannot reach them.
 - Every Entry dialog carries the [[id:7B32CA43-239F-4553-8849-3FA3F499B254][rail and the splash header]], and the
   registration door is drawn on =JourneyPage= rather than on a rail of its own.
 
 * See also
 
-- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — the policy this page's interactions carry out.
-- [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] and [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the journeys.
-- [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] — the survey, and the two defects these flows correct.
+- [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry journeys]] — the group this page belongs to.
+- [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] and [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the journeys themselves.
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]] — the policy these interactions carry out.
+- [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analysing the sign-up process]] — the survey, and the two defects these flows correct.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how a pre-authentication request resolves its tenant.
 - [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — the party branch, and the visible party set the token carries.
 - [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — where a journey that does wait on somebody keeps its state.
 - [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] and [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]] — the subjects whose replies gain a code.
-- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster this page belongs to.
+- [[https://plantuml.com/sequence-diagram][PlantUML sequence diagrams]] — the notation the three diagrams use.

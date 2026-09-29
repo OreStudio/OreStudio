@@ -47,7 +47,7 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 | [[id:54E60E3F-797A-4DF1-AD5A-0A30A35163D9][Take the registration defaults into the setup journeys]] | DONE | | 2026-09-29 | Record that the Setup journeys own the registration defaults: First run states the switch and confirms the default tenant, its first sign-in nominates the party and role, and New tenant and New party ask the same questions. |
 | [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Use one rail and one splash header on every setup screen]] | BACKLOG | | | Draw the setup journeys, the registration door and the sign-in dialog on the same rail and the same splash header, so every screen that sets something up looks like the same product. |
 | [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] | BACKLOG | | | Document how a person asks for roles beyond the default one registration gives them, as its own journey in the Access group, separate from sign up. |
-| [[id:A7881424-279D-4E8F-8C4E-5B9B89C25529][Document the Entry journeys' server-side target state]] | DONE | | 2026-09-29 | Write the architecture page that explains how the server handles sign in and sign up, with interaction diagrams for the policy read, the sign-in branch and the registration branch. |
+| [[id:A7881424-279D-4E8F-8C4E-5B9B89C25529][Document the entry journeys' server side]] | DONE | | 2026-09-29 | Write the page that traces how the server handles sign in and sign up, with an interaction diagram for the policy read, the sign-in branch and the registration branch. |
 
 * Decisions
 
@@ -71,7 +71,7 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 | Document | Kind | Purpose |
 |----------+------+---------|
 | [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] | knowledge | The target state for the policy: where a registration lands, what it receives, and who may change each. |
-| [[id:504863AB-C45A-47E8-BB77-AADCB620A305][Entry Journeys: Server-Side Target State]] | knowledge | The target state for the interaction: the layers, the branch order, the refusal codes and the state, with a sequence diagram per interaction. |
+| [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] | knowledge | The server side of both journeys, in the shape and beside the documents of the tenant provisioning journey: the layers, the order a sign-in is refused in, the refusal codes and the state, with a sequence diagram per interaction. |
 | [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] | investigation | The survey the target state answers: what exists, and the two defects it found. |
 | [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] | user_journey | The two journeys this story implements. |
 | [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | user_journey | The setup journeys that now carry the registration defaults this story depends on. |

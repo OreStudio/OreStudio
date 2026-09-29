@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: A7881424-279D-4E8F-8C4E-5B9B89C25529
 :END:
-#+title: Task: Document the Entry journeys' server-side target state
-#+description: Write the architecture page that explains how the server handles sign in and sign up, with interaction diagrams for the policy read, the sign-in branch and the registration branch.
+#+title: Task: Document the entry journeys' server side
+#+description: Write the page that traces how the server handles sign in and sign up, with an interaction diagram for the policy read, the sign-in branch and the registration branch.
 #+type: task
 #+level: s1
-#+filetags: :web:iam:journeys:entry:architecture:v0:sprint_26:implement-entry-journeys:
+#+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
 +#+branch: feature/implement-entry-journeys
 +#+pr:
@@ -55,7 +55,7 @@ An architecture page that explains the server side of the two Entry journeys, wi
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Interaction diagrams | 3 | =ls doc/knowledge/architecture/entry_*_sequence.puml= | =3e39fc8337= |
+| Interaction diagrams | 3 | =ls doc/knowledge/journeys/entry/entry_*_sequence.puml= | =3e39fc8337= |
 | Refusal codes | 13 | the page's codes table | =3e39fc8337= |
 | Layers the page names | 7 | the page's layers table | =3e39fc8337= |
 
@@ -90,9 +90,8 @@ via its "Verifies task" field.
 
 * Result
 
-[[id:504863AB-C45A-47E8-BB77-AADCB620A305][Entry Journeys: Server-Side Target State]] is the page, at =doc/knowledge/architecture/=. It carries three sequence diagrams, each with its =.puml= source beside it: the door's policy read, sign in with its six-branch order, and sign up with the gate, the destination and the two endings.
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] is the page, at =doc/knowledge/journeys/entry/=. It is named and shaped like its first-steps counterpart, [[id:4327303A-B544-47D8-B641-A57D3F6D4974][the tenant provisioning journey]]: a lede paragraph, one detail section per part of the path, a captioned diagram per interaction with its source beside it, and a See also. It carries three sequence diagrams, each with its =.puml= source beside it: the door's policy read, sign in with its six-branch order, and sign up with the gate, the destination and the two endings.
 
 Two tables carry the weight. *Where the state lives* names each piece of state and what survives a reload, which is what makes the browser's cookie and the BFF's session map distinguishable from the server's session row. *The refusal codes* collects all thirteen codes the two subjects can answer with, so a screen branches on a value and not on a sentence.
 
 The page states plainly which of its flows do not exist yet: the live sign-up path reads no flag, a registration that resolves to no tenant lands in the system tenant, and neither response carries a code. Those are the first implementation tasks, and the diagrams are drawn to the target rather than to what runs today.
-#+environment: swift_curie

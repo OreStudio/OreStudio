@@ -98,8 +98,11 @@ struct market_series final {
     std::string qualifier;
 
     /**
-     * @brief The oresmd identifier this series is, written as a URI: the canonical form of the key
-     * or the index name the row arrived under, and the identity the series is meant to be read by.
+     * @brief The oresmd identifier this series is, written as a URI: the canonical form of the
+     * key's series part -- the key without the point the observation at hand carries -- or the
+     * index name the row arrived under, and the identity the series is meant to be read by. The
+     * point belongs to the observation rows beneath this one, so a series with two points carries
+     * one identity rather than the identity of whichever point arrived first.
      *
      * Nullable, and not yet the natural key, because the triple above still keys the row: the
      * cutover that deletes series_type, metric and qualifier is what makes this not null and

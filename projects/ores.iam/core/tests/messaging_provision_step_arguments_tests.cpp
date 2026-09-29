@@ -289,6 +289,31 @@ TEST_CASE("a publish step whose parameter reference is not closed is refused", t
         "its braces.");
 }
 
+TEST_CASE("a publish step fills every reference a dataset names", tags) {
+    const std::vector<ores::iam::workflow::provision_tenant_parameter> given{
+        {.name = "counterparty_size", .value = "large"},
+        {.name = "office", .value = "uk"}};
+
+    const auto arguments = parse_publish_bundle_arguments(
+        R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "acme.{office}.accounts"]})",
+        given);
+
+    CHECK(arguments.opted_in_datasets ==
+          std::vector<std::string>{"gleif.lei_counterparties.large", "acme.uk.accounts"});
+}
+
+TEST_CASE("a publish step whose braces name no parameter is refused", tags) {
+    // A brace that is not a reference has nothing to resolve, so it is refused
+    // rather than published as written: a dataset code with a stray brace in it
+    // is a profile row that will never publish anything.
+    CHECK_THROWS_WITH(
+        parse_publish_bundle_arguments(
+            R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{}"]})",
+            parameters("counterparty_size", "small")),
+        "The step's argument 'gleif.lei_counterparties.{}' names the parameter '', which the run "
+        "supplies no value for.");
+}
+
 TEST_CASE("a party step that names no party acts on every party the tenant holds", tags) {
     const auto arguments = parse_provision_party_arguments(R"({"bundles": ["party_essentials"]})");
 

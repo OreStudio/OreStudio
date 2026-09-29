@@ -404,7 +404,12 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        if (!has_permission(*ctx_expected, "iam::tenants:create")) {
+        // Starting a party's provisioning run is a party-level capability and
+        // not a tenant-level one: a tenant administrator runs it in the tenant
+        // they already work in, and reaching for the verb that creates tenants
+        // would have made every caller who may provision a party into a caller
+        // who may create a tenant.
+        if (!has_permission(*ctx_expected, "iam::parties:provision")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -485,17 +490,43 @@ public:
             // The tenant every step acts on is the caller's own: a party is a
             // tenant's, and the request reaches the party through the tenant the
             // session is already in.
+            // The party the request names: its identifier when it is one, and
+            // its exact full name when it is not. The reference is parsed here
+            // rather than compared as text, so both spellings of one identifier
+            // reach the same row, which is what the step's own lookup does.
             auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id);
-            const auto found = execute_parameterized_string_query(
-                tenant_ctx,
-                "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
-                "AND valid_to = ores_utility_infinity_timestamp_fn() "
-                "AND (id::text = $2 OR full_name = $2)",
-                {tenant_id, req->party},
-                tenant_provisioning_handler_lg(),
-                "provision_party");
+            std::optional<boost::uuids::uuid> wanted_id;
+            try {
+                wanted_id = boost::lexical_cast<boost::uuids::uuid>(req->party);
+            } catch (const boost::bad_lexical_cast&) {
+            }
+            const auto found =
+                wanted_id ?
+                    execute_parameterized_string_query(
+                        tenant_ctx,
+                        "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
+                        "AND valid_to = ores_utility_infinity_timestamp_fn() AND id = $2::uuid",
+                        {tenant_id, boost::uuids::to_string(*wanted_id)},
+                        tenant_provisioning_handler_lg(),
+                        "provision_party") :
+                    execute_parameterized_string_query(
+                        tenant_ctx,
+                        "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
+                        "AND valid_to = ores_utility_infinity_timestamp_fn() "
+                        "AND full_name = $2",
+                        {tenant_id, req->party},
+                        tenant_provisioning_handler_lg(),
+                        "provision_party");
             if (found.empty()) {
                 refuse("The tenant holds no party named '" + req->party + "'.");
+                return;
+            }
+            // A legal name is not unique in the register, so two of a tenant's
+            // parties can share one. A run acts on one party, so a reference
+            // that names two is refused rather than guessed at.
+            if (found.size() > 1) {
+                refuse("The tenant holds more than one party named '" + req->party +
+                       "'; name it by its identifier.");
                 return;
             }
 
@@ -525,9 +556,12 @@ public:
 
             // The party is the step's own argument: a kind reads what it acts on
             // from its arguments, and the row that orders the kind is the one
-            // that says which bundles it acts with.
+            // that says which bundles it acts with. The identifier the refusal
+            // above resolved travels in the argument, so the step acts on the
+            // party this answer names rather than resolving the reference a
+            // second time and possibly reaching another row.
             auto arguments = detail::read_step_arguments(party_step->arguments_json);
-            arguments["party"] = req->party;
+            arguments["party"] = found.front();
             run.steps.push_back({party_step->step_kind, rfl::json::write(arguments)});
 
             boost::uuids::random_generator generate;
@@ -832,22 +866,7 @@ private:
                                          "'.");
             parties.push_back(std::move(*found));
         } else {
-            // Every party the tenant holds, one page at a time: a single page
-            // with a fixed limit would provision the first thousand and report
-            // success for the rest.
-            std::uint32_t offset = 0;
-            constexpr std::uint32_t page_size = 1000;
-            while (true) {
-                ores::refdata::messaging::list_parties_request request;
-                request.offset = offset;
-                request.limit = page_size;
-                const auto page = discover.request(request).parties;
-                for (const auto& party : page)
-                    parties.push_back(party);
-                if (page.size() < page_size)
-                    break;
-                offset += page_size;
-            }
+            parties = list_all_parties(discover);
         }
 
         std::vector<std::string> provisioned;
@@ -1110,14 +1129,32 @@ private:
         return std::nullopt;
     }
 
+    /// Every party the tenant holds, one page at a time. A single page with a
+    /// fixed limit would see the first thousand and report the rest missing.
+    static std::vector<ores::refdata::domain::party>
+    list_all_parties(internal_request_client& client) {
+        std::vector<ores::refdata::domain::party> parties;
+        std::uint32_t offset = 0;
+        constexpr std::uint32_t page_size = 1000;
+        while (true) {
+            ores::refdata::messaging::list_parties_request request;
+            request.offset = offset;
+            request.limit = page_size;
+            const auto page = client.request(request).parties;
+            for (const auto& party : page)
+                parties.push_back(party);
+            if (page.size() < page_size)
+                return parties;
+            offset += page_size;
+        }
+    }
+
     /// The party a reference names, by its identifier when it is one and by its
     /// exact full name when it is not.
     ///
     /// A person types the name they know a party by, and a script states the
     /// identifier it read; both reach the same party through one read, because
-    /// the party read is what answers either. Every page is read for the same
-    /// reason the tenant's own party step reads every page: the party somebody
-    /// names is not on any one page.
+    /// the party read is what answers either.
     static std::optional<ores::refdata::domain::party>
     resolve_party(internal_request_client& client, const std::string& reference) {
         std::optional<boost::uuids::uuid> wanted_id;
@@ -1126,21 +1163,19 @@ private:
         } catch (const boost::bad_lexical_cast&) {
         }
 
-        std::uint32_t offset = 0;
-        constexpr std::uint32_t page_size = 1000;
-        while (true) {
-            ores::refdata::messaging::list_parties_request req;
-            req.offset = offset;
-            req.limit = page_size;
-            const auto page = client.request(req).parties;
-            for (const auto& party : page) {
-                if (wanted_id ? party.id == *wanted_id : party.full_name == reference)
-                    return party;
-            }
-            if (page.size() < page_size)
-                return std::nullopt;
-            offset += page_size;
+        std::vector<ores::refdata::domain::party> matches;
+        for (const auto& party : list_all_parties(client)) {
+            if (wanted_id ? party.id == *wanted_id : party.full_name == reference)
+                matches.push_back(party);
         }
+        // A legal name is not unique, so a name that matches two parties is
+        // refused rather than guessed at: a step acts on one party.
+        if (matches.size() > 1)
+            throw std::runtime_error("The tenant holds more than one party named '" + reference +
+                                     "'; name it by its identifier.");
+        if (matches.empty())
+            return std::nullopt;
+        return matches.front();
     }
 
     // Starts every feed under the calling party's (client's) theme

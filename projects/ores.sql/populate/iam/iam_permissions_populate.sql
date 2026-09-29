@@ -67,6 +67,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:terminate', 'Terminate tenants');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:impersonate', 'Access other tenants');
 
+    -- Party provisioning: the party stage a tenant administrator runs inside the
+    -- tenant they already work in, which is a narrower act than creating one.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::parties:provision', 'Provision a party of the tenant the caller works in');
+
     -- System-level admin reset permissions (SuperAdmin only)
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::system:reset-tenant', 'Bootstrap-reset a tenant so provisioning wizards re-fire on next login');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::system:reset', 'Reset the entire system to pre-bootstrap state (purges all non-system tenants)');

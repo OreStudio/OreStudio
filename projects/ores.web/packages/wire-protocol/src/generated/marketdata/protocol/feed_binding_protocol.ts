@@ -29,13 +29,13 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface FeedBindingKey {
-    ore_key: string;
+    oresmd_uri: string;
 }
 
 export interface FeedBindingWrite {
     id: string;
     party_id: string;
-    ore_key: string;
+    oresmd_uri: string;
     source_name: string;
     asset_class: string;
     enabled: boolean;

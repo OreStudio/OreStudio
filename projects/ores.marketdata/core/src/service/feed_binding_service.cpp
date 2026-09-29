@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::feed_binding> read_one(repository::feed_binding_repository& repo,
                                            const ores::database::context& ctx,
                                            const messaging::feed_binding_key& key) {
-    return repo.read_latest_by_ore_key(ctx, key.ore_key);
+    return repo.read_latest_by_oresmd_uri(ctx, key.oresmd_uri);
 }
 
 /**
@@ -69,7 +69,7 @@ std::vector<domain::feed_binding> read_one(repository::feed_binding_repository& 
  */
 messaging::feed_binding_key key_from(const domain::feed_binding& v) {
     messaging::feed_binding_key key;
-    key.ore_key = v.ore_key;
+    key.oresmd_uri = v.oresmd_uri;
     return key;
 }
 
@@ -84,7 +84,7 @@ domain::feed_binding to_domain(const messaging::feed_binding_write& write) {
     domain::feed_binding v;
     v.id = write.id;
     v.party_id = write.party_id;
-    v.ore_key = write.ore_key;
+    v.oresmd_uri = write.oresmd_uri;
     v.source_name = write.source_name;
     v.asset_class = write.asset_class;
     v.enabled = write.enabled;
@@ -412,10 +412,10 @@ feed_binding_service::get_feed_binding(const boost::uuids::uuid& id) {
 }
 
 std::optional<domain::feed_binding>
-feed_binding_service::get_feed_binding_by_ore_key(const std::string& ore_key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting feed binding by ore_key: " << ore_key;
+feed_binding_service::get_feed_binding_by_oresmd_uri(const std::string& oresmd_uri) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting feed binding by oresmd_uri: " << oresmd_uri;
     messaging::feed_binding_key k;
-    k.ore_key = ore_key;
+    k.oresmd_uri = oresmd_uri;
     auto found = read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
@@ -470,13 +470,13 @@ feed_binding_service::get_feed_binding_history(const std::string& key) {
     // value the storage key never holds, and reports an entity that has a
     // history as having none.
     messaging::feed_binding_key k;
-    k.ore_key = key;
+    k.oresmd_uri = key;
     // A delete here closes the transaction-time window and leaves every version
     // in place, so resolving through a latest read would lose the history at
     // exactly the moment it is wanted. This takes the newest row carrying the
     // declared key whether or not it is still current, which for a record that
     // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_ore_key(ctx_, k.ore_key);
+    const auto found = repo_.read_any_by_oresmd_uri(ctx_, k.oresmd_uri);
     if (found.empty())
         return {};
     const auto& row = found.front();

@@ -145,6 +145,10 @@ private:
 
     struct feed_stats {
         std::string series_identity;
+        /// The ORE key the identity projects back to, projected once when the
+        /// binding is first seen rather than per tick. Empty for a binding whose
+        /// identity projects to no key, which the loop drops ticks for.
+        std::string ore_key;
         std::string nats_subject;
         std::string publish_subject;
         std::atomic<std::uint64_t> tick_count{0};

@@ -33,8 +33,8 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic
- * producer channel (source_name); enables/disables the ingest loop subscription.
+ * @brief Persisted mapping that binds an official ORE market series, by its oresmd identity, to one
+ * raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
  *
  * A feed binding records which raw producer channel feeds an official market
  * series, in which workspace. The marketdata service reads all enabled bindings
@@ -42,7 +42,8 @@ namespace ores::marketdata::domain {
  * (tenant, party, workspace), persists each arriving tick as a
  * market_observation under the binding's party, and republishes on the
  * per-party realtime stream
- * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>.
+ * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, whose key the
+ * binding's identity projects back to.
  *
  * workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
  * which resolves in every tenant. It is the seam where the future workspaces
@@ -104,9 +105,13 @@ struct feed_binding final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief Official ORE market data key for the series being bound (e.g. FX/RATE/EUR/USD).
+     * @brief The oresmd identity of the series being bound: the same identity the tick's key
+     * projects to and the market_series row the ticks land under carries, so a binding names a
+     * series by what it is rather than by a spelling the ingest loop then has to decompose. The
+     * loop projects it back to the ORE key for the subject it republishes under, which is why the
+     * binding can carry the identity alone.
      */
-    std::string ore_key;
+    std::string oresmd_uri;
 
     /**
      * @brief Unique producer identity; the subject suffix of the producer's

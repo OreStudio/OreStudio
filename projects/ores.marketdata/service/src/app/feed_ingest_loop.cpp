@@ -85,6 +85,21 @@ ores::marketdata::core::market_series_key parse_ore_key(const std::string& ore_k
     return *kp;
 }
 
+// A binding names its series by the identity, and the loop needs the ORE key for two
+// things: the subject it republishes the tick under, and the registry's decomposition
+// the observation is filed by. The identity projects back to that key, and nullopt
+// means the binding holds something the grammar cannot read -- an identity for a
+// fixing, say, which has no quote key, or a string that is not an oresmd URI at all.
+std::optional<std::string> ore_key_from_identity(const std::string& oresmd_uri) {
+    namespace core = ores::marketdata::core;
+    try {
+        const auto identifier = core::oresmd_parser::parse(domain::oresmd_uri{oresmd_uri});
+        return core::oresmd_projections::to_quote_key(identifier);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
+
 } // namespace
 
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
@@ -143,11 +158,19 @@ void feed_ingest_loop::refresh() {
             auto& st = kept[key];
             st = (it != fx_stats_.end()) ? it->second : std::make_shared<feed_stats>();
             if (st->series_identity.empty()) {
-                st->series_identity = b.ore_key;
+                const auto ore_key = ore_key_from_identity(b.oresmd_uri);
+                st->series_identity = b.oresmd_uri;
+                st->ore_key = ore_key ? *ore_key : std::string{};
                 st->nats_subject = ores::marketdata::domain::synthetic_tick_subject(
                     ores::marketdata::domain::fx_spot_kind_token, source_name);
-                st->publish_subject = ore_key_to_publish_subject(
-                    key.tenant_id, key.workspace_id, key.party_id, b.ore_key);
+                st->publish_subject =
+                    ore_key ? ore_key_to_publish_subject(
+                                  key.tenant_id, key.workspace_id, key.party_id, *ore_key) :
+                              std::string{};
+                if (!ore_key)
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Binding for source '" << source_name << "' names " << b.oresmd_uri
+                        << ", which projects to no ORE key to republish under";
             }
         }
     }
@@ -182,28 +205,46 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                                                 b.tenant_id.to_string(),
                                                 boost::uuids::to_string(b.party_id),
                                                 boost::uuids::to_string(b.workspace_id)};
-        const std::string publish_subject =
-            ore_key_to_publish_subject(key.tenant_id, key.workspace_id, key.party_id, b.ore_key);
-
         const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
         std::uint64_t prev_count = 0;
+        // The key the identity projects to is what the republished subject and the
+        // registry's decomposition are built from, and it is projected when the
+        // binding's stats entry is made rather than once per tick. A binding whose
+        // identity projects to no key keeps an empty one and is skipped whole, so
+        // no tick is republished under a subject nothing can address; refresh()
+        // reports it once, and this path reports a binding it is the first to see.
+        std::string ore_key;
+        std::string publish_subject;
         {
             std::lock_guard lock(mu_);
             auto& st = fx_stats_[key];
             if (!st) {
                 st = std::make_shared<feed_stats>();
-                st->series_identity = b.ore_key;
+                const auto projected = ore_key_from_identity(b.oresmd_uri);
+                st->series_identity = b.oresmd_uri;
+                st->ore_key = projected ? *projected : std::string{};
                 st->nats_subject = ores::marketdata::domain::synthetic_tick_subject(
                     ores::marketdata::domain::fx_spot_kind_token, source_name);
-                st->publish_subject = publish_subject;
+                st->publish_subject =
+                    projected ? ore_key_to_publish_subject(
+                                    key.tenant_id, key.workspace_id, key.party_id, *projected) :
+                                std::string{};
+                if (!projected)
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Binding for source '" << source_name << "' names " << b.oresmd_uri
+                        << ", which projects to no ORE key to republish under";
             }
+            ore_key = st->ore_key;
+            publish_subject = st->publish_subject;
             prev_count = st->tick_count.fetch_add(1, std::memory_order_relaxed);
             st->last_tick_rep.store(now_rep, std::memory_order_relaxed);
         }
+        if (ore_key.empty())
+            continue;
 
         if (prev_count == 0) {
-            BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: source='" << b.ore_key << "' subject='"
-                                      << publish_subject << "' mid=" << tick->mid;
+            BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: source='" << b.oresmd_uri
+                                      << "' subject='" << publish_subject << "' mid=" << tick->mid;
         }
 
         // Persist the observation; the republish below is gated on this
@@ -211,7 +252,7 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
         // observations table.
         bool persisted = false;
         try {
-            const auto kp = parse_ore_key(b.ore_key);
+            const auto kp = parse_ore_key(ore_key);
             // The subclass is spot by construction of the fx_spot producer
             // kind. The point is left to the series type's own answer, which
             // is SPOT for FX.
@@ -229,7 +270,7 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                                                  {});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
-                << "Failed to persist observation for " << b.ore_key << ": " << e.what();
+                << "Failed to persist observation for " << b.oresmd_uri << ": " << e.what();
         }
 
         // Offer the tick to the CRM as a candidate driver update,
@@ -244,7 +285,7 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
         // FX-shaped, so the bridge is an fx_spot concern only.
         if (crm_bridge_) {
             try {
-                const auto kp = parse_ore_key(b.ore_key);
+                const auto kp = parse_ore_key(ore_key);
                 if (kp.series_type == "FX" && kp.metric == "RATE") {
                     const auto slash = kp.qualifier.find('/');
                     if (slash != std::string::npos) {
@@ -257,7 +298,7 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn)
-                    << "CRM update failed for " << b.ore_key << ": " << e.what();
+                    << "CRM update failed for " << b.oresmd_uri << ": " << e.what();
             }
         }
 

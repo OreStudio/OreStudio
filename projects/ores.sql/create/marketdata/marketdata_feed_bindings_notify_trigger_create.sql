@@ -29,13 +29,13 @@ declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_ore_key text;
+    changed_oresmd_uri text;
     changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_ore_key := OLD.ore_key;
+        changed_oresmd_uri := OLD.oresmd_uri;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
@@ -53,11 +53,11 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_ore_key := NEW.ore_key;
+        changed_oresmd_uri := NEW.oresmd_uri;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
-    changed_key := jsonb_build_object('ore_key', changed_ore_key);
+    changed_key := jsonb_build_object('oresmd_uri', changed_oresmd_uri);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,

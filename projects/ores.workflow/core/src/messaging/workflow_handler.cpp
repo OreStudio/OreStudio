@@ -181,10 +181,10 @@ void workflow_handler::retry_instance(ores::nats::message msg) {
         resp.message = outcome.reason;
         resp.step_index = outcome.step_index;
         resp.step_name = outcome.step_name;
-        BOOST_LOG_SEV(lg(), info)
-            << "retry_instance " << (outcome.resumed ? "resumed" : "refused")
-            << " workflow=" << req->workflow_instance_id
-            << (outcome.resumed ? " step=" + outcome.step_name : " reason=" + outcome.reason);
+        BOOST_LOG_SEV(lg(), info) << "retry_instance " << (outcome.resumed ? "resumed" : "refused")
+                                  << " workflow=" << req->workflow_instance_id
+                                  << (outcome.resumed ? " step=" + outcome.step_name :
+                                                        " reason=" + outcome.reason);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
         resp.success = false;

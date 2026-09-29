@@ -1234,17 +1234,16 @@ private:
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
-        wf.complete(rfl::json::write(provision_step_result{
-            .kind = command.kind, .parties = parties, .images = images}));
+        wf.complete(rfl::json::write(
+            provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
     /// Publishes the configuration bundles against the tenant's system party,
     /// binds every party the tenant holds to the theme the step names, and
     /// starts that theme's feeds.
-    void start_market_feeds_step(
-        const ores::service::messaging::workflow_step_context& wf,
-        const ores::iam::workflow::provision_tenant_step_command& command,
-        const step_actor& actor) {
+    void start_market_feeds_step(const ores::service::messaging::workflow_step_context& wf,
+                                 const ores::iam::workflow::provision_tenant_step_command& command,
+                                 const step_actor& actor) {
         const auto arguments = parse_market_feed_arguments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
@@ -1254,17 +1253,14 @@ private:
             throw std::runtime_error(
                 "The tenant holds no system party to publish its market configuration against.");
 
-        auto system_client = make_step_client(
-            command.tenant_id, actor.account_id, system_party->id, actor.username);
+        auto system_client =
+            make_step_client(command.tenant_id, actor.account_id, system_party->id, actor.username);
         dq::messaging::publish_bundle_params params;
         params.party_id = boost::uuids::to_string(system_party->id);
         const auto params_json = dq::messaging::build_params_json(params);
         for (const auto& bundle_code : arguments.bundles)
-            publish_bundle_or_throw(system_client,
-                                    bundle_code,
-                                    actor.username,
-                                    params_json,
-                                    system_party->full_name);
+            publish_bundle_or_throw(
+                system_client, bundle_code, actor.username, params_json, system_party->full_name);
 
         // Every party the tenant holds consumes the shared stream through its
         // own bindings, which is how the consistent world reaches each party.
@@ -1292,8 +1288,7 @@ private:
         }
 
         if (!start_synthetic_theme_feeds(system_client, arguments.theme))
-            throw std::runtime_error("The theme '" + arguments.theme +
-                                     "' feeds were not started.");
+            throw std::runtime_error("The theme '" + arguments.theme + "' feeds were not started.");
 
         wf.complete(rfl::json::write(provision_step_result{.kind = command.kind,
                                                            .bundles = arguments.bundles,

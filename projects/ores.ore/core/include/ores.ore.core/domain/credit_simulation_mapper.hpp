@@ -116,8 +116,9 @@ public:
  * @param path Prefixed to the message, so a caller walking a corpus can say
  * which file disagreed
  */
-ORES_ORE_CORE_EXPORT std::string credit_simulation_difference(
-    const creditsimulation& original, const creditsimulation& exported, const std::string& path);
+ORES_ORE_CORE_EXPORT std::string credit_simulation_difference(const creditsimulation& original,
+                                                              const creditsimulation& exported,
+                                                              const std::string& path);
 
 }
 

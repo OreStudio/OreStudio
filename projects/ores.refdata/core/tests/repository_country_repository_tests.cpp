@@ -74,9 +74,8 @@ TEST_CASE("write_multiple_countries", tags) {
 
     const auto read_countries = repo.read_latest(h.context());
     for (const auto& written : countries) {
-        const auto it = std::ranges::find_if(read_countries, [&](const country& c) {
-            return c.alpha2_code == written.alpha2_code;
-        });
+        const auto it = std::ranges::find_if(
+            read_countries, [&](const country& c) { return c.alpha2_code == written.alpha2_code; });
         REQUIRE(it != read_countries.end());
         CHECK(it->name == written.name);
     }

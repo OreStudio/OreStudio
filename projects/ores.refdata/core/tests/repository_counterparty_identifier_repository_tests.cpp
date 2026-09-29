@@ -28,9 +28,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -94,9 +94,8 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     const auto read_counterparty_identifiers = repo.read_latest(h.context());
     for (const auto& written : counterparty_identifiers) {
         const auto it = std::ranges::find_if(
-            read_counterparty_identifiers, [&](const counterparty_identifier& c) {
-                return c.id == written.id;
-            });
+            read_counterparty_identifiers,
+            [&](const counterparty_identifier& c) { return c.id == written.id; });
         REQUIRE(it != read_counterparty_identifiers.end());
         CHECK(it->id_value == written.id_value);
     }
@@ -128,9 +127,8 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
 
     for (const auto& written : written_counterparty_identifiers) {
         const auto it = std::ranges::find_if(
-            read_counterparty_identifiers, [&](const counterparty_identifier& c) {
-                return c.id == written.id;
-            });
+            read_counterparty_identifiers,
+            [&](const counterparty_identifier& c) { return c.id == written.id; });
         REQUIRE(it != read_counterparty_identifiers.end());
         CHECK(it->id_value == written.id_value);
     }
@@ -193,9 +191,10 @@ TEST_CASE("read_nonexistent_counterparty_identifier_id", tags) {
         repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
-    const auto answered_with_another_key = std::ranges::any_of(
-        read_counterparty_identifiers,
-        [&](const counterparty_identifier& c) { return c.id == nonexistent_id; });
+    const auto answered_with_another_key =
+        std::ranges::any_of(read_counterparty_identifiers, [&](const counterparty_identifier& c) {
+            return c.id == nonexistent_id;
+        });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the key that was written.

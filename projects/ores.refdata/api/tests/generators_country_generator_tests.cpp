@@ -47,16 +47,14 @@ TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
 
     CHECK(countries.size() == 50);
 
-    const auto first = std::ranges::find_if(countries, [](const auto& c) {
-        return c.alpha2_code == "AL";
-    });
+    const auto first =
+        std::ranges::find_if(countries, [](const auto& c) { return c.alpha2_code == "AL"; });
     REQUIRE(first != countries.end());
     CHECK(first->name == "Aerilon");
     CHECK(first->official_name == "Republic of Aerilon");
 
-    const auto last = std::ranges::find_if(countries, [](const auto& c) {
-        return c.alpha2_code == "ZE";
-    });
+    const auto last =
+        std::ranges::find_if(countries, [](const auto& c) { return c.alpha2_code == "ZE"; });
     REQUIRE(last != countries.end());
     CHECK(last->name == "Zephyria");
     CHECK(last->numeric_code == "10050");
@@ -85,9 +83,8 @@ TEST_CASE("generate_fictional_countries_returns_all_when_count_exceeds_available
 
     CHECK(countries.size() == 50);
 
-    const auto last = std::ranges::find_if(countries, [](const auto& c) {
-        return c.alpha2_code == "ZE";
-    });
+    const auto last =
+        std::ranges::find_if(countries, [](const auto& c) { return c.alpha2_code == "ZE"; });
     REQUIRE(last != countries.end());
     CHECK(last->name == "Zephyria");
     CHECK(last->official_name == "Empire of Zephyria");

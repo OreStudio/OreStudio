@@ -29,9 +29,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -110,9 +110,8 @@ TEST_CASE("write_multiple_business_units", tags) {
 
     const auto rows = repo.read_latest(party_ctx);
     for (const auto& written : units) {
-        const auto it = std::ranges::find_if(rows, [&](const business_unit& b) {
-            return b.id == written.id;
-        });
+        const auto it =
+            std::ranges::find_if(rows, [&](const business_unit& b) { return b.id == written.id; });
         REQUIRE(it != rows.end());
         CHECK(it->unit_name == written.unit_name);
     }
@@ -138,9 +137,8 @@ TEST_CASE("read_latest_business_units", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read business units: " << read;
 
     for (const auto& expected : written) {
-        const auto it = std::ranges::find_if(read, [&](const business_unit& b) {
-            return b.id == expected.id;
-        });
+        const auto it =
+            std::ranges::find_if(read, [&](const business_unit& b) { return b.id == expected.id; });
         REQUIRE(it != read.end());
         CHECK(it->unit_name == expected.unit_name);
     }
@@ -166,9 +164,8 @@ TEST_CASE("read_latest_business_units_paginated", tags) {
 
     REQUIRE(page.size() == 2);
     for (const auto& row : page) {
-        const auto it = std::ranges::find_if(written, [&](const business_unit& b) {
-            return b.id == row.id;
-        });
+        const auto it =
+            std::ranges::find_if(written, [&](const business_unit& b) { return b.id == row.id; });
         REQUIRE(it != written.end());
         CHECK(row.unit_name == it->unit_name);
     }
@@ -244,15 +241,13 @@ TEST_CASE("read_all_business_unit_versions", tags) {
     auto all_versions = repo.read_all(party_ctx, id_str);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all_versions;
 
-    const auto v1 = std::ranges::find_if(all_versions, [](const business_unit& b) {
-        return b.version == 1;
-    });
+    const auto v1 =
+        std::ranges::find_if(all_versions, [](const business_unit& b) { return b.version == 1; });
     REQUIRE(v1 != all_versions.end());
     CHECK(v1->unit_name == original_name);
 
-    const auto v2 = std::ranges::find_if(all_versions, [](const business_unit& b) {
-        return b.version == 2;
-    });
+    const auto v2 =
+        std::ranges::find_if(all_versions, [](const business_unit& b) { return b.version == 2; });
     REQUIRE(v2 != all_versions.end());
     CHECK(v2->unit_name == original_name + " v2");
 }
@@ -315,8 +310,8 @@ TEST_CASE("remove_business_unit", tags) {
 
     // The removed row is gone from the read, and the same read still answers
     // for the row that was not removed.
-    const auto removed_still_present = std::ranges::any_of(
-        after_remove, [&](const business_unit& b) { return b.id == bu.id; });
+    const auto removed_still_present =
+        std::ranges::any_of(after_remove, [&](const business_unit& b) { return b.id == bu.id; });
     CHECK_FALSE(removed_still_present);
 
     const auto keeper_rows = repo.read_latest(party_ctx, boost::uuids::to_string(keeper.id));
@@ -354,8 +349,8 @@ TEST_CASE("remove_multiple_business_units", tags) {
     // Each removed row is gone from the read.
     for (const auto& id_str : ids) {
         auto after_remove = repo.read_latest(party_ctx, id_str);
-        const auto removed_still_present = std::ranges::any_of(
-            after_remove, [&](const business_unit& b) {
+        const auto removed_still_present =
+            std::ranges::any_of(after_remove, [&](const business_unit& b) {
                 return boost::uuids::to_string(b.id) == id_str;
             });
         CHECK_FALSE(removed_still_present);

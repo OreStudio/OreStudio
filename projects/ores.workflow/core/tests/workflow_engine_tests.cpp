@@ -490,18 +490,16 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", tags) 
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 2);
     const auto failed_step_id = boost::uuids::to_string(rows.back().id);
-    f.engine->on_step_completed(as_message(
-        completion_for(instance_id, failed_step_id, step_outcome::failed, "two broke")));
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, failed_step_id, step_outcome::failed, "two broke")));
 
     auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
     REQUIRE(instance.front().state_id == f.instance_states.require("failed"));
 
     // The retry names no step, so the step that failed is the one.
-    const auto outcome =
-        f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
-                                 "",
-                                 f.h.context().tenant_id());
+    const auto outcome = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
     CHECK(outcome.resumed);
     CHECK(outcome.step_index == 1);
     CHECK(outcome.step_name == "two");
@@ -553,9 +551,8 @@ TEST_CASE("a retry refuses a run that has not stopped", tags) {
     CHECK(refused.reason.find("has not stopped") != std::string::npos);
 
     // And a run that never started is not the caller's to resume either.
-    const auto unknown = f.engine->retry_instance(boost::uuids::random_generator{}(),
-                                                  "",
-                                                  f.h.context().tenant_id());
+    const auto unknown =
+        f.engine->retry_instance(boost::uuids::random_generator{}(), "", f.h.context().tenant_id());
     CHECK_FALSE(unknown.resumed);
     CHECK(unknown.reason == "Workflow instance not found.");
     BOOST_LOG_SEV(lg, debug) << "Retry refused runs that had not stopped.";
@@ -581,9 +578,8 @@ TEST_CASE("a retry refuses a step the run does not hold", tags) {
 
     // The run stopped at step one, so no step is named three: a run that
     // stopped never materialised the steps after the one that failed.
-    const auto refused = f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
-                                                  "three",
-                                                  f.h.context().tenant_id());
+    const auto refused = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "three", f.h.context().tenant_id());
     CHECK_FALSE(refused.resumed);
     CHECK(refused.reason.find("'three'") != std::string::npos);
     BOOST_LOG_SEV(lg, debug) << "Retry refused a step the run does not hold.";
@@ -653,18 +649,16 @@ TEST_CASE("a retry is confined to the caller's own tenant", tags) {
 
     // A caller in another tenant is told the run does not exist, not that it
     // exists and is not theirs: the answer must not disclose the run.
-    const auto refused = f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
-                                                  "",
-                                                  f.service_context().tenant_id());
+    const auto refused = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.service_context().tenant_id());
     CHECK_FALSE(refused.resumed);
     CHECK(refused.reason == "Workflow instance not found.");
 
     // A retry that reads, mutates and re-dispatches nothing is what the
     // refusal above must leave behind, so the run's own tenant can still
     // resume it.
-    const auto accepted = f.engine->retry_instance(boost::uuids::string_generator{}(instance_id),
-                                                   "",
-                                                   f.h.context().tenant_id());
+    const auto accepted = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
     CHECK(accepted.resumed);
     CHECK(accepted.step_index == 0);
     BOOST_LOG_SEV(lg, debug) << "Retry confined to the caller's tenant.";

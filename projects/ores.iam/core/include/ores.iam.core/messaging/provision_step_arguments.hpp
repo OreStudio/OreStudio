@@ -302,8 +302,7 @@ struct photo_step_arguments {
  * A party's staff photos come from the dataset its entry names, so the kind
  * reads no office code and composes no dataset name of its own.
  */
-[[nodiscard]] inline photo_step_arguments
-parse_photo_arguments(const std::string& arguments_json) {
+[[nodiscard]] inline photo_step_arguments parse_photo_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     const auto* found = detail::member(arguments, "parties");
     if (found == nullptr)

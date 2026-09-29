@@ -80,9 +80,9 @@ TEST_CASE("decimal_json_read_keeps_a_value_a_double_cannot", tags) {
 TEST_CASE("decimal_travels_the_msgpack_wire_exactly", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto sut = holds_amount{
-        .label = "notional",
-        .amount = decimal::from_string("12345678901234567890.123456789").value()};
+    const auto sut =
+        holds_amount{.label = "notional",
+                     .amount = decimal::from_string("12345678901234567890.123456789").value()};
 
     const auto packed = rfl::msgpack::write(sut);
     const auto read = rfl::msgpack::read<holds_amount>(packed);
@@ -93,12 +93,9 @@ TEST_CASE("decimal_travels_the_msgpack_wire_exactly", tags) {
 TEST_CASE("decimal_json_read_refuses_text_that_is_not_a_decimal", tags) {
     auto lg(make_logger(test_suite));
 
-    CHECK_FALSE(rfl::json::read<holds_amount>(
-                    R"({"label":"notional","amount":"nan"})")
-                    .has_value());
-    CHECK_FALSE(rfl::json::read<holds_amount>(
-                    R"({"label":"notional","amount":""})")
-                    .has_value());
+    CHECK_FALSE(
+        rfl::json::read<holds_amount>(R"({"label":"notional","amount":"nan"})").has_value());
+    CHECK_FALSE(rfl::json::read<holds_amount>(R"({"label":"notional","amount":""})").has_value());
 }
 
 TEST_CASE("optional_decimal_travels_as_an_omitted_field_when_absent", tags) {
@@ -111,8 +108,8 @@ TEST_CASE("optional_decimal_travels_as_an_omitted_field_when_absent", tags) {
     REQUIRE(back.has_value());
     CHECK_FALSE(back->amount.has_value());
 
-    const auto present = rfl::json::write(
-        maybe_holds_amount{.amount = decimal::from_string("1e-10").value()});
+    const auto present =
+        rfl::json::write(maybe_holds_amount{.amount = decimal::from_string("1e-10").value()});
     CHECK(present == R"({"amount":"0.0000000001"})");
 
     const auto read = rfl::json::read<maybe_holds_amount>(present);

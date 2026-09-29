@@ -548,20 +548,12 @@ std::string save_leg(Nats& nats,
         if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_rate failed" : error;
 
-        if (auto failure = save_schedule(nats,
-                                         trade_id,
-                                         leg_role,
-                                         leg_number,
-                                         "fixing_schedule",
-                                         floating.fixing_schedule);
+        if (auto failure = save_schedule(
+                nats, trade_id, leg_role, leg_number, "fixing_schedule", floating.fixing_schedule);
             !failure.empty())
             return failure;
-        if (auto failure = save_schedule(nats,
-                                         trade_id,
-                                         leg_role,
-                                         leg_number,
-                                         "reset_schedule",
-                                         floating.reset_schedule);
+        if (auto failure = save_schedule(
+                nats, trade_id, leg_role, leg_number, "reset_schedule", floating.reset_schedule);
             !failure.empty())
             return failure;
     } else if (leg.rate && leg.rate->formula_based) {
@@ -599,11 +591,11 @@ std::string save_leg(Nats& nats,
         req.change.write.amortization_type = amortization.type;
         // The ORE XML number is a binary float and the amount is a decimal
         // from here on, so the value is converted once, at the boundary.
-        req.change.write.value = amortization.value ?
-                                     std::optional(ores::utility::decimal::decimal::from_double(
-                                                       *amortization.value)
-                                                       .value()) :
-                                     std::nullopt;
+        req.change.write.value =
+            amortization.value ?
+                std::optional(
+                    ores::utility::decimal::decimal::from_double(*amortization.value).value()) :
+                std::nullopt;
         req.change.write.start_date = amortization.start_date;
         req.change.write.end_date = amortization.end_date;
         req.change.write.frequency = amortization.frequency;
@@ -688,12 +680,12 @@ std::string save_option_block(Nats& nats,
         req.change.write.has_exercise_data = block.exercise_data.has_value();
         if (block.exercise_data) {
             req.change.write.exercise_date = parse_date(block.exercise_data->date);
-            req.change.write.exercise_price = block.exercise_data->price ?
-                                                  std::optional(
-                                                      ores::utility::decimal::decimal::from_double(
-                                                          *block.exercise_data->price)
-                                                          .value()) :
-                                                  std::nullopt;
+            req.change.write.exercise_price =
+                block.exercise_data->price ?
+                    std::optional(
+                        ores::utility::decimal::decimal::from_double(*block.exercise_data->price)
+                            .value()) :
+                    std::nullopt;
         }
 
         req.change.write.has_payment_data = block.payment_data.has_value();
@@ -772,19 +764,14 @@ std::string save_option_block(Nats& nats,
         ores::trading::domain::bond_schedule_dates dates;
         dates.dates = data.option_exercise_dates;
         schedule.dates.push_back(std::move(dates));
-        if (auto failure =
-                save_schedule(nats, trade_id, "option", 1, "exercise_dates", schedule);
+        if (auto failure = save_schedule(nats, trade_id, "option", 1, "exercise_dates", schedule);
             !failure.empty())
             return failure;
     }
 
     if (data.option_exercise_schedule) {
-        if (auto failure = save_schedule(nats,
-                                         trade_id,
-                                         "option",
-                                         1,
-                                         "exercise_schedule",
-                                         *data.option_exercise_schedule);
+        if (auto failure = save_schedule(
+                nats, trade_id, "option", 1, "exercise_schedule", *data.option_exercise_schedule);
             !failure.empty())
             return failure;
     }
@@ -805,19 +792,19 @@ std::string save_strike(Nats& nats,
 
     put_instrument_strike_request req;
     req.change.write.trade_id = trade_id;
-    req.change.write.price_value = strike.price_value ?
-                                       std::optional(ores::utility::decimal::decimal::from_double(
-                                                         *strike.price_value)
-                                                         .value()) :
-                                       std::nullopt;
+    req.change.write.price_value =
+        strike.price_value ?
+            std::optional(
+                ores::utility::decimal::decimal::from_double(*strike.price_value).value()) :
+            std::nullopt;
     req.change.write.price_currency = strike.price_currency;
     req.change.write.yield_value = strike.yield_value;
     req.change.write.yield_compounding = strike.yield_compounding;
-    req.change.write.bare_value = strike.bare_value ?
-                                      std::optional(ores::utility::decimal::decimal::from_double(
-                                                        *strike.bare_value)
-                                                        .value()) :
-                                      std::nullopt;
+    req.change.write.bare_value =
+        strike.bare_value ?
+            std::optional(
+                ores::utility::decimal::decimal::from_double(*strike.bare_value).value()) :
+            std::nullopt;
     req.change.write.bare_currency = strike.bare_currency;
 
     std::string error;
@@ -852,17 +839,17 @@ std::string save_forward(Nats& nats,
         req.change.write.forward_maturity_date = settlement.forward_maturity_date;
         req.change.write.forward_settlement_date = settlement.forward_settlement_date;
         req.change.write.settlement = settlement.settlement;
-        req.change.write.amount = settlement.amount ?
-                                      std::optional(ores::utility::decimal::decimal::from_double(
-                                                        *settlement.amount)
-                                                        .value()) :
-                                      std::nullopt;
+        req.change.write.amount =
+            settlement.amount ?
+                std::optional(
+                    ores::utility::decimal::decimal::from_double(*settlement.amount).value()) :
+                std::nullopt;
         req.change.write.lock_rate = settlement.lock_rate;
-        req.change.write.dv01 = settlement.dv01 ?
-                                    std::optional(ores::utility::decimal::decimal::from_double(
-                                                      *settlement.dv01)
-                                                      .value()) :
-                                    std::nullopt;
+        req.change.write.dv01 =
+            settlement.dv01 ?
+                std::optional(
+                    ores::utility::decimal::decimal::from_double(*settlement.dv01).value()) :
+                std::nullopt;
         req.change.write.lock_rate_day_counter = settlement.lock_rate_day_counter;
         req.change.write.settlement_dirty = settlement.settlement_dirty;
     }
@@ -1007,8 +994,7 @@ save_bond_instrument(Nats& nats,
     const auto trade_id = instrument.identity.trade_id;
     int leg_number = 0;
     for (const auto& leg : data.bond_legs) {
-        if (auto failure = save_leg(nats, trade_id, "bond", ++leg_number, leg);
-            !failure.empty())
+        if (auto failure = save_leg(nats, trade_id, "bond", ++leg_number, leg); !failure.empty())
             return failure;
     }
     if (auto failure = save_leg(nats, trade_id, "trs_funding", 1, data.trs_funding_leg);
@@ -1572,15 +1558,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 int sequence_number = 0;
                                 for (const auto& call_date : r.call_dates) {
                                     put_callable_swap_call_date_request date_req;
-                                    date_req.change.write.trade_id =
-                                        instr.identity.trade_id;
+                                    date_req.change.write.trade_id = instr.identity.trade_id;
                                     date_req.change.write.sequence_number = ++sequence_number;
                                     date_req.change.write.call_date = call_date.call_date;
                                     auto date_resp =
                                         nats_call(delegated_nats, date_req, instr_error);
-                                    if (!date_resp ||
-                                        date_resp->result.outcome !=
-                                            ores::utility::domain::outcome::ok)
+                                    if (!date_resp || date_resp->result.outcome !=
+                                                          ores::utility::domain::outcome::ok)
                                         return false;
                                 }
                                 return true;
@@ -1930,7 +1914,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
                                 req.change.write.long_short = instr.long_short;
-                                req.change.write.payment_frequency_code = instr.payment_frequency_code;
+                                req.change.write.payment_frequency_code =
+                                    instr.payment_frequency_code;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
@@ -2044,8 +2029,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         auto constituent_resp =
                             nats_call(delegated_nats, constituent_req, instr_error);
                         if (!constituent_resp ||
-                            constituent_resp->result.outcome !=
-                                ores::utility::domain::outcome::ok)
+                            constituent_resp->result.outcome != ores::utility::domain::outcome::ok)
                             return false;
                     }
                     return true;
@@ -2231,8 +2215,7 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
             .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
                                                            .commentary =
                                                                "Rolling back a failed ORE import"}};
-        for (auto it = req.saved_portfolio_names.rbegin();
-             it != req.saved_portfolio_names.rend();
+        for (auto it = req.saved_portfolio_names.rbegin(); it != req.saved_portfolio_names.rend();
              ++it)
             del_req.removals.push_back({.key = {.name = *it}});
         std::string err;

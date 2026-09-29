@@ -20,8 +20,8 @@
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
-#include <chrono>
 #include <charconv>
+#include <chrono>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -1162,8 +1162,8 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
                 if (!ld.Currency && !issue.currency.empty())
                     ld.Currency = issue.currency;
                 if (!ld.DayCounter && !issue.day_count_fraction_code.empty())
-                    ld.DayCounter =
-                        parse_code(issue.day_count_fraction_code, day_counter_count, dayCounter::A360);
+                    ld.DayCounter = parse_code(
+                        issue.day_count_fraction_code, day_counter_count, dayCounter::A360);
 
                 if (!ld.Notionals && issue.face_value && !issue.face_value->is_zero()) {
                     legData_Notionals_t n;

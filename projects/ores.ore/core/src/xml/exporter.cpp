@@ -290,8 +290,8 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                                         equity_instrument_mapper::reverse_equity_option_position(
                                             instr, r.underlyings, tt);
                                 } else {
-                                    xsd_t = equity_instrument_mapper::reverse_equity_position(
-                                        instr, tt);
+                                    xsd_t = equity_instrument_mapper::reverse_equity_position(instr,
+                                                                                              tt);
                                 }
                                 matched = true;
                             } else if constexpr (std::is_same_v<I, equity_option_instrument>) {

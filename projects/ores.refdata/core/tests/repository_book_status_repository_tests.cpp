@@ -76,9 +76,8 @@ TEST_CASE("write_multiple_book_statuses", tags) {
 
     const auto rows = repo.read_latest(h.context());
     for (const auto& written : book_statuses) {
-        const auto it = std::ranges::find_if(rows, [&](const book_status& bs) {
-            return bs.code == written.code;
-        });
+        const auto it = std::ranges::find_if(
+            rows, [&](const book_status& bs) { return bs.code == written.code; });
         REQUIRE(it != rows.end());
         CHECK(it->name == written.name);
     }

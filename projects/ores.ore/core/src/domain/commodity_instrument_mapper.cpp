@@ -245,7 +245,8 @@ commodity_instrument_mapper::forward_commodity_forward(const trade& t) {
     result.commodity_code = std::string(d.Name);
     result.currency = to_string(d.Currency);
     result.quantity = static_cast<double>(d.Quantity);
-    result.fixed_price = ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
+    result.fixed_price =
+        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
     result.maturity_date = to_optional_domain_date(std::string(d.Maturity));
     return result;
 }
@@ -270,7 +271,9 @@ commodity_instrument_mapper::forward_commodity_option(const trade& t) {
         if (!s.empty())
             result.strike_price = ores::utility::decimal::decimal::from_string(s).value();
     } else if (d.strikeGroup.StrikeData && d.strikeGroup.StrikeData->Value) {
-        result.strike_price = ores::utility::decimal::decimal::from_double(static_cast<double>(*d.strikeGroup.StrikeData->Value)).value();
+        result.strike_price = ores::utility::decimal::decimal::from_double(
+                                  static_cast<double>(*d.strikeGroup.StrikeData->Value))
+                                  .value();
     }
     result.option_type = extract_option_type(d.OptionData);
     result.exercise_type = extract_exercise_style(d.OptionData);
@@ -356,7 +359,8 @@ commodity_instrument_mapper::forward_commodity_apo(const trade& t) {
     result.commodity_code = std::string(d.Name);
     result.currency = to_string(d.Currency);
     result.quantity = static_cast<double>(d.Quantity);
-    result.strike_price = ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
+    result.strike_price =
+        ores::utility::decimal::decimal::from_double(static_cast<double>(d.Strike)).value();
     result.option_type = extract_option_type(d.OptionData);
     result.exercise_type = extract_exercise_style(d.OptionData);
     result.maturity_date = first_exercise_date(d.OptionData);
@@ -427,9 +431,9 @@ commodity_instrument_mapper::forward_commodity_basket_option(const trade& t) {
         constituent.sequence_number = sequence_number++;
         constituent.underlying_code = std::string(u.Name);
         if (u.Weight)
-            constituent.weight = ores::utility::decimal::decimal::from_double(
-                                     static_cast<double>(*u.Weight))
-                                     .value();
+            constituent.weight =
+                ores::utility::decimal::decimal::from_double(static_cast<double>(*u.Weight))
+                    .value();
         constituent.modified_by = "ores";
         constituent.performed_by = "ores";
         constituent.change_reason_code = "system.external_data_import";
@@ -453,7 +457,8 @@ trade commodity_instrument_mapper::reverse_commodity_forward(const commodity_ins
     static_cast<std::string&>(d.Maturity) = to_ore_date(instr.maturity_date);
     static_cast<std::string&>(d.Name) = instr.commodity_code;
     d.Currency = parse_currency_code(instr.currency);
-    d.Strike = static_cast<float>(instr.fixed_price.value_or(ores::utility::decimal::decimal{}).to_double());
+    d.Strike = static_cast<float>(
+        instr.fixed_price.value_or(ores::utility::decimal::decimal{}).to_double());
     d.Quantity = static_cast<float>(instr.quantity);
     t.CommodityForwardData = std::move(d);
     return t;
@@ -615,7 +620,8 @@ trade commodity_instrument_mapper::reverse_commodity_apo(const commodity_instrum
     static_cast<std::string&>(d.Name) = instr.commodity_code;
     d.Currency = parse_currency_code(instr.currency);
     d.Quantity = static_cast<float>(instr.quantity);
-    d.Strike = static_cast<float>(instr.strike_price.value_or(ores::utility::decimal::decimal{}).to_double());
+    d.Strike = static_cast<float>(
+        instr.strike_price.value_or(ores::utility::decimal::decimal{}).to_double());
     d.PriceType = priceType::FutureSettlement;
     static_cast<std::string&>(d.StartDate) = to_ore_date(instr.averaging_start_date);
     static_cast<std::string&>(d.EndDate) = to_ore_date(instr.averaging_end_date);

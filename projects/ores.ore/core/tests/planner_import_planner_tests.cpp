@@ -433,8 +433,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
     }
 
     CHECK(checked > 0);
-    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id key for " << checked
-                            << " trade(s)";
+    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id key for " << checked << " trade(s)";
 }
 
 TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {

@@ -484,14 +484,12 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     leg.settlement_fixing_date = "2024-04-15";
     bond_leg_repository().write(ctx, leg);
 
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, trade_id, "bond", 1, "notional", 1, "1000"));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, trade_id, "bond", 1, "notional", 1, "1000"));
     // Written in reverse ordinal order, so the order read back is the
     // query's doing rather than the insert order's.
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "rate", 2, "5"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "rate", 1, "4"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "rate", 2, "5"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "rate", 1, "4"));
 
     bond_leg_rate_repository().write(ctx, make_rate(s, trade_id, "bond", 1, "fixed"));
 
@@ -587,10 +585,8 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
                                        make_amount(s, trade_id, "bond", 1, "spread", 2, "0.75"));
     bond_leg_amount_repository().write(ctx,
                                        make_amount(s, trade_id, "bond", 1, "spread", 1, "0.5"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "cap", 1, "6"));
-    bond_leg_amount_repository().write(ctx,
-                                       make_amount(s, trade_id, "bond", 1, "floor", 1, "1"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "cap", 1, "6"));
+    bond_leg_amount_repository().write(ctx, make_amount(s, trade_id, "bond", 1, "floor", 1, "1"));
     bond_leg_amount_repository().write(ctx,
                                        make_amount(s, trade_id, "bond", 1, "gearing", 1, "1.5"));
 
@@ -598,11 +594,9 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     fixing.convention = "Following";
     instrument_schedule_repository().write(ctx, fixing);
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 1, "2024-04-15"));
+        ctx, make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 1, "2024-04-15"));
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 2, "2024-10-15"));
+        ctx, make_schedule_date(s, trade_id, "bond", 1, "fixing_schedule", 1, 2, "2024-10-15"));
 
     auto reset = make_schedule(s, trade_id, "bond", 1, "reset_schedule", 1, "rules");
     reset.calendar = "TARGET";
@@ -781,11 +775,9 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     auto dates = make_schedule(s, trade_id, "option", 1, "exercise_dates", 1, "dates");
     instrument_schedule_repository().write(ctx, dates);
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, trade_id, "option", 1, "exercise_dates", 1, 1, "2025-01-15"));
+        ctx, make_schedule_date(s, trade_id, "option", 1, "exercise_dates", 1, 1, "2025-01-15"));
     instrument_schedule_date_repository().write(
-        ctx,
-        make_schedule_date(s, trade_id, "option", 1, "exercise_dates", 1, 2, "2025-07-15"));
+        ctx, make_schedule_date(s, trade_id, "option", 1, "exercise_dates", 1, 2, "2025-07-15"));
 
     auto schedule = make_schedule(s, trade_id, "option", 1, "exercise_schedule", 1, "rules");
     schedule.calendar = "TARGET";

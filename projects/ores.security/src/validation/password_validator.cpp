@@ -88,8 +88,8 @@ validation_result password_validator::validate(const std::string& password, bool
 
     if (rules.require_special && !has_special) {
         result.is_valid = false;
-        result.error_message =
-            std::format("Password must contain at least one special character ({})", rules.special_chars);
+        result.error_message = std::format(
+            "Password must contain at least one special character ({})", rules.special_chars);
         return result;
     }
 

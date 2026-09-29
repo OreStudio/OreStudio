@@ -73,9 +73,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // change event.
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
-    auto workspace_events =
-        ores::workspace::service::messaging::register_workspace_event_mapping(
-            event_source, event_bus, nats);
+    auto workspace_events = ores::workspace::service::messaging::register_workspace_event_mapping(
+        event_source, event_bus, nats);
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 

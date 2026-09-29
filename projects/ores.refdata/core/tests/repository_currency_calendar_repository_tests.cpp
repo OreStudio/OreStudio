@@ -229,9 +229,10 @@ TEST_CASE("remove_currency_calendar", tags) {
     repo.remove(currencies[5].iso_code, calendars[5].code);
 
     const auto removed_rows = repo.read_latest(cc.currency_iso_code, cc.calendar_code);
-    const auto answered_with_removed_key = std::ranges::any_of(
-        removed_rows,
-        [&](const currency_calendar& r) { return r.calendar_code == cc.calendar_code; });
+    const auto answered_with_removed_key =
+        std::ranges::any_of(removed_rows, [&](const currency_calendar& r) {
+            return r.calendar_code == cc.calendar_code;
+        });
     CHECK_FALSE(answered_with_removed_key);
 
     const auto keeper_rows = repo.read_latest(keeper.currency_iso_code, keeper.calendar_code);
@@ -266,8 +267,8 @@ TEST_CASE("remove_by_currency_currency_calendar", tags) {
     repo.remove_by_currency(currencies[6].iso_code);
 
     const auto remaining = repo.read_latest_by_currency(currencies[6].iso_code);
-    const auto answered_with_removed_currency = std::ranges::any_of(
-        remaining, [&](const currency_calendar& r) {
+    const auto answered_with_removed_currency =
+        std::ranges::any_of(remaining, [&](const currency_calendar& r) {
             return r.currency_iso_code == currencies[6].iso_code;
         });
     CHECK_FALSE(answered_with_removed_currency);

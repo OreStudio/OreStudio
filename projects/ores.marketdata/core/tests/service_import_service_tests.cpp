@@ -165,8 +165,7 @@ TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
     database_helper h;
     ores::nats::service::client nats(ores::testing::make_nats_options());
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string{}; });
-    import_service svc(
-        h.context(), auth_nats, [known]() { return known; });
+    import_service svc(h.context(), auth_nats, [known]() { return known; });
     ores::marketdata::repository::market_series_repository series_repo;
 
     ores::marketdata::messaging::import_market_data_request req;

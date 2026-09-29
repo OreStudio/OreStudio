@@ -125,12 +125,10 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& tr
         rows[boost::uuids::to_string(row.trade_id)].option_premiums.push_back(std::move(row));
 
     for (auto& row : repository::read_option_exercise_fees_by_trade_ids(ctx, trade_ids))
-        rows[boost::uuids::to_string(row.trade_id)].option_exercise_fees.push_back(
-            std::move(row));
+        rows[boost::uuids::to_string(row.trade_id)].option_exercise_fees.push_back(std::move(row));
 
     for (auto& row : repository::read_option_payment_dates_by_trade_ids(ctx, trade_ids))
-        rows[boost::uuids::to_string(row.trade_id)].option_payment_dates.push_back(
-            std::move(row));
+        rows[boost::uuids::to_string(row.trade_id)].option_payment_dates.push_back(std::move(row));
 
     for (auto& row : repository::read_strikes_by_trade_ids(ctx, trade_ids))
         rows[boost::uuids::to_string(row.trade_id)].strike = std::move(row);
@@ -333,14 +331,13 @@ domain::bond_leg_data build_leg(const instrument_rows& rows, const domain::bond_
         // The stored amount is a decimal and the ORE-shaped block the reader
         // rebuilds holds the float the ORE document carries, so the value
         // crosses at that boundary.
-        leg.amortizations.push_back({amortization.amortization_type,
-                                     amortization.value ?
-                                         std::optional(amortization.value->to_double()) :
-                                         std::nullopt,
-                                     amortization.start_date,
-                                     amortization.end_date,
-                                     amortization.frequency,
-                                     amortization.underflow});
+        leg.amortizations.push_back(
+            {amortization.amortization_type,
+             amortization.value ? std::optional(amortization.value->to_double()) : std::nullopt,
+             amortization.start_date,
+             amortization.end_date,
+             amortization.frequency,
+             amortization.underflow});
     }
 
     leg.schedule = schedule_for(rows, row.leg_role, row.leg_number, "schedule");

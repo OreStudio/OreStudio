@@ -77,9 +77,8 @@ TEST_CASE("write_multiple_party_id_schemes", tags) {
 
     const auto read_schemes = repo.read_latest(h.context());
     for (const auto& written : party_id_schemes) {
-        const auto it = std::ranges::find_if(read_schemes, [&](const party_id_scheme& s) {
-            return s.code == written.code;
-        });
+        const auto it = std::ranges::find_if(
+            read_schemes, [&](const party_id_scheme& s) { return s.code == written.code; });
         REQUIRE(it != read_schemes.end());
         CHECK(it->name == written.name);
         CHECK(it->description == written.description);
@@ -104,9 +103,9 @@ TEST_CASE("read_latest_party_id_schemes", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     for (const auto& written : written_party_id_schemes) {
-        const auto it = std::ranges::find_if(
-            read_party_id_schemes,
-            [&](const party_id_scheme& s) { return s.code == written.code; });
+        const auto it = std::ranges::find_if(read_party_id_schemes, [&](const party_id_scheme& s) {
+            return s.code == written.code;
+        });
         REQUIRE(it != read_party_id_schemes.end());
         CHECK(it->name == written.name);
         CHECK(it->description == written.description);
@@ -156,9 +155,9 @@ TEST_CASE("read_nonexistent_party_id_scheme_code", tags) {
     auto read_party_id_schemes = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
-    const auto answered_with_another_key = std::ranges::any_of(
-        read_party_id_schemes,
-        [&](const party_id_scheme& s) { return s.code == nonexistent_code; });
+    const auto answered_with_another_key =
+        std::ranges::any_of(read_party_id_schemes,
+                            [&](const party_id_scheme& s) { return s.code == nonexistent_code; });
     CHECK_FALSE(answered_with_another_key);
 
     // The same read does answer for the code that was written.

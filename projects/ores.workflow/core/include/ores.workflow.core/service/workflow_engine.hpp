@@ -25,10 +25,10 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
@@ -244,8 +244,7 @@ private:
      * step untouched, so a person can retry the step that failed. The failed
      * step keeps its own error and log.
      */
-    void stop_on_failure(const domain::workflow_instance& instance,
-                         const std::string& failure_msg);
+    void stop_on_failure(const domain::workflow_instance& instance, const std::string& failure_msg);
 
     /**
      * @brief Checks whether all compensation steps have finished.

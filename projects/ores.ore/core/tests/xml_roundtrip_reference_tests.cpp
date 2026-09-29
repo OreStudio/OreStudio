@@ -50,8 +50,7 @@ fs::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-bool same_optional_text(const xsd::optional<calendar>& lhs,
-                        const xsd::optional<calendar>& rhs) {
+bool same_optional_text(const xsd::optional<calendar>& lhs, const xsd::optional<calendar>& rhs) {
     const bool left = static_cast<bool>(lhs);
     const bool right = static_cast<bool>(rhs);
     if (left != right)
@@ -108,7 +107,8 @@ ores::ore::xml::roundtrip_kind calendar_kind() {
     return ores::ore::xml::make_roundtrip_kind<
         calendaradjustment,
         std::vector<ores::refdata::messaging::calendar_adjustment>>(
-        "calendar adjustments", "calendaradjustment",
+        "calendar adjustments",
+        "calendaradjustment",
         static_cast<std::vector<ores::refdata::messaging::calendar_adjustment> (*)(
             const calendaradjustment&)>(&calendar_adjustment_mapper::map),
         static_cast<calendaradjustment (*)(
@@ -120,7 +120,8 @@ ores::ore::xml::roundtrip_kind calendar_kind() {
 ores::ore::xml::roundtrip_kind currency_kind() {
     return ores::ore::xml::make_roundtrip_kind<currencyConfig,
                                                std::vector<ores::refdata::domain::currency>>(
-        "currencies", "currencies",
+        "currencies",
+        "currencies",
         static_cast<std::vector<ores::refdata::domain::currency> (*)(const currencyConfig&)>(
             &currency_mapper::map),
         static_cast<currencyConfig (*)(const std::vector<ores::refdata::domain::currency>&)>(
@@ -130,7 +131,10 @@ ores::ore::xml::roundtrip_kind currency_kind() {
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions, mapped_conventions>(
-        "conventions", "conventions", &conventions_mapper::map, &conventions_mapper::reverse,
+        "conventions",
+        "conventions",
+        &conventions_mapper::map,
+        &conventions_mapper::reverse,
         ores::ore::xml::parsed_text_difference<conventions>);
 }
 

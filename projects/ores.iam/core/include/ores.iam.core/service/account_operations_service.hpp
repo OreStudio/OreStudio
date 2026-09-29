@@ -182,8 +182,8 @@ public:
      * @throws std::runtime_error If account is locked or credentials are invalid
      */
     authenticated_login login(const std::string& username,
-                          const std::string& password,
-                          const boost::asio::ip::address& ip_address);
+                              const std::string& password,
+                              const boost::asio::ip::address& ip_address);
 
     /**
      * @brief Locks an account, preventing login.

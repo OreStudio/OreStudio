@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2394
+#+pr: 2395
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -329,10 +329,10 @@ is left is the cutover the task takes its name from.
    identity now (see the identity note below). That one caller is the IR curve's vintage
    seeding, and it cannot move the same way: it reads the DQ deposit grid, whose series
    the cutover names generically, so the synthetic config has to name the series it seeds
-   from or the path retires. What is left is that decision and then =series_type=,
-   =metric=, =qualifier= and the import classification table going, with the census's
-   21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents as the
-   checklist. The generated =read_latest_by_type= goes with the columns it reads.
+   from or the path retires. The generated =read_latest_by_type= has gone, because
+   nothing called it; what is left is that decision and then =series_type=, =metric=,
+   =qualifier= and the import classification table going, with the census's 21 + 32 C++
+   files, 4 SQL files, 2 TypeScript twins and 80 org documents as the checklist.
 
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
@@ -359,8 +359,8 @@ identity instead, leaving the synthetic row inert the way the grid's row is. The
 snapshot's two lookups were the last readers on the triple alone, kept there because a
 request carrying only an identity could not reach the FOMC grid no projection could
 name; the grid is gone, so both requests carry the identity and the handler reads by
-it. Nothing in production calls the generated =read_latest_by_type= any more, which is
-what lets the deletion take it with the columns.
+it. Nothing in production called the generated =read_latest_by_type=, which a later unit
+deleted outright rather than waiting for the columns it reads.
 
 That also closes the identity review's other recorded prerequisite. With the fallback
 gone there is no contest to settle: the import finds a series by the real identity when
@@ -485,6 +485,8 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.marketdata.core=, =client=, =synthetic.service= and =synthetic.api= suites | 1893 in 414, 6 in 6, 297 in 46 and 65 in 22 assertions and cases | the four test binaries | =eba20b1d9d= |
 | Why =synthetic.api= counts fewer cases than the identity unit measured | 7 cases gone with two test files: another environment's merge deleted the organisation generator and its tests (=04f6092cfd=), not this change | =git show --stat 04f6092cfd= | =eba20b1d9d= |
 | =reachability=, with the one caller left | 7739 declared cases in 952 sources | =check_test_case_reachability.py= | =eba20b1d9d= |
+| References to =read_latest_by_type= left in the tree | 0: gone from the model, the generated repository and the tests, where nothing in production called it | =grep -rn "read_latest_by_type" projects/ --include=*.cpp --include=*.hpp --include=*.org= | =9db9a2ac3d= |
+| =ores.marketdata.core= suite, with the dead reader gone | 1893 assertions in 414 cases, the by-type repository case become a by-identity one | =ores.marketdata.core.tests= | =9db9a2ac3d= |
 | Fields a curve snapshot request names a series by | 1: =oresmd_uri=, where it carried the registry's three | =grep -n "std::string" projects/ores.marketdata/api/include/ores.marketdata.api/messaging/curve_snapshot_protocol.hpp= | =ac4e03519b= |
 | =ores.marketdata.core=, =service= and =api= suites with the retirement | 1879 in 412, 176 in 28 and 71 in 14 assertions and cases | the three test binaries | =ac4e03519b= |
 | =reachability=, with the retirement | 7780 declared cases in 956 sources | =check_test_case_reachability.py= | =ac4e03519b= |
@@ -520,6 +522,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2395][#2395]] | [marketdata] Delete the reader nothing calls |
 | [[https://github.com/OreStudio/OreStudio/pull/2394][#2394]] | [marketdata,synthetic] Read a series by identity |
 | [[https://github.com/OreStudio/OreStudio/pull/2392][#2392]] | [marketdata,synthetic] Name the binding by identity, and repair the dq publish |
 | [[https://github.com/OreStudio/OreStudio/pull/2391][#2391]] | [agile] Leave the handover naming only what is left |
@@ -630,6 +633,9 @@ via its "Verifies task" field.
 | 77 | =find_series_by_uri= and =find_series= repeat the list, send and error handling | =market_data_client.cpp= | answered | Both are the same ten lines around a different match predicate, and one of them goes with the triple when the IR caller does, so a helper would be an abstraction with one unit's lifetime. Recorded rather than taken, and the deletion revisits it. |
 | 78 | =find_series_by_uri= could be tested with a mocked list response | the client | recorded | The client suite covers the pure subject helpers only; a mocked response needs the NATS stub that =market_data_client='s =send()= calls through, which no case in the tree has. The same missing harness as the handler's and the dq publish's, recorded with them for V06. |
 | 79 | The retained =find_series='s doc still says "natural key" where the identity is now the natural key | =market_data_client.hpp= | accepted, fixed | It says "the same decomposition" now. |
+| 80 | The test helper's comment says it goes with the columns; linking it to the task would stop it being orphaned | =service_import_service_tests.cpp= | accepted, fixed | The comment names task 4050BF6C-DBC3-4E75-A204-A75CE4AFA323 now. |
+| 81 | The revision could not be diffed against a merge base, so the build and tests were not re-run | the PR | answered | CI's =tests= job builds its database from the create scripts and passed, together with the other fifteen checks. |
+| 82 | A dated plan still mentions =read_latest_by_type= | =doc/plans/2026-03-31-ore-marketdata-domain-model.org= | recorded | It is a historical plan document; the record's own measurement counts C++, headers and models, and the plan is left as the dated artefact it is. |
 
 * Result
 
@@ -734,6 +740,15 @@ tree: 1893 core assertions in 414 cases, 6 client cases, and 297 in 46 with 65 i
 the synthetic suites -- smaller than the seventh unit measured because another
 environment's merge deleted the organisation generator and its two test files
 (=04f6092cfd=), not because this change removed anything.
+
+**A ninth unit deleted the reader nothing called.** =read_latest_by_type= was how a
+series was found before the identity keyed it, and every production caller had moved:
+the import, the ingest loop and the curve snapshot read by identity, the client lists
+and filters, and the IR vintage seeding goes through the client. Only its tests kept it
+alive, so it went from the model and the generated repository with them. The import
+tests keep every assertion -- a helper filters the list for the key the import was given
+-- and the repository's own by-type case became a by-identity one. Measured on the
+rebuilt tree: 1893 core assertions in 414 cases, and no reference to the method left.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

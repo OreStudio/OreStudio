@@ -46,6 +46,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -344,9 +346,8 @@ public:
         }
 
         const auto refuse = [&](const std::string& reason) {
-            reply(nats_,
-                  msg,
-                  provision_party_command_response{.success = false, .message = reason});
+            reply(
+                nats_, msg, provision_party_command_response{.success = false, .message = reason});
         };
 
         try {
@@ -366,8 +367,7 @@ public:
             // caller in words -- its name, its tenant and its party -- and no
             // account identifier, so the identifier comes from the token's
             // subject, which is the session's account.
-            const auto claims =
-                signer_.validate(ores::service::messaging::bearer_token(msg));
+            const auto claims = signer_.validate(ores::service::messaging::bearer_token(msg));
             if (!claims) {
                 refuse("The authorization token could not be read.");
                 return;
@@ -393,10 +393,9 @@ public:
             // point that orders no party step has no party stage to run, and
             // saying so is better than running a run whose one step cannot read
             // its own arguments.
-            const auto declared_steps =
-                ores::iam::service::seed_profile_step_service(sys_ctx)
-                    .list_seed_profile_steps_by_seed_profile_id(
-                        boost::uuids::to_string(profile->id), 0, 1000);
+            const auto declared_steps = ores::iam::service::seed_profile_step_service(sys_ctx)
+                                            .list_seed_profile_steps_by_seed_profile_id(
+                                                boost::uuids::to_string(profile->id), 0, 1000);
             const auto party_step = std::find_if(
                 declared_steps.begin(), declared_steps.end(), [](const auto& declared) {
                     return declared.step_kind == ores::iam::workflow::provision_party_step_kind;
@@ -461,8 +460,8 @@ public:
                 {tenant_id},
                 tenant_provisioning_handler_lg(),
                 "provision_party");
-            if (!tenant_row.empty() && tenant_row.front().size() >= 2 &&
-                tenant_row.front()[0] && tenant_row.front()[1]) {
+            if (!tenant_row.empty() && tenant_row.front().size() >= 2 && tenant_row.front()[0] &&
+                tenant_row.front()[1]) {
                 code = *tenant_row.front()[0];
                 hostname = *tenant_row.front()[1];
             }
@@ -504,9 +503,8 @@ public:
 
             reply(nats_,
                   msg,
-                  provision_party_command_response{.success = true,
-                                                   .instance_id = instance_id,
-                                                   .party_id = found.front()});
+                  provision_party_command_response{
+                      .success = true, .instance_id = instance_id, .party_id = found.front()});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -736,14 +734,14 @@ private:
         const auto arguments =
             parse_lei_hierarchy_arguments(command.arguments_json, command.parameters);
         if (arguments.root_lei.empty()) {
-            wf.warn(rfl::json::write(provision_step_result{
-                        .kind = command.kind, .bundles = arguments.bundles, .root_lei = ""}),
-                    {ores::workflow::messaging::step_log_entry{
-                        .level = ores::workflow::messaging::step_log_level::warn,
-                        .message =
-                            "The starting point names no legal entity, so there was nothing to "
-                            "import.",
-                        .context = command.tenant_id}});
+            wf.warn(
+                rfl::json::write(provision_step_result{
+                    .kind = command.kind, .bundles = arguments.bundles, .root_lei = ""}),
+                {ores::workflow::messaging::step_log_entry{
+                    .level = ores::workflow::messaging::step_log_level::warn,
+                    .message = "The starting point names no legal entity, so there was nothing to "
+                               "import.",
+                    .context = command.tenant_id}});
             return;
         }
 
@@ -1299,7 +1297,10 @@ private:
             return false;
         }
 
-        // Each pair is (source_name, ore_key).
+        // Each pair is (source_name, the series' oresmd identity). The config names
+        // the series by its ORE key, and the binding names it by the identity that
+        // key projects to -- the same projection the ingest loop applies to a tick --
+        // so a key the grammar cannot name has no series to bind and is skipped.
         std::vector<std::pair<std::string, std::string>> sources;
         {
             synthetic::messaging::list_fx_spot_generation_configs_request req;
@@ -1311,13 +1312,25 @@ private:
                     << resp.result.message;
                 return false;
             }
-            for (auto& c : resp.fx_spot_generation_configs)
-                if (c.enabled && c.config_id == config_id)
-                    sources.emplace_back(c.source_name, c.ore_key);
+            for (auto& c : resp.fx_spot_generation_configs) {
+                if (!c.enabled || c.config_id != config_id)
+                    continue;
+                const auto identifier =
+                    ores::marketdata::core::oresmd_projections::from_ore_key(c.ore_key);
+                if (!identifier) {
+                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                        << "create_theme_feed_bindings: oresmd names no series for ORE key '"
+                        << c.ore_key << "'; skipping its binding";
+                    continue;
+                }
+                sources.emplace_back(
+                    c.source_name,
+                    ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value);
+            }
         }
 
         // Active bindings already exist per natural key (tenant, party,
-        // ore_key, source_name); skip them so re-provisioning does not trip
+        // oresmd_uri, source_name); skip them so re-provisioning does not trip
         // the unique index. The list is tenant-scoped, so filter down to
         // this party's rows.
         std::vector<std::string> existing;
@@ -1333,14 +1346,14 @@ private:
             }
             for (const auto& b : resp.feed_bindings)
                 if (boost::uuids::to_string(b.party_id) == party_id_str)
-                    existing.push_back(b.ore_key + "|" + b.source_name);
+                    existing.push_back(b.oresmd_uri + "|" + b.source_name);
         }
 
         boost::uuids::random_generator uuid_gen;
         boost::uuids::string_generator sg;
         bool all_saved = true;
-        for (const auto& [source_name, ore_key] : sources) {
-            if (std::find(existing.begin(), existing.end(), ore_key + "|" + source_name) !=
+        for (const auto& [source_name, oresmd_uri] : sources) {
+            if (std::find(existing.begin(), existing.end(), oresmd_uri + "|" + source_name) !=
                 existing.end()) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "create_theme_feed_bindings: binding " << source_name << " for party "
@@ -1349,19 +1362,19 @@ private:
             }
             marketdata::messaging::put_feed_binding_request req;
             req.change.write.id = uuid_gen();
-            req.change.write.ore_key = ore_key;
+            req.change.write.oresmd_uri = oresmd_uri;
             req.change.write.source_name = source_name;
             req.change.write.asset_class = "fx";
             req.change.write.enabled = true;
             req.change.write.party_id = sg(party_id_str);
             // The write states no expectation, because the store's
-            // must-not-exist claim is keyed on the ORE key alone while the
-            // binding's natural key is the party with the ORE key and the
+            // must-not-exist claim is keyed on the identity alone while the
+            // binding's natural key is the party with the identity and the
             // source. A must-not-exist claim therefore refuses the second
             // party's binding for a source the first party already holds.
             // The freshness check above is what keeps this idempotent, and
             // the natural key's unique index
-            // (feed_bindings_party_id_ore_key_source_name_uniq_idx) is what
+            // (feed_bindings_party_id_oresmd_uri_source_name_uniq_idx) is what
             // keeps it honest.
             req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             req.intent.reason_code = "system.new_record";

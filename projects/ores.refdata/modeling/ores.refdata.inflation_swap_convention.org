@@ -23,13 +23,11 @@ Ten fields are required and the rest are optional. The corpus sets all ten in
 all one hundred and one elements. Of the optional fields it sets only
 =PublicationRoll=, in two elements.
 
-The element carries one field this table does not model, =PublicationSchedule=,
-which ORE types as a schedule of rules, dates and derived schedule groups. No
-column can hold it. Two shipped files set it, and both carry other unmodelled
-categories as well. The mapper counts every element that carries one into
-=mapped_conventions::unmodelled= under =InflationSwap.PublicationSchedule=, so
-the file stays out of the round-trip set and the measurement names the field
-rather than dropping it.
+The element also carries =PublicationSchedule=, which ORE types as a schedule
+of rule blocks, date blocks and derived schedule groups. Each block is written
+as one text column in a stated form: blocks are separated by semicolons and a
+block's fields by pipes, which is enough to keep every value the binding holds
+without a table of its own. Two shipped files set a schedule.
 
 * Flags
 :PROPERTIES:
@@ -211,6 +209,58 @@ Business day convention applied to the start delay.
 std::nullopt
 #+end_src
 
+** publication_schedule_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Name of the publication schedule, when ORE gives it one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** publication_schedule_rules
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+The schedule's rule blocks, one per semicolon, each a pipe-separated record of start date, end date, adjust-end-date flag, tenor, calendar, convention, term convention, rule, end-of-month, end-of-month convention, first date, last date, remove-first flag and remove-last flag. An empty field is absent and a field of =~= is present but empty, because ORE writes an element the document leaves blank and the export has to write it back.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** publication_schedule_dates
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+The schedule's date blocks, one per semicolon, each a pipe-separated record of calendar, convention, tenor, end-of-month, include-duplicates and a comma-separated date list.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** publication_schedule_derived_groups
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+The schedule's derived groups, one per semicolon, each a pipe-separated pair of the derived schedule and the derived flag.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -306,8 +356,11 @@ std::nullopt
 | PublicationRoll | publication_roll | Publication Roll | string | 160 |
 | StartDelay | start_delay | Start Delay | string | 120 |
 | StartDelayConvention | start_delay_convention | Start Delay Convention | string | 180 |
-| Version | version | Version | int | 80 |
-| ModifiedBy | modified_by | Modified By | string | 120 |
+| publication_schedule_name | Schedule Name | publicationScheduleNameEdit | line_edit |  |  |  |
+| publication_schedule_rules | Schedule Rules | publicationScheduleRulesEdit | line_edit |  |  |  |
+| publication_schedule_dates | Schedule Dates | publicationScheduleDatesEdit | line_edit |  |  |  |
+| publication_schedule_derived_groups | Schedule Derived Groups | publicationScheduleDerivedGroupsEdit | line_edit |  |  |  |
+| Version | version | Version | int | 80 || ModifiedBy | modified_by | Modified By | string | 120 |
 | RecordedAt | recorded_at | Recorded At | timestamp | 150 |
 
 ** Custom repository methods

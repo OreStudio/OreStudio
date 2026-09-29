@@ -54,6 +54,10 @@ inflation_swap_convention_mapper::map(const inflation_swap_convention_entity& v)
     r.publication_roll = v.publication_roll;
     r.start_delay = v.start_delay;
     r.start_delay_convention = v.start_delay_convention;
+    r.publication_schedule_name = v.publication_schedule_name;
+    r.publication_schedule_rules = v.publication_schedule_rules;
+    r.publication_schedule_dates = v.publication_schedule_dates;
+    r.publication_schedule_derived_groups = v.publication_schedule_derived_groups;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -85,6 +89,10 @@ inflation_swap_convention_mapper::map(const domain::inflation_swap_convention& v
     r.publication_roll = v.publication_roll;
     r.start_delay = v.start_delay;
     r.start_delay_convention = v.start_delay_convention;
+    r.publication_schedule_name = v.publication_schedule_name;
+    r.publication_schedule_rules = v.publication_schedule_rules;
+    r.publication_schedule_dates = v.publication_schedule_dates;
+    r.publication_schedule_derived_groups = v.publication_schedule_derived_groups;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

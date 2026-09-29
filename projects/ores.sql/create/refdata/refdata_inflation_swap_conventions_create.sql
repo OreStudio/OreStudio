@@ -34,13 +34,11 @@
  * all one hundred and one elements. Of the optional fields it sets only
  * PublicationRoll, in two elements.
  *
- * The element carries one field this table does not model, PublicationSchedule,
- * which ORE types as a schedule of rules, dates and derived schedule groups. No
- * column can hold it. Two shipped files set it, and both carry other unmodelled
- * categories as well. The mapper counts every element that carries one into
- * mapped_conventions::unmodelled under InflationSwap.PublicationSchedule, so
- * the file stays out of the round-trip set and the measurement names the field
- * rather than dropping it.
+ * The element also carries PublicationSchedule, which ORE types as a schedule
+ * of rule blocks, date blocks and derived schedule groups. Each block is written
+ * as one text column in a stated form: blocks are separated by semicolons and a
+ * block's fields by pipes, which is enough to keep every value the binding holds
+ * without a table of its own. Two shipped files set a schedule.
  */
 
 create table if not exists "ores_refdata_inflation_swap_conventions_tbl" (
@@ -59,6 +57,10 @@ create table if not exists "ores_refdata_inflation_swap_conventions_tbl" (
     "publication_roll" text null,
     "start_delay" text null,
     "start_delay_convention" text null,
+    "publication_schedule_name" text null,
+    "publication_schedule_rules" text null,
+    "publication_schedule_dates" text null,
+    "publication_schedule_derived_groups" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,

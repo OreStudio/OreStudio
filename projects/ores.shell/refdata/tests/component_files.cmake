@@ -73,6 +73,7 @@ set(files
     "ibor_index_convention_commands_tests.cpp"
     "inflation_swap_convention_commands_tests.cpp"
     "instrument_code_commands_tests.cpp"
+    "intraday_power_load_convention_commands_tests.cpp"
     "ir_curve_bootstrap_config_commands_tests.cpp"
     "ir_curve_bootstrap_pillar_commands_tests.cpp"
     "ledger_feed_type_commands_tests.cpp"

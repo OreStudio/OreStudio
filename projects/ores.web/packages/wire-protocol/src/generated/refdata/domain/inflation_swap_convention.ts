@@ -47,6 +47,10 @@ export interface InflationSwapConvention {
     publication_roll: string | null;
     start_delay: string | null;
     start_delay_convention: string | null;
+    publication_schedule_name: string | null;
+    publication_schedule_rules: string | null;
+    publication_schedule_dates: string | null;
+    publication_schedule_derived_groups: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

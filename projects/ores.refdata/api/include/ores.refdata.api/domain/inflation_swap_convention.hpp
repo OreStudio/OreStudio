@@ -46,13 +46,11 @@ namespace ores::refdata::domain {
  * all one hundred and one elements. Of the optional fields it sets only
  * PublicationRoll, in two elements.
  *
- * The element carries one field this table does not model, PublicationSchedule,
- * which ORE types as a schedule of rules, dates and derived schedule groups. No
- * column can hold it. Two shipped files set it, and both carry other unmodelled
- * categories as well. The mapper counts every element that carries one into
- * mapped_conventions::unmodelled under InflationSwap.PublicationSchedule, so
- * the file stays out of the round-trip set and the measurement names the field
- * rather than dropping it.
+ * The element also carries PublicationSchedule, which ORE types as a schedule
+ * of rule blocks, date blocks and derived schedule groups. Each block is written
+ * as one text column in a stated form: blocks are separated by semicolons and a
+ * block's fields by pipes, which is enough to keep every value the binding holds
+ * without a table of its own. Two shipped files set a schedule.
  */
 struct inflation_swap_convention final {
     /**
@@ -137,6 +135,33 @@ struct inflation_swap_convention final {
      * @brief Business day convention applied to the start delay.
      */
     std::optional<std::string> start_delay_convention;
+
+    /**
+     * @brief Name of the publication schedule, when ORE gives it one.
+     */
+    std::optional<std::string> publication_schedule_name;
+
+    /**
+     * @brief The schedule's rule blocks, one per semicolon, each a pipe-separated record of start
+     * date, end date, adjust-end-date flag, tenor, calendar, convention, term convention, rule,
+     * end-of-month, end-of-month convention, first date, last date, remove-first flag and
+     * remove-last flag. An empty field is absent and a field of ~ is present but empty, because ORE
+     * writes an element the document leaves blank and the export has to write it back.
+     */
+    std::optional<std::string> publication_schedule_rules;
+
+    /**
+     * @brief The schedule's date blocks, one per semicolon, each a pipe-separated record of
+     * calendar, convention, tenor, end-of-month, include-duplicates and a comma-separated date
+     * list.
+     */
+    std::optional<std::string> publication_schedule_dates;
+
+    /**
+     * @brief The schedule's derived groups, one per semicolon, each a pipe-separated pair of the
+     * derived schedule and the derived flag.
+     */
+    std::optional<std::string> publication_schedule_derived_groups;
 
     /**
      * @brief Username of the person who last modified this inflation swap convention.

@@ -97,6 +97,10 @@ to_domain(const messaging::inflation_swap_convention_write& write) {
     v.publication_roll = write.publication_roll;
     v.start_delay = write.start_delay;
     v.start_delay_convention = write.start_delay_convention;
+    v.publication_schedule_name = write.publication_schedule_name;
+    v.publication_schedule_rules = write.publication_schedule_rules;
+    v.publication_schedule_dates = write.publication_schedule_dates;
+    v.publication_schedule_derived_groups = write.publication_schedule_derived_groups;
     return v;
 }
 

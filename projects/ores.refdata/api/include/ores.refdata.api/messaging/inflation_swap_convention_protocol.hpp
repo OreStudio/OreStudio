@@ -53,6 +53,10 @@ struct inflation_swap_convention_write {
     std::optional<std::string> publication_roll;
     std::optional<std::string> start_delay;
     std::optional<std::string> start_delay_convention;
+    std::optional<std::string> publication_schedule_name;
+    std::optional<std::string> publication_schedule_rules;
+    std::optional<std::string> publication_schedule_dates;
+    std::optional<std::string> publication_schedule_derived_groups;
 };
 
 struct inflation_swap_convention_change {

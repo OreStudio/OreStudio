@@ -144,8 +144,9 @@ void inflation_swap_convention_commands::register_commands(cli::Menu& root_menu,
         },
         "add <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> "
         "<observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> "
-        "<inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason> "
-        "<commentary>");
+        "<inflation_convention> <publication_roll> <start_delay> <start_delay_convention> "
+        "<publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> "
+        "<publication_schedule_derived_groups> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,8 +155,9 @@ void inflation_swap_convention_commands::register_commands(cli::Menu& root_menu,
         },
         "set <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> "
         "<observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> "
-        "<inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason> "
-        "<commentary> [--version <n>]");
+        "<inflation_convention> <publication_roll> <start_delay> <start_delay_convention> "
+        "<publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> "
+        "<publication_schedule_derived_groups> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +167,8 @@ void inflation_swap_convention_commands::register_commands(cli::Menu& root_menu,
         "put-many --count <n> <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> "
         "<interpolated> <observation_lag> <adjust_inflation_observation_dates> "
         "<inflation_calendar> <inflation_convention> <publication_roll> <start_delay> "
-        "<start_delay_convention> <reason> <commentary>");
+        "<start_delay_convention> <publication_schedule_name> <publication_schedule_rules> "
+        "<publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -360,8 +363,8 @@ void inflation_swap_convention_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -388,6 +391,18 @@ void inflation_swap_convention_commands::process_add(std::ostream& out,
         read_token(req.change.write.start_delay_convention,
                    parsed->positionals[next++],
                    "start_delay_convention");
+        read_token(req.change.write.publication_schedule_name,
+                   parsed->positionals[next++],
+                   "publication_schedule_name");
+        read_token(req.change.write.publication_schedule_rules,
+                   parsed->positionals[next++],
+                   "publication_schedule_rules");
+        read_token(req.change.write.publication_schedule_dates,
+                   parsed->positionals[next++],
+                   "publication_schedule_dates");
+        read_token(req.change.write.publication_schedule_derived_groups,
+                   parsed->positionals[next++],
+                   "publication_schedule_derived_groups");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -430,8 +445,8 @@ void inflation_swap_convention_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -458,6 +473,18 @@ void inflation_swap_convention_commands::process_set(std::ostream& out,
         read_token(req.change.write.start_delay_convention,
                    parsed->positionals[next++],
                    "start_delay_convention");
+        read_token(req.change.write.publication_schedule_name,
+                   parsed->positionals[next++],
+                   "publication_schedule_name");
+        read_token(req.change.write.publication_schedule_rules,
+                   parsed->positionals[next++],
+                   "publication_schedule_rules");
+        read_token(req.change.write.publication_schedule_dates,
+                   parsed->positionals[next++],
+                   "publication_schedule_dates");
+        read_token(req.change.write.publication_schedule_derived_groups,
+                   parsed->positionals[next++],
+                   "publication_schedule_derived_groups");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -512,8 +539,8 @@ void inflation_swap_convention_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 13 + 2) {
-            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 17 + 2) {
+            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -542,6 +569,18 @@ void inflation_swap_convention_commands::process_put_many(std::ostream& out,
             read_token(change.write.start_delay_convention,
                        parsed->positionals[next++],
                        "start_delay_convention");
+            read_token(change.write.publication_schedule_name,
+                       parsed->positionals[next++],
+                       "publication_schedule_name");
+            read_token(change.write.publication_schedule_rules,
+                       parsed->positionals[next++],
+                       "publication_schedule_rules");
+            read_token(change.write.publication_schedule_dates,
+                       parsed->positionals[next++],
+                       "publication_schedule_dates");
+            read_token(change.write.publication_schedule_derived_groups,
+                       parsed->positionals[next++],
+                       "publication_schedule_derived_groups");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

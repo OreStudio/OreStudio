@@ -173,6 +173,243 @@ domain::monthType parse_month(const std::string& s) {
     throw std::runtime_error("parse_month: unrecognised '" + s + "'");
 }
 
+std::string join_fields(const std::vector<std::string>& fields, char sep) {
+    std::string out;
+    for (const auto& f : fields) {
+        if (!out.empty())
+            out += sep;
+        out += f;
+    }
+    return out;
+}
+
+std::vector<std::string> split_fields(const std::string& s, char sep) {
+    std::vector<std::string> out;
+    std::istringstream in(s);
+    std::string token;
+    while (std::getline(in, token, sep))
+        out.push_back(token);
+    return out;
+}
+
+bool bool_value(domain::bool_ v) {
+    using b = domain::bool_;
+    switch (v) {
+        case b::Y:
+        case b::YES:
+        case b::TRUE_:
+        case b::True:
+        case b::true_:
+        case b::_1:
+            return true;
+        default:
+            return false;
+    }
+}
+
+domain::dateRule parse_date_rule(const std::string& s);
+
+std::string serialize_schedule_rule(const domain::scheduleData_Rules_t& rule) {
+    return join_fields(
+        {std::string(rule.StartDate),
+         rule.EndDate ? (rule.EndDate->empty() ? std::string("~") : std::string(*rule.EndDate))
+                      : std::string(),
+         rule.AdjustEndDateToPreviousMonthEnd
+             ? (bool_value(*rule.AdjustEndDateToPreviousMonthEnd) ? "true" : "false")
+             : std::string(),
+         std::string(rule.Tenor), rule.Calendar ? std::string(*rule.Calendar) : std::string(),
+         to_string(rule.Convention),
+         rule.TermConvention ? to_string(*rule.TermConvention) : std::string(),
+         rule.Rule ? to_string(*rule.Rule) : std::string(),
+         rule.EndOfMonth ? (bool_value(*rule.EndOfMonth) ? "true" : "false") : std::string(),
+         rule.EndOfMonthConvention ? to_string(*rule.EndOfMonthConvention) : std::string(),
+         rule.FirstDate ? (rule.FirstDate->empty() ? std::string("~")
+                                                   : std::string(*rule.FirstDate))
+                        : std::string(),
+         rule.LastDate ? (rule.LastDate->empty() ? std::string("~")
+                                                 : std::string(*rule.LastDate))
+                       : std::string(),
+         rule.RemoveFirstDate ? (*rule.RemoveFirstDate ? "true" : "false") : std::string(),
+         rule.RemoveLastDate ? (*rule.RemoveLastDate ? "true" : "false") : std::string()},
+        '|');
+}
+
+domain::scheduleData_Rules_t parse_schedule_rule(const std::string& s) {
+    domain::scheduleData_Rules_t rule;
+    const auto f = split_fields(s, '|');
+    auto at = [&f](std::size_t i) { return i < f.size() ? f[i] : std::string(); };
+    static_cast<std::string&>(rule.StartDate) = at(0);
+    if (at(1) == "~")
+        rule.EndDate = domain::date(std::string());
+    else if (!at(1).empty())
+        rule.EndDate = domain::date(at(1));
+    if (!at(2).empty())
+        rule.AdjustEndDateToPreviousMonthEnd = at(2) == "true" ? domain::bool_::True : domain::bool_::False;
+    static_cast<std::string&>(rule.Tenor) = at(3);
+    if (!at(4).empty())
+        rule.Calendar = domain::calendar(at(4));
+    rule.Convention = parse_bdc(at(5));
+    if (!at(6).empty())
+        rule.TermConvention = parse_bdc(at(6));
+    if (!at(7).empty())
+        rule.Rule = parse_date_rule(at(7));
+    if (!at(8).empty())
+        rule.EndOfMonth = at(8) == "true" ? domain::bool_::True : domain::bool_::False;
+    if (!at(9).empty())
+        rule.EndOfMonthConvention = parse_bdc(at(9));
+    if (at(10) == "~")
+        rule.FirstDate = domain::date(std::string());
+    else if (!at(10).empty())
+        rule.FirstDate = domain::date(at(10));
+    if (at(11) == "~")
+        rule.LastDate = domain::date(std::string());
+    else if (!at(11).empty())
+        rule.LastDate = domain::date(at(11));
+    if (!at(12).empty())
+        rule.RemoveFirstDate = at(12) == "true";
+    if (!at(13).empty())
+        rule.RemoveLastDate = at(13) == "true";
+    return rule;
+}
+
+std::string serialize_schedule_dates(const domain::scheduleData_Dates_t& block) {
+    std::string dates;
+    for (const auto& d : block.Dates.Date) {
+        if (!dates.empty())
+            dates += ",";
+        dates += static_cast<const std::string&>(d);
+    }
+    return join_fields({block.Calendar ? std::string(*block.Calendar) : std::string(),
+                        block.Convention ? to_string(*block.Convention) : std::string(),
+                        block.Tenor ? std::string(*block.Tenor) : std::string(),
+                        block.EndOfMonth ? (bool_value(*block.EndOfMonth) ? "true" : "false")
+                                         : std::string(),
+                        block.IncludeDuplicateDates
+                            ? (bool_value(*block.IncludeDuplicateDates) ? "true" : "false")
+                            : std::string(),
+                        dates},
+                       '|');
+}
+
+domain::scheduleData_Dates_t parse_schedule_dates(const std::string& s) {
+    domain::scheduleData_Dates_t block;
+    const auto f = split_fields(s, '|');
+    auto at = [&f](std::size_t i) { return i < f.size() ? f[i] : std::string(); };
+    if (!at(0).empty())
+        block.Calendar = domain::calendar(at(0));
+    if (!at(1).empty())
+        block.Convention = parse_bdc(at(1));
+    if (!at(2).empty())
+        block.Tenor = domain::scheduleData_Dates_t_Tenor_t(at(2));
+    if (!at(3).empty())
+        block.EndOfMonth = at(3) == "true" ? domain::bool_::True : domain::bool_::False;
+    if (!at(4).empty())
+        block.IncludeDuplicateDates = at(4) == "true" ? domain::bool_::True : domain::bool_::False;
+    for (const auto& d : split_fields(at(5), ',')) {
+        if (!d.empty())
+            block.Dates.Date.push_back(domain::date(d));
+    }
+    return block;
+}
+
+std::string serialize_derived_schedule(const domain::DerivedScheduleType& d) {
+    return join_fields({std::string(d.BaseSchedule),
+                        d.Shift ? std::string(*d.Shift) : std::string(),
+                        d.Calendar ? std::string(*d.Calendar) : std::string(),
+                        d.Convention ? to_string(*d.Convention) : std::string(),
+                        d.RemoveFirstDate ? (*d.RemoveFirstDate ? "true" : "false") : std::string(),
+                        d.RemoveLastDate ? (*d.RemoveLastDate ? "true" : "false") : std::string(),
+                        std::string(), std::string()},
+                       '|');
+}
+
+domain::DerivedScheduleType parse_derived_schedule(const std::string& s) {
+    domain::DerivedScheduleType d;
+    const auto f = split_fields(s, '|');
+    auto at = [&f](std::size_t i) { return i < f.size() ? f[i] : std::string(); };
+    static_cast<std::string&>(d.BaseSchedule) = at(0);
+    if (!at(1).empty())
+        d.Shift = domain::DerivedScheduleType_Shift_t(at(1));
+    if (!at(2).empty())
+        d.Calendar = domain::calendar(at(2));
+    if (!at(3).empty())
+        d.Convention = parse_bdc(at(3));
+    if (!at(4).empty())
+        d.RemoveFirstDate = at(4) == "true";
+    if (!at(5).empty())
+        d.RemoveLastDate = at(5) == "true";
+    return d;
+}
+
+std::string serialize_factors(const domain::loadFactorsType& factors) {
+    std::string out;
+    for (const auto& f : factors.LoadFactor) {
+        if (!out.empty())
+            out += ",";
+        out += std::to_string(f.from) + ":" + std::to_string(f.to) + ":" +
+               (f.unit ? std::string(*f.unit) : std::string()) + ":" +
+               (f.dst ? (bool_value(*f.dst) ? "true" : "false") : std::string()) + ":" +
+               std::to_string(static_cast<double>(f));
+    }
+    return out;
+}
+
+domain::loadFactorsType parse_factors(const std::string& s) {
+    domain::loadFactorsType factors;
+    for (const auto& record : split_fields(s, ',')) {
+        if (record.empty())
+            continue;
+        const auto parts = split_fields(record, ':');
+        if (parts.size() < 5)
+            continue;
+        domain::loadFactorType f;
+        f.from = std::stoll(parts[0]);
+        f.to = std::stoll(parts[1]);
+        if (!parts[2].empty())
+            f.unit = parts[2];
+        if (!parts[3].empty())
+            f.dst = parts[3] == "true" ? domain::bool_::True : domain::bool_::False;
+        static_cast<double&>(f) = std::stod(parts[4]);
+        factors.LoadFactor.push_back(f);
+    }
+    return factors;
+}
+
+domain::dateRule parse_date_rule(const std::string& s) {
+    using dr = domain::dateRule;
+    if (s == "Backward")
+        return dr::Backward;
+    if (s == "Forward")
+        return dr::Forward;
+    if (s == "Zero")
+        return dr::Zero;
+    if (s == "ThirdWednesday")
+        return dr::ThirdWednesday;
+    if (s == "Twentieth")
+        return dr::Twentieth;
+    if (s == "TwentiethIMM")
+        return dr::TwentiethIMM;
+    if (s == "OldCDS")
+        return dr::OldCDS;
+    if (s == "CDS")
+        return dr::CDS;
+    if (s == "CDS2015")
+        return dr::CDS2015;
+    if (s == "ThirdThursday")
+        return dr::ThirdThursday;
+    if (s == "ThirdFriday")
+        return dr::ThirdFriday;
+    if (s == "MondayAfterThirdFriday")
+        return dr::MondayAfterThirdFriday;
+    if (s == "TuesdayAfterThirdFriday")
+        return dr::TuesdayAfterThirdFriday;
+    if (s == "LastWednesday")
+        return dr::LastWednesday;
+    if (s == "EveryThursday")
+        return dr::EveryThursday;
+    throw std::runtime_error("parse_date_rule: unrecognised '" + s + "'");
+}
+
 domain::averagingDataPeriodType parse_averaging_period(const std::string& s) {
     using p = domain::averagingDataPeriodType;
     if (s == "PreviousMonth")
@@ -235,41 +472,6 @@ domain::compounding parse_compounding(const std::string& s) {
     if (s == "SimpleThenCompounded")
         return cm::SimpleThenCompounded;
     throw std::runtime_error("parse_compounding: unrecognised '" + s + "'");
-}
-
-domain::dateRule parse_date_rule(const std::string& s) {
-    using dr = domain::dateRule;
-    if (s == "Backward")
-        return dr::Backward;
-    if (s == "Forward")
-        return dr::Forward;
-    if (s == "Zero")
-        return dr::Zero;
-    if (s == "ThirdWednesday")
-        return dr::ThirdWednesday;
-    if (s == "Twentieth")
-        return dr::Twentieth;
-    if (s == "TwentiethIMM")
-        return dr::TwentiethIMM;
-    if (s == "OldCDS")
-        return dr::OldCDS;
-    if (s == "CDS")
-        return dr::CDS;
-    if (s == "CDS2015")
-        return dr::CDS2015;
-    if (s == "ThirdThursday")
-        return dr::ThirdThursday;
-    if (s == "ThirdFriday")
-        return dr::ThirdFriday;
-    if (s == "MondayAfterThirdFriday")
-        return dr::MondayAfterThirdFriday;
-    if (s == "TuesdayAfterThirdFriday")
-        return dr::TuesdayAfterThirdFriday;
-    if (s == "LastWednesday")
-        return dr::LastWednesday;
-    if (s == "EveryThursday")
-        return dr::EveryThursday;
-    throw std::runtime_error("parse_date_rule: unrecognised '" + s + "'");
 }
 
 domain::bool_ make_bool(bool v) {
@@ -484,6 +686,47 @@ reverse_commodity_forward(const refdata::domain::commodity_forward_convention& v
         r.BusinessDayConvention = parse_bdc(*v.business_day_convention);
     if (v.outright)
         r.Outright = make_bool(*v.outright);
+    return r;
+}
+
+intradayPowerLoad
+reverse_intraday_power_load(const refdata::domain::intraday_power_load_convention& v) {
+    intradayPowerLoad r;
+    static_cast<std::string&>(r.Id) = v.id;
+    if (v.explicit_load_profile || v.business_day_load_rules) {
+        powerLoadProfileDataType profile;
+        if (v.explicit_load_profile) {
+            explicitLoadProfileType explicit_dates;
+            for (const auto& record : split_fields(*v.explicit_load_profile, ';')) {
+                if (record.empty())
+                    continue;
+                const auto parts = split_fields(record, '|');
+                explicitLoadProfileType_LoadProfileDatum_t datum;
+                static_cast<std::string&>(datum.Date) = parts.empty() ? std::string() : parts[0];
+                if (parts.size() > 1)
+                    datum.LoadFactors = parse_factors(parts[1]);
+                explicit_dates.LoadProfileDatum.push_back(datum);
+            }
+            profile.ExplicitDates = explicit_dates;
+        }
+        if (v.business_day_load_rules) {
+            ruleBasedLoadProfileType rules;
+            for (const auto& record : split_fields(*v.business_day_load_rules, ';')) {
+                const auto parts = split_fields(record, '|');
+                ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t rule;
+                static_cast<std::string&>(rule.Date) = parts.empty() ? std::string() : parts[0];
+                static_cast<std::string&>(rule.Calendar) =
+                    parts.size() > 1 ? parts[1] : std::string();
+                if (parts.size() > 2 && !parts[2].empty())
+                    rule.BusinessDayLoadFactors = parse_factors(parts[2]);
+                if (parts.size() > 3 && !parts[3].empty())
+                    rule.NonBusinessDayLoadFactors = parse_factors(parts[3]);
+                rules.LoadProfileBusinessDayRule.push_back(rule);
+            }
+            profile.BusinessDayRules = rules;
+        }
+        r.PowerLoadProfileData = profile;
+    }
     return r;
 }
 
@@ -765,6 +1008,37 @@ inflationswapType reverse_inflation_swap(const refdata::domain::inflation_swap_c
     }
     if (v.start_delay_convention)
         r.StartDelayConvention = parse_bdc(*v.start_delay_convention);
+    if (v.publication_schedule_name || v.publication_schedule_rules ||
+        v.publication_schedule_dates || v.publication_schedule_derived_groups) {
+        scheduleData schedule;
+        if (v.publication_schedule_name)
+            schedule.name = xsd::string(*v.publication_schedule_name);
+        if (v.publication_schedule_rules) {
+            for (const auto& token : split_fields(*v.publication_schedule_rules, ';')) {
+                if (!token.empty())
+                    schedule.Rules.push_back(parse_schedule_rule(token));
+            }
+        }
+        if (v.publication_schedule_dates) {
+            for (const auto& token : split_fields(*v.publication_schedule_dates, ';')) {
+                if (!token.empty())
+                    schedule.Dates.push_back(parse_schedule_dates(token));
+            }
+        }
+        if (v.publication_schedule_derived_groups) {
+            for (const auto& token : split_fields(*v.publication_schedule_derived_groups, ';')) {
+                if (token.size() < 3 || token[1] != '|')
+                    continue;
+                DerivedScheduleGroup_group_t group;
+                if (token[0] == 'S')
+                    group.DerivedSchedule = parse_derived_schedule(token.substr(2));
+                else
+                    group.Derived = parse_derived_schedule(token.substr(2));
+                schedule.DerivedScheduleGroup.push_back(group);
+            }
+        }
+        r.PublicationSchedule = schedule;
+    }
     return r;
 }
 
@@ -1779,6 +2053,45 @@ conventions_mapper::map_commodity_forward(const commodityForwardType& v) {
     return r;
 }
 
+refdata::domain::intraday_power_load_convention
+conventions_mapper::map_intraday_power_load(const intradayPowerLoad& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping intraday power load convention: " << std::string(v.Id);
+
+    refdata::domain::intraday_power_load_convention r;
+    r.id = std::string(v.Id);
+
+    if (v.PowerLoadProfileData) {
+        const auto& profile = *v.PowerLoadProfileData;
+        if (profile.ExplicitDates) {
+            std::string out;
+            for (const auto& datum : profile.ExplicitDates->LoadProfileDatum) {
+                if (!out.empty())
+                    out += ";";
+                out += std::string(datum.Date) + "|" + serialize_factors(datum.LoadFactors);
+            }
+            r.explicit_load_profile = out;
+        }
+        if (profile.BusinessDayRules) {
+            std::string out;
+            for (const auto& rule : profile.BusinessDayRules->LoadProfileBusinessDayRule) {
+                if (!out.empty())
+                    out += ";";
+                out += std::string(rule.Date) + "|" + std::string(rule.Calendar) + "|" +
+                       (rule.BusinessDayLoadFactors ? serialize_factors(*rule.BusinessDayLoadFactors)
+                                                    : std::string()) +
+                       "|" +
+                       (rule.NonBusinessDayLoadFactors
+                            ? serialize_factors(*rule.NonBusinessDayLoadFactors)
+                            : std::string());
+            }
+            r.business_day_load_rules = out;
+        }
+    }
+
+    set_audit(r);
+    return r;
+}
+
 refdata::domain::bond_yield_convention
 conventions_mapper::map_bond_yield(const bondYield& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << std::string(v.Id);
@@ -2079,6 +2392,46 @@ conventions_mapper::map_inflation_swap(const inflationswapType& v) {
     if (v.StartDelayConvention)
         r.start_delay_convention = normalize_bdc(*v.StartDelayConvention);
 
+    if (v.PublicationSchedule) {
+        const auto& s = *v.PublicationSchedule;
+        if (s.name)
+            r.publication_schedule_name = std::string(*s.name);
+
+        std::string rules;
+        for (const auto& rule : s.Rules) {
+            if (!rules.empty())
+                rules += ";";
+            rules += serialize_schedule_rule(rule);
+        }
+        if (!rules.empty())
+            r.publication_schedule_rules = rules;
+
+        std::string dates;
+        for (const auto& block : s.Dates) {
+            if (!dates.empty())
+                dates += ";";
+            dates += serialize_schedule_dates(block);
+        }
+        if (!dates.empty())
+            r.publication_schedule_dates = dates;
+
+        std::string groups;
+        for (const auto& group : s.DerivedScheduleGroup) {
+            if (group.DerivedSchedule) {
+                if (!groups.empty())
+                    groups += ";";
+                groups += "S|" + serialize_derived_schedule(*group.DerivedSchedule);
+            }
+            if (group.Derived) {
+                if (!groups.empty())
+                    groups += ";";
+                groups += "D|" + serialize_derived_schedule(*group.Derived);
+            }
+        }
+        if (!groups.empty())
+            r.publication_schedule_derived_groups = groups;
+    }
+
     set_audit(r);
     return r;
 }
@@ -2275,6 +2628,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
                            std::back_inserter(r.commodity_forward),
                            [](const auto& x) { return map_commodity_forward(x); });
 
+    r.intraday_power_load.reserve(v.IntradayPowerLoad.size());
+    std::ranges::transform(v.IntradayPowerLoad,
+                           std::back_inserter(r.intraday_power_load),
+                           [](const auto& x) { return map_intraday_power_load(x); });
+
     r.bond_yield.reserve(v.BondYield.size());
     std::ranges::transform(v.BondYield,
                            std::back_inserter(r.bond_yield),
@@ -2366,19 +2724,12 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
             r.unmodelled.emplace(std::string(name), count);
     };
     count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
-    count_unmodelled("IntradayPowerLoad", v.IntradayPowerLoad.size());
 
     std::size_t rebasing_events = 0;
     for (const auto& x : v.ZeroInflationIndex)
         if (x.RebasingEvents)
             ++rebasing_events;
     count_unmodelled("ZeroInflationIndex.RebasingEvents", rebasing_events);
-
-    std::size_t publication_schedules = 0;
-    for (const auto& x : v.InflationSwap)
-        if (x.PublicationSchedule)
-            ++publication_schedules;
-    count_unmodelled("InflationSwap.PublicationSchedule", publication_schedules);
 
     for (const auto& [name, count] : r.unmodelled) {
         BOOST_LOG_SEV(lg(), warn)
@@ -2437,6 +2788,10 @@ conventions conventions_mapper::reverse(const mapped_conventions& v) {
     r.CommodityForward.reserve(v.commodity_forward.size());
     for (const auto& x : v.commodity_forward)
         r.CommodityForward.push_back(reverse_commodity_forward(x));
+
+    r.IntradayPowerLoad.reserve(v.intraday_power_load.size());
+    for (const auto& x : v.intraday_power_load)
+        r.IntradayPowerLoad.push_back(reverse_intraday_power_load(x));
 
     r.BondYield.reserve(v.bond_yield.size());
     for (const auto& x : v.bond_yield)

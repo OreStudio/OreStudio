@@ -89,8 +89,9 @@ public:
     /**
      * @brief add <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated>
      * <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar>
-     * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason>
-     * <commentary>
+     * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention>
+     * <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates>
+     * <publication_schedule_derived_groups> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -99,8 +100,9 @@ public:
     /**
      * @brief set <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated>
      * <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar>
-     * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason>
-     * <commentary> [--version <n>]
+     * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention>
+     * <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates>
+     * <publication_schedule_derived_groups> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -109,8 +111,9 @@ public:
     /**
      * @brief put-many --count <n> <id> <fix_calendar> <fix_convention> <day_count_fraction> <index>
      * <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar>
-     * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason>
-     * <commentary>
+     * <inflation_convention> <publication_roll> <start_delay> <start_delay_convention>
+     * <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates>
+     * <publication_schedule_derived_groups> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

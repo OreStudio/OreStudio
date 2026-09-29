@@ -402,6 +402,22 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Intraday Power Load Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_intraday_power_load_conventions_tbl enable row level security;
+
+drop policy if exists intraday_power_load_conventions_tenant_isolation_policy
+    on ores_refdata_intraday_power_load_conventions_tbl;
+
+create policy intraday_power_load_conventions_tenant_isolation_policy on ores_refdata_intraday_power_load_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Bond Yield Conventions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_bond_yield_conventions_tbl enable row level security;

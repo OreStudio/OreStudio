@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-inflation_swap_conventions add <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason> <commentary>
+inflation_swap_conventions add <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.inflation_swap_conventions.put=.
 
 #+name: inflation_swap_conventions-add
 #+begin_src ores-shell :tangle inflation_swap_conventions-add.ores :exports none
-inflation_swap_conventions add __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - system.new_record generated_script
+inflation_swap_conventions add __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-inflation_swap_conventions set <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason> <commentary> [--version <n>]
+inflation_swap_conventions set <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.inflation_swap_conventions.put=.
 
 #+name: inflation_swap_conventions-set
 #+begin_src ores-shell :tangle inflation_swap_conventions-set.ores :exports none
-inflation_swap_conventions set __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - system.new_record generated_script
+inflation_swap_conventions set __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-inflation_swap_conventions put-many --count <n> <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <reason> <commentary>
+inflation_swap_conventions put-many --count <n> <id> <fix_calendar> <fix_convention> <day_count_fraction> <index> <interpolated> <observation_lag> <adjust_inflation_observation_dates> <inflation_calendar> <inflation_convention> <publication_roll> <start_delay> <start_delay_convention> <publication_schedule_name> <publication_schedule_rules> <publication_schedule_dates> <publication_schedule_derived_groups> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.inflation_swap_conventions.put_many=.
 
 #+name: inflation_swap_conventions-put-many
 #+begin_src ores-shell :tangle inflation_swap_conventions-put-many.ores :exports none
-inflation_swap_conventions put-many --count 1 __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - system.new_record generated_script
+inflation_swap_conventions put-many --count 1 __none__ __none__ __none__ __none__ __none__ false __none__ false __none__ __none__ - - - - - - - system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -40,6 +40,7 @@
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/inflation_swap_convention.hpp"
+#include "ores.refdata.api/domain/intraday_power_load_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
@@ -100,6 +101,7 @@ struct mapped_conventions {
     std::vector<refdata::domain::future_convention> future;
     std::vector<refdata::domain::fx_option_convention> fx_option;
     std::vector<refdata::domain::inflation_swap_convention> inflation_swap;
+    std::vector<refdata::domain::intraday_power_load_convention> intraday_power_load;
     std::vector<refdata::domain::ois_convention> ois;
     std::vector<refdata::domain::fra_convention> fra;
     std::vector<refdata::domain::ibor_index_convention> ibor_index;
@@ -149,6 +151,7 @@ private:
     static std::string normalize_frequency(domain::frequencyType v);
     static std::string normalize_compounding(domain::compounding v);
     static std::string normalize_date_rule(domain::dateRule v);
+
     static bool parse_bool(domain::bool_ v);
 
 public:
@@ -191,6 +194,9 @@ public:
 
     static refdata::domain::inflation_swap_convention
     map_inflation_swap(const inflationswapType& v);
+
+    static refdata::domain::intraday_power_load_convention
+    map_intraday_power_load(const intradayPowerLoad& v);
 
     static refdata::domain::overnight_index_convention
     map_overnight_index(const overnightIndexType& v);

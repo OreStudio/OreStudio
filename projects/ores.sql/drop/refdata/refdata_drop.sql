@@ -81,6 +81,8 @@
 \ir ./refdata_commodity_forward_conventions_drop.sql
 \ir ./refdata_bond_yield_conventions_notify_trigger_drop.sql
 \ir ./refdata_bond_yield_conventions_drop.sql
+\ir ./refdata_intraday_power_load_conventions_notify_trigger_drop.sql
+\ir ./refdata_intraday_power_load_conventions_drop.sql
 \ir ./refdata_fra_conventions_notify_trigger_drop.sql
 \ir ./refdata_fra_conventions_drop.sql
 \ir ./refdata_ois_conventions_notify_trigger_drop.sql

@@ -230,6 +230,8 @@
 \ir ./refdata_commodity_forward_conventions_notify_trigger_create.sql
 \ir ./refdata_bond_yield_conventions_create.sql
 \ir ./refdata_bond_yield_conventions_notify_trigger_create.sql
+\ir ./refdata_intraday_power_load_conventions_create.sql
+\ir ./refdata_intraday_power_load_conventions_notify_trigger_create.sql
 \ir ./refdata_overnight_index_conventions_create.sql
 \ir ./refdata_overnight_index_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql

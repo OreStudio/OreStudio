@@ -1075,3 +1075,7 @@ tangled into the runnable script library
 * Commodity Forward Conventions
 
 - [[id:91F7757D-D3E0-553C-A4F5-BFE8484E8A43][How do I run the commodity_forward_conventions commands from the shell?]]
+
+* Intraday Power Load Conventions
+
+- [[id:9E9A7855-DC09-5B10-B1C5-131EA13ACDC6][How do I run the intraday_power_load_conventions commands from the shell?]]

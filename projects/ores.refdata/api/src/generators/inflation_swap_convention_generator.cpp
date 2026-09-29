@@ -60,6 +60,10 @@ generate_synthetic_inflation_swap_convention(utility::generation::generation_con
     r.publication_roll = std::nullopt;
     r.start_delay = std::nullopt;
     r.start_delay_convention = std::nullopt;
+    r.publication_schedule_name = std::nullopt;
+    r.publication_schedule_rules = std::nullopt;
+    r.publication_schedule_dates = std::nullopt;
+    r.publication_schedule_derived_groups = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

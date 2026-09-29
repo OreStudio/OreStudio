@@ -32,8 +32,8 @@
  * @brief The conventions kind: what rounds trips, and what the mapper drops.
  *
  * The document carries twenty-six convention categories and the mapper models
- * twenty-four. The files that use only those twenty-four round trip. The rest
- * do not,
+ * twenty-five. The files that use only those twenty-five round trip, and all
+ * seventy-two of them do.
  * because a category the mapper does not model is content the export cannot
  * write, and the measurement below says which categories those are and how many
  * files each one costs.
@@ -252,6 +252,60 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
     // Forty-nine of the seventy-two at the commit this was written at. It is the
     // largest category in the document, and three files carried nothing else.
     CHECK(files_with_basis == 49);
+}
+
+TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
+    int files_with_intraday_power = 0;
+    std::size_t elements_with_intraday_power = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.IntradayPowerLoad.empty())
+            continue;
+
+        ++files_with_intraday_power;
+        elements_with_intraday_power += document.IntradayPowerLoad.size();
+        const auto mapped = conventions_mapper::map(document);
+        REQUIRE(mapped.intraday_power_load.size() == document.IntradayPowerLoad.size());
+
+        for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
+            const auto& in = document.IntradayPowerLoad[i];
+            const auto& out = mapped.intraday_power_load[i];
+            CHECK(out.id == std::string(in.Id));
+            if (in.PowerLoadProfileData) {
+                const auto& profile = *in.PowerLoadProfileData;
+                if (profile.ExplicitDates)
+                    CHECK(out.explicit_load_profile.has_value());
+                if (profile.BusinessDayRules)
+                    CHECK(out.business_day_load_rules.has_value());
+            }
+        }
+
+        // The two load profiles are written as text columns, so the mapper must
+        // not report the category as skipped.
+        CHECK(mapped.unmodelled.empty());
+
+        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const int written = element_count(exported, "IntradayPowerLoad");
+        INFO(path.string() + ": the document has " +
+             std::to_string(document.IntradayPowerLoad.size()) +
+             " IntradayPowerLoad element(s), the export " + std::to_string(written));
+        CHECK(written == static_cast<int>(document.IntradayPowerLoad.size()));
+
+        conventions reparsed;
+        load_data(exported, reparsed);
+        REQUIRE(reparsed.IntradayPowerLoad.size() == document.IntradayPowerLoad.size());
+
+        const auto remapped = conventions_mapper::map(reparsed);
+        for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
+            INFO(path.string() + ": IntradayPowerLoad element " + std::to_string(i));
+            CHECK(remapped.intraday_power_load[i] == mapped.intraday_power_load[i]);
+        }
+    }
+
+    // One of the seventy-two files carries it, in two elements, one of each form.
+    CHECK(files_with_intraday_power == 1);
+    CHECK(elements_with_intraday_power == 2);
 }
 
 TEST_CASE("conventions_commodity_forward_round_trips", tags) {
@@ -601,12 +655,15 @@ TEST_CASE("conventions_inflation_swap_round_trips", tags) {
                 carries_a_schedule = true;
         }
 
-        // A schedule of rules, dates and derived groups has no column to hold
-        // it, so the mapper counts it. A file that carries one must therefore
-        // name it, and must not be in the round-trip set.
+        // A schedule of rules, dates and derived groups is written as text
+        // columns, so the mapper must not report it as skipped.
         if (carries_a_schedule) {
             ++files_with_a_publication_schedule;
-            CHECK(mapped.unmodelled.count("InflationSwap.PublicationSchedule") == 1);
+            CHECK(mapped.unmodelled.count("InflationSwap.PublicationSchedule") == 0);
+            for (const auto& out : mapped.inflation_swap) {
+                if (out.publication_schedule_rules)
+                    CHECK(!out.publication_schedule_rules->empty());
+            }
         }
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
@@ -883,10 +940,10 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         CHECK(outcome.passed);
     }
 
-    // Sixty-nine of the seventy-two once CommodityFuture landed: the two files
-    // it cleared on its own on top of the sixty-seven already clean. The count
-    // is asserted so that a change in it is noticed rather than absorbed.
-    CHECK(walked == 69);
+    // All seventy-two once the publication schedule and the intraday power load
+    // were written as text columns. The count is asserted so that a change in
+    // it is noticed rather than absorbed.
+    CHECK(walked == 72);
 }
 
 // Hidden by default, and run on demand:

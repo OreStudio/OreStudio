@@ -49,6 +49,14 @@ render_inflation_swap_convention_fields(const domain::inflation_swap_convention&
     fields.push_back({.name = "Start Delay", .value = v.start_delay.value_or(std::string{})});
     fields.push_back({.name = "Start Delay Convention",
                       .value = v.start_delay_convention.value_or(std::string{})});
+    fields.push_back({.name = "Publication Schedule Name",
+                      .value = v.publication_schedule_name.value_or(std::string{})});
+    fields.push_back({.name = "Publication Schedule Rules",
+                      .value = v.publication_schedule_rules.value_or(std::string{})});
+    fields.push_back({.name = "Publication Schedule Dates",
+                      .value = v.publication_schedule_dates.value_or(std::string{})});
+    fields.push_back({.name = "Publication Schedule Derived Groups",
+                      .value = v.publication_schedule_derived_groups.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

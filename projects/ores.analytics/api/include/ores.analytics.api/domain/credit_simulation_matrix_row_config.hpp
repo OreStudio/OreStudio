@@ -78,42 +78,42 @@ struct credit_simulation_matrix_row_config final {
     /**
      * @brief The probability of moving from the row's rating to aaa.
      */
-    double p_aaa;
+    double p_aaa = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to aa.
      */
-    double p_aa;
+    double p_aa = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to a.
      */
-    double p_a;
+    double p_a = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to baa.
      */
-    double p_baa;
+    double p_baa = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to ba.
      */
-    double p_ba;
+    double p_ba = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to b.
      */
-    double p_b;
+    double p_b = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to c.
      */
-    double p_c;
+    double p_c = 0.0;
 
     /**
      * @brief The probability of moving from the row's rating to default.
      */
-    double p_default;
+    double p_default = 0.0;
 
     /**
      * @brief Username of the person who last modified this matrix row.

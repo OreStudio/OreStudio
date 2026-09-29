@@ -66,6 +66,7 @@ is one of the eight is enforced by the type, not by a lookup.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to aaa.
@@ -75,6 +76,7 @@ The probability of moving from the row's rating to aaa.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to aa.
@@ -84,6 +86,7 @@ The probability of moving from the row's rating to aa.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to a.
@@ -93,6 +96,7 @@ The probability of moving from the row's rating to a.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to baa.
@@ -102,6 +106,7 @@ The probability of moving from the row's rating to baa.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to ba.
@@ -111,6 +116,7 @@ The probability of moving from the row's rating to ba.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to b.
@@ -120,6 +126,7 @@ The probability of moving from the row's rating to b.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to c.
@@ -129,6 +136,7 @@ The probability of moving from the row's rating to c.
 :type:     double precision
 :cpp_type: double
 :nullable: false
+:default_value: 0.0
 :END:
 
 The probability of moving from the row's rating to default.

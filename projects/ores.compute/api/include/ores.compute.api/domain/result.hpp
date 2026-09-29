@@ -80,7 +80,7 @@ struct result final {
     /**
      * @brief PGMQ lease pointer; NULL when not actively queued.
      */
-    std::int64_t pgmq_msg_id;
+    std::int64_t pgmq_msg_id = 0;
 
     /**
      * @brief State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
@@ -90,7 +90,7 @@ struct result final {
     /**
      * @brief Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
      */
-    int outcome;
+    int outcome = 0;
 
     /**
      * @brief URI where the wrapper uploaded the zipped output; NULL until completed.
@@ -105,7 +105,7 @@ struct result final {
     /**
      * @brief Timestamp when the output was received by the server pool.
      */
-    std::chrono::system_clock::time_point received_at;
+    std::chrono::system_clock::time_point received_at = {};
 
     /**
      * @brief Username of the person who last modified this compute result.

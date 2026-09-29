@@ -89,7 +89,7 @@ struct host final {
     /**
      * @brief Timestamp of the last heartbeat received from this node.
      */
-    std::chrono::system_clock::time_point last_rpc_time;
+    std::chrono::system_clock::time_point last_rpc_time = {};
 
     /**
      * @brief Accumulated work units successfully processed by this host.

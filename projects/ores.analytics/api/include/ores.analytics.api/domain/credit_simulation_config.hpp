@@ -79,7 +79,7 @@ struct credit_simulation_config final {
     /**
      * @brief Whether the market profit and loss is zeroed.
      */
-    bool zero_market_pnl;
+    bool zero_market_pnl = false;
 
     /**
      * @brief The evaluation date or rule the run uses.
@@ -89,17 +89,17 @@ struct credit_simulation_config final {
     /**
      * @brief Whether double default is modelled.
      */
-    bool double_default;
+    bool double_default = false;
 
     /**
      * @brief The Monte Carlo seed.
      */
-    int seed;
+    int seed = 0;
 
     /**
      * @brief The number of Monte Carlo paths.
      */
-    int paths;
+    int paths = 0;
 
     /**
      * @brief The credit simulation mode.

@@ -46,8 +46,8 @@ struct credit_simulation_matrix_config_entity {
     std::string tenant_id;
     int version = 0;
     std::string name;
-    double t0;
-    double t1;
+    double t0 = 0.0;
+    double t1 = 1.0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

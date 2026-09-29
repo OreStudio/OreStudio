@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: F1523C7D-5DA9-42C1-8928-45C1642D4B64
+:END:
+#+title: 87 non-nullable columns still generate an indeterminate member
+#+description: Only :default_value: reaches a generated struct's member initializer, and codegen synthesises one for bool and int alone. 87 non-nullable columns across the catalogue declare neither, so a default-constructed object of the type they belong to holds indeterminate members that are only found when a write path reads them -- which is how the 2026-09-29 nightly found 214 reads in ores.analytics.core.tests and 99 in ores.ore.core.tests. The valgrind hotfix closed the instances it reported and gated the nullable shape; the class remains.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:valgrind:models:tech_debt:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide the rule for a non-nullable model column that declares no
+=:default_value:=, and apply it. Either the code-generation templates
+synthesise a safe default for every remaining type the way they already do
+for =bool= and =int=, or =org_loader= refuses the column so the model has
+to state its default.
+
+* Why
+
+=build/valgrind/custom.supp= and the nightly memcheck run are the only thing
+that finds these, and they find them late: the defect appears as an
+uninitialised read in whichever write path happens to touch the member first,
+on main, days later.
+
+The census, taken on this branch with
+=build/hotfix_red/census_defaults.py= over =projects/*/modeling/*.org=:
+
+| cpp_type | columns |
+|----------+---------|
+| =int= | 149 |
+| =std::chrono::year_month_day= | 45 |
+| =std::chrono::system_clock::time_point= | 16 |
+| =std::int64_t= | 10 |
+| =std::uint64_t= | 8 |
+| =std::uint32_t= | 5 |
+| =double= | 3 |
+
+The 149 =int= columns are safe by accident: =core.py= synthesises =0= for
+=bool= and =int=. The other 87 are indeterminate, and every one of them is
+the same defect the valgrind hotfix fixed fifteen instances of: a
+default-constructed =credit_simulation_matrix_row_config= held eight
+indeterminate probabilities, =bond_future= two indeterminate dates, and
+=bond_trs::funding_rate= one indeterminate rate.
+
+The enum columns already have the gate this capture proposes for the rest:
+=org_loader= refuses a non-nullable =is_enum= column with no
+=:default_value:=, because that defect shipped once before
+(=task_fix_market_series_generator_uninitialized_enums=). The nullable half
+of this shape is now gated too, by the same file. The non-nullable half is
+not, and it is the larger half.
+
+The two options differ in who decides the value. Synthesis says the type
+knows its own zero and the model need not repeat it; refusal says the model
+must state what "absent" means for that column, which is what the estate
+already asks of every enum column. The second is stricter and makes a
+default a reviewable line in the model; the first is smaller and makes the
+trap impossible without touching 87 columns.
+
+* References
+
+- Story [[id:C6FA1B77-DA25-4878-9819-5091E8932312][Hotfix: the nightly Valgrind run reports uninitialised members and library leaks]]
+  — the branch that closed the reported instances and gated the nullable
+  shape.
+- =projects/ores.codegen/src/codegen/core.py= — the =bool=/=int= synthesis.
+- =projects/ores.codegen/src/codegen/org_loader.py= — the two gates that
+  exist, for enum columns and for nullable bare value types.
+- Story [[id:55EF2B1E-C304-4621-AC4D-21F7302B8FBB][Hotfix: Valgrind flags compute host ram_mb/credit_total read uninitialized]]
+  — the same class, fixed in sprint 25 by declaring two model defaults; its
+  * Out of scope records both options and defers them to this decision.
+
+* See also
+
+- =build/scripts/census_generated_defaults.py= prints the table above; run it
+  before and after the decision to check the count.

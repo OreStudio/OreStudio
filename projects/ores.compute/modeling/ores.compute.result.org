@@ -73,6 +73,7 @@ boost::uuids::uuid{}
 :type:     bigint
 :cpp_type: std::int64_t
 :nullable: true
+:default_value: 0
 :END:
 
 PGMQ lease pointer; NULL when not actively queued.
@@ -100,6 +101,7 @@ State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
 :type:     integer
 :cpp_type: int
 :nullable: true
+:default_value: 0
 :END:
 
 Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
@@ -139,6 +141,7 @@ std::string()
 :type:     timestamp with time zone
 :cpp_type: std::chrono::system_clock::time_point
 :nullable: true
+:default_value: {}
 :END:
 
 Timestamp when the output was received by the server pool.

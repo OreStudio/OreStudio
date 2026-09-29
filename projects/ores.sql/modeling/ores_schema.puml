@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T20:12:05.343739Z
+' Generated: 2026-09-29T21:18:40.744880Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9896,7 +9896,7 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * ore_key : text
+        * oresmd_uri : text
         * source_name : text
         * asset_class : text
         * enabled : boolean
@@ -9920,7 +9920,8 @@ package "marketdata" #E3F2FD {
     (tenant, party, workspace), persists each arriving tick as a
     market_observation under the binding's party, and republishes on the
     per-party realtime stream
-    marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>.
+    marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, whose key the
+    binding's identity projects back to.
     workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
     which resolves in every tenant. It is the seam where the future workspaces
     feature binds scenario data: a binding reads "party P consumes source S in

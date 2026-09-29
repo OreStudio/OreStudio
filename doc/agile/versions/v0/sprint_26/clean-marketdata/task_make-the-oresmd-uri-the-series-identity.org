@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2388
+#+pr: 2389
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -484,6 +484,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2389][#2389]] | [marketdata] Retire the triple's last readers |
 | [[https://github.com/OreStudio/OreStudio/pull/2388][#2388]] | [agile] Point the handover at the deletion |
 | [[https://github.com/OreStudio/OreStudio/pull/2387][#2387]] | [marketdata] Make the series identity the key |
 | [[https://github.com/OreStudio/OreStudio/pull/2385][#2385]] | [refdata,marketdata] Drop the grid the feed no longer writes |

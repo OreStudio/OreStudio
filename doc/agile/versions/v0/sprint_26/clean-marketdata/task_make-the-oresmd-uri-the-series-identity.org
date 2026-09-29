@@ -28,7 +28,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from =from_ore_key()= and =from_index_name()= -- the latter's first production call site -- and the ingest loop, which derives it from the =ore_key= it already builds. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
+| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
 | Waiting on   | The re-keying unit's own first step: the roles the two configs give the FOMC instruments must be reconciled before a key can be derived from a pillar. Nothing outside the task holds it up. |
 | Next         | Reconcile the two role vocabularies, then re-key the FOMC segment: the synthetic feed publishes the grid under the instruments' ORE keys, the bootstrap reads them from its own pillars, and the seed and its tests follow. Then the not-null and unique constraints, then the deletion against the census, which is the fourth acceptance and is not done. |
 | Last touched | 2026-09-29                               |
@@ -100,6 +100,19 @@ generated shell command. So the binding's identity arrives with the unit that
 replaces =ore_key=, where the same code that supplies the key today supplies the URI;
 until then the column would be null in every row, which is worse than absent. The
 natural key stays =ore_key= and =source_name= meanwhile.
+
+**The identity the writers derived named a datum, not a series.** The column sits on
+the series row, and the value came from a key that names one datum: =IR_SWAP/RATE/
+USD/0D/1D/5Y= is the 5Y point of the =USD/0D/1D= series. The import projected the
+file's whole key, so a series row's identity carried whichever point arrived first,
+and two databases built from the same files in a different order would disagree about
+the identity of one series. The ingest loop projected the triple alone, which names no
+class whose key is longer than the triple, so a swap, curve or future series got no
+identity at all from a live tick. =oresmd_parser::to_series_uri()= projects the
+identifier with its point, and a volatility surface with it, dropped; both writers
+call it, and the ingest loop builds the datum's full key -- the triple plus the tick's
+point -- before falling back to the triple. No row changes shape: the series and its
+points were already separate rows.
 
 **The deletion needs no backfill, and the fallback is what says so.** The plan
 records a hard cutover with no backfill, which only works because this schema is
@@ -210,6 +223,8 @@ plan itself stays — it is the historical record of what we did.)
 | Production rows no projection can name | 2: =RATES / YIELD / 'USD/SOFR-FOMC'= and =YieldCurve / DISCOUNT / 'USD/SOFR-FOMC'= | =marketdata_market_series_fomc_populate.sql= | =3632865c32= |
 | =ores.marketdata.core= suite, with the identity written | 1778 assertions in 399 cases | =ores.marketdata.core.tests= | =ce3c6f32bd= |
 | Key spaces the import names | one case each: =FX/RATE/EUR/USD= and =UKRPI= | =ores.marketdata.core.tests "import_gives_a_series_the_identity_its_key_projects_to"= | =ce3c6f32bd= |
+| A key's points that project to one series identity | =oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap= for both =.../5Y= and =.../10Y= | =ores.marketdata.core.tests "a_keys_points_project_to_one_series_identity"= | =be9191357f= |
+| =ores.marketdata.core= suite, with the series projection | 1793 assertions in 402 cases | =ores.marketdata.core.tests= | =be9191357f= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -277,13 +292,22 @@ from each space and reads the series back by its identity and by its triple, bot
 agreeing. Component drift is clean for =marketdata= at all eight addresses,
 including the entity that gained the column.
 
+**A second unit, on the same column, made the identity name a series rather than a
+datum.** The import projected the file's whole key and the ingest loop projected the
+triple alone, so a series' identity carried whichever of its points arrived first and
+a swap series got none from a live tick at all. =to_series_uri()= projects the
+identifier with its point dropped, both writers call it, and the ingest loop builds
+the datum's full key before falling back to the triple. Measured on the rebuilt tree:
+1793 assertions in 402 cases.
+
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:
 
 - the =feed_binding= column cannot be written, because its only writer is a generated
   service with no derivation hook and a model's generator block feeds test data;
 - the column cannot be made =not null= yet, because the FOMC bootstrap seeds a series
-  under the synthetic pipeline's own vocabulary, which no projection can name;
+  under the synthetic pipeline's own vocabulary, which no projection can name -- the
+  replacement is the instruments' own ORE keys, decided above;
 - =marketdata= is one modelling pass short of =COMPONENTS_UNDER_TEST=, because seven
   hand-written protocol headers carry no TypeScript twin and a twin is generated from
   an operation model. Listing the component was tried and reverted, and the modelling

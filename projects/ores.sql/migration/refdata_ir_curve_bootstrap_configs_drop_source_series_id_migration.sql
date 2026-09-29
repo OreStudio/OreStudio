@@ -36,6 +36,14 @@
  * On a freshly recreated database the create script no longer emits the
  * column and this migration is unnecessary. It exists for databases created
  * before the change.
+ *
+ * Such a database also keeps the RATES/YIELD grid series and the observations
+ * under it. Nothing reads them now: the feed writes one series per pillar and
+ * the reader asks for those, so the old rows are inert. They are left in place
+ * rather than deleted here, because market_series and its observations are
+ * temporal and the seed's own row history is not this migration's to rewrite;
+ * a rebuilt database has no grid row at all, since the populate script no
+ * longer writes one.
  */
 
 alter table ores_refdata_ir_curve_bootstrap_configs_tbl

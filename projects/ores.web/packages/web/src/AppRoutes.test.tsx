@@ -73,6 +73,7 @@ const authenticated: SessionState = { status: 'authenticated', session };
  * The journey's own screens are asserted in its own file.
  */
 const journey = <p>First run journey</p>;
+const newTenantJourney = <p>New tenant journey</p>;
 
 function render(
     path: string,
@@ -87,6 +88,7 @@ function render(
                     gate={gate}
                     session={sessionState}
                     journey={journey}
+                    newTenantJourney={newTenantJourney}
                     journeyInProgress={false}
                     onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                     onChooseParty={async () => undefined}
@@ -159,6 +161,30 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('Acme Operations');
         expect(html).toContain('admin@acme.test');
         expect(html).toContain('Sign out');
+    });
+
+    it('offers the new tenant journey to a signed-in person', () => {
+        // The journey is a route, not the gate: the installation is set up, and
+        // this is one of the screens it serves.
+        const html = render('/tenants/new', ready, authenticated);
+
+        expect(html).toContain('New tenant journey');
+        expect(html).toContain('Sign out');
+    });
+
+    it('sends a visitor to sign in rather than to a journey they cannot run', () => {
+        const html = render('/tenants/new', ready, anonymous);
+
+        // The guard is a redirect, and a redirect renders nothing of its own:
+        // what matters is that the journey is not one of them.
+        expect(html).not.toContain('New tenant journey');
+    });
+
+    it('offers the way into the journey from the home screen', () => {
+        const html = render('/', ready, authenticated);
+
+        expect(html).toContain('New tenant');
+        expect(html).toContain('/tenants/new');
     });
 });
 

@@ -1,0 +1,119 @@
+The New tenant journey, walked in a headless browser
+====================================================
+
+Walked on 2026-09-29 against the running deployment (fleet up, a tenant of its
+own, signed in as super_admin through the BFF), with the web bundle built from
+this branch and served by ores.web.service. The rail, the starting points, the
+form and the review below are the page's own text, read out of the DOM after
+each step; the screenshot beside this file is the first step.
+
+The route
+---------
+
+  GET http://127.0.0.1:21402/tenants/new  ->  200
+
+The shell renders it for a signed-in person, and the guard sends a visitor to
+sign in rather than to it (covered by AppRoutes.test.tsx).
+
+1. Choose a starting point
+--------------------------
+
+  ORE Studio
+  super_admin · Root Tenant · System Party
+  Sign out
+  1 Choose a starting point
+  2 Describe the tenant
+  3 Review
+  4 Provisioning
+  5 Hand off
+
+  Choose a starting point
+  A starting point is a profile the server holds. It states the settings, the
+  steps and the tenant it creates.
+
+  Operational
+  For real use
+  Production-ready setup
+  • Standard reference data and counterparties
+  • Your legal entities, from their LEI
+  • No test data
+  2 settings · 3 steps
+
+  GLEIF entity ...     (the second card follows)
+  ACME demo ...        (and the third)
+
+2. Describe the tenant, after choosing Operational
+--------------------------------------------------
+
+  ✓ Choose a starting point
+  2 Describe the tenant
+  3 Review
+  4 Provisioning
+  5 Hand off
+  Operational
+
+  Describe the tenant
+  Name the tenant and create its administrator.
+
+  Tenant
+  Name / Code (Lowercase letters, digits and underscores, starting with a
+  letter. It names the tenant in a username.) / Hostname
+  Operational settings
+  Root LEI
+  The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant's
+  parties. A person who has no LEI yet leaves it empty: the import then has
+  nothing to read and says so, and the parties are added later.
+  Counterparty set: small / large
+  small is about 13k GLEIF counterparties; large is about 500k.
+
+  Tenant administrator
+  Username / Email / Administrator password (Show)
+  At least 12 characters, an uppercase letter, a lowercase letter, a digit and
+  a special character -- each checked and reported as met or not met
+  Confirm password (Show)
+
+  Back / Continue
+
+3. Review
+---------
+
+  ✓ Choose a starting point
+  ✓ Describe the tenant
+  3 Review
+  4 Provisioning
+  5 Hand off
+  Operational
+
+  Review
+  Nothing is created until you confirm.
+
+  Starting point: Operational
+  Tenant:         (the fields the person types; left empty in this walk)
+  Hostname:
+  Administrator
+  Password: The one you typed
+  Root LEI: --
+  Counterparty set: small
+
+  Creating the tenant runs 3 steps.
+
+  Back / Create tenant
+
+What this proves
+----------------
+
+The journey is a route of its own on the shared runtime: one flat rail of the
+five tenant steps, the starting points read from the server, the form built
+from the chosen profile's declared parameters, the shared password field
+enforcing the deployment's policy, and the review summary before anything is
+created.
+
+What it does not prove
+----------------------
+
+The run itself was not walked to its end here: the walk stopped at the review,
+because the tenant name, code and hostname are typed by hand for the
+operational starting point and this driver did not fill them. Creating a tenant
+runs the provisioning steps for minutes and is covered by the journey's own
+tests -- the create action sends the request, and the hand-over signs out and
+in -- and by the shell recipes the previous task ran from empty installations.

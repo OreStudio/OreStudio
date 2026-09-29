@@ -21,7 +21,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
-import { Detail, PageHeader } from '../ui/Primitives.js';
+import { Detail, LinkButton, PageHeader } from '../ui/Primitives.js';
 
 /**
  * Where a signed-in person lands.
@@ -50,6 +50,13 @@ export function HomePage({ username, email, tenantName, partyName }: HomePagePro
                 <Detail label={t('home.tenant')} value={tenantName} />
                 <Detail label={t('home.party')} value={partyName} />
             </dl>
+            {/*
+             * The way into the journey a signed-in administrator runs: a tenant
+             * is added from here until the Tenants page is its permanent home.
+             */}
+            <div className="mt-6">
+                <LinkButton to="/tenants/new">{t('home.newTenant')}</LinkButton>
+            </div>
         </div>
     );
 }

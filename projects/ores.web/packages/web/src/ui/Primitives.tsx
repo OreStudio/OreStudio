@@ -26,6 +26,7 @@ import type {
     Ref,
     SelectHTMLAttributes,
 } from 'react';
+import { Link, type LinkProps } from 'react-router';
 
 /**
  * The interface primitives.
@@ -100,6 +101,35 @@ export function Button({
             )}
             {pending ? (pendingLabel ?? children) : children}
         </button>
+    );
+}
+
+/**
+ * The same control, for a place rather than an action.
+ *
+ * A screen the journeys add is a route a person can link to, and a link that
+ * looks like every other control is one they can find. It shares the button's
+ * classes rather than restating them, so the two cannot drift.
+ */
+export interface LinkButtonProps extends LinkProps {
+    readonly variant?: keyof typeof BUTTON_VARIANTS;
+    readonly size?: keyof typeof BUTTON_SIZES;
+}
+
+export function LinkButton({
+    variant = 'secondary',
+    size = 'md',
+    className,
+    children,
+    ...rest
+}: LinkButtonProps): ReactNode {
+    return (
+        <Link
+            className={cx(BUTTON_BASE, BUTTON_VARIANTS[variant], BUTTON_SIZES[size], className)}
+            {...rest}
+        >
+            {children}
+        </Link>
     );
 }
 

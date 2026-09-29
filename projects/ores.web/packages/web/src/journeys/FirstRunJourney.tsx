@@ -40,13 +40,13 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
-import { heroSplash } from '../assets/brand.js';
 import { JourneyPage } from './JourneyPage.js';
+import { JourneyHeader } from './parts.js';
 import { indexOfStep } from './runtime.js';
 import { firstRunSteps, type AdministratorDraft } from './firstRunSteps.js';
 import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
-import { administratorPassword, tenantPrincipal, useNewTenant, type NewTenant } from './state.js';
+import { administratorPassword, tenantPrincipal, useNewTenant } from './state.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 /** What a fresh installation's administrator is almost always called. */
@@ -63,57 +63,6 @@ const DEFAULT_EMAIL = 'super_admin@system.ores';
 
 function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
-}
-
-/**
- * What the panel says above every step.
- *
- * The splash frames the panel, and once a starting point is chosen the tenant
- * being described stands beside it: the form, the review, the run and the
- * hand-over are all about that tenant, and a person who looked away should not
- * have to walk back up the rail to remember which one it is.
- *
- * The lockup keeps its own proportions. The artwork is wider than it is tall
- * and the panel is wider than the artwork, so a band of a fixed height crops
- * the top and the foot off the wordmark.
- */
-function JourneyHeader({ tenant }: { readonly tenant: NewTenant }): ReactNode {
-    const tenantName = tenant.details?.name ?? '';
-    const profileName = tenant.profile?.name ?? '';
-    /*
-     * The tenant's name is what the person typed or the profile proposed, so it
-     * is the heading when there is one and the starting point is only what it
-     * was built from. Before that there is no tenant to name, and the heading
-     * is the starting point itself: one line, never the same line twice.
-     */
-    const heading = tenantName !== '' ? tenantName : profileName;
-    const builtFrom = tenantName !== '' ? profileName : '';
-    return (
-        <div>
-            {/*
-             * The artwork's own dimensions are stated, so the panel reserves
-             * the room before the image arrives, and the width the panel has
-             * scales it by the ratio 964:323. Nothing here crops it or states a
-             * height: a height that is not the ratio's is what cut the top and
-             * the foot off the wordmark.
-             */}
-            <img
-                src={heroSplash}
-                alt=""
-                width={964}
-                height={323}
-                className="h-auto w-full rounded-md border border-line"
-            />
-            {tenant.profile !== undefined && (
-                <div className="mt-3 flex items-baseline justify-between gap-3 text-sm">
-                    <span className="truncate font-medium">{heading}</span>
-                    {builtFrom !== '' && (
-                        <span className="truncate text-xs text-ink-faint">{builtFrom}</span>
-                    )}
-                </div>
-            )}
-        </div>
-    );
 }
 
 /**

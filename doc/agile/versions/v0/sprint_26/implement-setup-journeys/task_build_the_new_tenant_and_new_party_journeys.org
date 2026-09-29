@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-new-tenant-and-new-party-journeys
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
 #+updated: 2026-09-29
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ and a scripted end-to-end run proves the browser's path on a fresh database.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Not yet started. The step library exists and the first run inlines it, the request that provisions a tenant and the one that provisions a party exist, and the progress read and the retry verb exist. What is missing is the routes that render each journey alone and the party journey's own screens. |
+| Now          | The *New tenant* journey is built and walked in a browser: `/tenants/new` renders the five tenant steps on their own rail for a signed-in administrator, and the home screen is the way in. The *New party* journey is not built, and no scripted run proves the browser's path. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the two routes on the existing runtime and step library, then the scripted proof. |
+| Next         | The *New party* journey: the BFF route and the wire call for `iam.v1.parties.provision`, a way to create the party when the entity is not one the deployment holds, then its screens. Then the scripted proof. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -94,3 +94,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The *New tenant* journey runs at =/tenants/new=, and it is a route rather than
+a gate: the installation is already set up, so a signed-in administrator adds a
+tenant beside the ones the deployment has. The rail is the same five steps the
+first run inlines, from the same library, so the two journeys cannot describe a
+tenant differently; what the new journey does not carry is the administrator to
+create and the first sign-in, because both already happened.
+
+Two things differ from the first run and both come from who the person is. The
+browser does not hold the signed-in administrator's password, so a starting
+point that hands that password to the tenant's administrator asks for one
+instead -- the form already warns when it has none to hand on -- and the
+hand-over is the journey's end: the person either becomes the new tenant's
+administrator, which signs out and back in as them, or passes the account on,
+which signs out and stops.
+
+The walk in a headless browser is recorded in
+=evidence/new_tenant_journey_live.txt= with a screenshot: the five-step rail,
+the three starting points read from the server, the form built from the chosen
+profile's settings with the shared password field and the deployment's policy,
+and the review summary before anything is created. The run itself was not
+walked to its end in the browser, and the file says so.
+
+What this task still owes is the *New party* journey and the scripted browser
+proof. The party journey is the larger half: the deployment's search over its
+legal entities exists, but nothing in the browser reaches
+=iam.v1.parties.provision=, and a party that is not one of the deployment's
+legal entities has to be described by hand, so it needs a BFF route and a wire
+call of its own before its screens can be honest.

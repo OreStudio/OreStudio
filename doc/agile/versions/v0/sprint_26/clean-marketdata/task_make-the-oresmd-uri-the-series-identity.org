@@ -303,21 +303,26 @@ grid's own identity and then the cutover the task takes its name from.
 2. *The bootstrap reads its own pillars.* =curve_republish_service= stops reading one
    =source_series_id= and reads, per pillar, the series the key above projects to:
    resolve the pillar's start and end tenor codes to dates through =refctx=, call the
-   same builder, and that builder needs the pillar's currency. **Neither the config nor
-   the pillar carries one**: the reader looks for a series keyed by the currency and has
-   nowhere to read it. So this step adds a =currency_code= column the way the convention
-   column landed, seeded as =USD= for the FOMC config -- the currency the synthetic
-   config that publishes into it carries. Then the reader finds the series by identity
-   and takes its observation. The rate map is
+   same builder, which takes the currency the config names (#2375). Then the reader finds
+   the series by identity and takes its observation. The rate map is
    keyed by the pillar's =end_tenor_code=, which is what =resolve_bootstrap_pillars()=
-   already matches on, so its contract does not change. The grid series stays readable
-   as a fallback, and the reader prefers the pillar's series wherever it exists: a
-   database with some pillars written under the new keys and some under the grid
-   resolves each pillar from whichever holds it. That is the same shape as the triple
-   fallback the readers already carry, and it goes with the column below. The lineage
-   lists the nine series the reader took rather than the grid, and its own
-   =source_series_id= column is untouched -- the column step three drops is the
-   config's. =curve_republish_resolver_fomc_tests= is this step's proof.
+   already matches on, so its contract does not change. The fallback and the lineage
+   are in the note below. =curve_republish_resolver_fomc_tests= is this step's proof.
+3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
+   drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
+   the bootstrap config's =source_series_id= loses its reader. Dropping the config's
+   column is a refdata change, not one file: the model, the regenerated domain,
+   protocol, entity, mapper, history field mapper, service and shell command, the
+   generate artefact's TypeScript twin, the populate and a migration. The lineage's
+   column of the same name stays.
+4. *The constraints and the deletion.* With every writer supplying an identity and no
+   row without one, =oresmd_uri= becomes not-null and unique, the natural key moves
+   onto it, and then =series_type=, =metric=, =qualifier=, =ore_key= and the import
+   classification table go, with the census's 21 + 32 C++ files, 4 SQL files, 2
+   TypeScript twins and 80 org documents as the checklist. The triple readers and
+   their fallbacks go last, because they are what keeps a half-migrated database
+   reachable in the meantime.
+
 **Step two, in detail, for whoever takes it next.** The reader stands on four things,
 and only two of them exist today.
 
@@ -339,21 +344,6 @@ and only two of them exist today.
 
 The lineage follows the reader: it lists the series each pillar was taken from, so a
 curve's provenance names its quotes rather than the grid they used to land in.
-
-3. *The seed stops seeding the grid.* =marketdata_market_series_fomc_populate.sql=
-   drops the =RATES/YIELD= row and the asset-class junction row that goes with it, and
-   the bootstrap config's =source_series_id= loses its reader. Dropping the config's
-   column is a refdata change, not one file: the model, the regenerated domain,
-   protocol, entity, mapper, history field mapper, service and shell command, the
-   generate artefact's TypeScript twin, the populate and a migration. The lineage's
-   column of the same name stays.
-4. *The constraints and the deletion.* With every writer supplying an identity and no
-   row without one, =oresmd_uri= becomes not-null and unique, the natural key moves
-   onto it, and then =series_type=, =metric=, =qualifier=, =ore_key= and the import
-   classification table go, with the census's 21 + 32 C++ files, 4 SQL files, 2
-   TypeScript twins and 80 org documents as the checklist. The triple readers and
-   their fallbacks go last, because they are what keeps a half-migrated database
-   reachable in the meantime.
 
 The one thing the plan does not do is keep two writers: the feed either publishes the
 grid's key or the pillars' keys, never both. The fallback above is a *reader*

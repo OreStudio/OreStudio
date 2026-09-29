@@ -342,14 +342,15 @@ row lives in and then the cutover the task takes its name from.
   there rather than from a series' spelling.
 - The dates exist now: =resolve_tenor_date()= turns a pillar's start and end tenor codes
   into calendar dates, which is the path the discount curve's own points already take.
-- The fallback is in the reader: a pillar whose series the identity lookup does not find
-  is taken from the grid the config still points at, matched on point id. The plan said
+- The fallback is in the reader: a pillar whose series the identity lookup does not find,
+  or whose series carries no quote at the point the read derived, is taken from the grid
+  the config still points at, matched on point id. The plan said
   =curve_republish_resolver_fomc_tests= seeds the grid and would prove that path. It does
-  not, and the correction matters: the case is a unit test of
+  not, and the correction stands: the case is a unit test of
   =resolve_bootstrap_pillars()= that hands the resolver an in-memory rate map, so it never
-  reads a series at all and passes unchanged for that reason rather than because the
-  fallback works. No case exercises the reader's database path today; that is a limitation
-  of this unit, not a proof of it, and it is recorded as one.
+  reads a series at all. The reader's own path is proved by three database-backed cases
+  instead -- a pillar read from its own series, one read from the grid, and the mixture
+  that also pins the lineage -- added when the review asked for them.
 
 The lineage follows the reader: it lists the series each pillar was taken from, so a
 curve's provenance names its quotes rather than the grid they used to land in. A
@@ -395,6 +396,10 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.marketdata.core= suite, with the builder's cases | 1865 assertions in 408 cases | =ores.marketdata.core.tests= | =e3e237ded1= |
 | =ores.synthetic.api= suite, with the moved case gone | 102 assertions in 29 cases | =ores.synthetic.api.tests= | =e3e237ded1= |
 | =ores.marketdata.service= suite, with the resolver untouched | 164 assertions in 24 cases | =ores.marketdata.service.tests= | =e3e237ded1= |
+| =ores.marketdata.service= suite, with the reader's own cases | 178 assertions in 27 cases, 14 of them the reader's three | =ores.marketdata.service.tests= | =d8333211c8= |
+| Paths the reader's cases cover | 3: the pillar's own series, the grid when no such series exists, and the mixture that also pins the lineage | =ores.marketdata.service.tests "[curve_pillar_reader]"= | =d8333211c8= |
+| The missing-point fallback, shown red before it was believed | with the check disabled the mixture case fails on the map size alone: 1 where 2 is required | that case, with =if (!found)= replaced by =if (!found && false)= | =d8333211c8= |
+| Test-case reachability, with the reader's cases | 7599 declared cases in 937 sources | =check_test_case_reachability.py= | =d8333211c8= |
 | Grid readers left in the reader | 1, the fallback in =read_pillar_rates=; no case exercises it | =grep -n "read_grid_rates" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =e3e237ded1= |
 | Component file lists stale on the trunk this branch sits on | 2, =ores.iam/api/src= and =ores.workflow/api/src=, neither of them this change's | =regenerate_cmake_component_files.py --all --check= | =e3e237ded1= |
 
@@ -498,6 +503,13 @@ via its "Verifies task" field.
 | 45 | The generator's fixed =USD= gives no variety | the model's generator | recorded | Generated configs are not data; a currency that varies would need the generator to read the currency table. |
 | 46 | Other consumers of the config need no change | =curve_republish_service.cpp= | confirmed | They read it rather than write it, and the reader that uses the column lands next. |
 | 47 | The shell tests' arity change deserves a comment | =ir_curve_bootstrap_config_commands_tests.cpp= | recorded | Cosmetic; the assertion's order is what the test file's own convention carries. |
+| 48 | A pillar whose series exists but carries no quote at the point the read derived gets no rate and no fallback, so the bootstrap fails on a grid that could have answered | =curve_pillar_reader.cpp= | accepted, fixed | A real gap: the read now treats that pillar as unresolved and takes it from the grid, and the new mixture case fails on the map size alone -- 1 where 2 is required -- when the check is disabled (=d8333211c8=). |
+| 49 | =read_latest_by_uri= is called with no =party_id=, so two parties holding one URI make =series.front()= arbitrary | =curve_pillar_reader.cpp= | accepted, fixed | The lookup is scoped to the config's own party, as the ingest loop scopes the series it writes, because the curve is bootstrapped for that party (=d1708c0334=). |
+| 50 | The lineage now names the discount curve's output series where it named a config id, and no case covers it | the lineage | accepted, recorded | Intended: what the list held before was a config id inside a list of series. The reader's cases pin the pillar ids; a PROJECTION config needs a second config and its own curve, so that case belongs with the next unit rather than this one. |
+| 51 | The reader's path carries the most logic and has no test | the reader | accepted, fixed | =read_pillar_rates= moved out of the service's anonymous namespace into its own header, and three database-backed cases cover it: the pillar's own series, the grid when it has none, and the mixture (=d8333211c8=). |
+| 52 | =compute()= still logs while =compute_curve= does the work | =curve_republish_service.cpp= | confirmed | The extraction gives both callers one read of the pillars and, now, one read of the config; the log line stays on =compute()=, where a caller sees it. |
+| 53 | =pillar_series_uri= throws inside the read loop with no catch | =curve_pillar_reader.hpp= | accepted, documented | The header now says that a tenor code which does not resolve and a key the grammar cannot name are configuration errors, and that they are deliberately left to propagate. |
+| 54 | The header's "the series the first writes the second finds" reads awkwardly | =pillar_quote_key.hpp= | accepted, fixed | Reworded to "the series one writes is the series the other looks for". |
 
 * Result
 
@@ -532,12 +544,14 @@ cases.
 **A third unit put the grid's pillars on their own identities.** The builder that spells
 a pillar as the OIS quote the feed simulates moved into =ores.marketdata.core=, beside
 the parser its identity goes through, and the bootstrap reads each pillar's observation
-from the series that key names; the grid the config still points at is the fallback for
-a database the feed has not published into. The lineage names the series each pillar was
-read from, in place of the grid they used to land in. Measured on the rebuilt tree: 1865
-assertions in 408 cases. The plan's claim that the resolver's FOMC case seeds the grid
-was wrong and is corrected in place; the reader's own database path has no case, which
-the record states as a limitation of the unit.
+from the series that key names, scoped to the config's party; the grid the config still
+points at is the fallback for a database the feed has not published into, and a series
+that carries no quote at the point the read derived falls back the same way rather than
+failing. The lineage names the series each pillar was read from, in place of the grid
+they used to land in. Measured on the rebuilt tree: 1865 assertions in 408 cases, and 178
+in 27 for the service, including the reader's three database-backed cases. The plan's
+claim that the resolver's FOMC case seeds the grid was wrong and is corrected in place;
+the reader's path it was said to prove has cases of its own, added after the review.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

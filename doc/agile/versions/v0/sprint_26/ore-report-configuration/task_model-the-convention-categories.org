@@ -140,3 +140,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Eight of the sixteen categories landed, in one pull request: SwapIndex, Future,
+FxOption, AverageOIS, CrossCurrencyBasis, TenorBasisTwoSwap, TenorBasisSwap and
+ZeroInflationIndex. They took the count of files that round trip outright from
+nine to forty-four and the count carrying an unmodelled category from sixty-three
+to twenty-eight.
+
+The acceptance is not met, so the task stays STARTED. Eight categories remain
+unmodelled -- BMABasisSwap, CrossCurrencyFixFloat, InflationSwap,
+CmsSpreadOption, CommodityForward, CommodityFuture, BondYield and
+IntradayPowerLoad -- so the mapper's count of what it skips is eight rather than
+zero, and twenty-eight of the seventy-two files still carry one. The work
+continues on a new branch, because this branch's pull request is merged and the
+acceptance asks for all sixteen.
+
+Two decisions the work settled, for whoever picks up the rest:
+
+- A category lands one at a time, and the next is chosen by how many files it
+  clears alone rather than by how few fields it has. The hidden case
+  =conventions_files_cleared_by_each_category= ranks the candidates, and the
+  Measurements table records the ranking each round. The next two are
+  =BMABasisSwap= and =InflationSwap=, at three files each.
+- A field the refdata schema cannot hold is counted, not dropped.
+  =ZeroInflationIndex.RebasingEvents= is the first: a list of doubles with no
+  array column to hold it, counted into =unmodelled= under that name, so a file
+  that ever sets one leaves the round-trip set and is named in the measurement.

@@ -85,12 +85,31 @@ public:
     save_observations(const std::vector<domain::market_observation>& observations);
 
     /**
-     * @brief Find an existing market series by its natural key.
+     * @brief Find an existing market series by its identity.
      *
-     * The canonical key for this resource is the surrogate UUID, which cannot
-     * express a (series_type, metric, qualifier, party_id) lookup, so the
-     * natural key is matched client-side against a generous page of
+     * The canonical key for this resource is the surrogate UUID, and the natural
+     * key is now the series' oresmd identity, which the list request does not
+     * filter on, so the identity is matched client-side against a generous page of
      * marketdata.v1.market_series.list (limit 10000).
+     *
+     * When @p party_id is non-empty the scan is restricted to that party's
+     * series. Without it the first id-ordered match wins, which is arbitrary
+     * when the same identity exists for several parties (e.g. FX spot series are
+     * materialised per party).
+     *
+     * @return The matching series, std::nullopt if none found, or an error.
+     */
+    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string>
+    find_series_by_uri(const std::string& oresmd_uri, const std::string& party_id = {});
+
+    /**
+     * @brief Find an existing market series by the registry's decomposition of its
+     * key.
+     *
+     * Superseded by find_series_by_uri() for every caller but the IR curve feed's
+     * vintage seeding, which reads a DQ-published series whose identity the cutover
+     * cannot name yet; that caller goes when the synthetic config names the series
+     * it seeds from.
      *
      * When @p party_id is non-empty the scan is restricted to that party's
      * series. Without it the first id-ordered match wins, which is arbitrary

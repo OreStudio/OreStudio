@@ -217,6 +217,13 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
+    // The last lookup in the tree that asks for a series by the registry's
+    // decomposition. The series here is the DQ deposit grid the vintage dataset
+    // published, whose key is RATES/YIELD rather than an ORE market-data key, so the
+    // cutover cannot name it: the DQ publish gives it a generic identity, and this
+    // path cannot construct that name. Moving it means the synthetic config naming
+    // the series it seeds from, or the dataset carrying the ORE key its own source
+    // names -- the task's record holds the decision.
     auto series =
         md_client.find_series("RATES", "YIELD", qualifier, boost::uuids::to_string(cfg.party_id));
     if (!series)

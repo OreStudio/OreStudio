@@ -556,17 +556,18 @@ private:
                    ".";
         };
 
-        const auto key =
-            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
-        if (!key) {
-            error_detail = "Cannot parse ORE key '" + ore_key + "'.";
+        const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(ore_key);
+        if (!identifier) {
+            error_detail = "oresmd names no series for ORE key '" + ore_key + "'.";
             return false;
         }
+        const auto oresmd_uri =
+            ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value;
 
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-        auto series = md_client.find_series(key->series_type, key->metric, key->qualifier);
+        auto series = md_client.find_series_by_uri(oresmd_uri);
         if (!series) {
             error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
             return false;

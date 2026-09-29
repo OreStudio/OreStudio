@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-30T10:27:21.953511Z
+' Generated: 2026-09-30T10:27:23.131173Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9500,6 +9500,41 @@ package "reporting" #E0F7FA {
     leaves the entity type unresolved and the generator writes files called
     unknown_* rather than reporting the bad line. Check the header first when a
     model generates unknown.
+    end note
+
+    entity ores_reporting_report_analytics_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * analytic_type_code : text
+        * display_order : integer
+        * active : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_analytics_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Analytic Table
+    One row per Analytic element in a report's ORE run document: which analytic to
+    run, in what order, and whether it is on. The corpus runs eighteen hundred and
+    seventy-four analytics across its four hundred and sixteen run documents, in
+    thirty-five distinct types, and every one of them carries an active parameter.
+    This is the row that replaces the analytic switches on risk_report_config.
+    Those were twelve *_enabled booleans, which could say "run NPV" and nothing
+    else; a run can now name any of the thirty-five types, in order, and repeat one.
+    The type-specific parameters live in a table per type, named by the type's
+    parameter_entity, rather than in columns here.
+    Each row belongs to exactly one report_definition, which is this run's
+    document, and the definition has many analytics.
     end note
 
     entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {

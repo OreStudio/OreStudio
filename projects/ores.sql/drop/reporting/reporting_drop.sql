@@ -42,6 +42,9 @@
 \ir ./reporting_configurations_notify_trigger_drop.sql
 \ir ./reporting_configurations_drop.sql
 
+\ir ./reporting_report_analytics_notify_trigger_drop.sql
+\ir ./reporting_report_analytics_drop.sql
+
 \ir ./reporting_report_run_setups_notify_trigger_drop.sql
 \ir ./reporting_report_run_setups_drop.sql
 

@@ -169,6 +169,53 @@ trigger, json, table, event, handler, registrar and generator are stable.
 The generated TypeScript twins are declared but absent, so nothing to
 regenerate there.
 
+** Unit 2: the legs' parents, inventoried and decided (2026-09-29)
+
+The four leg tables -- =bond_leg=, =bond_leg_rate=, =bond_leg_amount=,
+=bond_leg_amortization= -- key on =trade_id= today, with =leg_role=
+separating the bond's own legs from =trs_funding=, =repo= and
+=ascot_swap=.
+
+ORE says the two are different parents. The bond's legs are
+=bondData.LegData= inside =bondReferenceDatum=, the security; the funding,
+repo and ascot legs are =FundingData=, =RepoData= and
+=ReferenceSwapData= inside =trsData=, =repoData= and =ascotData=, the
+trade's product. Our own container agrees: it holds those three as one leg
+each, not as lists. A blind =trade_id= to =issue_id= swap would key two
+BondTRS trades on one ISIN identically and merge their funding terms --
+=service_bond_instrument_reader_tests.cpp=:647-691 already builds exactly
+that collision.
+
+=Decision (D19): split by parent.= The bond's leg family is keyed by
+=issue_id=, the ORE reference datum id, and holds =leg_role= 'bond' only.
+The three single product legs stay trade-keyed, with their roles narrowed
+to the three they own. Each parent owns its rows and no table alternates
+between two parents, which is the shape the collapse removed from the
+instrument. The cost is that the leg, rate, amount and amortization shape
+exists once per parent rather than once in total.
+
+Two couplings the spec did not name, both measured:
+
+- =instrument_schedule= holds the bond leg's schedules keyed by
+  =trade_id= + =owner_role= (=bond_instrument_reader.cpp=:343-356), so the
+  bond leg's schedules move with the leg or the round trip loses them.
+- =bond_instrument.issue_id= has no foreign-key block, so nothing validates
+  it today; the new leg foreign key will be the first to the issue table.
+  The generic mechanism already supports a non-=id= target column, so no
+  generator capability is needed.
+
+Consumers to retarget: the reader's =read_family_rows= (:100-142) and the
+four =read_leg*_by_trade_ids= (=parent_scoped_queries.cpp=:176-250), which
+read many parents at once and now read two; the import handler's =save_leg=,
+=save_leg_amounts=, rate and amortization writers (:411-605), one trade per
+call, with the issue already written first; and
+=repository_bond_leg_amount_repository_tests.cpp=, whose parent seed writes
+a trade but no instrument or issue.
+
+Early detection, in this order: a reader test holding two BondTRS trades on
+one ISIN and asserting each container keeps its own funding leg; the bond
+leg's schedules surviving the move; then the corpus round trip.
+
 ** Branch
 
 Cut from =main= after PR 4 merges, so the split reshapes the collapsed

@@ -85,7 +85,11 @@ task and name that file in the Command column.
 | Compiled units now taking --log-to-console | 23 | inspect the generated iam unit | =fba1a973cd= |
 | Node units left to systemd's default | 1 | inspect the generated web unit | =fba1a973cd= |
 | Compass suite | 295 passed, 1 skipped | =pytest projects/ores.compass/tests -q= | =fba1a973cd= |
-| Fleet start on the new units | not run | =compass services start= | pending the rebuild |
+| Fleet start on the new units | 22 running, 2 starting, 0 failed, nats running | =compass services start= | =acbcb957b8= |
+| Service log files written during the run | none; the only .log files are ctest's, vcpkg's and npm's | =find build projects -name '*.log' -newermt '-2 hours'= | =acbcb957b8= |
+| A service's own records in the journal | present, in the service's format | =compass services logs iam -n 4= | =acbcb957b8= |
+| The web unit's readiness line | present in the journal | =compass services logs web -n 40= | =acbcb957b8= |
+| Logging C++ suites | 2 of 2 pass, 2172 assertions | =ctest -R 'logging\|telemetry.core'= | =acbcb957b8= |
 
 * Notes
 
@@ -129,8 +133,20 @@ active only after the service called =sd_notify(READY=1)=. The start path polls
 =ActiveState= rather than a growing file, which deleted the byte-offset waiter
 and its snapshot.
 
-Not yet proven: no service has run on this change. The rebuild is what drops
-the file sink from the compiled binaries, and until it finishes a fleet start
-would still write a file in a relative directory. The open question is whether
-=ores.web=, the one unit whose readiness still reads a line, logs =Service
-ready= to the journal.
+Proven by a fleet start on the new units. Twenty-two of the twenty-four came
+up and reported =running=, nats reported running, and nothing was failed or
+missing; the two that did not, =marketdata= and =synthetic=, read =starting=,
+which is the honest state and is almost certainly the schema drift rather than
+this change, since the database is a day behind HEAD. The journal then held the
+services' own records in their own format, which is the whole claim:
+=2026-09-30 15:24:18.546519 [INFO] [ores.nats.service.client] NATS publish: ...=
+came back through =compass services logs iam=, so the console, systemd's
+capture, and the verb all work with no file involved.
+
+=ores.web= does log =Service ready=, so the one unit whose readiness still
+reads a line is served. The fleet was stopped again afterwards.
+
+The start also found a defect in this task's own code: the bounded retry called
+itself, so a unit that could not become active made the start loop forever.
+That is fixed in =acbcb957b8=, which is also where the fleet numbers above come
+from.

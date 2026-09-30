@@ -30,11 +30,12 @@ Logging:
   -l [ --log-level ] arg (=info)        What level to use for logging. Valid
                                         values: trace, debug, info, warn,
                                         error.
-  --log-to-console                      Output logging to the console, as well
-                                        as to file.
-  --log-directory arg (=log)            Where to place the log files.
-  --log-filename arg (=ores.shell.log)
-                                        Name of the log file.
+  --log-to-console                      Accepted for compatibility: logging
+                                        always goes to the console.
+  --log-directory arg                   Where to place the log files. Only used
+                                        with --log-filename.
+  --log-filename arg                    Name of the log file. Empty, the
+                                        default, disables file logging.
   --log-include-pid                     Include process ID in log filename
                                         (e.g., app.12345.log).
 

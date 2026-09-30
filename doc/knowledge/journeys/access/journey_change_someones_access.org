@@ -107,10 +107,12 @@ anyway, and that is a gap named below.
 
 The role subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
-=iam.v1.roles.revoke= checks =iam::roles:revoke= before it acts.
-=iam.v1.roles.assign= checks nothing at all, so any signed-in account can grant
-any role inside its tenant. The operation exists and the caller may use it;
-the missing check is the gap below.
+Both writes check their own permission before they act:
+=iam.v1.roles.assign= refuses a caller without =iam::roles:assign=, and
+=iam.v1.roles.revoke= refuses one without =iam::roles:revoke=. That was not
+true when this journey was written — assign checked nothing, and any signed-in
+account could grant any role inside its tenant — and it is the first of the two
+gaps the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][access group]]'s survey closed.
 
 * What is missing
 
@@ -120,27 +122,26 @@ the missing check is the gap below.
    =iam.v1.roles.assignments-by-account=, returning each role with its
    assignment fields. Until it exists, the screen shows the role list without
    the audit evidence.
-2. *No permission check on assign.* =iam.v1.roles.assign= does not test
-   =iam::roles:assign=, while =iam.v1.roles.revoke= does test
-   =iam::roles:revoke=. The candidate is to apply the same check to assign, so
-   the operation matches its twin.
-3. *No reason on the message.* =assign_role_request= and =revoke_role_request=
+2. *No reason on the message.* =assign_role_request= and =revoke_role_request=
    carry only =account_id= and =role_id=. The row has change reason and
    commentary columns, and the insert trigger validates the reason, but the
    client cannot set either field. The candidate is to add
    =change_reason_code= and =change_commentary= to both requests, or to add
    =iam.v1.roles.assign-with-reason= and its revoke twin.
-4. *The account read carries credential material.* =iam.v1.accounts.list= and
-   =iam.v1.accounts.get= return the whole =account= wire shape, which includes
-   =password_hash=, =password_salt= and =totp_secret=. The picker needs only a
-   username and a full name. The candidate is a summary shape for the picker,
-   or a server-side redaction, so credential material never leaves the server.
-   =service_password_hash= is absent from the wire shape already, and must stay
-   absent.
-5. *No guard on an empty role list.* The account screen warns when an account
+3. *No guard on an empty role list.* The account screen warns when an account
    has no party, but stays silent when it has no role (see the user guide
    chapter). The same silence applies when a revoke removes the last role. The
    candidate is a warning before the last role is revoked.
+
+A fourth gap has closed since this journey was written. It recorded that
+=iam.v1.accounts.list= and =iam.v1.accounts.get= returned the whole =account=
+wire shape, credential material included. =password_hash=, =password_salt=,
+=service_password_hash= and =totp_secret= are =:no_wire:= in
+[[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] now, so no read
+returns them, and the picker needs nothing else: a username and a full name
+come over the wire and the secrets do not. That is the second gap the survey
+closed, and it closes it for every reader of the entity rather than for this
+screen alone.
 
 * Related journeys
 

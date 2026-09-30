@@ -68,8 +68,8 @@ unblocks what.
 | # | Group | Journeys | Story |
 |---+-------+----------+-------|
 | 1 | [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] | First run, New tenant, New party | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| 2 | [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry]] | Sign in, Sign up | not yet scaffolded |
-| 3 | [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile]] | Present myself, Keep my details current, Change someone's details | not yet scaffolded |
+| 2 | [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry]] | Sign in, Sign up | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| 3 | [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile]] | Present myself, Keep my details current, Change someone's details | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
 | 4 | [[id:8C1DC5DE-F480-49F4-AA63-77A397D0BC03][Credentials]] | Protect my account, Rescue access, Audit sign-ins | not yet scaffolded |
 | 5 | [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] | Know what I may do, Change someone's access, Shape the role catalogue | not yet scaffolded |
 | 6 | [[id:EC3EDE29-5A12-44C0-80A5-D96ADAF2898F][Membership]] | Choose where I work, Draw the reporting line | not yet scaffolded |

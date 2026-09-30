@@ -47,9 +47,12 @@ journeys are [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] and
 2. *Open the record.* The administrator picks a person. The system shows the
    same screen the member sees: photo and identity on the left, contact details
    beside them, both editable.
-3. *Correct the profile.* The administrator edits the full name, job title and
-   reporting line, and picks a new photo. The reporting line must be another
-   account in the same tenant.
+3. *Correct the profile.* The administrator edits the full name and job title,
+   and picks a new photo. The reporting line is shown and not set here: a change
+   to it is a proposal, and the person's hierarchical superior or a tenant
+   administrator approves it. An administrator who is the approver either
+   approves a proposal that is waiting or makes the change on
+   [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]].
 4. *Correct the contact details.* The administrator edits the street, city,
    postcode, telephone, contact email and web page.
 5. *Save.* The system asks why the record changed, records the reason, and
@@ -89,7 +92,7 @@ edit; only the caller and the permission differ.
 | Find the person | List accounts in the tenant | =iam.v1.accounts.list= | exists |
 | Open the record | Read the account | =iam.v1.accounts.get= | exists |
 | Open the record | Read the contact record | =iam.v1.account_contact_informations.list_by_account_id= | exists |
-| Correct the profile | Set full name, job title, reporting line | =iam.v1.accounts.update= | exists |
+| Correct the profile | Set full name and job title | =iam.v1.accounts.update= | exists |
 | Replace the photo | Upload an image, receive its id | none | missing |
 | Replace the photo | Set the photo on the account | =iam.v1.accounts.update= | exists |
 | Correct the contact details | Write the contact record | =iam.v1.account_contact_informations.put= | exists |
@@ -121,6 +124,12 @@ both writes carry the shared change intent.
    =iam.v1.accounts.update= writes the first and the contact put writes the
    second, so the screen must label them, or the administrator changes the wrong
    one.
+4. *No approval for the reporting line.* The line is shown on this screen and a
+   change to it is a proposal that the person's hierarchical superior or a
+   tenant administrator approves. Nothing in the platform holds an approval, so
+   the screen states who decides and the line does not move.
+   [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] records the same gap and owns the decision.
+   (Product owner, 2026-09-30.)
 
 * Related journeys
 

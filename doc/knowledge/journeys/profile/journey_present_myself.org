@@ -103,9 +103,10 @@ So =partial= here means the operation exists and the caller may not use it.
 3. *No size or format rule.* Nothing states the accepted image formats or the
    maximum size, so the picker has nothing to enforce.
 4. *Two email fields.* =account.email= and
-   =account_contact_information.email= both exist. The screen must show one, and
-   which is authoritative is undecided. This is a modelling error the journey
-   exposes.
+   =account_contact_information.email= both exist. The screen shows both,
+   labelled apart: the first is the address a person signs in with and the
+   second is the address colleagues use, and neither reads as the other.
+   (Product owner, 2026-09-30.)
 
 * Related journeys
 

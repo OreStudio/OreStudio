@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:profile:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/implement-profile-journeys
-#+pr:
+#+pr: 2433
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2433][#2433]] | [web] Prototype the profile screen |
 
 * Review
 

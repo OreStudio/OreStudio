@@ -17,9 +17,26 @@ asks, over the whole corpus.
 The classifier's two scopes still apply: the bond products and the trade
 envelope are in scope, the other families are reported and not gated.
 
+The corpus is not consistent reference data, so the sweep holds it to one
+statement per security before it compares. ORE states a bond's terms on
+the trade, inline, and the corpus reuses five security ids across ten
+documents that disagree: about 117 trades name =SECURITY_1= and state a
+different issuer, a different credit curve and a different leg schedule
+each. Our model holds one issue per security -- that is the split's point
+-- so no database can return more than one of those statements, and a
+comparison against all of them reads every contradiction as a loss. The
+sweep therefore folds the issue's statement the way the import folds it,
+first stated wins, rewrites every later trade that restates the same
+security, and reports what it overrode. The two =bondData= members the
+instrument keeps for itself, the security id and =BondNotional=, are left
+as each trade states them. =--raw-corpus= skips the fold and compares the
+corpus exactly as it is written, which is how the contradiction is
+measured.
+
 Usage::
 
     python3 scripts/ore_corpus_roundtrip.py [--work-dir DIR] [--keep]
+        [--raw-corpus]
 
 The run needs a freshly recreated database and a provisioned tenant; see
 the round-trip recipe for both. Exit code is the classifier's.
@@ -31,6 +48,7 @@ import subprocess
 import sys
 import uuid
 import xml.etree.ElementTree as ET
+from collections import Counter
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -87,6 +105,103 @@ def discover(corpus_dir: Path) -> tuple:
     return portfolios, config
 
 
+# The two bondData members the model keeps on the trade's own instrument,
+# which the sweep must leave as each trade states them. Everything else
+# under BondData is the bond issue's statement: the mapper reads it into
+# the issue, the issue is keyed by the security id, and one security
+# therefore holds one statement. See the module docstring.
+TRADE_OWNED_BOND_MEMBERS = frozenset({"SecurityId", "BondNotional"})
+
+
+def member_signature(element: ET.Element):
+    """A member's shape and text, with the document's indentation removed.
+
+    Two documents state the same member with different whitespace, so the
+    comparison reads the element's own text and children and never its
+    tail.
+    """
+    return (
+        element.tag,
+        (element.text or "").strip(),
+        tuple(member_signature(child) for child in element),
+    )
+
+
+def issue_statement(bond: ET.Element) -> list:
+    """The issue-level members of one trade's bondData, in document order.
+
+    A member repeats: a bond with a fixed and a floating leg states two
+    =LegData= elements, so the statement is the sequence, not a map from
+    tag to value.
+    """
+    return [
+        (child.tag, member_signature(child), ET.tostring(child, encoding="unicode"))
+        for child in bond
+        if child.tag not in TRADE_OWNED_BOND_MEMBERS
+    ]
+
+
+def hold_one_statement_per_security(root: ET.Element) -> dict:
+    """Rewrite every restatement of a security to the first one stated.
+
+    The import resolves a security by its id and keeps the first statement
+    it reads, so this mirrors it: the first trade that names a security
+    states the issue, and every later trade that names the same security
+    must agree. A later statement is rewritten in place, so the document
+    that is imported states the same issue on every trade and the export
+    can match it pair for pair.
+
+    Returns the report the caller prints: the distinct security ids, the
+    trades that restated one, and how many trades stated each member
+    differently.
+    """
+    canonical: dict = {}
+    restated_trades = set()
+    restatements: Counter = Counter()
+    for trade in root.iter("Trade"):
+        # A bond product does not always state its bondData directly: a
+        # forward bond wraps it in ForwardBondData, and a callable or
+        # convertible bond wraps it the same way. The security is the same
+        # datum wherever the document puts it, so every nested statement is
+        # folded too.
+        for bond in trade.iter("BondData"):
+            security_id = bond.findtext("SecurityId")
+            if not security_id:
+                continue
+            statement = issue_statement(bond)
+            if security_id not in canonical:
+                canonical[security_id] = statement
+                continue
+
+            first = canonical[security_id]
+            if [member[1] for member in statement] == [member[1] for member in first]:
+                continue
+            restated_trades.add(trade.get("id"))
+            for tag in sorted({member[0] for member in statement + first}):
+                stated = [member[1] for member in statement if member[0] == tag]
+                held = [member[1] for member in first if member[0] == tag]
+                if stated != held:
+                    restatements[tag] += 1
+
+            # The statement is rewritten in place: the trade keeps its own
+            # security id and notional where they are, and the issue's
+            # members are replaced by the ones the security's first
+            # statement gave.
+            owned = [child for child in bond if child.tag in TRADE_OWNED_BOND_MEMBERS]
+            replaced = [child for child in bond if child.tag not in TRADE_OWNED_BOND_MEMBERS]
+            at = list(bond).index(replaced[0]) if replaced else len(bond)
+            for child in replaced:
+                bond.remove(child)
+            for offset, member in enumerate(first):
+                bond.insert(at + offset, ET.fromstring(member[2]))
+
+    return {
+        "securities": len(canonical),
+        "restated_trades": len(restated_trades),
+        "restatements": restatements,
+    }
+
+
 def stage(documents: list, source_dir: Path) -> None:
     """Copy each document under a name unique within the pack.
 
@@ -100,7 +215,7 @@ def stage(documents: list, source_dir: Path) -> None:
         shutil.copy2(document, source_dir / f"{index:03d}-{document.name}")
 
 
-def merge_sources(source_dir: Path, merged: Path, portfolios: int) -> int:
+def merge_sources(source_dir: Path, merged: Path, portfolios: int, canonicalise: bool) -> tuple:
     """Fold the staged portfolios into one Portfolio.
 
     The classifier pairs element paths, not files, so the union of the
@@ -110,6 +225,10 @@ def merge_sources(source_dir: Path, merged: Path, portfolios: int) -> int:
     staged beside them are not portfolios and are left out. Staging numbers
     the files in order, so the first ``portfolios`` of them are the
     portfolios.
+
+    Unless ``canonicalise`` is off, every security is then held to the one
+    statement its first trade gives it. The report of that fold is
+    returned beside the child count.
     """
     merged_root = ET.Element("Portfolio")
     seen_ids = set()
@@ -129,9 +248,29 @@ def merge_sources(source_dir: Path, merged: Path, portfolios: int) -> int:
                     continue
                 seen_ids.add(trade_id)
             merged_root.append(child)
+    report = (
+        hold_one_statement_per_security(merged_root)
+        if canonicalise
+        else {"securities": 0, "restated_trades": 0, "restatements": Counter()}
+    )
     merged.parent.mkdir(parents=True, exist_ok=True)
     ET.ElementTree(merged_root).write(merged, encoding="utf-8", xml_declaration=True)
-    return len(merged_root)
+    return len(merged_root), report
+
+
+def print_corpus_report(report: dict, canonicalised: bool) -> None:
+    """Print what the corpus states for each security, and what was overridden."""
+    tag = "held to one statement per security" if canonicalised else "compared raw"
+    print(f"Reference data ({tag}): {report['securities']} distinct security id(s)")
+    if not canonicalised:
+        return
+    print(f"  trades restating a security: {report['restated_trades']}")
+    if report["restatements"]:
+        print("  overridden, by member:")
+        for member, count in report["restatements"].most_common():
+            print(f"    {count:6d}  {member}")
+    else:
+        print("  the corpus states one statement per security; nothing overridden")
 
 
 def write_script(work_dir: Path, source_dir: Path, output: Path) -> Path:
@@ -183,6 +322,11 @@ def main() -> int:
         help="gate on every product the corpus states, not only the bond scope",
     )
     parser.add_argument(
+        "--raw-corpus",
+        action="store_true",
+        help="compare the corpus as written, without holding it to one statement per security",
+    )
+    parser.add_argument(
         "--keep",
         action="store_true",
         help="keep the staged pack after the run",
@@ -209,8 +353,11 @@ def main() -> int:
     staging = work_dir / "staged"
     stage(portfolios + config, staging)
     union = union_dir / "portfolio_roundtrip.xml"
-    children = merge_sources(staging, union, len(portfolios))
+    children, report = merge_sources(
+        staging, union, len(portfolios), canonicalise=not args.raw_corpus
+    )
     print(f"Union of the sources: {children} top-level element(s)")
+    print_corpus_report(report, canonicalised=not args.raw_corpus)
 
     # The pack holds the union and the configuration documents beside it,
     # and nothing else: the portfolios it was folded from would import a

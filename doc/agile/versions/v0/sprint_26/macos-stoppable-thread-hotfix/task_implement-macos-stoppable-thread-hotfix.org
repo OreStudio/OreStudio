@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 7B3F9C58-2E41-4D86-A5C7-9F0E6B3A2D14
+:END:
+#+title: Task: Implement Hotfix: the workflow deadline watch uses a thread Apple's libc++ lacks
+#+description: Add ores.platform::concurrency::stoppable_thread, move the workflow engine's deadline watch onto it, and verify with the workflow and platform suites plus a macOS run.
+#+type: task
+#+level: s1
++#+filetags: :hotfix:platform:workflow:macos:concurrency:sprint_26:v0:macos-stoppable-thread-hotfix:
++#+owner: marco
++#+branch: hotfix/macos-stoppable-thread
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-09-30
++#+updated: 2026-09-30
++#+environment: clever_dijkstra
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D1E7A34-8C26-4B0F-9A73-6E4B2C8D1F05][Hotfix: the workflow deadline watch uses a thread Apple's libc++ lacks]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the deadline watch portable, so both macOS legs build and test again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5D1E7A34-8C26-4B0F-9A73-6E4B2C8D1F05][Hotfix: the workflow deadline watch uses a thread Apple's libc++ lacks]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- =stoppable_thread= starts a thread with a token, requests a stop and joins
+  in its destructor, and is movable and not copyable.
+- The workflow engine declares and constructs it, and =grep= for
+  =std::jthread= over =projects/= finds nothing.
+- The tree builds; the workflow, platform and iam core suites pass.
+- A macOS run builds and tests the branch.
+
+* Plan
+
+1. Write the type, with a comment saying why it exists and why it is not
+   exported.
+2. Add it to the concurrency aggregate header and to the component file list.
+3. Read the engine's two sites and move them onto it.
+4. Build, run the suites, format-check, and dispatch macOS.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =std::jthread= uses before | 2, in the workflow engine | =grep -rn jthread projects/= | main at 26d66e66 |
+| The same after | 0 | same | this branch |
+| The initialiser-order warning the first draft produced | =field 'source_' is uninitialized when used here=, an error under =-Werror= | =cmake --build= | this branch, first draft |
+| Suites | 6 of 6 pass: workflow api/core/service, platform, iam core, shell workflow | =ctest -R "workflow\|platform\|iam.core"= | this branch |
+| Full tree | builds | =cmake --build --preset linux-clang-debug-make -j 8= | this branch |
+| Formatting | clang-format clean on the four changed files | =clang-format --dry-run --Werror= | this branch |
+| macOS | dispatched | =gh workflow run continuous-macos.yml= | this branch |
+
+* Notes
+
+- The first draft initialised the thread in the constructor's member-init list
+  and read the stop source there. clang flags that under =-Werror= as an
+  uninitialised field read, and the fix is to take the token and assign the
+  thread in the body: the token is then a plain value and the initialisation
+  order cannot be argued about.
+- The macOS run of the previous fix (36704140032) succeeded, so the failure
+  this task fixes is the one the deadline watch introduced afterwards.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores.platform::concurrency::stoppable_thread= carries the stop token and
+joins in its destructor, and the deadline watch uses it. No source in the
+estate names =std::jthread=; the six affected suites pass and the tree builds.

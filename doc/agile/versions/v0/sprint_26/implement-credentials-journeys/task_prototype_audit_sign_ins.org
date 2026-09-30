@@ -93,16 +93,16 @@ each one, and the prototype decides how.
 3. *No operation to end another account's session.* The repository method
    =session_repository::end_session= writes the end time, and only the logout
    path calls it for the caller's own session.
-4. *The activity and the audit data have no read path in the browser.* The
-   session samples have neither a working subject nor a BFF route. Until the
-   subjects exist, the session-activity panel must state that the data is not
-   available.
+4. *The activity and the audit data have no path the browser can use.* The
+   sessions and the login records have =ores.http= routes, which the browser
+   never reaches, and the samples have no route at all. Until the BFF serves
+   them, the session-activity panel must state that the data is not available.
 
 Three of the reads are =partial=: =iam.v1.sessions.list= takes no account
 filter, and =iam.v1.sessions.active= and =iam.v1.sessions.samples= exist and
-reply with success and no rows. The BFF answers the active sessions from the
-session repository, so that panel works in the browser today while the NATS
-path does not.
+reply with success and no rows. =ores.http= exposes the sessions and the active
+sessions, each forwarding to its subject, and exposes nothing for the samples.
+The browser reaches none of them: the BFF is its only HTTP surface.
 
 * Test Scenarios
 
@@ -164,11 +164,12 @@ reads the sessions, which is exactly when a locked account matters.
 - *The failure count and the lock state travel together.* A locked account is
   the case the screen exists for, so the state is a tag beside the count.
 
-*The whole journey is unreachable from the browser today.* No route serves
-=iam.v1.sessions.list=, =iam.v1.sessions.active=, =iam.v1.sessions.samples= or
-=iam.v1.login_info.list=, and there is no subject or route for the auth events
-or the session statistics. The journey document's claim that
-=/api/v1/sessions/active= "works in the browser today" is stale.
+*The whole journey is unreachable from the browser today.* =ores.http= serves
+=iam.v1.sessions.list=, =.active= and =iam.v1.login_info.list=, one forwarding
+route each, and the browser never reaches =ores.http=. The samples, the auth
+events and the statistics have neither a subject nor a route on any surface. The
+journey document's claim that =/api/v1/sessions/active= "works in the browser
+today" named the wrong surface, and it is corrected there.
 
 *Verification.* =npm run typecheck --workspace @ores/web= passes.
 =npm test --workspace @ores/web= passes, 146 tests in 13 files, on the same

@@ -23,6 +23,15 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 -
 
+* Resolved
+
+Fixed by PR #2413, "Fix the schema validation: enable row-level security on
+three reporting tables", which landed just before the change that filed this.
+The strict validator now reports no warnings over 1796 files, and the tables
+carry their enablement and their policies. Kept as the record of what the
+failure looked like: the strict validator was the only thing that said a
+tenant-scoped table had no isolation.
+
 * See also
 
 -

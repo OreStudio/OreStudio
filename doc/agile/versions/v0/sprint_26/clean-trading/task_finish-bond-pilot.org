@@ -130,6 +130,34 @@ rows the work touches.
 
 * Notes
 
+- Round trip, first run of the pilot (2026-09-30). The gate the split left
+  unrun now runs and reads zero: the bond example document
+  (=Cash_BondRepo_and_Bond.xml=) imports, exports again and classifies
+  as *lost 0, unexplained 0* in scope, with a worst relative error of
+  =2.2e-8=. What it took is below; the corpus sweep is still to run.
+- The import could not write a single trade. The cause was a generator
+  defect, not a trading one: the service template's =prepare_change=
+  stamped the domain object whole, which is right only for a flat entity.
+  A field-grouped entity reaches its audit through =audit= and an
+  identity-grouped one through =identity= and =audit=, so the stamp found
+  no =modified_by= to set and the insert trigger refused the row with
+  ="modified_by cannot be null or empty"=. Every =put= of a trade or a
+  bond instrument failed. Fixed at source in
+  =cpp_service.cpp.mustache= and =core.py=, which now name the members a
+  write stamps; a flat entity's emitted code is byte-identical, so no
+  other component moved. =test_service_write_stamps_audit.py= pins one
+  entity of each shape.
+- Run the round trip against a *freshly recreated* database. The book the
+  import writes is named =portfolio_roundtrip= every time, so a second run
+  against a database that already holds one fails at =save_book= with an
+  empty message. Recreate, then =bootstrap setup ... --profile
+  acme_demo= (the provisioning commands were renamed; =provision system=
+  is gone), then the three shell verbs.
+- Keep =projects/ores.codegen/venv/bin= first on =PATH= when regenerating.
+  The sweep and the in-place regeneration format with whichever
+  =clang-format= wins, and 21 wraps a line that 18.1.3 does not, which
+  reads as drift in a file nothing changed.
+
 - The pilot's recorded results are in the sprint 25 task bodies. The
   zero-loss claim is =B753AD00= and the round trip is =D2D32410=. Read
   both before re-measuring, so a difference is attributable.

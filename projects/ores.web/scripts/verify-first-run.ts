@@ -397,7 +397,10 @@ async function handOver(profile: SeedProfileChoice, details: TenantDetails): Pro
     );
 
     if (outcome.outcome === 'active') {
-        check('the tenant administrator signed in', outcome.session.username === principal);
+        // The session names the account, not the principal that routes to it:
+        // the hostname part of `principal` is the tenant's, and the account is
+        // stored under its username.
+        check('the tenant administrator signed in', outcome.session.username === TENANT_ADMIN);
         check(
             'the session works in a party',
             outcome.session.party.name.length > 0,
@@ -456,10 +459,7 @@ async function firstSignIn(
 
     await signOut();
     session = await enterAs(tenantPrincipal(details), TENANT_ADMIN_NEW_PASSWORD);
-    check(
-        'the new password is the one that signs in',
-        session.username === tenantPrincipal(details),
-    );
+    check('the new password is the one that signs in', session.username === TENANT_ADMIN);
     return session;
 }
 

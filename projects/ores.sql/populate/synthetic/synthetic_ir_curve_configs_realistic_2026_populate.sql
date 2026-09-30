@@ -114,7 +114,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date
+        price_source, vintage_source, vintage_date, vintage_series_uri
     )
     select
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -131,7 +131,7 @@ begin
         true, true, c.currency_code, c.index_family, '', 'COX_INGERSOLL_ROSS',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly',
-        'fixed', '', ''
+        'fixed', '', '', ''
     from (values
         -- currency, index_family, annual kappa, annual sigma, theta (mean/initial level).
         -- Real-benchmark conventions (fixing calendar/day-count/settlement) for each family
@@ -200,7 +200,7 @@ begin
         currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
-        price_source, vintage_source, vintage_date
+        price_source, vintage_source, vintage_date, vintage_series_uri
     )
     values (
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
@@ -213,7 +213,7 @@ begin
         true, true, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
         0.55, 0.04, 0.008, 0.04,
         60, 'Quarterly',
-        'fixed', '', ''
+        'fixed', '', '', ''
     );
 
     insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (

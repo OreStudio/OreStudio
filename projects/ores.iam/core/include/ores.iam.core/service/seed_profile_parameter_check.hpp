@@ -194,8 +194,7 @@ check_parameters(const std::vector<domain::seed_profile_parameter>& declared,
              * cannot have come from one.
              */
             const bool is_lei =
-                value.size() == 20 &&
-                std::all_of(value.begin(), value.end(), [](unsigned char c) {
+                value.size() == 20 && std::all_of(value.begin(), value.end(), [](unsigned char c) {
                     return std::isalnum(c) != 0;
                 });
             if (!is_lei)

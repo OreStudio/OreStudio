@@ -110,9 +110,8 @@ TEST_CASE("conventions_swap_index_round_trips", tags) {
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
         const int written = element_count(exported, "SwapIndex");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.SwapIndex.size()) + " SwapIndex element(s), the export " +
-             std::to_string(written));
+        INFO(path.string() + ": the document has " + std::to_string(document.SwapIndex.size()) +
+             " SwapIndex element(s), the export " + std::to_string(written));
         CHECK(written == static_cast<int>(document.SwapIndex.size()));
     }
 
@@ -205,9 +204,8 @@ TEST_CASE("conventions_average_ois_round_trips", tags) {
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
         const int written = element_count(exported, "AverageOIS");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.AverageOIS.size()) + " AverageOIS element(s), the export " +
-             std::to_string(written));
+        INFO(path.string() + ": the document has " + std::to_string(document.AverageOIS.size()) +
+             " AverageOIS element(s), the export " + std::to_string(written));
         CHECK(written == static_cast<int>(document.AverageOIS.size()));
     }
 
@@ -430,8 +428,7 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
             CHECK(out.contract_frequency == to_string(in.ContractFrequency));
             CHECK(out.calendar == std::string(in.Calendar));
             if (in.AveragingData)
-                CHECK(out.averaging_commodity_name ==
-                      std::string(in.AveragingData->CommodityName));
+                CHECK(out.averaging_commodity_name == std::string(in.AveragingData->CommodityName));
             if (in.ProhibitedExpiries)
                 CHECK(out.prohibited_expiries.has_value());
             if (in.FutureContinuationMappings)
@@ -668,8 +665,7 @@ TEST_CASE("conventions_inflation_swap_round_trips", tags) {
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
         const int written = element_count(exported, "InflationSwap");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.InflationSwap.size()) +
+        INFO(path.string() + ": the document has " + std::to_string(document.InflationSwap.size()) +
              " InflationSwap element(s), the export " + std::to_string(written));
         CHECK(written == static_cast<int>(document.InflationSwap.size()));
 

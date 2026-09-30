@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: ABEA22FE-C92F-4522-8256-72DE1804295B
+:END:
+#+title: ores.reporting.report_analytic
+#+description: Codegen entity model for the reporting =report_analytic= table. The analytics a report's run document asks for, in order.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: An analytic a report's run asks for.
+#+entity_singular: report_analytic
+#+entity_plural: report_analytics
+#+entity_title: Report Analytic
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One row per =Analytic= element in a report's ORE run document: which analytic to
+run, in what order, and whether it is on. The corpus runs eighteen hundred and
+seventy-four analytics across its four hundred and sixteen run documents, in
+thirty-five distinct types, and every one of them carries an =active= parameter.
+
+This is the row that replaces the analytic switches on =risk_report_config=.
+Those were twelve =*_enabled= booleans, which could say "run NPV" and nothing
+else; a run can now name any of the thirty-five types, in order, and repeat one.
+The type-specific parameters live in a table per type, named by the type's
+=parameter_entity=, rather than in columns here.
+
+Each row belongs to exactly one =report_definition=, which is this run's
+document, and the definition has many analytics.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this analytic.
+
+** report_definition_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The report definition whose run document this analytic belongs to.
+
+** analytic_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The analytic to run, as the value ORE writes in its type attribute.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The position the analytic holds in the document's list, counting from one. ORE
+runs the analytics in the order they appear.
+
+** active
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the analytic is on, as ORE spells it: Y or N. ORE writes the flag as a
+parameter of every analytic, so the row carries it rather than inferring it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_analytics_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** analytic_type_code
+:PROPERTIES:
+:table:         ores_reporting_analytic_types_tbl
+:target_column: code
+:parent_entity: analytic_type
+:nullable:      false
+:error_message: Invalid analytic_type_code: %. No active analytic type found with this code.
+:list_by:       true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: analytic
+:entity_plural_short:   analytics
+:entity_singular_words: report analytic
+:entity_plural_words:   report analytics
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ra
+:END:
+
+** Table display
+
+| column             | header             |
+|--------------------+--------------------|
+| analytic_type_code | Analytic           |
+| display_order      | Order              |
+| active             | Active             |
+| modified_by        | Modified By        |
+| version            | Version            |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        report_analytics
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: report_analytic
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|
+| analytic_type_code | Analytic | line_edit |  | true | e.g. npv |
+| display_order | Order | spin_edit |  | true | Enter order |
+| active | Active | line_edit |  | true | Y or N |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| AnalyticTypeCode | analytic_type_code | Analytic | string | 180 |
+| DisplayOrder | display_order | Order | int | 80 |
+| Active | active | Active | string | 80 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

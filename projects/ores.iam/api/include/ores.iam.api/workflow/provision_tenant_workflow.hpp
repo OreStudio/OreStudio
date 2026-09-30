@@ -125,8 +125,7 @@ struct step_kind_words {
         return {"Start the market feeds",
                 "Starts the synthetic market data the tenant's curves and prices are built from."};
     if (kind == complete_provisioning_step_kind)
-        return {"Finish",
-                "Marks the tenant ready: it stops bootstrapping and becomes active."};
+        return {"Finish", "Marks the tenant ready: it stops bootstrapping and becomes active."};
     return {kind, {}};
 }
 
@@ -281,7 +280,9 @@ make_step(const provision_tenant_workflow_request& run,
                                    const ores::workflow::service::workflow_step_results&) {
         return rfl::json::write(command);
     };
-    step.build_compensation = [](const std::string&, const std::string&) { return "{}"; };
+    step.build_compensation = [](const std::string&, const std::string&) {
+        return "{}";
+    };
     return step;
 }
 
@@ -350,8 +351,8 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
         const auto run = detail::read_workflow_request(request_json);
         std::unordered_map<std::string, int> seen;
         auto steps = detail::build_declared_steps(run, seen);
-        steps.push_back(detail::make_step(
-            run, std::string(complete_provisioning_step_kind), "{}", seen));
+        steps.push_back(
+            detail::make_step(run, std::string(complete_provisioning_step_kind), "{}", seen));
         return steps;
     };
 

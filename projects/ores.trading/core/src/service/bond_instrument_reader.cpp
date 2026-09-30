@@ -19,17 +19,17 @@
  */
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.trading.core/repository/parent_scoped_queries.hpp"
-#include "ores.trading.core/service/ascot_service.hpp"
-#include "ores.trading.core/service/bond_future_service.hpp"
-#include "ores.trading.core/service/bond_instrument_service.hpp"
-#include "ores.trading.core/service/bond_issue_service.hpp"
 #include "ores.trading.api/domain/bond_issue_leg.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
+#include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/service/ascot_service.hpp"
+#include "ores.trading.core/service/bond_future_service.hpp"
+#include "ores.trading.core/service/bond_instrument_service.hpp"
+#include "ores.trading.core/service/bond_issue_service.hpp"
 #include "ores.trading.core/service/bond_option_service.hpp"
 #include "ores.trading.core/service/bond_repo_service.hpp"
 #include "ores.trading.core/service/bond_trs_service.hpp"
@@ -291,9 +291,8 @@ domain::bond_schedule_rules to_rules(const ScheduleRow& row) {
 }
 
 template <typename ScheduleRow, typename DateRow>
-domain::bond_schedule_data
-to_schedule_data(const std::vector<const ScheduleRow*>& rows,
-                 const std::vector<const DateRow*>& date_rows) {
+domain::bond_schedule_data to_schedule_data(const std::vector<const ScheduleRow*>& rows,
+                                            const std::vector<const DateRow*>& date_rows) {
     std::unordered_map<int, std::vector<const DateRow*>> by_sequence;
     for (const auto* date_row : date_rows)
         by_sequence[date_row->schedule_sequence_number].push_back(date_row);
@@ -351,9 +350,8 @@ domain::bond_schedule_data schedule_for(const instrument_rows& rows,
 }
 
 template <typename AmountRow>
-leg_amounts collect_amounts(const std::vector<AmountRow>& rows,
-                            std::string_view leg_role,
-                            int leg_number) {
+leg_amounts
+collect_amounts(const std::vector<AmountRow>& rows, std::string_view leg_role, int leg_number) {
     leg_amounts amounts;
     for (const auto& row : rows) {
         if (leg_role_of(row) != leg_role || row.leg_number != leg_number)
@@ -496,7 +494,8 @@ domain::bond_leg_data build_leg(const Rows& rows, const LegRow& row) {
              amortization.underflow});
     }
 
-    leg.schedule = schedule_for(rows.schedules, rows.schedule_dates, leg_role, leg_number, "schedule");
+    leg.schedule =
+        schedule_for(rows.schedules, rows.schedule_dates, leg_role, leg_number, "schedule");
     leg.payment_schedule =
         schedule_for(rows.schedules, rows.schedule_dates, leg_role, leg_number, "payment_schedule");
     const auto payment_dates =
@@ -511,8 +510,10 @@ domain::bond_leg_data build_leg(const Rows& rows, const LegRow& row) {
         leg.rate = to_rate_data(
             rate_row,
             amounts,
-            schedule_for(rows.schedules, rows.schedule_dates, leg_role, leg_number, "fixing_schedule"),
-            schedule_for(rows.schedules, rows.schedule_dates, leg_role, leg_number, "reset_schedule"));
+            schedule_for(
+                rows.schedules, rows.schedule_dates, leg_role, leg_number, "fixing_schedule"),
+            schedule_for(
+                rows.schedules, rows.schedule_dates, leg_role, leg_number, "reset_schedule"));
         break;
     }
     return leg;
@@ -784,8 +785,7 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
             data.conversion_targets = it->second;
         const auto family = leg_family.find(id);
         const auto issue_family_row = issue_family.find(issue_id);
-        const auto& trade_rows =
-            family == leg_family.end() ? no_trade_rows : family->second;
+        const auto& trade_rows = family == leg_family.end() ? no_trade_rows : family->second;
         const auto& security_rows =
             issue_family_row == issue_family.end() ? no_issue_rows : issue_family_row->second;
         apply_leg_family(data, trade_rows, security_rows);

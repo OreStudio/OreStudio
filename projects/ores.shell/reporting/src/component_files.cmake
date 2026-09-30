@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/commands/reporting/analytic_type_commands.cpp"
     "app/commands/reporting/concurrency_policy_commands.cpp"
     "app/commands/reporting/configuration_commands.cpp"
     "app/commands/reporting/configuration_parameter_commands.cpp"
@@ -35,6 +36,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/analytic_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/concurrency_policy_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/configuration_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/configuration_parameter_commands.hpp"

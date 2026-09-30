@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-29T22:54:28.448682Z
+' Generated: 2026-09-30T10:27:32.275164Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -4735,6 +4735,8 @@ package "dq_staging" #F3E5F5 {
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
         * version : integer
+        * oresmd_uri : text
+        * key : text
         * series_type : text
         * metric : text
         * qualifier : text
@@ -4949,6 +4951,7 @@ package "dq_staging" #F3E5F5 {
         * price_source : text
           vintage_source : text
           vintage_date : text
+          vintage_series_uri : text
     }
 
     note right of ores_dq_synthetic_ir_curve_configs_artefact_tbl
@@ -9283,6 +9286,40 @@ package "scheduler" #F1F8E9 {
 ' ==================== reporting (Reporting & Analytics) ====================
 '
 package "reporting" #E0F7FA {
+    entity ores_reporting_analytic_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+          parameter_entity : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_analytic_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Analytic Type Table
+    Reference data naming the analytics ORE's run document can ask for: NPV,
+    cashflows, curves, simulation, XVA, initial margin, sensitivity, stress, SIMM
+    and the rest. The element's type attribute is a free string in ORE's schema;
+    this is the vocabulary the shipped run documents actually use, and it is what
+    makes the attribute a foreign key rather than free text.
+    Thirty-five types are in use across the corpus, and their parameter sets barely
+    overlap: xva takes around seventy parameters, simulation sixty, sensitivity
+    thirty, and several types one flag. That is why each type owns a table for its
+    parameters and this table names it, in parameter_entity, rather than every
+    type sharing one wide row.
+    end note
+
     entity ores_reporting_concurrency_policies_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -9465,6 +9502,79 @@ package "reporting" #E0F7FA {
     model generates unknown.
     end note
 
+    entity ores_reporting_report_analytic_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_analytic_id : uuid <<FK>>
+        * parameter_definition_id : uuid <<FK>>
+        * value : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_analytic_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Analytic Parameter Table
+    One Parameter element inside one Analytic of a run document: the value, and
+    the definition that says what it means. The corpus writes eighteen hundred and
+    seventy-four analytics whose parameters barely overlap -- xva takes around
+    seventy, simulation sixty, sensitivity thirty, and several types one flag -- so
+    the parameters cannot be columns on the analytic.
+    They are held the way the reporting registry already holds a configuration's
+    parameters: a row per value, keyed to a definition in parameter_definition
+    whose scope is the analytic and whose subtype is the analytic type code,
+    and whose value domain supplies the type. Adding a parameter is a lookup row,
+    never a column, and no analytic type needs a table of its own. That is the
+    decision this entity records, and it replaces the plan's table-per-type with the
+    registry's own pattern, which was built for this shape.
+    Each row belongs to exactly one analytic and has many parameters, in the order
+    the document wrote them.
+    end note
+
+    entity ores_reporting_report_analytics_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * analytic_type_code : text
+        * display_order : integer
+        * active : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_analytics_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Analytic Table
+    One row per Analytic element in a report's ORE run document: which analytic to
+    run, in what order, and whether it is on. The corpus runs eighteen hundred and
+    seventy-four analytics across its four hundred and sixteen run documents, in
+    thirty-five distinct types, and every one of them carries an active parameter.
+    This is the row that replaces the analytic switches on risk_report_config.
+    Those were twelve *_enabled booleans, which could say "run NPV" and nothing
+    else; a run can now name any of the thirty-five types, in order, and repeat one.
+    The type-specific parameters live in a table per type, named by the type's
+    parameter_entity, rather than in columns here.
+    Each row belongs to exactly one report_definition, which is this run's
+    document, and the definition has many analytics.
+    end note
+
     entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -9595,6 +9705,121 @@ package "reporting" #E0F7FA {
     fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
     started_at is NULL when the instance is cancelled or skipped before execution
     begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_market_bindings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * role : text
+        * configuration_name : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_market_bindings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Market Binding Table
+    One Parameter of the Markets block in a run document: a market role, and the
+    configuration set the run binds to it. Three hundred and thirteen of the corpus's
+    four hundred and sixteen documents carry the block, and between them they bind
+    nineteen hundred and fifteen times, in eight roles: pricing,
+    simulation, sensitivity, lgmcalibration, fxcalibration,
+    eqcalibration, infcalibration and bondpricing.
+    The role is a free string in ORE's schema and the value names a configuration
+    set built in todaysmarket.xml, which is market data and belongs to another
+    component. This table holds the binding, not the configuration it names: what
+    the run asks the market for, by role, in the order the document wrote it.
+    Each row belongs to exactly one report_definition and a definition has many
+    bindings.
+    end note
+
+    entity ores_reporting_report_run_setups_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+          asof_date : text
+          accrual_date : text
+          input_path : text
+          input_path_market : text
+          input_path_portfolio : text
+          output_path : text
+          log_file : text
+          log_mask : integer
+          n_threads : integer
+          observation_model : text
+          base_currency : text
+          date_calendar : text
+          date_convention : text
+          fixing_cutoff : text
+          continue_on_error : text
+          build_failed_trades : text
+          imply_todays_fixings : text
+          ignore_fixing_lag : integer
+          include_todays_cash_flows : text
+          include_reference_date_events : text
+          lazy_market_building : text
+          enrich_index_fixings : text
+          use_analytics : text
+          csv_comment_report_header : text
+          default_mapping_to_identity : text
+          portfolio_recurse_into_sub_directories : text
+          curve_config_file : text
+          conventions_file : text
+          market_config_file : text
+          pricing_engines_file : text
+          pricing_engines_file_scenario : text
+          portfolio_file : text
+          market_data_file : text
+          market_data_mapping_file : text
+          fixing_data_file : text
+          fixing_data_mapping_file : text
+          calendar_adjustment : text
+          currency_configuration : text
+          reference_data_file : text
+          counterparty_file : text
+          script_library : text
+          ibor_fallback_config : text
+          additional_results : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_run_setups_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Run Setup Table
+    The Setup block of the ORE run document, as typed columns: the dates the run
+    works to, the paths it reads and writes, the flags it runs under, and the
+    configuration files it names. The corpus uses forty of these parameters across
+    all four hundred and sixteen shipped run documents, and asofDate, inputPath,
+    outputPath and logFile appear in every one.
+    Each row is owned by exactly one report_definition (1:1, enforced by the
+    unique index on report_definition_id). It replaces the part of
+    risk_report_config that held a handful of these parameters as columns mixed in
+    with the analytic switches; the switches become rows in report_analytic, and
+    what is left of the run's configuration is here.
+    Values are held as ORE spells them rather than converted, because the run
+    document is written back to ORE and the flags are not all booleans: the
+    fixing and cashflow flags are Y or N, the model flags are true or
+    false, and accrualDate may be the literal ASOF. Converting them would
+    mean inventing a canonical form ORE does not have.
     end note
 
     entity ores_reporting_report_types_tbl <<temporal>> #C6F0D8 {
@@ -11061,6 +11286,7 @@ package "synthetic" #F9FBE7 {
         * price_source : text
         * vintage_source : text
         * vintage_date : text
+        * vintage_series_uri : text
           description : text
         * fixed_leg_payment_frequency_code : text
         * source_name : text

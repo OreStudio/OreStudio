@@ -1074,3 +1074,7 @@ tangled into the runnable script library
 * Intraday Power Load Conventions
 
 - [[id:9E9A7855-DC09-5B10-B1C5-131EA13ACDC6][How do I run the intraday_power_load_conventions commands from the shell?]]
+
+* Analytic Types
+
+- [[id:D74D4948-6B4D-5495-B833-2656AE06D375][How do I run the analytic_types commands from the shell?]]

@@ -212,23 +212,23 @@ domain::dateRule parse_date_rule(const std::string& s);
 std::string serialize_schedule_rule(const domain::scheduleData_Rules_t& rule) {
     return join_fields(
         {std::string(rule.StartDate),
-         rule.EndDate ? (rule.EndDate->empty() ? std::string("~") : std::string(*rule.EndDate))
-                      : std::string(),
-         rule.AdjustEndDateToPreviousMonthEnd
-             ? (bool_value(*rule.AdjustEndDateToPreviousMonthEnd) ? "true" : "false")
-             : std::string(),
-         std::string(rule.Tenor), rule.Calendar ? std::string(*rule.Calendar) : std::string(),
+         rule.EndDate ? (rule.EndDate->empty() ? std::string("~") : std::string(*rule.EndDate)) :
+                        std::string(),
+         rule.AdjustEndDateToPreviousMonthEnd ?
+             (bool_value(*rule.AdjustEndDateToPreviousMonthEnd) ? "true" : "false") :
+             std::string(),
+         std::string(rule.Tenor),
+         rule.Calendar ? std::string(*rule.Calendar) : std::string(),
          to_string(rule.Convention),
          rule.TermConvention ? to_string(*rule.TermConvention) : std::string(),
          rule.Rule ? to_string(*rule.Rule) : std::string(),
          rule.EndOfMonth ? (bool_value(*rule.EndOfMonth) ? "true" : "false") : std::string(),
          rule.EndOfMonthConvention ? to_string(*rule.EndOfMonthConvention) : std::string(),
-         rule.FirstDate ? (rule.FirstDate->empty() ? std::string("~")
-                                                   : std::string(*rule.FirstDate))
-                        : std::string(),
-         rule.LastDate ? (rule.LastDate->empty() ? std::string("~")
-                                                 : std::string(*rule.LastDate))
-                       : std::string(),
+         rule.FirstDate ?
+             (rule.FirstDate->empty() ? std::string("~") : std::string(*rule.FirstDate)) :
+             std::string(),
+         rule.LastDate ? (rule.LastDate->empty() ? std::string("~") : std::string(*rule.LastDate)) :
+                         std::string(),
          rule.RemoveFirstDate ? (*rule.RemoveFirstDate ? "true" : "false") : std::string(),
          rule.RemoveLastDate ? (*rule.RemoveLastDate ? "true" : "false") : std::string()},
         '|');
@@ -237,14 +237,17 @@ std::string serialize_schedule_rule(const domain::scheduleData_Rules_t& rule) {
 domain::scheduleData_Rules_t parse_schedule_rule(const std::string& s) {
     domain::scheduleData_Rules_t rule;
     const auto f = split_fields(s, '|');
-    auto at = [&f](std::size_t i) { return i < f.size() ? f[i] : std::string(); };
+    auto at = [&f](std::size_t i) {
+        return i < f.size() ? f[i] : std::string();
+    };
     static_cast<std::string&>(rule.StartDate) = at(0);
     if (at(1) == "~")
         rule.EndDate = domain::date(std::string());
     else if (!at(1).empty())
         rule.EndDate = domain::date(at(1));
     if (!at(2).empty())
-        rule.AdjustEndDateToPreviousMonthEnd = at(2) == "true" ? domain::bool_::True : domain::bool_::False;
+        rule.AdjustEndDateToPreviousMonthEnd =
+            at(2) == "true" ? domain::bool_::True : domain::bool_::False;
     static_cast<std::string&>(rule.Tenor) = at(3);
     if (!at(4).empty())
         rule.Calendar = domain::calendar(at(4));
@@ -279,22 +282,24 @@ std::string serialize_schedule_dates(const domain::scheduleData_Dates_t& block) 
             dates += ",";
         dates += static_cast<const std::string&>(d);
     }
-    return join_fields({block.Calendar ? std::string(*block.Calendar) : std::string(),
-                        block.Convention ? to_string(*block.Convention) : std::string(),
-                        block.Tenor ? std::string(*block.Tenor) : std::string(),
-                        block.EndOfMonth ? (bool_value(*block.EndOfMonth) ? "true" : "false")
-                                         : std::string(),
-                        block.IncludeDuplicateDates
-                            ? (bool_value(*block.IncludeDuplicateDates) ? "true" : "false")
-                            : std::string(),
-                        dates},
-                       '|');
+    return join_fields(
+        {block.Calendar ? std::string(*block.Calendar) : std::string(),
+         block.Convention ? to_string(*block.Convention) : std::string(),
+         block.Tenor ? std::string(*block.Tenor) : std::string(),
+         block.EndOfMonth ? (bool_value(*block.EndOfMonth) ? "true" : "false") : std::string(),
+         block.IncludeDuplicateDates ?
+             (bool_value(*block.IncludeDuplicateDates) ? "true" : "false") :
+             std::string(),
+         dates},
+        '|');
 }
 
 domain::scheduleData_Dates_t parse_schedule_dates(const std::string& s) {
     domain::scheduleData_Dates_t block;
     const auto f = split_fields(s, '|');
-    auto at = [&f](std::size_t i) { return i < f.size() ? f[i] : std::string(); };
+    auto at = [&f](std::size_t i) {
+        return i < f.size() ? f[i] : std::string();
+    };
     if (!at(0).empty())
         block.Calendar = domain::calendar(at(0));
     if (!at(1).empty())
@@ -319,14 +324,17 @@ std::string serialize_derived_schedule(const domain::DerivedScheduleType& d) {
                         d.Convention ? to_string(*d.Convention) : std::string(),
                         d.RemoveFirstDate ? (*d.RemoveFirstDate ? "true" : "false") : std::string(),
                         d.RemoveLastDate ? (*d.RemoveLastDate ? "true" : "false") : std::string(),
-                        std::string(), std::string()},
+                        std::string(),
+                        std::string()},
                        '|');
 }
 
 domain::DerivedScheduleType parse_derived_schedule(const std::string& s) {
     domain::DerivedScheduleType d;
     const auto f = split_fields(s, '|');
-    auto at = [&f](std::size_t i) { return i < f.size() ? f[i] : std::string(); };
+    auto at = [&f](std::size_t i) {
+        return i < f.size() ? f[i] : std::string();
+    };
     static_cast<std::string&>(d.BaseSchedule) = at(0);
     if (!at(1).empty())
         d.Shift = domain::DerivedScheduleType_Shift_t(at(1));
@@ -929,7 +937,8 @@ reverse_commodity_future(const refdata::domain::commodity_future_convention& v) 
     return r;
 }
 
-cmsSpreadOptionType reverse_cms_spread_option(const refdata::domain::cms_spread_option_convention& v) {
+cmsSpreadOptionType
+reverse_cms_spread_option(const refdata::domain::cms_spread_option_convention& v) {
     cmsSpreadOptionType r;
     static_cast<std::string&>(r.Id) = v.id;
     static_cast<std::string&>(r.ForwardStart) = v.forward_start;
@@ -1096,8 +1105,8 @@ overnightIndexType reverse_overnight_index(const refdata::domain::overnight_inde
     return r;
 }
 
-tenorBasisTwoSwapType reverse_tenor_basis_two_swap(
-    const refdata::domain::tenor_basis_two_swap_convention& v) {
+tenorBasisTwoSwapType
+reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convention& v) {
     tenorBasisTwoSwapType r;
     static_cast<std::string&>(r.Id) = v.id;
     static_cast<std::string&>(r.Calendar) = v.calendar;
@@ -1168,8 +1177,8 @@ tenorBasisSwapType reverse_tenor_basis_swap(const refdata::domain::tenor_basis_s
     return r;
 }
 
-crossCurrencyBasisType reverse_cross_currency_basis(
-    const refdata::domain::cross_currency_basis_convention& v) {
+crossCurrencyBasisType
+reverse_cross_currency_basis(const refdata::domain::cross_currency_basis_convention& v) {
     crossCurrencyBasisType r;
     static_cast<std::string&>(r.Id) = v.id;
     r.SettlementDays = static_cast<int64_t>(v.settlement_days);
@@ -1740,8 +1749,7 @@ refdata::domain::swap_convention conventions_mapper::map_swap(const swapType& v)
     return r;
 }
 
-refdata::domain::swap_index_convention
-conventions_mapper::map_swap_index(const swapIndexType& v) {
+refdata::domain::swap_index_convention conventions_mapper::map_swap_index(const swapIndexType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping swap index convention: " << std::string(v.Id);
 
     refdata::domain::swap_index_convention r;
@@ -2076,13 +2084,14 @@ conventions_mapper::map_intraday_power_load(const intradayPowerLoad& v) {
             for (const auto& rule : profile.BusinessDayRules->LoadProfileBusinessDayRule) {
                 if (!out.empty())
                     out += ";";
-                out += std::string(rule.Date) + "|" + std::string(rule.Calendar) + "|" +
-                       (rule.BusinessDayLoadFactors ? serialize_factors(*rule.BusinessDayLoadFactors)
-                                                    : std::string()) +
-                       "|" +
-                       (rule.NonBusinessDayLoadFactors
-                            ? serialize_factors(*rule.NonBusinessDayLoadFactors)
-                            : std::string());
+                out +=
+                    std::string(rule.Date) + "|" + std::string(rule.Calendar) + "|" +
+                    (rule.BusinessDayLoadFactors ? serialize_factors(*rule.BusinessDayLoadFactors) :
+                                                   std::string()) +
+                    "|" +
+                    (rule.NonBusinessDayLoadFactors ?
+                         serialize_factors(*rule.NonBusinessDayLoadFactors) :
+                         std::string());
             }
             r.business_day_load_rules = out;
         }
@@ -2092,8 +2101,7 @@ conventions_mapper::map_intraday_power_load(const intradayPowerLoad& v) {
     return r;
 }
 
-refdata::domain::bond_yield_convention
-conventions_mapper::map_bond_yield(const bondYield& v) {
+refdata::domain::bond_yield_convention conventions_mapper::map_bond_yield(const bondYield& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << std::string(v.Id);
 
     refdata::domain::bond_yield_convention r;
@@ -2478,8 +2486,7 @@ conventions_mapper::map_bma_basis_swap(const bmaBasisSwapType& v) {
 
 refdata::domain::zero_inflation_index_convention
 conventions_mapper::map_zero_inflation_index(const zeroInflationIndexType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping zero inflation index convention: "
-                               << std::string(v.Id);
+    BOOST_LOG_SEV(lg(), trace) << "Mapping zero inflation index convention: " << std::string(v.Id);
 
     refdata::domain::zero_inflation_index_convention r;
     r.id = std::string(v.Id);
@@ -2634,9 +2641,9 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
                            [](const auto& x) { return map_intraday_power_load(x); });
 
     r.bond_yield.reserve(v.BondYield.size());
-    std::ranges::transform(v.BondYield,
-                           std::back_inserter(r.bond_yield),
-                           [](const auto& x) { return map_bond_yield(x); });
+    std::ranges::transform(v.BondYield, std::back_inserter(r.bond_yield), [](const auto& x) {
+        return map_bond_yield(x);
+    });
 
     r.commodity_future.reserve(v.CommodityFuture.size());
     std::ranges::transform(v.CommodityFuture,
@@ -2659,9 +2666,9 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
                            [](const auto& x) { return map_inflation_swap(x); });
 
     r.bma_basis_swap.reserve(v.BMABasisSwap.size());
-    std::ranges::transform(v.BMABasisSwap,
-                           std::back_inserter(r.bma_basis_swap),
-                           [](const auto& x) { return map_bma_basis_swap(x); });
+    std::ranges::transform(v.BMABasisSwap, std::back_inserter(r.bma_basis_swap), [](const auto& x) {
+        return map_bma_basis_swap(x);
+    });
 
     r.zero_inflation_index.reserve(v.ZeroInflationIndex.size());
     std::ranges::transform(v.ZeroInflationIndex,
@@ -2706,15 +2713,13 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
     });
 
     r.future.reserve(v.Future.size());
-    std::ranges::transform(v.Future, std::back_inserter(r.future), [](const auto& x) {
-        return map_future(x);
-    });
+    std::ranges::transform(
+        v.Future, std::back_inserter(r.future), [](const auto& x) { return map_future(x); });
 
     r.swap_index.reserve(v.SwapIndex.size());
-    std::ranges::transform(
-        v.SwapIndex, std::back_inserter(r.swap_index), [](const auto& x) {
-            return map_swap_index(x);
-        });
+    std::ranges::transform(v.SwapIndex, std::back_inserter(r.swap_index), [](const auto& x) {
+        return map_swap_index(x);
+    });
 
     // Every category the document carries that this mapper does not model. A
     // skip that is counted is a gap a caller can read; a skip that is silent is

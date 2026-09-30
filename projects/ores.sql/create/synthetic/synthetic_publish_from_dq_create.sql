@@ -583,7 +583,8 @@ begin
                 a.description,
                 a.price_source,
                 coalesce(a.vintage_source, '') as vintage_source,
-                coalesce(a.vintage_date, '') as vintage_date
+                coalesce(a.vintage_date, '') as vintage_date,
+                coalesce(a.vintage_series_uri, '') as vintage_series_uri
             from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
             order by a.currency_code, a.index_family
@@ -610,7 +611,7 @@ begin
                 ticks_per_hour, enabled,
                 auto_start, description,
                 fixed_leg_payment_frequency_code, source_name,
-                price_source, vintage_source, vintage_date,
+                price_source, vintage_source, vintage_date, vintage_series_uri,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -630,7 +631,7 @@ begin
                 'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
                     lower(r.currency_code) || lower(r.index_family) ||
                     lower(replace(r.tenor, ' ', '')),
-                r.price_source, r.vintage_source, r.vintage_date,
+                r.price_source, r.vintage_source, r.vintage_date, r.vintage_series_uri,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _dummy

@@ -69,7 +69,6 @@ public:
     static void process_tenant_history(std::ostream& out,
                                        ores::nats::service::nats_client& session,
                                        std::string tenant_id);
-
 };
 
 }

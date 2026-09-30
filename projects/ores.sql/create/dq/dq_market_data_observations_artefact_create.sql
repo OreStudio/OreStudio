@@ -18,16 +18,29 @@
  *
  */
 -- Generic across market-data shapes (FX spot today; rates curves, vol
--- surfaces, credit spreads, equity spots, ... later) — series_type/metric/
--- qualifier/point_id mirror market_observation's own decomposed-key
--- columns, not anything FX-specific, so a new asset class is new dataset
--- rows here, never a new artefact table. source_url/retrieved_at are
--- per-row (not on the shared methodology row) so every future value,
--- whatever its source, carries its own citation independently.
+-- surfaces, credit spreads, equity spots, ... later) — oresmd_uri/key/point_id
+-- mirror market_observation's own identity and key columns, not anything
+-- FX-specific, so a new asset class is new dataset rows here, never a new
+-- artefact table. source_url/retrieved_at are per-row (not on the shared
+-- methodology row) so every future value, whatever its source, carries its own
+-- citation independently.
+--
+-- oresmd_uri is the series the row belongs to and key is the observation's own
+-- ORE key, and both are carried rather than derived: the projection from a key
+-- to an identity is the C++ grammar's, and SQL has no way back to it. A seed
+-- therefore states the two facts its own source names, the way the market-data
+-- import does when it reads a file.
+--
+-- series_type/metric/qualifier are the registry's decomposition of the same key.
+-- They outlive their use here: the market_series row still requires them, so the
+-- publish still writes them, and they go when that row stops carrying the
+-- decomposition.
 create table if not exists "ores_dq_market_data_observations_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "oresmd_uri" text not null,
+    "key" text not null,
     "series_type" text not null,
     "metric" text not null,
     "qualifier" text not null,
@@ -47,3 +60,6 @@ on "ores_dq_market_data_observations_artefact_tbl" (tenant_id);
 
 create index if not exists market_data_observations_artefact_qualifier_idx
 on "ores_dq_market_data_observations_artefact_tbl" (series_type, metric, qualifier);
+
+create index if not exists market_data_observations_artefact_series_idx
+on "ores_dq_market_data_observations_artefact_tbl" (oresmd_uri);

@@ -326,18 +326,16 @@ TEST_CASE("a party run is its declared steps and nothing that completes the tena
     const auto command =
         rfl::json::read<provision_tenant_step_command>(steps.front().build_command("", {}));
     REQUIRE(command);
-    CHECK(command->arguments_json ==
-          R"({"bundles":["party_essentials"],"party":"BARCLAYS PLC"})");
+    CHECK(command->arguments_json == R"({"bundles":["party_essentials"],"party":"BARCLAYS PLC"})");
     CHECK(command->admin_account_id == admin_account_id);
 }
 
 TEST_CASE("a party run that orders a kind this build cannot execute is refused", tags) {
     const auto def = party_definition();
 
-    CHECK_THROWS_AS(def.build_steps(request_json({declared("publish_everything")}),
-                                    tenant_id,
-                                    correlation_id),
-                    std::runtime_error);
+    CHECK_THROWS_AS(
+        def.build_steps(request_json({declared("publish_everything")}), tenant_id, correlation_id),
+        std::runtime_error);
     CHECK_THROWS_AS(
         def.build_steps(request_json({declared(std::string(complete_provisioning_step_kind))}),
                         tenant_id,

@@ -227,10 +227,9 @@ parse_step_bundles(const std::string& arguments_json) {
  * place: a step that published without the member its row named would leave the
  * tenant with half the data the person asked for.
  */
-[[nodiscard]] inline std::string
-resolve_parameter_references(std::string text,
-                             const std::vector<ores::iam::workflow::provision_tenant_parameter>&
-                                 parameters) {
+[[nodiscard]] inline std::string resolve_parameter_references(
+    std::string text,
+    const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters) {
     auto opening = text.find('{');
     while (opening != std::string::npos) {
         const auto closing = text.find('}', opening);

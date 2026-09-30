@@ -42,6 +42,21 @@
 \ir ./reporting_configurations_notify_trigger_drop.sql
 \ir ./reporting_configurations_drop.sql
 
+\ir ./reporting_report_market_bindings_notify_trigger_drop.sql
+\ir ./reporting_report_market_bindings_drop.sql
+
+\ir ./reporting_report_analytic_parameters_notify_trigger_drop.sql
+\ir ./reporting_report_analytic_parameters_drop.sql
+
+\ir ./reporting_report_analytics_notify_trigger_drop.sql
+\ir ./reporting_report_analytics_drop.sql
+
+\ir ./reporting_report_run_setups_notify_trigger_drop.sql
+\ir ./reporting_report_run_setups_drop.sql
+
+\ir ./reporting_analytic_types_notify_trigger_drop.sql
+\ir ./reporting_analytic_types_drop.sql
+
 \ir ./reporting_configuration_types_notify_trigger_drop.sql
 \ir ./reporting_configuration_types_drop.sql
 

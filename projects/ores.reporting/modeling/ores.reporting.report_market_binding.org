@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 90B90247-376D-4EDA-958D-5ABE66A8B14D
+:END:
+#+title: ores.reporting.report_market_binding
+#+description: Codegen entity model for the reporting =report_market_binding= table. The configuration set a run binds to each market role.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The configuration set a run binds to a market role.
+#+entity_singular: report_market_binding
+#+entity_plural: report_market_bindings
+#+entity_title: Report Market Binding
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+One =Parameter= of the =Markets= block in a run document: a market role, and the
+configuration set the run binds to it. Three hundred and thirteen of the corpus's
+four hundred and sixteen documents carry the block, and between them they bind
+nineteen hundred and fifteen times, in eight roles: =pricing=,
+=simulation=, =sensitivity=, =lgmcalibration=, =fxcalibration=,
+=eqcalibration=, =infcalibration= and =bondpricing=.
+
+The role is a free string in ORE's schema and the value names a configuration
+set built in =todaysmarket.xml=, which is market data and belongs to another
+component. This table holds the binding, not the configuration it names: what
+the run asks the market for, by role, in the order the document wrote it.
+
+Each row belongs to exactly one =report_definition= and a definition has many
+bindings.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this binding.
+
+** report_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The report definition whose run document carries this binding.
+
+** role
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The market role the run binds, as ORE names it: pricing, simulation and the rest.
+
+** configuration_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The configuration set the role binds to, named as the market document names it.
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the binding in.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_market_bindings_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: binding
+:entity_plural_short:   bindings
+:entity_singular_words: report market binding
+:entity_plural_words:   report market bindings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rmb
+:END:
+
+** Table display
+
+| column             | header             |
+|--------------------+--------------------|
+| role               | Role               |
+| configuration_name | Configuration      |
+| position           | Position           |
+| modified_by        | Modified By        |
+| version            | Version            |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        report_market_bindings
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: report_market_binding
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|
+| role | Role | line_edit |  | true | e.g. pricing |
+| configuration_name | Configuration | line_edit |  | true | Enter the configuration set name |
+| position | Position | spin_edit |  | true | Enter position |
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Role | role | Role | string | 160 |
+| ConfigurationName | configuration_name | Configuration | string | 220 |
+| Position | position | Position | int | 80 |
+| Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

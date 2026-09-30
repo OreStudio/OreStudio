@@ -1,0 +1,530 @@
+:PROPERTIES:
+:ID: F1BD5176-F305-4066-910F-39B418CFE099
+:END:
+#+title: ores.reporting.report_run_setup
+#+description: Codegen entity model for the reporting =report_run_setup= table. The ORE run document's Setup block as typed columns.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The ORE run document's Setup block for a report definition.
+#+entity_singular: report_run_setup
+#+entity_plural: report_run_setups
+#+entity_title: Report Run Setup
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+The =Setup= block of the ORE run document, as typed columns: the dates the run
+works to, the paths it reads and writes, the flags it runs under, and the
+configuration files it names. The corpus uses forty of these parameters across
+all four hundred and sixteen shipped run documents, and =asofDate=, =inputPath=,
+=outputPath= and =logFile= appear in every one.
+
+Each row is owned by exactly one =report_definition= (1:1, enforced by the
+unique index on =report_definition_id=). It replaces the part of
+=risk_report_config= that held a handful of these parameters as columns mixed in
+with the analytic switches; the switches become rows in =report_analytic=, and
+what is left of the run's configuration is here.
+
+Values are held as ORE spells them rather than converted, because the run
+document is written back to ORE and the flags are not all booleans: the
+fixing and cashflow flags are =Y= or =N=, the model flags are =true= or
+=false=, and =accrualDate= may be the literal =ASOF=. Converting them would
+mean inventing a canonical form ORE does not have.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this setup.
+
+** report_definition_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The report definition this setup belongs to. Unique per tenant on active records, so a definition has at most one live setup.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** asof_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date the run values the portfolio at, as ORE spells it.
+
+** accrual_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date accrued interest is measured to, or the literal ASOF.
+
+** input_path
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Directory the run reads its inputs from.
+
+** input_path_market
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Directory the run reads market data from, when it differs from the input path.
+
+** input_path_portfolio
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Directory the run reads the portfolio from, when it differs from the input path.
+
+** output_path
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Directory the run writes its output to.
+
+** log_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+File the run writes its log to.
+
+** log_mask
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Bit mask selecting which log categories the run writes.
+
+** n_threads
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Number of threads the run may use.
+
+** observation_model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the run observes fixings, as ORE spells it.
+
+** base_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the run reports its results in.
+
+** date_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the run's date arithmetic uses.
+
+** date_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention the run's date arithmetic uses, as ORE spells it.
+
+** fixing_cutoff
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Latest fixing the run will read, as ORE spells it.
+
+** continue_on_error
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run carries on after an analytic fails, as ORE spells it.
+
+** build_failed_trades
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run builds trades that failed to build, as ORE spells it.
+
+** imply_todays_fixings
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run implies today's fixings from the market, as ORE spells it.
+
+** ignore_fixing_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Days of fixing lag the run ignores.
+
+** include_todays_cash_flows
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run's cashflow report includes today's flows, as ORE spells it.
+
+** include_reference_date_events
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run counts events on the reference date, as ORE spells it.
+
+** lazy_market_building
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run builds market data lazily, as ORE spells it.
+
+** enrich_index_fixings
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run enriches index fixings, as ORE spells it.
+
+** use_analytics
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run uses the analytics block, as ORE spells it.
+
+** csv_comment_report_header
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run writes a comment header into its CSV reports, as ORE spells it.
+
+** default_mapping_to_identity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether an unmapped input falls back to the identity mapping, as ORE spells it.
+
+** portfolio_recurse_into_sub_directories
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run reads portfolios from subdirectories too, as ORE spells it.
+
+** curve_config_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Curve configuration the run reads.
+
+** conventions_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Conventions document the run reads.
+
+** market_config_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Market configuration the run reads.
+
+** pricing_engines_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Pricing engines the run reads.
+
+** pricing_engines_file_scenario
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Pricing engines the run reads for its scenario analytic.
+
+** portfolio_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Portfolio the run reads.
+
+** market_data_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Market data the run reads.
+
+** market_data_mapping_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Mapping the run applies to its market data.
+
+** fixing_data_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Fixing data the run reads.
+
+** fixing_data_mapping_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Mapping the run applies to its fixing data.
+
+** calendar_adjustment
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar adjustments the run reads.
+
+** currency_configuration
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency configuration the run reads.
+
+** reference_data_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Reference data the run reads.
+
+** counterparty_file
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Counterparties the run reads.
+
+** script_library
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Script library the run reads.
+
+** ibor_fallback_config
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+IBOR fallback configuration the run reads.
+
+** additional_results
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the run collects the additional results its configuration asks for, as ORE spells it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_run_setups_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: setup
+:entity_plural_short:   setups
+:entity_singular_words: report run setup
+:entity_plural_words:   report run setups
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rs
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| asof_date    | As Of        |
+| base_currency | Base Currency |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        run_setups
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: report_run_setup
+:END:
+
+*** Detail fields
+
+| field | label | type | is_key | is_required | placeholder |
+|-------+-------+------+--------+-------------+-------------|| asof_date | Asof Date | line_edit |  |  |  || accrual_date | Accrual Date | line_edit |  |  |  || input_path | Input Path | line_edit |  |  |  || input_path_market | Input Path Market | line_edit |  |  |  || input_path_portfolio | Input Path Portfolio | line_edit |  |  |  || output_path | Output Path | line_edit |  |  |  || log_file | Log File | line_edit |  |  |  || log_mask | Log Mask | line_edit |  |  |  || n_threads | N Threads | line_edit |  |  |  || observation_model | Observation Model | line_edit |  |  |  || base_currency | Base Currency | line_edit |  |  |  || date_calendar | Date Calendar | line_edit |  |  |  || date_convention | Date Convention | line_edit |  |  |  || fixing_cutoff | Fixing Cutoff | line_edit |  |  |  || continue_on_error | Continue On Error | line_edit |  |  |  || build_failed_trades | Build Failed Trades | line_edit |  |  |  || imply_todays_fixings | Imply Todays Fixings | line_edit |  |  |  || ignore_fixing_lag | Ignore Fixing Lag | line_edit |  |  |  || include_todays_cash_flows | Include Todays Cash Flows | line_edit |  |  |  || include_reference_date_events | Include Reference Date Events | line_edit |  |  |  || lazy_market_building | Lazy Market Building | line_edit |  |  |  || enrich_index_fixings | Enrich Index Fixings | line_edit |  |  |  || use_analytics | Use Analytics | line_edit |  |  |  || csv_comment_report_header | Csv Comment Report Header | line_edit |  |  |  || default_mapping_to_identity | Default Mapping To Identity | line_edit |  |  |  || portfolio_recurse_into_sub_directories | Portfolio Recurse Into Sub Directories | line_edit |  |  |  || curve_config_file | Curve Config File | line_edit |  |  |  || conventions_file | Conventions File | line_edit |  |  |  || market_config_file | Market Config File | line_edit |  |  |  || pricing_engines_file | Pricing Engines File | line_edit |  |  |  || pricing_engines_file_scenario | Pricing Engines File Scenario | line_edit |  |  |  || portfolio_file | Portfolio File | line_edit |  |  |  || market_data_file | Market Data File | line_edit |  |  |  || market_data_mapping_file | Market Data Mapping File | line_edit |  |  |  || fixing_data_file | Fixing Data File | line_edit |  |  |  || fixing_data_mapping_file | Fixing Data Mapping File | line_edit |  |  |  || calendar_adjustment | Calendar Adjustment | line_edit |  |  |  || currency_configuration | Currency Configuration | line_edit |  |  |  || reference_data_file | Reference Data File | line_edit |  |  |  || counterparty_file | Counterparty File | line_edit |  |  |  || script_library | Script Library | line_edit |  |  |  || ibor_fallback_config | Ibor Fallback Config | line_edit |  |  |  || additional_results | Additional Results | line_edit |  |  |  |
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|| AsofDate | asof_date | Asof Date | string | 200 || AccrualDate | accrual_date | Accrual Date | string | 200 || InputPath | input_path | Input Path | string | 200 || InputPathMarket | input_path_market | Input Path Market | string | 200 || InputPathPortfolio | input_path_portfolio | Input Path Portfolio | string | 200 || OutputPath | output_path | Output Path | string | 200 || LogFile | log_file | Log File | string | 200 || LogMask | log_mask | Log Mask | int | 100 || NThreads | n_threads | N Threads | int | 100 || ObservationModel | observation_model | Observation Model | string | 200 || BaseCurrency | base_currency | Base Currency | string | 200 || DateCalendar | date_calendar | Date Calendar | string | 200 || DateConvention | date_convention | Date Convention | string | 200 || FixingCutoff | fixing_cutoff | Fixing Cutoff | string | 200 || ContinueOnError | continue_on_error | Continue On Error | string | 200 || BuildFailedTrades | build_failed_trades | Build Failed Trades | string | 200 || ImplyTodaysFixings | imply_todays_fixings | Imply Todays Fixings | string | 200 || IgnoreFixingLag | ignore_fixing_lag | Ignore Fixing Lag | int | 100 || IncludeTodaysCashFlows | include_todays_cash_flows | Include Todays Cash Flows | string | 200 || IncludeReferenceDateEvents | include_reference_date_events | Include Reference Date Events | string | 200 || LazyMarketBuilding | lazy_market_building | Lazy Market Building | string | 200 || EnrichIndexFixings | enrich_index_fixings | Enrich Index Fixings | string | 200 || UseAnalytics | use_analytics | Use Analytics | string | 200 || CsvCommentReportHeader | csv_comment_report_header | Csv Comment Report Header | string | 200 || DefaultMappingToIdentity | default_mapping_to_identity | Default Mapping To Identity | string | 200 || PortfolioRecurseIntoSubDirectories | portfolio_recurse_into_sub_directories | Portfolio Recurse Into Sub Directories | string | 200 || CurveConfigFile | curve_config_file | Curve Config File | string | 200 || ConventionsFile | conventions_file | Conventions File | string | 200 || MarketConfigFile | market_config_file | Market Config File | string | 200 || PricingEnginesFile | pricing_engines_file | Pricing Engines File | string | 200 || PricingEnginesFileScenario | pricing_engines_file_scenario | Pricing Engines File Scenario | string | 200 || PortfolioFile | portfolio_file | Portfolio File | string | 200 || MarketDataFile | market_data_file | Market Data File | string | 200 || MarketDataMappingFile | market_data_mapping_file | Market Data Mapping File | string | 200 || FixingDataFile | fixing_data_file | Fixing Data File | string | 200 || FixingDataMappingFile | fixing_data_mapping_file | Fixing Data Mapping File | string | 200 || CalendarAdjustment | calendar_adjustment | Calendar Adjustment | string | 200 || CurrencyConfiguration | currency_configuration | Currency Configuration | string | 200 || ReferenceDataFile | reference_data_file | Reference Data File | string | 200 || CounterpartyFile | counterparty_file | Counterparty File | string | 200 || ScriptLibrary | script_library | Script Library | string | 200 || IborFallbackConfig | ibor_fallback_config | Ibor Fallback Config | string | 200 || AdditionalResults | additional_results | Additional Results | string | 200 || Version | version | Version | int | 80 |
+| ModifiedBy | modified_by | Modified By | string | 120 |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
+

@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2403
+#+pr: 2410
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -28,9 +28,9 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= and both writers of series rows supply it: the import, from the series projection of the file's key (=from_ore_key()= for a market-data key, =from_index_name()= for a fixing's index name, and =to_series_uri()= to drop the datum's point), and the ingest loop, which builds the datum's full key from the tick and drops its point the same way. The identity is the natural key with =party_id= -- not null, non-empty, unique per party -- and the triple no longer keys the row, though its columns stay for the readers that still ask by it. The repository reads by identity through =read_latest_by_uri=, declared in the model beside the triple reader; the import's and the ingest loop's lookups ask by identity first and by the triple after it, for rows written before the column existed. |
+| Now          | =market_series= carries =oresmd_uri= as its natural key with =party_id=, and every writer of an observation stores the key the row is written under: the import keeps the file's, the ingest loop keeps the tick's, the republish service projects its own from the output series' identity and the pillar's point, and the DQ publish copies the key the dataset names. The vintage decision is settled and built: the datasets name each row's own ORE key and the series it belongs to, so the deposit grid is a real =MM/RATE/USD/2D= series rather than a generic name, and the synthetic config names the series its vintage reads through =vintage_series_uri=. The triple no longer keys a series and no reader falls back to it. What step four has left is the deletion: =series_type=, =metric= and =qualifier= off =market_series= and off the DQ artefact and its publish, with the last hand-written readers. |
 | Waiting on   | Nothing. |
-| Next         | Decide who names the series the IR curve's vintage seeding reads -- either the synthetic config gains the identity it seeds from, or the DQ dataset carries the ORE key its own source names -- and then delete =series_type=, =metric= and =qualifier= from =market_series=, and the import classification table that classifies by them, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. |
+| Next         | Delete =series_type=, =metric= and =qualifier= from =market_series=, from the DQ artefact and from its publish function, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. One thing the census named is not deleted: the series classification rule stays, because it classifies a key's own tokens rather than a series row, and the acceptance below is corrected to say so. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 - market_series and feed_binding carry oresmd_uri, and it is the natural key for a series and for a feed binding.
 - import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
 - The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
-- series_type, metric, qualifier, ore_key and the import classification table are deleted, and every consumer reads the URI.
+- series_type, metric, qualifier and ore_key are deleted, and every consumer reads the URI. The series classification rule is not part of that deletion and the acceptance is corrected here: it classifies the tokens of a key -- which the ORE shapes registry decomposes -- rather than a series row, so the identity does not replace it. The =ore_key= column named here is the feed binding's, already become =oresmd_uri=.
 - The FOMC segment's instruments carry ORE identities: the raw grid is one series per pillar, named by the shape of the instrument the feed simulates -- the spot-starting pillar spelled as the swap it is, so no pillar needs a new spelling -- and the republish curve carries ORE's DISCOUNT key.
 
 * Scope, measured before the column
@@ -330,9 +330,34 @@ is left is the cutover the task takes its name from.
    seeding, and it cannot move the same way: it reads the DQ deposit grid, whose series
    the cutover names generically, so the synthetic config has to name the series it seeds
    from or the path retires. The generated =read_latest_by_type= has gone, because
-   nothing called it; what is left is that decision and then =series_type=, =metric=,
-   =qualifier= and the import classification table going, with the census's 21 + 32 C++
-   files, 4 SQL files, 2 TypeScript twins and 80 org documents as the checklist.
+   nothing called it, and the datum-key projection the export's rebuild was waiting on
+   exists now: =oresmd_parser::with_point()= puts an observation's point back into the
+   field its family keeps it in, so the republish service -- the last writer that stored
+   no key -- projects one from the output series' identity and the pillar's point and
+   keeps it on the row. The vintage decision is delivered too: the datasets name their
+   rows' own ORE keys and the series those keys belong to, so the deposit grid is a real
+   =MM/RATE/USD/2D= series and the DQ publish stores the observation's key, and the
+   synthetic config names the series its vintage reads -- which is what the client's last
+   triple lookup was waiting for, so that lookup goes with its caller. What is left is the
+   export reading a fixing's index name off the identity rather than off the =qualifier=
+   column, and then =series_type=, =metric= and =qualifier= going, with the census's
+   21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents as the
+   checklist. The import classification table is not among them: it classifies a key's own
+   tokens rather than a series row, and the fourth acceptance is corrected to say so.
+
+   Read off the tree, the hand-written half of that work is four places rather than
+   twenty-one files, because most of the census's hits are the generated entity, mapper,
+   history field mapper, protocol, generator, service and shell command, which a
+   regeneration takes: =import_service='s =find_or_create_series= stops writing the three
+   columns (the parameters that feed the classifier stay, since they name a key), the
+   ingest loop stops writing them on the series it auto-creates, =ore_export_service='s
+   rebuild goes and the datum is emitted under =obs.key= -- which every writer supplies
+   now, so an empty one is a writer that forgot and should say so -- with a fixing's index
+   name projected from the identity through =to_index_name()= instead of read off the
+   =qualifier= column, and =market_data_client::save_series= stops copying the three and
+   starts copying =oresmd_uri=, which it never did and which the write's own contract says
+   clears the identity. The DQ artefact and its publish lose the three columns with the
+   series row, and the FOMC seed's insert loses them too.
 
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
@@ -395,9 +420,11 @@ own key emission: =ores.cpp.oresmd.projections.org= writes each family's key out
 identifier's members, so which member is the coordinate is written down there, per family,
 already. The next unit therefore adds a per-family arm beside that emission -- a setter the
 writer calls to place a point before projecting -- rather than reading =point_semantics=,
-inventing a rule, or extending a hand-written helper that cannot know it. Until that exists the writers that hold a producer key store it (the
-import and the ingest loop do; the republish service does not), and the export's rebuild
-stays.
+inventing a rule, or extending a hand-written helper that cannot know it. That arm is
+delivered, one unit after this note was written: =oresmd_parser::with_point()= places the
+point in the field the family's own key emission reads, the family survey's pairs walk
+backwards through it, and the republish service -- the writer that held no key -- stores
+the one it projects from its output series and the pillar's point.
 
 **The export cannot rebuild a datum's key from the identity, and that was worth finding
 before the columns go.** The export writes an observation under the key it was given when
@@ -407,14 +434,45 @@ the corpus case fails: the identity is the *series'* key, and a datum's key need
 point placed in a field that differs per family, because a future's coordinate is a
 contract code and a tenor rather than the URI's =point=. The experiment was reverted.
 What the deletion needs instead is for every writer to store the key with the datum, the
-way the import already does; the ingest loop does now, and the republish service is the
-one left, which can build it from the output series it already reads.
+way the import already does. The ingest loop does, and the republish service did with the
+projection above: it builds the key from the output series it already reads and the
+pillar's point, so the rebuild described here has nothing left to serve and goes with the
+columns.
 
 That also closes the identity review's other recorded prerequisite. With the fallback
 gone there is no contest to settle: the import finds a series by the real identity when
 one holds it, and creates one when none does, so a synthetic row is never preferred and
 never collides -- it simply stays, as inert as the grid's row, until an operator deletes
 it. The deletion has nothing to decide about which row wins.
+
+**The vintage is named by two rows that agree, and the decision was never between naming
+it and retiring it.** The IR curve feed's vintage seeding was the last caller of the
+client's triple lookup, and the series it read was the DQ deposit grid, whose published
+identity was a generic name no projection rebuilds. The choice the record left open was
+whether the synthetic config names the series it seeds from or the dataset carries the
+ORE key its own source names; the answer is both, because each is true on its own. The
+dataset's rows come from ORE files -- the deposit grid's row is =MM/RATE/USD/2D/3M=, as
+its own =source_url= already says -- so the seed names that key and the identity its
+series projects to, the publish stores the key on the observation and creates the series
+under the identity, and the config names the same identity for its vintage. Retiring the
+path was never on the table: it is a working feature whose only defect was the vocabulary
+its series was filed under.
+
+The DQ artefact is the one place the projection is stated rather than made, and that is
+the honest limit: a key becomes an identity through the C++ grammar, and SQL has no way
+back to it. The seed therefore carries the two strings its own source names, the way the
+import carries a file's key. The asset class a published series joins follows from the
+identity instead of from a type table -- =oresmd://fx/...= is an FX series and
+=oresmd://ir/...= an interest-rates one -- which is the one part of a URI every class
+shares, so a further class is one arm in that case.
+
+The registry's three columns outlive their use in the artefact, and the reason is a
+constraint rather than an idea: =market_series= still refuses an empty =series_type=, so
+the publish keeps writing the decomposition beside the identity until the deletion takes
+both away in one step. One thing the deletion does not take is the series classification
+rule. It is keyed by a key's own tokens, which the ORE shapes registry decomposes, and it
+never reads a series row, so the identity does not replace it; the acceptance that named
+it is corrected above.
 
 **The binding names a series by identity now, and the constraint it inherited broke a
 writer.** =feed_binding.ore_key= was the last column the task's goal names, and it held a
@@ -549,6 +607,33 @@ which is the same reason the identity lookups fall back to the triple.
 | =reachability=, with the retirement | 7780 declared cases in 956 sources | =check_test_case_reachability.py= | =ac4e03519b= |
 | Grid readers left in the reader | 1, the fallback in =read_pillar_rates=; no case exercises it | =grep -n "read_grid_rates" projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =e3e237ded1= |
 | Component file lists stale on the trunk this branch sits on | 2, =ores.iam/api/src= and =ores.workflow/api/src=, neither of them this change's | =regenerate_cmake_component_files.py --all --check= | =e3e237ded1= |
+| The projection from a series identity and a point | one grammar function, =oresmd_parser::with_point()=, generated beside =to_series_uri()= | =grep -n "with_point" projects/ores.marketdata/core/include/ores.marketdata.core/oresmd/oresmd_parser.hpp= | =a67cc26b8b= |
+| Families the round trip names | seven: =MM=, =FRA=, =IR_SWAP=, =COMMODITY_FWD=, =DISCOUNT=, =MM_FUTURE= and =OI_FUTURE=, with a surface and a fixing pinned as refusals | =ores.marketdata.core.tests "a_series_identity_and_a_point_project_back_to_the_datum_key"= | =a67cc26b8b= |
+| =ores.marketdata.core= suite, with the projection | 1920 assertions in 415 cases | =ores.marketdata.core.tests= | =a67cc26b8b= |
+| Writers that store the key with the datum | 3 of 3: the import, the ingest loop and the republish service | =grep -n "obs.key = " projects/ores.marketdata/core/src/service/import_service.cpp projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp projects/ores.marketdata/service/src/app/curve_republish_service.cpp= | =4fb044c271= |
+| Evidence for the republish service's key | the grammar's own case and a whole build; the service has no harness, so the row it writes is not read back by any test | =grep -rln "curve_republish_service" projects/ --include=*tests*.cpp= | =4fb044c271= |
+| =ores.marketdata.service= suite, with the republish key | 176 assertions in 28 cases | =ores.marketdata.service.tests= | =4fb044c271= |
+| =codegen= suite | 1016 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | =4fb044c271= |
+| =reachability=, with the projection's case | 7741 declared cases in 952 sources | =check_test_case_reachability.py= | =4fb044c271= |
+| Dataset rows that name their series and their key | 339 rows across 14 series, in the deposit-grid and both FX driver seeds | =select count(*), count(distinct oresmd_uri) from ores_dq_market_data_observations_artefact_tbl where oresmd_uri <> ''= | =e761a8ce03= |
+| Series the DQ publish creates for the deposit grid | 1, under =oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm=, where it wrote =oresmd://generic/dq-...= | =select s.oresmd_uri from ores_marketdata_market_observations_tbl o join ores_marketdata_market_series_tbl s on s.id = o.series_id where o.party_id = '68dd6600-80bf-410a-a0bf-f01f667f13a4'= | =e761a8ce03= |
+| Key the same publish stores on the observation | =MM/RATE/USD/2D/3M=, the key the dataset's own source names | the same query | =e761a8ce03= |
+| The config's name for the series it seeds from | =vintage_series_uri= = =oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm=, the same string, on the USD vintage exemplar | =select vintage_series_uri from ores_synthetic_ir_curve_generation_configs_tbl where price_source = 'vintage'= | =d44d64ba64= |
+| The vintage's anchor point, against the series it now reads | =3M=: the DEPOSIT entry's =end_tenor_code=, the published observation's =point_id=, and the source and date the config names | =select e.end_tenor_code ... where e.instrument_code = 'DEPO'= and the observation query above | =d44d64ba64= |
+| Callers of the client's triple lookup | 0: the last one was the IR vintage seeding, which asks by identity now | =grep -rn "find_series(" projects/ --include=*.cpp --include=*.hpp= | =d44d64ba64= |
+| What the vintage path's proof does not cover | the lookup and the observation it scans, verified against the database; the feed's own run of them is not, because it needs a started service and a published feed | =ores.marketdata.service.tests= and the queries above | =d44d64ba64= |
+| =ores.synthetic.api= suite, with the config's new column | 65 assertions in 22 cases | =ores.synthetic.api.tests= | =d44d64ba64= |
+| =ores.synthetic.service= suite, with the feed's identity lookup | 297 assertions in 46 cases | =ores.synthetic.service.tests= | =d44d64ba64= |
+| =ores.marketdata.client= and =core= suites, with the lookup gone | 6 in 6 and 1926 in 415 assertions and cases | the two binaries | =d44d64ba64= |
+| =ores.marketdata.service= suite | 176 assertions in 28 cases | =ores.marketdata.service.tests= | =d44d64ba64= |
+| =ores.shell.synthetic= suite, with the regenerated command | 432 assertions in 153 cases | =ores.shell.synthetic.tests= | =d44d64ba64= |
+| =reachability=, with the added field | 7741 declared cases in 952 sources | =check_test_case_reachability.py= | =d44d64ba64= |
+| The tree, built whole | no error and no warning, with the config's field and the feed's new lookup | =cmake --build --preset linux-clang-debug-make= with no target | =d44d64ba64= |
+| The vintage config's migration, on a database that had a vintage row | the row comes back as =oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm=, from the artefact's own identity | =alter table ores_synthetic_ir_curve_generation_configs_tbl drop column vintage_series_uri=, then the migration, then a read of the row | =42ca72b950= |
+| The publish function's reinstall, with the one-lookup class table | =updated 1=, the same series and key as before the change | =psql -f marketdata_publish_from_dq_create.sql= then the publish call | =42ca72b950= |
+| The build gate's heavy job, on the pull request that adds it | =COMPLETED/SUCCESS= for =build, test and start the services / linux-clang-debug-ninja=: it recreates the database, configures, builds every target, runs ctest, and starts the services | =gh pr checks 2401=, and the check-run API on =a19b874c1d= | =a19b874c1d= |
+| Pull-request checks that compile C++, before the gate | 0: =tests= runs the codegen suite and every other job is a Python gate over generated output | the check rollup on #2392's head | =599a1a06db= |
+| The gate's triage, per class of change | 14 cases: docs, web and check config start nothing heavy; C++, headers, the build description, models, codegen and SQL build and test; a service directory starts the services too; an unclassified path asks for everything | =projects/ores.codegen/tests/test_change_classification.py= | =a19b874c1d= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -579,6 +664,11 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2410][#2410]] | [agile] Record the gate that compiles C++ |
+| [[https://github.com/OreStudio/OreStudio/pull/2409][#2409]] | [agile] Hand the deletion its four places |
+| [[https://github.com/OreStudio/OreStudio/pull/2408][#2408]] | [marketdata,synthetic,sql] Let the config name the series its vintage reads |
+| [[https://github.com/OreStudio/OreStudio/pull/2406][#2406]] | [marketdata,codegen] Name a datum from its series and its point |
+| [[https://github.com/OreStudio/OreStudio/pull/2401][#2401]] | [ci] Build and test the tree when a change can break it |
 | [[https://github.com/OreStudio/OreStudio/pull/2403][#2403]] | [agile] Record where the coordinate's field is modelled |
 | [[https://github.com/OreStudio/OreStudio/pull/2402][#2402]] | [agile] Record what the datum-key projection cannot do |
 | [[https://github.com/OreStudio/OreStudio/pull/2400][#2400]] | [iam] Let a written binding join the freshness list |
@@ -698,6 +788,10 @@ via its "Verifies task" field.
 | 80 | The test helper's comment says it goes with the columns; linking it to the task would stop it being orphaned | =service_import_service_tests.cpp= | accepted, fixed | The comment names task 4050BF6C-DBC3-4E75-A204-A75CE4AFA323 now. |
 | 81 | The revision could not be diffed against a merge base, so the build and tests were not re-run | the PR | answered | CI's =tests= job builds its database from the create scripts and passed, together with the other fifteen checks. |
 | 82 | A dated plan still mentions =read_latest_by_type= | =doc/plans/2026-03-31-ore-marketdata-domain-model.org= | recorded | It is a historical plan document; the record's own measurement counts C++, headers and models, and the plan is left as the dated artefact it is. |
+| 83 | The projection's helper could be exposed for a test, and a surface's coordinate is not a point | =curve_republish_service.cpp=, =oresmd_parser.cpp= | answered | The helper is ten lines over the grammar's own projection, so exposing it would be an interface with one test as its caller; the service's missing harness is recorded with the others. The surface refusal is deliberate and pinned: its coordinate is the vol point, which is not one string. |
+| 84 | The vintage config's migration could not land on a database that had a vintage row, because the check requires the column the migration had just left empty | the migration | accepted, fixed | The migration names every vintage row before the check arrives, from the publishing dataset's own identity where it covers the row and from the currency's deposit-grid spelling otherwise, and it was proved by dropping the column on the live database and running it. |
+| 85 | A force-push after a rebase can leave GitHub's mergeability stale, and a =pull_request= workflow then runs nothing | the PR | recorded | =mergeable: UNKNOWN= and an empty check rollup after rebasing #2406 onto main; closing and reopening the pull request recomputed the merge state and dispatched all fifteen checks. Rebasing is still right, and the reopen is the step that follows it. |
+| 86 | An entity's regeneration also moves the recipe its shell library is tangled from, and the tangled scripts are a separate gate | =doc/recipes/shell/ir_curve_generation_configs/= | accepted, fixed | =drift= failed on three =ir_curve_generation_configs-*.ores= scripts that still wrote the record without the new field; =compass build --direct tangle_shell_scripts= and a commit fixed it. A model field now costs a tangle beside the entity regeneration. |
 
 * Result
 
@@ -818,6 +912,57 @@ to rebuild one for every feed row from the registry columns. It stores it now, b
 export's own rule, so nothing the export writes changes and the row carries the key the
 deletion needs it to carry. Measured on the rebuilt tree: 176 service assertions in 28
 cases and 1893 core assertions in 414.
+
+**An eleventh unit gave the grammar the projection the deletion was waiting on, and
+made the republish writer keep its key.** The export rebuilt a datum's key from the
+series' registry columns because a datum's key needs its point, and which identifier
+field holds that point differs per family; two hand-written helpers guessed it and both
+were reverted. The fact now lives in the grammar, beside the =to_series_uri()= drop it
+inverts: =oresmd_parser::with_point()= places one observation's point in the field its
+family keeps it in -- a discount curve's maturity in =tenor=, a future's coordinate
+split into its contract fields, every other indexed family in =point= -- and refuses a
+surface, whose coordinate is the vol point rather than one string, and a fixing, whose
+key is an index name. The family survey's pairs walk backwards through it in a new
+case: each corpus key projects to its series, the point goes back in, and the key
+projects again. The republish service, the last writer that stored no key, projects its
+observations' keys from the output series' identity and the pillar's point and keeps
+them on the rows, so the export's rebuild has nothing left to serve. The service has no
+harness, so what is proved is the projection and the whole build, not a republished row
+read back; that is recorded with the other missing harnesses. Measured on the rebuilt
+tree: 1920 core assertions in 415 cases, 176 service assertions in 28, and the codegen
+suite at 1016 passed.
+
+**A twelfth unit settled the vintage and took the last triple lookup with it.** The IR
+curve's vintage seeding read the DQ deposit grid through the registry's decomposition,
+and the grid's series was published under a generic identity no projection rebuilds --
+the one caller the client's triple lookup had left. Both halves of the open decision are
+true, so both are built: the datasets name each row's own ORE key and the series that key
+projects to, because the rows come from ORE files whose keys say so, and the synthetic
+config names the series its vintage reads, because the series is what the catalog is keyed
+by. The DQ publish creates the deposit grid's series under
+=oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm= and stores =MM/RATE/USD/2D/3M=
+on the observation, and the config's =vintage_series_uri= is the same identity, so the
+feed asks for it and scans it at the DEPOSIT anchor's own point. The client's triple
+lookup goes with its caller, and the classification rule stays: it classifies a key's own
+tokens, never a series row, so the acceptance that named it is corrected here. The
+registry's three columns stay on the artefact and in the publish one step longer than
+their use, because =market_series= still refuses an empty =series_type=; the deletion
+takes both away at once. Measured on the rebuilt tree: the artefact names 339 rows across
+14 series, the publish creates the series and the key above, and the suites hold at 65
+synthetic-api assertions in 22 cases, 297 synthetic-service in 46, 6 client in 6 and 1926
+core in 415.
+
+**A thirteenth unit closed the gap that let a rename break the tree.** No pull-request
+check compiled C++: the job named =tests= runs the codegen suite, every other job is a
+Python gate over generated output, and =codegen-drift.yml= narrows itself to generated
+paths -- so the binding rename that stopped =ores.iam= compiling passed sixteen green
+checks. =pull-request-verify.yml= now runs on every pull request, classifies the diff
+against fourteen tested cases, and calls =cpp-verify.yml= when a change can break a
+build; that workflow recreates the database, builds every target, runs ctest, and starts
+the services when the change can affect one. Its heavy job ran green on the pull request
+that adds it: =build, test and start the services / linux-clang-debug-ninja= completed
+successfully, which is the check this record had twice reported as unwritten or unproven.
+A documentation change now costs one light job, and a C++ change costs the build.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

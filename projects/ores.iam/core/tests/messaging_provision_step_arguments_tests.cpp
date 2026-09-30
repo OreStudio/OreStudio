@@ -130,9 +130,8 @@ TEST_CASE("an LEI import whose root LEI comes from neither the step nor the run 
     // nothing and says so, rather than stopping a run whose tenant is built
     // from the party it creates for itself.
     const auto absent = parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})", {});
-    const auto other =
-        parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})",
-                                      parameters("counterparty_size", "small"));
+    const auto other = parse_lei_hierarchy_arguments(R"({"bundles": ["lei_hierarchy"]})",
+                                                     parameters("counterparty_size", "small"));
 
     CHECK(absent.root_lei.empty());
     CHECK(absent.bundles == std::vector<std::string>{"lei_hierarchy"});
@@ -251,7 +250,8 @@ TEST_CASE("a publish step reads the datasets its profile opts in", tags) {
         R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.large"]})", {});
 
     CHECK(arguments.bundles == std::vector<std::string>{"base"});
-    CHECK(arguments.opted_in_datasets == std::vector<std::string>{"gleif.lei_counterparties.large"});
+    CHECK(arguments.opted_in_datasets ==
+          std::vector<std::string>{"gleif.lei_counterparties.large"});
 }
 
 TEST_CASE("a publish step that opts in nothing publishes its bundles whole", tags) {
@@ -268,7 +268,8 @@ TEST_CASE("a publish step builds an opted-in dataset from the run's parameter", 
         R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]})",
         parameters("counterparty_size", "small"));
 
-    CHECK(arguments.opted_in_datasets == std::vector<std::string>{"gleif.lei_counterparties.small"});
+    CHECK(arguments.opted_in_datasets ==
+          std::vector<std::string>{"gleif.lei_counterparties.small"});
 }
 
 TEST_CASE("a publish step whose parameter the run supplies no value for is refused", tags) {
@@ -291,8 +292,7 @@ TEST_CASE("a publish step whose parameter reference is not closed is refused", t
 
 TEST_CASE("a publish step fills every reference a dataset names", tags) {
     const std::vector<ores::iam::workflow::provision_tenant_parameter> given{
-        {.name = "counterparty_size", .value = "large"},
-        {.name = "office", .value = "uk"}};
+        {.name = "counterparty_size", .value = "large"}, {.name = "office", .value = "uk"}};
 
     const auto arguments = parse_publish_bundle_arguments(
         R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "acme.{office}.accounts"]})",

@@ -1,0 +1,139 @@
+The first run journey's scripted end-to-end proof, recorded 2026-09-30 on the
+eager_maxwell environment at commit 47fe43eaab, on a fresh installation:
+`compass services stop`, `compass db recreate -y -k`, and `compass services
+start`. The installation was empty before the walk -- `/api/bootstrap` answered
+`isInBootstrapMode: true` and `hasTenant: false` -- and the fleet held 24
+running units and nats.
+
+The command:
+
+  cd projects/ores.web && npx tsx scripts/verify-first-run.ts
+
+The output, verbatim. The npm notice lines are the runner's, not the script's.
+
+  deployment: http://127.0.0.1:21402
+  starting point: empty_operational
+
+  1. the deployment is empty:
+    [PASS] the deployment still needs its first administrator
+    [PASS] it has no tenant of its own
+
+  2. the rules a password must satisfy, read before anybody signed in:
+    [PASS] the policy states a minimum length (12)
+    [PASS] the creating administrator’s password meets the policy
+
+  3. create the administrator:
+    [PASS] the deployment answered with the account it created
+    [PASS] the account belongs to the system tenant (ffffffff-ffff-ffff-ffff-ffffffffffff)
+
+  4. the deployment is no longer waiting for one:
+    [PASS] bootstrap mode closed when the administrator was created
+    [PASS] the deployment still has no tenant of its own
+
+  5. sign in as the administrator the journey created:
+    [PASS] the session names the account that was created
+    [PASS] the session works in a party (System Party)
+    [PASS] the session belongs to the system tenant (Root Tenant)
+
+  6. the starting points the deployment holds:
+    [PASS] at least one starting point came back (3)
+    empty_operational (Operational): 3 step(s), 2 parameter(s)
+    gleif_entity (GLEIF entity): 3 step(s), 2 parameter(s)
+    acme_demo (ACME demo): 6 step(s), 0 parameter(s)
+    [PASS] the walked starting point orders steps
+    [PASS] every required parameter comes with the value the form proposes
+
+  7. describe the tenant:
+    [PASS] the tenant administrator’s password meets the policy
+
+  8. review, and create the first tenant:
+    [PASS] the request names the starting point that was chosen
+    [PASS] the deployment accepted the request
+    [PASS] the run it started has an id (2130e0fb-4b02-44fc-b315-604dc3b84570)
+    [PASS] the tenant exists
+    [PASS] its administrator exists
+
+  9. follow the run until it rests:
+    status= current=0
+    status=in_progress current=0 publish_bundle
+    status=in_progress current=2 provision_party
+    status=completed current=3 complete_provisioning
+    publish_bundle         completed
+    import_lei_hierarchy   completed_with_warnings
+    provision_party        completed
+    complete_provisioning  completed
+    [PASS] the run completed (completed)
+    [PASS] it materialised every step it counted
+    [PASS] no step failed
+    [PASS] the run executed the starting point’s own steps, in the order it states
+
+  10. the deployment is set up:
+    [PASS] the deployment has a tenant of its own
+    [PASS] the setup screen is no longer the only page
+
+  11. hand off to the tenant administrator:
+    [PASS] the session ended
+    [PASS] the forced change the answer reports is the starting point’s own choice (answer=false starting point=false)
+    [PASS] the tenant administrator signed in
+    [PASS] the session works in a party (System Party)
+
+  12. the tenant administrator’s first sign-in:
+    [PASS] the session names the tenant the run created
+    [PASS] the session works in a party (System Party)
+    [PASS] the session belongs to the tenant the run created
+    [PASS] no password change is outstanding
+
+  Ready:
+    signed in as northwind_admin (admin@northwind.example.com)
+    tenant: Northwind Capital (1ddf5b44-63e3-45a6-900d-7275e6ffd604)
+    party: System Party (System)
+    [PASS] the session ended
+
+  ALL CHECKS PASSED
+
+The process exited 0.
+
+--- What the walk is ---
+
+It is not a recording of a browser. It is the browser's own client
+(`packages/web/src/api/client.ts`), its own request-building
+(`journeys/state.ts`: `detailsFor`, `provisionRequest`, `tenantPrincipal`,
+`administratorPassword`) and its own password rules
+(`ui/passwordPolicy.ts`), run in the journey's order against the real BFF. An
+answer the browser could not parse fails the walk, because the browser's schema
+is the one that parses it. The two things a browser supplies and Node does not
+are supplied by the script: a base address for the relative paths, and a jar for
+the session cookie.
+
+Its first assertion is that the installation is empty. A deployment that is
+already set up is refused rather than half-walked, because the first run is the
+one path that cannot happen twice.
+
+--- What the run left, and one warning ---
+
+The run's `import_lei_hierarchy` step completed with warnings, and the walk is
+what asked it to: the *Operational* starting point declares `root_lei`
+optional, the walk -- like the shell's `tenant_provision` recipe -- names no
+value for it, and the step states that it had nothing to import rather than
+failing. The tenant's administrator therefore works in the tenant's system
+party, which is the party the provisioner creates. A person who names a legal
+entity the deployment holds gets its hierarchy as the tenant's parties instead.
+
+The recreate also applied main's schema fix: the three reporting tables that
+carried `tenant_id` with no isolation now each hold one row-level policy.
+
+  tablename                            | policies
+  -------------------------------------+----------
+  ores_reporting_analytic_types_tbl    |        1
+  ores_reporting_report_analytics_tbl  |        1
+  ores_reporting_report_run_setups_tbl |        1
+
+--- How the first walk failed, and why that matters ---
+
+The first run of the script was green on every system check and red on one
+assertion of the script's own: it compared the tenant administrator's login
+principal (`northwind_admin@northwind.example.com`) against the session's
+username (`northwind_admin`). The session names the account, which is stored
+under its username; the hostname part of the principal is the tenant's and only
+routes the request. The assertion was corrected and the walk re-run from an
+empty installation. No product code changed.

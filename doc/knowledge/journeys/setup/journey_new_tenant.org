@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-27
+#+updated: 2026-09-30
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator provisions a tenant from a seed profile and hands it over.
@@ -175,16 +175,12 @@ that gap in full.
 
 * What is missing
 
-1. *No browser route of its own.* The journey's steps are written once, as a
-   library of step definitions, and first run places that library inline on its
-   rail. No route renders the new tenant journey alone, so a system
-   administrator reaches these steps only through the first run's setup page.
-   The same library is what the standalone journey renders, and a task to build
-   it is filed beside this change.
-2. *No scripted end-to-end proof.* Nothing runs this browser's path on a fresh
-   database the way =projects/ores.web/scripts/verify-login.ts= proves the
-   sign-in, so the proof of the journey stays manual.
-3. *No discard that stops the workflow.* =iam.v1.system.reset-tenant= discards
+1. *No scripted proof of the route of its own.* The path on a fresh database is
+   walked and asserted, because first run inlines these same steps and
+   =projects/ores.web/scripts/verify-first-run.ts= walks it. What no script
+   covers is the standalone route: =/tenants/new= is walked in a browser and
+   recorded in =evidence/new_tenant_journey_live.txt=, which is manual.
+2. *No discard that stops the workflow.* =iam.v1.system.reset-tenant= discards
    the tenant, but it does not stop a workflow instance the tenant owns.
    =iam.v1.tenants.delete= closes the row and sets the status to /terminated/,
    and it also leaves a running workflow alone. The missing part is the stop,

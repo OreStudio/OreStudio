@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-29
+#+updated: 2026-09-30
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An empty installation is brought to life: the system administrator, the first tenant and the first sign-in.
@@ -178,23 +178,22 @@ every tenant, the first one included.
 
 * What is missing
 
-Three things the journey reaches for are not in the browser:
+One thing the journey reaches for is not in the browser:
 
-- The *New tenant* and *New party* journeys have no rail of their own. Their
-  step library
-  (=projects/ores.web/packages/web/src/journeys/newTenantSteps.tsx=) exists and
-  first run places it inline, but no route renders either journey alone, and the
-  party journey's activate and publish steps have no screen. A task to build
-  them is filed beside this change.
-- No scripted end-to-end run proves the browser's path on a fresh database the
-  way =projects/ores.web/scripts/verify-login.ts= proves the sign-in. The proof
-  of the three journeys is manual.
 - The *Operational* card's root LEI is typed rather than chosen, so a person has
   to know a code the deployment can check nothing about. The deployment
   answers a legal-entity search the *GLEIF entity* card uses to choose its root
   LEI, and the *Operational* card's optional parameter still takes a string, so
   a code the deployment does not hold fails inside the publication and arrives
-  as its SQL error rather than as a sentence about the entity.
+  as its SQL error rather than as a sentence about the entity. A card that names
+  no entity at all is the supported case: the parameter is optional, the import
+  step says it had nothing to read, and the tenant's parties come from the party
+  stage.
+
+The *New tenant* and *New party* journeys have rails of their own, and
+=projects/ores.web/scripts/verify-first-run.ts= walks this journey's path on a
+fresh database and asserts every answer, so the gap that used to sit here is
+closed.
 
 Everything else the journey reaches for exists, and the list below is the
 record of what each part turned out to be.

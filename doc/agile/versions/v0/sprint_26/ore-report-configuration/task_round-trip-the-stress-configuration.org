@@ -26,11 +26,11 @@ Stress is the first file with the shift vocabulary, so it proves the family look
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The library, its scenarios and their shifts are modelled; the mappers follow. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Map a stress document to the entities and back, then prove it over the corpus and through the database. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -107,3 +107,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+DONE. The kind is modelled as three tables --
+=ores_analytics_stress_test_libraries_tbl=,
+=ores_analytics_stress_test_scenarios_tbl= and
+=ores_analytics_stress_test_shifts_tbl= -- and the library, all forty-six
+scenarios and the =DiscountCurves= family round trip over the twenty documents
+the corpus ships. The shift families that have no reader yet are counted by
+name rather than dropped, and the case asserts the counts for the four busiest,
+so the gap is measured instead of hidden.
+
+Measured, on the rebased head with the database recreated from the same tree:
+the full suite is 89 of 89, and =compass services start= brings up 24 of 24
+units (=running=24 stopped=0 failed=0 missing=0=). Component drift, the ER
+diagram, SQL hygiene, the protocol twins, handler permissions, shell menus,
+route auth, the recipe inventories and =compass lint= are clean. Merged as
+8edb093b4e.
+
+Two things to carry forward. The verification job never reached its services
+step: the from-scratch debug build was cancelled at three and a half hours, so
+the merge rests on the local run of the same sequence at the same head. And the
+kind is not complete: thirteen of the fourteen families the corpus uses have no
+reader, each needing the key type it names its object by and its own extras,
+which is the first thing the next task on this story should pick up.

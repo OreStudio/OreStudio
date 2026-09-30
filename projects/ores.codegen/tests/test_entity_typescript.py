@@ -40,7 +40,7 @@ UNMAPPED_COLUMN = """
 ** extra_payload
 :PROPERTIES:
 :type:     text
-:cpp_type: std::map<std::string, int>
+:cpp_type: std::set<std::string>
 :nullable: false
 :END:
 
@@ -305,7 +305,9 @@ def test_domain_member_types_project():
         "ores::iam::domain::tenant_type") == "TenantType"
     assert _ts_domain_type(
         "std::vector<ores::iam::domain::tenant_type>") == "TenantType[]"
-    assert _ts_domain_type("std::map<std::string, int>") is None
+    assert _ts_domain_type("std::map<std::string, int>") == (
+        "Record<string, number>")
+    assert _ts_domain_type("std::set<std::string>") is None
 
 
 def test_the_ip_address_projects_to_a_string():
@@ -323,7 +325,7 @@ def test_an_unmapped_entity_domain_member_refuses_the_model(tmp_path):
     message = str(excinfo.value)
     assert model.name in message
     assert "extra_payload" in message
-    assert "std::map<std::string, int>" in message
+    assert "std::set<std::string>" in message
 
 
 @pytest.mark.parametrize("properties", [

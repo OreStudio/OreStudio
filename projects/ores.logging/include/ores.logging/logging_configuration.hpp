@@ -42,7 +42,10 @@ public:
      * @brief Creates the boost::program_options description for logging CLI
      * arguments.
      *
-     * @param log_file name of the file to log to by default.
+     * @param log_file Retained for the callers that still name the file
+     * they would write. File logging is opt-in now, so the name is not a
+     * default: a caller that passes --log-enabled and no --log-filename
+     * logs to the console and writes no file.
      * @return options_description for logging configuration.
      */
     static boost::program_options::options_description

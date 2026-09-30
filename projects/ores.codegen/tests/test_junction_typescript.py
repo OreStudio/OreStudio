@@ -101,7 +101,9 @@ def test_junction_member_types_project():
     assert _ts_domain_type(
         "std::chrono::system_clock::time_point") == "string"
     assert _ts_domain_type("std::optional<int>") == "number | null"
-    assert _ts_domain_type("std::map<std::string, int>") is None
+    assert _ts_domain_type("std::map<std::string, int>") == (
+        "Record<string, number>")
+    assert _ts_domain_type("std::set<std::string>") is None
 
 
 def test_junction_fields_are_the_left_right_and_own_columns():
@@ -114,8 +116,8 @@ def test_junction_fields_are_the_left_right_and_own_columns():
 
 def test_a_junction_member_with_no_projection_is_refused():
     junction = _junction(columns=[
-        {"name": "amount", "cpp_type": "std::map<std::string, int>"}])
-    with pytest.raises(ValueError, match=r"std::map<std::string, int>"):
+        {"name": "amount", "cpp_type": "std::set<std::string>"}])
+    with pytest.raises(ValueError, match=r"std::set<std::string>"):
         _reject_silent_junction_ts_gap("ores.iam.example_junction.org", junction)
 
 

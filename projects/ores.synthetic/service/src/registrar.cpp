@@ -21,7 +21,7 @@
 #include "feed_config_handler.hpp"
 #include "folder_feed_control_handler.hpp"
 #include "ir_curve_preview_handler.hpp"
-#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"

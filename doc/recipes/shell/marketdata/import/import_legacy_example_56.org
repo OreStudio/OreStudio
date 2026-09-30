@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:marketdata:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-09-30
 
 Reproduce, from the command line, the market data import needed by
 [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] — the dominant ORE
@@ -81,7 +81,7 @@ confirmed exactly. Pass =--duplicates-are-errors= semantics via the
 request's =duplicates_are_errors= field (not yet exposed as a shell
 flag) to treat these as hard failures instead — see
 =import_market_data_request= in
-=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/import_protocol.hpp=.
+=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/operations_protocol.hpp=.
 
 * Script
 

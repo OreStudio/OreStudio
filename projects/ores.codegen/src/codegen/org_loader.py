@@ -2474,6 +2474,28 @@ def _to_pascal_case(name: str) -> str:
     return "".join(part.capitalize() for part in name.split("_"))
 
 
+def _split_template_arguments(arguments: str) -> list[str]:
+    """Split a template argument list at its top-level commas.
+
+    A nested template such as ``std::map<std::string, X>`` carries a comma
+    of its own, so a plain split would cut the map's key from its value.
+    The depth count keeps the separator the one at depth zero.
+    """
+    parts: list[str] = []
+    depth = 0
+    start = 0
+    for index, char in enumerate(arguments):
+        if char == "<":
+            depth += 1
+        elif char == ">":
+            depth -= 1
+        elif char == "," and depth == 0:
+            parts.append(arguments[start:index].strip())
+            start = index + 1
+    parts.append(arguments[start:].strip())
+    return parts
+
+
 def _ts_type(cpp_type: str) -> str | None:
     """Project a C++ member type onto its TypeScript counterpart.
 
@@ -2496,6 +2518,17 @@ def _ts_type(cpp_type: str) -> str | None:
     if cpp_type.startswith("std::vector<") and cpp_type.endswith(">"):
         inner = _ts_type(cpp_type[len("std::vector<"):-1])
         return f"{inner}[]" if inner else None
+    if cpp_type.startswith("std::map<") and cpp_type.endswith(">"):
+        # rfl::json writes a map as a JSON object, and a JSON object's keys
+        # are strings whatever the C++ key type is, so the Record is keyed
+        # by string and only the value is projected. A key type with no
+        # projection is therefore not a gap: the key crosses as the string
+        # its reflector writes.
+        arguments = _split_template_arguments(cpp_type[len("std::map<"):-1])
+        if len(arguments) != 2:
+            return None
+        value = _ts_type(arguments[1])
+        return f"Record<string, {value}>" if value else None
     if cpp_type in _TS_SCALARS:
         return _TS_SCALARS[cpp_type]
     if cpp_type == "std::chrono::system_clock::time_point":

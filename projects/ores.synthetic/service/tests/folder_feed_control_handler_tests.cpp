@@ -20,7 +20,7 @@
 #include "../src/feed_controller.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"

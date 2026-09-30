@@ -149,13 +149,13 @@ applied, and does that type declare the coordinates its key carries? It pins a
 floor on the number of URIs it looked at, so a loader that returns nothing fails
 there instead of passing over an empty set.
 
-It deliberately does not compare the token count with the declared key count.
-The old =point= mixes coordinate and identity dimensions -- a capfloor's
-=5y,6m,0,0,0.03= is an expiry, a float tenor, two surface flags and a strike, of
-which only two are coordinates -- and its arity varies with the key's shape, as
-a swaption's smile form shows. Asserting that mapping here would restate the old
-grammar rather than check the new declaration; the generated parser of unit 3 is
-what replaces it.
+It does not map a token to the key it lands on, because the old =point= mixes
+coordinate and identity dimensions and its arity varies with the key's shape, as
+a swaption's smile form shows. What it does assert is the bound: the token count
+never exceeds the keys the type's =point_keys= column declares, and every one of
+those keys is a declared coordinate or a field. A key the point carries and the
+model does not declare fails there. The generated parser of unit 3 is what
+replaces the positional mapping.
 
 * Measurements
 

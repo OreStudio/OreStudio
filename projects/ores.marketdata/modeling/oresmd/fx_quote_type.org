@@ -15,11 +15,11 @@
 
 * Quote types
 
-| enum_name | ore_type  | ore_constant | ore_metric | point_semantics | qualifier_shape | notes                                                                                                                                                                     | comment                            | coordinates  |
-|-----------+-----------+--------------+------------+-----------------+-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+--------------|
-| spot      | FX        | fx           | RATE       | scalar          | pair_substr     | 4-segment: FX/RATE/CCY1/CCY2                                                                                                                                              | FX/RATE (spot rate, the default).  |              |
-| fwd       | FXFWD     | fxfwd        | RATE       | tenor           | pair_substr     | 5-segment: FXFWD/RATE/CCY1/CCY2/TENOR                                                                                                                                     | FXFWD/RATE (forward points).       | maturity     |
-| option    | FX_OPTION | fx_option    | RATE       | surface         | pair_substr     | 6-segment: FX_OPTION/RATE_LNVOL/CCY1/CCY2/EXPIRY/DELTA, and the same shape under RATE_NVOL; the metric segment comes from the vol model, not from this table's ore_metric | FX_OPTION (FX option implied vol). | expiry,delta |
+| enum_name | ore_type  | ore_constant | ore_metric | point_semantics | qualifier_shape | notes                                                                                                                                                                     | comment                            | coordinates  | point_keys   |
+|-----------+-----------+--------------+------------+-----------------+-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+--------------+--------------|
+| spot      | FX        | fx           | RATE       | scalar          | pair_substr     | 4-segment: FX/RATE/CCY1/CCY2                                                                                                                                              | FX/RATE (spot rate, the default).  |              |              |
+| fwd       | FXFWD     | fxfwd        | RATE       | tenor           | pair_substr     | 5-segment: FXFWD/RATE/CCY1/CCY2/TENOR                                                                                                                                     | FXFWD/RATE (forward points).       | maturity     | maturity     |
+| option    | FX_OPTION | fx_option    | RATE       | surface         | pair_substr     | 6-segment: FX_OPTION/RATE_LNVOL/CCY1/CCY2/EXPIRY/DELTA, and the same shape under RATE_NVOL; the metric segment comes from the vol model, not from this table's ore_metric | FX_OPTION (FX option implied vol). | expiry,delta | expiry,delta |
 
 * Enum brief
 

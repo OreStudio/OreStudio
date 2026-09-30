@@ -16,12 +16,12 @@
 
 * Quote types
 
-| enum_name | ore_type        | ore_constant    | ore_metric | point_semantics | qualifier_shape | comment                                     | coordinates                          |
-|-----------+-----------------+-----------------+------------+-----------------+-----------------+---------------------------------------------+--------------------------------------|
-| spot      | EQUITY          | equity          | PRICE      | scalar          | with_ccy        | EQUITY/PRICE (spot price, the default).     |                                      |
-| dividend  | EQUITY_DIVIDEND | equity_dividend | RATE       | tenor           | with_ccy        | EQUITY_DIVIDEND/RATE (dividend yield rate). | maturity                             |
-| fwd       | EQUITY_FWD      | equity_fwd      | PRICE      | tenor           | with_ccy        | EQUITY_FWD/PRICE (equity forward price).    | maturity                             |
-| option    | EQUITY_OPTION   | equity_option   | RATE       | surface         | with_ccy        | EQUITY_OPTION (equity option implied vol).  | expiry,delta,premium,call_put,strike |
+| enum_name | ore_type        | ore_constant    | ore_metric | point_semantics | qualifier_shape | comment                                     | coordinates                          | point_keys                           |
+|-----------+-----------------+-----------------+------------+-----------------+-----------------+---------------------------------------------+--------------------------------------+--------------------------------------|
+| spot      | EQUITY          | equity          | PRICE      | scalar          | with_ccy        | EQUITY/PRICE (spot price, the default).     |                                      |                                      |
+| dividend  | EQUITY_DIVIDEND | equity_dividend | RATE       | tenor           | with_ccy        | EQUITY_DIVIDEND/RATE (dividend yield rate). | maturity                             | maturity                             |
+| fwd       | EQUITY_FWD      | equity_fwd      | PRICE      | tenor           | with_ccy        | EQUITY_FWD/PRICE (equity forward price).    | maturity                             | maturity                             |
+| option    | EQUITY_OPTION   | equity_option   | RATE       | surface         | with_ccy        | EQUITY_OPTION (equity option implied vol).  | expiry,delta,premium,call_put,strike | expiry,delta,premium,call_put,strike |
 
 * Enum brief
 

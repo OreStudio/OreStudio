@@ -85,7 +85,7 @@ def _point_uris(spec):
 
 
 def _by_type(spec):
-    return {qt["enum_name"]: qt["coordinates"] for qt in spec["quote_types"]}
+    return {qt["enum_name"]: qt for qt in spec["quote_types"]}
 
 
 def test_the_models_declare_coordinates_to_check():
@@ -122,9 +122,19 @@ def test_every_point_uri_names_a_quote_type_that_declares_coordinates():
             if quote not in by_type:
                 problems.append(f"{asset}: '{quote}' is not a declared quote type. {uri}")
                 continue
-            if not by_type[quote]:
+            declared = by_type[quote]
+            if not declared["coordinates"] and declared["point_keys"]:
                 problems.append(
-                    f"{asset}: '{quote}' carries {len(tokens)} coordinate token(s) "
-                    f"but declares none. {uri}")
+                    f"{asset}: '{quote}' carries {len(tokens)} token(s) but "
+                    f"declares no coordinate. {uri}")
+                continue
+            # The token count is bounded by the keys the old point corresponds
+            # to, identity keys included. A key the point carries and the model
+            # does not declare is what this catches.
+            if len(tokens) > len(declared["point_keys"]):
+                problems.append(
+                    f"{asset}: '{quote}' point carries {len(tokens)} token(s) "
+                    f"but declares {len(declared['point_keys'])} key(s): "
+                    f"{declared['point_keys']}. {uri}")
     assert checked > 30, f"only {checked} point URIs found; the loader or the tables changed"
     assert not problems, "\n".join(problems)

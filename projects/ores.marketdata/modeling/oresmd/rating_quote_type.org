@@ -21,9 +21,9 @@ ORE writes the metric as the second segment, so the one metric is its own quote
 type here -- the `metric` query key is one of the IR-only keys every other class
 rejects.
 
-| enum_name              | ore_type | ore_constant | ore_metric             | point_semantics | qualifier_shape | comment                                                                                                                                   | coordinates |
-|------------------------+----------+--------------+------------------------+-----------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------+-------------|
-| transition_probability | RATING   | rating       | TRANSITION_PROBABILITY | composite       | no_ccy          | RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form the corpus also writes, which names the provider and no grades. | from,to     |
+| enum_name              | ore_type | ore_constant | ore_metric             | point_semantics | qualifier_shape | comment                                                                                                                                   | coordinates | point_keys |
+|------------------------+----------+--------------+------------------------+-----------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------+-------------+------------|
+| transition_probability | RATING   | rating       | TRANSITION_PROBABILITY | composite       | no_ccy          | RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form the corpus also writes, which names the provider and no grades. | from,to     | from,to    |
 
 * Enum brief
 

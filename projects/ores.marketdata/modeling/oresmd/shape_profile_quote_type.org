@@ -21,9 +21,9 @@ profile is sampled on. ORE writes the metric as the second segment, so the one
 metric is its own quote type here -- the `metric` query key is one of the IR-only
 keys every other class rejects.
 
-| enum_name    | ore_type      | ore_constant  | ore_metric   | point_semantics | qualifier_shape | comment                                                                                                          | coordinates            |
-|--------------+---------------+---------------+--------------+-----------------+-----------------+------------------------------------------------------------------------------------------------------------------+------------------------|
-| shape_factor | SHAPE_PROFILE | shape_profile | SHAPE_FACTOR | composite       | no_ccy          | SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the corpus writes as a seventh segment. | date,second,period,dst |
+| enum_name    | ore_type      | ore_constant  | ore_metric   | point_semantics | qualifier_shape | comment                                                                                                          | coordinates            | point_keys             |
+|--------------+---------------+---------------+--------------+-----------------+-----------------+------------------------------------------------------------------------------------------------------------------+------------------------+------------------------|
+| shape_factor | SHAPE_PROFILE | shape_profile | SHAPE_FACTOR | composite       | no_ccy          | SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the corpus writes as a seventh segment. | date,second,period,dst | date,second,period,dst |
 
 * Enum brief
 

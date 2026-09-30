@@ -5954,6 +5954,15 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 key.strip() for key in row.get("coordinates", "").split(",")
                 if key.strip()
             ]
+            # The ordered keys the old comma-joined `point` value corresponds
+            # to, identity keys included: a capfloor's point is an expiry, a
+            # float tenor, two surface flags and a strike, of which only two are
+            # coordinates. It is what the grammar generation reads to place each
+            # token, and what the declaration check reads to bound the count.
+            row["point_keys"] = [
+                key.strip() for key in row.get("point_keys", "").split(",")
+                if key.strip()
+            ]
             qts.append(row)
     result["quote_types"] = qts
 
@@ -6083,6 +6092,12 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 raise ValueError(
                     f"{path.name}: quote type '{qt.get('enum_name')}' lists "
                     f"coordinate '{key}', which is declared nowhere"
+                )
+        for key in qt["point_keys"]:
+            if key not in declared and key not in field_types:
+                raise ValueError(
+                    f"{path.name}: quote type '{qt.get('enum_name')}' lists "
+                    f"point key '{key}', which is declared nowhere"
                 )
 
     # --- Per-struct doc comments: identifier/requirement briefs, in the

@@ -15,9 +15,9 @@
 
 * Quote types
 
-| enum_name | ore_type    | ore_metric | point_semantics | qualifier_shape  | comment                                                                                                                       | coordinates  |
-|-----------+-------------+------------+-----------------+------------------+-------------------------------------------------------------------------------------------------------------------------------+--------------|
-| pairwise  | CORRELATION | RATE       | surface         | pairwise_surface | CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two operands with the expiry and strike after them. | expiry,delta |
+| enum_name | ore_type    | ore_metric | point_semantics | qualifier_shape  | comment                                                                                                                       | coordinates  | point_keys   |
+|-----------+-------------+------------+-----------------+------------------+-------------------------------------------------------------------------------------------------------------------------------+--------------+--------------|
+| pairwise  | CORRELATION | RATE       | surface         | pairwise_surface | CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two operands with the expiry and strike after them. | expiry,delta | expiry,delta |
 
 * Enum brief
 

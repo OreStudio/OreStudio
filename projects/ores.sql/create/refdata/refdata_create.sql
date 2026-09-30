@@ -282,6 +282,8 @@
 \ir ./refdata_leg_types_validate_fn_create.sql
 
 -- ORE curve configuration: the sections an ORE curveconfig.xml is built
--- from, which the curve tables that follow reference.
+-- from, and the curve entries themselves, which reference those sections.
 \ir ./refdata_curve_sections_create.sql
 \ir ./refdata_curve_sections_notify_trigger_create.sql
+\ir ./refdata_curve_definitions_create.sql
+\ir ./refdata_curve_definitions_notify_trigger_create.sql

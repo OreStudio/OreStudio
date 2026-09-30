@@ -58,7 +58,9 @@
 \ir ./refdata_crm_topology_configs_notify_trigger_drop.sql
 \ir ./refdata_crm_topology_configs_drop.sql
 
--- ORE curve configuration (no dependants yet)
+-- ORE curve configuration (definitions first, they reference the sections)
+\ir ./refdata_curve_definitions_notify_trigger_drop.sql
+\ir ./refdata_curve_definitions_drop.sql
 \ir ./refdata_curve_sections_notify_trigger_drop.sql
 \ir ./refdata_curve_sections_drop.sql
 

@@ -8,7 +8,7 @@
 #+filetags: :asset-class:taxonomy:codegen:refdata:clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/declare-the-asset-class-catalogue
-#+pr: 2432
+#+pr: 2437
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -199,6 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2437][#2437]] | [marketdata,refdata] Let a fixing take its class from its index name |
 | [[https://github.com/OreStudio/OreStudio/pull/2432][#2432]] | [refdata,codegen] Declare both asset-class lists in one model |
 
 * Review

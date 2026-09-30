@@ -20,7 +20,6 @@
 #ifndef ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 #define ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 
-#include "ores.workflow.api/export.hpp"
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -30,10 +29,17 @@
 
 namespace ores::workflow::service {
 
+// These types are header-only: every member is defined here and the
+// component's library compiles no translation unit for them. A DLL import
+// attribute on such a type makes every other component that constructs one
+// reference a symbol this component's library never defines, which clang-cl
+// reports as an unresolved import of the implicit default constructor when
+// it links a consumer. The header therefore carries no export attribute.
+
 /**
  * @brief The result of one completed step, named by the step that produced it.
  */
-struct ORES_WORKFLOW_API_EXPORT workflow_step_result {
+struct workflow_step_result {
     /**
      * @brief The step's name, as declared in its definition.
      */
@@ -73,7 +79,7 @@ using workflow_step_results = std::vector<workflow_step_result>;
  * The workflow engine uses these descriptors to build and dispatch commands
  * without needing bespoke executor classes per workflow type.
  */
-struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
+struct workflow_step_def {
     /**
      * @brief The step's identity, stored in workflow_step.name.
      *
@@ -161,7 +167,7 @@ struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
  * the step sequence is preserved across service restarts, even when
  * build_steps is non-deterministic.
  */
-struct ORES_WORKFLOW_API_EXPORT materialised_step {
+struct materialised_step {
     std::string name;
     std::string label;
     std::string description;
@@ -224,11 +230,10 @@ inline constexpr std::chrono::seconds write_step_timeout{120};
  * for a retry, because every step is idempotent and undoing costs more than
  * resuming.
  *
- * The declaration deliberately carries no ORES_WORKFLOW_API_EXPORT, unlike
- * the structs around it: that macro expands to a DLL import or export
- * attribute, which does not apply to an enum, and clang-cl rejects it with
- * -Wignored-attributes, an error under -Werror. An enum needs no export
- * attribute to travel across a binary boundary.
+ * The declaration carries no export attribute: the macro expands to a DLL
+ * import or export attribute, which does not apply to an enum, and clang-cl
+ * rejects it with -Wignored-attributes, an error under -Werror. An enum needs
+ * no export attribute to travel across a binary boundary.
  */
 enum class failure_policy : std::uint8_t {
     /// Roll the completed steps back and end in compensated. The default.
@@ -243,7 +248,7 @@ enum class failure_policy : std::uint8_t {
  * Registered once at startup in the workflow_registry. The engine calls
  * build_steps once per instance at start time to determine the step sequence.
  */
-struct ORES_WORKFLOW_API_EXPORT workflow_definition {
+struct workflow_definition {
     /**
      * @brief Unique type name matching workflow_instance.type.
      *

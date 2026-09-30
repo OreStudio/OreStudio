@@ -20,12 +20,18 @@
 #ifndef ORES_WORKFLOW_API_SERVICE_WORKFLOW_REGISTRY_HPP
 #define ORES_WORKFLOW_API_SERVICE_WORKFLOW_REGISTRY_HPP
 
-#include "ores.workflow.api/export.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include <string>
 #include <unordered_map>
 
 namespace ores::workflow::service {
+
+// These types are header-only: every member is defined here and the
+// component's library compiles no translation unit for them. A DLL import
+// attribute on such a type makes every other component that constructs one
+// reference a symbol this component's library never defines, which clang-cl
+// reports as an unresolved import of the implicit default constructor when
+// it links a consumer. The header therefore carries no export attribute.
 
 /**
  * @brief Registry of all known workflow definitions.
@@ -33,7 +39,7 @@ namespace ores::workflow::service {
  * Populated at startup before the NATS subscriptions are registered.
  * The workflow engine looks up definitions by type_name to drive execution.
  */
-class ORES_WORKFLOW_API_EXPORT workflow_registry {
+class workflow_registry {
 public:
     /**
      * @brief Register a workflow definition.

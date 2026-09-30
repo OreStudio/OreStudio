@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 3F0B9A5C-4D2E-41B7-9C63-5A8E0D4F1B27
+:END:
+#+title: Story: Hotfix: a library exports a type none of its units compiles
+#+description: The Windows clang-cl build fails at the link step of every consumer of ores.workflow.api with an undefined __declspec(dllimport) workflow_registry and workflow_definition constructor. The two hand-written service headers put the export macro on header-only types that no translation unit of the library includes, so the library exports nothing for them while every consumer imports them. The attribute is removed, and a check now finds the shape on any platform.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:workflow:windows:link:codegen:sprint_26:v0:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Windows clang-cl build fails at the link step of the workflow core DLL:
+
+#+begin_src text
+lld-link: error: undefined symbol: __declspec(dllimport) public: __cdecl
+  ores::workflow::service::workflow_registry::workflow_registry(void)
+lld-link: error: undefined symbol: __declspec(dllimport) public: __cdecl
+  ores::workflow::service::workflow_definition::workflow_definition(void)
+#+end_src
+
+=ORES_WORKFLOW_API_EXPORT= is =BOOST_SYMBOL_IMPORT= for a consumer and
+=BOOST_SYMBOL_EXPORT= while the library itself is compiled. On the Microsoft
+ABI the import arm is =__declspec(dllimport)=, so a consumer that constructs
+one of these types references the symbol in the library's import library and
+cannot generate it locally.
+
+The export is real only if some translation unit of the library includes the
+header. Every =.cpp= under =ores.workflow/api/src= is generated domain or
+generator code, and none of them includes these two service headers, so the
+library exports nothing for the types while every consumer imports them. They
+are the only hand-written headers in the estate in that state.
+
+It surfaced now because until the same afternoon the Windows build stopped
+earlier -- at the export attribute on the enum in the same header, which the
+previous hotfix removed -- so the link step was never reached.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- A consumer of =ores.workflow.api= that constructs a =workflow_registry= or
+  a =workflow_definition= compiles to a definition rather than to an import.
+- The types stay usable from every component as they are today on Linux, and
+  the tree builds and its suites pass.
+- A check fails when any sublibrary exports a type none of its translation
+  units compiles, naming the type and both remedies.
+- The check runs on a pull request, so the shape fails in seconds rather than
+  at link time on Windows, hours into a scheduled build.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6C2D4E81-9A3F-4B05-8E7D-1F2A3B4C5D6E][Implement Hotfix: a library exports a type none of its units compiles]] | DONE | 2026-09-30 | 2026-09-30 | Remove the attribute from the header-only types, add the exported-type scan to the header-hygiene workflow, prove the scan in both directions, and take the fix to a Windows verification run. |
+
+* Decisions
+
+- The attribute is removed rather than the library given a translation unit
+  that includes the headers. Either works, and =ores.eventing.api= uses the
+  second for =event_bus=; but a header-only type needs no DLL attribute on any
+  ABI, while a compilation unit would have to be added for every such type and
+  relies on the compiler exporting implicitly-declared members.
+- The scan checks the *include graph* rather than looking for an out-of-line
+  definition. A type whose header reaches a library translation unit is
+  exported correctly even when the type is header-only; a type whose header
+  reaches none is broken even when it declares out-of-line members that no
+  unit defines. Whether the header reaches a unit is the thing that decides.
+- The check joins the enum check on the same pull-request workflow. Both are
+  source scans with no toolchain, and both exist because Windows is the only
+  compiler that reports the defect and it reports it hours late.
+
+* Out of scope
+
+- The other Windows failure, MSVC C1202 =recursive type or function dependency
+  context too complex=, which is the accepted oversized-translation-unit limit.
+- The =event_bus= stub unit in =ores.eventing.api=, which is the same pattern
+  and passes the check.

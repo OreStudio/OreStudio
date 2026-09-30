@@ -2519,13 +2519,16 @@ def _ts_type(cpp_type: str) -> str | None:
         inner = _ts_type(cpp_type[len("std::vector<"):-1])
         return f"{inner}[]" if inner else None
     if cpp_type.startswith("std::map<") and cpp_type.endswith(">"):
-        # rfl::json writes a map as a JSON object whose keys are the map's
-        # own, so the member is a Record keyed by the map's key type.
+        # rfl::json writes a map as a JSON object, and a JSON object's keys
+        # are strings whatever the C++ key type is, so the Record is keyed
+        # by string and only the value is projected. A key type with no
+        # projection is therefore not a gap: the key crosses as the string
+        # its reflector writes.
         arguments = _split_template_arguments(cpp_type[len("std::map<"):-1])
         if len(arguments) != 2:
             return None
-        key, value = _ts_type(arguments[0]), _ts_type(arguments[1])
-        return f"Record<{key}, {value}>" if key and value else None
+        value = _ts_type(arguments[1])
+        return f"Record<string, {value}>" if value else None
     if cpp_type in _TS_SCALARS:
         return _TS_SCALARS[cpp_type]
     if cpp_type == "std::chrono::system_clock::time_point":

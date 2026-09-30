@@ -30,6 +30,11 @@
 
 namespace ores::workflow::workflow {
 
+// The budgets a step states belong to the engine's vocabulary, so a definition
+// reads them from one place rather than inventing its own numbers.
+using ores::workflow::service::data_step_timeout;
+using ores::workflow::service::write_step_timeout;
+
 /**
  * @brief What one step of the identity workflow should do.
  *
@@ -126,6 +131,10 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
             s.command_subject = std::string(identity_step_command_subject);
             s.compensation_subject =
                 wanted.compensates() ? std::string(identity_compensation_command_subject) : "";
+            // A step here answers as soon as it is handled, so its budget is
+            // the write budget; the delay a step may declare is deliberately
+            // short in the fixtures that use this workflow.
+            s.timeout = write_step_timeout;
 
             const auto behaviour = wanted.outcome();
             const auto delay = wanted.delay();

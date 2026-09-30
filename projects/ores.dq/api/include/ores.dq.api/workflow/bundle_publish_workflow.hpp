@@ -30,6 +30,11 @@
 
 namespace ores::dq::workflow {
 
+// The budgets a step states belong to the engine's vocabulary, so a definition
+// reads them from one place rather than inventing its own numbers.
+using ores::workflow::service::data_step_timeout;
+using ores::workflow::service::write_step_timeout;
+
 /**
  * @brief Per-dataset entry in a bundle publish workflow request.
  *
@@ -90,6 +95,9 @@ inline void register_bundle_publish_workflow(ores::workflow::service::workflow_r
             s.name = ds.dataset_code;
             s.description = "Publish " + ds.dataset_code + " via " + ds.target_subject;
             s.command_subject = ds.target_subject;
+            // Each step hands a dataset to its publisher and waits for the run
+            // that writes it, so its budget is minutes of data work.
+            s.timeout = data_step_timeout;
             s.compensation_subject = "";
 
             const std::string dataset_id = ds.dataset_id;

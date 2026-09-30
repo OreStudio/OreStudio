@@ -38,6 +38,11 @@
 
 namespace ores::refdata::workflow {
 
+// The budgets a step states belong to the engine's vocabulary, so a definition
+// reads them from one place rather than inventing its own numbers.
+using ores::workflow::service::data_step_timeout;
+using ores::workflow::service::write_step_timeout;
+
 /**
  * @brief Registers the provision_parties workflow definition.
  *
@@ -79,6 +84,9 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "save_party";
             s.description = "Create party record in the reference data service.";
+            // The work is a publication the step waits on, so its budget is
+            // the data budget.
+            s.timeout = data_step_timeout;
             s.command_subject =
                 std::string(ores::refdata::messaging::put_party_request::nats_subject);
             s.compensation_subject =
@@ -133,6 +141,9 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "save_account";
             s.description = "Create IAM account for the party's principal.";
+            // The work is a publication the step waits on, so its budget is
+            // the data budget.
+            s.timeout = data_step_timeout;
             s.command_subject =
                 std::string(ores::iam::messaging::save_account_request::nats_subject);
             s.compensation_subject =
@@ -172,6 +183,9 @@ register_provision_parties_workflow(ores::workflow::service::workflow_registry& 
             workflow_step_def s;
             s.name = "link_account_party";
             s.description = "Link the IAM account to the party record.";
+            // The work is a publication the step waits on, so its budget is
+            // the data budget.
+            s.timeout = data_step_timeout;
             s.command_subject =
                 std::string(ores::iam::messaging::put_many_account_parties_request::nats_subject);
             s.compensation_subject =

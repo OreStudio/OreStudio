@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0EBBA137-9A83-4411-A706-DBC5543B1235
+:END:
+#+title: Running the workflow engine tests re-dispatches the deployment's in-flight runs
+#+description: recover_in_progress() runs at engine construction and re-dispatches every in-progress step of every tenant, which is right for a deployed service resuming its runs and wrong for a test process pointed at the same database: the test re-stamps command_published_at on real runs, so their deadlines restart and a step that should have expired does not. Observed while proving the step deadline live: three test runs pushed a live run's deadline out at 11:20, 11:21 and 11:22.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

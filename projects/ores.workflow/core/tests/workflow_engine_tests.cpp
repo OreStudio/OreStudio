@@ -95,6 +95,7 @@ using ores::workflow::messaging::step_outcome;
 using ores::workflow::repository::workflow_instance_repository;
 using ores::workflow::repository::workflow_step_repository;
 using ores::workflow::service::failure_policy;
+using ores::workflow::service::write_step_timeout;
 using ores::workflow::service::fsm_state_map;
 using ores::workflow::service::load_fsm_states;
 using ores::workflow::service::workflow_definition;
@@ -161,13 +162,14 @@ struct fixture {
 
     void register_steps(const std::string& type,
                         const std::vector<std::string>& names,
-                        failure_policy on_failure = failure_policy::compensate) {
+                        failure_policy on_failure = failure_policy::compensate,
+                        std::chrono::seconds timeout = write_step_timeout) {
         workflow_definition def;
         def.type_name = type;
         def.description = "engine fixture";
         def.on_failure = on_failure;
         def.build_steps =
-            [names](const std::string& request, const std::string&, const std::string&) {
+            [names, timeout](const std::string& request, const std::string&, const std::string&) {
                 std::vector<workflow_step_def> steps;
                 steps.reserve(names.size());
                 for (const auto& name : names) {
@@ -175,6 +177,7 @@ struct fixture {
                     s.name = name;
                     s.description = name;
                     s.command_subject = step_subject;
+                    s.timeout = timeout;
                     s.compensation_subject = compensation_subject;
                     s.build_command = [request](const std::string&, const workflow_step_results&) {
                         return request;
@@ -924,4 +927,154 @@ TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for
     CHECK(instances.get_total_instance_count(f.service_context()) >
           instances.get_total_instance_count(f.h.context()));
     BOOST_LOG_SEV(lg, debug) << "List and count follow the reading tenant.";
+}
+
+/**
+ * @brief Winds a step's dispatch back so its deadline has passed.
+ *
+ * The rule is about elapsed time, so a case moves the elapsed time rather than
+ * sleeping through it: the alternative is a case that takes a minute to assert
+ * a rule about a minute.
+ */
+void backdate_dispatch(ores::database::context ctx,
+                       workflow_step_repository& steps,
+                       const std::string& instance_id,
+                       std::chrono::seconds by) {
+    const auto rows = steps.read_latest_by_workflow_id(ctx, instance_id, 0, 100);
+    REQUIRE(!rows.empty());
+    auto step = rows.front();
+    REQUIRE(step.command_published_at.has_value());
+    step.command_published_at = *step.command_published_at - by;
+    steps.write(ctx, step);
+}
+
+TEST_CASE("workflow_engine stops a run whose step outlives its deadline", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // The definition would roll a failure back. A deadline stops regardless,
+    // because a step that went silent is a step whose work is unknown.
+    f.register_steps("test_deadline_workflow",
+                     {"one"},
+                     failure_policy::compensate,
+                     std::chrono::seconds{60});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_deadline_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    backdate_dispatch(f.h.context(), steps, instance_id, std::chrono::seconds(120));
+
+    CHECK(f.engine->expire_overdue_steps() == 1);
+
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().state_id == f.step_states.require("failed"));
+    // The reason names what never answered and for how long, so a person reads
+    // a cause rather than a step that looks like it is still running.
+    CHECK(rows.front().error.find("did not answer within 1m") != std::string::npos);
+    CHECK(rows.front().error.find(step_subject) != std::string::npos);
+
+    workflow_instance_repository instances;
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("failed"));
+    CHECK(instance.front().error.find("did not answer within") != std::string::npos);
+
+    // A second pass finds nothing: the step it failed is no longer running, so
+    // a pass that ran twice cannot fail the same step twice.
+    CHECK(f.engine->expire_overdue_steps() == 0);
+    BOOST_LOG_SEV(lg, debug) << "An overdue step stopped its run.";
+}
+
+TEST_CASE("workflow_engine keeps a failure when the step answers later", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_late_answer_workflow",
+                     {"one"},
+                     failure_policy::stop,
+                     std::chrono::seconds{60});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_late_answer_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    const auto first = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(first.size() == 1);
+    const auto step_id = boost::uuids::to_string(first.front().id);
+
+    backdate_dispatch(f.h.context(), steps, instance_id, std::chrono::seconds(120));
+    REQUIRE(f.engine->expire_overdue_steps() == 1);
+
+    // The service was slow rather than gone, and finishes after the engine has
+    // given up on it. The work it did is real, and the run still says failed:
+    // the record is the one a person was already shown, and a late report does
+    // not un-say it. The retry that follows is what advances the run.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, step_id, step_outcome::completed)));
+
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().state_id == f.step_states.require("failed"));
+
+    workflow_instance_repository instances;
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("failed"));
+
+    // One retry recovers the run, and it recovers it under the step's own
+    // identity: that id is the idempotency key the service deduplicates on, so
+    // the service that already did the work replays its outcome instead of
+    // doing it twice.
+    const auto outcome = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
+    CHECK(outcome.resumed);
+
+    const auto after = wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5));
+    REQUIRE(after.size() == 2);
+    CHECK(after.back().headers.at(std::string(ores::workflow::messaging::step_id_header)) ==
+          step_id);
+
+    const auto retried = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(retried.size() == 1);
+    CHECK(retried.front().state_id == f.step_states.require("in_progress"));
+    CHECK(retried.front().error.empty());
+    BOOST_LOG_SEV(lg, debug) << "A late answer left the failure standing, and a retry resumed it.";
+}
+
+TEST_CASE("workflow_engine starts nothing for a definition whose step states no deadline", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // Zero is what a definition that forgot to say leaves behind.
+    f.register_steps("test_undeadlined_workflow", {"one"}, failure_policy::stop,
+                     std::chrono::seconds{0});
+    f.register_steps("test_deadlined_workflow", {"one"});
+    const auto refused_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_undeadlined_workflow", f.tenant(), refused_id)));
+
+    // A step with no deadline is a command the engine would wait on for ever,
+    // so the run is refused rather than left for a person to wait on.
+    workflow_instance_repository instances;
+    CHECK(instances.read_latest(f.h.context(), refused_id).empty());
+    CHECK(wait_for_instance(commands, refused_id, 1, std::chrono::milliseconds(300)).empty());
+
+    // The control is the same fixture and the same call with one number
+    // changed, so the assertion above is about the deadline.
+    const auto accepted_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    f.engine->on_start_workflow(
+        as_message(start_for("test_deadlined_workflow", f.tenant(), accepted_id)));
+    CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
+    CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
+    BOOST_LOG_SEV(lg, debug) << "A definition with no deadline started nothing.";
 }

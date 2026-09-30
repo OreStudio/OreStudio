@@ -37,14 +37,20 @@ namespace ores::platform::numeric {
  * compiles under libstdc++ and MSVC and stops the macOS build with "call to
  * deleted function 'from_chars'". The integer overloads, and the
  * floating-point @c to_chars the estate formats with, are implemented there.
- * Boost's lexical cast is used instead, which parses in the classic locale and
- * demands the whole input, which is the contract the standard overload has.
+ *
+ * The grammar is checked here rather than left to a conversion routine, so
+ * what is accepted does not depend on the program's locale, and the C
+ * library's extensions -- hexadecimal input, "inf", "nan" -- are not numbers.
+ * The conversion then runs in a C locale of its own. A result the type holds
+ * only as a subnormal is accepted: libc++ reports the range error such a
+ * result carries as a stream failure, which is how the round trip of the
+ * smallest denormal a double has came to fail on macOS alone.
  *
  * @param text The whole number, and nothing else. Leading or trailing
  * whitespace is not part of a number, so it is rejected rather than skipped.
  * @return The value, or @c std::nullopt when @p text is empty, is not a
- * number, holds anything after the number, or names a value outside the
- * range of a @c double.
+ * number, holds anything after the number, or is a value the type cannot
+ * hold -- one that rounds to zero or to infinity.
  */
 [[nodiscard]] ORES_PLATFORM_EXPORT std::optional<double> parse_double(std::string_view text);
 

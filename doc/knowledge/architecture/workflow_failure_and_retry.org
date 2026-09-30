@@ -2,21 +2,121 @@
 :ID: 353DC9B3-65BC-4801-B6D8-08ADD2647F24
 :END:
 #+title: Failure, compensation and retry
-#+description: The failure contract a definition declares, the compensation and stop-and-retry policies it chooses between, and the retry verb that resumes a stopped run while keeping every completed step.
+#+description: The failure contract a definition declares, the deadline every step states, the compensation and stop-and-retry policies, and the retry verb that resumes a stopped run while keeping every completed step.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:architecture:workflow:failure:retry:
+#+filetags: :knowledge:architecture:workflow:failure:retry:timeout:
 #+created: 2026-09-28
-#+updated: 2026-09-28
+#+updated: 2026-09-30
+
+There are two ways a step can fail, and both end in the same place. A handler that
+cannot do its work reports =failed=, and the definition's failure policy decides
+what happens to the run. A handler that says nothing at all is the second way: the
+engine waits on a step forever unless the step states how long it may take, so
+every step states a deadline and the engine fails it when it expires.
 
 The failure policy belongs to the definition. The default policy is compensate, so
 a failed step is rolled back and the run's error is cleared, which is the right
 answer for a short saga of writes. Provisioning declares stop instead, because its
 completed work is published data that a person expects to keep and the recovery it
-wants is a retry rather than a rollback. This note states the failure contract, the
-two policies a definition chooses between, and the retry contract that serves both.
+wants is a retry rather than a rollback. A deadline is different from both: the
+engine stops the run whatever the definition declares, because a step that went
+silent is a step whose work is unknown.
+
+This note states the failure contract, the deadline every step states and how the
+engine enforces it, the two policies a definition chooses between, and the retry
+contract that serves them all.
 
 * Detail
+
+** The deadline every step states
+
+A step command is published to a subject, and the engine waits for the service
+that owns that subject to report the outcome. Nothing in that path notices a
+service that has died, a command the bus dropped, or a handler that wedged: the
+step stays =in_progress=, the run stays =in_progress=, and every waiter
+eventually gives up on a run that never failed. That is the failure the deadline
+exists for, and it is the only one the engine cannot observe by itself.
+
+Every step therefore states how long it may run, and the engine states the rule
+when a definition does not: a built step with no deadline is refused, and no run
+exists to wait on. There is no default, because the number depends on what the
+step does and one value would be wrong for both a write that answers in
+milliseconds and an import that publishes tens of thousands of rows. The
+definitions read their budgets from two names in
+[[id:FF8BAB73-9A76-4B23-87F5-59D1BE1A2877][the definition contract]] —
+=data_step_timeout= for work that publishes or imports, =write_step_timeout= for
+a write or a handshake — and a step whose work is neither states its own.
+
+A run states more than the steps it waits for. A provisioning step hands its work
+to another run and waits for the answer, so its budget is larger than the budget
+of the steps inside it: the inner deadline is what fails, and the outer wait
+reports the reason instead of running out of its own patience first.
+
+The budget travels with the run, in the snapshot the engine materialises at
+start, rather than being read from the definition when the deadline is checked. A
+run started under a longer budget keeps it, however the definition changes
+afterwards.
+
+#+caption: A step's deadline, and the answer that arrives too late.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/workflow_step_deadline.png]]
+
+** The engine enforces the deadline
+
+The engine reads the clock on a pass every thirty seconds, and fails any step
+whose command was published more than its budget ago. The deadline is measured
+from the dispatch, so what it asks is "how long has this dispatch been silent"
+and not "how old is this run". When the step was dispatched is the row's to
+state, because a restart, a retry and a recovery all rewrite it there: a retry
+that re-dispatches a step starts its silence again, and so does the recovery pass
+that re-dispatches whatever a restart interrupted.
+
+The pass walks the steps the engine dispatched rather than every run the store
+holds. What it is looking for is work in flight, which is what the engine itself
+handed out, and a pass that read every run of every tenant would grow with the
+deployment's history rather than with the work in flight. The list decides
+nothing: the pass reads each entry's step row, which is the authority on whether
+the step is still running, so the worst a lost entry costs is a deadline that
+fires late.
+
+One pass fails one step of one run, because only one step of a run is ever
+in_progress. A step the pass has failed is invisible to the next pass, so a pass
+that runs twice cannot fail the same step twice, and a completion that arrives
+while the pass is running cannot interleave with it: the pass and the
+step-completed handler hold the same lock.
+
+** A deadline stops the run, and never rolls it back
+
+The engine stops the run on a deadline, whatever failure policy its definition
+declares. A rollback is the right answer for a step that reported that it failed,
+because such a step did nothing; a step that went silent is a step whose work is
+unknown, since it may have died before writing anything or may be slow and about
+to finish. Compensating on that guess would undo a run whose work was in fact
+done, which is the worse of the two mistakes. So the run stops in =failed= with
+every completed step kept, and the decision belongs to a person: retrying is safe
+because a step is idempotent, and discarding is a separate action.
+
+** A service that is gone, and a service that is slow
+
+The engine cannot tell those two apart, and does not pretend to. The bus drops a
+command whose subject has no subscriber and says nothing about it, so from the
+engine's side both are silence; the deadline is what decides, and presence is what
+explains.
+
+Every service publishes a heartbeat, and the engine keeps the last time it heard
+from each, keyed by the canonical service name. A step's command subject names its
+component as its first token — =marketdata.v1.…= belongs to
+=ores.marketdata.service= — so a deadline failure states what the engine saw: that
+nothing has reported as that service since the engine started, that the service
+was not reporting when the command was published and when it last reported, or
+that it was still reporting, in which case the command reached a service that did
+not finish the step. That is evidence and not proof: a service that is running but
+wedged reports for duty as well.
+
+#+caption: How the engine knows a service is gone, and what it says when it does.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/workflow_service_presence.png]]
 
 ** The failure contract on a step that fails
 
@@ -24,7 +124,7 @@ The failure contract starts with the step's own report. A handler that cannot do
 
 Compensation is the rollback of the run, and it belongs to the definitions whose completed work is a liability. The engine walks the completed steps in reverse and compensates only those the contract marks =completed=; a step that finished =completed_with_warnings= is not compensated. When the rollback finishes, the run reaches =compensated= and both its result and its error are cleared, which is the outcome the definition asked for when it declared compensate.
 
-The engine keeps the run state =failed= for the paths that cannot proceed without a step report at all: an unknown workflow type, a step position out of range, a startup recovery that finds no steps, and a failure while starting.
+The engine keeps the run state =failed= for the paths that cannot proceed without a step report at all: an unknown workflow type, a step position out of range, a startup recovery that finds no steps, a definition that states no deadline for a step, and a failure while starting. A step that outlives its deadline is failed with the reason the engine recorded, and the run stops: see the deadline sections above.
 
 ** The failure policy belongs to the definition
 
@@ -43,6 +143,24 @@ A resume reads only what the run persists. The failed step keeps its position, i
 ** Why a retry is safe
 
 The step identity must stay stable for a retry to be safe, and stability is the property the retry reuses. The engine ignores a completion for a step that is not =in_progress=, and a handler can ask the engine to replay the step's last outcome instead of repeating the work. A retry that re-dispatches the step under its own identity therefore runs the step once, however the messages interleave — see [[id:183361A9-31B8-4066-A13D-94CA35270F42][idempotency in a workflow step]].
+
+** An answer that arrives after the deadline
+
+A deadline that fires on a service that was merely slow leaves the work done and
+the run failed, and the engine is explicit about both. The late completion is
+ignored, because the record the engine keeps is the one a person was already
+shown and a later report does not un-say it; the log says the answer came too
+late, which is a different thing from a duplicate that changes nothing. The run
+recovers in one retry, and the retry carries the step's own id, which is the
+idempotency key: the service that already finished replays the outcome it holds
+rather than doing the work a second time.
+
+The window a person should know about is the one between the deadline firing and
+the retry: a retry dispatched while the original is still running gives one step
+two executions in flight, and the idempotency key deduplicates them only once the
+first has recorded its outcome. A step that can be interrupted must therefore be
+safe to repeat, and a step whose work cannot be repeated safely must finish well
+inside its budget rather than relying on the deadline.
 
 ** The shape the two policies take together
 

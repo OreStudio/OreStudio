@@ -26,6 +26,7 @@
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
 #include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
@@ -185,6 +186,28 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // ----------------------------------------------------------------
+    // Service presence, and the clock that enforces step deadlines.
+    // ----------------------------------------------------------------
+    // A step command published to a subject whose service has died is dropped
+    // by the bus in silence, so the only liveness the engine can observe is
+    // the heartbeats the services publish. It keeps the last time it heard
+    // from each, and a deadline failure says what it saw.
+    subs.push_back(nats.queue_subscribe(
+        telemetry::messaging::service_heartbeat_message::nats_subject,
+        qg,
+        [engine](ores::nats::message msg) {
+            const auto decoded =
+                ores::nats::default_wire_codec()
+                    .decode<telemetry::messaging::service_heartbeat_message>(msg.data);
+            if (!decoded) {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to decode a service heartbeat: "
+                                          << decoded.error().what();
+                return;
+            }
+            engine->note_service_seen(decoded->service_name, std::chrono::system_clock::now());
+        }));
+
+    // ----------------------------------------------------------------
     // Startup recovery: re-dispatch any in-progress workflow steps.
     // ----------------------------------------------------------------
     try {
@@ -192,6 +215,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Workflow recovery failed: " << e.what();
     }
+
+    // Recovery re-dispatches what silence left behind; the watch is what stops
+    // the next silence from lasting for ever.
+    engine->start_deadline_watch();
 
     BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size() << " workflow message handlers.";
     return subs;

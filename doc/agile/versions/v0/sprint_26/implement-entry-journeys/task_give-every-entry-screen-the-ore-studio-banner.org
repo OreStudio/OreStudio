@@ -92,6 +92,15 @@ via its "Verifies task" field.
 | 3 | A closed door renders a narrow card in the wide public shell. | =journeys/SignUpJourney.tsx= | Decline | The route cannot know the policy before the door reads it, and the open door needs the width for its rail. The card is what the prototype draws for the closed state; the extra width is the shell's, not the screen's. |
 | 4 | The confirmation step exists before any registration has happened. | =journeys/signUpSteps.tsx= | Decline | The rail is derived from one step list, which is what keeps the rail and the steps from disagreeing. The step is unreachable until the write resolves, because the review step is final and the page advances only on success. |
 | 5 | =misspell-fixer .= exits 1 over the repository. | (repository root) | Decline | The hits are the upstream identifier in sprint 25 task records and files under =node_modules/=, all present on =origin/main= in files this branch does not touch. An isolated run over this change's paths reports "nothing to replace". |
+| 6 | =GET /api/registration-policy= is unauthenticated with no limiter, and opens a broker connection per call. | =bff/src/server.ts= | Accept | Fixed: a policy limiter on its own budget, separate from the sign-in attempts, and the 429 the error contract was missing. |
+| 7 | Every refusal answers 409, which does not fit a weak password or a deployment that does not accept registrations. | =bff/src/errors.ts= | Accept | Fixed: the status follows the code — 409 for a name or an address already in use, 400 for a weak password, 403 for a refusal of the request itself. |
+| 8 | An unknown server code falls back to =invalid-request=, so a new code reads as a client defect. | =bff/src/errors.ts= | Accept | Fixed: the fallback is =signup-refused=, a refusal of its own. |
+| 9 | The limiter runs after the body validation. | =bff/src/server.ts= | Decline | Deliberate, and the order the sign-in route already uses: a malformed body is rejected before it costs the caller budget. |
+| 10 | Registration tells a stranger whether a name is taken, so the limit must be tight enough. | =bff/src/server.ts= | Accept | Already recorded at #2 as inherent. Both routes are limited now, which is the mitigation a registration form admits. |
+| 11 | The create step's empty-message fallback reuses the closed door's sentence. | =journeys/SignUpJourney.tsx= | Accept | Fixed: =signUp.createFailed=, added to the three catalogues. |
+| 12 | =read()= sets state after the screen has gone, or after =server= changed. | =journeys/SignUpJourney.tsx= | Accept | Fixed: the effect hands the read a flag and sets it on unmount, and the read writes nothing once it is set. |
+| 13 | =success= with =usableNow= false could open a door that then fails at submit. | =journeys/SignUpJourney.tsx= | Decline | Handled, and now stated where the decision is made: the door opens either way, and the review step and the confirmation both say the account will wait. A tenant that nominates no role is refused by the read itself. |
+| 14 | =signUpJourney= is a new required prop of =AppRoutes=. | =AppRoutes.tsx= | Decline | Supplied by =ConnectedApp= and by the route table's own test; the typecheck is what holds it. |
 
 * Result
 
@@ -118,11 +127,18 @@ The banner is one element and the registration door exists.
   of a tenant's address — and the second shares the sign-in limiter. A refusal
   keeps the server's own code, mapped onto the browser's error contract, so the
   screen branches on a value rather than a sentence.
-- *Verification.* TypeScript: typecheck clean; 288 tests pass across the three
-  packages (web 167, BFF 70, wire protocol 51), of which the new ones are 6 BFF,
+- *Verification.* TypeScript: typecheck clean; 291 tests pass across the three
+  packages (web 167, BFF 73, wire protocol 51), of which the new ones are 9 BFF,
   8 door, 8 steps, and 3 route-table assertions. Formatting clean. Docs: =compass
   lint= clean, all seven doc-lint steps pass, and the site publishes the 28
   changed pages with no broken link.
+- *Live, against the running deployment.* =POST /api/v1/iam/auth/signup= on the
+  environment's HTTP gateway answers
+  ={"success":false,"error_code":"signup_disabled"}=, which is the defect the
+  survey found, closed: the live path reads the deployment's switch and refuses
+  the registration it should never have accepted. The positive path — an account
+  actually created, in either state — was not driven live, because it would
+  change the environment's settings and leave an account behind.
 - *The documents are corrected with it.* [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]]'s coverage table now
   names the policy read and the refusal code, and four of its seven gaps have
   closed. What remains is the release of a waiting account, the approval

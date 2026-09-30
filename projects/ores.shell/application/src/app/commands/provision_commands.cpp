@@ -182,8 +182,8 @@ bool run_and_follow(std::ostream& out,
     }
 
     out << "  Run started: " << started->instance_id << std::endl;
-    return workflow_operation_commands::wait_for_instance(out, session, started->instance_id,
-                                                          timeout);
+    return workflow_operation_commands::wait_for_instance(
+        out, session, started->instance_id, timeout);
 }
 
 /// The timeout a command was given, or nothing after reporting a value it
@@ -206,22 +206,20 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
     // how it is given an administrator, and how it is brought to life. The
     // extension is recorded rather than inserted, because that unit registers
     // in its own call and the two halves of one menu are two of repl.cpp's.
-    ores::shell::app::extend_menu(
-        root_menu, "bootstrap", [&session](cli::Menu& menu) {
-            menu.Insert(
-                "setup",
-                [&session](std::ostream& out, std::vector<std::string> args) {
-                    process_setup(std::ref(out), std::ref(session), args);
-                },
-                "Set an empty installation up from a starting point: create the "
-                "system administrator, sign in as it, and provision the first "
-                "tenant",
-                {"<username> <password> <email> --tenant-admin-password <pw> "
-                 "[--profile <code>] [--param <name=value>] [--tenant-code <c>] "
-                 "[--tenant-name <n>] [--tenant-hostname <h>] [--tenant-description <d>] "
-                 "[--tenant-admin <user>] [--tenant-admin-email <email>] "
-                 "[--timeout <seconds>]"});
-        });
+    ores::shell::app::extend_menu(root_menu, "bootstrap", [&session](cli::Menu& menu) {
+        menu.Insert("setup",
+                    [&session](std::ostream& out, std::vector<std::string> args) {
+                        process_setup(std::ref(out), std::ref(session), args);
+                    },
+                    "Set an empty installation up from a starting point: create the "
+                    "system administrator, sign in as it, and provision the first "
+                    "tenant",
+                    {"<username> <password> <email> --tenant-admin-password <pw> "
+                     "[--profile <code>] [--param <name=value>] [--tenant-code <c>] "
+                     "[--tenant-name <n>] [--tenant-hostname <h>] [--tenant-description <d>] "
+                     "[--tenant-admin <user>] [--tenant-admin-email <email>] "
+                     "[--timeout <seconds>]"});
+    });
 
     auto provision_menu = std::make_unique<cli::Menu>("provision");
 
@@ -250,10 +248,10 @@ void provision_commands::register_commands(cli::Menu& root_menu, nats_client& se
     ores::shell::app::insert_menu(root_menu, std::move(provision_menu));
 }
 void provision_commands::process_setup(std::ostream& out,
-                                        nats_client& session,
-                                        const std::vector<std::string>& args) {
-    auto parsed = parse_args(
-        args, tenant_flag_specs("Default tenant for single-tenant deployment"));
+                                       nats_client& session,
+                                       const std::vector<std::string>& args) {
+    auto parsed =
+        parse_args(args, tenant_flag_specs("Default tenant for single-tenant deployment"));
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -318,8 +316,8 @@ void provision_commands::process_setup(std::ostream& out,
     if (!session.is_logged_in())
         return;
 
-    out << "[3/3] Provisioning tenant '" << fields->code << "' from '"
-        << parsed->flag("profile") << "'..." << std::endl;
+    out << "[3/3] Provisioning tenant '" << fields->code << "' from '" << parsed->flag("profile")
+        << "'..." << std::endl;
     if (!run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout))
         return;
 
@@ -380,14 +378,13 @@ constexpr std::string_view default_party_profile_code = "";
 void provision_commands::process_party(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
-    auto parsed = parse_args(
-        args,
-        {{.name = "profile",
-          .requires_value = true,
-          .default_value = std::string(default_party_profile_code)},
-         {.name = "timeout",
-          .requires_value = true,
-          .default_value = std::to_string(default_run_timeout.count())}});
+    auto parsed = parse_args(args,
+                             {{.name = "profile",
+                               .requires_value = true,
+                               .default_value = std::string(default_party_profile_code)},
+                              {.name = "timeout",
+                               .requires_value = true,
+                               .default_value = std::to_string(default_run_timeout.count())}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;

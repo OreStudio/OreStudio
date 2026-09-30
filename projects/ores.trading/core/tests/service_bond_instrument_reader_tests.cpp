@@ -24,13 +24,13 @@
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_repository.hpp"
-#include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
+#include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/bond_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/bond_leg_rate_repository.hpp"
@@ -343,9 +343,7 @@ instrument_schedule_date make_schedule_date(const stamps& s,
  * The security's own rows. A bond's legs belong to the issue rather than
  * to the trade, so one set serves every instrument of the ISIN.
  */
-bond_issue_leg make_issue_leg(const stamps& s,
-                              const boost::uuids::uuid& issue_id,
-                              int leg_number) {
+bond_issue_leg make_issue_leg(const stamps& s, const boost::uuids::uuid& issue_id, int leg_number) {
     bond_issue_leg r;
     stamp(r, s);
     r.issue_id = issue_id;
@@ -569,11 +567,9 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     auto payment_dates = make_issue_schedule(s, issue.issue_id, 1, "payment_dates", 1, "dates");
     bond_issue_leg_schedule_repository().write(ctx, payment_dates);
     bond_issue_leg_schedule_date_repository().write(
-        ctx,
-        make_issue_schedule_date(s, issue.issue_id, 1, "payment_dates", 1, 1, "2024-07-15"));
+        ctx, make_issue_schedule_date(s, issue.issue_id, 1, "payment_dates", 1, 1, "2024-07-15"));
     bond_issue_leg_schedule_date_repository().write(
-        ctx,
-        make_issue_schedule_date(s, issue.issue_id, 1, "payment_dates", 1, 2, "2025-01-15"));
+        ctx, make_issue_schedule_date(s, issue.issue_id, 1, "payment_dates", 1, 2, "2025-01-15"));
 
     const auto id = boost::uuids::to_string(trade_id);
     bond_instrument_reader reader(ctx);
@@ -660,11 +656,9 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     fixing.convention = "Following";
     bond_issue_leg_schedule_repository().write(ctx, fixing);
     bond_issue_leg_schedule_date_repository().write(
-        ctx,
-        make_issue_schedule_date(s, issue.issue_id, 1, "fixing_schedule", 1, 1, "2024-04-15"));
+        ctx, make_issue_schedule_date(s, issue.issue_id, 1, "fixing_schedule", 1, 1, "2024-04-15"));
     bond_issue_leg_schedule_date_repository().write(
-        ctx,
-        make_issue_schedule_date(s, issue.issue_id, 1, "fixing_schedule", 1, 2, "2024-10-15"));
+        ctx, make_issue_schedule_date(s, issue.issue_id, 1, "fixing_schedule", 1, 2, "2024-10-15"));
 
     auto reset = make_issue_schedule(s, issue.issue_id, 1, "reset_schedule", 1, "rules");
     reset.calendar = "TARGET";

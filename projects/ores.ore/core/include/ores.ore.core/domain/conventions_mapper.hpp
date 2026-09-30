@@ -26,13 +26,13 @@
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/domain/bond_yield_convention.hpp"
-#include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
+#include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
-#include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
@@ -46,9 +46,9 @@
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/domain/swap_index_convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
-#include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
+#include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include <cstddef>
 #include <map>
 #include <string>
@@ -204,8 +204,7 @@ public:
     static refdata::domain::zero_inflation_index_convention
     map_zero_inflation_index(const zeroInflationIndexType& v);
 
-    static refdata::domain::bma_basis_swap_convention
-    map_bma_basis_swap(const bmaBasisSwapType& v);
+    static refdata::domain::bma_basis_swap_convention map_bma_basis_swap(const bmaBasisSwapType& v);
 
     static mapped_fx map_fx(const fxType& v);
 

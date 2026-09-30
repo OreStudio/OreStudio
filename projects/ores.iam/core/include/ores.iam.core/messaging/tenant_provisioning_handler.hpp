@@ -377,11 +377,10 @@ public:
             ores::iam::service::seed_profile_service profile_svc(sys_ctx);
             ores::iam::service::seed_profile_step_service step_svc(sys_ctx);
 
-            const auto declared_steps_of =
-                [&](const ores::iam::domain::seed_profile& candidate) {
-                    return step_svc.list_seed_profile_steps_by_seed_profile_id(
-                        boost::uuids::to_string(candidate.id), 0, 1000);
-                };
+            const auto declared_steps_of = [&](const ores::iam::domain::seed_profile& candidate) {
+                return step_svc.list_seed_profile_steps_by_seed_profile_id(
+                    boost::uuids::to_string(candidate.id), 0, 1000);
+            };
             const auto party_step_of =
                 [](const std::vector<ores::iam::domain::seed_profile_step>& declared) {
                     return std::find_if(
@@ -427,13 +426,11 @@ public:
                 party_step = *declared_party_step;
             } else {
                 auto ordered = profiles;
-                std::sort(ordered.begin(),
-                          ordered.end(),
-                          [](const auto& left, const auto& right) {
-                              return left.display_order == right.display_order ?
-                                         left.code < right.code :
-                                         left.display_order < right.display_order;
-                          });
+                std::sort(ordered.begin(), ordered.end(), [](const auto& left, const auto& right) {
+                    return left.display_order == right.display_order ?
+                               left.code < right.code :
+                               left.display_order < right.display_order;
+                });
                 for (const auto& candidate : ordered) {
                     const auto declared = declared_steps_of(candidate);
                     const auto declared_party_step = party_step_of(declared);

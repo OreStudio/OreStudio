@@ -82,8 +82,8 @@ public:
      * left signed in as the system administrator.
      */
     static void process_setup(std::ostream& out,
-                               ores::nats::service::nats_client& session,
-                               const std::vector<std::string>& args);
+                              ores::nats::service::nats_client& session,
+                              const std::vector<std::string>& args);
 
     /**
      * @brief Provision a tenant: provision tenant

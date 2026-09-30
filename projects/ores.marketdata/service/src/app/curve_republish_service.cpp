@@ -145,8 +145,9 @@ read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_co
 // Reads the config's pre-minted output market_series, which the keys below are projected
 // from. A missing row is a config-integrity error, not auto-fabricated: this service has
 // none of series_type/metric/qualifier to invent one from.
-domain::market_series read_output_series(ores::database::context ctx,
-                                         const ores::refdata::domain::ir_curve_bootstrap_config& config) {
+domain::market_series
+read_output_series(ores::database::context ctx,
+                   const ores::refdata::domain::ir_curve_bootstrap_config& config) {
     repository::market_series_repository series_repo;
     auto series = series_repo.read_latest(ctx, boost::uuids::to_string(config.output_series_id));
     if (series.empty())

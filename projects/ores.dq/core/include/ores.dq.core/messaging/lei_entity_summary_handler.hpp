@@ -148,17 +148,15 @@ public:
         search_lei_entities_response resp;
         try {
             using namespace ores::database::repository;
-            const std::string sql =
-                "SELECT * FROM ores_dq_lei_entities_search_fn($1, $2, $3, $4)";
-            auto rows = execute_parameterized_multi_column_query(
-                ctx,
-                sql,
-                {req.search,
-                 req.country_filter,
-                 std::to_string(req.limit),
-                 std::to_string(req.offset)},
-                dq_lei_entity_summary_handler_lg(),
-                "searching LEI entities");
+            const std::string sql = "SELECT * FROM ores_dq_lei_entities_search_fn($1, $2, $3, $4)";
+            auto rows = execute_parameterized_multi_column_query(ctx,
+                                                                 sql,
+                                                                 {req.search,
+                                                                  req.country_filter,
+                                                                  std::to_string(req.limit),
+                                                                  std::to_string(req.offset)},
+                                                                 dq_lei_entity_summary_handler_lg(),
+                                                                 "searching LEI entities");
             for (const auto& row : rows) {
                 if (row.size() >= 5)
                     resp.entities.push_back({.lei = row[0].value_or(""),

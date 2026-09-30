@@ -57,18 +57,30 @@ const round = (value) => Math.round(value * 100) / 100
 
 /* ------------------------------------------------------------- the host */
 
+const COOKIE = 'dsh-session=stub'
+
 function makeHost(sessionCwd) {
   const routes = new Map()
   apply({
     effect: (fn) => fn(),
-    get: (name) => (name === 'webServer'
-      ? {
+    get: (name) => {
+      if (name === 'webServer') {
+        return {
           register: ({ path, handler }) => {
             routes.set(path, handler)
             return () => {}
           },
         }
-      : undefined),
+      }
+      if (name === 'connection') {
+        /* The harness's own browser-trust check, stubbed: the authority-bound
+         * cookie is the whole of it here. */
+        return {
+          browserAuth: { isAuthenticated: (req) => req.headers.cookie === COOKIE },
+        }
+      }
+      return undefined
+    },
     sessions: {
       get: (id) => (id === 'known-session' ? { header: { cwd: sessionCwd } } : undefined),
     },
@@ -76,12 +88,12 @@ function makeHost(sessionCwd) {
   return routes
 }
 
-function makeReq({ method = 'GET', url = '/', headers = {}, body = null }) {
+function makeReq({ method = 'GET', url = '/', headers = {}, body = null, cookie = COOKIE }) {
   const chunks = body === null ? [] : [Buffer.from(body)]
   return {
     method,
     url,
-    headers,
+    headers: { host: '127.0.0.1:3199', ...(cookie === null ? {} : { cookie }), ...headers },
     async *[Symbol.asyncIterator]() {
       for (const chunk of chunks) yield chunk
     },
@@ -138,7 +150,32 @@ heading('1. the plugin registers both routes')
 check('state route registered', routes.has(STATE_PATH))
 check('action route registered', routes.has(ACTION_PATH))
 
-heading('2. the resolution ladder')
+heading('2. both routes need the browser session')
+{
+  const stateAnon = await call(routes.get(STATE_PATH),
+    makeReq({ url: `${STATE_PATH}?cwd=${encodeURIComponent(REPO)}`, cookie: null }))
+  check('an unauthenticated read is 401',
+    stateAnon.status === 401 && stateAnon.json().reason === 'unauthenticated',
+    `${stateAnon.status} ${stateAnon.json().reason}`)
+
+  const actionAnon = await call(routes.get(ACTION_PATH), makeReq({
+    method: 'POST',
+    url: ACTION_PATH,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ cwd: REPO, action: 'fleet-stop' }),
+    cookie: null,
+  }))
+  check('an unauthenticated action is 401, so a rebound page cannot stop a fleet',
+    actionAnon.status === 401 && actionAnon.json().reason === 'unauthenticated',
+    `${actionAnon.status} ${actionAnon.json().reason}`)
+
+  const wrongCookie = await call(routes.get(STATE_PATH),
+    makeReq({ url: `${STATE_PATH}?cwd=${encodeURIComponent(REPO)}`, cookie: 'dsh-session=forged' }))
+  check('a cookie this authority did not issue is 401', wrongCookie.status === 401,
+    String(wrongCookie.status))
+}
+
+heading('3. the resolution ladder')
 {
   const byCwd = await getState(routes, `cwd=${encodeURIComponent(REPO)}`)
   const body = byCwd.json()
@@ -172,7 +209,7 @@ heading('2. the resolution ladder')
     outside.json().ok === false)
 }
 
-heading('3. the state contract against the real compass')
+heading('4. the state contract against the real compass')
 let payload = null
 {
   const first = await getState(routes, `cwd=${encodeURIComponent(REPO)}`)
@@ -234,13 +271,13 @@ let payload = null
   console.log(`  note  state payload ${Buffer.byteLength(first.body)} bytes, read ${first.status}`)
 }
 
-heading('4. the read route refuses what it should')
+heading('5. the read route refuses what it should')
 {
   const wrongMethod = await call(routes.get(STATE_PATH), makeReq({ method: 'POST', url: STATE_PATH }))
   check('a POST to the read route is 405', wrongMethod.status === 405, String(wrongMethod.status))
 }
 
-heading('5. the action route refuses what it should')
+heading('6. the action route refuses what it should')
 {
   const wrongType = await call(routes.get(ACTION_PATH), makeReq({
     method: 'POST', url: ACTION_PATH, headers: { 'content-type': 'text/plain' }, body: '{}',
@@ -278,7 +315,7 @@ heading('5. the action route refuses what it should')
     wrongName.json().reason)
 }
 
-heading('6. a real action job')
+heading('7. a real action job')
 {
   const started = await postAction(routes, { cwd: REPO, action: 'service-start', service: 'nope' })
   const job = started.json()

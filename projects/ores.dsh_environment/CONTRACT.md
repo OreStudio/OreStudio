@@ -178,7 +178,29 @@ Failure shape, still HTTP 200:
 ```
 
 `reason` is one of `not-an-environment`, `unknown-session`, `compass-too-old`,
-`compass-failed`, `compass-unreadable`.
+`compass-failed`, `compass-unreadable`, `unauthenticated`.
+
+### Both routes need the browser session
+
+The harness fences `/api` with a Host rule and an authority-bound cookie, and
+registers a plugin route outside that fence. This plugin therefore applies the
+same cookie check itself, on the read as well as the act:
+
+```js
+ctx.get('connection')?.browserAuth?.isAuthenticated(req) === true
+```
+
+A request without it is refused with `reason: "unauthenticated"` and HTTP 401,
+before any other check. The browser already holds the cookie `dsh web` issued
+for this authority, and a same-origin fetch sends it, so the client asks for
+nothing extra.
+
+This is not decoration. A page that rebinds its own hostname to loopback
+reaches this route as a same-origin caller, so the Origin check cannot see it,
+and without the cookie a rebound page could stop the fleet. The harness's own
+documentation makes the same argument for `/api`. When `connection` is absent,
+the plugin refuses rather than allowing: an unauthenticated action route is the
+worse failure.
 
 ### Act
 
@@ -364,7 +386,7 @@ when the last seat unmounts.
 
 ## Verification
 
-Three gates, none of which needs a browser dependency.
+Four gates. None needs a browser dependency, and none is destructive.
 
 `node --test` from the `projects/ores.dsh_environment` directory covers the
 transform and its tile rules, the action table and every validation refusal,
@@ -378,20 +400,30 @@ until the panel fails to appear.
 manifest fields, the export paths, the two routes, and the two seat names.
 
 `node scripts/verify.mjs` is the host gate against the real compass. It applies
-the plugin to a stub host, then drives the captured handlers: the resolution
-ladder and the rung each request took, the state contract against a live
-payload, every failure reason, every action refusal, and one real action job
-with its tail and exit code. The action it runs is `services start` on a name
-compass does not know, which reaches the registry lookup and exits 1 without
-touching systemd. Nothing in it starts a service, stops a service, or rebuilds
-a database.
+the plugin to a stub host, then drives the captured handlers: the cookie check
+and its refusals, the resolution ladder and the rung each request took, the
+state contract against a live payload, every failure reason, every action
+refusal, and one real action job with its tail and exit code. The action it runs
+is `services start` on a name compass does not know, which reaches the registry
+lookup and exits 1 without touching systemd. Nothing in it starts a service,
+stops a service, or rebuilds a database. It is a local gate, because it reads a
+real environment.
 
-It is a local gate: it needs a configured checkout, because it reads a real
-environment. CI runs the other two.
+A scratch DSH instance is the fourth check, and the only one that exercises the
+loader: install the packed tarball into a throwaway `$DSH_HOME`, boot it on its
+own port, and confirm the boot log names both routes. Then confirm that an
+anonymous read and an anonymous `fleet-stop` are both 401, that the read with
+the cookie `dsh web` issued is 200, and that an authenticated action runs and
+settles with its tail. That is what proved the cookie check was needed: the
+route answered 200 to an anonymous caller until it was added. The scratch
+instance is a check, not a deployment, and it runs on its own port.
 
-Not covered: a rendered panel in a real browser. Playwright is not installed in
-this checkout, so a browser gate could not be run here, and shipping one that
-had never executed would be worse than not shipping one. The rendering rules
-that can be wrong in a way that matters are decided in the host, where
-`node --test` reaches them: which tone a tile carries and which state is
-broken.
+Not covered: a rendered panel in a real browser, and the rebuild sequence
+itself. Playwright is not installed in this checkout, so a browser gate could
+not run here, and shipping one that had never executed would be worse than not
+shipping one. The rendering rules that can be wrong in a way that matters are
+decided in the host, where `node --test` reaches them: which tone a tile carries
+and which state is broken. `db recreate -y -k` is destructive, so the plugin's
+restore path is verified up to the guard and no further: the sequence is
+unit-tested, and the job wrapper it runs in is the same one proven live. The
+verb itself is compass's, and the repository runs it routinely.

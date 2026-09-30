@@ -62,6 +62,22 @@ export function apply(ctx) {
     ? failure('unknown-session', `session ${sessionId} is not in a work tree of an ORE Studio checkout`)
     : failure('not-an-environment', 'no session and no cwd resolved to a work tree of an ORE Studio checkout')
 
+  /* The harness fences `/api` with a Host rule and an authority-bound cookie;
+   * a plugin route is registered outside that fence, so it applies the same
+   * cookie check itself. Without it, a page that rebinds its own hostname to
+   * loopback reaches this route as a same-origin caller, and this plugin can
+   * stop a fleet. The browser already holds the cookie `dsh web` issued for
+   * this authority and a same-origin fetch sends it, so the client is asked
+   * for nothing extra. See dsh-client-connection's isAuthenticated. */
+  const authenticated = (req) => {
+    const auth = ctx.get('connection')?.browserAuth
+    if (!auth || typeof auth.isAuthenticated !== 'function') return false
+    return auth.isAuthenticated(req) === true
+  }
+
+  const unauthenticated = (res) => json(res, failure('unauthenticated',
+    'this route needs the browser session that dsh web issued'), 401)
+
   const readModel = async (resolved, now) => {
     const read = await readEnvironment(resolved.root)
     if (!read.ok) return failure(read.reason, read.message)
@@ -84,6 +100,7 @@ export function apply(ctx) {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       return json(res, failure('bad-request', 'Only GET and HEAD are supported'), 405)
     }
+    if (!authenticated(req)) return unauthenticated(res)
     try {
       const query = new URL(req.url, 'http://127.0.0.1').searchParams
       const sessionId = query.get('session') ?? ''
@@ -116,6 +133,7 @@ export function apply(ctx) {
     if (req.method !== 'POST') {
       return json(res, failure('bad-request', 'Only POST is supported'), 405)
     }
+    if (!authenticated(req)) return unauthenticated(res)
     try {
       const contentType = String((req.headers && req.headers['content-type']) || '').toLowerCase()
       if (!contentType.startsWith('application/json')) {

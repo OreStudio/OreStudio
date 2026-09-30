@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: prototype/audit-sign-ins
-#+pr:
+#+pr: 2434
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -114,7 +114,7 @@ path does not.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
 
 * Review
 

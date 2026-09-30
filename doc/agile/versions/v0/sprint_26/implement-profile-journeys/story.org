@@ -54,7 +54,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:ECC602E3-71D3-4265-942B-063EFEB61495][Prototype the profile screen]] | STARTED | 2026-09-30 | | Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants. |
+| [[id:ECC602E3-71D3-4265-942B-063EFEB61495][Prototype the profile screen]] | DONE | 2026-09-30 | 2026-09-30 | Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants. |
 
 * Decisions
 

@@ -199,6 +199,8 @@ somebody else's action.
   is decided, since =Viewer= is currently granted without a choice.
 - [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — where a deployment with no account at all creates its first
   one, which is the other way accounts come into being.
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — how the member asks for a role beyond the default
+  one registration gave them, once the confirmation has been read.
 
 * Related knowledge
 

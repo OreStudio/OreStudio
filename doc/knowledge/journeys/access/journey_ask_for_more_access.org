@@ -1,0 +1,239 @@
+:PROPERTIES:
+:ID: DF0FBED2-59C1-43DE-945F-D8839884C38D
+:END:
+#+title: User Journey: Ask for more access
+#+description: A member asks for a role beyond the one registration gave them, and a tenant administrator answers.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member asks for a role beyond the one registration gave them, and a tenant administrator answers.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I cannot do my job with the access I have." The member asks for a role they do
+not hold. The journey is done when the request has an answer the member can
+read: the role is now theirs, or the request was refused and the refusal says
+why.
+
+* Actor and trigger
+
+Two people act on one request, at different times. The requester is a member: an
+account of type =user=, signed in inside one tenant, reading their own record.
+The trigger is a refusal — a screen answers "permission denied" — or a task the
+member cannot finish. It starts at *My access*, which already lists the roles
+they hold, and it ends when they read the answer.
+
+The answerer is a tenant administrator: an account inside the same tenant that
+holds =iam::roles:assign=. The trigger is a request that is waiting. It starts
+at the tenant's request queue and it ends when the role is granted, or when the
+request is refused.
+
+This is one journey with two actors, because it is one request with one
+lifecycle and each actor owns one end of it. The screens stay apart: the member
+never sees the queue, and the administrator never sees the ask. The
+administrator's unprompted version of the same write is
+[[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]]; here the
+write answers a request instead of starting one.
+
+A request waits on somebody, so this is the case the
+[[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey contract]] calls
+server-side state: the request is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+=ores.workflow=, and both screens read that one instance. The member's rail is
+not resumable across a reload — only the request is.
+
+* Steps
+
+** The member asks
+
+1. *Open my access.* The member opens *My access*. The system reads the roles
+   they hold, and beside them the roles the tenant offers that they do not hold.
+   The first list is =iam.v1.roles.by-account= and the second is
+   =iam.v1.roles.list=.
+2. *Read what a role grants.* The member opens a role and reads the permissions
+   it bundles, so the ask is an informed one. The read is
+   =iam.v1.roles.permissions=.
+3. *Ask for the role.* The member picks a role and writes why they need it. The
+   system opens a request that names the requester, the role and the reason, and
+   puts it in front of the tenant's administrators. This is the step that leaves
+   somebody waiting, so the request is written down rather than kept in the
+   browser.
+4. *Wait.* The member leaves. *My access* shows the request as waiting, with what
+   was asked for and when. The roles they hold do not change: a request is not a
+   grant. The member may withdraw the request here, and a withdrawal closes it.
+5. *Read the answer.* The member returns to *My access*, or follows a notice, and
+   reads the answer. An approval shows the role among the roles they hold. A
+   refusal shows the reason the administrator wrote.
+6. *Leave.* The request is closed, and it stays in the member's history.
+
+** The administrator answers
+
+7. *Read the queue.* The administrator opens *Requests* and reads what the
+   tenant's members have asked for: who, which role, why, and how long it has
+   waited. The system lists the requests waiting in the tenant, oldest first.
+8. *Weigh the request.* The administrator opens one request and reads the member,
+   the role, the reason, and the permissions the role bundles. The last of these
+   is what turns a role name into a decision.
+9. *Decide.* The administrator approves or refuses. An approval grants the role
+   to the member through the ordinary assignment path, so the =account_role= row
+   carries the same audit tail every grant carries, and the request closes as
+   approved. A refusal writes the reason the member will read, and the request
+   closes as refused.
+10. *Leave.* The queue no longer lists the request. The grant takes effect at the
+    member's next sign-in, as every assignment does.
+
+The ask and the decision are final steps: there is no Back past a request that
+has been made, or past a decision that has been given. A member who needs the
+same role again asks again, and the second request is a new one.
+
+* Screens and wireframes
+
+Two screens, one per actor. The member's screen is *My access*, extended by two
+panels: the ask, which pairs a role picker with the reason, and the requests,
+which lists what the member has asked for and how each request ended. The four
+panels answer one question — what may I do, and what have I asked for — so they
+belong on one screen rather than on a screen of their own.
+
+#+caption: Ask for more access: the roles the member holds, the ask, and the requests the member has made.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/access/wireframe_ask_for_more_access.png]]
+
+The administrator's screen is the queue. It shows the requests waiting in the
+tenant, the selected request in full, and the decision. The decision is one
+panel because the administrator reads the reason and answers at once; a request
+that needs research is left in the queue rather than half-answered.
+
+#+caption: Answer a request: the tenant's waiting requests, the selected request with what the role grants, and the decision.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/access/wireframe_answer_a_request.png]]
+
+The queue is the Access group's screen, beside the roster rather than inside it.
+[[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] answers who
+is in the tenant; this screen answers what they have asked for.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =account= | The member's identity in the header, and the requester on each queue row: username and full name | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] |
+| =role= | The role asked for, the roles on offer, and the roles the member holds | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+| =permission= | What the role grants, so both actors decide from the codes rather than from the name | [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] |
+| =account_role= | The assignment an approval writes, with its audit tail | no entity model — junction table |
+| =workflow_instance= | The request itself: who asked, for which role, why, and where it waits | [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] |
+
+The request is the one member of this table that is not an IAM record, and that
+is deliberate: a request waits on a person, and a journey that waits on a person
+keeps its state as a workflow instance. The instance's =type= names the request,
+=request_json= holds the role and the reason, =created_by= is the requester, and
+=state_id= is where the request has got to.
+
+No credential field appears on either screen. =password_hash=,
+=password_salt=, =service_password_hash=, =totp_secret= and cleartext passwords
+stay on the server.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open my access | Read the roles on my account | =iam.v1.roles.by-account= | exists |
+| Open my access | List the roles the tenant offers | =iam.v1.roles.list= | exists |
+| Read what a role grants | Read the permissions one role bundles | =iam.v1.roles.permissions= | exists |
+| Ask for the role | Submit a request for a role | =iam.v1.roles.request= | missing |
+| Wait | Read my own requests and their answers | =iam.v1.roles.requests-by-me= | missing |
+| Wait | Withdraw my request | =iam.v1.roles.withdraw-request= | missing |
+| Read the queue | List the requests waiting in the tenant | =iam.v1.roles.requests= | missing |
+| Decide | Refuse a request, with a reason | =iam.v1.roles.refuse-request= | missing |
+| Decide | Grant the role the request asks for | =iam.v1.roles.assign= | exists |
+| Either end | Follow the request's state | =workflow.v1.instances.steps= | exists |
+
+The existing subjects are defined in
+[[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
+=iam.v1.roles.assign= checks =iam::roles:assign= before it writes, so the
+administrator's decision carries the check the member's ask must not. The three
+reads prove that the caller has a session and check no further permission —
+which is what the handlers in =ores.iam.core/messaging/role_handler.hpp= and
+=authorization_handler.hpp= do — so a member can list the roles on offer without
+holding an administrator's read.
+
+* What is missing
+
+1. *No request subject exists.* =iam.v1.roles.*= carries =assign=, =revoke=,
+   =by-account=, =permissions=, =permissions-by-account=, =suggest-commands= and
+   the registrar's CRUD; nothing submits, lists, withdraws or refuses a request.
+   The candidates are the five request subjects in the table above. The approval
+   itself needs no new write: =iam.v1.roles.assign= already grants the role and
+   already checks =iam::roles:assign=.
+2. *The workflow engine cannot wait on a person.* The seeded =workflow_instance=
+   states are =pending=, =in_progress=, =completed=, =failed=, =compensating=
+   and =compensated=, and the transitions are start, complete, fail, compensate
+   and retry. Nothing suspends a run, and nothing resumes it when somebody
+   answers. Nor is there anywhere for the run to stop once it is answered: an
+   approved, refused, withdrawn or expired request has no state that means it.
+   The candidates are a waiting state beside =in_progress=, a terminal state per
+   answer, and a step kind that means "a person decides", or a decision verb that
+   resumes a suspended instance and closes it. Until they exist, a request cannot
+   be held the way this journey says it is held, and the ask has nowhere to wait.
+3. *The requester may answer their own request.* Four-eyes means the answer comes
+   from an account other than the requester's. An administrator who holds
+   =iam::roles:assign= can ask for a role and then approve it, which is the
+   escalation this journey exists to prevent. The candidate is a guard on the
+   decision: the approver must not be the requester.
+4. *Nothing says which roles may be asked for.* Every role in the tenant is on
+   offer, the administrative ones included. A tenant may want a role that nobody
+   may ask for, and today there is no way to say so. The candidate is a flag on
+   the role row, =is_requestable=, in the shape of =is_registration_default=: a
+   flag on the row it points at, because row-level security decides which actor
+   may set it.
+5. *Nothing tells either person that something happened.* No subject tells the
+   administrator that a request is waiting, and none tells the member the answer.
+   The changed-event pipeline carries entity changes, not a person's notice. The
+   candidate is a notification of its own, which is larger than this journey and
+   outlives it.
+6. *No query returns a request as a row.* The request is an instance whose
+   payload is =request_json=, and =workflow.v1.instances.list= returns instances
+   rather than a joined request. The queue needs the requester, the role and the
+   reason together. The candidate is a projection beside the read, or the
+   IAM-side read of step 7.
+7. *A request that nobody answers waits forever.* There is no deadline and no
+   reminder. The candidate is a review window, as a setting, after which the
+   request closes as expired, so that a queue cannot rot.
+
+* Related journeys
+
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — where the member reads the roles they hold, which is where the ask starts and where the answer is read.
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the administrator's unprompted grant, and the assignment the approval writes through.
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — where the role the member asks for is defined, and where the permissions it bundles are decided.
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the roster the administrator arrives from, and returns to.
+- [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the registration that gave the member the default role this request goes beyond.
+- [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Register a service account]] — the non-human account that receives roles by assignment and cannot ask for them.
+
+* Related knowledge
+
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — why the default role is a floor and not a ceiling, and why the ask is its own journey.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — the composition classes, and why a journey that waits on a person keeps its state as a workflow instance.
+- [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — the state table that states the same rule.
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — the user guide chapter
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access journeys]] — the group hub
+
+* See also
+
+- [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] — the role asked for and the roles on offer
+- [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] — the member who asks and the administrator who answers
+- [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] — the codes a role bundles
+- [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] — where a request waits
+- [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Task: Create the role-request journey]] — the task this document answers
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

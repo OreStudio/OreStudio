@@ -121,10 +121,14 @@ database was behind the SQL on main; =compass db recreate -y -k= rebuilt it and
 the suite then passed, which is worth knowing for every later task in this
 story.
 
-*What is still missing.* No test exercises the refusal: the existing
-=messaging_*= suites cover the account-party handler, the registration gate and
-the provision steps, and none of them touches the session handler. The guard is
-verified by the compiler and by the suite staying green, not by a case that
-calls a read without =iam::sessions:read= and asserts =forbidden=. That test is
-the next step on this task, and it should land before the Audit sign-ins screen
-is built on these reads.
+*What is still missing.* No test exercises the refusal, and the reason is
+larger than this task: =projects/ores.iam/core/tests/= mentions no permission
+string, no =has_permission= and no =forbidden= anywhere, so no guard in the
+component is covered — not the account reads, not the login-record reads, not
+the write or delete verbs this guard copies. The session handler is therefore
+not the odd one out; it is the first verb set whose refusal anybody wanted to
+prove. Either the first such test builds the harness (a message for the subject,
+a request context carrying a caller without the permission, and the reply read
+back) and the component gains a way to test its guards, or the guards stay
+verified by inspection. That decision belongs to whoever takes this task next,
+and it is worth making deliberately rather than by accident.

@@ -165,6 +165,28 @@ Tenant lifecycle status (FK to tenant_statuses).
 "active"
 #+end_src
 
+** is_registration_default
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether self-registrations land in this tenant when the address they arrive
+at names no tenant. At most one live row may hold it, because two tenants
+flagged as the default is a question with no answer.
+
+The flag belongs to the super administrator. The write policy on this table
+admits only the system tenant, and every tenant row carries the system
+tenant, so only a super administrator may write a tenant row at all. That is
+also why the default party and the default role are not columns here: a
+tenant administrator could not set them.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
 * SQL
 
 ** Flags
@@ -196,6 +218,12 @@ hostname that states a port is a principal the login cannot resolve.
 | expression            |
 |-----------------------+|
 | status = 'terminated' |
+
+** Indexes
+
+| name                             | columns   | unique | current_only | where_extra                                                                |
+|----------------------------------+-----------+--------+--------------+----------------------------------------------------------------------------|
+| registration_default_tenant_uniq | tenant_id | true   | false        | is_registration_default and valid_to = ores_utility_infinity_timestamp_fn() |
 
 * Insert trigger
 

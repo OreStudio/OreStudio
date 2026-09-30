@@ -24,6 +24,7 @@ that describes it.
 | Prototype                                       | What it argues                                                                                                        | Open it                                          |
 |-------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+--------------------------------------------------|
 | [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. | [[file:trade-entry/][Booking screen]] |
+| [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door]] | Registration has five states and one of them is "waiting for an administrator". The door must show that before the person submits, not at sign-in. | [[file:registration-door/][Registration door]] |
 
 * Adding a prototype
 

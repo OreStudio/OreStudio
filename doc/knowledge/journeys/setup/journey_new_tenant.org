@@ -75,7 +75,10 @@ thing that happens on an empty database.
    sign-in. *Hand off to someone else* signs out and shows the username to pass
    on; that person sets their own password at first sign-in. The web keeps the
    administrator's password in memory only until this point, and never writes
-   it to storage.
+   it to storage. Where the deployment accepts self-registration, the person
+   may also mark this tenant as the one a registration lands in. The
+   installation's first tenant is marked when it is created, so a later tenant
+   takes the mark over deliberately or not at all.
 
 The rail is flat: a person sees five steps and never a journey inside a
 journey. Steps that change server state are final, so there is no Back past
@@ -245,6 +248,7 @@ each part turned out to be.
 * Related knowledge
 
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the Tenant lifecycle: /Provision/, /Seed profile/, /Onboard/
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — where the registration defaults live, including the tenant this journey may nominate
 - [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — the user guide chapter on what a tenant is
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]
 - [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]

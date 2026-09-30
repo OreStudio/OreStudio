@@ -242,6 +242,10 @@ only meets their after-effects; it never calls them.
   count, and the party-selection wire protocol.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how the tenant is resolved, isolated and
   carried on the session.
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — the waiting state this journey
+  refuses, and the refusals it states as codes.
+- [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — this journey as an interaction diagram: the branch
+  order, the session, and the party picker.
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the component this journey belongs to.
 - [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]] — the wireframe above.
 - [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry journeys]] — the group.

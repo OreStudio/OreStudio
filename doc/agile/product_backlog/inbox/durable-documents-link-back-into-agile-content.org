@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 0FAACFE8-D2F0-44D8-9E28-D21168BBE3A0
+:END:
+#+title: Durable documents still link back into agile content
+#+description: About 180 id links run the wrong way, from doc/knowledge, doc/recipes, doc/meta and doc/llm into stories, tasks, captures and plans, which the lint reports as an advisory rather than a failure.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:lint:workflow:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The link between durable documents and agile content runs one way in the rule
+and two ways in the tree. About 180 id links run from =doc/knowledge/=,
+=doc/recipes/=, =doc/meta/= and =doc/llm/= into stories, tasks, captures and
+plans. The bulk is the journey documents' =* Prototype= sections, which link the
+task that built each prototype; the rest is spread thinly across recipes, hubs
+and knowledge pages that name the work that produced them.
+
+* Why
+
+A durable document that links a task pins itself to a sprint. When the task
+closes and the sprint recedes, the link leads to a record of work rather than to
+knowledge, and a reader who follows it learns what somebody did rather than what
+is true. The rule is already encoded and already measured: =compass lint= counts
+these links and reports them as an advisory, so the number is visible and nothing
+fails. Making it fail without first clearing the backlog would block every
+unrelated change, which is why it is advisory today.
+
+The questions this capture has to settle before it becomes a task: whether the
+prototype links are worth keeping in some other form — a prototype branch or a
+prototype page is itself durable, so the record may move rather than disappear —
+and whether the advisory becomes a gate in the same change or a later one.
+
+* References
+
+- The rule as the lint encodes it: the durable directories are =doc/llm/=,
+  =doc/meta/=, =doc/knowledge/= and =doc/recipes/=, and the agile types are
+  story, task, sprint, design, capture, version, plan and retrospective.
+  =investigation= is deliberately not among them, so a durable page may cite the
+  survey it answers.
+- The measurement is the line =compass lint= prints: at the time of writing, 180
+  links across 89 files.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub the durable pages hang from.

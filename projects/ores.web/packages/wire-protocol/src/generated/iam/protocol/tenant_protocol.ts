@@ -40,6 +40,7 @@ export interface TenantWrite {
     description: string;
     hostname: string;
     status: string;
+    is_registration_default: boolean;
 }
 
 export interface TenantChange {

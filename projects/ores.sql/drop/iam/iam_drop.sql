@@ -56,6 +56,8 @@
 \ir ./iam_accounts_drop.sql
 \ir ./iam_account_types_notify_trigger_drop.sql
 \ir ./iam_account_types_drop.sql
+\ir ./iam_account_statuses_notify_trigger_drop.sql
+\ir ./iam_account_statuses_drop.sql
 
 -- Seed profiles (children first - they depend on the profile)
 \ir ./iam_seed_profile_steps_notify_trigger_drop.sql

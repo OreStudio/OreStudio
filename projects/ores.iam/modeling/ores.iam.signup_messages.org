@@ -17,6 +17,15 @@
 
 The signup protocol messages.
 
+The response is the door's answer. The policy behind it — the switch, the tenant
+a registration lands in, and the party and role a new account receives — is
+settled in
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding
+defaults]], and the path the call takes is
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]]. The read that
+tells a screen whether to offer the form at all is a separate subject,
+=iam.v1.auth.registration-policy=.
+
 * Includes
 
 #+begin_src cpp :name includes
@@ -48,6 +57,22 @@ The signup protocol messages.
 :cpp_type: std::string
 :END:
 
+*** hostname
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The address the registration arrived at.
+ *
+ * The address names the tenant the account lands in: the service resolves
+ * it by hostname and uses the tenant flagged @c is_registration_default
+ * only when the address names none. Without it a registration lands in the
+ * system tenant by omission, which is the defect the survey found.
+ */
+#+end_src
+
 ** signup_response
 
 *** success
@@ -65,4 +90,63 @@ The signup protocol messages.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** account_status
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The state the account was created in: @c active or @c pending.
+ *
+ * An account is active when its tenant nominated a default party, so it
+ * received an association and can sign in at once. It is pending when the
+ * tenant nominated none: the account exists, but it waits for an
+ * administrator to finish setting it up.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The party the account received, when the tenant nominated one.
+ *
+ * Empty when the account is pending, because a pending account has no
+ * association yet.
+ */
+#+end_src
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The role the account received: the tenant's nominated default.
+ *
+ * Empty when the tenant nominated no role.
+ */
+#+end_src
+
+*** error_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stable code a client branches on.
+ *
+ * Empty when the registration succeeded. The message beside it is for a
+ * person and may change; this is what a screen branches on, so a refusal is
+ * a value rather than a sentence to match. The codes a registration can
+ * answer with are collected on the Entry journeys page.
+ */
+#+end_src
 

@@ -212,6 +212,8 @@ public:
     std::vector<boost::uuids::uuid> read_descendants(context ctx,
                                                      const boost::uuids::uuid& root_id);
 
+    std::optional<domain::party> read_registration_default(context ctx);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

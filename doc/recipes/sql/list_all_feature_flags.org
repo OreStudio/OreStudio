@@ -25,3 +25,9 @@ order by name;
 | system.signup_requires_authorization |       0 | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. |       1 |
 | system.user_signups                  |       0 | Controls whether user self-registration is allowed.                                                                 |       1 |
 #+end_example
+
+Two of these flags shape the registration door: =system.user_signups= is the
+switch, and =system.signup_requires_authorization= closes the door rather than
+gating it until the approval workflow exists. How they are read, who may set them
+and what the door answers with are in
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]].

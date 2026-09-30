@@ -1,0 +1,47 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Registration: what the deployment offers the door
+
+actor Person
+participant "ores.web" as web
+participant BFF as bff
+participant "IAM auth handler" as auth
+participant "system settings" as settings
+database PostgreSQL as db
+
+Person -> web : open the door at the address the deployment serves
+web -> bff : GET /api/registration-policy
+bff -> auth : iam.v1.auth.registration-policy {hostname}
+auth -> settings : is_user_signups_enabled()
+settings -> db : read system.user_signups at system scope
+db --> settings : false by default
+auth -> db : resolve the tenant by hostname,\nelse the tenant flagged is_registration_default
+db --> auth : the tenant, or nothing
+auth -> db : read the tenant's flagged party and role
+db --> auth : a party and a role, or nothing
+auth --> bff : policy {signups_enabled, authorization_required,\ntenant, party, role, usable_now}
+bff --> web : the policy
+alt sign-ups refused, or no destination
+    web --> Person : the closed notice, naming the reason
+else the door is open
+    web --> Person : the form, the password rules, and what the account will receive
+end
+
+@enduml

@@ -57,6 +57,7 @@ struct party_entity {
     std::string business_center_code;
     std::string status;
     std::optional<std::string> image_id;
+    bool is_registration_default = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

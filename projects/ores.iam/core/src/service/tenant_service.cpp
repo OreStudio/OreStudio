@@ -89,6 +89,7 @@ domain::tenant to_domain(const messaging::tenant_write& write) {
     v.description = write.description;
     v.hostname = write.hostname;
     v.status = write.status;
+    v.is_registration_default = write.is_registration_default;
     return v;
 }
 

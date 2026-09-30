@@ -82,7 +82,7 @@ TEST_CASE("signup_operations_process_signup_reports_the_expected_count", tags) {
     signup_operations_commands::process_signup(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -100,6 +100,7 @@ TEST_CASE("signup_operations_process_signup_reaches_the_transport", tags) {
     signup_operations_commands::process_signup(out,
                                                session,
                                                std::vector<std::string>{
+                                                   "sample",
                                                    "sample",
                                                    "sample",
                                                    "sample",

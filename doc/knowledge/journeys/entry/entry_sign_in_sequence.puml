@@ -1,0 +1,78 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Sign in: the door to the session
+
+actor Person
+participant "ores.web" as web
+participant BFF as bff
+participant "IAM auth handler" as auth
+participant "account service" as acct
+database "PostgreSQL\n(tenant and party RLS)" as db
+
+Person -> web : username and password
+web -> bff : POST /api/session
+bff -> bff : rate limit the attempt
+bff -> auth : iam.v1.auth.login {principal, password}
+
+auth -> db : resolve the tenant by hostname,\nelse the handler's own tenant
+auth -> acct : login(username, password, client address)
+acct -> db : read the account by username
+acct -> db : read the account's tenant status
+acct -> db : read login_info
+alt the account is locked
+    acct --> auth : refusal account_locked
+else the password is wrong
+    acct -> db : failed_logins + 1, and lock at five
+    acct --> auth : refusal invalid_credentials
+else the password is valid
+    acct -> db : failed_logins = 0, last login, online
+    acct --> auth : the account and password_reset_required
+end
+
+auth -> db : read the account-party associations
+auth -> auth : compute the visible party set for the tenant
+alt the account is pending
+    auth --> bff : refusal account_pending
+else no association at all
+    auth --> bff : refusal no_party_assignment
+else exactly one party
+    auth -> db : write the session row
+    auth --> bff : token, party, visible party set, password_reset_required
+else several parties
+    auth -> db : write the session row
+    auth --> bff : short-lived select-party token,\navailable parties, stored default party
+end
+
+bff -> bff : keep the token server-side, store the session,\nset an opaque cookie
+alt a session was bound
+    bff --> web : the session
+    web --> Person : the workspace opens
+else the party is still to be chosen
+    bff --> web : the parties, with the default marked
+    Person -> web : choose a party
+    web -> bff : POST /api/session/party
+    bff -> auth : iam.v1.accounts.select-party {partyId}
+    auth -> db : check the association, then bind the party to the session
+    auth --> bff : the active session
+    bff --> web : the session
+    web --> Person : the workspace opens
+end
+
+@enduml

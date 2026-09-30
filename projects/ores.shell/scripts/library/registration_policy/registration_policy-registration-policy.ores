@@ -1,0 +1,6 @@
+# =registration-policy=
+#
+# GENERATED from doc/recipes/shell/registration_policy/registration_policy.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+registration_policy registration-policy __none__

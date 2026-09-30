@@ -27,10 +27,12 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 namespace ores::iam::service {
@@ -49,6 +51,21 @@ namespace ores::iam::service {
 struct ORES_IAM_CORE_EXPORT authenticated_login {
     domain::account account;
     bool password_reset_required = false;
+};
+
+/**
+ * @brief A login refusal that states why, as a code a client can branch on.
+ *
+ * The sentence is for a person and may change; the code is what a screen
+ * decides with. A refusal that carries only English is why a client cannot
+ * tell a locked account from a wrong password today.
+ */
+struct ORES_IAM_CORE_EXPORT login_error : std::runtime_error {
+    login_error(ores::utility::serialization::error_code code, const std::string& message)
+        : std::runtime_error(message)
+        , code(code) {}
+
+    ores::utility::serialization::error_code code;
 };
 
 class ORES_IAM_CORE_EXPORT account_operations_service {

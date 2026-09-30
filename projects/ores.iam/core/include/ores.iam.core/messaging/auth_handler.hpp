@@ -23,15 +23,18 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
+#include "ores.iam.api/messaging/registration_policy_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
@@ -39,10 +42,12 @@
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/service_session_service.hpp"
+#include "ores.iam.core/service/signup_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/atomic_shared_ptr.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.security/validation/password_validator.hpp"
@@ -174,6 +179,134 @@ inline bool auth_is_party_onboarding_complete(const ores::database::context& ctx
     return false;
 }
 
+/**
+ * @brief The deployment's answer to a registration, given its two flags.
+ *
+ * Nothing when the door is open, and the code and the sentence when it is shut.
+ * Split from the read so the decision can be tested without a database, and so
+ * the handler asks in one place.
+ */
+inline std::optional<std::pair<std::string, std::string>>
+auth_registration_refusal(bool signups_enabled, bool authorization_required) {
+    if (!signups_enabled) {
+        return std::make_pair(std::string("signup_disabled"),
+                              std::string("User registration is currently disabled."));
+    }
+    if (authorization_required) {
+        return std::make_pair(
+            std::string("signup_requires_authorization"),
+            std::string("This deployment approves new accounts by hand, and the approval step "
+                        "does not exist yet. Ask an administrator to create your account."));
+    }
+    return std::nullopt;
+}
+
+/**
+ * @brief Reads the deployment's registration flags and answers with the decision.
+ *
+ * The switch is the deployment's answer rather than a tenant's, so it is read at
+ * system scope. A read that fails closes the door: a deployment that cannot say
+ * whether it accepts registrations does not accept them.
+ */
+inline std::optional<std::pair<std::string, std::string>>
+auth_registration_refusal(const ores::database::context& ctx) {
+    try {
+        variability::service::system_settings_service flags(
+            ctx, database::service::tenant_context::system_tenant_id);
+        flags.refresh();
+        return auth_registration_refusal(flags.is_user_signups_enabled(),
+                                         flags.is_signup_requires_authorization_enabled());
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), error)
+            << "Failed to read the registration flags, closing the door: " << e.what();
+        return std::make_pair(
+            std::string("signup_disabled"),
+            std::string("The deployment could not say whether it accepts registrations, so it "
+                        "does not."));
+    }
+}
+
+/**
+ * @brief The destination's answer, given what the deployment has nominated.
+ *
+ * Nothing when a registration has somewhere to land and something to hold,
+ * and the code and the sentence when it does not. Split from the reads so the
+ * decision can be tested without a database.
+ */
+inline std::optional<std::pair<std::string, std::string>>
+auth_registration_destination_refusal(bool has_tenant, bool has_role) {
+    if (!has_tenant) {
+        return std::make_pair(
+            std::string("no_registration_destination"),
+            std::string("This deployment has not said where registrations land. Ask an "
+                        "administrator."));
+    }
+    if (!has_role) {
+        return std::make_pair(
+            std::string("no_default_role"),
+            std::string("This deployment has not nominated a role for new accounts. Ask an "
+                        "administrator."));
+    }
+    return std::nullopt;
+}
+
+/**
+ * @brief The tenant a registration lands in, given the address it arrived at.
+ *
+ * The address names a tenant first, which is the multi-tenant case and needs
+ * no configuration at all. When it names none, the tenant flagged
+ * =is_registration_default= is used. When neither exists there is no
+ * destination, and the caller refuses rather than placing the registration in
+ * the system tenant by omission.
+ */
+inline std::optional<domain::tenant>
+auth_registration_tenant(const ores::database::context& ctx, const std::string& hostname) {
+    if (!hostname.empty()) {
+        if (auto t = auth_lookup_tenant_by_hostname(ctx, hostname))
+            return t;
+    }
+    const auto defaults = repository::read_registration_default_tenant(ctx);
+    if (!defaults.empty())
+        return defaults.front();
+    return std::nullopt;
+}
+
+/**
+ * @brief The context of the tenant a registration lands in, or nothing.
+ */
+inline std::optional<ores::database::context>
+auth_registration_context(const ores::database::context& ctx, const std::string& hostname) {
+    const auto tenant = auth_registration_tenant(ctx, hostname);
+    if (!tenant)
+        return std::nullopt;
+    auto tid = ores::utility::uuid::tenant_id::from_uuid(tenant->id);
+    if (!tid)
+        return std::nullopt;
+    return ctx.with_tenant(*tid, "");
+}
+
+/**
+ * @brief The party and role a new account receives in the resolved tenant.
+ *
+ * The two flags are read in the tenant's own scope, because that is where the
+ * flagged rows live and what row-level security admits. A tenant that
+ * nominates no party still admits a registration; one that nominates no role
+ * does not, because an account that holds nothing is not an account somebody
+ * can use.
+ */
+inline service::signup_destination
+auth_registration_destination(const ores::database::context& tenant_ctx) {
+    service::signup_destination destination;
+    refdata::repository::party_repository party_repo;
+    if (auto p = party_repo.read_registration_default(tenant_ctx))
+        destination.party_id = p->id;
+    repository::role_repository role_repo;
+    if (auto r = role_repo.read_registration_default(tenant_ctx))
+        destination.role_id = r->id;
+    return destination;
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -226,30 +359,215 @@ public:
             BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        try {
-            service::account_operations_service acct_svc(ctx_);
-            auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
-            service::account_setup_service setup_svc(acct_svc, auth_svc);
-            auto acct = setup_svc.create_account(
-                req->principal, req->email, req->password, ctx_.service_account());
-            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
-            record_auth_event(ctx_, "signup_success", [&](auto& ev_repo) {
-                ev_repo.record_signup_success(std::chrono::system_clock::now(),
-                                              acct.tenant_id.to_string(),
-                                              boost::uuids::to_string(acct.id),
-                                              acct.username);
+
+        /*
+         * The deployment's gate, read before anything is created. A deployment
+         * that has turned self-registration off refuses here, over NATS and over
+         * the HTTP gateway alike, and the refusal carries the code a screen
+         * branches on.
+         */
+        if (const auto refusal = auth_registration_refusal(ctx_)) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Signup refused for " << req->principal << ": " << refusal->first;
+            record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
+                ev_repo.record_signup_failure(
+                    std::chrono::system_clock::now(), "", req->principal, refusal->second);
             });
             reply(nats_,
                   msg,
-                  signup_response{.success = true, .account_id = boost::uuids::to_string(acct.id)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                  signup_response{.success = false,
+                                  .message = refusal->second,
+                                  .error_code = refusal->first});
+            return;
+        }
+
+        /*
+         * Where the registration lands, resolved before anything is created.
+         * The address names the tenant, and the tenant flagged
+         * is_registration_default answers when it names none. A deployment
+         * that resolved neither refuses, rather than landing the account in
+         * the system tenant by omission.
+         */
+        const auto tenant_ctx = auth_registration_context(ctx_, req->hostname);
+        if (!tenant_ctx) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Signup refused for " << req->principal << ": no_registration_destination";
             record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
                 ev_repo.record_signup_failure(
-                    std::chrono::system_clock::now(), "", req->principal, e.what());
+                    std::chrono::system_clock::now(),
+                    "",
+                    req->principal,
+                    "The address names no tenant and the deployment nominates no default.");
             });
-            reply(nats_, msg, signup_response{.success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  signup_response{.success = false,
+                                  .message = "This deployment has not said where registrations "
+                                             "land. Ask an administrator.",
+                                  .error_code = "no_registration_destination"});
+            return;
         }
+
+        const auto destination = auth_registration_destination(*tenant_ctx);
+
+        try {
+            /*
+             * The registration is the self-registration service's, not the
+             * administrator path's. That service checks the username and the
+             * email for uniqueness and the password against the policy, and
+             * answers with a code for each refusal; the administrator path
+             * checks none of them. It re-reads the flags the gate above already
+             * read, which is deliberate: it must refuse for every caller and not
+             * only for this one.
+             */
+            auto flags = std::make_shared<variability::service::system_settings_service>(
+                ctx_, database::service::tenant_context::system_tenant_id);
+            auto auth_svc = std::make_shared<service::authorization_service>(*tenant_ctx);
+            service::signup_service signup_svc(*tenant_ctx, flags, auth_svc);
+            const auto result =
+                signup_svc.register_user(req->principal, req->email, req->password, destination);
+
+            if (!result.success) {
+                const auto code = ores::utility::serialization::to_string(result.error_code);
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Signup refused for " << req->principal << ": " << code;
+                record_auth_event(*tenant_ctx, "signup_failure", [&](auto& ev_repo) {
+                    ev_repo.record_signup_failure(std::chrono::system_clock::now(),
+                                                  tenant_ctx->tenant_id().to_string(),
+                                                  req->principal,
+                                                  result.error_message);
+                });
+                reply(nats_,
+                      msg,
+                      signup_response{.success = false,
+                                      .message = result.error_message,
+                                      .error_code = code});
+                return;
+            }
+
+            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+            record_auth_event(*tenant_ctx, "signup_success", [&](auto& ev_repo) {
+                ev_repo.record_signup_success(std::chrono::system_clock::now(),
+                                              tenant_ctx->tenant_id().to_string(),
+                                              boost::uuids::to_string(result.account_id),
+                                              result.username);
+            });
+            reply(nats_,
+                  msg,
+                  signup_response{
+                      .success = true,
+                      .account_id = boost::uuids::to_string(result.account_id),
+                      .account_status = result.account_status,
+                      .party_id = result.party_id ? boost::uuids::to_string(*result.party_id) : "",
+                      .role_id = result.role_id ? boost::uuids::to_string(*result.role_id) : ""});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            record_auth_event(*tenant_ctx, "signup_failure", [&](auto& ev_repo) {
+                ev_repo.record_signup_failure(std::chrono::system_clock::now(),
+                                              tenant_ctx->tenant_id().to_string(),
+                                              req->principal,
+                                              e.what());
+            });
+            reply(nats_,
+                  msg,
+                  signup_response{.success = false,
+                                  .message = e.what(),
+                                  .error_code = "invalid_request"});
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.auth.registration-policy.
+     *
+     * The one question the door asks before it offers a form. It answers the
+     * deployment's switch, whether a registration also waits on an approval,
+     * the tenant a registration lands in, the party and role a new account
+     * receives, and whether the result is usable at once. A refusal states why
+     * as a code, because each reason names a different thing for an
+     * administrator to fix.
+     */
+    void registration_policy(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
+
+        registration_policy_response resp;
+        std::string hostname;
+        if (!msg.data.empty()) {
+            if (auto req = decode<registration_policy_request>(msg))
+                hostname = req->hostname;
+        }
+
+        try {
+            variability::service::system_settings_service flags(
+                ctx_, database::service::tenant_context::system_tenant_id);
+            flags.refresh();
+            resp.signups_enabled = flags.is_user_signups_enabled();
+            resp.authorization_required = flags.is_signup_requires_authorization_enabled();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << "Failed to read the registration flags, closing the door: " << e.what();
+            resp.message = "The deployment could not say whether it accepts registrations, so it "
+                           "does not.";
+            resp.error_code = "signup_disabled";
+            reply(nats_, msg, resp);
+            return;
+        }
+
+        if (const auto refusal =
+                auth_registration_refusal(resp.signups_enabled, resp.authorization_required)) {
+            resp.message = refusal->second;
+            resp.error_code = refusal->first;
+            reply(nats_, msg, resp);
+            return;
+        }
+
+        const auto tenant = auth_registration_tenant(ctx_, hostname);
+        if (!tenant) {
+            const auto refusal = auth_registration_destination_refusal(false, false);
+            resp.message = refusal->second;
+            resp.error_code = refusal->first;
+            reply(nats_, msg, resp);
+            return;
+        }
+        resp.tenant_id = boost::uuids::to_string(tenant->id);
+        resp.tenant_name = tenant->name;
+
+        auto tid = ores::utility::uuid::tenant_id::from_uuid(tenant->id);
+        if (!tid) {
+            resp.message = "The tenant this address names could not be read.";
+            resp.error_code = "no_registration_destination";
+            reply(nats_, msg, resp);
+            return;
+        }
+        const auto tenant_ctx = ctx_.with_tenant(*tid, "");
+
+        refdata::repository::party_repository party_repo;
+        if (auto p = party_repo.read_registration_default(tenant_ctx)) {
+            resp.party_id = boost::uuids::to_string(p->id);
+            resp.party_name = p->full_name;
+        }
+        repository::role_repository role_repo;
+        if (auto r = role_repo.read_registration_default(tenant_ctx)) {
+            resp.role_id = boost::uuids::to_string(r->id);
+            resp.role_name = r->name;
+        }
+
+        /*
+         * A tenant that nominates no role cannot admit a registration: the
+         * account would hold nothing. A tenant that nominates no party still
+         * can, and the account it creates waits in the pending state.
+         */
+        if (const auto refusal =
+                auth_registration_destination_refusal(true, !resp.role_id.empty())) {
+            resp.message = refusal->second;
+            resp.error_code = refusal->first;
+            reply(nats_, msg, resp);
+            return;
+        }
+
+        resp.usable_now = !resp.party_id.empty();
+        resp.success = true;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
     }
 
     void login(ores::nats::message msg) {
@@ -286,11 +604,28 @@ public:
             repository::account_party_repository ap_repo(login_ctx);
             auto account_parties = ap_repo.read_latest_by_account(acct.id);
 
+            /*
+             * A pending account is refused before a party-less one, and with
+             * its own code. The person learns they are waiting for an
+             * administrator to finish setting the account up, rather than
+             * being told to ask about a party they have never heard of. The
+             * two are different states and only one of them has an
+             * administrator already working on it.
+             */
+            if (acct.account_status == "pending") {
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Login rejected for " << username << ": account is pending";
+                throw service::login_error(
+                    ores::utility::serialization::error_code::account_pending,
+                    "Your account is waiting for an administrator to finish setting it up.");
+            }
+
             if (account_parties.empty()) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
                     << "Login rejected for " << username << ": account has no party assignment";
-                throw std::runtime_error("Account has no party assignment. "
-                                         "Please contact your administrator.");
+                throw service::login_error(
+                    ores::utility::serialization::error_code::no_party_assignment,
+                    "Account has no party assignment. Please contact your administrator.");
             }
 
             // Ensure party details are in the cache. Bootstrap parties are
@@ -447,6 +782,29 @@ public:
                 // Multi-party: login_success recorded after party selection
                 reply(nats_, msg, resp);
             }
+        } catch (const service::login_error& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Login refused for " << req->principal << ": "
+                << ores::utility::serialization::to_string(e.code);
+            record_auth_event(ctx_, "login_failure", [&](auto& ev_repo) {
+                ev_repo.record_login_failure(
+                    std::chrono::system_clock::now(), "", req->principal, e.what());
+            });
+            login_response resp;
+            resp.success = false;
+            resp.error_message = e.what();
+            /*
+             * The code is what a screen branches on, so a locked account, a
+             * pending one and a wrong password are three states rather than
+             * three sentences to match.
+             */
+            resp.error_code = ores::utility::serialization::to_string(e.code);
+            /*
+             * A refusal still says which build refused, so a client can state
+             * the deployment's version without having signed in at all.
+             */
+            resp.version = utility::version::full_version_string();
+            reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             record_auth_event(ctx_, "login_failure", [&](auto& ev_repo) {

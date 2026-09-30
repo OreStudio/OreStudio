@@ -50,6 +50,7 @@ domain::account generate_synthetic_account(utility::generation::generation_conte
                                                        std::string(faker::person::lastName()))) +
                  "-" + std::to_string(idx);
     r.account_type = std::string("user");
+    r.account_status = std::string("active");
     r.full_name =
         std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
     r.password_hash = ctx.alphanumeric(64);

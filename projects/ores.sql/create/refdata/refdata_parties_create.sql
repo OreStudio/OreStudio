@@ -44,6 +44,7 @@ create table if not exists "ores_refdata_parties_tbl" (
     "business_center_code" text not null,
     "status" text not null,
     "image_id" uuid null,
+    "is_registration_default" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -96,6 +97,10 @@ where parent_party_id is null and party_category <> 'System' and valid_to = ores
 create unique index if not exists parties_system_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where party_category = 'System' and valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists parties_registration_default_party_uniq_idx
+on "ores_refdata_parties_tbl" (tenant_id)
+where is_registration_default and valid_to = ores_utility_infinity_timestamp_fn();
 
 
 -- =============================================================================

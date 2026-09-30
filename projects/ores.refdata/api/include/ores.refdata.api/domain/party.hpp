@@ -141,6 +141,17 @@ struct party final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
+     * @brief Whether a self-registered account in this tenant joins this party. At most one live
+     * party per tenant may hold it.
+     *
+     * The flag sits on the party row rather than on the tenant because this table is
+     * tenant-isolated: a tenant administrator may write their own parties, so the choice is theirs
+     * to make. A default_party_id column on the tenant row would be unreachable to them, because
+     * only a system-tenant session may write a tenant row.
+     */
+    bool is_registration_default = false;
+
+    /**
      * @brief Username of the person who last modified this party.
      */
     std::string modified_by;

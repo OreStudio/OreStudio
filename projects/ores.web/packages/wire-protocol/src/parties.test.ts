@@ -206,6 +206,7 @@ describe('OresClient create party', () => {
             business_center_code: 'WRLD',
             status: 'Inactive',
             image_id: null,
+            is_registration_default: false,
         });
         expect(write.change.precondition).toEqual({ kind: 'must_not_exist', version: null });
         // The reason is left to the server, which states the new-record one.

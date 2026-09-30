@@ -57,6 +57,7 @@ create table if not exists "ores_iam_roles_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
+    "is_registration_default" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -89,6 +90,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists roles_tenant_idx
 on "ores_iam_roles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists roles_registration_default_role_uniq_idx
+on "ores_iam_roles_tbl" (tenant_id)
+where is_registration_default and valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_iam_roles_insert_fn()
 returns trigger as $$

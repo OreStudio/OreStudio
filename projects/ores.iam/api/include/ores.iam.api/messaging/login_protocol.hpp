@@ -79,6 +79,15 @@ struct login_response {
     std::string party_setup_warning;
     std::string token;
     std::string error_message;
+    /**
+     * @brief The stable code a client branches on.
+     *
+     * Empty when the sign-in succeeded. The message beside it is for a person
+     * and may change; this is what a screen branches on, so a locked account is
+     * distinguishable from a wrong password without matching English prose. The
+     * codes a sign-in can answer with are collected on the Entry journeys page.
+     */
+    std::string error_code;
     std::string message;
     std::string selected_party_id;
     std::vector<party_summary> available_parties;

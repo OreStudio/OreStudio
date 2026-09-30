@@ -92,6 +92,7 @@ create table if not exists "ores_iam_accounts_tbl" (
     "version" integer not null,
     "username" text not null,
     "account_type" text not null default 'user',
+    "account_status" text not null default 'active',
     "full_name" text null,
     "password_hash" text not null,
     "password_salt" text not null,
@@ -256,6 +257,9 @@ begin
 
     -- Validate account_type
     NEW.account_type := ores_iam_validate_account_type_fn(NEW.tenant_id, NEW.account_type);
+
+    -- Validate account_status
+    NEW.account_status := ores_iam_validate_account_status_fn(NEW.tenant_id, NEW.account_status);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

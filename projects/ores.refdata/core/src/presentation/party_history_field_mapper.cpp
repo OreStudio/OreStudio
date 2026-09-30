@@ -48,6 +48,8 @@ std::vector<ores::diff::domain::field_value> render_party_fields(const domain::p
     fields.push_back({.name = "Status", .value = v.status});
     fields.push_back({.name = "Image ID",
                       .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});
+    fields.push_back(
+        {.name = "Is Registration Default", .value = v.is_registration_default ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

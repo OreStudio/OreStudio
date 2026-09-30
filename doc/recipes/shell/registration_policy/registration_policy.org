@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: CF9073DF-02CD-5832-9479-32E5C361BD15
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the registration_policy commands from the shell?
+#+description: Every command the registration_policy submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:registration_policy:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> registration_policy registration-policy=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =registration-policy=
+:PROPERTIES:
+:ID: 8A5D85C1-6731-5A77-98F3-930F1C2C4D62
+:END:
+
+Sends =registration_policy_request= and prints =registration_policy_response=, so the shape is the protocol's and the meaning is the service's. It reads =hostname=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+registration_policy registration-policy <hostname>
+#+end_example
+
+It is addressed at =iam.v1.auth.registration-policy=.
+
+#+name: registration_policy-registration-policy
+#+begin_src ores-shell :tangle registration_policy-registration-policy.ores :exports none
+registration_policy registration-policy __none__
+#+end_src
+

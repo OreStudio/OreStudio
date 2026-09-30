@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: CF975012-2E6A-4F9D-821A-30BAE7FCC031
+:END:
+#+title: Task: Create the role-request journey
+#+description: Document how a person asks for roles beyond the default one registration gives them, as its own journey in the Access group, separate from sign up.
+#+type: task
+#+level: s1
+#+filetags: :web:iam:journeys:entry:access:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A journey document that answers the question registration leaves open. Registration gives a new account one default role; a person who needs more has today no way to ask, because [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] is an administrator acting on somebody else's record and [[id:550682A6-6AAC-4939-BB2B-80D53091E4FA][Ask for more access]] does not exist. The journey records how a person asks, who answers, what they see while they wait, and what closes the request.
+
+It is deliberately its own journey and not a step of [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]]. A registration ends at a confirmation; a role request may be made at any time afterwards, it may be refused, and it is answered by somebody else. Folding it into the door would make one journey with two actors and two endings.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Not yet started. The question is recorded and the journey has no document. |
+| Waiting on   | Nothing.                               |
+| Next         | Write the journey under =doc/knowledge/journeys/access/=, wire it into the Access hub, and record the server gaps it needs. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- The journey document exists in the Access group and is named for the person's goal rather than for the entity, following [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]].
+- It carries every required section: goal, actor and trigger, steps, screens and wireframes, entities composed, operations and messages, what is missing, and related journeys.
+- It names who answers the request, what the requester sees while they wait, how a refusal is stated, and what closes the request.
+- It states whether the request holds server-side state. A request that waits on a person is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]]; one that is answered in the same session is not.
+- The Access hub links it, and [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Know what I may do]] link to it under * Related journeys*.
+- Every operation it needs is marked =exists=, =partial= or =missing= against the generated protocol.
+
+* Plan
+
+1. Start from the person's goal: "I cannot do my job with the access I have."
+2. Decide the shape with the product owner: a request that an administrator approves, or a request that self-service grants from a catalogue the tenant allows. The existing subjects bound what is possible: =iam.v1.roles.assign= needs =iam::roles:assign= and is an administrator's write, so a self-service grant is new server work.
+3. Write the steps the person takes, then the steps the approver takes, as one journey with two actors or two journeys if that is what the design says.
+4. Draw the wireframe, name the entities and the fields, and build the coverage table.
+5. Record the gaps, including how the requester is told the answer and whether the account can hold a pending request at all.
+6. Wire the document into the Access group hub and into the related journeys of the pages around it.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Journeys in the Access group before this | 3 | =ls doc/knowledge/journeys/access/= | =69d002553c= |
+| Self-service role-request subjects in the protocol | 0 | =grep -rn "role" projects/ores.iam/modeling/ores.iam.authorization_messages.org= | =69d002553c= |
+
+* Notes
+
+- The product owner's steer while reviewing the registration prototype: "we will give users some kind of default role. how does one ask for additional roles? add a task to create a journey to allow users to request changes to their roles. this can be separate from the sign up journey to make things easier."
+- The default role itself is settled in [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]]: a flag on the role row, nominated by the tenant administrator. This task owns the answer to "and what if it is not enough?".
+- The implementation is not this task's. It lands in the Access group's story, which owns those screens; this task produces the design the implementation is built from.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

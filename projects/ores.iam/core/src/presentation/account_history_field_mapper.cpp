@@ -36,6 +36,7 @@ std::vector<ores::diff::domain::field_value> render_account_fields(const domain:
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Username", .value = v.username});
     fields.push_back({.name = "Account Type", .value = v.account_type});
+    fields.push_back({.name = "Account Status", .value = v.account_status});
     fields.push_back({.name = "Full Name", .value = v.full_name});
     fields.push_back({.name = "Email", .value = v.email});
     fields.push_back({.name = "Default Party ID",

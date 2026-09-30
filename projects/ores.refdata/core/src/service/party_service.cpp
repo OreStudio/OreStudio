@@ -94,6 +94,7 @@ domain::party to_domain(const messaging::party_write& write) {
     v.business_center_code = write.business_center_code;
     v.status = write.status;
     v.image_id = write.image_id;
+    v.is_registration_default = write.is_registration_default;
     return v;
 }
 

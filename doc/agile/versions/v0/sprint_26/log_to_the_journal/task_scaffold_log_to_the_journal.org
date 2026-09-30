@@ -8,7 +8,7 @@
 #+filetags: :log_to_the_journal:sprint_26:v0:
 #+owner: marco
 #+branch: feature/log-to-the-journal
-#+pr: 2421
+#+pr: 2422
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2422][#2422]] | [agile] Record the logging story scaffold result |
 | [[https://github.com/OreStudio/OreStudio/pull/2421][#2421]] | [logging] Log the fleet to the console and read it from the journal |
 
 * Review

@@ -103,6 +103,62 @@ function run(root, args, timeoutMs) {
 const firstLine = (text) =>
   String(text || '').split('\n').map((line) => line.trim()).filter(Boolean)[0] ?? ''
 
+/* The levels `compass services logs` accepts, and the flag each one is. A
+ * level is not journald's own priority: journald records console output at one
+ * priority, so compass matches the token the service printed instead. */
+export const LOG_LEVELS = { all: '', warnings: '--warnings', errors: '--errors' }
+
+/**
+ * One unit's recent journal output, as compass reports it.
+ *
+ * Fetched on demand rather than with the environment, because a log tail
+ * changes constantly and is only wanted when somebody is looking at it. The
+ * same failure reasons as the environment read, plus `unknown-unit` when
+ * compass resolves the selector to nothing.
+ */
+export async function readLogs(root, unit, level = 'all', lines = 200) {
+  const flag = LOG_LEVELS[level] ?? LOG_LEVELS.all
+  const args = ['services', 'logs', unit, '-n', String(lines), '--json']
+  if (flag) args.push(flag)
+  const result = await run(root, args, READ_TIMEOUT_MS)
+  if (result.code !== 0) {
+    const text = result.stderr + result.stdout
+    if (/invalid choice/.test(text)) {
+      return {
+        ok: false,
+        reason: 'compass-too-old',
+        message: 'this work tree carries a compass without `services logs`; '
+          + 'rebase the work tree to pick it up',
+      }
+    }
+    if (/nothing named/.test(text)) {
+      return { ok: false, reason: 'unknown-unit', message: unit }
+    }
+    return {
+      ok: false,
+      reason: 'compass-failed',
+      message: firstLine(text) || `compass exited with code ${result.code}`,
+    }
+  }
+  try {
+    const payload = JSON.parse(result.stdout)
+    if (!payload || typeof payload !== 'object' || payload.ok !== true) {
+      return {
+        ok: false,
+        reason: 'compass-unreadable',
+        message: 'compass services logs reported no output',
+      }
+    }
+    return { ok: true, payload }
+  } catch {
+    return {
+      ok: false,
+      reason: 'compass-unreadable',
+      message: 'compass services logs --json did not print JSON',
+    }
+  }
+}
+
 /**
  * The environment of one work tree, as compass reports it.
  *

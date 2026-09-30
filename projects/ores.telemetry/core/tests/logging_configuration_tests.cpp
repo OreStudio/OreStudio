@@ -67,16 +67,18 @@ TEST_CASE("logging_read_options_returns_value_when_enabled", tags) {
     auto opts = logging_configuration::read_options(vm);
 
     REQUIRE(opts.has_value());
-    REQUIRE(opts->filename == "test.log");
+    REQUIRE(opts->filename.empty());
     REQUIRE(opts->severity == "info");
-    REQUIRE(opts->output_directory == "log");
-    REQUIRE_FALSE(opts->output_to_console);
+    REQUIRE(opts->output_directory.empty());
+    REQUIRE(opts->output_to_console);
     REQUIRE_FALSE(opts->include_pid);
     REQUIRE_FALSE(opts->replica_index.has_value());
     REQUIRE(opts->tag.empty());
 }
 
-TEST_CASE("logging_read_options_uses_default_filename", tags) {
+TEST_CASE("logging_read_options_writes_no_file_without_a_filename", tags) {
+    /* File logging is opt-in. The caller's suggested name is no longer a
+     * default, so asking for logging alone writes no file. */
     auto desc = logging_configuration::make_options_description("my-app.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -84,7 +86,7 @@ TEST_CASE("logging_read_options_uses_default_filename", tags) {
     auto opts = logging_configuration::read_options(vm);
 
     REQUIRE(opts.has_value());
-    REQUIRE(opts->filename == "my-app.log");
+    REQUIRE(opts->filename.empty());
 }
 
 TEST_CASE("logging_read_options_parses_custom_filename", tags) {
@@ -98,7 +100,7 @@ TEST_CASE("logging_read_options_parses_custom_filename", tags) {
     REQUIRE(opts->filename == "custom.log");
 }
 
-TEST_CASE("logging_read_options_uses_default_directory", tags) {
+TEST_CASE("logging_read_options_has_no_default_directory", tags) {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -106,7 +108,7 @@ TEST_CASE("logging_read_options_uses_default_directory", tags) {
     auto opts = logging_configuration::read_options(vm);
 
     REQUIRE(opts.has_value());
-    REQUIRE(opts->output_directory == "log");
+    REQUIRE(opts->output_directory.empty());
 }
 
 TEST_CASE("logging_read_options_parses_custom_directory", tags) {
@@ -153,7 +155,7 @@ TEST_CASE("logging_read_options_parses_short_log_level", tags) {
     REQUIRE(opts->severity == "warn");
 }
 
-TEST_CASE("logging_read_options_console_disabled_by_default", tags) {
+TEST_CASE("logging_read_options_console_is_implied", tags) {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -161,7 +163,7 @@ TEST_CASE("logging_read_options_console_disabled_by_default", tags) {
     auto opts = logging_configuration::read_options(vm);
 
     REQUIRE(opts.has_value());
-    REQUIRE_FALSE(opts->output_to_console);
+    REQUIRE(opts->output_to_console);
 }
 
 TEST_CASE("logging_read_options_enables_console_output", tags) {

@@ -55,9 +55,12 @@ HOST_ID_NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 # own {tenant_id} substitution and its accompanying comment.
 SYSTEM_TENANT_UUID = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 
+# Console only. systemd captures stdout and stderr into the user journal, so
+# one interface reaches every unit and no log file is written. --log-filename
+# and --log-directory are deliberately absent: with no filename the binary adds
+# no file sink, which is the opt-out logging_options.hpp documents.
 DEFAULT_ARGS_TEMPLATE = (
-    "--log-enabled --log-level {log_level} --log-directory {log_dir} "
-    "--log-replica-index {replica_index} {nats_tls_args}"
+    "--log-enabled --log-level {log_level} --log-to-console {nats_tls_args}"
 )
 
 # The compiled fleet's log level, read from this checkout's .env. One setting
@@ -257,8 +260,9 @@ def render_node_unit(def_row, deps_on, checkout_root, env_name, target_name,
     entry_point = f"{component_dir}/{def_row['entry_point']}"
     env_file = f"{checkout_root}/.env"
     keys_dir = f"{checkout_root}/build/keys/nats"
-    log_file = (f"{checkout_root}/build/output/{preset}/publish/log/"
-                f"{def_row['service_name']}.0.log")
+    # No StandardOutput or StandardError: systemd's default is the journal,
+    # which is where this fleet's console output belongs. Redirecting to a file
+    # here is what made ores.web the second of three logging mechanisms.
     node = shutil.which("node") or "/usr/bin/node"
 
     after = [_unit_basename("nats-server", env_name) + ".service"] + \
@@ -284,8 +288,6 @@ StartLimitBurst=5
 Type=simple
 WorkingDirectory={component_dir}
 EnvironmentFile={env_file}
-StandardOutput=append:{log_file}
-StandardError=append:{log_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2

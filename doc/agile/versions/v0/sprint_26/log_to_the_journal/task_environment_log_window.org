@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 7982A502-15D6-46EC-8A1A-326126406C41
+:END:
+#+title: Task: Add the per-service log overview to the environment plugin
+#+description: A log overview for one service in the Environment view: the tail, and the last warnings and errors.
+#+type: task
+#+level: s1
+#+filetags: :log_to_the_journal:sprint_26:v0:
+#+owner: marco
+#+branch: feature/environment-log-window
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Environment view opens a log overview for one service from its row. The overview shows the tail, the last warnings and the last errors, read from the journal through the plugin host, and it says plainly when a unit has no journal output yet rather than showing an empty box.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- A service row opens a log overview without leaving the view.
+- The overview shows the tail, and can switch to the last warnings and the last errors.
+- The overview names the unit and says when the journal has nothing for it.
+- The route that serves it requires the browser session cookie, as the other two do.
+
+* Plan
+
+The plugin gains a third host route and a panel in the view.
+
+- The route is keyed by unit and takes the filter and the line count, so the
+  log is fetched when a reader asks for it rather than on the two-second
+  environment poll. It requires the browser session cookie, as the state and
+  action routes do.
+- The overview opens from a service row and stays inside the view. Three
+  choices: the tail, the last warnings, the last errors. It names the unit, and
+  when the journal holds nothing for it the panel says so, because an empty box
+  and a silent service are different facts.
+- The panel does not follow the log live. The route is one-shot, and a reader
+  presses Refresh, which is the same honesty rule the action strip already
+  follows.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Plugin tests | 43 passed | =node --test= | =f74db14d91= |
+| Host gate checks | 58 passed, 0 failed | =node scripts/verify.mjs= | =f74db14d91= |
+| A real journal read through the route | 1 line, truncated | the gate's logs section | =f74db14d91= |
+| nats-server reachable through the route | yes | the same section | =f74db14d91= |
+| Anonymous log read | 401 | the gate asserts it | =f74db14d91= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A service row offers its journal. The panel opens inside the view, names the
+unit, and switches between the tail, the last warnings and the last errors. An
+empty result says which it is, the journal holding nothing for that unit or
+nothing at that level, because both are different facts from a failed read.
+The =nats-server= row carries the same affordance.
+
+The log is a third route and a second payload shape, fetched on demand rather
+than with the environment. Writing it exposed a smell in the browser half that
+the general field guard caught: two different payloads were both called
+=snapshot=, so the guard could not tell the environment model from the log
+model. The log one is named apart now and the guard covers both.

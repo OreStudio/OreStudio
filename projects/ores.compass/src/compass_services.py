@@ -24,6 +24,7 @@ PartOf=<target>) moved.
 
 import argparse
 import contextlib
+import json
 import os
 import subprocess
 import sys
@@ -145,84 +146,120 @@ def _wait_for_log(ctx, name, pattern, timeout=120, log_basename=None) -> bool:
     return False
 
 
-def _wait_for_logs(ctx, units, pattern, timeout=180, start_pos=None) -> dict:
-    """Poll every (unit, log_basename) in `units` concurrently -- one
-    shared timeout, not N sequential per-unit timeouts -- since systemd
-    already started every unit's dependency-ordered chain in parallel
-    when the target was started; a real deploy with 20+ services all
-    connecting to the DB at once can legitimately take longer than any
-    single unit's own budget to settle, so checking them one at a time
-    with individual timeouts (as an earlier version of this function
-    did) reported false timeouts for units that were still simply
-    queued behind slower siblings, not actually stuck. Returns
-    {unit: bool} once every unit is ready or the shared timeout expires.
-
-    `start_pos`, if given, is a {unit: byte-offset} map captured by the
-    caller *before* issuing `systemctl start` -- capturing it fresh in
-    here (log_file.stat().st_size at call time) is too late: a fast
-    unit can start, connect, and log "Service ready." before this
-    function is even entered (e.g. while the caller is still waiting
-    on something else, like the NATS port), so a size captured now
-    would already be past that line and this function would wait
-    forever for a *second* occurrence that never comes."""
-    remaining = {unit: ctx.log_dir / log for unit, log in units}
-    if start_pos is None:
-        start_pos = {unit: (f.stat().st_size if f.exists() else 0)
-                     for unit, f in remaining.items()}
-    ready = {}
-    print(f"  wait    {len(remaining)} unit(s) ({pattern})", end="", flush=True)
-    for i in range(timeout * 2):
-        for unit in list(remaining):
-            log_file = remaining[unit]
-            cur = log_file.stat().st_size if log_file.exists() else 0
-            if cur < start_pos[unit]:  # log truncated by service restart
-                start_pos[unit] = 0
-            if not log_file.exists():
-                continue
-            with open(log_file, "rb") as f:
-                f.seek(start_pos[unit])
-                if pattern.encode() in f.read():
-                    ready[unit] = True
-                    del remaining[unit]
-        if not remaining:
-            print(" ... done")
-            return ready
-        time.sleep(0.5)
-        if i % 4 == 3:
-            print(".", end="", flush=True)
-    print(f" ... timeout ({len(remaining)}/{len(ready) + len(remaining)} "
-          f"still not ready: {', '.join(sorted(remaining))})")
-    ready.update({unit: False for unit in remaining})
-    return ready
+# The journal is the only log source. Every unit logs to the console and
+# systemd captures it, so one interface reaches the whole fleet, including
+# nats-server, which never wrote a file.
+JOURNAL_LINES = 400
+JOURNAL_TIMEOUT_S = 20
 
 
-def _log_contains(log_file: Path, pattern: str) -> bool:
-    """Stream-search a log for PATTERN without loading it into memory."""
-    if not log_file.exists():
-        return False
-    needle = pattern.encode()
-    keep = len(needle) - 1
-    tail = b""
-    with open(log_file, "rb") as f:
-        while True:
-            chunk = f.read(1 << 20)
-            if not chunk:
-                return False
-            if needle in tail + chunk:
-                return True
-            tail = chunk[-keep:] if keep else b""
+def _journal_lines(units, lines=JOURNAL_LINES):
+    """The most recent journal lines for one unit or several, oldest first.
+
+    `-o cat` drops the journal's own prefix, so a caller sees what the
+    service wrote. A journal that cannot be read and a service that has
+    written nothing both come back empty; a caller reports the count rather
+    than guessing which it was."""
+    names = [units] if isinstance(units, str) else list(units)
+    if not names:
+        return []
+    cmd = ["journalctl", "--user", "--no-pager", "-n", str(lines), "-o", "cat"]
+    for name in names:
+        cmd += ["-u", f"{name}.service"]
+    try:
+        out = subprocess.run(cmd, capture_output=True, text=True,
+                             timeout=JOURNAL_TIMEOUT_S)
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    if out.returncode:
+        return []
+    return out.stdout.splitlines()
 
 
-def _log_last_line(log_file: Path) -> str:
-    """Last line of a log by reading only its final chunk."""
-    if not log_file.exists():
+# journald records everything a service writes to stdout at one priority, so
+# `-p` cannot select a level: every line arrives as info whatever the service
+# called it. The level is the token the service prints in square brackets, so
+# these filters match on that.
+#
+# Two vocabularies are in play. A compiled service formats
+# `timestamp [severity] [channel] message`, where severity is one of trace,
+# debug, info, warn, error. nats-server formats its own way and tags a line
+# `[INF]`, `[WRN]`, `[ERR]`, `[FTL]`, `[DBG]` or `[TRC]`. Both are covered,
+# which matters because nats-server is one of the units this verb exists to
+# reach.
+SEVERITY_TOKENS = {
+    "warnings": ("warn", "warning", "wrn"),
+    "errors": ("error", "err", "fatal", "ftl", "crit", "critical"),
+}
+
+
+def _severity_tokens(line):
+    """Every bracketed token in a service's line, lowercased.
+
+    A set rather than one token, because the two formats put the severity in
+    different places: a compiled service leads with a timestamp, while
+    nats-server leads with its process id, so the first bracket is not the
+    severity for both."""
+    tokens = set()
+    rest = line
+    while True:
+        start = rest.find("[")
+        if start < 0:
+            return tokens
+        end = rest.find("]", start)
+        if end < 0:
+            return tokens
+        token = rest[start + 1:end].strip().lower()
+        if token:
+            tokens.add(token)
+        rest = rest[end + 1:]
+
+
+def _journal_tail(units, lines, level=None):
+    """Recent journal lines, narrowed to one level when asked.
+
+    A level filter cannot be pushed into journalctl, so the tail is fetched
+    and filtered here. The caller is told how many lines it got, because an
+    empty result and a silent service are different facts."""
+    fetched = _journal_lines(units, lines=lines)
+    capped = len(fetched) >= lines
+    if level is None:
+        return fetched, capped
+    wanted = set(SEVERITY_TOKENS[level])
+    return [line for line in fetched
+            if set(_severity_tokens(line)) & wanted], capped
+
+
+def _resolve_units(ctx, selector):
+    """The units a log selector names, or [] when it names none.
+
+    Accepts a registry service, the short name of one, a full unit name this
+    environment deployed, and nats-server, which the registry does not carry
+    and which therefore no service selector could reach before."""
+    if selector in ("nats", "nats-server", _nats_unit(ctx)):
+        return [_nats_unit(ctx)]
+    try:
+        name = _resolve_service(ctx, selector)
+    except KeyError:
+        deployed = [row["unit"] for row in _unit_rows(ctx)]
+        return [selector] if selector in deployed else []
+    return [unit for unit, _log in _service_units(ctx, only=name)]
+
+
+def _journal_contains(unit, pattern: str) -> bool:
+    """Whether the unit's recent journal output carries PATTERN."""
+    return any(pattern in line for line in _journal_lines(unit))
+
+
+def _journal_last_line(unit) -> str:
+    """The unit's last journal line, trimmed to the message.
+
+    A service logs a JSON envelope, so the interesting part is what follows
+    the closing bracket of the envelope."""
+    found = _journal_lines(unit, lines=1)
+    if not found:
         return ""
-    with open(log_file, "rb") as f:
-        f.seek(0, 2)
-        size = f.tell()
-        f.seek(max(0, size - 1024))
-        lines = f.read().splitlines()
-    return lines[-1].decode("utf-8", errors="ignore") if lines else ""
+    return found[-1].split('\"] ')[-1].strip()[:120]
 
 
 def _short_name(service_name):
@@ -266,12 +303,14 @@ def _unit_rows(ctx, only=None):
                       "service": d["service_name"],
                       "replica": r,
                       "label": f"{short}-{r}",
-                      "log": f"{d['service_name']}.{r}.log"}
+                      "log": f"{d['service_name']}.{r}.log",
+                      "runtime": d.get("runtime", "native")}
                      for r in range(1, d["desired_replicas"] + 1)]
         else:
             rows.append({"unit": base, "service": d["service_name"],
                          "replica": 0, "label": short,
-                         "log": f"{d['service_name']}.0.log"})
+                         "log": f"{d['service_name']}.0.log",
+                         "runtime": d.get("runtime", "native")})
     return rows
 
 
@@ -303,36 +342,69 @@ def _resolve_service(ctx, selector):
     raise KeyError(selector)
 
 
-def _snapshot_logs(ctx, unit_pairs):
-    """Log sizes before a start, so a readiness line already on disk is not
-    mistaken for one this start produced."""
-    return {unit: ((ctx.log_dir / log).stat().st_size
-                   if (ctx.log_dir / log).exists() else 0)
-            for unit, log in unit_pairs}
+def _service_ready(ctx, unit_pairs, timeout=300):
+    """Wait until every unit is active.
 
-
-def _service_ready(ctx, unit_pairs, start_pos, timeout=300):
-    ready = _wait_for_logs(ctx, unit_pairs, "Service ready", timeout=timeout,
-                           start_pos=start_pos)
-    # Requires= means a unit whose FIRST start attempt fails (e.g. it
-    # briefly races a dependency) permanently fails that unit's start
-    # job -- systemd does NOT re-trigger it once the dependency's own
-    # Restart=always later succeeds. One reset-failed+start retry pass
-    # for anything still not ready and in a failed/inactive systemd
-    # state covers that race without masking a genuinely broken service
-    # (which will just fail the retry too).
-    broken = [unit for unit, ok in ready.items()
-              if not ok and _unit_active_state(unit) in ("failed", "inactive")]
-    if broken:
-        print(f"[retry: {len(broken)} unit(s) failed their first start "
-              f"attempt -- likely raced a dependency; retrying once]")
+    ActiveState is the readiness signal for the compiled services, because
+    they are Type=notify: systemd reports the unit active only once the
+    service itself called sd_notify(READY=1). There is no log to scan any
+    more, and scanning one would only restate that. nats-server and
+    ores.web are Type=simple; systemd reports them active when the process
+    is up, and nats blocks on its own port check before its start job
+    completes."""
+    waiting = {unit for unit, _ in unit_pairs}
+    ready = {}
+    # Two rounds at most: the first wait, then one retry of whatever systemd
+    # gave up on. An earlier version called itself for the retry, so a unit
+    # that could not come up was retried forever and a start never returned.
+    for attempt in (1, 2):
+        waiting = _await_active(waiting, ready, timeout if attempt == 1 else 120)
+        if not waiting:
+            break
+        broken = [unit for unit in sorted(waiting)
+                  if _unit_active_state(unit) in ("failed", "inactive")]
+        if not broken:
+            break
+        # Requires= means a unit whose first start attempt fails races a
+        # dependency and permanently fails that start job: systemd does not
+        # re-trigger it once the dependency's own Restart=always succeeds.
+        # One reset-failed and start covers that race without masking a
+        # genuinely broken service, which fails the retry too.
+        print(f"[retry: {len(broken)} unit(s) did not become active; "
+              f"resetting and starting them once]")
         for unit in broken:
             _systemctl(["reset-failed", f"{unit}.service"], check=False)
             _systemctl(["start", f"{unit}.service"], check=False)
-        ready.update(_wait_for_logs(
-            ctx, [(u, log) for u, log in unit_pairs if u in broken],
-            "Service ready"))
-    return all(ready.values())
+    return not waiting
+
+
+def _await_active(waiting, ready, timeout):
+    """Wait until every unit in `waiting` is active, or the timeout expires.
+
+    ActiveState is the readiness signal for the compiled services, because
+    they are Type=notify: systemd reports the unit active only once the
+    service itself called sd_notify(READY=1). There is no log to scan, and
+    scanning one would only restate that. nats-server and ores.web are
+    Type=simple; systemd reports them active when the process is up, and nats
+    blocks on its own port check before its start job completes.
+
+    Returns the units still not active, and records the rest in `ready`."""
+    print(f"  wait    {len(waiting)} unit(s) (active)", end="", flush=True)
+    deadline = time.time() + timeout
+    while waiting and time.time() < deadline:
+        for unit in sorted(waiting):
+            if _unit_active_state(unit) == "active":
+                ready[unit] = True
+                waiting.discard(unit)
+        if waiting:
+            print(".", end="", flush=True)
+            time.sleep(0.5)
+    if waiting:
+        print(f" ... timeout ({len(waiting)} still not active: "
+              f"{', '.join(sorted(waiting))})")
+    else:
+        print(" ... done")
+    return waiting
 
 
 def _nats_unit(ctx):
@@ -362,37 +434,29 @@ def _unit_active_state(unit) -> str:
 SERVICE_STATES = ("running", "starting", "stopped", "failed", "missing")
 
 
-def classify_unit(ctx, unit, log_basename=None):
+def classify_unit(ctx, unit, runtime="native"):
     """(state, detail) for one unit.
 
-    `running` needs an active unit AND the readiness line in its own log,
-    because a unit whose listener is not up yet answers no request. A
-    caller passes log_basename=None for a unit that has no readiness log,
-    which is nats-server under systemd: it logs to journald only, so
-    ActiveState alone decides it."""
+    `running` means the unit is active. For the compiled services that is
+    the whole rule, because they are Type=notify: systemd reports the unit
+    active only after the service called sd_notify(READY=1). `ores.web` is
+    Type=simple and cannot declare itself, so its readiness line is read
+    from the journal. nats-server is reported on ActiveState alone, as it
+    always was; its unit's port check is what the start path waits on."""
     active = _unit_active_state(unit)
     if active == "missing":
         return "missing", "unit not loaded"
     if active == "failed":
-        return "failed", _detail_of(ctx.log_dir / log_basename) if log_basename else "failed"
+        return "failed", _journal_last_line(unit) or "failed"
     if active == "active":
-        if log_basename is None:
+        if runtime != "node":
             return "running", "active"
-        if _log_contains(ctx.log_dir / log_basename, "Service ready"):
+        if _journal_contains(unit, "Service ready"):
             return "running", "active"
-        return "starting", _detail_of(ctx.log_dir / log_basename)
+        return "starting", _journal_last_line(unit)
     if active == "activating":
-        return "starting", _detail_of(ctx.log_dir / log_basename) if log_basename else active
+        return "starting", _journal_last_line(unit) or active
     return "stopped", active
-
-
-def _detail_of(log_file):
-    """The last line of a unit's log, trimmed to the message.
-
-    A service logs a JSON envelope, so the interesting part is what follows
-    the closing bracket of the envelope."""
-    last = _log_last_line(log_file).split('\"] ')[-1].strip()
-    return last[:120]
 
 
 def gather_units(ctx):
@@ -417,13 +481,13 @@ def gather_units(ctx):
     # nats-server's systemd unit has no -l logfile flag (unlike the old
     # native-process launch), so readiness is ActiveState alone.
     nats_unit = _nats_unit(ctx)
-    state, detail = classify_unit(ctx, nats_unit, None)
+    state, detail = classify_unit(ctx, nats_unit)
     nats = {"unit": nats_unit, "service": "", "replica": 0,
-            "label": "nats-server", "log": "", "state": state,
-            "detail": detail}
+            "label": "nats-server", "log": "", "runtime": "native",
+            "state": state, "detail": detail}
 
     for row in _unit_rows(ctx):
-        state, detail = classify_unit(ctx, row["unit"], row["log"])
+        state, detail = classify_unit(ctx, row["unit"], row["runtime"])
         counts[state] += 1
         rows.append({**row, "state": state, "detail": detail})
 
@@ -481,7 +545,6 @@ def _cmd_start(ctx, args):
     print()
 
     units = _service_units(ctx)
-    start_pos = _snapshot_logs(ctx, units)
 
     print(f"[systemctl --user start {ctx.target_name}]")
     result = _systemctl(["start", ctx.target_name], check=False)
@@ -495,7 +558,7 @@ def _cmd_start(ctx, args):
 
     # 300s: 20+ services all connecting to the DB at once (migrations,
     # schema checks) can genuinely take several minutes to all settle.
-    ok = _service_ready(ctx, units, start_pos)
+    ok = _service_ready(ctx, units)
 
     print()
     print(f"Logs     : {ctx.log_dir}")
@@ -541,7 +604,6 @@ def _start_one(ctx, args, start_ts):
         return 1
     print()
 
-    start_pos = _snapshot_logs(ctx, units)
     print(f"[systemctl --user start {name}]")
     for unit, _log in units:
         result = _systemctl(["start", f"{unit}.service"], check=False)
@@ -553,7 +615,7 @@ def _start_one(ctx, args, start_ts):
     if not _wait_for_listen(ctx.nats_port):
         return 1
 
-    ok = _service_ready(ctx, units, start_pos)
+    ok = _service_ready(ctx, units)
     print()
     print(f"Logs     : {ctx.log_dir}")
     print(f"Time     : {int(time.time() - start_ts)}s")
@@ -620,23 +682,21 @@ def cmd_restart(ctx, args):
         name, units = _resolve_service_or_report(ctx, args.service)
         if name is None:
             return 1
-        start_pos = _snapshot_logs(ctx, units)
-        print(f"[systemctl --user restart {name}]")
+            print(f"[systemctl --user restart {name}]")
         for unit, _log in units:
             result = _systemctl(["restart", f"{unit}.service"], check=False)
             if result.returncode != 0:
                 print(result.stderr, file=sys.stderr)
                 return 1
-        return 0 if _service_ready(ctx, units, start_pos) else 1
+        return 0 if _service_ready(ctx, units) else 1
 
     units = _service_units(ctx)
-    start_pos = _snapshot_logs(ctx, units)
     print(f"[systemctl --user restart {ctx.target_name}]")
     result = _systemctl(["restart", ctx.target_name], check=False)
     if result.returncode != 0 and "not loaded" not in (result.stderr or ""):
         print(result.stderr, file=sys.stderr)
         return 1
-    return 0 if _service_ready(ctx, units, start_pos) else 1
+    return 0 if _service_ready(ctx, units) else 1
 
 
 def cmd_status(ctx, args):
@@ -673,7 +733,8 @@ def cmd_status(ctx, args):
                                      for s in SERVICE_STATES))
     if nats is not None:
         print(f"nats    : {nats}")
-    print(f"\nLogs : {ctx.log_dir}")
+    print("\nJournal: journalctl --user -u <service>-" + ctx.env_name
+          + ".service   (or: journalctl --user -u 'ores*-" + ctx.env_name + "*')")
     return 0
 
 
@@ -740,6 +801,48 @@ def cmd_top(ctx, args):
     result = subprocess.run(["systemd-cgtop"] + args.extra + [_claude_slice_path(ctx)],
                             check=False)
     return result.returncode
+
+
+def cmd_logs(ctx, args):
+    """Print a unit's recent journal output, optionally at one level.
+
+    One interface for the whole fleet: a compiled service, ores.web and
+    nats-server all reach the journal, so a selector that names any of them
+    works, and a selector that names none says so instead of printing
+    nothing."""
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    units = _resolve_units(ctx, args.selector)
+    if not units:
+        print(f"error: nothing named '{args.selector}' in this environment "
+              f"({ctx.env_name}).", file=sys.stderr)
+        print("       compass services status lists what is deployed.",
+              file=sys.stderr)
+        return 1
+    level = "warnings" if args.warnings else "errors" if args.errors else None
+    found, capped = _journal_tail(units, args.lines, level)
+
+    if args.json:
+        print(json.dumps({
+            "ok": True,
+            "units": units,
+            "level": level or "all",
+            "count": len(found),
+            "truncated": capped,
+            "lines": found,
+        }, indent=2))
+        return 0
+
+    for line in found:
+        print(line)
+    if not found:
+        print(f"the journal holds no {level or 'output'} for "
+              f"{' '.join(units)}; it may not have run yet.")
+    elif capped:
+        print(f"... last {len(found)} line(s); raise -n for more.",
+              file=sys.stderr)
+    return 0
 
 
 def cmd_clear_logs(ctx, args):
@@ -820,6 +923,20 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
                     help="Extra flags forwarded verbatim to systemd-cgtop "
                          "(e.g. -1, -b, -m)")
 
+    lg = sub.add_parser("logs", help="Tail a unit's journal output: a "
+                                     "compiled service, a short name, a unit "
+                                     "name, or nats-server")
+    _common(lg)
+    lg.add_argument("selector", help="Service, short name, unit name, or "
+                                     "nats-server")
+    lg.add_argument("-n", "--lines", type=int, default=200,
+                    help="How many journal lines to read (default: 200)")
+    lg.add_argument("--warnings", action="store_true",
+                    help="Only lines the service logged at warning level")
+    lg.add_argument("--errors", action="store_true",
+                    help="Only lines the service logged at error level")
+    lg.add_argument("--json", action="store_true",
+                    help="Emit one JSON object instead of plain lines")
     cl = sub.add_parser("clear-logs", help="Delete all *.log / *.err under "
                                            "the preset's log directory")
     _common(cl)
@@ -832,4 +949,5 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
 
     return {"start": cmd_start, "stop": cmd_stop, "status": cmd_status,
             "restart": cmd_restart, "tree": cmd_tree, "top": cmd_top,
+            "logs": cmd_logs,
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)

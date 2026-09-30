@@ -28,7 +28,6 @@ namespace ores::logging {
 namespace {
 
 const std::string logging_log_enabled_arg("log-enabled");
-const std::string logging_log_to_console_arg("log-to-console");
 const std::string logging_log_level_arg("log-level");
 const std::string logging_log_dir_arg("log-directory");
 const std::string logging_log_filename_arg("log-filename");
@@ -42,16 +41,27 @@ logging_configuration::make_options_description(const std::string& log_file) {
     using boost::program_options::value;
     using boost::program_options::options_description;
 
+    /* File logging is opt-in. logging_options.hpp already documents an empty
+     * filename as disabling it, but the option carried a non-empty default,
+     * so the documented opt-out could not be reached. The caller's suggested
+     * name stays in the signature until the callers are migrated; it is no
+     * longer a default, so a unit that asks for nothing gets the console. */
+    (void)log_file;
+
     options_description r("Logging");
     r.add_options()("log-enabled,e", "Generate a log file.")(
         "log-level,l",
         value<std::string>()->default_value("info"),
         "What level to use for logging. Valid values: trace, debug, info, "
-        "warn, error.")("log-to-console", "Output logging to the console, as well as to file.")(
+        "warn, error.")(
+        "log-to-console",
+        "Accepted for compatibility: logging always goes to the console.")(
         "log-directory",
-        value<std::string>()->default_value("log"),
-        "Where to place the log files.")(
-        "log-filename", value<std::string>()->default_value(log_file), "Name of the log file.")(
+        value<std::string>()->default_value(""),
+        "Where to place the log files. Only used with --log-filename.")(
+        "log-filename",
+        value<std::string>()->default_value(""),
+        "Name of the log file. Empty, the default, disables file logging.")(
         "log-include-pid", "Include process ID in log filename (e.g., app.12345.log).")(
         "log-replica-index",
         value<int>(),
@@ -69,7 +79,12 @@ logging_configuration::read_options(const boost::program_options::variables_map&
 
     logging_options r;
     r.filename = vm[logging_log_filename_arg].as<std::string>();
-    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
+    /* The console is where logging goes, and it is not optional: systemd
+     * captures a service's stdout into the journal, which is how the fleet is
+     * read. A file is added only when a filename is given, so a caller that
+     * asks for logging and nothing else gets the console rather than a
+     * validator error. --log-to-console is still accepted and is now implied. */
+    r.output_to_console = true;
     r.output_directory = vm[logging_log_dir_arg].as<std::string>();
     r.include_pid = vm.count(logging_log_include_pid_arg) != 0;
     if (vm.count(logging_log_replica_index_arg))

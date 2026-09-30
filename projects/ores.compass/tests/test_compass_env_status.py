@@ -42,32 +42,42 @@ def _definitions(monkeypatch, *specs):
                           for name, replicas in specs])
 
 
-def _states(monkeypatch, states, ready=(), last_line=""):
-    """Drive the systemd and log boundaries from a {unit: state} map.
+def _states(monkeypatch, states, journal=()):
+    """Drive the systemd boundary and the journal from a {unit: state} map.
 
-    A unit the map does not name is one the manager has never heard of, so
-    it reads as missing, which is the real shape of an undeployed unit."""
+    A unit the map does not name is one the manager has never heard of, so it
+    reads as missing, which is the real shape of an undeployed unit. `journal`
+    is the text that unit is treated as having logged."""
     monkeypatch.setattr(compass_services, "_unit_active_state",
                         lambda unit: states.get(unit, "missing"))
-    monkeypatch.setattr(compass_services, "_log_contains",
-                        lambda path, pattern: str(path) in ready)
-    monkeypatch.setattr(compass_services, "_log_last_line",
-                        lambda path: last_line)
+    monkeypatch.setattr(
+        compass_services, "_journal_lines",
+        lambda unit, lines=compass_services.JOURNAL_LINES: list(journal))
 
 
 class TestClassification:
-    """The five states, and what each one's detail says."""
+    """The five states, and what each one's detail says.
 
-    def test_an_active_unit_with_the_readiness_line_is_running(self, ctx,
-                                                              monkeypatch):
-        _states(monkeypatch, {"u": "active"}, ready=("web.log",))
-        assert compass_services.classify_unit(ctx, "u", "web.log") == \
+    The journal is the log source now, so these drive `_journal_lines` rather
+    than a file on disk."""
+
+    def test_a_compiled_service_is_running_when_it_is_active(self, ctx,
+                                                             monkeypatch):
+        """The compiled services are Type=notify, so ActiveState is the whole
+        readiness rule and no log is consulted for them."""
+        _states(monkeypatch, {"u": "active"})
+        assert compass_services.classify_unit(ctx, "u") == ("running", "active")
+
+    def test_the_node_unit_still_needs_its_readiness_line(self, ctx,
+                                                          monkeypatch):
+        _states(monkeypatch, {"u": "active"}, journal=["Service ready"])
+        assert compass_services.classify_unit(ctx, "u", "node") == \
             ("running", "active")
 
-    def test_an_active_unit_without_the_readiness_line_is_starting(
+    def test_the_node_unit_without_the_readiness_line_is_starting(
             self, ctx, monkeypatch):
-        _states(monkeypatch, {"u": "active"}, last_line='{"m":"Listening"}')
-        state, detail = compass_services.classify_unit(ctx, "u", "web.log")
+        _states(monkeypatch, {"u": "active"}, journal=['{"m":"Listening"}'])
+        state, detail = compass_services.classify_unit(ctx, "u", "node")
         assert state == "starting"
         assert detail == '{"m":"Listening"}'
 
@@ -75,37 +85,36 @@ class TestClassification:
                                                            monkeypatch):
         """Folding failed into stopped hid a crashed service behind a
         deliberate shutdown, which is the defect this state exists for."""
-        _states(monkeypatch, {"u": "failed"}, last_line="bind: address in use")
-        state, detail = compass_services.classify_unit(ctx, "u", "web.log")
+        _states(monkeypatch, {"u": "failed"}, journal=["bind: address in use"])
+        state, detail = compass_services.classify_unit(ctx, "u")
         assert state == "failed"
         assert detail == "bind: address in use"
 
     def test_an_unknown_unit_is_missing(self, ctx, monkeypatch):
         _states(monkeypatch, {})
-        assert compass_services.classify_unit(ctx, "u", "web.log") == \
+        assert compass_services.classify_unit(ctx, "u") == \
             ("missing", "unit not loaded")
 
     def test_an_inactive_unit_is_stopped_not_failed(self, ctx, monkeypatch):
         _states(monkeypatch, {"u": "inactive"})
-        assert compass_services.classify_unit(ctx, "u", "web.log") == \
-            ("stopped", "inactive")
+        assert compass_services.classify_unit(ctx, "u") == ("stopped", "inactive")
 
     def test_an_activating_unit_is_starting(self, ctx, monkeypatch):
         _states(monkeypatch, {"u": "activating"})
-        assert compass_services.classify_unit(ctx, "u", "web.log")[0] == "starting"
+        assert compass_services.classify_unit(ctx, "u")[0] == "starting"
 
-    def test_a_unit_with_no_readiness_log_decides_on_active_state_alone(
-            self, ctx, monkeypatch):
-        """nats-server logs to journald, so it has no log to check."""
-        _states(monkeypatch, {"nats": "active"}, ready=())
-        assert compass_services.classify_unit(ctx, "nats", None) == \
+    def test_nats_is_reported_on_active_state_alone(self, ctx, monkeypatch):
+        """nats-server is not a compiled service, so no readiness line is
+        looked for. Its unit's port check is what the start path waits on."""
+        _states(monkeypatch, {"nats-server": "active"})
+        assert compass_services.classify_unit(ctx, "nats-server") == \
             ("running", "active")
 
     def test_a_service_log_line_is_trimmed_to_its_message(self, ctx,
                                                           monkeypatch):
         _states(monkeypatch, {"u": "active"},
-                last_line='{"timestamp":"now","level":"info"] service started')
-        state, detail = compass_services.classify_unit(ctx, "u", "web.log")
+                journal=['{"timestamp":"now","level":"info"] service started'])
+        state, detail = compass_services.classify_unit(ctx, "u", "node")
         assert (state, detail) == ("starting", "service started")
 
 

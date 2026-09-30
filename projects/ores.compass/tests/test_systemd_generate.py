@@ -51,12 +51,16 @@ class TestRenderNodeUnit:
         assert ('export ORES_NATS_TLS_KEY='
                 '"/checkout/build/keys/nats/ores.web.service.key"') in unit
 
-    def test_standard_output_lands_where_compass_looks_for_readiness(self):
+    def test_the_node_unit_is_left_to_the_journal(self):
+        """The fleet logs to the console and systemd captures it.
+
+        Redirecting this unit to a file is what made ores.web the second of
+        three logging mechanisms, so the absence of both lines is the point:
+        systemd's own default is the journal."""
         unit = _render()
-        log = ("/checkout/build/output/"
-               f"{PRESET}/publish/log/ores.web.service.0.log")
-        assert f"StandardOutput=append:{log}" in unit
-        assert f"StandardError=append:{log}" in unit
+        assert "StandardOutput" not in unit
+        assert "StandardError" not in unit
+        assert "Type=simple" in unit
 
     def test_requires_nats_and_the_declared_dependencies(self):
         unit = _render(deps_on=["ores.iam.service"])

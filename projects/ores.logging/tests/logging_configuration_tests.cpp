@@ -89,9 +89,12 @@ TEST_CASE("read_options_returns_defaults_when_logging_enabled", tags) {
     BOOST_LOG_SEV(lg, ores::logging::info) << *result;
 
     CHECK(result->severity == "debug");
-    CHECK(result->filename == "app.log");
-    CHECK(result->output_directory == std::filesystem::path("log"));
-    CHECK_FALSE(result->output_to_console);
+    /* No filename and no directory: this logs to the console and writes no
+     * file, which is what a caller that asks for logging and nothing else
+     * now gets. */
+    CHECK(result->filename.empty());
+    CHECK(result->output_directory.empty());
+    CHECK(result->output_to_console);
     CHECK_FALSE(result->include_pid);
     CHECK_FALSE(result->replica_index.has_value());
 }

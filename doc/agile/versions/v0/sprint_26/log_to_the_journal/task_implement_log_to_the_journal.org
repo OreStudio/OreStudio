@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: B1D026B6-18AD-4A98-A84F-EA14C9B6F2C7
+:END:
+#+title: Task: Log to the console and read readiness from the journal
+#+description: Initial task for: Log the fleet to the journal
+#+type: task
+#+level: s1
+#+filetags: :log_to_the_journal:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The fleet logs to the console and systemd captures it into the user journal, so one interface reaches every service and no file is written. compass stops reading a log file to decide whether a service is ready, because that file is the thing being removed, and it gains a verb that tails any unit including nats-server, with the last warnings and the last errors a filter away. The environment plugin shows that tail, and those warnings and errors, for one service at a time.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- No service writes a log file, and every service's output reaches the user journal.
+- File logging is opt-in in ores.logging, matching the option the header already documents, and a unit that passes no filename writes no file.
+- compass decides a service is ready by reading the journal, and a running fleet still reports running rather than starting.
+- compass services logs prints a tail from the journal for any unit, including nats-server, which no selector reaches today.
+- The tail verb can return only the last warnings or only the last errors.
+- The Environment view opens a log overview for one service showing its tail and its warnings and errors.
+
+* Plan
+
+Four edits, and the third is the one that keeps the change from breaking the
+fleet.
+
+- =logging_configuration.cpp= gives =--log-filename= an empty default, which is
+  what =logging_options.hpp= already documents. File logging then happens only
+  when a caller asks for it, and no caller changes.
+- =systemd_generate.py='s =DEFAULT_ARGS_TEMPLATE= becomes =--log-enabled
+  --log-level {log_level} --log-to-console= and stops passing =--log-directory=
+  and =--log-replica-index=. The node unit renderer stops redirecting stdout
+  and stderr to a file, so systemd captures both into the journal.
+- compass moves its reads to the journal. For readiness this is mostly
+  deletion: the twenty-three =Type=notify= units answer through =ActiveState=,
+  so =classify_unit= stops scanning anything for them and only =ores.web= keeps
+  a string check, moved to the journal. =_detail_of=, =_snapshot_logs= and
+  =_service_ready= read the journal too. Leaving this out is the silent failure:
+  those functions read the file this task deletes, so every active unit would
+  report =starting= forever.
+- =clear-logs= and the log path reported by =compass services status= follow,
+  because there is no log directory to clear or report.
+
+Verification is a fleet start, because nothing else exercises readiness. The
+fleet must be stopped again afterwards to leave the environment as it was
+found.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Units still passing a log directory | 0 of 25 | after regenerating them, grep for log-directory | =fba1a973cd= |
+| Units still redirecting to a file | 0 of 25 | grep for StandardOutput=append | =fba1a973cd= |
+| Compiled units now taking --log-to-console | 23 | inspect the generated iam unit | =fba1a973cd= |
+| Node units left to systemd's default | 1 | inspect the generated web unit | =fba1a973cd= |
+| Compass suite | 295 passed, 1 skipped | =pytest projects/ores.compass/tests -q= | =fba1a973cd= |
+| Fleet start on the new units | 22 running, 2 starting, 0 failed, nats running | =compass services start= | =acbcb957b8= |
+| Service log files written during the run | none; the only .log files are ctest's, vcpkg's and npm's | =find build projects -name '*.log' -newermt '-2 hours'= | =acbcb957b8= |
+| A service's own records in the journal | present, in the service's format | =compass services logs iam -n 4= | =acbcb957b8= |
+| The web unit's readiness line | present in the journal | =compass services logs web -n 40= | =acbcb957b8= |
+| Logging C++ suites | 2 of 2 pass, 2172 assertions | =ctest -R 'logging\|telemetry.core'= | =acbcb957b8= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=logging_options.hpp= already documented an empty filename as disabling file
+logging, but =--log-filename= carried a non-empty default and
+=--log-directory= carried =log=, so the documented opt-out could not be
+reached and an empty filename alone would have tripped the validator's
+directory-without-a-filename rule. Both defaults are empty now.
+
+The generator passes =--log-enabled --log-level <level> --log-to-console= and
+no longer passes =--log-directory= or =--log-replica-index=, and the node unit
+keeps no =StandardOutput= or =StandardError= so systemd's own default, the
+journal, applies. Readiness stopped being a log question for twenty-three of
+the twenty-four units, because they are =Type=notify= and systemd reports them
+active only after the service called =sd_notify(READY=1)=. The start path polls
+=ActiveState= rather than a growing file, which deleted the byte-offset waiter
+and its snapshot.
+
+Proven by a fleet start on the new units. Twenty-two of the twenty-four came
+up and reported =running=, nats reported running, and nothing was failed or
+missing; the two that did not, =marketdata= and =synthetic=, read =starting=,
+which is the honest state and is almost certainly the schema drift rather than
+this change, since the database is a day behind HEAD. The journal then held the
+services' own records in their own format, which is the whole claim:
+=2026-09-30 15:24:18.546519 [INFO] [ores.nats.service.client] NATS publish: ...=
+came back through =compass services logs iam=, so the console, systemd's
+capture, and the verb all work with no file involved.
+
+=ores.web= does log =Service ready=, so the one unit whose readiness still
+reads a line is served. The fleet was stopped again afterwards.
+
+The start also found a defect in this task's own code: the bounded retry called
+itself, so a unit that could not become active made the start loop forever.
+That is fixed in =acbcb957b8=, which is also where the fleet numbers above come
+from.

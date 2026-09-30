@@ -186,3 +186,66 @@ class TestTransportSelection:
         assert self._selection(
             tmp_path, "ORES_USE_BUSCTL=1\n", ["status"], monkeypatch,
             environ="0") is False
+
+
+class TestLogs:
+    """`compass services logs` reads the journal.
+
+    The level filter matches the service's own severity token rather than a
+    journald priority, because journald records every console line at one
+    priority whatever the service called it."""
+
+    def test_the_compiled_format_reports_its_severity(self):
+        line = "2026-09-30 15:02:19.123456 [warn] [iam] pool nearly full"
+        assert compass_services._severity_tokens(line) == {"warn", "iam"}
+
+    def test_the_nats_format_puts_the_severity_after_its_process_id(self):
+        line = "[783113] 2026/09/30 01:02:51.145838 [INF] Server Exiting.."
+        assert compass_services._severity_tokens(line) == {"783113", "inf"}
+
+    def test_a_line_with_no_brackets_carries_no_severity(self):
+        assert compass_services._severity_tokens("Stopped the unit.") == set()
+
+    def test_warnings_and_errors_are_told_apart(self, monkeypatch):
+        payload = [
+            "2026-09-30 15:02:19.100000 [info] [iam] listening",
+            "2026-09-30 15:02:20.100000 [warn] [iam] pool nearly full",
+            "2026-09-30 15:02:21.100000 [error] [iam] gave up",
+            "[783113] 2026/09/30 01:02:51.145838 [WRN] slow consumer",
+        ]
+        monkeypatch.setattr(compass_services, "_journal_lines",
+                            lambda units, lines=0: list(payload))
+        warnings, _ = compass_services._journal_tail(["u"], 10, "warnings")
+        errors, _ = compass_services._journal_tail(["u"], 10, "errors")
+        assert warnings == [payload[1], payload[3]]
+        assert errors == [payload[2]]
+
+    def test_unfiltered_lines_come_back_whole(self, monkeypatch):
+        monkeypatch.setattr(compass_services, "_journal_lines",
+                            lambda units, lines=0: ["a", "b"])
+        found, capped = compass_services._journal_tail(["u"], 5)
+        assert (found, capped) == (["a", "b"], False)
+
+    def test_the_tail_reports_when_it_hit_its_cap(self, monkeypatch):
+        monkeypatch.setattr(compass_services, "_journal_lines",
+                            lambda units, lines=0: ["a", "b"])
+        assert compass_services._journal_tail(["u"], 2)[1] is True
+
+    def test_nats_is_reachable_though_no_service_selector_resolves_it(self,
+                                                                     ctx):
+        assert compass_services._resolve_units(ctx, "nats") == \
+            ["nats-server-eager_maxwell"]
+        assert compass_services._resolve_units(ctx, "nats-server") == \
+            ["nats-server-eager_maxwell"]
+
+    def test_a_short_name_resolves_to_its_units(self, ctx, monkeypatch):
+        _definitions(monkeypatch, "ores.web.service", 1)
+        assert compass_services._resolve_units(ctx, "web") == \
+            ["ores.web.service-eager_maxwell"]
+
+    def test_an_unresolvable_selector_names_nothing(self, ctx, monkeypatch):
+        monkeypatch.setattr(compass_services.systemd_generate,
+                            "load_service_registry", lambda root: [])
+        monkeypatch.setattr(compass_services.systemd_generate,
+                            "fetch_service_definitions", lambda services: [])
+        assert compass_services._resolve_units(ctx, "nope") == []

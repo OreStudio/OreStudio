@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:entry:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
 #+branch: feature/give-every-entry-screen-the-ore-studio-banner
-#+pr:
+#+pr: 2441
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2441][#2441]] | [web,iam] Build the registration door behind one banner |
 
 * Review
 

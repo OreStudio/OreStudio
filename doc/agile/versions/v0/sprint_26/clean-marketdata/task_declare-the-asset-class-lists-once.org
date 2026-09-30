@@ -28,11 +28,11 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Reopened. The task was closed with acceptance 1 unmet: two files still hold a hand-written copy of the seven codes. The classification rule and feed binding models each carry the same seven-element array in a test-data generator block, and a literal list of the taxonomy in a file that is not the catalogue is the copy the acceptance forbids. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Generate the codes into the header the catalogue already writes into ores.marketdata.api and read them from both generator blocks, then close the task. |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -323,3 +323,21 @@ With that, every acceptance is met. The drift check reports no drift for =refdat
 none across the catalogue, the codegen suite passes 1046, =validate_docs.sh= passes all
 41 components, and SQL hygiene, the schema validation, the populate references and the
 CMake lists all pass.
+
+**The task was reopened once, and the reopen is the honest part of this record.** It was
+closed after the fourth unit with acceptance 1 unmet: the classification rule and feed
+binding models each still carried the same seven-element array of codes in a test-data
+generator block. The census had listed that duplication as a drift, and the disposition
+recorded it as deferred on the grounds that it is test data rather than the taxonomy --
+but acceptance 1 says no file outside the catalogue holds a hand-written copy of the
+list, and a literal seven-element array is one whatever it feeds. The array is now
+generated: the codes are part of the header =ores.cpp.asset_class= already writes into
+=ores.marketdata.api=, in display order, and both generator blocks read it through the
+domain header they include. A class added to the catalogue now reaches the samplers, and
+the drift is fixed rather than deferred.
+
+Verified on the branch: the marketdata core suite's classification walk passes its 557
+assertions in 19 cases, the codegen suite passes 1046, the full ctest suite passes 89 of
+89 targets, the drift check reports no drift for =marketdata= and for =refdata= and none
+across the catalogue after a full dry run, and every codegen, SQL and documentation gate
+passes.

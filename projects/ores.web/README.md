@@ -129,13 +129,20 @@ npm run dev:web
 
 ## Verification
 
-One verifier asserts against the running system rather than a mock.
+Two verifiers assert against the running system rather than a mock.
 
 `scripts/verify-login.ts` exercises the protocol layer. Its first assertion is a
 deliberately rejected login. A server that decoded the msgpack body answers with
 a message. A server that did not decode it never replies at all. A well-formed
 rejection therefore proves the subject, the encoding, and the response schema in
 one step.
+
+`scripts/verify-first-run.ts` walks the First run journey the way the browser
+walks it: the same client (`packages/web/src/api/client.ts`), the same
+request-building and password rules, in the journey's order, from an empty
+installation to _Ready_. It refuses to run unless the deployment still needs its
+administrator, because the first run is the one path that can only happen on an
+empty database, so its run starts by wiping this environment's data.
 
 Unit tests cover the pieces that must not drift. They include a golden-bytes
 test that an empty request encodes as the msgpack empty map, and that every
@@ -144,6 +151,11 @@ declared field is written even when the caller omits it.
 ```sh
 npm test
 npm run verify:login
+
+compass services stop
+compass db recreate -y -k
+compass services start
+npm run verify:first-run
 ```
 
 ## The test account

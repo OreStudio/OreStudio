@@ -21,6 +21,7 @@
     "dev:bff": "npm run dev --workspace @ores/bff",
     "dev:web": "npm run dev --workspace @ores/web",
     "verify:login": "tsx scripts/verify-login.ts",
+    "verify:first-run": "tsx scripts/verify-first-run.ts",
     "seed:account": "bash scripts/seed-test-account.sh",
     "ir:protocol": "python3 scripts/emit_protocol_ir.py --all --out .runtime/ir/protocol.ir.json",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/tsconfig.tsbuildinfo"

@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:setup:v0:sprint_26:
 #+category: feature
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-09-30
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -46,12 +46,12 @@ state and the progress are real.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Both clients run the three Setup journeys' work against the same contract, and nothing is left of the provisioning the wizards did client-side. The browser sets an empty installation up from the setup page — the first administrator, the first tenant from a registered starting point, the hand-over, the first sign-in and *Ready* — and a reload comes back to the rail rather than stranding the person. The shell says the same things with =bootstrap setup=, =provision tenant= and =provision party=, each sending one request per stage and following the run through the same progress read the browser's rail renders, and the end-to-end recipes each ran from their own empty installation to a working tenant. The two verbs the generic request replaced retired with the shell, and so did the generated duplicates of the porcelain commands and the synthetic organisation generator. |
+| Now           | Both clients run the three Setup journeys' work against the same contract, and nothing is left of the provisioning the wizards did client-side. The browser sets an empty installation up from the setup page — the first administrator, the first tenant from a registered starting point, the hand-over, the first sign-in and *Ready* — and a reload comes back to the rail rather than stranding the person. The shell says the same things with =bootstrap setup=, =provision tenant= and =provision party=, each sending one request per stage and following the run through the same progress read the browser's rail renders, and the end-to-end recipes each ran from their own empty installation to a working tenant. The two verbs the generic request replaced retired with the shell, and so did the generated duplicates of the porcelain commands and the synthetic organisation generator. Every acceptance line is met, the last one by =scripts/verify-first-run.ts=. |
 | Waiting on    | Nothing. |
-| Next          | One acceptance line is not met, and it is why this story stays open: no scripted end-to-end run proves the browser's path on a fresh database the way =projects/ores.web/scripts/verify-login.ts= proves the sign-in. Both journeys now run as routes of their own -- =/tenants/new= for a signed-in administrator and =/parties/new= for a tenant administrator -- and the party journey carries both cases the product owner states, a party built from a legal entity the deployment holds and a party that is not one of them, described by hand. It is recorded as a task of its own. |
-| Last touched  | 2026-09-29                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-30                               |
 
 * Acceptance
 
@@ -110,7 +110,7 @@ state and the progress are real.
 | [[id:01CF4ADC-404E-4CEA-8594-C033245A7342][Start a tenant from a GLEIF entity]] | DONE | 2026-09-29 | 2026-09-29 | The starting points become three: build the tenant by hand, build it around a parent legal entity the deployment holds in its GLEIF data, or take the prefilled demo. The GLEIF card opens on a search over those entities and derives the tenant from the one chosen; the manual card may leave the legal entity out altogether. |
 | [[id:CD991920-78E3-4CD3-965D-B1E76665BAB2][Keep the setup screen after a reload]] | DONE | | 2026-09-29 | An installation is set up when it has an administrator and a tenant of its own, so the setup journey is the only screen until it has both. A browser that reloads half way through comes back to the rail and signs in as the administrator the deployment already has, rather than being stranded with no way back to the work. |
 | [[id:C7487AE2-CC23-4FF3-AAB1-E4FF30F331CD][Mop up the provisioning surface and the synthetic organisation]] | DONE | 2026-09-29 | 2026-09-29 | Rename the first-run command to bootstrap setup, retire the generated duplicates of the provision verbs, delete the synthetic organisation generator and its recipe, and close the story with its documents brought up to date. |
-| [[id:77CFDF61-0AE6-4176-9ADA-2D15207767EA][Build the New tenant and New party journeys and the scripted browser proof]] | STARTED | 2026-09-29 | | Two acceptance lines of the story are unmet: the New tenant and New party journeys are not journeys of their own (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database. |
+| [[id:77CFDF61-0AE6-4176-9ADA-2D15207767EA][Build the New tenant and New party journeys and the scripted browser proof]] | DONE | 2026-09-29 | 2026-09-30 | Two acceptance lines of the story are unmet: the New tenant and New party journeys are not journeys of their own (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database. |
 | [[id:39AE2A8D-9680-4395-A9E9-596217C13593][Name the bootstrap commands consistently]] | DONE | 2026-09-29 | 2026-09-29 | The bootstrap menu repeats its own name in one of its verbs: a caller types bootstrap bootstrap-status. The generated command verb comes from the message name, and the message is named bootstrap_status_request, so the model needs a way to state the verb it wants. |
 | [[id:EE8AD3DD-73FE-495E-B4A7-B899729C87D9][Give a workflow step a deadline the engine enforces]] | DONE | | 2026-09-30 | A step declares how long it may run and the engine fails it when it does not answer, so a run whose service is gone stops being in_progress forever and a waiter sees the truth. |
 
@@ -278,6 +278,50 @@ none of them depends on it and all of them are permanent.
   them they cover the three journeys — two of them through the party
   journey as well as the tenant one. All three are kept working, and they
   are what the story's last plan step runs.
+- *The scripted proof drives the browser's client, not a browser.* The last
+  acceptance line asks for a run in the shape of =verify-login.ts=, and that
+  verifier asserts against the real system with no screen in the way.
+  =scripts/verify-first-run.ts= is the same: it calls the browser's own client,
+  its own request-building and its own password rules, and supplies only the two
+  things a browser provides and Node does not — a base address for the relative
+  paths and a jar for the session cookie. An answer the browser could not parse
+  fails it, because the browser's schema is what parses it. A driven browser
+  would prove the rendering too, and would fail for reasons that are not the
+  contract's: the rails and the screens are covered by the web suite, and the
+  path is covered here.
+- *A journey that can only happen once is proved on a fresh database or not at
+  all.* The proof's first assertion is that the installation still needs its
+  administrator, and a deployment that is already set up is refused rather than
+  half-walked. The alternative — a script that sets a deployment back into
+  bootstrap mode — would prove a state no person reaches.
+
+* Gaps the journeys still record
+
+The three journey documents name what they still reach for, and none of it is
+silent. Two of the gaps are owned by documents of their own, and the rest are
+stated here:
+
+- A tenant cannot be reset in a way that also stops its run.
+  [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]]
+  records it.
+- The engine's change event cannot be read by the browser, because the shared
+  schema reads a country-shaped field. The progress read is the contract
+  instead, and the mismatch is
+  [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][captured]].
+- The *Operational* card's root LEI is typed rather than chosen. Only the
+  *GLEIF entity* card searches the deployment's register, and a code the
+  deployment does not hold arrives as the publication's SQL rather than as a
+  sentence about the entity. A person who has no LEI leaves it empty, which is
+  the case the scripted proof walks.
+- The party describe step carries no accounts picker. Nothing writes the chosen
+  associations — the run joins the caller alone — and a picker whose choices
+  went nowhere would be worse than no picker.
+- Where a party hangs is the deployment's answer and not the person's.
+  [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] is that
+  journey.
+- The standalone =/tenants/new= and =/parties/new= routes are walked in a
+  browser and recorded as evidence rather than scripted. Only the first run can
+  happen on an empty database, and that is the path the scripted proof walks.
 
 * Out of scope
 

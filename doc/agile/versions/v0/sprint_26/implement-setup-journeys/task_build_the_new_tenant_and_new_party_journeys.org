@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
-#+branch: feature/build-the-new-tenant-and-new-party-journeys
-#+pr: 2405
+#+branch: feature/prove-the-first-run-journey
+#+pr: 2420
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
-#+updated: 2026-09-29
+#+updated: 2026-09-30
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ and a scripted end-to-end run proves the browser's path on a fresh database.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Both journeys are built and walked in a browser. `/tenants/new` renders the five tenant steps on their own rail for a signed-in administrator, `/parties/new` renders the five party steps for a tenant administrator, and the home screen is the way into both. The scripted end-to-end proof is still owed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The scripted end-to-end run the last acceptance line asks for, in the shape of `projects/ores.web/scripts/verify-login.ts`, walking the first-run path against the real server on a fresh database. |
-| Last touched | 2026-09-29                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
 
 * Acceptance
 
@@ -70,9 +70,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Tests in the web workspace | 146 passing, 13 files | =npm run test --workspace @ores/web= | branch tip |
-| Tests in the wire protocol | 51 passing, 7 files | =npm run test --workspace @ores/wire-protocol= | branch tip |
-| Tests in the BFF | 64 passing, 14 files | =npm run test --workspace @ores/bff= | branch tip |
+| Tests in the web workspace | 146 passing, 13 files | =npm run test --workspace @ores/web= | 47fe43eaab |
+| Tests in the wire protocol | 51 passing, 7 files | =npm run test --workspace @ores/wire-protocol= | 47fe43eaab |
+| Tests in the BFF | 64 passing, 14 files | =npm run test --workspace @ores/bff= | 47fe43eaab |
+| The first-run path on a fresh installation | Every check passed, exit 0 | =npx tsx scripts/verify-first-run.ts= | 47fe43eaab |
 | A party the run provisions | Active, LEI recorded, caller joined, onboarding complete | =evidence/new_party_journey_live.txt= | branch tip |
 | A party the run provisions that the register does not hold | Active, no identifier | =evidence/new_party_journey_live.txt= | branch tip |
 
@@ -105,6 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2420][#2420]] | [web] Prove the first run journey on a fresh installation |
 | [[https://github.com/OreStudio/OreStudio/pull/2405][#2405]] | [web,iam] Add a party to the tenant, as a journey |
 | [[https://github.com/OreStudio/OreStudio/pull/2396][#2396]] | [web] Run the new tenant journey on its own rail |
 
@@ -162,10 +164,17 @@ its own, and the service that holds both is the one that chooses. The shell's
 =provision party= therefore names none by default, and the browser names none at
 all.
 
-What this task still owes is the scripted end-to-end proof, the last acceptance
-line: a run in the shape of =projects/ores.web/scripts/verify-login.ts= walking
-the first-run path against the real server on a fresh database. The two walks
-recorded here are manual.
+The scripted end-to-end proof, the last acceptance line, is
+=projects/ores.web/scripts/verify-first-run.ts=, run with =npm run
+verify:first-run=. It is not a recording of a browser: it drives the browser's
+own client, its own request-building and its own password rules in the journey's
+order, so an answer the browser could not parse fails the walk. It refuses to
+run on a deployment that is already set up, because the first run is the one
+path that cannot happen twice. On a fresh database it walked the installation
+from nothing to *Ready* and every check passed, which is
+=evidence/first_run_journey_scripted.txt=. Its only red mark on the first run
+was the script's own: it compared the tenant administrator's login principal
+against the session's account name. No product code changed for it.
 
 The party journey also does not carry the accounts picker the prototype showed.
 Nothing writes the chosen associations -- the run joins the caller alone -- and a

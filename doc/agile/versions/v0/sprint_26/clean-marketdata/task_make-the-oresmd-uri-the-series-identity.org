@@ -28,9 +28,9 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | =market_series= carries =oresmd_uri= as its natural key with =party_id=, and every writer of an observation stores the key the row is written under: the import keeps the file's, the ingest loop keeps the tick's, the republish service projects its own from the output series' identity and the pillar's point, and the DQ publish copies the key the dataset names. The vintage decision is settled and built: the datasets name each row's own ORE key and the series it belongs to, so the deposit grid is a real =MM/RATE/USD/2D= series rather than a generic name, and the synthetic config names the series its vintage reads through =vintage_series_uri=. The triple no longer keys a series and no reader falls back to it. What step four has left is the deletion: =series_type=, =metric= and =qualifier= off =market_series= and off the DQ artefact and its publish, with the last hand-written readers. |
+| Now          | The cutover's four acceptances are delivered. =market_series= is named by its =oresmd_uri= alone -- =series_type=, =metric= and =qualifier= have gone, with the DQ artefact's and the publish's -- and every writer of an observation stores the key the row is written under: the import keeps the file's, the ingest loop keeps the tick's, the republish service projects its own from the output series and the pillar's point, and the DQ publish copies the key its dataset names. The vintage decision is built, the client's triple lookup is gone with its last caller, and the export reads each datum's own key rather than rebuilding one from columns that no longer exist. |
 | Waiting on   | Nothing. |
-| Next         | Delete =series_type=, =metric= and =qualifier= from =market_series=, from the DQ artefact and from its publish function, against the census's 21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents. That is the fourth acceptance and is not done; the Plan's step four says how far the step has come, and the identity note says what each earlier unit settled. One thing the census named is not deleted: the series classification rule stays, because it classifies a key's own tokens rather than a series row, and the acceptance below is corrected to say so. |
+| Next         | V06: join =COMPONENTS_UNDER_TEST= and run the standard's gates. =marketdata= is one modelling pass short of it, because seven hand-written protocol headers carry no TypeScript twin and a twin is generated from an operation model; the pattern to follow is read off =ores.variability.operations=. The Plan's step four records the deletion as delivered, and the identity note says what each earlier unit settled. |
 | Last touched | 2026-09-29                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 - market_series and feed_binding carry oresmd_uri, and it is the natural key for a series and for a feed binding.
 - import_service writes the URI for every market-data key and every fixing index name, and writes no row that has an identifier without one. from_index_name has production call sites at last.
 - The corpus import round-trips: every fixing row in external/ore/examples creates a series, with the skipped-name warning count at zero and the de-duplication count unchanged.
-- series_type, metric, qualifier and ore_key are deleted, and every consumer reads the URI. The series classification rule is not part of that deletion and the acceptance is corrected here: it classifies the tokens of a key -- which the ORE shapes registry decomposes -- rather than a series row, so the identity does not replace it. The =ore_key= column named here is the feed binding's, already become =oresmd_uri=.
+- series_type, metric, qualifier and ore_key are deleted, and every consumer reads the URI. Delivered: the three left =market_series=, the DQ artefact and its publish, and the last four hand-written readers went with them. The series classification rule is not part of that deletion and the acceptance is corrected here: it classifies the tokens of a key -- which the ORE shapes registry decomposes -- rather than a series row, so the identity does not replace it. The =ore_key= column named here is the feed binding's, already become =oresmd_uri=.
 - The FOMC segment's instruments carry ORE identities: the raw grid is one series per pillar, named by the shape of the instrument the feed simulates -- the spot-starting pillar spelled as the swap it is, so no pillar needs a new spelling -- and the republish curve carries ORE's DISCOUNT key.
 
 * Scope, measured before the column
@@ -338,12 +338,12 @@ is left is the cutover the task takes its name from.
    rows' own ORE keys and the series those keys belong to, so the deposit grid is a real
    =MM/RATE/USD/2D= series and the DQ publish stores the observation's key, and the
    synthetic config names the series its vintage reads -- which is what the client's last
-   triple lookup was waiting for, so that lookup goes with its caller. What is left is the
-   export reading a fixing's index name off the identity rather than off the =qualifier=
-   column, and then =series_type=, =metric= and =qualifier= going, with the census's
-   21 + 32 C++ files, 4 SQL files, 2 TypeScript twins and 80 org documents as the
-   checklist. The import classification table is not among them: it classifies a key's own
-   tokens rather than a series row, and the fourth acceptance is corrected to say so.
+   triple lookup was waiting for, so that lookup goes with its caller. That is delivered,
+   and so is the deletion the paragraph below describes: the export reads a fixing's index
+   name off the identity, =series_type=, =metric= and =qualifier= have gone from
+   =market_series=, the DQ artefact and its publish, and step four is complete. The import
+   classification table was never part of it: it classifies a key's own tokens rather than
+   a series row, and the fourth acceptance is corrected to say so.
 
    Read off the tree, the hand-written half of that work is four places rather than
    twenty-one files, because most of the census's hits are the generated entity, mapper,
@@ -634,6 +634,13 @@ which is the same reason the identity lookups fall back to the triple.
 | The build gate's heavy job, on the pull request that adds it | =COMPLETED/SUCCESS= for =build, test and start the services / linux-clang-debug-ninja=: it recreates the database, configures, builds every target, runs ctest, and starts the services | =gh pr checks 2401=, and the check-run API on =a19b874c1d= | =a19b874c1d= |
 | Pull-request checks that compile C++, before the gate | 0: =tests= runs the codegen suite and every other job is a Python gate over generated output | the check rollup on #2392's head | =599a1a06db= |
 | The gate's triage, per class of change | 14 cases: docs, web and check config start nothing heavy; C++, headers, the build description, models, codegen and SQL build and test; a service directory starts the services too; an unclassified path asks for everything | =projects/ores.codegen/tests/test_change_classification.py= | =a19b874c1d= |
+| Columns a series row carries, after the deletion | 15, and the triple is not among them; =oresmd_uri= is the only name | =select column_name from information_schema.columns where table_name='ores_marketdata_market_series_tbl'= on the recreated database | =dcbee2f195= |
+| Hand-written readers of the series triple | 0: the import, the ingest loop, the export and the client's save all stopped reading or writing it | =grep -rn "\.series_type\|\.qualifier\b" projects/ --include=*.cpp --include=*.hpp= less the key, classification and tick vocabularies | =7430e08021= |
+| The DQ publish, with no triple columns anywhere | the deposit dataset creates the series =oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm= with =MM/RATE/USD/2D/3M= on the observation | the publish call and the join query | =dcbee2f195= |
+| The database, recreated from the scripts with the deletion | 39s, schema 0.0.25, the FOMC curve row and the DQ publish both writing identity-only series | =compass db recreate -y -k= | =dcbee2f195= |
+| The tree, built whole, and the suites | no error and no warning; 68 in 14 marketdata-api, 1923 in 415 marketdata-core, 176 in 28 marketdata-service, 6 in 6 client, 144 in 51 shell-marketdata, 65 in 22 synthetic-api, 297 in 46 synthetic-service, 432 in 153 shell-synthetic | =cmake --build --preset linux-clang-debug-make= and the eight test binaries | =dcbee2f195= |
+| =codegen= suite and =reachability=, with the deletion | 1030 passed; 7741 declared cases in 952 sources | =pytest projects/ores.codegen/tests -q= and =check_test_case_reachability.py= | =dcbee2f195= |
+| The ER diagram, with the columns gone | 355 tables, regenerated | =plantuml_er_generate.sh= | =dcbee2f195= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -963,6 +970,24 @@ the services when the change can affect one. Its heavy job ran green on the pull
 that adds it: =build, test and start the services / linux-clang-debug-ninja= completed
 successfully, which is the check this record had twice reported as unwritten or unproven.
 A documentation change now costs one light job, and a C++ change costs the build.
+
+**A fourteenth unit finished the cutover: the registry's triple is gone.** The identity
+was the natural key, every writer supplied one and no reader asked by the triple, so
+=series_type=, =metric= and =qualifier= left =market_series=, the DQ artefact and the
+publish function. The census's 21 + 32 C++ files turned out to be one generated entity's
+layers -- which a regeneration takes -- plus four hand-written places, and those four
+carried a real defect: =market_data_client::save_series= never copied =oresmd_uri=, so
+every save through it cleared the name of the row it wrote. The export stopped rebuilding
+a key from columns that no longer exist: it emits each datum's own key, which every
+writer stores, and refuses a row a writer left without one; a fixing's index name is now
+a projection of the series' identity rather than a read of the =qualifier= column. The
+classification rule stayed, as the acceptance says, because it classifies a key's tokens.
+Measured on the recreated database: the series row carries no triple, the DQ publish
+creates the identity-only series and keeps the observation's key, the tree builds whole,
+and the suites hold at 68 in 14 marketdata-api cases, 1923 in 415 marketdata-core, 176 in
+28 marketdata-service, 6 in 6 client, 144 in 51 shell-marketdata, 65 in 22 synthetic-api,
+297 in 46 synthetic-service and 432 in 153 shell-synthetic, with the codegen suite at
+1030 and reachability at 7741 declared cases. What is left is V06.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

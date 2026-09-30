@@ -30,3 +30,8 @@ Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
     114 lost:        /Portfolio/Trade/BondData/CreditCurveId
     113 lost:        /Portfolio/Trade/BondData/LegData/FixedLegData/Rates/Rate
     113 lost:        /Portfolio/Trade/BondData/LegData/FixedLegData/Rates
+
+=== the date spelling the corpus states against the export ===
+trade Bond
+  source: [('StartDate', '20160203'), ('EndDate', '20260203')]
+  export: [('StartDate', '2016-02-09'), ('EndDate', '2026-02-09')]

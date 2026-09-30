@@ -177,6 +177,19 @@ rows the work touches.
 - The configuration documents make no difference to the numbers: the run
   with them staged and the run without read the same, so whatever the
   import is dropping, it is not the conventions.
+- The in-scope losses are mostly the *spelling* of a date, not its loss.
+  Every source document that carries the full bond terms states them in
+  the corpus's basic ISO form and the export states the extended one: a
+  leg schedule rule reads =StartDate 20160203= in the source and
+  =StartDate 2016-02-09= in the output. The classifier compares element
+  text, so a re-spelled date is one lost pair and one unexplained pair.
+  The single document reads zero because it states the extended form
+  already, which is why the recipe never saw this. The dates also differ
+  in the day (the 3rd against the 9th), which is the business-day
+  adjustment the reader applies, so the corpus sweep needs a decision:
+  normalise both sides before comparing, or preserve the source's own
+  spelling and adjustment. The known basic-form gap is recorded on
+  =task_model-missing-trading-families.org=.
 - Keep =projects/ores.codegen/venv/bin= first on =PATH= when regenerating.
   The sweep and the in-place regeneration format with whichever
   =clang-format= wins, and 21 wraps a line that 18.1.3 does not, which

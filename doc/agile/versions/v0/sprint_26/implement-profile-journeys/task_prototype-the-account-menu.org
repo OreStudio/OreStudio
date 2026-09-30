@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: A54241DF-7B50-4BE8-890C-1A3BB35EC709
+:END:
+#+title: Task: Prototype the account menu
+#+description: Build the throwaway static prototype that argues how a signed-in person reaches the profile journeys: the shell's header, the trigger that shows the person's own name and photo, and the menu that holds the member's screens and the administrator's.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:profile:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/prototype-the-account-menu
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A clickable prototype of the application navigation that the design can be judged against, on a throwaway page with mock data. It draws the shell around a journey screen and argues three structural answers to the question nothing owns: where the member's own screens hang, where an administrator's screens hang, and what the trigger shows before the account has been read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The prototype is published beside its description and the other prototypes, and it reads no service.
+- Every journey that names the account menu can reach its screen from the prototype.
+- The trigger's state before the account is read, the current screen, and the administrator's extra items are all renderable without reading the code.
+- The verdict is recorded on the prototype page and the losing variants stay as the record.
+
+* Plan
+
+1. Collect what the journey documents actually say about the menu: every
+   journey that names it, the screen each reaches, and the closing line that
+   says the menu shows the new name and photo.
+2. Read the shell as it stands, and the session the shell is given, because
+   the trigger's promise depends on what the session carries.
+3. Build the prototype as a static page under =doc/prototypes/account-menu/=,
+   which is how the tree keeps throwaway prototypes: plain HTML, CSS and
+   JavaScript, no framework and no build step.
+4. Argue three structural answers to the question no document answers: where
+   the member's screens hang, and where an administrator's hang. Draw each in
+   the shell the application actually has, so a reviewer judges the navigation
+   and not a page of its own.
+5. Mark every item whose group has not landed with the group that owns it,
+   because a menu that offers a screen nothing implements is a promise.
+6. Publish it with the site build, beside the other prototypes; drive the
+   whole state matrix without a browser; then look at the screens in Chrome.
+7. Record the verdict on the prototype page and distil the decisions into the
+   story.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Variant, actor and state combinations rendered head-less | 36 | =node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/account_menu_check.js= (output in =evidence/account_menu_states.txt=) | =PENDING= |
+| Promises asserted on those states | 12 | same | =PENDING= |
+| Screens captured in Chrome | 5 | =google-chrome --headless=new --screenshot=… "file://…#?variant=…&actor=…&state=…"= | =PENDING= |
+| Files in the prototype, no build step | 5, being 3 code and 2 photos | =ls doc/prototypes/account-menu/ doc/prototypes/account-menu/photos/= | =PENDING= |
+| Journeys that name the account menu | 5 | =grep -rl "account menu" doc/knowledge/journeys= | =PENDING= |
+| Subjects that let the trigger show a name and a photo | 0 | =grep -rn "get-self" projects/ores.iam/modeling/ projects/ores.iam/core/modeling/= | =PENDING= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

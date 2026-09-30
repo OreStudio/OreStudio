@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: E6E32AB5-2F25-4230-AB93-E38E75DE23B6
+:END:
+#+title: Account menu prototype
+#+description: Three structural variants of the shell's navigation, for a member and a tenant administrator, with mock data, on a throwaway prototype page.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:security:identity:navigation:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+* Summary
+
+Every journey in the catalogue reaches its screen the same way: the person
+"chooses" it from the *account menu*. No document says what that menu holds,
+where an administrator's screens hang, or what the trigger shows before the
+account has been read — and the shell does not have one. It carries the brand,
+the session and the way out, because "the navigation itself is what the
+journeys add".
+
+This prototype argues that navigation before the Profile group builds the first
+screens that hang from it. It draws the shell around a journey screen and
+carries three structural variants, two actors and six states.
+
+It is throwaway. It is not production code, it reads no service, and every
+value on it is mock data.
+
+Open the [[file:account-menu/][menu]].
+
+* Detail
+
+** The question
+
+The journeys agree on the trigger and disagree, by saying nothing, on almost
+everything else. Three things have to be settled before a screen can hang from
+the menu:
+
+1. *Where a member's own screens hang.* The catalogue puts five there: My
+   profile, My details, Security, My access and Where I work. Four groups own
+   one each.
+2. *Where an administrator's screens hang.* The Directory, Membership and
+   Access journeys have the administrator "choose" a screen, and no document
+   says from where. This is the real disagreement.
+3. *What the trigger shows.* [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] ends with "the account menu now
+   shows the new name and photo", so the trigger is a view of the account, not
+   of the session.
+
+** The three variants
+
+Switch with the bottom bar, the left and right arrow keys, or =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Account menu only | The trigger holds the member's own screens and nothing else. Clean and honest while the member is the only actor with screens — and an administrator's work then has no home at all, which the variant states out loud rather than hiding. |
+| =B= | One menu | The same trigger holds everything the person may do, under two headings: the member's screens, then *This tenant*, which only an administrator sees. One place to look; the menu grows with every group. |
+| =C= | Two navigations | The tenant's surfaces take the header as a top-level navigation; the trigger keeps the member's own screens. The shape most products use, and the most chrome for a product with four screens. |
+
+** The two actors
+
+Switch with the actor buttons, or =?actor=.
+
+| Actor | What changes |
+|-------+--------------|
+| =member= | Five personal screens and the way out. No tenant group, no top-level navigation: there is nothing in either for them. |
+| =admin= | The same five, plus the tenant's screens: find a colleague, the reporting lines, the roles. In =A= the variant has to admit they have nowhere to go. |
+
+** The six states
+
+Switch with the state buttons, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =closed= | The header at rest, with the trigger. |
+| =open= | The menu, with the person's own head above the items. |
+| =current= | A screen in view, marked *you are here* in the menu and in the top-level navigation. |
+| =updated= | The trigger after a profile save, showing the new name and the new photo. |
+| =pending= | The account has not been read yet: the trigger shows the username and says so, which is the state it is in today. |
+| =narrow= | The session text drops, the top-level navigation goes, and the menu becomes a sheet. |
+
+** What the trigger can and cannot show
+
+The session view carries the username, the party id and the visible party ids.
+It carries neither the person's full name nor their photo, so a trigger that
+shows them is reading the account and not the session.
+
+That read is the same self read the profile screen needs:
+=iam.v1.accounts.get-self=. Until it exists the trigger can show the username
+and nothing else, which is the =pending= state, and the journey's closing line
+— "the account menu now shows the new name and photo" — cannot be kept.
+
+** What is real and what is not
+
+The items whose group has landed are drawn plain. Every other item carries the
+group that owns it, because a menu that offers a screen nothing implements is
+a promise the product cannot keep. Today that is all of them: this prototype is
+the first thing the Profile group builds, so nothing it links to exists yet.
+
+Everything else is mock. The tenant, the people, the photos and the roles are
+hard-coded, and the photos are two of the repository's stock faces under
+=external/facestudio/faces=, copied in so the prototype is self-contained.
+
+** Where the code lives
+
+=doc/prototypes/account-menu/=. Three files of code plus the two photos, plain
+HTML, CSS and JavaScript, no framework and no build step. The site build copies
+the directory through =ores-deploy-web-app=, beside the other prototypes. The
+CSS holds only the tokens, the shell and the menu: the journey furniture
+belongs to the screen prototypes beside this one and is not repeated here.
+
+** What it does not settle
+
+The shape of the screens the menu opens, which the screen prototypes settle.
+And the menu's own history: nothing here says what a person sees when they may
+reach a screen but the deployment has not switched it on, because no document
+says a journey has a switch.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]] — the screen this menu is drawn opening.
+- [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]] — the group whose journeys name the account menu first.
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] — the journey that ends by saying the menu shows the new name and photo.

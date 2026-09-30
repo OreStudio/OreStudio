@@ -47,6 +47,9 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 - The screen says which panel the caller may write, and every panel the caller
   may not write says why.
 - The two email fields are labelled so that neither reads as the other.
+- A signed-in person reaches the journeys from the shell's navigation, and the
+  trigger that opens it shows the person's own name and photo once the account
+  has been read.
 - Every gap the three journey documents record is closed or stated on the
   screen, and the statement is recorded.
 
@@ -55,6 +58,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:ECC602E3-71D3-4265-942B-063EFEB61495][Prototype the profile screen]] | DONE | 2026-09-30 | 2026-09-30 | Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants. |
+| [[id:A54241DF-7B50-4BE8-890C-1A3BB35EC709][Prototype the account menu]] | BACKLOG | | | Build the throwaway static prototype that argues how a signed-in person reaches the profile journeys: the shell's header, the trigger that shows the person's own name and photo, and the menu that holds the member's screens and the administrator's. |
 
 * Decisions
 

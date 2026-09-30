@@ -1,0 +1,24 @@
+Evidence: the account menu prototype's state matrix, driven without a browser.
+
+Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/account_menu_check.js
+Run from: the repository root, on branch feature/prototype-the-account-menu.
+Environment: eager_maxwell.
+
+The harness runs doc/prototypes/account-menu/prototype.js against a minimal DOM
+shim and asserts what the prototype promises a reviewer: every combination of
+variant, actor and state renders; the menu is open in every state but the one
+at rest; variant A admits it has no home for the administrator's screens;
+variant B groups them under "This tenant" and reaches the reporting lines;
+variant C puts them in the header as a top-level navigation; the member sees
+neither the tenant group nor the navigation; the trigger says the account is
+being read, and shows neither the name nor the photo, until it has been read;
+after a read it shows both; the screen in view is marked; the narrow state is
+the narrow shell; the way out stays; and a screen whose group has not landed is
+marked with its group rather than promised.
+
+The screenshots beside this file are the same states in Chrome.
+
+--- output ---
+
+rendered 36 variant/actor/state combinations and 12 promises
+ALL CHECKS PASSED

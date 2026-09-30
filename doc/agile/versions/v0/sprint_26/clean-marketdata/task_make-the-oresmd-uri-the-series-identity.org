@@ -26,11 +26,11 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | V06 is delivered. =marketdata= is listed in =COMPONENTS_UNDER_TEST=, the seven hand-written protocol headers are one generated operation model whose every interface has its TypeScript twin, and every gate the standard asks for passes over the component. The cutover's four acceptances and the registry entry are both in. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | The story's close. =task_clean_marketdata='s V05 and V06 are recorded from this pass, and the story is reviewed for closing. |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance

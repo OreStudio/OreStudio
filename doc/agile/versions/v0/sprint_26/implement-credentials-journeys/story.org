@@ -78,6 +78,7 @@ The build tasks are written when the prototypes are accepted.
 | [[id:B7F44B5A-2DF4-4A89-9326-1D17A1FFF8E9][Prototype Protect my account]] | BACKLOG | | | [wayfinder:prototype] The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended. |
 | [[id:0CD0EAD3-1714-432A-9E64-0C41C4F34E45][Prototype Rescue access]] | BACKLOG | | | [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
 | [[id:7F5AA065-212F-4523-924B-1BE38494CF62][Prototype Audit sign-ins]] | BACKLOG | | | [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |
+| [[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]] | DONE | | 2026-09-30 | [wayfinder:task] The three journey documents name the wrong surface, claim a working browser read and name a caller that does not exist. Correct them against the route census and the tree. |
 
 * Plan
 
@@ -104,12 +105,14 @@ task.
   change no server code, so they collide with neither group. The build waits on
   the Entry group for the sign-in screen that owns the forced password change,
   and on the server gaps the prototypes record.
-- *The prototypes ride the real runtime.* The tree already carries the
-  journey runtime and the step parts from the Setup group:
-  =projects/ores.web/packages/web/src/journeys/runtime.ts=,
-  =JourneyPage.tsx= and =parts.tsx=. A prototype that uses them answers a
-  question about the screen, not about the frame, and the Setup group's
-  contract is tested by a second caller.
+- *The prototypes ride the shell and the shared primitives, not the step rail.*
+  A credentials journey is one screen, so the ordered-step runtime the Setup
+  group landed does not apply:
+  =projects/ores.web/packages/web/src/journeys/runtime.ts= and
+  =JourneyPage.tsx= render a rail of steps, and =parts.tsx= is tenant
+  provisioning. The screens compose =src/components/AppShell.tsx= with
+  =src/ui/Primitives.tsx=, =src/ui/PasswordField.tsx= and
+  =src/ui/passwordPolicy.ts= instead, which is the material the build uses.
 - *The prototype branches are throwaway and never merge.* Each branch is
   cut from =feature/implement-credentials-journeys=, named
   =prototype/<journey>=, and left unmerged. This follows the sprint 25
@@ -120,14 +123,23 @@ task.
   verdict, so every task's Result and state land here, and the branch field
   points at the code. Every other task's branch field points at this branch,
   because that is where both its work and its record are.
-- *The journey documents stay with the extraction pass.* This story does
-  not rewrite them. Where a prototype proves a document wrong, the
-  correction goes to that document under
-  [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]],
-  and the finding is recorded here. One is known at the branch point: the
-  Protect my account document says the change-password handler ignores
-  =current_password=, and the handler verifies it on the current tree, because
-  the ores.iam security work closed that defect.
+- *The journey documents stay with the extraction pass, except for the claims
+  the prototypes disproved.* Those are corrected in place and recorded here,
+  because a design document that names the wrong surface misleads the build.
+  Corrected 2026-09-30, in
+  [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]]'s
+  documents: the change-password verification note in Protect my account, the
+  =sessions.active= read path in Protect my account and Audit sign-ins, and the
+  reset-flag caller note in Rescue access.
+- *The browser has no credentials path, and the routes that exist serve other
+  clients.* =ores.http= serves the IAM subjects — =/api/v1/iam/sessions=,
+  =/sessions/active=, =/login_info=, =/accounts=, =/accounts/lock=,
+  =/accounts/unlock= and =/accounts/reset-password= — and each forwards to the
+  matching subject. The BFF is the browser's only HTTP surface and serves none
+  of them, so every credentials screen needs BFF routes before it can read or
+  write anything. =sessions/active= answers with no rows on every path, and the
+  samples, the statistics and the auth events have neither a subject nor a
+  route.
 - *The screen states the gap, and never simulates it.* A panel whose
   subject returns no rows says the data is not available. A control the
   server cannot perform is drawn as unavailable with its reason. A

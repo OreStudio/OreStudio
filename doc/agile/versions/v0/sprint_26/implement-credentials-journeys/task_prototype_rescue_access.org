@@ -160,13 +160,13 @@ keeps.
 - *The account's state belongs in the list as well as the panel,* so an
   administrator scanning the tenant sees who is locked before opening anyone.
 
-*The journey is unreachable from the browser today.* No route serves
-=iam.v1.accounts.list=, =iam.v1.accounts.get=, =iam.v1.login_info.get=,
-=iam.v1.accounts.reset-password=, =iam.v1.accounts.lock= or
-=iam.v1.accounts.unlock=. The subjects exist and each needs its own permission;
-what is missing is the browser's path to them. The screen's build task cannot
-start before those routes do, and that is the largest single item this journey
-adds to the group.
+*The journey is unreachable from the browser today.* =ores.http= serves
+=iam.v1.accounts.list=, =.get=, =iam.v1.login_info.get=,
+=iam.v1.accounts.reset-password=, =.lock= and =.unlock=, one forwarding route
+each, and the browser never reaches =ores.http=: the BFF is its only HTTP
+surface and serves none of them. So every step of this journey needs a BFF route
+before the screen can do anything, and that is the largest single item this
+journey adds to the group.
 
 *Verification.* =npm run typecheck --workspace @ores.web= passes.
 =npm test --workspace @ores.web= passes, 146 tests in 13 files, on the same

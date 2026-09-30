@@ -92,8 +92,8 @@ states each one, and the prototype decides how.
 2. *No TOTP enrolment.* =account.totp_secret= exists, and nothing enrols,
    replaces or clears a secret for an existing account.
 3. *=iam.v1.sessions.active= returns nothing.* The subject exists and is a stub.
-   The BFF answers =/api/v1/sessions/active= from the session repository, so the
-   panel has a working read today.
+   The route =/api/v1/iam/sessions/active= is =ores.http='s, and it forwards to
+   the same subject, so it answers with no rows too.
 4. *No session statistics.* The continuous aggregates exist with no subject.
 5. *The current password is verified.* The journey document says the handler
    ignores =current_password=; on this tree
@@ -175,10 +175,13 @@ panel sits.
   (=account_operations_service::change_password=), so the "What is missing"
   item 5 and the note under the operations table are both stale.
 - The journey document says the BFF answers =/api/v1/sessions/active= and that
-  "the browser has a working read today". No route serves the sessions: the BFF
-  serves the caller's own session and the password change, and nothing else.
+  "the browser has a working read today". The route is =ores.http='s, it forwards
+  to a subject that answers with no rows, and the BFF serves no session route at
+  all, so the browser has no read on any path.
 
-The corrections belong to the extraction pass, which owns the document.
+The corrections belong to the extraction pass, which owns the document. They
+landed in the document on 2026-09-30, under
+[[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]].
 
 *Verification.* =npm run typecheck --workspace @ores/web= passes.
 =npm test --workspace @ores/web= passes, 146 tests in 13 files, on the same

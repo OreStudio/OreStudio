@@ -42,16 +42,26 @@ logging_configuration::make_options_description(const std::string& log_file) {
     using boost::program_options::value;
     using boost::program_options::options_description;
 
+    /* File logging is opt-in. logging_options.hpp already documents an empty
+     * filename as disabling it, but the option carried a non-empty default,
+     * so the documented opt-out could not be reached. The caller's suggested
+     * name stays in the signature until the callers are migrated; it is no
+     * longer a default, so a unit that asks for nothing gets the console. */
+    (void)log_file;
+
     options_description r("Logging");
     r.add_options()("log-enabled,e", "Generate a log file.")(
         "log-level,l",
         value<std::string>()->default_value("info"),
         "What level to use for logging. Valid values: trace, debug, info, "
-        "warn, error.")("log-to-console", "Output logging to the console, as well as to file.")(
+        "warn, error.")(
+        "log-to-console", "Output logging to the console, as well as to file.")(
         "log-directory",
-        value<std::string>()->default_value("log"),
-        "Where to place the log files.")(
-        "log-filename", value<std::string>()->default_value(log_file), "Name of the log file.")(
+        value<std::string>()->default_value(""),
+        "Where to place the log files. Only used with --log-filename.")(
+        "log-filename",
+        value<std::string>()->default_value(""),
+        "Name of the log file. Empty, the default, disables file logging.")(
         "log-include-pid", "Include process ID in log filename (e.g., app.12345.log).")(
         "log-replica-index",
         value<int>(),

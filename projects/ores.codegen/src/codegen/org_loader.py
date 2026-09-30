@@ -6100,6 +6100,45 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                     f"point key '{key}', which is declared nowhere"
                 )
 
+    # A coordinate the identifier does not already carry as a field becomes one,
+    # named exactly as its query key. The surface's own coordinates live in
+    # volatility_surface_point, which the template writes by hand, so they are
+    # not repeated here.
+    surface_member = {
+        "expiry": "expiry",
+        "strike": "strike",
+        "delta": "delta_type",
+        "call_put": "call_put",
+        "premium": "premium_type",
+        "smile": "smile",
+    }
+    result["coordinate_fields"] = [
+        {"name": c["query_key"], "cpp_type": c["cpp_type"]}
+        for c in coordinate_keys
+        if c["query_key"] not in field_types and c["query_key"] not in surface_member
+    ]
+    # The coordinates the URI writer emits by hand, because the uri_order loop
+    # above only walks the Fields table: a coordinate already emitted there as a
+    # field (an IR curve's tenor, a future's contract fields) is skipped. The
+    # surface's own coordinates are read through the vol member.
+    uri_covered = {f["query_key"] for f in fields if f.get("query_key")}
+    coordinate_uri: list[dict[str, Any]] = []
+    for c in coordinate_keys:
+        key = c["query_key"]
+        if key in uri_covered:
+            continue
+        if key in surface_member:
+            coordinate_uri.append(
+                {"key": key, "member": surface_member[key], "in_surface": True,
+                 "qp_member": key})
+        else:
+            # `from` is the query key and cannot be the query_params member: that
+            # struct has a static `from` that reads the URL.
+            coordinate_uri.append(
+                {"key": key, "member": key, "in_surface": False,
+                 "qp_member": "from_grade" if key == "from" else key})
+    result["coordinate_uri"] = coordinate_uri
+
     # --- Per-struct doc comments: identifier/requirement briefs, in the
     # same " * " continuation scheme as the enum brief (the header
     # templates render them inside /** ... */ blocks; line breaks are

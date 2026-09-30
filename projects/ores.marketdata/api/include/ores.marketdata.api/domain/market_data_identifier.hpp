@@ -51,14 +51,20 @@ struct volatility_surface_point final {
     std::optional<std::string> call_put;
     /**
      * @brief What the key quotes when the strike slot holds a delta: DEL, ATM or ATMF,
-     * the risk-reversal and butterfly conventions, and the swaption family's Smile,
-     * whose shift then takes the value's place.
+     * the risk-reversal and butterfly conventions.
      */
     std::optional<std::string> delta_type;
     /**
      * @brief Where the premium is read -- Spot, Fwd, or unset.
      */
     std::optional<std::string> premium_type;
+    /**
+     * @brief The smile convention marker ORE writes between the underlying's tenor
+     * and the strike, present only on the surfaces that carry one. It is its own
+     * dimension and not a delta: an at-the-money point and a smiled surface of the
+     * same underlying are two different quotes.
+     */
+    std::optional<std::string> smile;
 
     bool operator==(const volatility_surface_point&) const = default;
 };
@@ -92,6 +98,7 @@ struct fx_market_data_identifier final {
     std::optional<std::string> source_spelling;
     std::optional<domain::fx_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
     bool operator==(const fx_market_data_identifier&) const = default;
@@ -125,6 +132,7 @@ struct ir_market_data_identifier final {
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
     bool operator==(const ir_market_data_identifier&) const = default;
@@ -152,6 +160,7 @@ struct equity_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::equity_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
     bool operator==(const equity_market_data_identifier&) const = default;
@@ -169,6 +178,9 @@ struct credit_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::credit_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> seniority;
+    std::optional<std::string> restructuring;
+    std::optional<std::string> tenor;
     std::optional<volatility_surface_point> vol;
 
     bool operator==(const credit_market_data_identifier&) const = default;
@@ -198,6 +210,7 @@ struct commodity_market_data_identifier final {
     std::optional<std::string> delivery;
     std::optional<domain::commodity_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
     bool operator==(const commodity_market_data_identifier&) const = default;
@@ -217,6 +230,8 @@ struct inflation_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::inflation_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> maturity;
+    std::optional<std::string> month;
     std::optional<volatility_surface_point> vol;
 
     bool operator==(const inflation_market_data_identifier&) const = default;
@@ -265,6 +280,10 @@ struct shape_profile_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::shape_profile_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> date;
+    std::optional<std::string> second;
+    std::optional<std::string> period;
+    std::optional<std::string> dst;
 
     bool operator==(const shape_profile_market_data_identifier&) const = default;
 };
@@ -277,6 +296,8 @@ struct rating_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::rating_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<std::string> from;
+    std::optional<std::string> to;
 
     bool operator==(const rating_market_data_identifier&) const = default;
 };

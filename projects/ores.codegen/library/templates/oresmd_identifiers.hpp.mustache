@@ -29,14 +29,20 @@ struct volatility_surface_point final {
     std::optional<std::string> call_put;
     /**
      * @brief What the key quotes when the strike slot holds a delta: DEL, ATM or ATMF,
-     * the risk-reversal and butterfly conventions, and the swaption family's Smile,
-     * whose shift then takes the value's place.
+     * the risk-reversal and butterfly conventions.
      */
     std::optional<std::string> delta_type;
     /**
      * @brief Where the premium is read -- Spot, Fwd, or unset.
      */
     std::optional<std::string> premium_type;
+    /**
+     * @brief The smile convention marker ORE writes between the underlying's tenor
+     * and the strike, present only on the surfaces that carry one. It is its own
+     * dimension and not a delta: an at-the-money point and a smiled surface of the
+     * same underlying are two different quotes.
+     */
+    std::optional<std::string> smile;
 
     bool operator==(const volatility_surface_point&) const = default;
 };
@@ -64,6 +70,9 @@ struct {{asset_class}}_market_data_identifier final {
 {{#has_point}}
     std::optional<std::string> point;
 {{/has_point}}
+{{#coordinate_fields}}
+    {{{cpp_type}}} {{name}};
+{{/coordinate_fields}}
 {{#has_vol}}
     std::optional<volatility_surface_point> vol;
 {{/has_vol}}

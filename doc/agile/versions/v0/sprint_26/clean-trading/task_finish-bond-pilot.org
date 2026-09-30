@@ -130,6 +130,17 @@ rows the work touches.
 
 * Notes
 
+- *The underlyings table is recorded as out of scope, with the reason
+  (D26).* D21 settled its shape and left the second arm to the pilot. No
+  bond product states an underlying: all eleven =underlyingTypes= sites in
+  =instruments.xsd= are another family's (=varianceSwapData=,
+  =cliquetOptionData=, =settlementData=, =pricesType=, =equityOptionData=,
+  =eqBarrierOptionData=, =equityFutureOptionData=, =eqDigitalOptionData=,
+  =eqTouchOptionData=, =equityForwardData= and =genericBarrierOptionData=),
+  and the bond types state none. A table built in this PR would have no
+  producer and no consumer, which is the shape the pilot is retiring
+  elsewhere. The defect 15 fix belongs to the nine families that state an
+  underlying.
 - *The eight residue elements are resolved.* Six of them --
   =CreditGroup=, =VolatilityCurveId=, =PriceQuoteMethod=,
   =PriceQuoteBaseValue=, =PriceType= and =SubType= -- became columns of

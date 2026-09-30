@@ -609,6 +609,25 @@ row is updated as each PR lands.
   so it is its own unit rather than a footnote of this one. The two
   optional booleans are nullable, so a stated =false= and an absent element
   stay different values, which is D24's rule.
+- *D26, the underlyings table.* D21 settled its shape -- keyed by the
+  trade, holding an oresmd URI and an optional weight -- and left the
+  second arm, for an underlying that is itself a product, to the pilot. The
+  pilot records the table as out of scope for the bond rebuild, with the
+  reason: no bond product states an underlying. =underlyingTypes= is
+  referenced by eleven sites and every one is another family's --
+  =varianceSwapData=, =cliquetOptionData=, =settlementData=, =pricesType=,
+  =equityOptionData=, =eqBarrierOptionData=, =equityFutureOptionData=,
+  =eqDigitalOptionData=, =eqTouchOptionData=, =equityForwardData= and
+  =genericBarrierOptionData= -- while the bond family's own types
+  (=bondData=, =bondOptionData=, =bondFutureData=, =bondRepoData=,
+  =convertibleBondData=, =callableBondData= and =ascotData=) state none. A
+  table built here would have no producer and no consumer, which is the
+  shape this pilot is retiring elsewhere (=bond_future_delivery_basket=).
+  The defect 15 fix is a producer change across nine families and about
+  sixteen trade types, which the split task already recorded as not a bond
+  reshape. D21's shape stands as the design for that work; the second arm
+  is recorded as a kind that says URI or product, the URI, and the
+  product's own name.
 
 * Delivery plan
 

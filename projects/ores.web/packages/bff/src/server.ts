@@ -748,7 +748,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/login-info/:accountId', async (request) => {
         const session = requireSession(request);
         const params = request.params as { accountId?: string };
-        const key = loginInfoKeyRequestSchema.safeParse({ key: { account_id: params.accountId ?? '' } });
+        const key = loginInfoKeyRequestSchema.safeParse({
+            key: { account_id: params.accountId ?? '' },
+        });
         if (!key.success) {
             throw invalidRequest('An account id is required.');
         }

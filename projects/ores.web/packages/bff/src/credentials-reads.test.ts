@@ -292,7 +292,9 @@ describe('GET /api/accounts/:username', () => {
         expect(response.json()).toMatchObject({
             account: { username: 'jdoe', fullName: 'Jane Doe' },
         });
-        expect(calls).toEqual([{ subject: 'iam.v1.accounts.get', body: { key: { username: 'jdoe' } } }]);
+        expect(calls).toEqual([
+            { subject: 'iam.v1.accounts.get', body: { key: { username: 'jdoe' } } },
+        ]);
 
         await server.close();
     });

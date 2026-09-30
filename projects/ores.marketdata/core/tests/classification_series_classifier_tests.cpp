@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
@@ -547,6 +548,27 @@ TEST_CASE("classifier_prefers_the_metric_row_and_falls_back_to_the_empty_one", u
     REQUIRE(fallback);
     CHECK(fallback->asset_classes == std::vector<std::string>{"commodity"});
     CHECK(fallback->series_subclass == "forward");
+}
+
+TEST_CASE("the_catalogue_mapping_answers_for_every_authority", unit_tags) {
+    using ores::marketdata::domain::asset_class_for_authority;
+
+    // The mapping the index_name branch reads, exercised directly so the
+    // generated table cannot drift from the catalogue unnoticed.
+    CHECK(asset_class_for_authority("ir") ==
+          std::optional<std::string_view>{"interest_rates"});
+    CHECK(asset_class_for_authority("security") ==
+          std::optional<std::string_view>{"bond"});
+    CHECK(asset_class_for_authority("power") ==
+          std::optional<std::string_view>{"commodity"});
+    CHECK(asset_class_for_authority("rating") ==
+          std::optional<std::string_view>{"credit"});
+
+    // An authority the catalogue maps to no class, and a name it does not
+    // hold, both answer nothing.
+    CHECK_FALSE(asset_class_for_authority("correlation").has_value());
+    CHECK_FALSE(asset_class_for_authority("generic").has_value());
+    CHECK_FALSE(asset_class_for_authority("ghost").has_value());
 }
 
 TEST_CASE("classifier_reads_a_fixings_class_from_its_index_name", unit_tags) {

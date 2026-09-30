@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: BBCF1998-00C2-439D-B6D6-765762E47204
+:END:
+#+title: Task: Give the browser the account and login-record reads
+#+description: The credentials screens read accounts and login records, and no BFF route serves either. Add the read routes over the subjects that already work, with the wire client's shapes and the route tests.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: feature/credentials-account-and-login-reads
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the browser the two reads every credentials screen starts from. The
+administrator's screen opens on the tenant's accounts, and both the
+administrator's screen and the member's read one account's login record. The
+subjects behind both already work and =ores.http= already forwards them; what is
+missing is the path the browser can actually use, because the BFF is its only
+HTTP surface and serves neither.
+
+This is the first slice of the build. It adds no screen: it makes the reads
+answer, so the screens have something to read when their own tasks start.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next          | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- =GET /api/accounts= answers the page of accounts the caller may see, with
+  =totalCount= from the wire's own count.
+- =GET /api/accounts/:username= answers one account, and answers with nothing
+  when the username is not there.
+- =GET /api/login-info= answers the page of login records.
+- =GET /api/login-info/:accountId= answers one record, and answers with nothing
+  for an account that has never signed in.
+- Each route needs a session, and each answers 401 without one.
+- The wire client gains the shapes and the four read functions over
+  =iam.v1.accounts.list=, =iam.v1.accounts.get=, =iam.v1.login_info.list= and
+  =iam.v1.login_info.get=; the browser names none of those subjects.
+- Every route has a test that calls it the way its caller will, asserting the
+  subject, the body and a literal expected response.
+- The routes are recorded in the component specification and in the BFF's own
+  route documentation.
+- The workspace typechecks, matches Prettier, and passes every suite.
+
+* Plan
+
+1. Add the browser-facing login-record shape to =domain.ts=, beside the account
+   one, and the wire schema with its field-by-field translation to
+   =operations.ts=.
+2. Add the four read functions to a new =credentials.ts=, over the narrow
+   =AuthenticatedCaller= the account operations already use, so the subjects sit
+   beside the shapes they carry.
+3. Add the four routes to the BFF, each parsing its query or its key and each
+   answering a value rather than an error for an expected absence.
+4. Test each route against the fake client, asserting the subject, the body and
+   the response the browser will parse.
+5. Record the routes in the component specification.
+6. Start the fleet, run the BFF from source, and call every route for real.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Routes added | 4 | the =* Acceptance= list | working tree |
+| BFF suite | 16 files, 83 tests passed | =npm test --workspace @ores/bff= | working tree |
+| Wire-protocol suite | 7 files, 51 tests passed | =npm test --workspace @ores/wire-protocol= | working tree |
+| Web suite | 15 files, 167 tests passed | =npm test --workspace @ores/web= | working tree |
+| Typecheck, all packages | 0 errors | =npm run typecheck= | working tree |
+| Prettier | every file matches | =npm run format:check= | working tree |
+| Accounts the live list reports | 25, of which the first page held 2 | =curl -b jar '.../api/accounts?limit=2'= | live fleet, bff on 21803 |
+| One account, live | =admin=, with its real uuid | =curl -b jar .../api/accounts/admin= | live fleet |
+| An absent account, live | ={"account":null}= | =curl -b jar .../api/accounts/nobody-here= | live fleet |
+| One login record, live | the signed-in administrator's, =failedLogins 0= | =curl -b jar .../api/login-info/<uuid>= | live fleet |
+| Without a session, live | 401 =not-authenticated= | =curl .../api/accounts= | live fleet |
+| A malformed account id, live | 400 =invalid-request= | =curl -b jar .../api/login-info/not-a-uuid= | live fleet |
+
+* Notes
+
+- *The count was wrong, and silently so.* =accountPageSchema= read the wire's
+  count as =total_available_count=, which IAM never sends: its list replies
+  state =total=, and its =total_available_count= is a name other components use.
+  Because the field carried a default of 0, the account list would have answered
+  =totalCount: 0= for every tenant rather than failing, and the read had no
+  production caller to notice. The live call now reports 25.
+- *A get names its row through a key object.* The first live call answered
+  =bad_request= because the request was ={username: ...}= where the server
+  decodes ={key: {username: ...}}=. The wrapper is there so a =get_many= can
+  take ={keys: [...]}= without a second shape. A fake client that records the
+  body cannot catch this; only a call to the real server can, which is why the
+  routes were exercised live before this task closed.
+- *List requests state their order.* The server does not apply defaults to a
+  field that is absent, so the client writes =order= explicitly. An empty order
+  field means the key, which is what makes a page of an unordered set
+  reproducible rather than able to repeat or skip rows.
+- *An expected absence is a value, not an error.* An account that has gone since
+  the list was read and an account that has never signed in are both states a
+  screen shows, so those routes answer 200 with nothing. A malformed account id
+  is a client bug and answers 400.
+- *Found on the way:* the =@ores/bff= =dev= script cannot start the server from
+  its own package, because both its env path and the site-config default resolve
+  against the caller's working directory. Filed as
+  [[id:E5CBCBA4-312D-4C88-B20A-6B281EABB7F5][The @ores/bff dev script cannot start the BFF from its own package]];
+  the verification above ran the server from the workspace root instead.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done 2026-09-30.
+
+The browser can read accounts and login records. Four routes answer, each over a
+subject that already worked:
+
+| Route | Subject | Answers |
+|-------+---------+---------|
+| =GET /api/accounts= | =iam.v1.accounts.list= | The page of accounts the caller may see, with =totalCount= |
+| =GET /api/accounts/:username= | =iam.v1.accounts.get= | One account, or nothing |
+| =GET /api/login-info= | =iam.v1.login_info.list= | The page of login records |
+| =GET /api/login-info/:accountId= | =iam.v1.login_info.get= | One record, or nothing |
+
+=@ores/wire-protocol= gained the browser-facing login-record shape, the wire
+schema with its field-by-field translation, the two get-request key shapes, an
+order on both list requests, and a new =credentials.ts= holding the four reads
+over the same narrow caller the account operations use. Ten route tests and one
+corrected client test came with them, and the four routes are in the component
+specification.
+
+Two defects were fixed or found on the way: the account page's count read a field
+IAM never sends, which made every list report zero, and the =@ores/bff= =dev=
+script cannot start the server from its own package.
+
+Verification: typecheck clean across the workspace, 301 tests green in three
+packages (bff 83, web 167, wire-protocol 51), Prettier clean. Live against the
+fleet with the BFF run from source: the account list answered 2 of 25 accounts
+with the count right, one account and one login record answered, an absent
+account answered nothing, a request without a session answered 401, and a
+malformed account id answered 400.

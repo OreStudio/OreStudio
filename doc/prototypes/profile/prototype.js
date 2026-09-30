@@ -500,6 +500,15 @@
         render();
     });
 
+    document.addEventListener('keydown', function (ev) {
+        var order = Object.keys(VARIANTS);
+        var at = order.indexOf(S.variant);
+        if (ev.key === 'ArrowRight') S.variant = order[(at + 1) % order.length];
+        else if (ev.key === 'ArrowLeft') S.variant = order[(at + order.length - 1) % order.length];
+        else return;
+        render();
+    });
+
     readParams();
     render();
 })();

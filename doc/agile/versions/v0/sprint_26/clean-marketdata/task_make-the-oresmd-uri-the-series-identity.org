@@ -674,8 +674,10 @@ task and name that file in the Command column.
 | The tree, built whole, with the model | exit 0 | =cmake --build --preset linux-clang-debug-make -j 4= | =53bb7a59fc= |
 | The database, recreated from the scripts, with the model | exit 0; the schema, every seed and the Acme publish ran (the pre-existing missing-image warnings aside) | =compass db recreate -y -k= | =53bb7a59fc= |
 | The fleet, after the recreate | 24 running, 0 stopped, 0 failed, 0 missing; NATS running | =compass services start= and =compass services status= | =53bb7a59fc= |
-| The whole test suite, on the recreated database and the running fleet | 88 of 89 targets pass; =ores.service.tests= fails on a stale log-filename expectation that =91cf5273ab= left, and this branch does not touch =ores.service= or =ores.logging= (their trees are byte-identical to trunk) | =ctest --preset linux-clang-debug-make --output-on-failure -j 4= | =53bb7a59fc= |
-| The pull-request check set, run locally | 37 of 38 checks pass. The one failure is =regenerate_cmake_component_files.py --all --check=, on =iam/api= and =workflow/api=, which are stale on trunk; =marketdata= is current. The set covers header hygiene, the boost dependency check, populate references and its tests, component drift, the ER diagram, SQL hygiene, twin coverage, model drift, handler permissions, the shell menu check and its self-test, route auth, both recipe inventories, the registry, reachability, the codegen suite, the sweep, paste blocks, =validate_docs.sh=, =validate_schemas.sh=, =compass lint=, the org link check, the six skill checks, the shell tangle and its drift check, and the TypeScript typecheck, format and 51 tests | each gate by name | =53bb7a59fc= |
+| The whole test suite, on the recreated database and the running fleet | 89 of 89 targets pass | =ctest --preset linux-clang-debug-make --output-on-failure -j 4= | =6eceb87cc7= |
+| The console default's stale test | =ores.service.tests= goes from 42 cases and 117 assertions with one failure to 43 cases and 123 assertions, all green | the test binary | =6eceb87cc7= |
+| The workflow component's CMake list | adds =workflow_retry_protocol.hpp=, the header =45f36c0d66= left out; =--all --check= then exits 0 with no stale list | =regenerate_cmake_component_files.py --all --check= | =b4bc41c59c= |
+| The pull-request check set, run locally on the rebased tree | all 35 checks pass, and the TypeScript typecheck, format check and 51 tests pass beside them. The set covers header hygiene, the boost dependency check, populate references and its tests, component drift, the ER diagram, SQL hygiene, twin coverage (201 headers in 13 components), model drift, handler permissions, the shell menu check and its self-test, route auth, both recipe inventories, the registry, reachability, the codegen suite (1032), the sweep, paste blocks, =validate_docs.sh= (41 components), =validate_schemas.sh= (1802 files), =compass lint=, the org link check, the six skill checks, the shell tangle and its drift check | each gate by name | =b4bc41c59c= |
 | The cutover's suites | unchanged at 68 in 14 marketdata-api, 1923 in 415 marketdata-core, 176 in 28 marketdata-service, 144 in 51 shell-marketdata and 297 in 46 synthetic-service | the five test binaries | =53bb7a59fc= |
 
 * Notes
@@ -828,7 +830,9 @@ via its "Verifies task" field.
 | 87 | The map projection keys the Record by the C++ key type, and a numeric key would state =Record<number, V>= while the wire carries text | =org_loader.py= | accepted, fixed | The Record is keyed by =string= always, because a JSON object's keys are strings whatever the C++ key type is. Only the value decides the projection, so a key type with no projection is no longer a gap; the test covers a non-string key and an unmapped value. |
 | 88 | The ORE-side docs and backlog still name the deleted headers | =doc/plans/…=, =product_backlog= | answered | The one current recipe that named a deleted header is updated to =operations_protocol.hpp=. The remaining hits are a dated plan, idea captures under =product_backlog= and sprint 23's task records, and one is a different component's =ore_import_protocol.hpp=; all are historical artefacts. |
 | 89 | The claim that the wire does not move rests on the gates, and the reviewer did not diff each field against the deleted headers | the seven headers, =operations_protocol.hpp= | answered | Checked by hand as well. A parser over the seven deleted headers and the generated one reports the same 28 structs with the same field names, types, initialisers and subjects; the only difference is =std::chrono::year_month_day date{}= rendering as =date = {}=, which value-initialises the same. |
-| 90 | =ores.service.tests= fails under =ctest= | =standard_service_options_tests.cpp= | recorded | The reviewer agreed it is unrelated. It is pre-existing: =91cf5273ab= on trunk stopped defaulting a log filename, and the test still expects the caller's name to be the default. The logging branch owns it and this branch does not touch =ores.service=. |
+| 90 | =ores.service.tests= fails under =ctest= | =standard_service_options_tests.cpp= | accepted, fixed | The reviewer agreed it is unrelated to the model. =91cf5273ab= on trunk made the console the always-on sink and file logging opt-in, updated the two logging suites that pinned the old defaults, and missed this third one. The test now asserts the new contract and keeps the file path covered with an explicit =--log-filename=; the two signatures that still promised a default now say the name is retained for the caller. |
+| 91 | =regenerate_cmake_component_files.py --all --check= names =iam/api= and =workflow/api= | =component_files.cmake= | accepted, fixed | The IAM list was fixed on trunk while this branch waited, so the rebase took it. The workflow list was not: =45f36c0d66= added =workflow_retry_protocol.hpp= and never regenerated the list. The regeneration adds it, and =--all --check= then exits 0. |
+| 92 | The local check run was made before the branch was rebased, so it verified the branch rather than the merged tree | the whole set | accepted, fixed | The branch was rebased onto trunk and the whole set re-run there, with the database recreated from the new scripts and the fleet started: the tree builds whole, =ctest= passes 89 of 89, all 35 local checks pass, and the TypeScript checks pass. |
 
 * Result
 
@@ -1051,13 +1055,23 @@ sixteen files that included them read the one generated header. Measured on the 
 =marketdata= regenerates byte for byte at every address, the twin gate reports 199
 headers in 13 committed components with no model opting out, the drift check reports no
 drift across the catalogue, the registry lists 15 components, and the codegen suite
-passes 1032. The whole pull-request check set was then run locally: 37 of 38 checks
-pass, the database is recreated from the scripts, the 24-service fleet starts clean, the
-tree builds whole, and =ctest= passes 88 of 89 targets. The one test failure is
-=ores.service.tests=, which asserts a log filename that =91cf5273ab= on trunk ("Make the
-console where logging goes, not a default filename") deliberately stopped defaulting;
-=ores.service= and =ores.logging= are byte-identical to trunk here, so the failure is
-pre-existing and owned by the logging branch. The one gate that fails is
-=regenerate_cmake_component_files.py --all --check=, on =iam/api= and =workflow/api=,
-which are stale on trunk and are not this branch's. V06 is met, and the component is
-under the gates from now on.
+passes 1032. The whole pull-request check set was then run locally. The first run found
+two breaks, both pre-existing on trunk, and both were fixed rather than recorded:
+
+- =ores.service.tests= pinned a log filename that =91cf5273ab= ("Make the console where
+  logging goes, not a default filename") deliberately stopped defaulting. That commit
+  updated the two logging suites and missed this third one, whose expectation was the
+  old contract. The test now asserts the new one -- =--log-enabled= alone gives the
+  console and an empty filename -- and keeps the file path covered through the composed
+  options with an explicit =--log-filename=. Both signatures that still promised a
+  default now say the name is retained for the caller and is not one.
+- =regenerate_cmake_component_files.py --all --check= named =iam/api= and
+  =workflow/api=. The IAM list was already fixed on trunk while this branch waited, so
+  the rebase took it; the workflow list was not, because =45f36c0d66= added
+  =workflow_retry_protocol.hpp= and never regenerated the list. The regeneration adds
+  the header.
+
+On the rebased tree, with the database recreated and the 24-service fleet running, the
+tree builds whole, =ctest= passes 89 of 89 targets, all 35 local checks pass, and the
+TypeScript typecheck, format check and 51 tests pass beside them. V06 is met, and the
+component is under the gates from now on.

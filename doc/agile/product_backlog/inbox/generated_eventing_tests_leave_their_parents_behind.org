@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: F725B12C-F459-464A-89AA-D37F3F490597
+:END:
+#+title: Generated eventing tests leave their seeded parents behind
+#+description: Forty-eight generated *_eventing_integration_tests.cpp seed a parent row to satisfy the child's soft FK and never remove it. The row is system-tenant reference data, so the helper's per-tenant isolation does not reach it and it stays active forever. It no longer breaks the suite now that a seed profile's code is unique per deployment, but the tests still grow a global catalogue row per run.
+#+type: capture
+#+level: cross
+#+filetags: :iam:tests:hygiene:isolation:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the generated eventing tests remove the parent rows they seed to satisfy a
+child's soft foreign key, so a run leaves the system tenant as it found it.
+
+* Why
+
+Forty-eight of the 187 generated =*_eventing_integration_tests.cpp= files seed a
+parent and then delete only their own row. The parent is system-tenant reference
+data, so =scoped_database_helper='s per-tenant isolation does not reach it: every
+run leaves one active row behind, forever, in the catalogue the deployment
+reads.
+
+That residue used to break the suite on its second run, because the synthetic
+parent code came from a process-static counter and repeated; the seed profile's
+code is unique per deployment now, so nothing collides and the defect is benign.
+It is still wrong: a test that writes to a shared catalogue should remove what it
+wrote, and the deletion is the same shape for every one of the forty-eight
+because they all come from
+=projects/ores.codegen/library/templates/cpp_nats_integration_test.cpp.mustache=.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_nats_integration_test.cpp.mustache=
+  -- the template whose parent-seed block has no matching delete.
+- =projects/ores.iam/core/tests/seed_profile_parameter_eventing_integration_tests.cpp=
+  and its step sibling, where the parent is seeded at line 131 and never removed.
+
+* See also
+
+- [[id:4A771CA8-1640-4AC4-AB36-B7C64B6C38AA][Keep the ores.iam eventing tests idempotent]] — the story that made the key
+  unique and recorded this as out of scope.
+- [[id:96828FAA-1F22-4F18-AB56-81C0C8EBE33E][The iam seed-profile eventing tests only pass once per database]] — the
+  capture this residue produced.

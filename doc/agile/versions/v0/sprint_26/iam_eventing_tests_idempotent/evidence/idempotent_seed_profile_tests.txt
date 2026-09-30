@@ -1,0 +1,88 @@
+The ores.iam eventing tests, run twice against the same database.
+
+Environment: eager_maxwell, commit e346a64a3d (the model and the
+regenerated generator).
+
+-------------------------------------------------------------------------------
+What was wrong
+-------------------------------------------------------------------------------
+
+The three seed-profile eventing tests failed on the second run. A seed
+profile's code is unique per deployment -- the model says so, and the
+unique index is on the code alone -- and the insert trigger forces the
+system tenant. So the row the test writes escapes the per-tenant
+isolation scoped_database_helper hands out, and the synthetic code came
+from a process-static counter.
+
+Measured before the change, on a database with the residue cleared:
+
+  --- run A ---
+  All tests passed (21 assertions in 3 test cases)
+  --- active rows after A ---
+   CD_profile-0
+   CD_profile-1
+  --- run B ---
+  3 test cases: 1 passed, 2 failed
+  seed_profile_eventing_integration_tests.cpp:118
+  duplicate key value violates unique constraint "seed_profiles_code_uniq_idx"
+
+A successful run already poisoned the next one, because the two child
+tests seed a parent profile they never remove and the profile test
+cannot clean up after a failed insert.
+
+-------------------------------------------------------------------------------
+What changed
+-------------------------------------------------------------------------------
+
+projects/ores.iam/modeling/ores.iam.seed_profile.org, the code field:
+the generator expression now ends in a fresh uuid and
+:no_generator_suffix: keeps the process counter out of it. The template's
+own comment states that the counter is what it appends unless the model
+opts out, and :no_generator_suffix: is the established path for a key
+whose shape the counter would break (the tenant code uses it).
+
+Regenerated with:
+
+  ./compass.sh codegen regenerate --component iam \
+      --address ores.cpp.generator --entity seed_profile
+
+One generated file changed. The rest of the family is byte-identical.
+
+-------------------------------------------------------------------------------
+The proof
+-------------------------------------------------------------------------------
+
+The full suite, twice in a row, against one database:
+
+  --- run 1 ---
+  All tests passed (425 assertions in 165 test cases)
+  --- run 2 ---
+  All tests passed (425 assertions in 165 test cases)
+
+The database is ores_ci, built with `compass db setup ores_ci`, so the
+deployment's own database was not touched. It carries main's schema,
+which the deployment's older database does not.
+
+The seed-profile tests on their own, twice in a row, before the full
+proof:
+
+  --- run 1 ---
+  All tests passed (21 assertions in 3 test cases)
+  --- run 2 ---
+  All tests passed (21 assertions in 3 test cases)
+
+The codes the runs wrote are unique per run now:
+
+  CD_profile-64fbb052-29fa-40f2-a34f-55f27445289a
+  CD_profile-8f919d8c-6095-46f7-b339-33c8684c1729
+  CD_profile-8684c172-9208-4d31-8251-5bec108b0d36
+
+-------------------------------------------------------------------------------
+What is still left behind
+-------------------------------------------------------------------------------
+
+The tests pass twice, which is the defect. They still leave the parent
+profiles they seed, one per test per run, because every generated
+eventing test that seeds a parent never removes it -- forty-eight files,
+one template. That is hygiene rather than idempotence and it is captured
+as "Generated eventing tests leave their seeded parents behind".

@@ -132,30 +132,55 @@ rows the work touches.
 
 - *The delete and add paths are the next unit, and their shape is now
   known.* =bond_instrument_service::delete_bond_instrument= removes the
-  header row alone, so every family row and any minted issue stay behind,
-  and =bond_instrument_service= is a generated file, so the fix belongs in
-  a custom repository method the model declares rather than in the service
-  body. What the family owns, read off
-  =projects/ores.trading/core/src/repository/parent_scoped_queries.cpp=:
-  the trade-keyed rows =bond_legs=, =bond_leg_amounts=, =bond_leg_rates=,
-  =bond_leg_amortizations=, =instrument_schedules=,
+  header row alone, so every family row and any minted issue stay behind.
+  The family is the trade-keyed =bond_legs=, =bond_leg_amounts=,
+  =bond_leg_rates=, =bond_leg_amortizations=, =instrument_schedules=,
   =instrument_schedule_dates=, =instrument_options=,
   =instrument_option_premiums=, =instrument_option_exercise_fees=,
   =instrument_option_payment_dates=, =instrument_strikes=,
   =bond_forwards= and =bond_future_delivery_baskets=; the product rows
   =bond_futures=, =bond_options=, =bond_repos= and =bond_trs=; and the
-  issue-keyed rows =bond_issue_legs= and its four children,
-  =bond_issue_call_dates= and =bond_issue_conversion_targets=. An issue is
-  shared by security id, so it goes only when no other instrument names it,
-  and three products mint one (BondFuture, Ascot and any product with no
-  =BondData=). The transaction primitive is
+  issue-keyed =bond_issue_legs= and its four children,
+  =bond_issue_call_dates= and =bond_issue_conversion_targets=.
+  Three shapes can fix it, and the recommendation is the second:
+  1. *A cascade in a custom service method.* It calls each family
+     repository's batch =remove=. It is the most code and the least safe:
+     the removals are separate transactions, and
+     =bond_leg=, =instrument_schedule=, =bond_issue_leg=,
+     =bond_issue_call_date= and =bond_issue_conversion_target= have no
+     batch removal, so each needs a new parent-scoped one.
+  2. *A delete trigger the generator emits.* The entity declares the
+     children a delete closes and the create script gains an
+     =after delete= trigger that closes them. It is atomic by
+     construction, it is enforced where the schema can hold it (D15's
+     rule), and it serves the import rollback, which has the same defect
+     at a larger scale. No entity declares children today, so the
+     template gains the feature for one model to use.
+  3. *A refusal with a stated reason.* The smallest, and the acceptance
+     allows it, but it leaves the verb unable to delete a bond that has
+     any row at all.
+  The transaction primitive a cascade would need is
   =ores.database/repository/bitemporal_operations.hpp='s
   =session(...).and_then(begin_transaction).and_then(...).and_then(commit)=,
-  because each generated repository's =remove= commits its own. The add
-  path's three saves -- issue, instrument, product row -- become one
-  request carrying all three, which is the same custom-method work. The
-  acceptance allows a refusal with a stated reason instead, and the refusal
-  is the smaller half of the same change.
+  because each generated repository's =remove= commits its own. An issue is
+  shared by security id, so it goes only when no other instrument names it.
+- *The add path over the shell is already one transaction; the note that
+  said otherwise was stale.* The sprint 25 hand-written verb minted an
+  issue, then wrote the instrument, then the product row, and recorded the
+  three saves as its price. The regenerated verb is not that verb: it takes
+  =issue_id= as an argument and sends one =put_bond_instrument_request=
+  (=bond_instrument_commands.cpp:336-373=), and the service writes one row
+  through =repo_.write= (=bond_instrument_service.cpp:140-152=), which
+  =execute_write_query= wraps in one transaction. What is still three saves
+  is the *import*: =save_bond_issue=, then =put_bond_instrument_request=,
+  then the product row (=ore_import_execute_handler.cpp:1239-1412=), each
+  its own request and its own transaction. The shape that would make it one
+  is the one the composite family already has --
+  =put_composite_instrument_with_legs_request= carries the instrument and
+  its legs and is applied by one service call -- so a
+  =put_bond_instrument_with_family_request= carrying the issue, the
+  instrument and the product row is the work, and it is the same template
+  feature the delete's cascade wants.
 - *The underlyings table is recorded as out of scope, with the reason
   (D26).* D21 settled its shape and left the second arm to the pilot. No
   bond product states an underlying: all eleven =underlyingTypes= sites in

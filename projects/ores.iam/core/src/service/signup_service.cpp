@@ -18,8 +18,8 @@
  *
  */
 #include "ores.iam.core/service/signup_service.hpp"
-#include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.api/domain/role_codes.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.api/domain/account_party.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
@@ -31,6 +31,7 @@ using namespace ores::logging;
 using error_code = ores::utility::serialization::error_code;
 namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 signup_service::signup_service(
     database::context ctx,
@@ -42,7 +43,8 @@ signup_service::signup_service(
 
 signup_result signup_service::register_user(const std::string& username,
                                             const std::string& email,
-                                            const std::string& password) {
+                                            const std::string& password,
+                                            const signup_destination& destination) {
 
     BOOST_LOG_SEV(lg(), info) << "Signup attempt for username: " << username
                               << ", email: " << email;
@@ -111,6 +113,27 @@ signup_result signup_service::register_user(const std::string& username,
         return result;
     }
 
+    /*
+     * A tenant that nominates no role cannot admit a registration: the
+     * account would hold nothing. The policy read refuses this before the
+     * form is offered, and the service refuses it again here, because a
+     * service must refuse for every caller and not only for the door.
+     */
+    if (!destination.role_id) {
+        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: the tenant nominates no default role";
+        result.error_message = "This deployment has not nominated a role for new accounts.";
+        result.error_code = error_code::no_default_role;
+        return result;
+    }
+
+    /*
+     * The account's state follows the tenant's nominations. A nominated party
+     * gives the account somewhere to work, so it is usable at once. No party
+     * leaves it pending: the account exists, and an administrator finishes
+     * setting it up. The roster finds the waiting accounts by this status.
+     */
+    const std::string account_status = destination.party_id ? "active" : "pending";
+
     // Generate account ID
     auto id = uuid_generator_();
     BOOST_LOG_SEV(lg(), debug) << "Generated ID for new account: " << id;
@@ -130,6 +153,8 @@ signup_result signup_service::register_user(const std::string& username,
     new_account.password_salt = "";
     new_account.totp_secret = "";
     new_account.email = email;
+    new_account.account_status = account_status;
+    new_account.change_reason_code = std::string{reason::codes::new_record};
     // Self-registered: the user's own username records the author.
     new_account.modified_by = username;
 
@@ -149,23 +174,35 @@ signup_result signup_service::register_user(const std::string& username,
     std::vector<domain::login_info> login_infos{li};
     login_info_repo_.write(ctx_, login_infos);
 
-    // Assign the default Viewer role to the new account
-    auto viewer_role = auth_service_->find_role_by_name(domain::roles::viewer);
-    if (!viewer_role) {
-        BOOST_LOG_SEV(lg(), error) << "Viewer role not found - RBAC may not be properly seeded. "
-                                   << "Signup failed for account " << id;
-        throw std::runtime_error("Default 'Viewer' role not found. Cannot create account without "
-                                 "default permissions.");
+    // Grant the role the tenant nominated, which is the account's floor.
+    auth_service_->assign_role(id, *destination.role_id, username);
+    BOOST_LOG_SEV(lg(), info) << "Assigned the registration default role to new account: " << id;
+
+    // Give the account its first association, when the tenant nominated one.
+    if (destination.party_id) {
+        domain::account_party link;
+        link.version = 0;
+        link.tenant_id = ctx_.tenant_id().to_string();
+        link.account_id = id;
+        link.party_id = *destination.party_id;
+        link.modified_by = username;
+        link.performed_by = username;
+        link.change_reason_code = std::string{reason::codes::new_record};
+        link.change_commentary = "Self-registration association";
+        repository::account_party_repository ap_repo(ctx_);
+        ap_repo.write(link);
+        BOOST_LOG_SEV(lg(), info) << "Associated new account " << id << " with party "
+                                  << boost::uuids::to_string(*destination.party_id);
     }
 
-    auth_service_->assign_role(id, viewer_role->id, username);
-    BOOST_LOG_SEV(lg(), info) << "Assigned Viewer role to new account: " << id;
-
     BOOST_LOG_SEV(lg(), info) << "Signup successful for username: " << username
-                              << ", account ID: " << id;
+                              << ", account ID: " << id << ", status: " << account_status;
 
     result.success = true;
     result.account_id = id;
+    result.account_status = account_status;
+    result.party_id = destination.party_id;
+    result.role_id = destination.role_id;
     return result;
 }
 

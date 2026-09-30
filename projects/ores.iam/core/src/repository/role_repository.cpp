@@ -314,4 +314,23 @@ std::vector<domain::role> role_repository::read_latest_by_name(context ctx,
         "Reading latest role by name.");
 }
 
+std::optional<domain::role> role_repository::read_registration_default(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<role_entity>> |
+                       where("tenant_id"_c == tid && "is_registration_default"_c == true &&
+                             "valid_to"_c == max.value()) |
+                       limit(1);
+
+    const auto rows = execute_read_query<role_entity, domain::role>(
+        ctx,
+        query,
+        [](const auto& entities) { return role_mapper::map(entities); },
+        lg(),
+        "Reading the registration default role.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+
 }

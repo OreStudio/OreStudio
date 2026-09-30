@@ -60,6 +60,18 @@ read_active_tenant_by_id(const ores::database::context& ctx, const boost::uuids:
 ORES_IAM_CORE_EXPORT std::vector<domain::tenant>
 read_active_tenant_by_hostname(const ores::database::context& ctx, const std::string& hostname);
 
+/**
+ * @brief Reads the tenant flagged as the place registrations land.
+ *
+ * At most one live tenant may hold the flag, enforced by a partial unique
+ * index, so this is one row or none. It is the fallback a registration uses
+ * when the address it arrived at names no tenant; a deployment that
+ * nominates none and serves one tenant still works, because the address
+ * resolves it.
+ */
+ORES_IAM_CORE_EXPORT std::vector<domain::tenant>
+read_registration_default_tenant(const ores::database::context& ctx);
+
 } // namespace ores::iam::repository
 
 #endif

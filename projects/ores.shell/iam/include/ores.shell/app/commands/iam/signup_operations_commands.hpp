@@ -63,7 +63,7 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief signup <principal> <password> <email>
+     * @brief signup <principal> <password> <email> <hostname>
      */
     static void process_signup(std::ostream& out,
                                ores::nats::service::nats_client& session,

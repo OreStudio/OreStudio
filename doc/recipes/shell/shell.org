@@ -1078,3 +1078,11 @@ tangled into the runnable script library
 * Analytic Types
 
 - [[id:D74D4948-6B4D-5495-B833-2656AE06D375][How do I run the analytic_types commands from the shell?]]
+
+* Account Statuses
+
+- [[id:C5CBE7E0-3308-5539-8E6C-1760A6E3644C][How do I run the account_statuses commands from the shell?]]
+
+* Registration Policy
+
+- [[id:CF9073DF-02CD-5832-9479-32E5C361BD15][How do I run the registration_policy commands from the shell?]]

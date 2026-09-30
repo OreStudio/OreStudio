@@ -72,7 +72,9 @@ signed-in tenant administrator and a tenant that is already /active/.
 5. *Next steps.* The party is /active/. The page offers three exits: switch to
    the new party and work in it now, set up its books, or add another party.
    The person can also just go back; the Parties page lists the new party as
-   active.
+   active. Where the deployment accepts self-registration, the page may also
+   nominate this party as the one a new account joins; the tenant's first
+   sign-in nominates it, and this is where a second party takes it over.
 
 The rail is flat: a person sees five steps. Steps that change server state are
 final, so there is no Back past them.
@@ -264,6 +266,7 @@ each part turned out to be.
 * Related knowledge
 
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — /Provision/, /Onboard/, /Account-party association/, /Seed profile/
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — where the registration defaults live, including the party this journey may nominate
 - [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] — the user guide chapter on what a party is
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]]
 - [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]

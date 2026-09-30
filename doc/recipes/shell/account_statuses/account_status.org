@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: C5CBE7E0-3308-5539-8E6C-1760A6E3644C
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the account_statuses commands from the shell?
+#+description: Every command the account_statuses submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:account_statuses:
+
+This file documents the account_statuses resource at the shell, one section per command. Every command is a subcommand of =account_statuses=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D0424BC1-E7DC-5D96-BD95-68142067A758
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.list=.
+
+#+name: account_statuses-list
+#+begin_src ores-shell :tangle account_statuses-list.ores :exports none
+account_statuses list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 18A8DB36-7929-52D1-BC3E-76BDFFFB74BE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses get <status>
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.get=.
+
+#+name: account_statuses-get
+#+begin_src ores-shell :tangle account_statuses-get.ores :exports none
+account_statuses get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FF27D86E-604A-546E-83C6-8D09031AB53C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses get-many <status>
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.get_many=.
+
+#+name: account_statuses-get-many
+#+begin_src ores-shell :tangle account_statuses-get-many.ores :exports none
+account_statuses get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 9BBEAB62-09DC-53ED-8190-6F6366C31DCE
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses add <status> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.put=.
+
+#+name: account_statuses-add
+#+begin_src ores-shell :tangle account_statuses-add.ores :exports none
+account_statuses add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 13B3CB51-9713-5DBD-A3FA-AA4F12D2BECC
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses set <status> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.put=.
+
+#+name: account_statuses-set
+#+begin_src ores-shell :tangle account_statuses-set.ores :exports none
+account_statuses set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 89F411FA-F722-5137-8D06-92BDEFD37779
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses put-many --count <n> <status> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.put_many=.
+
+#+name: account_statuses-put-many
+#+begin_src ores-shell :tangle account_statuses-put-many.ores :exports none
+account_statuses put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7665E2BA-221F-52F2-8572-8DB397B953F1
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses delete <status> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.delete=.
+
+#+name: account_statuses-delete
+#+begin_src ores-shell :tangle account_statuses-delete.ores :exports none
+account_statuses delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 663E4633-67B0-5684-BC31-B045E87C3D46
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses delete-many <status> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_statuses.delete_many=.
+
+#+name: account_statuses-delete-many
+#+begin_src ores-shell :tangle account_statuses-delete-many.ores :exports none
+account_statuses delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: BD2A0F2D-9F3B-5CE2-9057-AD728BB1700D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses versions <status> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.account_statuses_versions.list=.
+
+#+name: account_statuses-versions
+#+begin_src ores-shell :tangle account_statuses-versions.ores :exports none
+account_statuses versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DE488953-2631-590B-8627-40898E0A48D8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_statuses version <status> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.account_statuses_versions.get=.
+
+#+name: account_statuses-version
+#+begin_src ores-shell :tangle account_statuses-version.ores :exports none
+account_statuses version __none__ --version 1
+#+end_src
+

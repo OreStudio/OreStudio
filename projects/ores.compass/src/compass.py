@@ -6206,13 +6206,25 @@ def resolve_build_targets(targets, claude=False, dsh=False):
     return resolved
 
 
+def _build_log_dir() -> Path:
+    """The directory the build logs live in: this checkout's own tmp/.
+
+    A log under the checkout is readable by everything that can read the
+    checkout. The host's /tmp is not: a sandbox mounts a private /tmp, so a
+    log written there is invisible to the very reader the log exists to
+    inform. tmp/ is gitignored apart from its .gitkeep."""
+    path = PROJECT_ROOT / "tmp"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def _direct_build_log_path(target: str) -> Path:
     """Well-known output-log path for a `--direct` emacs build target, for
     `tail -f` — named <environment-label>_<target>_build.log so it's easy
     to tell apart from another worktree's build running concurrently."""
     env_label = _read_env_map().get("ORES_CHECKOUT_LABEL", "") or "direct"
     friendly = target.removeprefix("deploy_")
-    return Path(f"/tmp/{env_label}_{friendly}_build.log")
+    return _build_log_dir() / f"{env_label}_{friendly}_build.log"
 
 
 def _clean_stale_emacs_build_state() -> None:
@@ -6764,7 +6776,7 @@ def _check_publish_artifacts(build_dir):
 
 def _build_log_path(slot_name):
     """Well-known output-log path for a build-lock slot, for `tail -f`."""
-    return Path(f"/tmp/ores-build.log.{slot_name}")
+    return _build_log_dir() / f"ores-build.log.{slot_name}"
 
 
 def _build_log_tail(slot_name, n=10):

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: A7881424-279D-4E8F-8C4E-5B9B89C25529
+:END:
+#+title: Task: Document the entry journeys' server side
+#+description: Write the page that traces how the server handles sign in and sign up, with an interaction diagram for the policy read, the sign-in branch and the registration branch.
+#+type: task
+#+level: s1
+#+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An architecture page that explains the server side of the two Entry journeys, with interaction diagrams rather than prose alone. It states which layer owns what, the order in which the server refuses a sign-in, the branch a registration takes, the code each refusal carries, and where every piece of state lives, so the implementation is built against a drawn contract instead of a paragraph.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- A sequence diagram per interaction: the door's policy read, sign in, and sign up.
+- Each diagram's source is committed beside it as a =.puml=, and the page says how to regenerate it.
+- The order in which the server refuses a sign-in is stated, and it matches the code that runs it.
+- Every refusal the two subjects can answer with is in one table, with its code.
+- The page says where each piece of state lives and what survives a reload.
+- The page links the policy document rather than restating its decisions.
+
+* Plan
+
+1. Read the login path as it is: the handler, =account_operations_service::login=, and the branch on the party count.
+2. Draw the target, not the current state: the flag reads, the destination resolution, the pending branch, and the codes.
+3. Draw the door's policy read first, because it is what tells the screen whether to offer a form.
+4. Put the branch order in prose beside the diagram, because the diagram shows the order but not why it is that order.
+5. Collect every refusal into one table, since a code that exists in two places drifts.
+6. Render each diagram with =plantuml -tpng= and commit the PNG beside its source.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Interaction diagrams | 3 | =ls doc/knowledge/journeys/entry/entry_*_sequence.puml= | =3e39fc8337= |
+| Refusal codes | 13 | the page's codes table | =3e39fc8337= |
+| Layers the page names | 7 | the page's layers table | =3e39fc8337= |
+
+* Notes
+
+- The diagrams are sequence diagrams, which the tree had not used before; the conventions for class and ER diagrams are on [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]], and the file and caption conventions are shared with them.
+- The pending and =account_pending= branches are drawn even though nothing implements them yet. A diagram that only drew what exists would not be a target state, and the missing pieces are exactly what the implementation is for.
+- The tenant resolution is drawn twice, once per journey, because the two differ: sign in falls back to the handler's own tenant, and registration refuses rather than falling back, since the system tenant is not a destination a person can be given.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] is the page, at =doc/knowledge/journeys/entry/=. It is named and shaped like its first-steps counterpart, [[id:4327303A-B544-47D8-B641-A57D3F6D4974][the tenant provisioning journey]]: a lede paragraph, one detail section per part of the path, a captioned diagram per interaction with its source beside it, and a See also. It carries three sequence diagrams, each with its =.puml= source beside it: the door's policy read, sign in with its six-branch order, and sign up with the gate, the destination and the two endings.
+
+Two tables carry the weight. *Where the state lives* names each piece of state and what survives a reload, which is what makes the browser's cookie and the BFF's session map distinguishable from the server's session row. *The refusal codes* collects all thirteen codes the two subjects can answer with, so a screen branches on a value and not on a sentence.
+
+The page states plainly which of its flows do not exist yet: the live sign-up path reads no flag, a registration that resolves to no tenant lands in the system tenant, and neither response carries a code. Those are the first implementation tasks, and the diagrams are drawn to the target rather than to what runs today.

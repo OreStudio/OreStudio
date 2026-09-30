@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: E156DD8A-327F-4B7E-B7FE-A2DE8559002F
+:END:
+#+title: Story: Implement the entry journeys in ores.web
+#+description: The door: sign in and sign up run in ores.web, on the refusals, the defaults and the registration state the platform needs.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:entry:v0:sprint_26:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The two Entry journeys run in ores.web against the real server. Sign in is finished: every refusal says which refusal it is, the forced password change blocks the workspace until the member sets a password of their own, the party step names the places a person works and marks their default, and a lapsed party-selection token returns them to the door with words rather than a generic failure. Sign up is added end to end: the deployment states whether it accepts self-registration, the screen reads that answer before it offers a form, the server refuses the registration it should never have accepted, and the person is told exactly what their new account has and what it still waits for. Registration's end state is the subject of the analysis this story opens with, because where a new account lands is a platform decision, not a screen decision.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The survey, the target state and the prototype are done, and the door is accepted as a step rail drawn in the shape of the provisioning journeys. Two requirements came out of the review: the ORE Studio banner on every Entry dialog, and the role-request journey as its own document. The setup journeys carry the registration defaults. No registration code has changed. |
+| Waiting on    | Nothing.                               |
+| Next          | Schedule the implementation from the target state's change table, beginning with the flag enforcement that closes the open registration door. |
+| Last touched  | 2026-09-29                               |
+
+* Acceptance
+
+- Every item of the User Journey Extraction Standard's Entry-journey section passes, with its evidence recorded.
+- The sign-up process is analysed end to end, and the target state it lands on is recorded in a knowledge document before any registration code changes.
+- The server refuses a registration when the deployment's self-registration flag is off, and every refusal carries a code the client can branch on.
+- Sign in runs against the real server from an empty installation through to the workspace, and every branch the journey document names has a screen state.
+- Sign up runs against the real server, and the confirmation states what the new account received and what it still waits for.
+- Both journeys are reachable and behaved on the shell as well as the browser, or the difference is stated and recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8F35000B-95D7-4FA6-92DF-915981CD17FA][Analyse the sign-up process end to end]] | DONE | 2026-09-29 | 2026-09-29 | Record what self-registration does today, where a new account lands, and every decision the sign-up journey waits on, so the target state can be written before any code changes. |
+| [[id:70FF2285-2801-42FA-9BC8-9AEFB05DEDF1][Define the registration target state]] | DONE | | 2026-09-29 | Write the knowledge document that settles where a self-registered account lands: the default tenant, party and role flags, the pending state, the policy read and the settings write path. |
+| [[id:97B54096-7FB5-42A7-BCDA-CA523C145E9C][Prototype the registration door]] | DONE | 2026-09-29 | 2026-09-29 | Build the throwaway static prototype that argues the registration door's layout: the closed notice, the form, the refusals, and the usable and pending confirmations, in three structural variants. |
+| [[id:54E60E3F-797A-4DF1-AD5A-0A30A35163D9][Take the registration defaults into the setup journeys]] | DONE | | 2026-09-29 | Record that the Setup journeys own the registration defaults: First run states the switch and confirms the default tenant, its first sign-in nominates the party and role, and New tenant and New party ask the same questions. |
+| [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Use one rail and one splash header on every setup screen]] | BACKLOG | | | Draw the setup journeys, the registration door and the sign-in dialog on the same rail and the same splash header, so every screen that sets something up looks like the same product. |
+| [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] | BACKLOG | | | Document how a person asks for roles beyond the default one registration gives them, as its own journey in the Access group, separate from sign up. |
+| [[id:A7881424-279D-4E8F-8C4E-5B9B89C25529][Document the entry journeys' server side]] | DONE | | 2026-09-29 | Write the page that traces how the server handles sign in and sign up, with an interaction diagram for the policy read, the sign-in branch and the registration branch. |
+| [[id:AE38F3C4-BC68-4ACD-BB8D-FB53574F57BE][Make the registration gate real]] | DONE | 2026-09-29 | 2026-09-29 | Read the deployment's self-registration switch on the live sign-up path and give every refusal a code, so the door a deployment believes it has closed is actually closed. |
+| [[id:D59EFB24-02C4-4C04-ADF3-028EFA94A7F7][Answer the registration policy and land the account it describes]] | DONE | 2026-09-30 | 2026-09-30 | Build the server side the door reads before it offers a form: the tenant resolution from the address, the three registration-default flags, the pending account state, the registration-policy read, and a code on every sign-in refusal. |
+
+* Decisions
+
+- *A default lives on the row its actor may write.* Row-level security decides who may set a value, so a default nobody can set is not a default. The tenant flag belongs to the super administrator, because only a system-tenant session may write a tenant row; the party and role flags belong to the tenant administrator, because those tables are tenant-isolated.
+- *A boolean stays a setting; a reference becomes a flag.* The two registration flags have no referent and stay in the variability settings, where they already live. A default party or role is a reference, and stored as a string it can name a row that does not exist — which is the failure mode of the hard-coded =Viewer= it replaces.
+- *Waiting is a state, not an absence.* A new =account_status= of =pending= is written when the tenant nominates no default party, read by the roster, and refused by sign-in with its own code and its own words.
+- *The door asks one policy read,* =iam.v1.auth.registration-policy=, separate from the bootstrap read: one answers what the deployment offers a person who is not in it, the other whether the deployment has been set up.
+- *The address names the tenant.* Both Entry journeys resolve the tenant from the address they are served at, so the person types a username and not a =user@hostname=. A registration that resolves to no tenant is refused with a reason; it never falls back to the system tenant by omission.
+- *A refusal is a code.* Both responses gain =error_code=, so a screen branches on a value rather than on English prose.
+- *The authorisation flag closes the door honestly.* Until the approval workflow exists, =system.signup_requires_authorization= closes registration and the policy read states why. It must not claim an approval that nothing performs.
+- *The setup journeys own the defaults, not the sign-up screen.* The person who opens the door is not the person who decides what it opens onto, so [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] confirms the first tenant as the default tenant and states whether the installation accepts self-registration, and its first sign-in lets the tenant administrator nominate the party and the role. [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions when they create a tenant or a party later. The three Setup journey documents now carry those steps. The screen work belongs to [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][the setup story]], which owns the setup screens; this story supplies the model, the policy read and the write paths they call.
+- *The switch is the deployment's, and it is read at system scope.* =system.user_signups= is seeded on the system tenant and defaults to =false=, so a deployment nobody has asked refuses registration. A tenant override is possible but nothing sets one, and the door reports the deployment's answer rather than inventing a per-tenant one.
+- *The door is a step rail, and it is the provisioning rail.* The registration screen uses the same flat rail the setup journeys use: one step at a time, a circled mark per step, the step in a card, the action in a footer under a rule, and the write deferred to a review step. The design was accepted as a prototype and reworked to that shape; the losing variants stay on the prototype page as the record.
+- *Every Entry dialog carries the ORE Studio banner.* The setup screen already leads with the project's artwork, so the sign-in and sign-up dialogs carry it too. Because this is about every door and not about one screen, it is a task of its own rather than a line in the screen work.
+- *Asking for more roles is its own journey.* Registration grants one default role. A person who needs more than that asks for it, after registration, and somebody else answers, which is two actors and two endings: it is not a step of the door. The journey document is a task here; its screens belong to the Access group.
+- *The rail and the splash header are the application's, not each screen's.* Every screen that sets something up renders on =JourneyPage='s rail and carries =JourneyHeader='s splash, unchanged. The setup journeys do, the registration door will, and the sign-in dialog carries the same splash above its form even though it has no rail. The splash keeps its 964:323 ratio and nothing crops it: a stated height that is not the ratio's is what cut the top and the foot off the wordmark. A screen that draws its own rail or banner is a defect, not a variation, and the prototype was corrected on both counts.
+- *The target state lands with the fix, by the product owner's choice.* The open registration door stays open until the implementation lands. That is a known and accepted risk for the duration of the work, and it is the reason the flag enforcement is the first implementation task rather than the last.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] | knowledge | The target state for the policy: where a registration lands, what it receives, and who may change each. |
+| [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] | knowledge | The server side of both journeys, in the shape and beside the documents of the tenant provisioning journey: the layers, the order a sign-in is refused in, the refusal codes and the state, with a sequence diagram per interaction. |
+| [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] | investigation | The survey the target state answers: what exists, and the two defects it found. |
+| [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] | user_journey | The two journeys this story implements. |
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | user_journey | The setup journeys that now carry the registration defaults this story depends on. |
+| [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door prototype]] | knowledge | The three variants of the sign-up screen; the step rail is the accepted one. |
+| [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] | knowledge | How a pre-authentication request resolves its tenant, which both journeys follow. |
+| [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] | knowledge | The checklist the Entry-journey section is worked against. |
+
+* Out of scope
+
+- The approval workflow behind =system.signup_requires_authorization=, which is a workflow in =ores.workflow=.
+- Email verification, invitation delivery and the notification that tells an administrator somebody is waiting.
+- Self-service password recovery from the door, which needs a delivery mechanism outside IAM.
+- The Directory screens that release a pending account and show it on the roster. The target state states the requirement; [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]] owns the screen.

@@ -55,4 +55,9 @@ disabled).
 
 - The administrative toggle that enables/disables self-registration
   (assumed to exist server-side; only its client-facing behaviour is in
-  scope here).
+  scope here). What the toggle is, who may set it and what the door answers
+  with are in
+  [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding
+  defaults]]; the live path reads no flag today, so "disabled" is not yet
+  enforced and the capture's second acceptance criterion depends on that
+  page landing.

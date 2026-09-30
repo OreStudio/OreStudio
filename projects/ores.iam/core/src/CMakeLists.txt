@@ -57,6 +57,7 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.utility.lib
         ores.refdata.api.lib
+        ores.refdata.core.lib
         ores.synthetic.api.lib
         ores.marketdata.api.lib
         ores.marketdata.core.lib

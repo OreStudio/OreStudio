@@ -53,6 +53,7 @@ struct party_write {
     std::string business_center_code;
     std::string status;
     std::optional<boost::uuids::uuid> image_id;
+    bool is_registration_default;
 };
 
 struct party_change {

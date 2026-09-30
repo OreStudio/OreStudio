@@ -61,6 +61,13 @@ enum class error_code : std::uint16_t {
     signup_requires_authorization = 0x0018,
     payload_incomplete = 0x0019,
     limit_exceeded = 0x001A,
+    invalid_credentials = 0x001B,
+    account_locked = 0x001C,
+    account_pending = 0x001D,
+    no_party_assignment = 0x001E,
+    tenant_inactive = 0x001F,
+    no_registration_destination = 0x0020,
+    no_default_role = 0x0021,
     last_value
 };
 

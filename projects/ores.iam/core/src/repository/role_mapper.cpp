@@ -44,6 +44,7 @@ domain::role role_mapper::map(const role_entity& v) {
     r.name = v.name;
 
     r.description = v.description;
+    r.is_registration_default = v.is_registration_default;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,6 +66,7 @@ role_entity role_mapper::map(const domain::role& v) {
     r.name = v.name;
 
     r.description = v.description;
+    r.is_registration_default = v.is_registration_default;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

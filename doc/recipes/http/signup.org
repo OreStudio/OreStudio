@@ -35,3 +35,9 @@ Access-Control-Allow-Origin: *
   "error": "User signups are disabled"
 }
 #+end_src
+
+The account this call creates, the tenant it lands in, the party and role it
+receives, and the switch that refuses it are
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]].
+The path the call takes, and the codes it answers with once they exist, are
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]].

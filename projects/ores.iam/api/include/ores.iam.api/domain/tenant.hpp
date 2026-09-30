@@ -110,6 +110,18 @@ struct tenant final {
     std::string status;
 
     /**
+     * @brief Whether self-registrations land in this tenant when the address they arrive at names
+     * no tenant. At most one live row may hold it, because two tenants flagged as the default is a
+     * question with no answer.
+     *
+     * The flag belongs to the super administrator. The write policy on this table admits only the
+     * system tenant, and every tenant row carries the system tenant, so only a super administrator
+     * may write a tenant row at all. That is also why the default party and the default role are
+     * not columns here: a tenant administrator could not set them.
+     */
+    bool is_registration_default = false;
+
+    /**
      * @brief Username of the person who last modified this tenant.
      */
     std::string modified_by;

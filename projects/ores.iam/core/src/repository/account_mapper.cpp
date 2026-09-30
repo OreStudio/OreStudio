@@ -44,6 +44,7 @@ domain::account account_mapper::map(const account_entity& v) {
     r.username = v.username;
 
     r.account_type = v.account_type;
+    r.account_status = v.account_status;
     r.full_name = v.full_name.value_or("");
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
@@ -82,6 +83,7 @@ account_entity account_mapper::map(const domain::account& v) {
     r.username = v.username;
 
     r.account_type = v.account_type;
+    r.account_status = v.account_status;
     r.full_name = v.full_name.empty() ? std::nullopt : std::optional(v.full_name);
     r.password_hash = v.password_hash.value();
     r.password_salt = v.password_salt.value();

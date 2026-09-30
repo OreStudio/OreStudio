@@ -279,9 +279,10 @@ RLS_001 ores_dq_badge_severities_tbl
 RLS_001 ores_dq_code_domains_tbl
 
 # IAM system enum/lookup tables — system-wide reference data, not user-created.
-# Account types, tenant statuses, and tenant types are seeded at startup and
-# never vary per tenant; RLS would add overhead with no benefit.
+# Account types, account statuses, tenant statuses, and tenant types are seeded
+# at startup and never vary per tenant; RLS would add overhead with no benefit.
 RLS_001 ores_iam_account_types_tbl
+RLS_001 ores_iam_account_statuses_tbl
 RLS_001 ores_iam_tenant_statuses_tbl
 RLS_001 ores_iam_tenant_types_tbl
 

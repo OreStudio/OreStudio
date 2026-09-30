@@ -40,6 +40,8 @@ std::vector<ores::diff::domain::field_value> render_tenant_fields(const domain::
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Hostname", .value = v.hostname});
     fields.push_back({.name = "Status", .value = v.status});
+    fields.push_back(
+        {.name = "Is Registration Default", .value = v.is_registration_default ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

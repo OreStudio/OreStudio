@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 8F35000B-95D7-4FA6-92DF-915981CD17FA
+:END:
+#+title: Task: Analyse the sign-up process end to end
+#+description: Record what self-registration does today, where a new account lands, and every decision the sign-up journey waits on, so the target state can be written before any code changes.
+#+type: task
+#+level: s1
+#+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A written record of what self-registration does today, read from the code rather than from the journey document, so that the target state for registration can be decided against the system. The record answers where a self-registered account lands, what it receives, who may open and close the door, and which of the journey document's seven gaps still reproduce.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- Every claim in the investigation cites a file, a model or a command, and the tree it was read at is stated.
+- The live sign-up path, the dead flag-aware service, the tenant resolution and the party rule are all recorded.
+- Each of the journey document's seven gaps is confirmed or corrected.
+- The decisions the target state must settle are listed, and none of them is silently made here.
+
+* Plan
+
+1. Read the journey document and mark each gap as it is checked, so a stale claim is found rather than repeated.
+2. Follow the subject: =iam.v1.auth.signup= from the model to the handler to the service it calls.
+3. Search for the callers of the flag-aware service, because a service with no caller is the difference between a closed door and a door with nobody behind it.
+4. Read the tenancy architecture for how a pre-authentication request finds its tenant, and check the service's configured default.
+5. Read the variability settings for the flags and for any subject that sets them.
+6. Read the browser's path — BFF routes, wire protocol, the deleted page — and the limiter the sign-in route uses.
+7. Record the target-state decisions in Recommendations; make none of them.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Callers of the flag-aware sign-up service | 2 files, both its own header and source | =grep -rln signup_service projects/ --include=*.cpp --include=*.hpp= | =67493fae8e= |
+| BFF routes for sign-up | 0 | =grep -n "'/api" projects/ores.web/packages/bff/src/server.ts= | =67493fae8e= |
+| Variability subjects that read or write a named setting | 0 | =grep -n "subject" projects/ores.variability/modeling/ores.variability.operations.org= | =67493fae8e= |
+| Sign-up response fields | 3, none an error code | =projects/ores.iam/modeling/ores.iam.signup_messages.org= | =67493fae8e= |
+
+* Notes
+
+- The finding that changes the shape of the work: =iam.v1.auth.signup= serves through =account_setup_service=, which reads neither =system.user_signups= nor =system.signup_requires_authorization=, while the service that does read them is never constructed. The deployment's switch is therefore advisory, and a deployment with self-registration turned off still accepts registrations over NATS and over the HTTP gateway.
+- The second finding: the sign-up handler never parses a hostname, so it writes with the IAM service's own context, which defaults to the system tenant. The browser has no tenant to offer it, because the BFF does not resolve one from the address.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The investigation is [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]]. It confirms six of the journey document's seven gaps and corrects the fifth, which describes the authorisation refusal of a service nothing calls.
+
+Two findings move the work beyond the screen. Self-registration is open on every deployment regardless of =system.user_signups=, because the live path checks nothing; and a registration that names no hostname creates its account in the system tenant, because the handler writes with its own context and the browser has no tenant to send. Neither is fixable on the sign-up screen.
+
+The record ends with the six decisions the target state must settle — the policy read, the default tenant, the default party, the waiting state, the default role and the kill switch — and with three prerequisites that are not choices: the live path must read the flags, the response must carry an error code, and the BFF must expose a rate-limited route.

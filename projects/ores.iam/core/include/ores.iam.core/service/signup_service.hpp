@@ -22,6 +22,7 @@
 
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -32,6 +33,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <expected>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace ores::iam::service {
@@ -46,6 +48,27 @@ struct signup_result {
         ores::utility::serialization::error_code::none;
     boost::uuids::uuid account_id;
     std::string username;
+    /** @brief The state the account was created in: @c active or @c pending. */
+    std::string account_status;
+    /** @brief The party the account received, when the tenant nominated one. */
+    std::optional<boost::uuids::uuid> party_id;
+    /** @brief The role the account received, when the tenant nominated one. */
+    std::optional<boost::uuids::uuid> role_id;
+};
+
+/**
+ * @brief Where a registration lands: the tenant's nominated party and role.
+ *
+ * The tenant itself travels in the database context the service is
+ * constructed with, so the two nominations are all this carries. A tenant
+ * that nominates no party still admits a registration: the account is created
+ * pending and waits for an administrator. A tenant that nominates no role
+ * does not, because an account that holds nothing is not an account somebody
+ * can use.
+ */
+struct signup_destination {
+    std::optional<boost::uuids::uuid> party_id;
+    std::optional<boost::uuids::uuid> role_id;
 };
 
 /**
@@ -94,16 +117,20 @@ public:
      * 3. Validates username uniqueness
      * 4. Validates email format and uniqueness
      * 5. Validates password against policy
-     * 6. Creates the account
+     * 6. Creates the account in the tenant its context names, active when the
+     *    destination nominates a party and pending when it does not
+     * 7. Grants the destination's role and, when nominated, the association
      *
      * @param username The desired username (must be unique)
      * @param email The user's email address (must be unique and valid format)
      * @param password The password (must meet policy requirements)
+     * @param destination The tenant's nominated party and role
      * @return signup_result with success status and account details or error info
      */
     signup_result register_user(const std::string& username,
                                 const std::string& email,
-                                const std::string& password);
+                                const std::string& password,
+                                const signup_destination& destination);
 
     /**
      * @brief Checks if signups are currently enabled.

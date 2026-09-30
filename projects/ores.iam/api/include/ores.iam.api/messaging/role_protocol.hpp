@@ -43,6 +43,7 @@ struct role_write {
     boost::uuids::uuid id;
     std::string name;
     std::string description;
+    bool is_registration_default;
 };
 
 struct role_change {

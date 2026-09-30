@@ -409,4 +409,23 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
     return result;
 }
 
+std::optional<domain::party> party_repository::read_registration_default(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+                       where("tenant_id"_c == tid && "is_registration_default"_c == true &&
+                             "valid_to"_c == max.value()) |
+                       limit(1);
+
+    const auto rows = execute_read_query<party_entity, domain::party>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(),
+        "Reading the registration default party.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+
 }

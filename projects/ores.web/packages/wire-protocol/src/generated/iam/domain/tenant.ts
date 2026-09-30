@@ -40,6 +40,7 @@ export interface Tenant {
     description: string;
     hostname: string;
     status: string;
+    is_registration_default: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

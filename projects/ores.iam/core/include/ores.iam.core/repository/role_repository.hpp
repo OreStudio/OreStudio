@@ -180,6 +180,8 @@ public:
 
     std::vector<domain::role> read_latest_by_name(context ctx, const std::string& name);
 
+    std::optional<domain::role> read_registration_default(context ctx);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

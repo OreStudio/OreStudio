@@ -80,18 +80,27 @@ journey that can happen on an empty database.
    The person can leave the page. A failed step stops the instance, the tenant
    stays /bootstrapping/, and a retry resumes from the failed step; the
    completed steps are kept.
-7. *Hand off.* The tenant is ready. The person chooses *Continue as tenant
+7. *Registration.* The installation can now accept registrations. The system
+   administrator decides whether it does, and confirms the first tenant as the
+   tenant a registration lands in. Nothing is created here, and a refusal still
+   leaves a working installation: it only means accounts come from an
+   administrator. The door reports both answers from then on.
+8. *Hand off.* The tenant is ready. The person chooses *Continue as tenant
    admin*, which signs out, signs in as the tenant administrator and opens
    their first sign-in, or *Hand off to someone else*, which signs out and
    shows the username to pass on. The web keeps the administrator's password in
    memory only until this point; it is never written to storage.
-8. *First sign-in.* The tenant administrator sets a password of their own
+9. *First sign-in.* The tenant administrator sets a password of their own
    when the profile asks for one, which neither starting point does today, and
-   chooses the party to start in when they work in more than one. This is
+   chooses the party to start in when they work in more than one. Where
+   registration is on they also nominate the party a new account joins and the
+   role it receives, beside the party they choose to work as. Neither
+   nomination is required: an installation that accepts registrations without
+   them creates accounts that wait for an administrator. This is
    [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][onboard]]: a person's first use
    of a tenant that already exists.
-9. *Ready.* The system confirms the installation. The person goes home, or to
-   the Tenants page to create another tenant.
+10. *Ready.* The system confirms the installation. The person goes home, or to
+    the Tenants page to create another tenant.
 
 One flat step rail. The new tenant steps are written once, as a library of
 step definitions, and first run expands them inline. The person sees the
@@ -136,6 +145,7 @@ tenant journey alike.
 | =tenant_status= | The tenant moves from /bootstrapping/ to /active/ | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
 | =account_party= | The [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][account-party association]] the first sign-in chooses between | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
 | Seed profile | The ordered workflow steps the profile selects, and its parameters | [[id:25B5DE96-7E9E-4713-92D7-F286BB41C855][ores.iam.seed_profile]] |
+| Registration defaults | The switch, the default tenant, the default party and the default role the journey sets, so the door can answer [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] | [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] |
 
 Three values must never reach this screen: =password_hash=, =password_salt=
 and any cleartext password after it is sent. The password fields write; no
@@ -157,6 +167,11 @@ read returns a hash.
 | Hand off | Re-ask the deployment when the administrator was created | none | exists |
 | First sign-in | Set a new password | =iam.v1.accounts.change-password= | exists |
 | First sign-in | Choose the party to start in | =iam.v1.accounts.select-party= | exists |
+| Registration | Read the policy the door reports: the switch and the defaults | =iam.v1.auth.registration-policy= | exists |
+| Registration | Set whether the deployment accepts self-registration | a settings write | missing |
+| Registration | Confirm the first tenant as the tenant a registration lands in | =iam.v1.tenants.put= | exists |
+| First sign-in | Nominate the party a new account joins | =refdata.v1.parties.put= | exists |
+| First sign-in | Nominate the role a new account receives | =iam.v1.roles.put= | exists |
 
 =iam.v1.bootstrap.status= and =iam.v1.bootstrap.create-admin= are declared in
 [[id:4B98E2D0-8FE3-4321-8CFD-90A4C13422EA][ores.iam.bootstrap_messages]] and
@@ -180,9 +195,18 @@ every tenant, the first one included.
 
 * What is missing
 
-Nothing. The starting point asks the deployment for the tenant's root legal
-entity rather than taking a code nobody can check, both other Setup journeys
-have rails of their own, and
+One thing the journey reaches for is not in place:
+
+- The registration step has nothing to write to yet. The read that reports the
+  switch and the defaults exists — =iam.v1.auth.registration-policy= — but no
+  interface sets the switch outside SQL, so the step and the two nominations are
+  design-only until the settings write and the screen land. The defaults the
+  nominations point at are settable now, as =is_registration_default= on the
+  tenant, the party and the role.
+
+Nothing else is missing from the journey's own path: the starting point asks the
+deployment for the tenant's root legal entity rather than taking a code nobody
+can check, both other Setup journeys have rails of their own, and
 =projects/ores.web/scripts/verify-first-run.ts= walks this journey's path on a
 fresh database and asserts every answer.
 
@@ -244,6 +268,7 @@ either way -- the rail showed the failed step and the retry was offered.
 - [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the same steps run on their own there, for every tenant after the first
 - [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — add another legal entity once the installation is up
 - [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the tenant administrator's later sign-ins, and where a forced change lands
+- [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the door this journey opens or closes: the deployment's switch, the tenant a registration lands in, and the party and role a new account receives
 - [[id:71515FD0-8089-493F-9D9C-36877392DB33][Keep my details current]] — the profile the tenant administrator completes after their first sign-in
 - [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — change the first tenant's settings once it is active
 

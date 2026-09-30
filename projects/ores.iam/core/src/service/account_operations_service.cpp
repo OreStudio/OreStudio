@@ -33,6 +33,7 @@ using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
+using error_code = ores::utility::serialization::error_code;
 
 void account_operations_service::throw_if_empty(const std::string& name, const std::string& value) {
     BOOST_LOG_SEV(lg(), debug) << name << ": '" << value << "'";
@@ -226,7 +227,7 @@ authenticated_login account_operations_service::login(const std::string& usernam
     auto accounts = account_repo_.read_latest_by_username(ctx_, username);
     if (accounts.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Login failed: account not found for username: " << username;
-        throw std::runtime_error("Invalid username or password");
+        throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
     const auto& account = accounts[0];
@@ -240,13 +241,13 @@ authenticated_login account_operations_service::login(const std::string& usernam
     const auto tenants = repository::read_active_tenant_by_id(ctx_, account.tenant_id.to_uuid());
     if (tenants.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Login failed: tenant not found for username: " << username;
-        throw std::runtime_error("Invalid username or password");
+        throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
     const auto& tenant_status = tenants.front().status;
     if (tenant_status != "active" && tenant_status != "bootstrapping") {
         BOOST_LOG_SEV(lg(), warn) << "Login refused for a tenant in status '" << tenant_status
                                   << "' for username: " << username;
-        throw std::runtime_error("Tenant is not active");
+        throw login_error(error_code::tenant_inactive, "Tenant is not active");
     }
 
     // Only user accounts can login with password
@@ -267,7 +268,8 @@ authenticated_login account_operations_service::login(const std::string& usernam
 
     if (login_info.locked) {
         BOOST_LOG_SEV(lg(), warn) << "Login attempt for locked account: " << username;
-        throw std::runtime_error("Account is locked due to too many failed attempts");
+        throw login_error(error_code::account_locked,
+                          "Account is locked due to too many failed attempts");
     }
 
     bool password_valid = crypto::password_hasher::verify(password, account.password_hash.value());
@@ -288,7 +290,7 @@ authenticated_login account_operations_service::login(const std::string& usernam
                 << "Account locked due to too many failed attempts: " << username;
         }
 
-        throw std::runtime_error("Invalid username or password");
+        throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
     login_info.last_ip = ip_address;

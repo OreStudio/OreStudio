@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-parties add <short_code> <full_name> <codename> <transliterated_name> <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id> <reason> <commentary>
+parties add <short_code> <full_name> <codename> <transliterated_name> <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id> <is_registration_default> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.parties.put=.
 
 #+name: parties-add
 #+begin_src ores-shell :tangle parties-add.ores :exports none
-parties add __none__ __none__ __none__ - __none__ __none__ - __none__ __none__ - system.new_record generated_script
+parties add __none__ __none__ __none__ - __none__ __none__ - __none__ __none__ - false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-parties set <id> <short_code> <full_name> <codename> <transliterated_name> <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id> <reason> <commentary> [--version <n>]
+parties set <id> <short_code> <full_name> <codename> <transliterated_name> <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id> <is_registration_default> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.parties.put=.
 
 #+name: parties-set
 #+begin_src ores-shell :tangle parties-set.ores :exports none
-parties set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ - __none__ __none__ - system.new_record generated_script
+parties set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ - __none__ __none__ - false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-parties put-many --count <n> <id> <short_code> <full_name> <codename> <transliterated_name> <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id> <reason> <commentary>
+parties put-many --count <n> <id> <short_code> <full_name> <codename> <transliterated_name> <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id> <is_registration_default> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.parties.put_many=.
 
 #+name: parties-put-many
 #+begin_src ores-shell :tangle parties-put-many.ores :exports none
-parties put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ - __none__ __none__ - system.new_record generated_script
+parties put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ - __none__ __none__ - false system.new_record generated_script
 #+end_src
 
 ** =delete=

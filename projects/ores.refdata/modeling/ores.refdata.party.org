@@ -213,6 +213,27 @@ Optional reference to a logo/branding image in the images table.
 std::nullopt
 #+end_src
 
+** is_registration_default
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether a self-registered account in this tenant joins this party. At most
+one live party per tenant may hold it.
+
+The flag sits on the party row rather than on the tenant because this table
+is tenant-isolated: a tenant administrator may write their own parties, so
+the choice is theirs to make. A =default_party_id= column on the tenant row
+would be unreachable to them, because only a system-tenant session may write
+a tenant row.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
 * Foreign keys
 
 ** parent_party_id
@@ -266,6 +287,7 @@ Everything below is consumed by the SQL codegen pipeline only.
 | codename_uniq     | codename          | true   | true          | codename <> '' |
 | root_party_uniq   | tenant_id         | true   | false         | parent_party_id is null and party_category <> 'System' and valid_to = ores_utility_infinity_timestamp_fn() |
 | system_party_uniq | tenant_id         | true   | false         | party_category = 'System' and valid_to = ores_utility_infinity_timestamp_fn() |
+| registration_default_party_uniq | tenant_id | true | false      | is_registration_default and valid_to = ores_utility_infinity_timestamp_fn() |
 
 ** Codename sequence
 :PROPERTIES:
@@ -608,6 +630,42 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
         if (!row.empty() && row[0])
             result.push_back(boost::lexical_cast<boost::uuids::uuid>(*row[0]));
     return result;
+}
+#+end_src
+
+*** read_registration_default
+:PROPERTIES:
+:ID: 2E7F5A14-8B3D-4C60-9A17-6F4B2E8D1C05
+:END:
+
+Reads the party flagged =is_registration_default= in the caller's tenant,
+when one is set. At most one live party per tenant may hold the flag, so
+this is one row or none. A registration into a tenant with no flagged party
+creates a pending account rather than failing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::party> read_registration_default(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::party>
+party_repository::read_registration_default(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_entity>> |
+                       where("tenant_id"_c == tid && "is_registration_default"_c == true &&
+                             "valid_to"_c == max.value()) |
+                       limit(1);
+
+    const auto rows = execute_read_query<party_entity, domain::party>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_mapper::map(entities); },
+        lg(),
+        "Reading the registration default party.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
 }
 #+end_src
 

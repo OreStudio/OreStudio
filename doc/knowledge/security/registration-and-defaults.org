@@ -1,0 +1,366 @@
+:PROPERTIES:
+:ID: 84706C3E-D48D-4A4B-967A-4AADB3CF44B2
+:END:
+#+title: Registration and Onboarding Defaults
+#+description: Where a self-registered account lands: the default tenant, party and role, the pending state, the policy read the door makes, and who may change each.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:identity:registration:defaults:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+* Summary
+
+Self-registration creates an account; it does not, by itself, give a person a
+place to work. This page settles the whole answer: the tenant a registration
+lands in, the party a new account joins and the role it receives, the state an
+account holds while an administrator has not finished setting it up, and who is
+allowed to change each of those. The rule the rest of the page follows is that a
+default lives as a flag on the row it points at, because row-level security
+decides which actor may write that row, and a default nobody can set is not a
+default. The interactions that carry it out are
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]], and the survey
+this page answers is
+[[id:9700E01F-B582-4984-AF2F-81E2BA880544][analyse the sign-up process]].
+
+* The three questions a registration answers
+
+A registration is only useful once three questions have an answer. The journey
+[[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] states the problem exactly: registration creates an account, sign-in
+refuses an account with no party, and the honest end of the journey is therefore
+a confirmation and not a workspace. The three questions are:
+
+1. *Which tenant does the account belong to?* An account row carries a =tenant_id=
+   and cannot be created without one.
+2. *Which party does the account work in?* Sign-in refuses an account with no
+   association, so this is what makes the difference between an account that
+   works and an account that waits.
+3. *Which role does the account hold?* The baseline access the account starts
+   from, granted at creation rather than by a later administrator.
+
+Each answer is a policy, and each policy has a different owner. That ownership
+is the reason the storage shape below is what it is.
+
+* The policy the door reads
+
+The door asks one question before it offers a form, and that question has one
+answer. A new unauthenticated read — =iam.v1.auth.registration-policy= — returns
+the whole policy for the tenant at the address:
+
+| Field | Meaning | Source |
+|-------+---------+--------|
+| =signups_enabled= | Whether the deployment accepts registrations at all | The setting =system.user_signups=, read at system scope |
+| =authorization_required= | Whether a registration also waits on an approval step | The setting =system.signup_requires_authorization= |
+| =tenant= | The tenant a registration lands in, when one is known | The address, else the tenant flagged =is_registration_default= |
+| =party= | The party a new account joins, when the tenant nominates one | The party flagged =is_registration_default= |
+| =role= | The role a new account receives | The role flagged =is_registration_default= |
+| =usable_now= | Whether a registration can sign in without an administrator | Derived: =tenant=, =party= and =role= are all present |
+
+The password rules stay where they are: [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] already
+answers =iam.v1.auth.password-policy=, and the sign-up screen reads it the same
+way the sign-in screen does.
+
+** The scope of the switch
+
+=system.user_signups= is the deployment's answer, not a tenant's. It is seeded
+once on the system tenant, and its registered default is =false=, so a
+deployment nobody has asked refuses registration. The settings are scoped, so a
+tenant override beside it is possible, but nothing sets one today and the door
+must not confuse the two. What the door reports is the deployment's switch; a
+tenant that wants its own answer is a later change with its own rule for which
+of the two wins.
+
+The read is separate from =iam.v1.bootstrap.status= rather than folded into it.
+The bootstrap read answers whether the deployment has been set up; this one
+answers what the deployment offers a person who is not in it yet. They change
+for different reasons, and a client that wants one rarely wants the other.
+
+** Resolving the tenant
+
+The tenant is resolved from the address before anything else happens, which is
+the rule [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] already states for a
+pre-authentication request: parse the hostname, look the tenant up by it, and use
+the handler's own tenant only when there is none. Registration adds one step
+after that:
+
+1. The address names a tenant — register there. This is the multi-tenant case
+   and needs no configuration at all.
+2. The address names none — use the tenant flagged =is_registration_default=.
+3. Neither — registration is closed, and the policy read says so with a reason.
+   It is never placed in the system tenant by omission, which is what happens
+   today and what [[id:9700E01F-B582-4984-AF2F-81E2BA880544][the survey]] found.
+
+Rule 3 is what keeps the single-tenant case honest: a deployment serving one
+tenant resolves it from the address, and a deployment serving many at one
+address needs the flag.
+
+** The person types a username, not a tenant
+
+The tenant is not a field on either Entry screen. The BFF forwards the hostname
+the request arrived at, and the service resolves the tenant from it. The login
+path takes the same treatment: the sign-in journey already says the tenant is
+not typed, because the address states it, so both journeys resolve it the same
+way and the ordinary door stops requiring =user@hostname=.
+
+* The default tenant
+
+| | |
+|---|---|
+| Where | A flag, =is_registration_default=, on [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| Who sets it | A super administrator |
+| How many | At most one, enforced by a partial unique index over the live rows |
+| When it is used | Only when the address names no tenant |
+
+The flag sits on the tenant row because the tenant row *is* the referent: the
+flag cannot point at a tenant that does not exist, on a table whose write policy
+admits exactly one actor. The write policy on =ores_iam_tenants_tbl= is
+=tenant_id = current_tenant_id=, and every tenant row carries the system tenant,
+so only a system-tenant session may write one. That is the super administrator,
+and it is why this flag is theirs and the other two are not.
+
+A deployment that nominates no default and serves one tenant still works, because
+the address resolves it. A deployment that nominates none and serves many at one
+address refuses registration with a stated reason rather than guessing.
+
+* The default party
+
+| | |
+|---|---|
+| Where | A flag, =is_registration_default=, on [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| Who sets it | A tenant administrator |
+| How many | At most one per tenant, enforced by a partial unique index over the live rows |
+| When it is used | At registration, to give the new account its first association |
+
+The flag sits on the party row because that is the row the tenant administrator
+may write. =ores_refdata_parties_tbl= is tenant-isolated, so a tenant
+administrator writes their own parties. The alternative — a =default_party_id=
+column on the tenant row — was rejected on exactly this ground: the tenant row's
+write policy admits only the system tenant, so the tenant administrator could not
+set their own default. See *Rejected alternatives*.
+
+When the flag is set, registration creates the association and the account is
+usable at once. When it is not, the account waits in the state below.
+
+* The default role
+
+| | |
+|---|---|
+| Where | A flag, =is_registration_default=, on [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+| Who sets it | A tenant administrator |
+| How many | At most one per tenant, enforced by a partial unique index over the live rows |
+| When it is used | At registration, to grant the account's baseline access |
+
+The role is per tenant and the tenant administrator owns the tenant's roles, so
+the flag sits on the role row for the same reason the party flag sits on the
+party row. The flag replaces the hard-coded name the registration path uses
+today: =account_setup_service= assigns =domain::roles::viewer= by name and throws
+when it is missing. A flag on the row removes both the hard-coding and the
+failure mode, because a flag cannot misspell a role that does not exist.
+
+A tenant that nominates no role is told so by the policy read, and registration
+is closed with that reason rather than creating an account that holds nothing.
+
+A default role is a floor and not a ceiling. A person who needs more than it
+grants asks for it, and that request is its own journey rather than part of the
+door: it happens after registration, it may be refused, and somebody else answers
+it. That journey belongs to the Access group and is documented there, not here.
+
+* The waiting state
+
+An account that exists but has not been given a place to work is *pending*. This
+is a second value beside *active* on a new status lookup,
+=ores_iam_account_statuses_tbl=, following [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]]'s existing
+=account_type= pattern: a code column validated against a lookup, with the two
+values =active= and =pending= seeded.
+
+| Event | Status |
+|-------+--------|
+| Registration in a tenant that nominates a default party and role | =active=, with the association and the role written |
+| Registration in a tenant that nominates neither or only some | =pending=, with the role written when one is nominated and no association |
+| An administrator gives a pending account its first party | =active= |
+
+One column, one transition, and the transition belongs to the administrator's
+act rather than to a timer. The rule the roster and the sign-in path both read
+is therefore: *pending means an administrator has not finished setting this
+account up.*
+
+** What sign-in does with it
+
+=iam.v1.auth.login= refuses a pending account before it refuses a missing party,
+and with its own code and its own words: *Your account is waiting for an
+administrator to finish setting it up.* The person learns what they are waiting
+for instead of being told to contact an administrator about a party they have
+never heard of. The refusal is a code, not a matched sentence — see the refusal
+codes below.
+
+** What the roster does with it
+
+The account roster reads the status and shows a pending account as such, with the
+action that releases it. That is the administrator's side of the journey and it
+belongs to [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]], which this page states as a requirement
+rather than building.
+
+* The two flags, and the write path they lack
+
+The two booleans stay where they are. =system.user_signups= and
+=system.signup_requires_authorization= are values with a scope and no referent,
+which is what [[id:B0DEC846-32B2-494D-96B9-3E1F6819345D][ores.variability.system_setting]] is for, and they are
+already seeded and already read by the typed settings service.
+
+What is missing is not storage but a way to write one. [[id:D4A00A97-BD2C-4871-B1A5-318EFDAFD907][ores.variability.operations]]
+carries two subjects, =clear_bootstrap_mode= and =complete_party_onboarding=, and
+neither reads nor writes a named setting. So the super administrator's kill
+switch needs a settings read/write pair, and that pair is the first general
+write path the settings have ever had:
+
+- A read that returns the settings in scope, so a screen can show the current
+  state rather than assume it.
+- A write that sets one setting by name, permission-gated, with the writer and
+  the change reason recorded as every other write records them.
+
+Until that pair exists, =system.user_signups= is advisory: the live registration
+path does not read it at all, which is the defect the survey found, and a
+deployment that believes it has closed the door has not.
+
+** The authorisation flag
+
+=system.signup_requires_authorization= must not claim an approval nothing
+performs. Today the code that reads it refuses the registration outright, and the
+code that refuses is the one nothing calls; once the live path reads the flags,
+the honest behaviour is that the flag *closes* registration and the policy read
+reports =authorization_required= so the screen shows why. The approval workflow
+itself is out of scope for this story and belongs to =ores.workflow=.
+
+* Where the defaults come from
+
+A fresh installation has none of these values, and the door cannot invent them.
+[[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] is where they are set, because it is the only journey that runs
+on an empty installation and it already creates the things a default points at.
+
+- *The default tenant is the first tenant.* At the end of its provisioning the
+  system administrator confirms it as the tenant registrations land in. The flag
+  is the super administrator's to set, and the first tenant is the only sensible
+  answer while the installation holds one.
+- *The switch is answered in the same pass.* The system administrator states
+  whether the installation accepts self-registration, and the door reports that
+  answer from then on. A deployment that refuses needs nothing else. One that
+  accepts says so deliberately rather than by omission, which is the difference
+  between a door that is closed and a door nobody has looked at.
+- *The default party and the default role are the tenant administrator's,* and
+  the journey's first sign-in is where they name them, beside the party they
+  choose to work as. An administrator who never names them still leaves a
+  deployment that accepts registrations; the accounts it creates wait in the
+  pending state rather than failing at sign-in.
+
+[[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and
+[[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions
+when they create a tenant or a party later, because an installation that grows
+past its first tenant still has to say which tenant is the default and where a
+new account joins.
+
+This is why the switch and the defaults belong to the setup journeys rather than
+to the sign-up screen: the person who opens the door is not the person who
+decides what it opens onto.
+
+* The registration flow end to end
+
+1. The door asks =iam.v1.auth.registration-policy=, unauthenticated, with the
+   address it was served at.
+2. The screen renders the form when the policy allows registration and the
+   destination is known, and the closed notice with its reason when it does not.
+3. The form takes a username, an email address, a password and its confirmation,
+   and states the password rules from =iam.v1.auth.password-policy=.
+4. The BFF posts to its registration route, under the same limiter family the
+   sign-in route uses, and forwards the hostname.
+5. The service resolves the tenant, reads both flags, validates the username,
+   the email and the password, creates the account with the status the defaults
+   allow, writes its login record, and grants the nominated role.
+6. The response carries the account, its status, the role and party it received,
+   and an error code when the registration was refused.
+7. The confirmation states what the account received and what it still waits for,
+   then returns the person to the door. It does not sign them in: a pending
+   account cannot open a session, and an active one should arrive at the door
+   deliberately.
+
+* Refusal codes
+
+Both Entry subjects drop a fact today: a refusal carries a sentence and no code,
+so a client distinguishes a locked account from a wrong password by matching
+English prose. Both responses gain an =error_code=, drawn from the existing
+=ores::utility::serialization::error_code= vocabulary where it already fits:
+
+| Subject | Codes |
+|---------+-------|
+| =signup_response= | =signup_disabled=, =signup_requires_authorization=, =no_registration_destination=, =no_default_role=, =username_taken=, =email_taken=, =weak_password=, =invalid_request= |
+| =login_response= | =invalid_credentials=, =account_locked=, =account_pending=, =no_party_assignment=, =tenant_inactive=, =bootstrap_mode= |
+
+The message stays for a human and may change; the code is what a screen branches
+on, which is what makes each branch a screen state rather than a guess.
+
+* Who may set what
+
+| Actor | May set | Because |
+|-------+---------+---------|
+| Super administrator | The default tenant flag; =system.user_signups= through the new settings write | The tenant table and the system-scope settings are theirs to write |
+| Tenant administrator | The default party flag; the default role flag | The party and role tables are tenant-isolated |
+
+No actor sets another tenant's defaults. A tenant administrator cannot nominate
+the deployment's default tenant, which is why that flag is not theirs; a super
+administrator can, which does not make the other two theirs.
+
+* Rejected alternatives
+
+- *Every default in the variability settings.* A setting holds a value, and a
+  default party or role is a reference. Stored as a string it can name a role
+  that was retired or misspell one, and the registration path finds out by
+  failing — which is the failure mode the current hard-coded =Viewer= already
+  has. Booleans stay settings because they have no referent; references become
+  flags on the row they point at.
+- *=default_party_id= and =default_role_id= on the tenant row.* Decisive against
+  it: the write policy on =ores_iam_tenants_tbl= is
+  =tenant_id = current_tenant_id=, and tenant rows carry the system tenant, so
+  only a super administrator may write a tenant row. The tenant administrator's
+  own choice would be unreachable to them.
+- *A flag with no uniqueness rule.* Two parties flagged as the default is a
+  question with no answer. Each flag carries a partial unique index over the live
+  rows, scoped by tenant where the table is, in the shape =ores.refdata.party=
+  already uses for =root_party_uniq= and =system_party_uniq=.
+- *Confirmation only, with no waiting state.* The confirmation could simply tell
+  the person to ask an administrator. It was rejected because it leaves the state
+  implicit: the roster cannot find the people who are waiting, and the sign-in
+  refusal cannot say what is actually wrong.
+
+* What this changes
+
+| Layer | Change |
+|-------+--------|
+| Models | =ores.iam.tenant=, =ores.refdata.party= and =ores.iam.role= gain =is_registration_default=; a new =ores.iam.account_status= lookup; =ores.iam.account= gains =account_status=; [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]] gains a hostname, a status, the granted party and role, and =error_code=; [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] gains =error_code= |
+| SQL | The columns, the lookup and its seeds, the partial unique indexes, and the history and validation the entity pattern requires |
+| Services | Registration reads the flags and the defaults and writes the status; login sets a code on every refusal and refuses a pending account before a party-less one |
+| Variability | A settings read and a settings write, permission-gated |
+| BFF | A registration-policy route, a registration route under the limiter, and the hostname forwarded |
+| Wire protocol | The browser-safe exports and the operation entries the two subjects need |
+| Clients | The sign-up screen and the sign-in screen changes, on the same subjects from the shell. Every dialog carries the ORE Studio banner, the sign-in screen included |
+| Journeys | [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] gains the registration step and nominates the tenant administrator's defaults; [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions when they create a tenant or a party |
+
+* Out of scope
+
+- The approval workflow behind =system.signup_requires_authorization=, which is a
+  workflow in =ores.workflow=.
+- Email verification, invitation delivery and the notification that tells an
+  administrator somebody is waiting.
+- Self-service password recovery from the door, which needs a delivery mechanism
+  outside IAM.
+- The Directory journeys that release a pending account and show it on the
+  roster. This page states the requirement; [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]] owns the screen.
+
+* See also
+
+- [[id:9700E01F-B582-4984-AF2F-81E2BA880544][Analyse the sign-up process end to end]] — the survey this page answers, and the evidence for the defects it corrects.
+- [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] and [[id:858C3FAA-C87A-4099-8893-582F9500681D][Sign in]] — the journeys that read this policy.
+- [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — the same policy carried out: the layers, the order a sign-in is refused in, the refusal codes, and a sequence diagram per interaction.
+- [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry journeys]] — the group the door belongs to.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — how the address resolves to a tenant.
+- [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — why an account with no party is refused.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — what the default role grants.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster this page belongs to.

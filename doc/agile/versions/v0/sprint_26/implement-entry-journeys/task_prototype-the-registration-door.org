@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 97B54096-7FB5-42A7-BCDA-CA523C145E9C
+:END:
+#+title: Task: Prototype the registration door
+#+description: Build the throwaway static prototype that argues the registration door's layout: the closed notice, the form, the refusals, and the usable and pending confirmations, in three structural variants.
+#+type: task
+#+level: s1
+#+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A clickable prototype of the registration door that the design can be judged against, on a throwaway page with mock data. It renders the five states the target state defines and argues three structural answers to the one question that matters: how a person learns, before they submit, that their new account may not be usable until an administrator acts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- The door renders all five states: closed, the form, a refusal, a usable account and a waiting account.
+- Three variants disagree about structure rather than colour or copy.
+- The difference between a usable account and a waiting one is visible before the person submits, on every variant.
+- Every variant is reachable by URL, so a variant can be linked to a reviewer.
+- The prototype is published beside its description and the other prototypes, and it reads no service.
+
+* Plan
+
+1. Take the five states from the target state, and the mock policy from its policy-read table.
+2. Choose three structurally different shapes, not three skins: one panel, a form beside a live status column, and a step rail.
+3. Build it as a static page under =doc/prototypes/registration-door/=, which is how the tree keeps throwaway prototypes: plain HTML, CSS and JavaScript, no framework and no build step.
+4. Publish it with the site build so a reviewer can open it beside the trade entry prototype.
+5. Hand it over for the verdict, and record which variant won and what was taken from the others.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Variants | 3 | =?variant=A|B|C= | =d09ae16ff1= |
+| Door states | 5 | =?state=closed|register|refused|created|waiting= | =d09ae16ff1= |
+| Files | 3, no build step | =ls doc/prototypes/registration-door/= | =d09ae16ff1= |
+
+* Notes
+
+- The target state settles the policy; the prototype settles only how the policy is shown. The nomination toggle exists so a reviewer can see both confirmations from one form without reading the code.
+- The prototype follows [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]], which keeps static prototypes in the tree and publishes them, rather than the throwaway-branch shape the bootstrap prototypes used. The page is throwaway in the sense that matters: no service, no state, mock data.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The prototype is [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door prototype]], at =doc/prototypes/registration-door/= and published on the site.
+
+Three variants: *A* one panel, with the destination below the form and the outcome replacing it; *B* the form beside a live status column that states the tenant, the party, the role and whether the account will work at once; *C* the step rail, with the write deferred to a review step. Five states: closed, the form, a refusal, a usable account and a waiting one, with a nomination toggle that turns the same submission into either outcome.
+
+*The verdict.* The product owner chose *C, the step rail*, and asked for it to look like the new-system provisioning journeys. C was reworked to the house rail: a 14rem rail column, one entry per step with a circled mark that carries a tick once the step is behind you, the step in a card with its title, its lead and its body, and the action in a footer under a rule. The banner was added to every variant while there.
+
+Two requirements came out of the review and are their own tasks:
+
+- [[id:7B32CA43-239F-4553-8849-3FA3F499B254][Give every Entry screen the ORE Studio banner]] — the sign-in dialog and the registration door carry the artwork the setup screen already leads with.
+- [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Create the role-request journey]] — registration grants one default role, and the journey that answers "how do I ask for more" is documented separately from the door.
+
+Do not read A or B as rejected designs: they stay on the page as the record, and either may contribute a panel. C is what gets built.

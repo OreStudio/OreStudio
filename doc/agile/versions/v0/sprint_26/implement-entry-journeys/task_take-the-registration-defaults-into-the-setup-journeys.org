@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 54E60E3F-797A-4DF1-AD5A-0A30A35163D9
+:END:
+#+title: Task: Take the registration defaults into the setup journeys
+#+description: Record that the Setup journeys own the registration defaults: First run states the switch and confirms the default tenant, its first sign-in nominates the party and role, and New tenant and New party ask the same questions.
+#+type: task
+#+level: s1
+#+filetags: :web:iam:journeys:entry:setup:v0:sprint_26:implement-entry-journeys:
+#+owner: marco
+#+branch: feature/implement-entry-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Setup journeys carry the registration defaults. [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] states whether the installation accepts self-registration and confirms the first tenant as the tenant a registration lands in, and its first sign-in lets the tenant administrator nominate the party a new account joins and the role it receives. [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] ask the same questions when they create a tenant or a party later. The target state records where the defaults come from and corrects the switch's scope.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-29                               |
+
+* Acceptance
+
+- First run carries a registration step, and it is clear which actor sets each value.
+- Its first sign-in nominates the party and the role, and says that neither is required.
+- New tenant and New party offer the same nomination when they create the tenant or the party.
+- The target state records that the setup journeys own the defaults, and says why the sign-up screen cannot.
+- The switch's scope is stated: the deployment's answer, read at system scope, seeded false.
+
+* Plan
+
+1. Add the registration step to First run, after provisioning and before the hand-off, because that is where the tenant exists and the system administrator is still the actor.
+2. Put the two nominations on the first sign-in, which is where the tenant administrator already is and where the party choice is made.
+3. Add the operations the step needs to the journey's coverage table, marked by whether the subject exists.
+4. Record the same questions on New tenant and New party, which create the two things a default points at.
+5. Add the section to the target state, and correct the switch's scope while there.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Steps on First run's rail, before and after | 8, then 9 | =grep -n "one rail of" doc/knowledge/journeys/setup/journey_first_run.org= | =d09ae16ff1= |
+| First run operations added | 5 | =doc/knowledge/journeys/setup/journey_first_run.org=, * Operations and messages | =d09ae16ff1= |
+| Setup journeys changed | 3 | =git diff --name-only doc/knowledge/journeys/setup= | =d09ae16ff1= |
+
+* Notes
+
+- The correction came from the product owner while the registration door was being prototyped: the person who opens the door is not the person who decides what it opens onto.
+- =system.user_signups= is seeded on the system tenant and its registered default is =false=, so it is the deployment's answer and a deployment nobody has asked refuses registration. The journey documents previously read it as a per-tenant setting; the target state now states the scope and leaves a tenant override as a later change.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+First run carries a registration step (step 7, with the rail now nine steps), its first sign-in nominates the default party and role, and New tenant and New party offer the same nomination when they create their tenant or party. The step's five operations are in the coverage table, four of them marked =missing= because nothing writes the switch or reports the policy today.
+
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] gains *Where the defaults come from* and records the switch's scope. The screen work is not in this task: [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][the setup story]] owns the setup screens, and this task hands it the requirement.

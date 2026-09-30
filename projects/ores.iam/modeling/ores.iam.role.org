@@ -92,12 +92,37 @@ Human-readable description of the role's purpose and scope.
 std::string("Synthetic test role")
 #+end_src
 
+** is_registration_default
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether a self-registered account in this tenant receives this role. At most
+one live role per tenant may hold it.
+
+The flag replaces the hard-coded name the registration path used to assign.
+A flag on the row cannot misspell a role that does not exist, which is the
+failure mode a stored name has.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_iam_roles_tbl
 :END:
+
+** Indexes
+
+| name                           | columns   | unique | current_only | where_extra                                                                |
+|--------------------------------+-----------+--------+--------------+----------------------------------------------------------------------------|
+| registration_default_role_uniq | tenant_id | true   | false        | is_registration_default and valid_to = ores_utility_infinity_timestamp_fn() |
 
 * C++
 
@@ -144,6 +169,42 @@ role_repository::read_latest_by_name(context ctx, const std::string& name) {
         [](const auto& entities) { return role_mapper::map(entities); },
         lg(),
         "Reading latest role by name.");
+}
+#+end_src
+
+*** read_registration_default
+:PROPERTIES:
+:ID: 4B8D1F27-3C6A-4E90-B581-7D2F4A9C1E63
+:END:
+
+Reads the tenant's role flagged =is_registration_default=, when one is set.
+At most one live role per tenant may hold the flag, so this is one row or
+none. The registration path grants the role this read names rather than a
+role name it hard-codes.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::role> read_registration_default(context ctx);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::role>
+role_repository::read_registration_default(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<role_entity>> |
+                       where("tenant_id"_c == tid && "is_registration_default"_c == true &&
+                             "valid_to"_c == max.value()) |
+                       limit(1);
+
+    const auto rows = execute_read_query<role_entity, domain::role>(
+        ctx,
+        query,
+        [](const auto& entities) { return role_mapper::map(entities); },
+        lg(),
+        "Reading the registration default role.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
 }
 #+end_src
 

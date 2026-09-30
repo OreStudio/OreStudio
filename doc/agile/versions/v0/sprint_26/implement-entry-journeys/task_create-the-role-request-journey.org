@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :web:iam:journeys:entry:access:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
-#+branch: feature/implement-entry-journeys
+#+branch: feature/create-the-role-request-journey
 #+pr:
 #+blocked_on:
 #+blocked_since:

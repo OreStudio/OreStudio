@@ -34,7 +34,10 @@ Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
 === the date spelling the corpus states against the export ===
 trade Bond
   source: [('StartDate', '20160203'), ('EndDate', '20260203')]
-  export: [('StartDate', '2016-02-09'), ('EndDate', '2026-02-09')]
+  export: [('StartDate', '2016-02-03'), ('EndDate', '2026-02-03')]
+  (the same dates, in the schema's two ISO spellings; an earlier reading of
+   2016-02-09 came from comparing against a different document's trade of the
+   same id, before the harness imported the union)
 
 === the corpus states five securities, one of them inconsistently ===
 distinct SecurityId: 5

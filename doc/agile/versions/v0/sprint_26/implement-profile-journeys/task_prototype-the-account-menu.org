@@ -26,7 +26,7 @@ A clickable prototype of the application navigation that the design can be judge
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

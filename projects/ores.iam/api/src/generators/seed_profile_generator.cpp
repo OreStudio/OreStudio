@@ -46,7 +46,12 @@ domain::seed_profile generate_synthetic_seed_profile(utility::generation::genera
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string(faker::word::noun()) + "_profile" + "-" + std::to_string(idx);
+    r.code = // no_generator_suffix: the "-<idx>" the template appends is a process counter
+             // that starts again with every run, so a second run against the same database
+             // would ask for the code it asked for the first time and the index that keeps
+             // this one unique per deployment would refuse it. The synthetic row carries a
+             // uuid instead.
+        std::string(faker::word::noun()) + "_profile-" + std::string(faker::string::uuidV4());
     r.name = std::string(faker::word::adjective()) + " Profile";
     r.summary = std::string(faker::lorem::sentence());
     r.audience = std::string("For ") + std::string(faker::word::noun());

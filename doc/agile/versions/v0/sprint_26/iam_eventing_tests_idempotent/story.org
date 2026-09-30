@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 4A771CA8-1640-4AC4-AB36-B7C64B6C38AA
+:END:
+#+title: Story: Keep the ores.iam eventing tests idempotent
+#+description: Three of ores.iam's generated eventing tests fail on the second run against the same database. They seed a system-tenant parent seed profile and never remove it, and the parent's synthetic code is unique only within one process, so the next run collides with the residue. A fabricated natural key must be unique in the scope its table enforces.
+#+type: story
+#+level: s2
+#+filetags: :iam:tests:hygiene:isolation:sprint_26:v0:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.iam.core.tests= passes twice in a row against the same database.
+
+That is not what happens today. Three of the generated eventing tests -- the
+seed profile and its two children -- seed a parent profile in the *system*
+tenant and never remove it, and the synthetic code the generator fabricates for
+that parent repeats with every process, so the second run's insert is refused by
+=seed_profiles_code_uniq_idx=.
+
+Every other generated eventing test isolates itself by tenant: the helper gives
+each run its own, the unique indexes start with =tenant_id=, and a key that
+repeats across runs is still unique. A seed profile cannot use that isolation,
+because the model states its code is one per *deployment* and the insert trigger
+forces the system tenant. In a shared scope uniqueness has to come from the key,
+and the key the generator fabricates is unique only within one process.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The synthetic seed profile's code is unique per deployment, so =ores.iam.core.tests= passes twice in a row against one database: 425 assertions in 165 test cases, both runs. What the tests still leave behind is captured rather than silent. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- =ores.iam.core.tests= passes twice in a row against the same database, with no
+  manual cleanup between the runs.
+- A fabricated seed profile code is unique in the scope its unique index
+  enforces: the deployment, not the process.
+- What the tests leave behind is recorded rather than silent.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E228F057-F8F0-4E05-8C90-CB61FD9DE851][Make the generated seed profile code unique per deployment]] | DONE | 2026-09-30 | 2026-09-30 | The seed profile's code is unique per deployment, but the generator fabricates it from a process-static counter, so a second run against the same database reuses CD_profile-0 and the insert is refused. Make the fabricated code unique in the scope the model declares. |
+
+* Decisions
+
+- *A fabricated natural key is unique in the scope its table enforces.* The
+  generator template builds text keys from a process-static counter, which is
+  enough when the unique index starts with =tenant_id= because the tenant
+  supplies the rest. It is not enough for a table whose index is on the key
+  alone, and the model already states that scope. The key is therefore made
+  unique where its scope is declared, not repaired afterwards by cleanup: a
+  cleanup only tidies a successful run, and the collision does not need one.
+
+* Out of scope
+
+- Removing the parent rows the generated eventing tests seed. Every generated
+  test that seeds a parent leaves it active, and making them delete it is a
+  change to the test template over many files. It is hygiene rather than
+  idempotence, and it is captured on its own.

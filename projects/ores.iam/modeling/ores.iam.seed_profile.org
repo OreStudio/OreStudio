@@ -64,9 +64,10 @@ Surrogate identifier for the profile. Provisioning names a profile by its
 
 ** code
 :PROPERTIES:
-:type:         text
-:cpp_type:     std::string
-:natural_key:  true
+:type:                text
+:cpp_type:            std::string
+:natural_key:         true
+:no_generator_suffix: true
 :END:
 
 Stable code the request names the profile by. The unique index states the
@@ -76,7 +77,12 @@ tenant.
 Examples: 'empty_operational', 'acme_demo'.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun()) + "_profile"
+// no_generator_suffix: the "-<idx>" the template appends is a process counter
+// that starts again with every run, so a second run against the same database
+// would ask for the code it asked for the first time and the index that keeps
+// this one unique per deployment would refuse it. The synthetic row carries a
+// uuid instead.
+std::string(faker::word::noun()) + "_profile-" + std::string(faker::string::uuidV4())
 #+end_src
 
 ** name

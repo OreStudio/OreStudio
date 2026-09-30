@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: E228F057-F8F0-4E05-8C90-CB61FD9DE851
+:END:
+#+title: Task: Make the generated seed profile code unique per deployment
+#+description: The seed profile's code is unique per deployment, but the generator fabricates it from a process-static counter, so a second run against the same database reuses CD_profile-0 and the insert is refused. Make the fabricated code unique in the scope the model declares.
+#+type: task
+#+level: s1
+#+filetags: :iam_eventing_tests_idempotent:sprint_26:v0:
+#+owner: marco
+#+branch: feature/make-the-seed-profile-code-unique
+#+pr: 2429
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4A771CA8-1640-4AC4-AB36-B7C64B6C38AA][Keep the ores.iam eventing tests idempotent]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The synthetic seed profile the tests write carries a =code= that cannot repeat,
+so a run after a run leaves nothing to collide with, and =ores.iam.core.tests=
+passes twice in a row against the same database.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4A771CA8-1640-4AC4-AB36-B7C64B6C38AA][Keep the ores.iam eventing tests idempotent]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The model states a generator for =code= that cannot repeat across processes.
+- =ores.iam.core.tests= passes twice in a row against the same database, with no
+  cleanup between the runs.
+- The regenerated generator is the only generated file that changes, and the
+  codegen drift gate is clean.
+
+* Plan
+
+The key's scope is declared in the model -- "one row per deployment and not one
+row per tenant" -- so the uniqueness is fixed there, not in the tests:
+
+1. =ores.iam.seed_profile.org=: the =code= field's generator expression ends in a
+   fresh uuid, and =:no_generator_suffix: true= stops the template appending the
+   process counter. The template's own comment says the counter is the mechanism
+   it appends "unless the model opts out via =:no_generator_suffix:=".
+2. Regenerate the seed profile generator. The drift sweep is what shows that no
+   other generated file moved.
+3. Prove it: clear the residue once, then run =ores.iam.core.tests= twice, and
+   the second run must be as green as the first.
+
+Why not cleanup instead: a cleanup tidies a successful run, but the collision
+does not need one to happen. Any run that fails early leaves the row, and every
+later run is refused because the code repeats. The key has to be unique; sweeping
+it is not the same property.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The full IAM core suite, twice against one database | 425 assertions in 165 cases, both runs | =ores.iam.core.tests= with =ORES_TEST_DB_DATABASE=ores_ci= | e346a64a3d |
+| The seed-profile eventing tests, twice | 21 assertions in 3 cases, both runs | =ores.iam.core.tests "write_seed_profile*"= | e346a64a3d |
+| Files the regeneration changed | 1 generated file | =compass codegen regenerate --component iam --address ores.cpp.generator --entity seed_profile= | e346a64a3d |
+
+* Notes
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2429][#2429]] | [iam] Make the synthetic seed profile code unique per deployment |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The synthetic seed profile now carries a code no other row can hold: the model's
+generator expression ends in a fresh uuid and =:no_generator_suffix:= keeps the
+process counter out of it. One generated file changed and the rest of the
+generator family is byte-identical.
+
+=ores.iam.core.tests= passes twice in a row against one database -- 425
+assertions in 165 test cases, both runs -- where before the change the second run
+lost two cases to =seed_profiles_code_uniq_idx=. The database is =ores_ci=,
+built with =compass db setup ores_ci=, so the deployment's own database was left
+alone; it predates main's =account_status= schema and could not have carried the
+suite either way. The runs are =evidence/idempotent_seed_profile_tests.txt=.
+
+The tests still leave the parent profile they seed, one per test per run. That is
+the same defect in its benign form: the row is now unique, so nothing collides,
+but a global catalogue still grows a junk row per run. Removing it is a change to
+the test template over forty-eight files and is captured on its own, which the
+story records under *Out of scope*.

@@ -71,3 +71,23 @@ either clean up, or make the identifier unique to the run.
 * See also
 
 - [[id:0F5115A5-05FA-4A0E-A24B-1305F6DBC41B][Workflow tests leave in-progress runs behind in every database they touch]]
+
+* Resolved
+
+Resolved by story [[id:4A771CA8-1640-4AC4-AB36-B7C64B6C38AA][Keep the ores.iam
+eventing tests idempotent]]. The capture was right that the fix is "clean up, or
+make the identifier unique to the run", and the second is what the defect needed:
+a cleanup tidies a successful run, but the collision does not need one to happen,
+because any run that fails early leaves the row and every later run is refused.
+
+The seed profile's code is unique per *deployment* -- the model says so, and the
+unique index is on the code alone -- while the generator fabricated it from a
+process-static counter that restarts every run. So the key is now unique where
+its scope is declared: the model's generator expression ends in a uuid and
+=:no_generator_suffix:= keeps the counter out of it. =ores.iam.core.tests= passes
+twice in a row against one database.
+
+What the tests still leave behind -- the parent row they seed and never remove
+-- is benign now and is captured as
+[[id:F725B12C-F459-464A-89AA-D37F3F490597][Generated eventing tests leave their
+seeded parents behind]].

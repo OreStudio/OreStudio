@@ -5641,6 +5641,18 @@ def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
         # A SQL literal carries the prose on one line and doubles its quotes.
         entry["description_sql"] = " ".join(
             entry["description"].split()).replace("'", "''")
+        # The DQ badge the class wears in a published list. The code is derived,
+        # the name defaults to the class's own, and the prose is the short form
+        # a badge tooltip wants rather than the taxonomy paragraph.
+        entry["badge_code"] = f"asset_class_{node.title}"
+        entry["badge_name"] = props.get("badge_name", entry["name"]).strip()
+        entry["badge_description"] = props.get(
+            "badge_description", f"{entry['name']} asset class.").strip()
+        entry["badge_background"] = props.get("badge_background", "").strip()
+        entry["badge_text"] = props.get("badge_text", "").strip()
+        entry["badge_severity"] = props.get("badge_severity", "").strip()
+        entry["badge_css"] = props.get("badge_css", "").strip()
+        entry["badge_order"] = int(props.get("badge_order", 0))
         taxonomy.append(entry)
     codes = [entry["code"] for entry in taxonomy]
     for label, values in (("code", codes),
@@ -5688,6 +5700,28 @@ def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
     catalogue["namespace"] = namespace
     catalogue["authority_to_class"] = {
         entry["authority"]: entry["refdata_code"] for entry in namespace
+    }
+
+    # The one DQ code domain the taxonomy's badge mappings hang off. Its prose
+    # names the classes, and ``{codes}`` is where they go, so the list is not
+    # written a second time inside the model.
+    domain_section = _section(doc.root, "Code domain")
+    if not domain_section or len(domain_section.children) != 1:
+        raise ValueError(
+            f"{Path(path).name}: the * Code domain section must hold exactly "
+            "one ** entry: the DQ code domain the taxonomy's badges map under"
+        )
+    domain_node = domain_section.children[0]
+    domain_props = {k.lower(): v for k, v in domain_node.properties.items()}
+    codes_text = ", ".join(codes)
+    domain_description = " ".join(
+        _strip_body(domain_node).split()).replace("{codes}", codes_text)
+    catalogue["code_domain"] = {
+        "code": domain_node.title,
+        "name": domain_props.get("name", domain_node.title).strip(),
+        "display_order": int(domain_props.get("display_order", 0)),
+        "description": domain_description,
+        "description_sql": domain_description.replace("'", "''"),
     }
     return {"asset_class_catalogue": catalogue}
 

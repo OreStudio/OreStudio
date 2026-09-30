@@ -169,6 +169,11 @@ select ores_utility_allow_version_replace_fn();
 \ir dq/dq_badge_mappings_dataset_populate.sql
 \ir dq/dq_badge_mappings_artefact_populate.sql
 
+-- The asset-class taxonomy's own DQ artefacts, generated from
+-- ores.refdata.asset_class_catalogue. The fragment looks each of the three
+-- datasets up itself, so it runs once after all three mirrors are seeded.
+\ir dq/dq_asset_class_artefact_populate.sql
+
 -- =============================================================================
 -- Reporting Layer
 -- =============================================================================

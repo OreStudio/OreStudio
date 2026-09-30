@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 5bc36895-c547-4a75-b9b9-56a378b86cd3
+:END:
+#+title: ores.sql.asset_class.dq_system_populate
+#+description: The asset-class badge definitions, code domain and mappings for the system tenant, generated from the catalogue.
+#+type: archetype
+#+output: projects/ores.sql/populate/dq/dq_asset_class_system_populate.sql
+#+facet: ores.sql.asset_class
+#+model_types: asset_class_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+Seeds the system tenant's own DQ tables for the taxonomy: one badge
+definition per class with its colour, severity and css class; the
+=asset_class= code domain; and one mapping per class from the domain to its
+badge. The generated script replaces the rows that used to sit inside
+=dq_badge_system_populate.sql='s single =DO= block, so the badge metadata has
+one author.
+
+The browser mirrors are the sibling =dq_artefact_populate= archetype, which
+carries the same rows into the staging tables a tenant is published from.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_asset_class_dq_system_populate.mustache=.
+
+#+begin_src mustache :tangle sql_asset_class_dq_system_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.asset_class.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_asset_class_dq_system_populate.mustache
+ *
+ * Asset Class DQ Rows Population Script
+ *
+ * Seeds the system tenant's badge definitions, the asset_class code domain and
+ * the badge mappings for the refdata product taxonomy. Generated from
+ * ores.refdata.asset_class_catalogue; the staging mirrors are the sibling
+ * dq_asset_class_artefact_populate.sql.
+ *
+ * This script is idempotent (uses upsert functions).
+ */
+
+\echo '--- Asset Class DQ Rows ---'
+
+do $$
+begin
+{{#asset_class_catalogue}}
+{{#taxonomy}}
+    perform ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{{badge_code}}', '{{badge_name}}', '{{badge_description}}',
+        '{{badge_background}}', '{{badge_text}}', '{{badge_severity}}', '{{badge_css}}', {{badge_order}});
+{{/taxonomy}}
+    perform ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{{code_domain.code}}', '{{code_domain.name}}',
+        '{{code_domain.description_sql}}', {{code_domain.display_order}});
+{{#taxonomy}}
+    perform ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{{code_domain.code}}', '{{code}}', '{{badge_code}}');
+{{/taxonomy}}
+{{/asset_class_catalogue}}
+end $$;
+#+end_src
+
+* See also
+
+- Parent facet: [[id:68b2099c-905e-496c-a1c7-94f12bca60ba][ores.sql.asset_class]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

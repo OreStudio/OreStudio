@@ -120,6 +120,16 @@ CATALOGUE_TEMPLATE = """\
 * Namespace
 
 {namespace}
+
+* Code domain
+
+** asset_class
+:PROPERTIES:
+:name:          Asset Class
+:display_order: 30
+:END:
+
+Top-level product classification codes ({{codes}}), shown on instrument_code and asset_class_code.
 """
 
 TAXONOMY_FX = (
@@ -183,3 +193,37 @@ def test_the_sql_prose_folds_to_one_line_and_doubles_its_quotes(tmp_path):
         "asset_class_catalogue"]["taxonomy"]
     assert taxonomy[0]["description_sql"] == (
         "The index''s pattern is wrapped over two lines.")
+
+
+def test_the_real_catalogue_carries_the_dq_rows_the_badges_need(tmp_path):
+    catalogue = _catalogue()
+    by_code = {entry["code"]: entry for entry in catalogue["taxonomy"]}
+
+    assert by_code["fx"]["badge_code"] == "asset_class_fx"
+    assert by_code["fx"]["badge_name"] == "FX"
+    assert by_code["fx"]["badge_description"] == "Foreign exchange asset class."
+    assert by_code["fx"]["badge_order"] == 50
+    # The class whose display name differs from its class name.
+    assert by_code["commodity"]["badge_name"] == "Commodity AC"
+    assert by_code["bond"]["badge_description"] == "Bond asset class."
+    assert by_code["bond"]["badge_order"] == 56
+
+    domain = catalogue["code_domain"]
+    assert domain["code"] == "asset_class"
+    assert domain["display_order"] == 30
+    # ``{codes}`` is replaced by the taxonomy's own codes, in display order.
+    assert domain["description_sql"] == (
+        "Top-level product classification codes (fx, interest_rates, credit, "
+        "equity, commodity, inflation, bond), shown on instrument_code and "
+        "asset_class_code.")
+
+
+def test_a_catalogue_with_two_code_domains_is_refused(tmp_path):
+    path = tmp_path / "ores.refdata.asset_class_catalogue.org"
+    path.write_text(
+        CATALOGUE_TEMPLATE.format(taxonomy=TAXONOMY_FX, namespace="")
+        + "\n** other\n:PROPERTIES:\n:name:          Other\n"
+        ":display_order: 31\n:END:\n\nAnother domain.\n",
+        encoding="utf-8")
+    with pytest.raises(ValueError, match=r"exactly one"):
+        load_org_asset_class_catalogue_model(path)

@@ -36,16 +36,28 @@ or a market series can carry.
 
 ** fx
 :PROPERTIES:
+:badge_description: Foreign exchange asset class.
 :name:          FX
 :display_order: 1
+:badge_background: #3b82f6
+:badge_text:       #ffffff
+:badge_severity:   info
+:badge_css:        badge bg-info
+:badge_order:      50
 :END:
 
 Foreign exchange: instruments whose value derives from the exchange rate between two currencies. Covers FX spot, forwards, swaps, and vanilla/exotic options, along with the market data that prices them -- spot rates, forward points, and volatility surfaces quoted by currency pair. FX is unique among asset classes in that every trade inherently involves two currencies rather than one underlying, which is why FX risk shows up as a cross-cutting concern in every other asset class (a USD-denominated equity option still carries FX risk for a EUR-based book).
 
 ** interest_rates
 :PROPERTIES:
+:badge_description: Interest rates asset class.
 :name:          Interest Rate
 :display_order: 2
+:badge_background: #14b8a6
+:badge_text:       #ffffff
+:badge_severity:   info
+:badge_css:        badge bg-info
+:badge_order:      51
 :END:
 
 Interest rate products: instruments whose value derives from the level or shape of a yield curve for a given currency and index (e.g. USD SOFR, EUR ESTR). Covers deposits, forward rate agreements, interest rate swaps and swaptions, caps/floors, and cross-currency swaps, together with the curve-construction market data -- discount factors, zero rates, and forward rates bootstrapped from quoted instruments at standard tenors. Interest rates is typically the first curve built in any pricing pipeline, since discounting and forward-rate projection for every other asset class ultimately depends on it.
@@ -54,6 +66,11 @@ Interest rate products: instruments whose value derives from the level or shape 
 :PROPERTIES:
 :name:          Credit
 :display_order: 3
+:badge_background: #7c3aed
+:badge_text:       #ffffff
+:badge_severity:   primary
+:badge_css:        badge bg-primary
+:badge_order:      52
 :END:
 
 Credit risk products: instruments whose value derives from the likelihood and severity of an issuer or reference entity defaulting on its obligations. Covers credit default swaps (single-name and index), credit-linked notes, and the underlying market data -- CDS spreads, hazard rate curves bootstrapped from those spreads, and assumed recovery rates. Credit curves are quoted per reference entity (or index series) and are combined with a rates curve to produce risky discount factors for defaultable cashflows.
@@ -62,6 +79,11 @@ Credit risk products: instruments whose value derives from the likelihood and se
 :PROPERTIES:
 :name:          Equity
 :display_order: 4
+:badge_background: #0ea5e9
+:badge_text:       #ffffff
+:badge_severity:   info
+:badge_css:        badge bg-info
+:badge_order:      53
 :END:
 
 Equity products: instruments whose value derives from the price of a single stock, a basket of stocks, or an equity index. Covers equity spot and forward positions, vanilla and exotic equity options (including barrier, Asian, and variance-swap structures), and the associated market data -- spot prices, dividend yield curves, and implied volatility surfaces quoted by strike and expiry. Equity derivatives pricing typically layers a dividend/borrow-cost forward curve and a volatility surface on top of the rates discount curve.
@@ -70,6 +92,12 @@ Equity products: instruments whose value derives from the price of a single stoc
 :PROPERTIES:
 :name:          Commodity
 :display_order: 5
+:badge_name:       Commodity AC
+:badge_background: #f97316
+:badge_text:       #ffffff
+:badge_severity:   warning
+:badge_css:        badge bg-warning
+:badge_order:      54
 :END:
 
 Commodity products: instruments whose value derives from the price of a physical commodity (energy, metals, agriculturals) or a commodity index/future. Covers commodity forwards, swaps, and options (including Asian and spread structures), and the associated market data -- forward curves (which, unlike FX or rates, are often in backwardation or contango driven by storage cost and convenience yield rather than pure interest-rate parity) and volatility surfaces per delivery point/contract month.
@@ -78,6 +106,11 @@ Commodity products: instruments whose value derives from the price of a physical
 :PROPERTIES:
 :name:          Inflation
 :display_order: 6
+:badge_background: #ec4899
+:badge_text:       #ffffff
+:badge_severity:   primary
+:badge_css:        badge bg-primary
+:badge_order:      55
 :END:
 
 Inflation-linked products: instruments whose value derives from a published price index (e.g. US CPI, UK RPI/CPI, EU HICP). Covers zero-coupon and year-on-year inflation swaps, inflation caps/floors, and inflation-linked bonds, together with the associated market data -- the inflation fixing/index curve (historical and forward-projected, with a seasonality adjustment for the index's known within-year pattern) and inflation volatility surfaces. Inflation curves are built and discounted against the nominal rates curve for the same currency.
@@ -86,6 +119,11 @@ Inflation-linked products: instruments whose value derives from a published pric
 :PROPERTIES:
 :name:          Bond
 :display_order: 7
+:badge_background: #6366f1
+:badge_text:       #ffffff
+:badge_severity:   primary
+:badge_css:        badge bg-primary
+:badge_order:      56
 :END:
 
 Bond products: fixed-income securities that pay a defined schedule of coupons and a principal redemption, whose value derives from a discount curve plus an issuer-specific credit/liquidity spread. Covers vanilla fixed and floating-rate bonds, callable/convertible bonds, and bond futures/options, together with the associated market data -- clean/dirty prices, yield-to-maturity, and issuer spread curves quoted over the risk-free (or asset-swap) curve. Government bonds are also a primary source instrument for bootstrapping the risk-free rates curve itself.
@@ -179,6 +217,21 @@ Intraday and forward power prices, quoted per contract hour and delivery area.
 :END:
 
 A wrapper whose metric slot names the instrument inside it, so the metric decides the class rather than the authority.
+
+* Code domain
+
+The DQ code domain the taxonomy's badge mappings hang off, and the order it
+sorts at among the other domains. Its description names the codes because
+that is what a reader of the domain list wants; ={codes}= is replaced by the
+taxonomy's own codes, in display order, when the DQ rows are generated.
+
+** asset_class
+:PROPERTIES:
+:name:          Asset Class
+:display_order: 30
+:END:
+
+Top-level product classification codes ({codes}), shown on instrument_code and asset_class_code.
 
 * See also
 

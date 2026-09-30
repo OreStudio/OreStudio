@@ -1,0 +1,36 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.asset_class.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_asset_class_dq_system_populate.mustache
+ *
+ * Asset Class DQ Rows Population Script
+ *
+ * Seeds the system tenant's badge definitions, the asset_class code domain and
+ * the badge mappings for the refdata product taxonomy. Generated from
+ * ores.refdata.asset_class_catalogue; the staging mirrors are the sibling
+ * dq_asset_class_artefact_populate.sql.
+ *
+ * This script is idempotent (uses upsert functions).
+ */
+
+\echo '--- Asset Class DQ Rows ---'
+
+do $$
+begin
+{{#asset_class_catalogue}}
+{{#taxonomy}}
+    perform ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{{badge_code}}', '{{badge_name}}', '{{badge_description}}',
+        '{{badge_background}}', '{{badge_text}}', '{{badge_severity}}', '{{badge_css}}', {{badge_order}});
+{{/taxonomy}}
+    perform ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{{code_domain.code}}', '{{code_domain.name}}',
+        '{{code_domain.description_sql}}', {{code_domain.display_order}});
+{{#taxonomy}}
+    perform ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        '{{code_domain.code}}', '{{code}}', '{{badge_code}}');
+{{/taxonomy}}
+{{/asset_class_catalogue}}
+end $$;

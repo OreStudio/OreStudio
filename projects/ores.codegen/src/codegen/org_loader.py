@@ -1399,6 +1399,24 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 fk["touch_function"] = re.sub(r"_tbl$", "_touch_version_fn", fk["table"])
         de["foreign_keys"] = fks
 
+    # Delete cascade: the child rows this entity owns, closed when the
+    # entity's row is deleted. The SQL facet's delete rule names them, so a
+    # delete removes the family rather than the header alone and every
+    # caller gets that, because the store is where it is enforced (decision
+    # D15's rule, applied to the delete side).
+    cascade_section = _section(doc.root, "Delete cascade")
+    if cascade_section and cascade_section.children:
+        de["delete_cascade"] = [
+            {"table": node["table"], "column": node["column"]}
+            for node in (
+                _soft_fk_validation_node_to_dict(c) for c in cascade_section.children
+            )
+            if node.get("table")
+        ]
+        # A section over a list repeats its whole body, so the one comment
+        # that introduces the cascade needs a boolean of its own.
+        de["has_delete_cascade"] = bool(de["delete_cascade"])
+
     # SQL section: SQL-specific flags + structured sub-sections.
     sql_section = _section(doc.root, "SQL")
     if sql_section:

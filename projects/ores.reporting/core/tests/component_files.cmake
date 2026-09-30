@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "analytic_type_eventing_integration_tests.cpp"
     "concurrency_policy_eventing_integration_tests.cpp"
     "configuration_eventing_integration_tests.cpp"
     "configuration_parameter_eventing_integration_tests.cpp"

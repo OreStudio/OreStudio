@@ -114,7 +114,9 @@ struct stress_test_shift final {
     std::optional<std::string> extras;
 
     /**
-     * @brief The order the document wrote the shift in.
+     * @brief The order the document wrote the shift in, which is what a reader orders by: the store
+     * does not order by it, and two entries of one family may legitimately sit anywhere in the
+     * block, so there is no unique index on it.
      */
     int position = 0;
 

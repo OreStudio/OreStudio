@@ -50,6 +50,15 @@ struct mapped_stress_scenario {
 struct mapped_stress_test {
     analytics::domain::stress_test_library library;
     std::vector<mapped_stress_scenario> scenarios;
+
+    /**
+     * @brief The families a scenario applies that the mapper cannot write back,
+     * and how many scenarios carry each.
+     *
+     * The count is of scenarios rather than of shift entries: it answers "which
+     * family is in the way", which is what chooses the next one to map, and not
+     * "how much shifting is there".
+     */
     std::map<std::string, std::size_t> unmodelled;
 
     friend bool operator==(const mapped_stress_test&, const mapped_stress_test&) = default;

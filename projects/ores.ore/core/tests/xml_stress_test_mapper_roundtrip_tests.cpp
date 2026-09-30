@@ -139,3 +139,78 @@ TEST_CASE("stress_test_library_and_scenarios_round_trip_over_the_corpus", tags) 
     CHECK(families_in_use.at("IndexCurves") == 41);
     CHECK(families_in_use.at("FxVolatilities") == 41);
 }
+
+// The cases the corpus does not carry: a scenario with no date, a document with
+// no scenarios at all, and the library setting absent, true and false. Each is
+// built by hand because the corpus has none of them.
+TEST_CASE("stress_test_mapper_keeps_the_shapes_the_corpus_lacks", tags) {
+    using namespace ores::ore::domain;
+
+    const auto round_trip = [](const std::string& xml) {
+        stresstesting original;
+        load_data(xml, original);
+        const auto mapped = stress_test_mapper::map(original);
+        const auto reversed = stress_test_mapper::reverse(mapped);
+        return std::make_pair(original, reversed);
+    };
+
+    SECTION("a scenario with no date keeps no date") {
+        const auto [original, reversed] = round_trip(R"(<StressTesting>
+  <StressTest id="theta">
+    <DiscountCurves/>
+  </StressTest>
+</StressTesting>)");
+        REQUIRE(reversed.StressTest.size() == 1);
+        CHECK(reversed.StressTest.front().id == "theta");
+        CHECK(static_cast<bool>(reversed.StressTest.front().Date) ==
+              static_cast<bool>(original.StressTest.front().Date));
+        CHECK(!reversed.StressTest.front().Date);
+    }
+
+    // A document with no scenarios at all cannot be built: ORE's schema makes
+    // StressTest occur at least once, and the binding refuses it. The case says
+    // so rather than pretending the shape exists.
+    SECTION("a document with no scenarios is refused by the schema") {
+        stresstesting empty;
+        CHECK_THROWS(load_data("<StressTesting></StressTesting>", empty));
+    }
+
+    SECTION("the library setting is absent, and stays absent") {
+        const auto [original, reversed] =
+            round_trip("<StressTesting><StressTest id=\"theta\"/></StressTesting>");
+        CHECK(!reversed.UseSpreadedTermStructures);
+    }
+
+    // The binding gives each spelling of a boolean its own enumerator, so true
+    // written back as True is a different enumerator holding the same value.
+    // The comparison is the mapper's own: map the reversal and compare that.
+    SECTION("the library setting is true, and stays true") {
+        const auto xml = std::string("<StressTesting><UseSpreadedTermStructures>true"
+                                     "</UseSpreadedTermStructures><StressTest id=\"theta\"/>"
+                                     "</StressTesting>");
+        stresstesting original;
+        load_data(xml, original);
+        const auto mapped = stress_test_mapper::map(original);
+        REQUIRE(mapped.library.use_spreaded_term_structures.has_value());
+        CHECK(*mapped.library.use_spreaded_term_structures);
+
+        const auto reversals = stress_test_mapper::map(stress_test_mapper::reverse(mapped));
+        CHECK(reversals.library.use_spreaded_term_structures ==
+              mapped.library.use_spreaded_term_structures);
+    }
+
+    SECTION("the library setting is false, and stays false") {
+        const auto xml = std::string("<StressTesting><UseSpreadedTermStructures>false"
+                                     "</UseSpreadedTermStructures><StressTest id=\"theta\"/>"
+                                     "</StressTesting>");
+        stresstesting original;
+        load_data(xml, original);
+        const auto mapped = stress_test_mapper::map(original);
+        REQUIRE(mapped.library.use_spreaded_term_structures.has_value());
+        CHECK(!*mapped.library.use_spreaded_term_structures);
+
+        const auto reversals = stress_test_mapper::map(stress_test_mapper::reverse(mapped));
+        CHECK(reversals.library.use_spreaded_term_structures ==
+              mapped.library.use_spreaded_term_structures);
+    }
+}

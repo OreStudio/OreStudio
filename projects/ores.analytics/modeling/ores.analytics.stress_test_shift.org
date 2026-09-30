@@ -169,7 +169,7 @@ std::nullopt
 :nullable:      false
 :END:
 
-The order the document wrote the shift in.
+The order the document wrote the shift in, which is what a reader orders by: the store does not order by it, and two entries of one family may legitimately sit anywhere in the block, so there is no unique index on it.
 
 #+begin_src cpp :name generator
 1

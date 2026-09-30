@@ -96,11 +96,18 @@ mapped_stress_test stress_test_mapper::map(const stresstesting& v) {
                 shift.family = "DiscountCurves";
                 shift.object_key = to_string(entry.ccy);
                 shift.position = static_cast<int>(discount_curve_shifts);
+                // ORE writes one ShiftType per entry. More than one is not a
+                // shape the entity has, so the extras are counted rather than
+                // dropped: the first is mapped and the rest are named.
                 if (!entry.ShiftType.empty())
                     shift.shift_type =
                         to_string(static_cast<domain::shiftType>(entry.ShiftType.front()));
+                if (entry.ShiftType.size() > 1)
+                    ++r.unmodelled["DiscountCurves.extraShiftTypes"];
                 if (entry.Shifts)
                     shift.shifts = std::string(*entry.Shifts);
+                // ShiftTenors is required by the family's own type, so it is
+                // written back whether or not it holds anything.
                 shift.shift_tenors = std::string(entry.ShiftTenors);
                 mapped_scenario.shifts.push_back(std::move(shift));
             }
@@ -138,6 +145,8 @@ stresstesting stress_test_mapper::reverse(const mapped_stress_test& v) {
             stressdiscountcurve entry;
             entry.ccy = parse_currency_code(shift.object_key);
             if (shift.shift_type) {
+                // shiftTypeEntry carries the enum as its value, which is what
+                // the base class's typed reference reaches.
                 shiftTypeEntry type;
                 static_cast<domain::shiftType&>(type) = parse_shift_type(*shift.shift_type);
                 entry.ShiftType.push_back(type);

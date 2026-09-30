@@ -50,9 +50,9 @@ generate_synthetic_series_classification_rule(utility::generation::generation_co
     r.metric = std::string(faker::word::noun());
     r.asset_class_source = std::string("literal");
     r.asset_class_code = [idx] {
-        static constexpr std::string_view classes[] = {
-            "fx", "interest_rates", "credit", "equity", "commodity", "inflation", "bond"};
-        return std::string(classes[static_cast<std::size_t>(idx) % std::size(classes)]);
+        constexpr auto count =
+            sizeof(domain::asset_class_codes) / sizeof(domain::asset_class_codes[0]);
+        return std::string(domain::asset_class_codes[static_cast<std::size_t>(idx) % count]);
     }();
     r.series_subclass_code = [idx] {
         static constexpr std::string_view subclasses[] = {"spot",

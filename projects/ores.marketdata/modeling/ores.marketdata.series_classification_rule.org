@@ -127,10 +127,9 @@ trigger validates a code only where one is set.
 
 #+begin_src cpp :name generator
 [idx]{
-    static constexpr std::string_view classes[] = {
-        "fx",        "interest_rates", "credit", "equity",
-        "commodity", "inflation",      "bond"};
-    return std::string(classes[static_cast<std::size_t>(idx) % std::size(classes)]);
+    constexpr auto count = sizeof(domain::asset_class_codes) /
+                           sizeof(domain::asset_class_codes[0]);
+    return std::string(domain::asset_class_codes[static_cast<std::size_t>(idx) % count]);
 }()
 #+end_src
 
@@ -215,6 +214,7 @@ relates; the subclass is the correlation itself.'
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include <chrono>
 #include <optional>
 #include <string>

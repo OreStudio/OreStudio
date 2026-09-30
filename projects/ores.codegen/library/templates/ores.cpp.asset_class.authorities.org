@@ -19,6 +19,9 @@ already parsed the index name does not turn it back into a string.
 
 An authority the mapping leaves empty -- =correlation= and =generic= -- is
 simply absent from both functions, so each answers =std::nullopt= for it.
+=asset_class_codes= carries the taxonomy's own codes, in display order, so a
+test-data generator that must emit a code the catalogue holds reads it rather
+than restating the list.
 
 The header is written into =ores.marketdata.api= rather than refdata's,
 because the identifier type it names lives there. The build already links
@@ -47,6 +50,21 @@ The full template source. Edit here and re-tangle with
 #include <variant>
 
 namespace ores::marketdata::domain {
+
+/**
+ * @brief The taxonomy's codes, in display order, as the catalogue declares
+ * them.
+ *
+ * A test-data generator that must emit a code the catalogue holds reads this
+ * rather than restating the list, so the taxonomy has one author.
+ */
+inline constexpr std::string_view asset_class_codes[] = {
+{{#asset_class_catalogue}}
+{{#taxonomy}}
+    "{{code}}",
+{{/taxonomy}}
+{{/asset_class_catalogue}}
+};
 
 /**
  * @brief The refdata asset class an oresmd authority names, or nullopt where

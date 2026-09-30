@@ -8,7 +8,7 @@
 #+filetags: :asset-class:taxonomy:codegen:refdata:clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/declare-the-asset-class-catalogue
-#+pr: 2444
+#+pr: 2445
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -199,6 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2445][#2445]] | [marketdata,refdata] Generate the taxonomy codes the test samplers read |
 | [[https://github.com/OreStudio/OreStudio/pull/2444][#2444]] | [refdata] Stop the entity model restating the taxonomy |
 | [[https://github.com/OreStudio/OreStudio/pull/2443][#2443]] | [refdata,codegen] Generate the asset-class DQ rows from the catalogue |
 | [[https://github.com/OreStudio/OreStudio/pull/2440][#2440]] | [marketdata,refdata] Close the series_subclass gap and settle the census's drifts |
@@ -323,3 +324,21 @@ With that, every acceptance is met. The drift check reports no drift for =refdat
 none across the catalogue, the codegen suite passes 1046, =validate_docs.sh= passes all
 41 components, and SQL hygiene, the schema validation, the populate references and the
 CMake lists all pass.
+
+**The task was reopened once, and the reopen is the honest part of this record.** It was
+closed after the fourth unit with acceptance 1 unmet: the classification rule and feed
+binding models each still carried the same seven-element array of codes in a test-data
+generator block. The census had listed that duplication as a drift, and the disposition
+recorded it as deferred on the grounds that it is test data rather than the taxonomy --
+but acceptance 1 says no file outside the catalogue holds a hand-written copy of the
+list, and a literal seven-element array is one whatever it feeds. The array is now
+generated: the codes are part of the header =ores.cpp.asset_class= already writes into
+=ores.marketdata.api=, in display order, and both generator blocks read it through the
+domain header they include. A class added to the catalogue now reaches the samplers, and
+the drift is fixed rather than deferred.
+
+Verified on the branch: the marketdata core suite's classification walk passes its 557
+assertions in 19 cases, the codegen suite passes 1046, the full ctest suite passes 89 of
+89 targets, the drift check reports no drift for =marketdata= and for =refdata= and none
+across the catalogue after a full dry run, and every codegen, SQL and documentation gate
+passes.

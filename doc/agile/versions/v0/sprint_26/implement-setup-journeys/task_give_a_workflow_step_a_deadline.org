@@ -8,12 +8,12 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch:
-#+pr: 2415
+#+pr: 2419
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ service is back.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The engine enforces the deadline and the service runs the clock. Every definition states a budget; the failure names the step's subject and what the engine knows about the service that owns it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Walk it live: stop a service, start a run that needs it, and read the failure. |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -85,6 +85,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Workflow engine cases | 27 passing, 3 of them the deadline's | `compass test run -- -R ores.workflow.core.tests` | branch tip |
 | A run whose service is gone | failed, naming the subject and the service | `evidence/step_deadline_live.txt` | branch tip |
+| Suites of the six components whose definitions changed | 10 passing (workflow, iam, dq, reporting, ore, refdata) | `compass test run -- -R "ores.workflow|ores.iam|ores.dq.api|ores.reporting.api|ores.ore.api|ores.refdata.api"` | branch tip |
 
 * Notes
 
@@ -108,6 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2419][#2419]] | [agile] Close the task that gave a step a deadline |
 | [[https://github.com/OreStudio/OreStudio/pull/2415][#2415]] | [workflow] Give a step a deadline the engine enforces |
 | [[https://github.com/OreStudio/OreStudio/pull/2418][#2418]] | [agile] Mark the isolation capture resolved — bookkeeping for a defect another change fixed, not this task's delivery |
 
@@ -118,3 +120,76 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A step declares how long it may run, the run carries the budgets it was started
+with, and the engine fails any step whose command it has been waiting on for
+longer than that. The failure names the command subject, how long it has been
+silent, and what the engine knows about the component that owns the subject.
+
+Three decisions make the behaviour what it is.
+
+The deadline belongs to the definition and not to the engine, because how long a
+step may take is knowledge its author has and no default is right for both a
+write that answers in milliseconds and an import that publishes tens of
+thousands of rows. Definitions read their budgets from two names in the
+definition contract -- one for data work, one for a write -- and a step whose
+work is neither states its own. A definition that forgot is refused rather than
+defaulted: a step with no deadline is a command the engine would wait on for
+ever, which is the failure this work exists to remove.
+
+A deadline stops the run and never rolls it back, whatever failure policy the
+definition declares. A rollback answers a step that reported that it failed,
+because such a step did nothing; a step nobody heard from is a step whose work is
+unknown, and undoing a run whose work was in fact done is the worse guess. What
+the engine fails is retryable, so a service that comes back is one retry away.
+
+A step that waits on another run states more than the steps inside it. The first
+live walk of this change proved why the rule is needed: the party stage and the
+bundle step it waited on both stated the data budget, the outer deadline fired
+seconds after the inner one, and the run recorded that the party stage had not
+finished. That sentence is true and useless, because the cause was one level
+down. `orchestrating_step_timeout` is the budget that says so, and the caller's
+own patience with a nested run is now a backstop rather than a deadline: the
+1500 seconds it stated was the length of a hang a dead service produced, which is
+how a timeout came to name a step instead of a cause.
+
+The engine cannot tell a service that has died from one that is slow, and does
+not pretend to. A command published to a subject with no subscriber is dropped by
+the bus in silence, so the deadline decides and presence only explains: the
+engine follows the service heartbeats and says, when a deadline fires, whether
+the component that owns the subject ever reported, whether it was reporting when
+the command was published, or whether it was still reporting. Evidence and not
+proof, because a service that is running but wedged reports too.
+
+An answer that arrives after the deadline is ignored and logged as an answer that
+came too late rather than as a duplicate, so the record a person acted on stands.
+The retry that follows carries the step's own id, which is the idempotency key,
+so a service that already finished replays its outcome instead of doing the work
+twice. A retry that overlaps the original leaves one step with two executions in
+flight until the first records its outcome, which the journey document states as
+the window a step must be safe to repeat inside.
+
+The live walk is in =evidence/step_deadline_live.txt=. With
+=ores.marketdata.service= stopped, a party added through the journey's own route
+failed after fifteen minutes with:
+
+#+begin_example
+The step did not answer within 15m of its command being published (subject
+marketdata.v1.market-data-observations.publish-from-dq); it has been silent for
+15m. Nothing has reported as the marketdata service since this engine started,
+so the command may have had no handler.
+#+end_example
+
+The step above it exercised the other branch of the presence text -- a service
+that was still reporting and did not finish -- and the run that followed the
+budget fix reported the silent step's own sentence, which is the outcome the
+change is for.
+
+Two defects were found on the way and are recorded rather than hidden. The pass
+that enforces the deadlines judged each entry in its own right only after a
+leftover run in a dropped test tenant aborted a whole pass and starved every
+deadline behind it; and the engine's own test suite re-dispatches the
+deployment's in-flight runs, which restarted a live run's silence three times
+and is captured as
+[[id:0EBBA137-9A83-4411-A706-DBC5543B1235][the engine tests reset a live run's
+deadline]].

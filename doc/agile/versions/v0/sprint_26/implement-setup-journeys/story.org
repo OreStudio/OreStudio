@@ -295,6 +295,34 @@ none of them depends on it and all of them are permanent.
   half-walked. The alternative — a script that sets a deployment back into
   bootstrap mode — would prove a state no person reaches.
 
+* Gaps the journeys still record
+
+The three journey documents name what they still reach for, and none of it is
+silent. Two of the gaps are owned by documents of their own, and the rest are
+stated here:
+
+- A tenant cannot be reset in a way that also stops its run.
+  [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]]
+  records it.
+- The engine's change event cannot be read by the browser, because the shared
+  schema reads a country-shaped field. The progress read is the contract
+  instead, and the mismatch is
+  [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][captured]].
+- The *Operational* card's root LEI is typed rather than chosen. Only the
+  *GLEIF entity* card searches the deployment's register, and a code the
+  deployment does not hold arrives as the publication's SQL rather than as a
+  sentence about the entity. A person who has no LEI leaves it empty, which is
+  the case the scripted proof walks.
+- The party describe step carries no accounts picker. Nothing writes the chosen
+  associations — the run joins the caller alone — and a picker whose choices
+  went nowhere would be worse than no picker.
+- Where a party hangs is the deployment's answer and not the person's.
+  [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] is that
+  journey.
+- The standalone =/tenants/new= and =/parties/new= routes are walked in a
+  browser and recorded as evidence rather than scripted. Only the first run can
+  happen on an empty database, and that is the path the scripted proof walks.
+
 * Out of scope
 
 - The *Tenants* and *Parties* pages as permanent homes. The journeys

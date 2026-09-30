@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,53 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The gate is designed and its first obstacle is found: the three read responses cannot say "no". |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Give the three read responses a way to refuse, then apply the gate. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
 
--
+- A caller who holds neither =iam::roles:read= nor the requested account reads
+  nothing about it, and the refusal is a value the caller can read rather than
+  an empty answer.
+- A caller reading their own account needs no permission, because the member's
+  own journey is the first of the four.
+- A test proves that a caller asking for another account's access is refused,
+  and that the same caller asking for their own is not.
+- A permission read answers which role grants each code, so the member's screen
+  can say where a capability comes from.
+- A read returns the =account_role= assignment tail: who granted a role, when,
+  and the reason.
+- The shell reaches the same subjects for the operations it carries today.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Give the three read responses a way to refuse. This comes first because it is
+   what the gate has nowhere to say: =get_account_roles_response= carries only
+   =roles=, and the two permission reads only =permission_codes=. A refusal that
+   answers an empty list reads as an account that holds nothing, so the gate
+   cannot be honest until the response can carry a refusal.
+2. Apply the gate to the three reads: allow when the caller holds
+   =iam::roles:read= — the constant exists in =permission_codes.hpp= — or when
+   the requested account is the caller's own, which the handler already has as
+   =ctx.actor()=.
+3. Add the permission-to-role attribution the member's screen needs, as a
+   response that pairs each code with the role it arrives through rather than a
+   flat list.
+4. Add the assignment read: the =account_role= tail, which the table already
+   stores and no subject returns.
+5. Regenerate the protocols for both languages, run the codegen gates, build,
+   and test the refusal and the two additions.
+
+Two findings worth carrying into the steps above. The reads take an arbitrary
+account id and prove only a session, so any member can read a colleague's
+access today — that is the defect, not a gap. And =role_handler.hpp= asks for a
+literal ="iam::roles:write"= that neither the seed nor =permission_codes.hpp=
+defines, while the constant file declares =roles_update=; the catalogue task
+owns that correction, and this one does not touch it.
 
 * Measurements
 

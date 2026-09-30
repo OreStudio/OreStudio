@@ -8,7 +8,7 @@
 #+filetags: :asset-class:taxonomy:codegen:refdata:clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/declare-the-asset-class-catalogue
-#+pr: 2440
+#+pr: 2443
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -30,9 +30,9 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The catalogue is declared and two outputs are generated from it. =ores.refdata.asset_class_catalogue= holds the seven product classes with the prose the seed used to carry, the twelve oresmd authorities and the mapping between them; the oresmd batch loader refuses a spec whose authority the namespace does not hold and an authority with no spec; a new =ores.sql.asset_class= facet generates =refdata_asset_class_codes_populate.sql= from the model; and the fixing defect is fixed -- the =FIXING= rule reads its class from the index name, through a C++ mapping the catalogue generates into =ores.marketdata.api=. |
+| Now          | The catalogue is declared and three outputs are generated from it. =ores.refdata.asset_class_catalogue= holds the seven product classes with the prose the seed used to carry, the twelve oresmd authorities and the mapping between them, and the DQ badge each class wears; the oresmd batch loader refuses a spec whose authority the namespace does not hold and an authority with no spec; a new =ores.sql.asset_class= facet generates =refdata_asset_class_codes_populate.sql= and the two DQ fragments from the model; and the fixing defect is fixed -- the =FIXING= rule reads its class from the index name, through a C++ mapping the catalogue generates into =ores.marketdata.api=. |
 | Waiting on   | Nothing. The fixing-identity task is closed and the =power= authority is in the namespace. |
-| Next         | Generate the DQ asset-class rows from the model, derive the briefs and the documentation list, and fix or record the census's drifts. |
+| Next         | Derive the briefs and the documentation list from the model. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -199,6 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2443][#2443]] | [refdata,codegen] Generate the asset-class DQ rows from the catalogue |
 | [[https://github.com/OreStudio/OreStudio/pull/2440][#2440]] | [marketdata,refdata] Close the series_subclass gap and settle the census's drifts |
 | [[https://github.com/OreStudio/OreStudio/pull/2437][#2437]] | [marketdata,refdata] Let a fixing take its class from its index name |
 | [[https://github.com/OreStudio/OreStudio/pull/2432][#2432]] | [refdata,codegen] Declare both asset-class lists in one model |
@@ -286,3 +287,23 @@ and re-reading the tree against them is what decides which still stand.
 - *The oresmd reject-URI list written three times.* No longer a drift. The two of the
   three are the template and its tangle source, which are the literate-codegen pair by
   construction, and the third is the test generated from them.
+
+**A third unit generated the DQ rows from the catalogue.** The taxonomy's seven badge
+definitions, its =asset_class= code domain and its seven badge mappings were hand-written
+inside =dq_badge_system_populate.sql='s single =DO= block and copied by hand into three
+staging mirrors, whose headers had already drifted from the files they described. The
+catalogue now carries each class's badge colour, text colour, severity, css class and
+sort order, and names the code domain its mappings hang off with ={codes}= where the
+taxonomy's own codes go; two new archetypes of the =ores.sql.asset_class= facet render
+the system rows and the staging rows, so the badge metadata has one author and the
+mirrors cannot drift again.
+
+The system fragment is included beside the badge system seed, and the staging fragment
+after the three mirrors. The staging deletes are scoped to the taxonomy's own rows,
+because a mirror's delete takes a whole dataset and an unscoped one would take every
+other domain's rows with it. Measured on a recreated database: the system tables still
+hold 108 definitions, 40 code domains and 159 mappings, the staging tables 107, 40 and
+161, and the taxonomy's own counts are 7, 1 and 7 in both. The full ctest suite passes 89
+of 89 targets, the codegen suite passes 1046, the drift check reports no drift for
+=refdata= and none across the catalogue, and every codegen, SQL and documentation gate
+passes.

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 10d22d7a-7dec-4d8d-b383-6d6d9ff55d27
+:END:
+#+title: ores.sql.asset_class.dq_artefact_populate
+#+description: The asset-class DQ rows in the staging tables a tenant is published from, generated from the catalogue.
+#+type: archetype
+#+output: projects/ores.sql/populate/dq/dq_asset_class_artefact_populate.sql
+#+facet: ores.sql.asset_class
+#+model_types: asset_class_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+The same rows as the sibling =dq_system_populate= archetype, written into the
+three staging tables the publish pipeline copies into another tenant. Each
+insert looks its dataset up by code rather than reusing a =psql= variable,
+because the three artefact seeds that precede it each overwrite the same one.
+The delete is scoped to this taxonomy's own rows -- the mirror seeds delete a
+whole dataset before their insert, so an unscoped delete here would take every
+other domain's rows with it -- which also makes re-running the fragment
+replace only its own.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_asset_class_dq_artefact_populate.mustache=.
+
+#+begin_src mustache :tangle sql_asset_class_dq_artefact_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.asset_class.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_asset_class_dq_artefact_populate.mustache
+ *
+ * Asset Class DQ Artefact Population Script
+ *
+ * Populates the three DQ staging tables with the asset-class taxonomy's badge
+ * definitions, code domain and badge mappings. Generated from
+ * ores.refdata.asset_class_catalogue; the system tenant's own rows are the
+ * sibling dq_asset_class_system_populate.sql. Runs after the three artefact
+ * mirrors, whose delete takes a whole dataset.
+ *
+ * This script is idempotent - replaces only its own rows.
+ */
+
+\echo '--- Asset Class DQ Artefacts ---'
+
+select id as v_ac_def_ds from ores_dq_datasets_tbl
+where code = 'ore.badge_definitions' and valid_to = ores_utility_infinity_timestamp_fn() \gset
+
+delete from ores_dq_badge_definitions_artefact_tbl
+where dataset_id = :'v_ac_def_ds' and code like 'asset_class\_%';
+
+insert into ores_dq_badge_definitions_artefact_tbl (
+    tenant_id, dataset_id, code, version, name, description, background_colour, text_colour, severity_code, css_class, display_order
+)
+values
+{{#asset_class_catalogue}}
+{{#taxonomy}}
+    (ores_utility_system_tenant_id_fn(), :'v_ac_def_ds', '{{badge_code}}', 0, '{{badge_name}}', '{{badge_description}}', '{{badge_background}}', '{{badge_text}}', '{{badge_severity}}', '{{badge_css}}', {{badge_order}}){{comma}}
+{{/taxonomy}}
+{{/asset_class_catalogue}}
+;
+
+select id as v_ac_dom_ds from ores_dq_datasets_tbl
+where code = 'ore.code_domains' and valid_to = ores_utility_infinity_timestamp_fn() \gset
+
+delete from ores_dq_code_domains_artefact_tbl
+where dataset_id = :'v_ac_dom_ds' and code = '{{code_domain.code}}';
+
+insert into ores_dq_code_domains_artefact_tbl (
+    tenant_id, dataset_id, code, version, name, description, display_order
+)
+values
+{{#asset_class_catalogue}}
+{{#code_domain}}
+    (ores_utility_system_tenant_id_fn(), :'v_ac_dom_ds', '{{code}}', 0, '{{name}}', '{{description_sql}}', {{display_order}})
+{{/code_domain}}
+{{/asset_class_catalogue}}
+;
+
+select id as v_ac_map_ds from ores_dq_datasets_tbl
+where code = 'ore.badge_mappings' and valid_to = ores_utility_infinity_timestamp_fn() \gset
+
+delete from ores_dq_badge_mappings_artefact_tbl
+where dataset_id = :'v_ac_map_ds' and code_domain_code = '{{code_domain.code}}';
+
+insert into ores_dq_badge_mappings_artefact_tbl (
+    tenant_id, dataset_id, code_domain_code, entity_code, badge_code, version
+)
+values
+{{#asset_class_catalogue}}
+{{#taxonomy}}
+    (ores_utility_system_tenant_id_fn(), :'v_ac_map_ds', '{{code_domain.code}}', '{{code}}', '{{badge_code}}', 0){{comma}}
+{{/taxonomy}}
+{{/asset_class_catalogue}}
+;
+#+end_src
+
+* See also
+
+- Parent facet: [[id:68b2099c-905e-496c-a1c7-94f12bca60ba][ores.sql.asset_class]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

@@ -22,6 +22,11 @@
 \echo '--- Badge System ---'
 \ir dq_badge_system_populate.sql
 
+-- The asset-class taxonomy's own DQ rows, generated from
+-- ores.refdata.asset_class_catalogue. They sit beside the badge system seed
+-- rather than inside it because the catalogue owns them.
+\ir dq_asset_class_system_populate.sql
+
 -- =============================================================================
 -- Dimensions (Origin, Nature, Treatment)
 -- =============================================================================

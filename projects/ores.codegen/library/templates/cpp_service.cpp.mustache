@@ -512,10 +512,21 @@ ores::utility::domain::result
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
+{{#domain_entity.stamp_members}}
+    // The audit reaches the row through whichever member carries it, so a
+    // grouped entity is stamped member by member; stamping it whole would
+    // find no audit column and leave the row without one.
+    stamp(out.{{member}}, ctx_,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{/domain_entity.stamp_members}}
+{{^domain_entity.stamp_members}}
     stamp(out, ctx_,
           intent.reason_code.empty()
               ? std::string(ores::service::messaging::change_reasons::new_record)
               : intent.reason_code);
+{{/domain_entity.stamp_members}}
 {{#has_audit_columns}}
     out.{{domain_entity.audit_prefix}}change_commentary = intent.commentary;
 {{/has_audit_columns}}

@@ -3100,6 +3100,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['audit_prefix'] = _member_of.get(
             'recorded_at', 'audit.' if has_audit_group else ''
         )
+        # Which members a caller stamps before a write. A field-grouped entity
+        # reaches every column through its groups, and an identity-grouped one
+        # through its identity slot and its audit member; a flat entity is
+        # stamped whole. Naming the members here stops the service template
+        # from stamping a struct that carries no audit column of its own.
+        stamp_members = []
+        if domain_groups:
+            for group in domain_groups:
+                stamp_members.append({'member': group['member']})
+        else:
+            for prefix in (domain_entity['scaffold_prefix'],
+                           domain_entity['audit_prefix']):
+                name = prefix.rstrip('.')
+                if name and name not in [m['member'] for m in stamp_members]:
+                    stamp_members.append({'member': name})
+        domain_entity['stamp_members'] = stamp_members
         # Primary-key columns live in a separate 'primary_key' dict, not in
         # 'columns' (see org_loader._parse_columns), so they need the same
         # flag set independently -- otherwise repository-layer helpers like

@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 4023B258-1B3B-4BD9-8EAB-4473D273CBF4
+:END:
+#+title: Task: Add compass services logs over the journal
+#+description: One verb that tails any service unit from the user journal, including nats-server, with filters for the last warnings and the last errors.
+#+type: task
+#+level: s1
+#+filetags: :log_to_the_journal:sprint_26:v0:
+#+owner: marco
+#+branch: feature/compass-logs-verb
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass services logs prints a tail from the user journal for any unit in this environment, and can return only the last warnings or only the last errors. nats-server is reachable through the same verb even though no service selector resolves it today, so the fleet has one log interface rather than one per family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- compass services logs <selector> prints the tail of that unit from the journal.
+- The verb accepts nats-server, which _resolve_service does not match.
+- The verb filters to warnings and to errors.
+- The verb emits one JSON object with the same ok discriminant and no ANSI codes, as env status does.
+- It reads the journal rather than any file, and it reports how many lines it returned and whether it truncated.
+
+* Plan
+
+One verb over =journalctl --user=, shaped like =env status=: one JSON object
+with an =ok= discriminant, no ANSI codes, and the same failure reasons.
+
+- =compass services logs <selector> [-n N] [--warnings] [--errors] [--json]=.
+  The tail is =journalctl --user -u <unit> --no-pager -n N -o cat=, the two
+  filters add =-p warning= and =-p err=.
+- The selector resolves through the registry as the other verbs do, and also
+  accepts a full unit name and =nats-server=, which the registry does not
+  carry. That is what makes the interface single rather than one per family.
+- The object reports the unit, the number of lines, whether the journal was
+  truncated to reach the limit, and the filter that was applied, so a caller
+  can say which of those it is looking at rather than showing an empty box.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

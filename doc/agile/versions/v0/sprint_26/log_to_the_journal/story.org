@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: DD8E47AC-6566-43C6-A98E-989BFD0D5A3E
+:END:
+#+title: Story: Log the fleet to the journal
+#+description: Every service writes its log to the console, systemd captures it into the user journal, and nobody writes a log file. compass reads readiness and log tails from the journal, so one interface serves every service including nats-server. The environment plugin gains a log overview for one service.
+#+type: story
+#+level: s2
+#+filetags: :logging:journal:compass:dsh:plugin:sprint_26:v0:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The fleet logs to the console and systemd captures it into the user journal, so one interface reaches every service and no file is written. compass stops reading a log file to decide whether a service is ready, because that file is the thing being removed, and it gains a verb that tails any unit including nats-server, with the last warnings and the last errors a filter away. The environment plugin shows that tail, and those warnings and errors, for one service at a time.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- No service writes a log file, and every service's output reaches the user journal.
+- File logging is opt-in in ores.logging, matching the option the header already documents, and a unit that passes no filename writes no file.
+- compass decides a service is ready by reading the journal, and a running fleet still reports running rather than starting.
+- compass services logs prints a tail from the journal for any unit, including nats-server, which no selector reaches today.
+- The tail verb can return only the last warnings or only the last errors.
+- The Environment view opens a log overview for one service showing its tail and its warnings and errors.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:09E9DDB9-DA17-4C12-8210-A7C2D3F93F73][Scaffold story: Log the fleet to the journal]] | STARTED | 2026-09-30 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B1D026B6-18AD-4A98-A84F-EA14C9B6F2C7][Log to the console and read readiness from the journal]] | BACKLOG | | | Initial task for: Log the fleet to the journal |
+| [[id:4023B258-1B3B-4BD9-8EAB-4473D273CBF4][Add compass services logs over the journal]] | BACKLOG | | | One verb that tails any service unit from the user journal, including nats-server, with filters for the last warnings and the last errors. |
+| [[id:7982A502-15D6-46EC-8A1A-326126406C41][Add the per-service log overview to the environment plugin]] | BACKLOG | | | A log overview for one service in the Environment view: the tail, and the last warnings and errors. |
+
+* Decisions
+
+* Decisions
+
+- The console sink already exists, writes to =std::cout=, and sets
+  =auto_flush(true)=. Its own comment names =podman logs=, so console capture
+  was already the intended path for a container. Nothing new is needed to log
+  to the console; the flags were simply never passed.
+- File logging is meant to be opt-in and is not. =logging_options.hpp= already
+  documents an empty filename as disabling file logging, but =--log-filename=
+  carries a non-empty default, so the documented opt-out cannot be reached from
+  the command line. Making the default empty is the fix, and it changes no
+  caller.
+- The fleet logs three different ways today, which is why one interface is
+  worth building. Twenty-three compiled units pass =--log-enabled --log-level
+  <level> --log-directory ../log --log-replica-index N= and write their own
+  file with the console sink off. =ores.web= is node and its unit redirects
+  stdout and stderr to the same file with =StandardOutput=append:=. =nats-server=
+  has no redirection and no logging keys in its config, so it already reaches
+  the journal. A viewer written against files would serve two thirds of the
+  fleet and miss nats.
+- Readiness reads the file that is being removed.
+  =_log_contains(ctx.log_dir / log_basename, "Service ready")= is what
+  separates running from starting, so dropping the file without moving that
+  read would leave every active unit reading =starting= forever. The log read
+  and the readiness read move in the same task, and that coupling fixes the
+  order of the tasks.
+- =nats-server= is not in the service registry, so =_resolve_service= cannot
+  reach it. A single log interface must accept a unit name, not only a registry
+  selector.
+- =journalctl --user= is readable from an agent shell and returns this
+  environment's unit output, so the journal is a usable source with no new
+  permission.
+- The level stays per family even though the interface is single.
+  =ORES_SERVICE_LOG_LEVEL= is baked into each compiled unit at generate time,
+  =ores.web= reads =ORES_WEB_LOG_LEVEL= itself, and nats reads its own config.
+- Readiness needs the log far less than it first appears. Twenty-three of the
+  twenty-four units are =Type=notify=, so the service calls =sd_notify(READY=1)=
+  and systemd reporting the unit active is already the readiness signal; the
+  =Service ready= scan adds nothing for them. Only =ores.web= is =Type=simple=
+  and has no way to declare itself, and nats already has an =ExecStartPost=
+  port check. So the readiness change is one unit rather than twenty-four, and
+  it avoids a journal query per unit on every status call.
+- All three tasks ride one branch and one pull request, as the environment
+  plugin did, because the plugin task cannot be verified without the verb and
+  the verb has nothing to read until the fleet logs to the console.
+
+* Out of scope
+
+- Following a log live. The plugin's routes are one-shot JSON, so a streaming
+  tail would change the transport rather than add a control.
+- Retention and rotation policy for the journal itself.
+- Interleaving every unit into one timeline.
+- Bringing logs back up from a remote or containerised deployment.
+
+-

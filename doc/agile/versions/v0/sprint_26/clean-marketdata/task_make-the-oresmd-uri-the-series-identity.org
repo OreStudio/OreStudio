@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2410
+#+pr: 2416
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -664,6 +664,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2416][#2416]] | [reporting] Give the run's new tables row level security |
 | [[https://github.com/OreStudio/OreStudio/pull/2410][#2410]] | [agile] Record the gate that compiles C++ |
 | [[https://github.com/OreStudio/OreStudio/pull/2409][#2409]] | [agile] Hand the deletion its four places |
 | [[https://github.com/OreStudio/OreStudio/pull/2408][#2408]] | [marketdata,synthetic,sql] Let the config name the series its vintage reads |

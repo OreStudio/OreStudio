@@ -24,15 +24,15 @@ _COMPONENT_FILES_TEMPLATES = {
 
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
-    "ores.codegen.entity":           "domain_entity",
-    "ores.codegen.junction":         "junction",
-    "ores.codegen.component":        "component",
-    "ores.codegen.field_group":      "field_group",
-    "ores.codegen.lookup_entity":    "schema",
-    "ores.codegen.service_registry": "service_registry",
-    "ores.codegen.dataset":          "dataset",
+    "ores.codegen.entity":            "domain_entity",
+    "ores.codegen.junction":          "junction",
+    "ores.codegen.component":         "component",
+    "ores.codegen.field_group":       "field_group",
+    "ores.codegen.lookup_entity":     "schema",
+    "ores.codegen.service_registry":  "service_registry",
+    "ores.codegen.dataset":           "dataset",
     "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
-    "ores.codegen.operation":        "operation",
+    "ores.codegen.operation":         "operation",
     "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
 }
 

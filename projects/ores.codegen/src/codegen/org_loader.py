@@ -5617,18 +5617,40 @@ def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
 
     taxonomy: list[dict[str, Any]] = []
     taxonomy_section = _section(doc.root, "Taxonomy")
-    for node in (taxonomy_section.children if taxonomy_section else []):
+    if not taxonomy_section:
+        raise ValueError(
+            f"{Path(path).name}: no * Taxonomy section; the catalogue declares "
+            "the refdata product classes there"
+        )
+    for node in taxonomy_section.children:
         props = {k.lower(): v for k, v in node.properties.items()}
+        raw_order = props.get("display_order", len(taxonomy) + 1)
+        try:
+            display_order = int(raw_order)
+        except ValueError:
+            raise ValueError(
+                f"{Path(path).name}: taxonomy entry {node.title!r} carries a "
+                f"non-numeric :display_order: {raw_order!r}"
+            ) from None
         entry = {
             "code": node.title,
             "name": props.get("name", node.title).strip(),
-            "display_order": int(props.get("display_order", len(taxonomy) + 1)),
+            "display_order": display_order,
             "description": _strip_body(node),
         }
         # A SQL literal carries the prose on one line and doubles its quotes.
         entry["description_sql"] = " ".join(
             entry["description"].split()).replace("'", "''")
         taxonomy.append(entry)
+    codes = [entry["code"] for entry in taxonomy]
+    for label, values in (("code", codes),
+                          ("display_order", [e["display_order"] for e in taxonomy])):
+        repeated = sorted({v for v in values if values.count(v) > 1})
+        if repeated:
+            raise ValueError(
+                f"{Path(path).name}: duplicate taxonomy {label}(s): "
+                f"{', '.join(str(v) for v in repeated)}"
+            )
     for index, entry in enumerate(taxonomy):
         last = index == len(taxonomy) - 1
         entry["last"] = last
@@ -5639,13 +5661,28 @@ def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
 
     namespace: list[dict[str, Any]] = []
     namespace_section = _section(doc.root, "Namespace")
-    for node in (namespace_section.children if namespace_section else []):
+    if not namespace_section:
+        raise ValueError(
+            f"{Path(path).name}: no * Namespace section; the catalogue declares "
+            "the oresmd authorities there"
+        )
+    for node in namespace_section.children:
         props = {k.lower(): v for k, v in node.properties.items()}
         namespace.append({
             "authority": node.title,
             "refdata_code": props.get("refdata_code", "").strip(),
             "description": _strip_body(node),
         })
+    known_codes = set(codes)
+    for entry in namespace:
+        # A typo in the mapping would otherwise pass codegen and surface only
+        # when the classifier met a series it could not class.
+        if entry["refdata_code"] and entry["refdata_code"] not in known_codes:
+            raise ValueError(
+                f"{Path(path).name}: authority {entry['authority']!r} maps to "
+                f"{entry['refdata_code']!r}, which is not a taxonomy code. "
+                f"Known codes: {', '.join(sorted(known_codes))}"
+            )
 
     catalogue["taxonomy"] = taxonomy
     catalogue["namespace"] = namespace
@@ -5757,7 +5794,13 @@ def _reject_unknown_oresmd_authorities(specs: list[dict[str, Any]]) -> None:
     known = asset_class_catalogue_authorities()
     for spec in specs:
         authority = spec.get("authority", "")
-        if authority and authority not in known:
+        if not authority:
+            raise ValueError(
+                f"{spec.get('source_file', 'an oresmd spec')}: names no oresmd "
+                "authority. Every spec states the namespace authority it is "
+                "written under in :authority:."
+            )
+        if authority not in known:
             raise ValueError(
                 f"{spec.get('source_file', 'an oresmd spec')}: names oresmd "
                 f"authority {authority!r}, which "

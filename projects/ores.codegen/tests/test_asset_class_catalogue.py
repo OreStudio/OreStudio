@@ -103,3 +103,83 @@ def test_a_declared_authority_with_no_spec_is_refused(monkeypatch):
         lambda: asset_class_catalogue_authorities() | frozenset({"ghost"}))
     with pytest.raises(ValueError, match=r"ghost"):
         load_org_oresmd_quote_type_model(ORESMD_MANIFEST)
+
+
+CATALOGUE_TEMPLATE = """\
+:PROPERTIES:
+:ID: 11111111-1111-1111-1111-111111111111
+:END:
+#+title: ores.refdata.asset_class_catalogue
+#+type: ores.codegen.asset_class_catalogue
+#+component: refdata
+
+* Taxonomy
+
+{taxonomy}
+
+* Namespace
+
+{namespace}
+"""
+
+TAXONOMY_FX = (
+    "** fx\n:PROPERTIES:\n:name:          FX\n:display_order: 1\n:END:\n"
+    "\nForeign exchange.\n"
+)
+
+
+def _temp_catalogue(tmp_path, taxonomy, namespace):
+    path = tmp_path / "ores.refdata.asset_class_catalogue.org"
+    path.write_text(
+        CATALOGUE_TEMPLATE.format(taxonomy=taxonomy, namespace=namespace),
+        encoding="utf-8")
+    return path
+
+
+def test_a_mapping_to_an_unknown_taxonomy_code_is_refused(tmp_path):
+    path = _temp_catalogue(
+        tmp_path, TAXONOMY_FX,
+        "** ir\n:PROPERTIES:\n:refdata_code: interest_rate\n:END:\n\nRates.\n")
+    with pytest.raises(ValueError, match=r"not a taxonomy code"):
+        load_org_asset_class_catalogue_model(path)
+
+
+def test_a_missing_section_is_refused(tmp_path):
+    path = tmp_path / "ores.refdata.asset_class_catalogue.org"
+    path.write_text(
+        ":PROPERTIES:\n:ID: 11111111-1111-1111-1111-111111111111\n:END:\n"
+        "#+title: ores.refdata.asset_class_catalogue\n"
+        "#+type: ores.codegen.asset_class_catalogue\n#+component: refdata\n\n"
+        "* Namespace\n\n** ir\n:PROPERTIES:\n:refdata_code:\n:END:\n\nRates.\n",
+        encoding="utf-8")
+    with pytest.raises(ValueError, match=r"no \* Taxonomy"):
+        load_org_asset_class_catalogue_model(path)
+
+
+def test_a_duplicate_taxonomy_code_is_refused(tmp_path):
+    path = _temp_catalogue(
+        tmp_path, TAXONOMY_FX + TAXONOMY_FX.replace("display_order: 1", "display_order: 2"),
+        "** fx\n:PROPERTIES:\n:refdata_code: fx\n:END:\n\nFX.\n")
+    with pytest.raises(ValueError, match=r"duplicate taxonomy code"):
+        load_org_asset_class_catalogue_model(path)
+
+
+def test_a_spec_without_an_authority_is_refused(monkeypatch):
+    monkeypatch.setattr(
+        org_loader, "asset_class_catalogue_authorities",
+        lambda: frozenset({"fx"}))
+    with pytest.raises(ValueError, match=r"names no oresmd authority"):
+        org_loader._reject_unknown_oresmd_authorities(
+            [{"source_file": "ghost_quote_type.org", "authority": ""}])
+
+
+def test_the_sql_prose_folds_to_one_line_and_doubles_its_quotes(tmp_path):
+    path = _temp_catalogue(
+        tmp_path,
+        "** fx\n:PROPERTIES:\n:name:          FX\n:display_order: 1\n:END:\n"
+        "\nThe index's pattern is\nwrapped over two lines.\n",
+        "")
+    taxonomy = load_org_asset_class_catalogue_model(path)[
+        "asset_class_catalogue"]["taxonomy"]
+    assert taxonomy[0]["description_sql"] == (
+        "The index''s pattern is wrapped over two lines.")

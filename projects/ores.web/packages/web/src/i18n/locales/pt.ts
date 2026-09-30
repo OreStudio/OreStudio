@@ -124,6 +124,7 @@ const pt: SourceCatalogue = {
         usableNow: 'Poderá iniciar sessão assim que a conta existir.',
         pending: 'Um administrador tem de o adicionar a uma parte antes de poder iniciar sessão.',
         create: 'Criar conta',
+        createFailed: 'A conta não foi criada.',
         createdTitle: 'Conta criada',
         waitingTitle: 'Conta em espera',
         createdLead: 'A sua conta existe. Inicie sessão com a palavra-passe que escolheu.',

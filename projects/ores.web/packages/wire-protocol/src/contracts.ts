@@ -173,6 +173,8 @@ export const apiErrorSchema = z.object({
         'username-taken',
         'email-taken',
         'weak-password',
+        'signup-refused',
+        'too-many-requests',
         'upstream-unavailable',
         'upstream-timeout',
         'internal',

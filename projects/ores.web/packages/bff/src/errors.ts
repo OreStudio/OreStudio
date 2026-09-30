@@ -112,21 +112,42 @@ export function bootstrapComplete(): HttpFailure {
  * role needs different words from a deployment that does not accept
  * registrations at all, and each names a different thing for an administrator
  * to fix.
+ *
+ * The status follows the code rather than being one value for all of them. A
+ * name already in use is a conflict, a weak password is a bad request, and a
+ * deployment that does not accept registrations at all is a refusal of the
+ * request rather than a fault in it. A code this build does not know is
+ * reported as a refusal of its own, so a new server-side code reads as a
+ * refusal rather than as a client defect.
  */
 export function signupRefused(code: string, message: string): HttpFailure {
-    const known: Record<string, ApiError['code']> = {
-        signup_disabled: 'signups-disabled',
-        signup_requires_authorization: 'signup-requires-authorization',
-        no_registration_destination: 'no-registration-destination',
-        no_default_role: 'no-default-role',
-        username_taken: 'username-taken',
-        email_taken: 'email-taken',
-        weak_password: 'weak-password',
-        invalid_request: 'invalid-request',
+    const known: Record<string, { readonly status: number; readonly code: ApiError['code'] }> = {
+        username_taken: { status: 409, code: 'username-taken' },
+        email_taken: { status: 409, code: 'email-taken' },
+        weak_password: { status: 400, code: 'weak-password' },
+        invalid_request: { status: 400, code: 'invalid-request' },
+        signup_disabled: { status: 403, code: 'signups-disabled' },
+        signup_requires_authorization: { status: 403, code: 'signup-requires-authorization' },
+        no_registration_destination: { status: 403, code: 'no-registration-destination' },
+        no_default_role: { status: 403, code: 'no-default-role' },
     };
-    return new HttpFailure(409, {
-        code: known[code] ?? 'invalid-request',
+    const refusal = known[code] ?? { status: 403, code: 'signup-refused' as const };
+    return new HttpFailure(refusal.status, {
+        code: refusal.code,
         message: message.length > 0 ? message : 'The registration was refused.',
+    });
+}
+
+/**
+ * A caller that has asked too often in the window.
+ *
+ * Its own code rather than a 401, because the credential was never the
+ * question: the request was fine and the caller asked too many of them.
+ */
+export function tooManyRequests(what: string): HttpFailure {
+    return new HttpFailure(429, {
+        code: 'too-many-requests',
+        message: `Too many ${what}. Wait a minute and try again.`,
     });
 }
 

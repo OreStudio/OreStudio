@@ -77,6 +77,7 @@ import {
     notAuthenticated,
     signupRefused,
     toHttpFailure,
+    tooManyRequests,
     HttpFailure,
 } from './errors.js';
 
@@ -95,11 +96,22 @@ import {
 
 const SESSION_COOKIE = 'ores_web_session';
 
+/**
+ * Policy reads allowed per client per minute.
+ *
+ * A read that opens a connection to the broker with no session, so a stranger
+ * can drive it. It is a page view rather than an attempt, so the budget is far
+ * larger than the sign-in one and it is a separate limiter: a person reloading
+ * the door must not spend the attempts they need to sign in with.
+ */
+const POLICY_READS_PER_MINUTE = 120;
+
 export interface ServerDependencies {
     readonly config: Config;
     readonly site: LoadedSiteConfiguration;
     readonly sessions?: SessionStore;
     readonly loginLimiter?: RateLimiter;
+    readonly policyLimiter?: RateLimiter;
     /** Injected in tests so no broker is needed. */
     readonly createClient?: () => { client: OresClient; connect: () => Promise<void> };
 }
@@ -111,6 +123,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const loginLimiter =
         dependencies.loginLimiter ??
         createRateLimiter({ maxAttempts: config.loginAttemptsPerMinute, windowSeconds: 60 });
+    const policyLimiter =
+        dependencies.policyLimiter ??
+        createRateLimiter({ maxAttempts: POLICY_READS_PER_MINUTE, windowSeconds: 60 });
 
     const injectedClient = dependencies.createClient;
     const createClient = (): { client: OresClient; connect: () => Promise<void> } => {
@@ -335,6 +350,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * recovers from.
      */
     server.get('/api/registration-policy', async (request) => {
+        if (!policyLimiter.allow(request.ip)) {
+            throw tooManyRequests('policy reads');
+        }
         const { client, connect } = createClient();
         try {
             await connect();
@@ -375,7 +393,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw invalidRequest('A username, an email address and a password are required.');
         }
         if (!loginLimiter.allow(request.ip)) {
-            throw invalidRequest('Too many attempts. Wait a minute and try again.');
+            throw tooManyRequests('registration attempts');
         }
 
         const { client, connect } = createClient();

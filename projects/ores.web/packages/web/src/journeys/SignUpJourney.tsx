@@ -81,6 +81,11 @@ export type DoorState =
  * A refusal from the policy read is a closed door rather than a failure: the
  * deployment said what it offers, and the screen states it. A reading that did
  * not arrive is a failure, because nothing was said at all.
+ *
+ * `success` says the deployment admits a registration; it does not say the
+ * account can sign in. A tenant that nominates no party still admits one, and
+ * the account it produces waits — which the rail states at the review step and
+ * again at the confirmation, so the door opens either way.
  */
 export function doorState(reading: SignUpReading): DoorState {
     if (reading.failure !== undefined) {
@@ -194,21 +199,37 @@ export function SignUpJourney({ server }: SignUpJourneyProps): ReactNode {
     const [outcome, setOutcome] = useState<SignupResult>();
     const [at, setAt] = useState(0);
 
-    const read = useCallback(async (): Promise<void> => {
-        setReading({});
-        try {
-            const [policy, passwordPolicy] = await Promise.all([
-                server.registrationPolicy(),
-                server.passwordPolicy(),
-            ]);
-            setReading({ policy, passwordPolicy });
-        } catch (error) {
-            setReading({ failure: reasonOf(error) });
-        }
-    }, [server]);
+    /*
+     * Both answers are read together, and the caller may walk away before they
+     * arrive: the effect says so with the flag it hands in, so a read that
+     * settles after the screen has gone writes nothing.
+     */
+    const read = useCallback(
+        async (isGone?: () => boolean): Promise<void> => {
+            setReading({});
+            try {
+                const [policy, passwordPolicy] = await Promise.all([
+                    server.registrationPolicy(),
+                    server.passwordPolicy(),
+                ]);
+                if (isGone?.() !== true) {
+                    setReading({ policy, passwordPolicy });
+                }
+            } catch (error) {
+                if (isGone?.() !== true) {
+                    setReading({ failure: reasonOf(error) });
+                }
+            }
+        },
+        [server],
+    );
 
     useEffect(() => {
-        void read();
+        let gone = false;
+        void read(() => gone);
+        return () => {
+            gone = true;
+        };
     }, [read]);
 
     const onChange = useCallback((patch: Partial<SignUpDraft>): void => {
@@ -218,7 +239,7 @@ export function SignUpJourney({ server }: SignUpJourneyProps): ReactNode {
     const onCreate = useCallback(async (): Promise<void> => {
         const result = await server.signup(signUpRequest(draft));
         if (!result.success) {
-            throw new Error(result.message !== '' ? result.message : t('signUp.closedFallback'));
+            throw new Error(result.message !== '' ? result.message : t('signUp.createFailed'));
         }
         setOutcome(result);
     }, [server, draft, t]);

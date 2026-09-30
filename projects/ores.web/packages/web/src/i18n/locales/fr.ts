@@ -120,6 +120,7 @@ const fr: SourceCatalogue = {
         pending:
             'Un administrateur doit vous ajouter à une partie avant que vous puissiez vous connecter.',
         create: 'Créer le compte',
+        createFailed: "Le compte n'a pas été créé.",
         createdTitle: 'Compte créé',
         waitingTitle: 'Compte en attente',
         createdLead:

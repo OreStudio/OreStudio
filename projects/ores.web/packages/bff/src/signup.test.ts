@@ -68,7 +68,10 @@ interface FakeAnswers {
 
 function buildTestServer(
     answers: FakeAnswers,
-    overrides: { readonly loginLimiter?: ReturnType<typeof createRateLimiter> } = {},
+    overrides: {
+        readonly loginLimiter?: ReturnType<typeof createRateLimiter>;
+        readonly policyLimiter?: ReturnType<typeof createRateLimiter>;
+    } = {},
 ): ReturnType<typeof buildServer> {
     const hostnames = answers.hostnames ?? [];
     const client = {
@@ -115,6 +118,7 @@ function buildTestServer(
         site: siteConfiguration(),
         sessions: createSessionStore({ ttlSeconds: 60 }),
         ...(overrides.loginLimiter !== undefined && { loginLimiter: overrides.loginLimiter }),
+        ...(overrides.policyLimiter !== undefined && { policyLimiter: overrides.policyLimiter }),
         createClient: () => ({ client, connect: async () => undefined }),
     });
 }
@@ -230,6 +234,64 @@ describe('POST /api/signup', () => {
         await server.close();
     });
 
+    it('reports a closed deployment as a refusal of the request, not a conflict', async () => {
+        const server = buildTestServer({
+            signup: {
+                success: false,
+                message: 'This deployment does not accept registrations.',
+                errorCode: 'signup_disabled',
+                accountId: '',
+                accountStatus: '',
+                partyId: '',
+                roleId: '',
+            },
+        });
+
+        const answer = await server.inject({
+            method: 'POST',
+            url: '/api/signup',
+            payload: {
+                principal: 'jdoe',
+                email: 'jdoe@northwind.example.com',
+                password: 'Secret-1!',
+            },
+        });
+
+        expect(answer.statusCode).toBe(403);
+        expect(answer.json()).toMatchObject({ code: 'signups-disabled' });
+
+        await server.close();
+    });
+
+    it('keeps a code this build does not know apart from a client defect', async () => {
+        const server = buildTestServer({
+            signup: {
+                success: false,
+                message: 'The server refused for a reason this build has not learned.',
+                errorCode: 'something_new',
+                accountId: '',
+                accountStatus: '',
+                partyId: '',
+                roleId: '',
+            },
+        });
+
+        const answer = await server.inject({
+            method: 'POST',
+            url: '/api/signup',
+            payload: {
+                principal: 'jdoe',
+                email: 'jdoe@northwind.example.com',
+                password: 'Secret-1!',
+            },
+        });
+
+        expect(answer.statusCode).toBe(403);
+        expect(answer.json()).toMatchObject({ code: 'signup-refused' });
+
+        await server.close();
+    });
+
     it('refuses a body that is missing a credential', async () => {
         const server = buildTestServer({});
 
@@ -260,10 +322,32 @@ describe('POST /api/signup', () => {
         const second = await server.inject({ method: 'POST', url: '/api/signup', payload: body });
 
         expect(first.statusCode).toBe(200);
-        expect(second.statusCode).toBe(400);
-        expect(second.json()).toMatchObject({
-            message: 'Too many attempts. Wait a minute and try again.',
+        expect(second.statusCode).toBe(429);
+        expect(second.json()).toEqual({
+            code: 'too-many-requests',
+            message: 'Too many registration attempts. Wait a minute and try again.',
         });
+
+        await server.close();
+    });
+});
+
+describe('the policy read', () => {
+    it('is limited on its own budget, so a reload never spends a sign-in attempt', async () => {
+        const server = buildTestServer(
+            {},
+            {
+                loginLimiter: createRateLimiter({ maxAttempts: 100, windowSeconds: 60 }),
+                policyLimiter: createRateLimiter({ maxAttempts: 1, windowSeconds: 60 }),
+            },
+        );
+
+        const first = await server.inject({ method: 'GET', url: '/api/registration-policy' });
+        const second = await server.inject({ method: 'GET', url: '/api/registration-policy' });
+
+        expect(first.statusCode).toBe(200);
+        expect(second.statusCode).toBe(429);
+        expect(second.json()).toMatchObject({ code: 'too-many-requests' });
 
         await server.close();
     });

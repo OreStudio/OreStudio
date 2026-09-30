@@ -127,6 +127,7 @@ export const en: SourceCatalogue = {
         usableNow: 'You can sign in as soon as the account exists.',
         pending: 'An administrator must add you to a party before you can sign in.',
         create: 'Create account',
+        createFailed: 'The account was not created.',
         createdTitle: 'Account created',
         waitingTitle: 'Account waiting',
         createdLead: 'Your account exists. Sign in with the password you chose.',

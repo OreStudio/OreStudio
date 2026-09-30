@@ -103,7 +103,7 @@ anyway, and that is a gap named below.
 | Choose a role to grant | List the roles defined in the tenant | =iam.v1.roles.list= | exists |
 | Grant the role | Assign a role to the account | =iam.v1.roles.assign= | exists |
 | Revoke a role | Revoke a role from the account | =iam.v1.roles.revoke= | exists |
-| Confirm | Read the assignment row: who, when, why | none | missing |
+| Confirm | Read the assignment row: who, when, why | =iam.v1.roles.by-account= | exists |
 
 The role subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
@@ -116,32 +116,39 @@ gaps the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][access group]]'s survey clos
 
 * What is missing
 
-1. *No assignment read.* No subject returns the =account_role= row, so
-   =assigned_by=, =assigned_at=, =change_reason_code= and =change_commentary=
-   cannot be shown even though they are stored. The candidate is
-   =iam.v1.roles.assignments-by-account=, returning each role with its
-   assignment fields. Until it exists, the screen shows the role list without
-   the audit evidence.
-2. *No reason on the message.* =assign_role_request= and =revoke_role_request=
+1. *No reason on the message.* =assign_role_request= and =revoke_role_request=
    carry only =account_id= and =role_id=. The row has change reason and
    commentary columns, and the insert trigger validates the reason, but the
    client cannot set either field. The candidate is to add
    =change_reason_code= and =change_commentary= to both requests, or to add
    =iam.v1.roles.assign-with-reason= and its revoke twin.
-3. *No guard on an empty role list.* The account screen warns when an account
+2. *No guard on an empty role list.* The account screen warns when an account
    has no party, but stays silent when it has no role (see the user guide
    chapter). The same silence applies when a revoke removes the last role. The
    candidate is a warning before the last role is revoked.
 
-A fourth gap has closed since this journey was written. It recorded that
-=iam.v1.accounts.list= and =iam.v1.accounts.get= returned the whole =account=
-wire shape, credential material included. =password_hash=, =password_salt=,
-=service_password_hash= and =totp_secret= are =:no_wire:= in
-[[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] now, so no read
-returns them, and the picker needs nothing else: a username and a full name
-come over the wire and the secrets do not. That is the second gap the survey
-closed, and it closes it for every reader of the entity rather than for this
-screen alone.
+Two more gaps have closed since this journey was written, both by
+[[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][the access group's]] first build.
+
+The first is the one this journey called its own: no subject returned the
+=account_role= row, so =assigned_by=, =assigned_at=, =change_reason_code= and
+=change_commentary= could not be shown even though they were stored. The
+composed read now carries all four beside each role, for the administrator and
+for the member alike, so the * Confirm row above answers from the same subject
+as the rest of the screen.
+
+The second is the credential material this journey recorded on the account read.
+=password_hash=, =password_salt=, =service_password_hash= and =totp_secret= are
+=:no_wire:= in [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]]
+now, so no read returns them, and the picker needs nothing else: a username and
+a full name come over the wire and the secrets do not. That closes it for every
+reader of the entity rather than for this screen alone.
+
+The read is also no longer open to anybody. It requires =iam::roles:read=
+before it looks the account up, and refuses with a =denied= result rather than
+an empty list, which is what
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] settles for both
+access reads.
 
 * Related journeys
 

@@ -85,34 +85,39 @@ server, and no read in this journey returns them.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open my access | Read the roles on my account | =iam.v1.roles.by-account= | exists |
-| Open my access | Read my effective permissions | =iam.v1.roles.permissions-by-account= | exists |
+| Open my access | Read the roles I hold, with the permissions each grants and its assignment record | =iam.v1.roles.mine= | exists |
 | Follow a permission back | Read the permissions one role bundles | =iam.v1.roles.permissions= | exists |
+| Another account's access, which this journey does not ask for | Read the same shape for an account the caller names | =iam.v1.roles.by-account= | exists |
 
-The three reads are defined in
-[[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
-Each proves that the caller has a session, but checks no permission and takes
-an arbitrary account id. So a member can read another account's access. That is
-the gap this journey exposes.
+The reads are defined in
+[[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]], and
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule
+they follow. =iam.v1.roles.mine= takes no account id, so it cannot name anybody
+else: the account is the authenticated caller's, and the read needs no
+permission beyond a session. The privileged read still takes an id and now
+requires =iam::roles:read= before it looks the account up.
 
 * What is missing
 
-1. *No self-scoping and no permission gate.* =iam.v1.roles.by-account=,
-   =iam.v1.roles.permissions-by-account= and =iam.v1.roles.permissions= take an
-   arbitrary id and check only that the caller is signed in. The candidate is a
-   self form of each read, such as =iam.v1.roles.by-account-self=, or an
-   =iam::roles:read= check on the existing reads plus a check that the target
-   account is the caller's own.
-2. *No attribution of a permission to a role.* =permissions-by-account= returns
-   a flat list of codes. The screen can show the flat list, or read each held
-   role in turn, but no single read says "this permission arrives through that
-   role". The candidate is a response that pairs each code with the role that
-   grants it.
-3. *No assignment dates on the roles read.* =iam.v1.roles.by-account= returns
-   =role= records only. The junction row carries =assigned_by= and
-   =assigned_at=, but the response does not. A member cannot see when a role was
-   given or by whom. The administrator's side of the same gap is
-   [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]].
+Nothing. All three gaps this journey recorded have closed, and the build that
+closed them is recorded on
+[[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]].
+
+=iam.v1.roles.mine= answers one composed shape: each role the caller holds, the
+permission codes that role grants, and the =account_role= junction's own record
+of who granted it, when and why. So the three gaps close together rather than in
+turn. The read attributes a permission to the role it arrives through, which the
+flat list could not; it carries the assignment tail, which no subject returned;
+and it is scoped to the caller by construction rather than by a comparison that
+has to be right.
+
+A refusal is worth stating separately, because it is what the composed read
+needed before it could be honest. =iam.v1.roles.permissions-by-account=
+answered a flat list and nothing else, so an empty list meant both "you may
+read nothing" and "this account holds nothing". The read that replaced it
+carries a =result=, and a caller who may not have what it asked for is told
+=denied= with the permission that was required. An account that holds no roles
+answers =ok= with no rows, which is a different answer.
 
 * Related journeys
 

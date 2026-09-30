@@ -47,9 +47,9 @@ from the survey rather than from the documents as they stand.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The survey is done: two of the recorded gaps have closed, seventeen are open with the subject that closes each, and the group's tasks are sized from that list. |
+| Now           | The survey is done, the mechanism is settled and written down as [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]], and the reads now follow it: a self read that takes no account id, a privileged read behind =iam::roles:read=, one composed answer with the attribution and the assignment tail, and a refusal that travels as a =denied= result. |
 | Waiting on    | Nothing. |
-| Next          | [[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]]. |
+| Next          | [[id:D8305768-6F61-4A67-99DE-DE837E2026A2][Let a role's permission bundle be written]]. |
 | Last touched  | 2026-09-30                               |
 
 * Acceptance

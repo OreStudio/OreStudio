@@ -32,12 +32,10 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Button, Detail, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
-import { NewPasswordField } from '../ui/PasswordField.js';
+import { Button, Detail, Field, Input, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
 import {
     account,
-    passwordPolicy,
     rescuedAccount,
     rescuedLoginState,
     type PrototypeLoginState,
@@ -76,10 +74,8 @@ const ROSTER: readonly RosterRow[] = [
 
 export function RescueAccessPrototype(): ReactNode {
     const { active, choose } = useVariant(VARIANTS, 'a');
-    const [chosen, setChosen] = useState('');
-    const [acceptable, setAcceptable] = useState(false);
+    const [sentAt, setSentAt] = useState<string | undefined>(undefined);
     const [nextState, setNextState] = useState<'locked' | 'unlocked'>('locked');
-    const [forceChange] = useState(true);
     const [selected, setSelected] = useState(rescuedAccount.username);
     const [log, setLog] = useState<readonly string[]>([]);
 
@@ -104,54 +100,51 @@ export function RescueAccessPrototype(): ReactNode {
         </section>
     );
 
-    const resetPanel = (
+    const recoveryPanel = (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
-                <h2 className="text-lg font-medium">Set a new password</h2>
+                <h2 className="text-lg font-medium">Send a recovery link</h2>
                 <p className="text-sm text-ink-muted">
-                    The colleague can sign in with this password at once. The server checks it
-                    against the policy and stores the hash.
+                    The administrator does not choose the colleague's password. The system emails a
+                    single-use link to the address on the account, and the colleague sets a password
+                    that only they know.
                 </p>
             </header>
-            <NewPasswordField
-                policy={passwordPolicy}
-                label="New password for this colleague"
-                value={chosen}
-                onChange={(value, ok) => {
-                    setChosen(value);
-                    setAcceptable(ok);
-                }}
-            />
-            <label className="flex items-center gap-3 text-sm">
-                <input
-                    type="checkbox"
-                    className="size-4 accent-[var(--color-accent)]"
-                    checked={forceChange}
-                    disabled
-                    onChange={() => undefined}
-                />
-                <span>
-                    Ask them to choose their own password at the next sign-in
-                    <span className="block text-xs text-ink-faint">
-                        No subject carries this over NATS today.{' '}
-                        <span className="font-mono">iam.v1.accounts.reset-password</span> writes the
-                        password directly, so the screen cannot offer it.
-                    </span>
+            <Field label="Send it to" hint="The address on the account. It is not edited here.">
+                <Input readOnly value={rescuedAccount.email} />
+            </Field>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs text-ink-faint">
+                    Nothing sends mail in this tree, no subject requests a reset, and no table holds a
+                    token. This screen sends nothing.
                 </span>
-            </label>
-            <div className="flex justify-end">
                 <Button
                     variant="primary"
-                    disabled={!acceptable}
                     onClick={() => {
-                        record(`reset password · ${chosen.length} chars · force change ${String(forceChange)}`);
-                        setChosen('');
-                        setAcceptable(false);
+                        setSentAt('2026-09-30 12:04 UTC');
+                        record(`send recovery link · ${rescuedAccount.email}`);
                     }}
                 >
-                    Reset the password
+                    Send the recovery link
                 </Button>
             </div>
+            {sentAt !== undefined && (
+                <Notice tone="success">
+                    The prototype recorded a link sent at {sentAt}. Nothing left the browser.
+                </Notice>
+            )}
+            <details className="text-sm">
+                <summary className="cursor-pointer text-ink-muted">
+                    Set a password here instead (fallback)
+                </summary>
+                <p className="mt-2 text-xs text-ink-faint">
+                    Kept for an account whose mailbox cannot receive. The administrator then knows the
+                    password, so the record has to say so.{' '}
+                    <span className="font-mono">iam.v1.accounts.reset-password</span> exists and no
+                    route reaches it. Whether this fallback survives is the open question this
+                    prototype raises.
+                </p>
+            </details>
         </section>
     );
 
@@ -206,7 +199,15 @@ export function RescueAccessPrototype(): ReactNode {
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
                     <span>
-                        Self-service recovery — candidates{' '}
+                        Send a recovery link — no subject requests a reset, no table holds a token,
+                        and nothing in the tree sends mail
+                    </span>
+                </li>
+                <li className="flex gap-2">
+                    <Tag tone="warn">missing</Tag>
+                    <span>
+                        Self-service recovery — the same machinery, started by the member who cannot
+                        sign in. Candidates{' '}
                         <span className="font-mono">iam.v1.accounts.request-password-reset</span> and{' '}
                         <span className="font-mono">complete-password-reset</span>
                     </span>
@@ -214,14 +215,6 @@ export function RescueAccessPrototype(): ReactNode {
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
                     <span>Activate or deactivate an account — no active flag exists</span>
-                </li>
-                <li className="flex gap-2">
-                    <Tag tone="warn">missing</Tag>
-                    <span>
-                        Force a change at the next sign-in over NATS —{' '}
-                        <span className="font-mono">set_password_reset_required</span> exists; no subject
-                        calls it
-                    </span>
                 </li>
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
@@ -252,7 +245,7 @@ export function RescueAccessPrototype(): ReactNode {
                 {active.id === 'a' && (
                     <div className="space-y-6">
                         {header}
-                        {resetPanel}
+                        {recoveryPanel}
                         {statePanel}
                         {gapsPanel}
                     </div>
@@ -263,7 +256,7 @@ export function RescueAccessPrototype(): ReactNode {
                         {header}
                         {recommendation}
                         <div className="grid gap-6 lg:grid-cols-2">
-                            {resetPanel}
+                            {recoveryPanel}
                             {statePanel}
                         </div>
                         {gapsPanel}
@@ -275,7 +268,7 @@ export function RescueAccessPrototype(): ReactNode {
                         <Roster selected={selected} onSelect={setSelected} />
                         <div className="space-y-6">
                             {header}
-                            {resetPanel}
+                            {recoveryPanel}
                             {statePanel}
                             {gapsPanel}
                         </div>
@@ -297,19 +290,12 @@ export function RescueAccessPrototype(): ReactNode {
                                 selected account: <span className="font-mono text-ink">{selected}</span>
                             </span>
                             <span>
-                                new password:{' '}
-                                <span className="font-mono text-ink">{chosen.length} chars</span>
-                            </span>
-                            <span>
-                                meets the policy:{' '}
-                                <span className="font-mono text-ink">{String(acceptable)}</span>
+                                recovery link sent:{' '}
+                                <span className="font-mono text-ink">{sentAt ?? 'no'}</span>
                             </span>
                             <span>
                                 lock control drawn as:{' '}
                                 <span className="font-mono text-ink">{nextState}</span>
-                            </span>
-                            <span>
-                                force a change: <span className="font-mono text-ink">{String(forceChange)}</span>
                             </span>
                         </div>
                         <p className="text-ink-faint">
@@ -341,12 +327,13 @@ function Recommendation({ state }: { readonly state: PrototypeLoginState }): Rea
             {state.locked ? (
                 <p className="text-sm text-ink-muted">
                     {state.failedAttempts} failed attempts locked this account. Unlock it if the
-                    colleague simply forgot the password, or reset the password if the attempts were
-                    not theirs.
+                    colleague simply forgot the password, or send a recovery link if the attempts
+                    were not theirs.
                 </p>
             ) : (
                 <p className="text-sm text-ink-muted">
-                    The account is not locked. Reset the password if the colleague has forgotten it.
+                    The account is not locked. Send a recovery link if the colleague has forgotten
+                    the password.
                 </p>
             )}
             <div className="flex flex-wrap gap-2 pt-1">

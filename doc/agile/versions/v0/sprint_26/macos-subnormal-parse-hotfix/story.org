@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 8E4C1A72-3B5D-4F19-A0C6-7D2E9B4F0A18
+:END:
+#+title: Story: Hotfix: the macOS parser refuses the smallest subnormal
+#+description: The macOS test phase fails one round trip in ores.platform.tests: parse_double answers nullopt for 5e-324, the shortest decimal that rounds to the smallest denormal a double has. libc++ turns the ERANGE the C library reports for a subnormal result into a stream failure, and the shim parsed through a stream, so a value the type holds was refused on that platform alone. The parse now checks the grammar itself and converts in a C locale of its own, accepting a subnormal and refusing only what rounds to zero or to infinity.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:platform:macos:numeric:sprint_26:v0:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The macOS test phase fails one assertion:
+
+#+begin_src text
+projects/ores.platform/tests/numeric_floating_point_tests.cpp:93: FAILED:
+  parsed.has_value() for: false
+#+end_src
+
+The case formats each of a set of doubles with @c std::to_chars and reads
+each back with =ores::platform::numeric::parse_double=. On Apple platforms
+libc++ formats the smallest denormal as =5e-324=, and the conversion the shim
+used -- boost::lexical_cast through a stream -- reports the range error the C
+library raises for a subnormal result as a stream failure, so the parse
+answered =nullopt= for a value a double holds. Linux and Windows report the
+same range error without failing the extraction, which is why only macOS saw
+it.
+
+The header promised a parser that refuses "a value outside the range of a
+double". A subnormal is inside that range, and the shim refused it by
+accident on one platform; =1e-400=, which really is outside it, was accepted
+by accident on the others.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- =parse_double("5e-324")= returns the denormal, not =nullopt=, so the round
+  trip passes on macOS.
+- A value that rounds to zero or to infinity is refused, which is what the
+  header always claimed.
+- The parse does not follow the program's locale: with a comma locale in
+  force, an English number still parses and a comma one is still refused.
+- The conversion does not go through a stream, so libc++'s treatment of the
+  range error cannot decide the answer.
+- The platform suite and the full suite pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2A7F3C95-6D18-42E0-B5A9-4C8E1D7B3F60][Implement Hotfix: the macOS parser refuses the smallest subnormal]] | DONE | 2026-09-30 | 2026-09-30 | Replace the stream conversion with a hand-written grammar check and a C-locale conversion, add the subnormal and underflow cases to the suite, and prove the locale independence on Linux. |
+
+* Decisions
+
+- The grammar is checked in the shim rather than left to the conversion, so
+  the accepted syntax depends on neither the program's locale nor the C
+  library's extensions: hexadecimal input, =inf= and =nan= are not numbers.
+- The conversion runs in a C locale of its own -- =strtod_l=, =_strtod_l= on
+  Windows, with the macOS header behind =__has_include= -- rather than in a
+  stream. It is the stream, not the C library, that decides a subnormal is a
+  failure on libc++.
+- A result that rounds to zero is refused even though it is finite: the type
+  cannot tell it from a real zero, and the header calls that outside the
+  range. The old parser accepted it, and no caller depended on that.
+- The two hotfixes of this evening are separate branches. This one shares no
+  file with the exported-type one.
+
+* Out of scope
+
+- libc++'s missing floating-point @c from_chars, which the shim exists to
+  stand in for. Nothing here changes when Apple implements it; the shim can
+  then be deleted.

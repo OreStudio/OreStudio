@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 2A7F3C95-6D18-42E0-B5A9-4C8E1D7B3F60
+:END:
+#+title: Task: Implement Hotfix: the macOS parser refuses the smallest subnormal
+#+description: Replace the stream conversion in parse_double with a hand-written grammar check and a C-locale conversion, accept a subnormal result, refuse one that rounds to zero or to infinity, add the cases to the platform suite, and prove the locale independence on Linux.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:platform:macos:numeric:sprint_26:v0:macos-subnormal-parse-hotfix:
+#+owner: marco
+#+branch: hotfix/macos-subnormal-parse
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E4C1A72-3B5D-4F19-A0C6-7D2E9B4F0A18][Hotfix: the macOS parser refuses the smallest subnormal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the round trip of the smallest denormal pass on macOS, and make the
+range check the header documents true on every platform.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8E4C1A72-3B5D-4F19-A0C6-7D2E9B4F0A18][Hotfix: the macOS parser refuses the smallest subnormal]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- =parse_double("5e-324")= returns =std::numeric_limits<double>::denorm_min()=.
+- =parse_double("1e-400")= and =parse_double("1e400")= return =std::nullopt=.
+- With =de_DE.UTF-8= in force, =parse_double("1.5")= still parses and
+  =parse_double("1,5")= is still refused.
+- The conversion no longer passes through a stream, so libc++'s treatment of
+  the range error cannot decide the answer.
+- =ores.platform.tests= passes and the tree builds.
+
+* Plan
+
+1. Reproduce the mechanism on Linux: show that the C conversion reports
+   =5e-324= as a subnormal with =ERANGE=, which is the error libc++ turns into
+   a stream failure.
+2. Check the grammar by hand, convert in a C locale of the host's making, and
+   classify the result by what the type can hold rather than by the stream's
+   state.
+3. Add the subnormal and the underflow to the suite, and demonstrate the
+   locale independence.
+4. Build the tree, run the platform suite and the suite.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The conversion on the failing value | =strtod_l("5e-324")= = 4.9406564584124654e-324= with =ERANGE= | probe against the shim | this branch |
+| The same on a subnormal | =strtod_l("1e-320")= = 9.9998886718268301e-321= with =ERANGE= | same | this branch |
+| The same on an underflow | =strtod_l("1e-400")= = 0= with =ERANGE= | same | this branch |
+| The same on an overflow | =strtod_l("1e400")= = inf= with =ERANGE= | same | this branch |
+| Round trip of the smallest denormal | =5e-324= parses to =denorm_min= | =ores.platform.tests= | this branch |
+| Locale independence | with =de_DE.UTF-8= in force, ="1.5"= parses and ="1,5"= is refused | probe | this branch |
+| Platform suite | 328 assertions in 142 cases, all pass | =ores.platform.tests -r compact= | this branch |
+| Full tree | builds | =cmake --build --preset linux-clang-debug-make -j 8= | this branch |
+| Full suite | 89 of 89 on a recreated database earlier in the session; afterwards three suites fail on =vintage_series_uri=, a column main added after that database was made | =ctest --preset linux-clang-debug-make -j 4= | this branch |
+
+* Notes
+
+- The macOS failure cannot be reproduced on Linux directly, because libstdc++
+  does not fail the extraction on the range error. What can be shown -- and
+  is shown above -- is that the error is there on this platform too, and that
+  the new code classifies by the value rather than by the stream.
+- The header's promise was false in both directions before this change: it
+  refused a subnormal on macOS and accepted an underflow everywhere else.
+  The task makes the promise true rather than documenting the accident.
+- =__has_include(<xlocale.h>)= guards the macOS header, so the file compiles
+  whether or not the SDK still ships it; =_locale_t= and =_strtod_l= serve
+  Windows, and =newlocale=/=strtod_l= the POSIX platforms.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=parse_double= checks the grammar itself and converts in a C locale of its
+own. The smallest denormal parses to =denorm_min=, =1e-400= and =1e400= are
+refused, and neither the program's locale nor libc++'s stream state decides
+the answer. The platform suite passes 328 assertions in 142 cases.

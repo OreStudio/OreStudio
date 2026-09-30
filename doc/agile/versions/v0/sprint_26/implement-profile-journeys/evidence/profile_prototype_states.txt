@@ -1,0 +1,23 @@
+Evidence: the profile prototype's state matrix, driven without a browser.
+
+Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_prototype_check.js
+Run from: the repository root, on branch feature/implement-profile-journeys.
+Environment: eager_maxwell.
+
+The harness runs doc/prototypes/profile/prototype.js against a minimal DOM shim
+and asserts what the prototype promises a reviewer: every combination of
+variant, actor and state renders; the administrator gets the person picker and
+the member does not; the read-only panel states why; the member is told which
+subject makes the panel theirs; the picker states the image rule and where the
+upload goes; the picker offers the images the tenant holds and defers the
+choice to a confirmation; a member without a photo is told so; the saved and
+half-written states name both records; the half-written state carries the
+refusal code; the proposal waits and names its approvers; the refusal carries
+its code; and variant B saves each panel alone while variant C draws the rail.
+
+The screenshots beside this file are the same states in Chrome.
+
+--- output ---
+
+rendered 36 variant/actor/state combinations and 18 promises
+ALL CHECKS PASSED

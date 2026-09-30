@@ -46,17 +46,23 @@ appears when the administrator holds it in their head.
    account behind it: full name, job title, current manager, and the party they
    work in.
 4. *Set the manager.* The administrator chooses another account in the tenant
-   and saves. The system records the change reason, writes a new account
-   version, and redraws the tree.
+   and saves. The administrator is the approver, so their own change takes
+   effect; a change a person asks for arrives here for that approval. The system
+   records the change reason, writes a new account version, and redraws the
+   tree.
 5. *Clear a line.* When a person leaves a team with no successor, the
    administrator clears the manager. The system records the same way and the
    person becomes a root.
-6. *Leave.* The administrator goes back. The next reader of the account sees the
+6. *Answer a proposal.* A person asks to change who they report to. The
+   administrator, or the person's hierarchical superior, approves or refuses
+   it. Until one of them does, the line does not move.
+7. *Leave.* The administrator goes back. The next reader of the account sees the
    new line.
 
-Every step ends in a reply; nothing is queued. The journey holds no state of
-its own, and the tree the administrator sees is assembled by the client from a
-flat read, not fetched as a tree.
+Every step ends in a reply, so nothing is queued; an approval is the one thing
+that waits, and it waits on a person rather than on the system. The journey
+holds no state of its own, and the tree the administrator sees is assembled by
+the client from a flat read, not fetched as a tree.
 
 * Screens and wireframes
 
@@ -143,6 +149,15 @@ unchanged, as =projects/ores.http/core/src/routes/iam_routes.cpp= does today.
    recoverable through =iam.v1.accounts_versions.list=, but the tree screen
    states none of it. An administrator who is asked "who did this person report
    to last quarter" has no answer on this screen.
+7. *No approval, and the line is not set by one actor alone.* A reporting-line
+   change is a proposal: a person asks for it, and their hierarchical superior
+   or a tenant administrator approves it. Nothing in the platform holds such an
+   approval. The workflow engine can hold the instance, but there is no
+   request, no queue, no notification and no decision. Until there is, the
+   screen states who approves a change and the line does not move, and the
+   proposal a person makes on
+   [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]]
+   has nowhere to land. (Product owner, 2026-09-30.)
 
 * Related journeys
 

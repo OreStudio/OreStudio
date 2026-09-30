@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: ECC602E3-71D3-4265-942B-063EFEB61495
+:END:
+#+title: Task: Prototype the profile screen
+#+description: Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:profile:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/implement-profile-journeys
+#+pr: 2433
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A clickable prototype of the profile screen that the design can be judged against, on a throwaway page with mock data. It renders the screen for both actors — the member on their own record and the tenant administrator on a colleague's — and argues three structural answers to the questions the journey documents leave open: whether the panels of one screen carry their own save, how a photo is replaced now that an upload path exists, and how the screen shows a reporting-line change that a superior or an administrator must approve before it takes effect.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The prototype is published beside its description and the other prototypes, and it reads no service.
+- Each open layout question has at least two structural answers a reviewer can switch between.
+- The photo picker, the read-only state and the reporting-line approval state are all renderable without reading the code.
+- The verdict is recorded on the prototype page and the losing variants stay as the record.
+
+* Plan
+
+1. Read the three journey documents and the group page. Write down every
+   requirement each states, marked settled or open.
+2. Take the open ones to the product owner. Four were decided on 2026-09-30 and
+   are distilled into the parent story's =* Decisions=; two more were settled
+   from the documents themselves.
+3. Build the prototype as a static page under =doc/prototypes/profile/=, which
+   is how the tree keeps throwaway prototypes: plain HTML, CSS and JavaScript,
+   no framework and no build step. The tokens and the rail classes are copied
+   from the application, not invented, and from the registration door prototype
+   where it already copied them.
+4. Publish it with the site build, beside the trade entry and registration door
+   prototypes, so a reviewer opens it beside the description that argues it.
+5. Drive the whole state matrix without a browser, so every combination of
+   variant, actor and state is proved to render, then look at the screens in a
+   browser.
+6. Record the verdict on the prototype page and distil the decisions into the
+   story.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Variant, actor and state combinations rendered head-less | 36 | =node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_prototype_check.js= (output in =evidence/profile_prototype_states.txt=) | =ab4c684d97= |
+| Promises asserted on those states | 14 | same | =ab4c684d97= |
+| Screens captured in Chrome | 6 | =google-chrome --headless=new --screenshot=… "file://…#?variant=…&actor=…&state=…"= | =ab4c684d97= |
+| Files in the prototype, no build step | 3 | =ls doc/prototypes/profile/= | =ab4c684d97= |
+| Decisions the product owner settled, marked on the story | 4 | =grep -c "Product owner" doc/agile/versions/v0/sprint_26/implement-profile-journeys/story.org= | =cc66cb16e6= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2433][#2433]] | [web] Prototype the profile screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The prototype is [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]], at
+=doc/prototypes/profile/= and published on the site beside the trade entry and
+registration door prototypes. It renders three structural variants, for the
+member and for a tenant administrator, in the six states the requirement work
+named, and it uses the repository's own stock faces.
+
+The verdict is recorded on that page: variant *B*, one page with a save per
+panel, is accepted; *A* and *C* stay as the record. The reporting line is
+proposed by the person whose line it is and approved by their hierarchical
+superior or a tenant administrator.
+
+The requirement work this task opened is on the parent story: four decisions
+the product owner took, and two journey documents corrected where the
+reporting-line decision changes them.
+
+What the review did not settle is recorded rather than hidden: how an approver
+is told, where the queue lives and what happens when a superior and an
+administrator disagree are the Membership group's, and the prototype states the
+gap where a claim would otherwise be implied.

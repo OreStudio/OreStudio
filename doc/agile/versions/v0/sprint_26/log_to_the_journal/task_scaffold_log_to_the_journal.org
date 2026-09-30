@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story is on sprint 26 with four tasks: the console and journal change, the
+logs verb, the plugin window, and this scaffold. All four ride one pull
+request, because the window cannot be verified without the verb and the verb
+has nothing to read until the fleet logs to the console.
+

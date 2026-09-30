@@ -44,10 +44,13 @@ A DSH plugin that shows the session's own checkout as a live environment: the en
 |------+-------+-------+-----+-------------|
 | [[id:019B17C7-A240-4ED9-BC74-A8AB7FA480C6][Scaffold story: Show the environment inside DSH]] | DONE | 2026-09-30 | 2026-09-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:DFE59EE2-40FB-408D-AC8D-F48363EDD4D8][Add compass env status and the JSON contract the plugin reads]] | DONE | 2026-09-30 | 2026-09-30 | One verb that gathers the environment and emits it as JSON, so the plugin reads compass and bearings stops recomputing the same block. |
-| [[id:53EF772B-D1E1-4742-B1AD-7E0551C95FEA][Build the environment plugin for DSH]] | STARTED | 2026-09-30 | | A DSH plugin that shows the session's own checkout as a live environment and can start, stop, and restore it. |
+| [[id:53EF772B-D1E1-4742-B1AD-7E0551C95FEA][Build the environment plugin for DSH]] | DONE | 2026-09-30 | 2026-09-30 | A DSH plugin that shows the session's own checkout as a live environment and can start, stop, and restore it. |
 
 * Decisions
 
+- Both tasks ride one pull request. The plugin cannot be verified without
+  the verb, and a work tree carrying one without the other is the broken
+  state, so they are reviewed and merged together.
 - The plugin reads compass and not the raw sources. Readiness (a unit is active
   and its log carries =Service ready=), the drift comparison, and the rule that
   an unknown unit is =missing= are policy. One home for that policy means the

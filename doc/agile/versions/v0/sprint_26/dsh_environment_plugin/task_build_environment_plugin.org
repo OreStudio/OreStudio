@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :dsh_environment_plugin:sprint_26:v0:
 #+owner: marco
-#+branch: feature/build-environment-plugin
+#+branch: feature/dsh-environment-plugin
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ projects/ores.dsh_environment is a DSH web plugin, built like ores.dsh_kanban: o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -111,6 +111,9 @@ task and name that file in the Command column.
 | Service units reported | 24, plus nats-server apart | =compass env status= | same |
 | Host half | 725 lines across three modules | =wc -l lib/index.js lib/compass.js lib/env.js= | same |
 | Browser half | 1042 lines, one file, no build step | =wc -l lib/client.js= | same |
+| Host gate checks after the cookie check | 49 passed, 0 failed | =node scripts/verify.mjs= | working tree on =8536c56f3b= |
+| Live scratch instance | both routes registered; anonymous read and anonymous =fleet-stop= both 401, authenticated read 200 | curl against the scratch instance on its own port | same |
+| A live action | job settled with code 1 and its tail | the scratch instance's action route | same |
 
 * Notes
 
@@ -174,3 +177,12 @@ drops it when the action settles.
 
 Not covered: a rendered panel in a real browser. Playwright is not installed in
 this checkout, so a browser gate could not be run here.
+
+A scratch DSH instance was the decisive check, and the one no unit gate could
+have replaced. It booted on its own port with the plugin installed from the
+packed tarball, logged both routes as registered, and then answered 200 to an
+anonymous read. That is what a rebound page would have seen. Both routes now
+require the authority-bound cookie =dsh web= issues, which reproduced live as
+401 anonymous, 401 for a forged cookie, and 200 with the real one. The action
+route is the reason it matters: this is the first ORE Studio plugin that
+changes the machine rather than reporting on it.

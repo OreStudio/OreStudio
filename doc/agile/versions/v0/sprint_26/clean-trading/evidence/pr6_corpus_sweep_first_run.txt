@@ -1,52 +1,89 @@
-ORE bond corpus round trip — first run, 2026-09-30 (corrected)
-commit: efbd8302cd
+ORE bond corpus round trip — first corpus-wide run, 2026-09-30
+commit: 72eb01d1a9 (working tree, before the bond-future reshape)
 
-=== import outcome ===
-      info: Saved 354 trade(s).
-Bond corpus: 49 portfolio(s) and 93 configuration document(s) under /home/marco/Development/OreStudio/ores_dev_merry_newton/external/ore/examples
-Union of the sources: 727 top-level element(s)
-
-=== the union must be deduplicated by trade id ===
+=== what the run covers ===
+Bond corpus: 49 portfolio(s) and 93 configuration document(s) under
+external/ore/examples
+Union of the sources: 354 top-level element(s)
 trades in the union: 727; distinct ids: 354
 ids stated by more than one document: 213
-distinct ids the import saved: 354; distinct ids the export holds: 353
-distinct trades missing from the export: 1 -> ['KnockOutSwap_example']
+distinct ids the import saved: 354; distinct ids the export holds: 354
 
-=== classifier, source deduplicated by trade id ===
+=== the corpus is not one consistent statement per security (D22) ===
+Reference data (held to one statement per security): 24 distinct security id(s)
+  trades restating a security: 127
+  overridden, by member:
+       127  CreditCurveId
+       127  LegData
+       105  IssuerId
+        25  ReferenceCurveId
+        14  IssueDate
+        11  IncomeCurveId
+         1  Calendar
+         1  SettlementDays
+The corpus states five security ids across ten documents that disagree
+about the issuer, the credit curve, the issue date and the leg schedule,
+and about 117 trades name SECURITY_1 between them. The database holds one
+issue per security, so the sweep folds the union the way the import folds
+it — first stated wins — and rewrites every later trade to that statement,
+leaving the trade's own SecurityId and BondNotional alone. Without the
+fold the same corpus reads in-scope lost 1013, unexplained 583, and every
+one of those pairs is a contradiction the model cannot hold. The fold is
+what makes the reading a statement about the code.
+
+=== classifier, canonicalised union against the one export ===
 Documents: 1  Failures: 1  Skipped: 0
-Classified: numeric 29, boolean 127
-In scope, bond products and the trade envelope: lost 1745, unexplained 1293
-Out of scope, the other instrument families: lost 7932, unexplained 131
+Classified: numeric 158, boolean 128
+In scope, bond products and the trade envelope: lost 256, unexplained 0
+Out of scope, the other instrument families: lost 7947, unexplained 125
 Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
 
-=== in-scope lost, by path ===
-    117 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/StartDate
-    117 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/LastDate
-    117 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/FirstDate
-    117 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/EndDate
-    116 lost:        /Portfolio/Trade/BondData/LegData/LegType
-    116 lost:        /Portfolio/Trade/BondData/IssueDate
-    115 lost:        /Portfolio/Trade/BondData/IssuerId
-    114 lost:        /Portfolio/Trade/BondData/CreditCurveId
-    113 lost:        /Portfolio/Trade/BondData/LegData/FixedLegData/Rates/Rate
-    113 lost:        /Portfolio/Trade/BondData/LegData/FixedLegData/Rates
+The 256 in-scope losses are one thing, in three products:
+    116  /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/FirstDate = ''
+    116  /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/LastDate = ''
+     11  /Portfolio/Trade/ForwardBondData/BondData/.../FirstDate = ''
+     11  /Portfolio/Trade/ForwardBondData/BondData/.../LastDate = ''
+      1  /Portfolio/Trade/AscotData/ReferenceSwapData/.../FirstDate = ''
+      1  /Portfolio/Trade/AscotData/ReferenceSwapData/.../LastDate = ''
+ORE's date type spells an unset date as the empty string, and the corpus
+uses both spellings: 414 empty FirstDate/LastDate elements corpus-wide and
+278 omissions. The model holds an optional date, which cannot tell the two
+apart, so the export omits the element and the source's empty element reads
+as lost. That is the presence question the pilot owns; the decision and the
+flag are the next unit.
 
-=== the date spelling the corpus states against the export ===
-trade Bond
-  source: [('StartDate', '20160203'), ('EndDate', '20260203')]
-  export: [('StartDate', '2016-02-03'), ('EndDate', '2026-02-03')]
-  (the same dates, in the schema's two ISO spellings; an earlier reading of
-   2016-02-09 came from comparing against a different document's trade of the
-   same id, before the harness imported the union)
+=== corrections this run made ===
+1. The union is deduplicated by trade id AND folded to one statement per
+   security, and the folded union is what is imported. Importing the
+   documents the union was folded from leaves whichever copy the import
+   saw last while the comparison holds another.
+2. A date is compared as a date. Basic (20160203) and extended
+   (2016-02-03) ISO spellings are the same day.
+3. A value is read as a date only when it spells a real calendar date. The
+   earlier rule accepted any eight-digit string, so a bond leg's notional
+   10000000 canonicalised to a date while the exporter's 10000000.000000
+   stayed a number, and one value read as both a loss and an excess. The
+   reading before this fix was in-scope lost 408, unexplained 63; before
+   the fold and the date fixes, lost 1745, unexplained 1293.
+4. Nested bondData is folded too. A forward bond states its bond inside
+   ForwardBondData, and the first fold only reached a trade's direct
+   BondData child, leaving every forward bond's issue restated.
 
-=== the corpus states five securities, one of them inconsistently ===
-distinct SecurityId: 5
-issuer/credit-curve statements for SECURITY_1: 105
-leg notionals stated for SECURITY_1: ['1.000000', '10000000.000000']
-
-=== classifier with dates compared as dates ===
-Documents: 1  Failures: 1  Skipped: 0
-Classified: numeric 31, boolean 128
-In scope, bond products and the trade envelope: lost 1013, unexplained 583
-Out of scope, the other instrument families: lost 7926, unexplained 125
-Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
+=== the KnockOutSwap, which never exported (D23) ===
+The corpus's one KnockOutSwap trade was saved and then dropped from the
+export, because its instrument never reached the database:
+  warn: Instrument save failed ... new row for relation
+  "ores_trading_scripted_instruments_tbl" violates check constraint
+  "ores_trading_scripted_instruments_tbl_trade_type_code_check"
+  [KnockOutSwap_example]
+The import sent the type to scripted_instrument, whose closed trade-type
+check does not name it. swap_leg names the knock-out swap among the nine
+rates families whose legs it holds, and knock_out_swap_instrument holds the
+barrier as typed columns, so the type is routed to the swap family instead.
+The row now lands and the trade exports:
+  trade_type_code KnockOutSwap  start 2024-05-02  maturity 2029-05-02
+  barrier_start_date 2027-05-03  barrier_level 0.0500000000  UpAndOut
+The export states the trade, its envelope, BarrierData/Type, the level and
+BarrierStartDate, and no LegData: the import writes no swaps legs for any of
+the nine rates families, which is recorded as defect 18 and is what makes
+the exported document schema-invalid for that one trade.

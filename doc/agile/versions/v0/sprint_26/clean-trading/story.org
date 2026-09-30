@@ -275,6 +275,7 @@ belong to this story:
 | 15 | An underlying is an unqualified name | Decided in PR 5 as D21, built in PR 6, the bond pilot, by the owner's ruling of 2026-09-29: the reshape takes underlying_name out of nine equity tables and basket_json out of two products, which is the pilot's shape |
 | 16 | No observation schedule | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
 | 17 | The trade's declared key is nullable, and its fixture left it empty | PR 3 |
+| 18 | The import writes an instrument but not its legs for the nine rates families | Recorded, not the bond pilot's: the rates families own it. Found by the PR 6 corpus sweep, which reads one KnockOutSwap with no `LegData` in the export |
 
 Defect 17 surfaced in PR 2, not in PR 3, because the regenerated trade
 eventing test reads the version history by the declared key. The model
@@ -542,6 +543,48 @@ row is updated as each PR lands.
   pilot PR 6 and the shell and verification work PR 7. By the owner's
   ruling of 2026-09-28, defects 14 and 16 move to the bond pilot and
   defect 15 to the split.
+- *D22, how the sweep holds the corpus to one statement per security.*
+  The round-trip gate imports one document and exports it again, so the
+  source it compares has to be a document the database can hold. The
+  corpus is not one: it states five security ids across ten documents
+  that disagree about the issuer, the credit curve, the issue date and the
+  leg schedule, and about 117 trades name =SECURITY_1= between them. Our
+  model holds one issue per security -- that is the split's point -- so a
+  comparison against every restatement reads the corpus's own
+  contradiction as a loss. The sweep therefore folds the union before it
+  imports it: the first trade that names a security states the issue, and
+  every later trade is rewritten to that statement, leaving the two
+  members the model keeps on the trade's own instrument, =SecurityId= and
+  =BondNotional=, as the trade stated them. The sweep prints what it
+  overrode, by member, and =--raw-corpus= skips the fold so the
+  contradiction can be measured. The gate is then a statement about the
+  code, and the contradiction is recorded as the corpus's own.
+- *D23, the KnockOutSwap's home.* =swap_leg= names the knock-out swap
+  among the nine rates families whose legs it holds, and
+  =knock_out_swap_instrument= holds the barrier, the start and the
+  maturity as typed columns. The import sent the type to
+  =scripted_instrument= instead, where the closed trade-type check refused
+  the row, so the corpus's one trade of the type never reached the
+  database and the export dropped the trade it could not rebuild.
+  KnockOutSwap is routed to the swap family, which is what the legs table
+  states, and =scripted_instrument= stops naming it. ORE's own
+  AmericanMonteCarlo readme lists KnockOutSwap under "Scripted Trade Types
+  (AMC)", which is how the wrong home was available; D12's ban on a JSON
+  collection decides it the other way, because the type's two =LegData=
+  elements have nowhere to go in a flat scripted row.
+- *D24, how a member that ORE may state empty keeps its presence.* ORE's
+  =date= type spells an unset date as the empty string, and the elements
+  that carry one are =minOccurs="0"=. The corpus uses both spellings: 414
+  =FirstDate=/=LastDate= elements corpus-wide are empty and 278 are absent.
+  A column that holds an optional date cannot tell those apart, so the
+  export omits the element and the source's empty element reads as a loss:
+  the corpus sweep's whole in-scope residue, 256 pairs across the bond, the
+  forward bond and the ascot. The model records presence: a member ORE may
+  state empty gains a =<member>_present= boolean, so absent, stated-empty
+  and stated-valued are three states and the export echoes the one the
+  document stated. A nullable boolean needs no flag, because null and
+  =false= are already two states; that is why the bond future's
+  =ApplyConversionFactor= and =UseFuturePrice= need none.
 
 * Delivery plan
 

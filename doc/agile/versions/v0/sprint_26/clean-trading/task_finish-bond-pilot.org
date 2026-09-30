@@ -130,6 +130,46 @@ rows the work touches.
 
 * Notes
 
+- *The corpus sweep now reads in-scope lost 256, unexplained 0, with all
+  354 trades exported.* Evidence:
+  =evidence/pr6_corpus_sweep_first_run.txt=. What it took, in order: the
+  union must be deduplicated by trade id and folded to one statement per
+  security, and the folded union is what must be imported (D22); a date
+  must be compared as a date; a value may be read as a date only when it
+  spells a real calendar date, because the earlier rule read the bond leg
+  notional =10000000= as a date while the exporter's =10000000.000000=
+  stayed a number; and a bond product does not always state its =bondData=
+  directly, so a forward bond's nested statement is folded too. The whole
+  residue is one thing in three products: 414 =FirstDate=/=LastDate=
+  elements are empty corpus-wide and 278 are absent, and an optional date
+  column cannot tell the two apart. That is D24, the presence flag, and it
+  is the next unit.
+- *The KnockOutSwap now round trips, and its home is the swap family
+  (D23).* The corpus's one trade of the type was saved and then dropped
+  from the export because its instrument never reached the database: the
+  import sent =KnockOutSwap= to =scripted_instrument=, whose closed
+  trade-type check does not name it, so the insert was refused.
+  =swap_leg= names the knock-out swap among the nine rates families whose
+  legs it holds, so the type is routed to =swap_instrument_mapper=, the
+  scripted path is removed, and =knock_out_swap_instrument= gains the
+  =barrier_start_date= column ORE states separately from the legs. The row
+  lands with start 2024-05-02, maturity 2029-05-02, barrier 2027-05-03 at
+  0.0500000000 UpAndOut, and the trade exports.
+- *The export still states no =LegData= for the KnockOutSwap, and the
+  document is therefore not schema-valid.* The import writes no swap legs
+  for any of the nine rates families: only bond legs and composite legs are
+  saved. Recorded as defect 18, which belongs to the rates families and not
+  to this pilot.
+- *Other families fail their own insert checks on the same run.* The
+  import reports warnings for =credit_instruments= (=tenor=),
+  =swaption_instruments= (=long_short=), =composite_instruments=
+  (=trade_type_code=, =GenericTRS=) and commodity instruments. They are out
+  of the bond scope and the same class of defect as the KnockOutSwap: a
+  closed set that does not name what the mapper produces. Recorded, not
+  taken here.
+- The corpus's in-scope losses before the fold and the date fixes were
+  lost 1745, unexplained 1293; after the date spelling fix alone, lost
+  1013, unexplained 583; after the fold, lost 256, unexplained 0.
 - Round trip, first run of the pilot (2026-09-30). The gate the split left
   unrun now runs and reads zero: the bond example document
   (=Cash_BondRepo_and_Bond.xml=) imports, exports again and classifies

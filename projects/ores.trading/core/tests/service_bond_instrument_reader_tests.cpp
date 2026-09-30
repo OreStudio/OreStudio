@@ -44,6 +44,7 @@
 #include "ores.trading.core/repository/instrument_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
+#include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "trade_parent_seed.hpp"
@@ -1043,4 +1044,99 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_r
     CHECK(rebuilt.option_data->option_type == "Put");
     CHECK(!rebuilt.option.has_value());
     CHECK(!rebuilt.trs.has_value());
+}
+
+// =============================================================================
+// The delete closes the family the instrument owns
+// =============================================================================
+
+namespace {
+
+std::vector<ores::trading::domain::bond_leg> legs_of(ores::database::context ctx, const std::string& trade_id) {
+    return ores::trading::repository::read_legs_by_trade_ids(ctx, {trade_id});
+}
+
+std::vector<ores::trading::domain::instrument_schedule>
+schedules_of(ores::database::context ctx, const std::string& trade_id) {
+    return ores::trading::repository::read_schedules_by_trade_ids(ctx, {trade_id});
+}
+
+std::vector<ores::trading::domain::bond_future_delivery_basket>
+baskets_of(ores::database::context ctx, const std::string& trade_id) {
+    return ores::trading::repository::read_delivery_baskets_by_trade_ids(ctx, {trade_id});
+}
+
+std::vector<ores::trading::domain::bond_issue_leg>
+issue_legs_of(ores::database::context ctx, const boost::uuids::uuid& issue_id) {
+    return ores::trading::repository::read_issue_legs_by_issue_ids(
+        ctx, {boost::uuids::to_string(issue_id)});
+}
+
+} // namespace
+
+TEST_CASE("the_delete_closes_the_family_and_the_issue_it_owns", tags) {
+    database_helper h;
+    const auto s = make_stamps(h);
+    auto ctx = make_context(h, s);
+
+    const auto issue = make_issue(s, "XS0000000021");
+    bond_issue_repository().write(ctx, issue);
+    const auto instr = make_instrument(s, issue.issue_id, "BondFuture");
+    bond_instrument_repository().write(ctx, instr);
+    const auto trade_id = instr.identity.trade_id;
+    const auto text = boost::uuids::to_string(trade_id);
+
+    bond_leg_repository().write(ctx, make_leg(s, trade_id, "trs_funding", 1));
+    instrument_schedule_repository().write(
+        ctx, make_schedule(s, trade_id, "option", 1, "exercise_schedule", 1, "rules"));
+    bond_future_delivery_basket_repository().write(
+        ctx, make_delivery_basket(s, trade_id, 1, "XS0000000022"));
+    bond_issue_leg_repository().write(ctx, make_issue_leg(s, issue.issue_id, 1));
+
+    REQUIRE(legs_of(ctx, text).size() == 1);
+    REQUIRE(schedules_of(ctx, text).size() == 1);
+    REQUIRE(baskets_of(ctx, text).size() == 1);
+    REQUIRE(issue_legs_of(ctx, issue.issue_id).size() == 1);
+
+    static_cast<void>(bond_instrument_repository().remove(ctx, text));
+
+    // The header, the trade-keyed family and the issue it was the last to
+    // name are all closed by the one statement the caller sent.
+    CHECK(bond_instrument_repository().read_latest(ctx, text).empty());
+    CHECK(legs_of(ctx, text).empty());
+    CHECK(schedules_of(ctx, text).empty());
+    CHECK(baskets_of(ctx, text).empty());
+    CHECK(issue_legs_of(ctx, issue.issue_id).empty());
+    CHECK(bond_issue_repository()
+              .read_latest(ctx, boost::uuids::to_string(issue.issue_id))
+              .empty());
+}
+
+TEST_CASE("the_issue_outlives_the_instrument_that_still_shares_it", tags) {
+    database_helper h;
+    const auto s = make_stamps(h);
+    auto ctx = make_context(h, s);
+
+    const auto issue = make_issue(s, "XS0000000023");
+    bond_issue_repository().write(ctx, issue);
+    const auto first = make_instrument(s, issue.issue_id, "BondFuture");
+    bond_instrument_repository().write(ctx, first);
+    const auto second = make_instrument(s, issue.issue_id, "BondFuture");
+    bond_instrument_repository().write(ctx, second);
+    bond_issue_leg_repository().write(ctx, make_issue_leg(s, issue.issue_id, 1));
+
+    const auto issue_id = boost::uuids::to_string(issue.issue_id);
+    static_cast<void>(
+        bond_instrument_repository().remove(ctx, boost::uuids::to_string(first.identity.trade_id)));
+
+    // The second instrument still names the issue, so the issue and its leg
+    // stay: the orphan rule takes them only with the last instrument.
+    CHECK(bond_issue_repository().read_latest(ctx, issue_id).size() == 1);
+    CHECK(issue_legs_of(ctx, issue.issue_id).size() == 1);
+
+    static_cast<void>(bond_instrument_repository().remove(
+        ctx, boost::uuids::to_string(second.identity.trade_id)));
+
+    CHECK(bond_issue_repository().read_latest(ctx, issue_id).empty());
+    CHECK(issue_legs_of(ctx, issue.issue_id).empty());
 }

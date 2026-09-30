@@ -280,6 +280,62 @@ now NULL, not an empty string.
 |----------+---------------------+--------+--------------+-------------|
 | security | tenant_id, security_id | true  | true         |             |
 
+* Delete cascade
+
+The rows a bond issue owns. Each is keyed by the issue, so the delete rule
+closes them when the issue goes. The issue goes only when its last
+instrument does (=bond_instrument='s =:cascade_orphan:= on =issue_id=), so a
+shared issue and its legs are not taken from an instrument still holding
+them.
+
+** bond_issue_legs
+:PROPERTIES:
+:table:  ores_trading_bond_issue_legs_tbl
+:column: issue_id
+:END:
+
+** bond_issue_leg_amounts
+:PROPERTIES:
+:table:  ores_trading_bond_issue_leg_amounts_tbl
+:column: issue_id
+:END:
+
+** bond_issue_leg_rates
+:PROPERTIES:
+:table:  ores_trading_bond_issue_leg_rates_tbl
+:column: issue_id
+:END:
+
+** bond_issue_leg_amortizations
+:PROPERTIES:
+:table:  ores_trading_bond_issue_leg_amortizations_tbl
+:column: issue_id
+:END:
+
+** bond_issue_leg_schedules
+:PROPERTIES:
+:table:  ores_trading_bond_issue_leg_schedules_tbl
+:column: issue_id
+:END:
+
+** bond_issue_leg_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_bond_issue_leg_schedule_dates_tbl
+:column: issue_id
+:END:
+
+** bond_issue_call_dates
+:PROPERTIES:
+:table:  ores_trading_bond_issue_call_dates_tbl
+:column: issue_id
+:END:
+
+** bond_issue_conversion_targets
+:PROPERTIES:
+:table:  ores_trading_bond_issue_conversion_targets_tbl
+:column: issue_id
+:END:
+
 * C++
 
 ** Flags

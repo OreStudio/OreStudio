@@ -143,6 +143,139 @@ std::make_optional(ores::utility::decimal::decimal::from_string("1000000").value
 The trade that carries this instrument. An instrument is written beside
 its trade, so a row cannot exist without one.
 
+** issue_id
+:PROPERTIES:
+:table:          ores_trading_bond_issues_tbl
+:target_column:  issue_id
+:nullable:       false
+:error_message:  Invalid issue_id: %. The bond issue must exist for tenant.
+:cascade_orphan: true
+:END:
+
+The issue whose terms this instrument's bond carries.
+
+=:cascade_orphan:= asks the delete rule to take the issue with the
+instrument when the instrument was the last row to name it. The issue is
+shared by security id, so an unconditional delete would take another
+instrument's terms with it, and no delete at all would leave an orphan.
+
+* Delete cascade
+
+The rows a bond instrument owns. Each is keyed by the instrument's own
+trade id, so the delete rule closes them all with one statement per table
+and the family does not outlive its header.
+
+The issue-keyed rows are not here: the issue owns them, and its own cascade
+closes them when the last instrument of the issue is deleted.
+
+** bond_legs
+:PROPERTIES:
+:table:  ores_trading_bond_legs_tbl
+:column: trade_id
+:END:
+
+** bond_leg_amounts
+:PROPERTIES:
+:table:  ores_trading_bond_leg_amounts_tbl
+:column: trade_id
+:END:
+
+** bond_leg_rates
+:PROPERTIES:
+:table:  ores_trading_bond_leg_rates_tbl
+:column: trade_id
+:END:
+
+** bond_leg_amortizations
+:PROPERTIES:
+:table:  ores_trading_bond_leg_amortizations_tbl
+:column: trade_id
+:END:
+
+** instrument_schedules
+:PROPERTIES:
+:table:  ores_trading_instrument_schedules_tbl
+:column: trade_id
+:END:
+
+** instrument_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
+
+** instrument_options
+:PROPERTIES:
+:table:  ores_trading_instrument_options_tbl
+:column: trade_id
+:END:
+
+** instrument_option_premiums
+:PROPERTIES:
+:table:  ores_trading_instrument_option_premiums_tbl
+:column: trade_id
+:END:
+
+** instrument_option_exercise_fees
+:PROPERTIES:
+:table:  ores_trading_instrument_option_exercise_fees_tbl
+:column: trade_id
+:END:
+
+** instrument_option_payment_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_option_payment_dates_tbl
+:column: trade_id
+:END:
+
+** instrument_strikes
+:PROPERTIES:
+:table:  ores_trading_instrument_strikes_tbl
+:column: trade_id
+:END:
+
+** bond_forwards
+:PROPERTIES:
+:table:  ores_trading_bond_forwards_tbl
+:column: trade_id
+:END:
+
+** bond_future_delivery_baskets
+:PROPERTIES:
+:table:  ores_trading_bond_future_delivery_baskets_tbl
+:column: trade_id
+:END:
+
+** bond_futures
+:PROPERTIES:
+:table:  ores_trading_bond_futures_tbl
+:column: trade_id
+:END:
+
+** bond_options
+:PROPERTIES:
+:table:  ores_trading_bond_options_tbl
+:column: trade_id
+:END:
+
+** bond_repos
+:PROPERTIES:
+:table:  ores_trading_bond_repos_tbl
+:column: trade_id
+:END:
+
+** bond_trs
+:PROPERTIES:
+:table:  ores_trading_bond_trs_tbl
+:column: trade_id
+:END:
+
+** ascots
+:PROPERTIES:
+:table:  ores_trading_ascots_tbl
+:column: trade_id
+:END:
+
 * SQL
 
 ** Flags

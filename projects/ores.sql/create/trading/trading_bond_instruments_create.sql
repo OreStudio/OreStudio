@@ -126,6 +126,17 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate issue_id (soft FK to ores_trading_bond_issues_tbl)
+    if not exists (
+        select 1 from ores_trading_bond_issues_tbl
+        where tenant_id = NEW.tenant_id
+          and issue_id = NEW.issue_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid issue_id: %. The bond issue must exist for tenant.', NEW.issue_id
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -182,8 +193,90 @@ create or replace trigger ores_trading_bond_instruments_insert_trg
 before insert on "ores_trading_bond_instruments_tbl"
 for each row execute function ores_trading_bond_instruments_insert_fn();
 
+-- The rows this row owns, closed when it is deleted. A function and not a
+-- rule body, because the rule resolves the tables it names when it is
+-- created and a child may be created after its parent; a plpgsql body
+-- resolves them when it runs.
+create or replace function ores_trading_bond_instruments_cascade_delete_fn(
+    p_row "ores_trading_bond_instruments_tbl")
+returns void as $$
+begin
+    -- Close every row this row owns, so one delete removes the family and
+    -- not the header alone. The store enforces it, so every caller gets it.
+    delete from "ores_trading_bond_legs_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_leg_amounts_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_leg_rates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_leg_amortizations_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedules_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_options_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_premiums_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_exercise_fees_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_option_payment_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_strikes_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_forwards_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_future_delivery_baskets_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_futures_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_options_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_repos_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_bond_trs_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_ascots_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    -- A row this one was the last to name goes with it, so a shared parent
+    -- survives and its last child does not leave an orphan. This row is
+    -- still open here, so the count excludes it.
+    if not exists (
+        select 1 from "ores_trading_bond_instruments_tbl"
+        where tenant_id = p_row.tenant_id
+          and issue_id = p_row.issue_id
+          and trade_id <> p_row.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        delete from "ores_trading_bond_issues_tbl"
+        where tenant_id = p_row.tenant_id
+          and issue_id = p_row.issue_id;
+    end if;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace rule ores_trading_bond_instruments_delete_rule as
 on delete to "ores_trading_bond_instruments_tbl" do instead (
+    select ores_trading_bond_instruments_cascade_delete_fn(OLD);
     update "ores_trading_bond_instruments_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id

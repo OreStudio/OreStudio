@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 6C2D4E81-9A3F-4B05-8E7D-1F2A3B4C5D6E
+:END:
+#+title: Task: Implement Hotfix: a library exports a type none of its units compiles
+#+description: Remove the export attribute from the two header-only workflow service headers, add a scan that fails when a sublibrary exports a type none of its translation units compiles, run it on the header-hygiene workflow, and verify the link fix on Windows.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:workflow:windows:link:codegen:sprint_26:v0:workflow-api-exported-types-hotfix:
+#+owner: marco
+#+branch: hotfix/workflow-api-exported-types
+#+pr: 2411
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3F0B9A5C-4D2E-41B7-9C63-5A8E0D4F1B27][Hotfix: a library exports a type none of its units compiles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the workflow core DLL link on Windows, and give the estate a check that
+finds the shape before a Windows build does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3F0B9A5C-4D2E-41B7-9C63-5A8E0D4F1B27][Hotfix: a library exports a type none of its units compiles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The six declarations in the two service headers carry no export attribute.
+- Every hand-written header in the estate that exports a class or struct
+  reaches a translation unit of its own library, or the check fails.
+- The check fails, naming the file, the type and the macro, when the
+  attribute is restored on =workflow_registry=.
+- The tree builds, the workflow suites pass, and the header-hygiene workflow
+  runs the check on a pull request.
+
+* Plan
+
+1. Find every exported type whose header no library translation unit includes,
+   rather than fixing the two the link error names.
+2. Remove the attribute from the header-only types and the now-unused export
+   include with it.
+3. Write the scan, prove it passes on the tree and fails on the restored
+   attribute, and add it to the header-hygiene workflow.
+4. Build, run the workflow suites, and dispatch a Windows run for the link.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Exported types whose header no library unit includes, before | 6 types in 2 headers, all in =ores.workflow.api= | =build/scripts/check_exported_types_are_compiled.py= | this branch |
+| The same, after | 0; 202 hand-written headers export a type and every one reaches a unit | same | this branch |
+| Negative control | restoring the attribute on =workflow_registry= fails the check, naming the file, the type and the macro | same | this branch |
+| Header-hygiene workflow | =yamllint= clean; the job is =exported-types= | workbench check | this branch |
+| Full tree | builds | =cmake --build --preset linux-clang-debug-make -j 8= | this branch |
+| Full suite | 89 of 89 on a recreated database | =ctest --preset linux-clang-debug-make -j 4= | this branch |
+| Workflow suites | 5 of 5 pass | =ctest -R "workflow\|iam.core"= | this branch |
+| Windows link | dispatched, run 36702537763 | =gh workflow run continuous-windows.yml= | this branch |
+
+* Notes
+
+- The Windows link cannot be reproduced on Linux or macOS: there the same
+  macro is a visibility attribute that costs nothing, and the construction is
+  satisfied by the inline definition every consumer already has.
+- The scan resolves includes transitively from each translation unit of the
+  sublibrary: a header included by another header that a unit includes is
+  compiled by that unit, which is what makes a header-only type safe.
+- The failed symbol was an implicitly-declared default constructor, which is
+  the class of member clang-cl imports but a library never emits on its own.
+  An aggregate used with brace initialisation, by contrast, never names it --
+  which is why only two of the six declarations produced a link error.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2411][#2411]] | Fix the Windows link failure: a library exporting a type it never compiles |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The six declarations carry no export attribute, the enum comment that
+described them as carrying one is corrected, and the header-hygiene workflow
+runs =check_exported_types_are_compiled.py= on every pull request. The full
+suite passes 89 of 89 on a recreated database and the tree builds; the
+Windows link is verified by the dispatched run.

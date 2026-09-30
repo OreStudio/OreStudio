@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 53EF772B-D1E1-4742-B1AD-7E0551C95FEA
+:END:
+#+title: Task: Build the environment plugin for DSH
+#+description: A DSH plugin that shows the session's own checkout as a live environment and can start, stop, and restore it.
+#+type: task
+#+level: s1
+#+filetags: :dsh_environment_plugin:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-environment-plugin
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+projects/ores.dsh_environment is a DSH web plugin, built like ores.dsh_kanban: one host route, one hand-written browser file with no build step, a frozen CONTRACT.md, and an install that copies a versioned tarball into a profile. It resolves the session's own work tree, runs that checkout's compass, and renders the environment: its name, when the database was last restored and how long ago, the schema drift, and every service unit with its state.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The session header carries a health dot and the environment name, and the dot is red when the database is unreachable or a service is failed or missing.
+- The Environment view lists every service unit with a state and a detail, and colours failed and missing red.
+- One service starts and stops from its own row, and the whole fleet starts and stops from the panel header, in one click each.
+- Restoring the database asks for the environment name, and the default flow stops services, rebuilds, then starts them again.
+- A running action reports its elapsed time and the tail of compass output, and a second action on the same work tree is refused while it runs.
+- A work tree whose compass has no env status verb reports that plainly instead of rendering an empty environment.
+
+* Plan
+
+The plugin is two halves that meet at one route, the way =ores.dsh_kanban= is.
+
+The host half registers a state route and an action route. The state route
+resolves the session's work tree through the same rungs the kanban plugin uses,
+then runs =<root>/compass.sh env status --json= and returns the parsed object. It
+never reads an =ORES_*= variable from its own process, because the server that
+hosts it starts from the home directory and holds no checkout's environment.
+=lib/compass.js= owns the only process boundary and models an action as a job:
+one per work tree, with the child's output kept as a tail, so the client can
+show what compass is doing without inventing progress.
+
+The browser half is one hand-written file with no build step. It calls
+=React.createElement= directly and requires nothing but react from the platform
+module table.
+
+Seat 1 is the readout that appears with the session, in
+=conversation.session.header.actions= at order 21. It carries a health dot, the
+environment label in monospace, the database age, and the count of running
+services, so it answers whether this environment is well without opening
+anything.
+
+Seat 2 is the view, in =conversation.view= at order 30 under the label
+Environment. It shows the identity line, three health tiles, the database panel
+with its restore age and drift and its Restore control, the service list, and an
+action strip.
+
+The state palette is one table keyed by the state ids the host sends. Running is
+green, starting amber, stopped grey, failed red, missing red. Failed and missing
+share the red but for different reasons: a failed unit is one systemd tried to
+run and could not, and a missing unit is one the manager has never heard of,
+which usually means the fleet was never deployed in this work tree. Stopped
+stays grey, because it is the state an operator chooses.
+
+Actions cost one click each when they are reversible, which covers starting and
+stopping a single unit and the whole fleet. compass's own verbs do not ask
+either, and a dialog on a reversible action teaches the operator to click
+through the one dialog that matters. The database restore is the single guarded
+action, because it drops the database and its roles. Its dialog names the
+database it is about to drop and requires the environment name to be typed. The
+default flow stops the fleet, recreates, then starts the fleet. A second choice
+rebuilds without touching the services, for when the fleet is already down.
+
+A state route that cannot resolve a work tree, cannot run compass, or finds a
+compass without =env status= answers =ok: false= with a reason, and the client
+names that reason. It never renders an empty environment as though the
+environment were empty.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: DFE59EE2-40FB-408D-AC8D-F48363EDD4D8
+:END:
+#+title: Task: Add compass env status and the JSON contract the plugin reads
+#+description: Initial task for: Show the environment inside DSH
+#+type: task
+#+level: s1
+#+filetags: :dsh_environment_plugin:sprint_26:v0:
+#+owner: marco
+#+branch: feature/dsh-environment-plugin
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One verb, =compass env status=, that gathers this checkout's environment in one
+place and emits it as JSON on request. It reports the environment identity from
+=.env=, the database's restore time with its age, schema version and drift
+against HEAD, and every service unit with its state. =compass bearings= stops
+composing the same block inline and reads the verb instead, so the
+machine-readable contract and the human orientation come from one
+implementation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- =compass env status= prints the environment block bearings prints today:
+  preset, label, =.env= version, scope, database restore time with its age and
+  drift, and the service counts.
+- =compass env status --json= prints one JSON object carrying the identity, the
+  database, and every service unit, and that object is the shape the plugin's
+  =CONTRACT.md= names.
+- A unit systemd reports as failed is counted and reported as failed, and is no
+  longer folded into stopped.
+- =compass bearings= prints the values it printed before for this checkout, and
+  its environment section comes from the shared gather.
+- The JSON output carries no colour codes and no terminal-only prose.
+- Tests cover the unit classification including failed and missing, the JSON
+  shape, and the human render.
+
+* Plan
+
+The work splits into one gather, two renderers, and a caller.
+
+- =compass_services.py= gains one per-unit gather that classifies a unit and
+  returns its detail. =cmd_status= and =gather_counts= both read it, so the
+  table, the counts line, and the JSON cannot classify the same unit
+  differently. The classification gains =failed= as a fifth state: systemd's
+  =ActiveState= already reports it, and folding it into =stopped= hid a crashed
+  unit behind a deliberate shutdown.
+- A new =compass_env_status.py= composes the identity, the database, and the
+  services into one dict. It owns no policy: =compass_db.database_info= and
+  =schema_drift= answer for the database, and the service gather answers for the
+  fleet.
+- =compass env status= renders that dict as the human block, and =--json= prints
+  it. The human render is the text bearings prints today, moved rather than
+  rewritten, so orientation output does not change.
+- =compass bearings= calls the renderer instead of composing the block inline.
+  Its genesis-environment and missing-=.env= paths stay where they are, because
+  they describe the absence of an environment rather than its state.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Compass test suite | 284 passed, 1 skipped | =projects/ores.compass/venv/bin/python -m pytest projects/ores.compass/tests -q= | working tree on =ed5e7756cf= |
+| Tests added by this task | 29, in =tests/test_compass_env_status.py= | same, with the file named | same |
+| Service units the fleet reports | 24 services, plus nats-server counted apart | =compass services status= | same |
+| =compass env status --json= payload | 8418 bytes | =compass env status --json= | same |
+| Command latency | =services status= 1.26s, =db status= 0.73s | bare =time= around each | same |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass env status= reports one checkout's environment as text, and
+=--json= reports it as one object for the DSH environment plugin to read.
+=compass bearings= prints its environment section from the same gather, so
+orientation, the verb, and the plugin cannot disagree.
+
+The service state vocabulary gained =failed=, and it is now the fifth state
+rather than a shade of =stopped=. =compass services status= prints it in the
+counts line and marks the row =failed=, and a unit the manager has never
+heard of is =missing= on its own. The counts line reports the 24 service
+units and nats-server on a line of its own, where before nats was folded
+into the totals and the JSON counted without it.
+
+Two smaller corrections came out of the work. =compass db status= and the
+new verb now read their thresholds from the same constants, so a restore
+past 24 hours and a connection budget past 85 percent cannot be a warning
+in one place and a failure in another. And =gather= adopts the checkout's
+systemd transport itself: without that a caller that did not go through
+=compass services run= read every unit as =missing= rather than =stopped=,
+which is the same symptom an earlier capture records for a sandboxed
+=compass services status=.

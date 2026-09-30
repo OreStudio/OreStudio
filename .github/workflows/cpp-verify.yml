@@ -1,0 +1,223 @@
+name: C++ verification
+
+# The half of the gate set that compiles and runs the tree: recreate the
+# database, configure, build every target, run ctest, and start the services
+# when the change can affect one. It is expensive, so it is called only by the
+# changes that can break it -- see
+# projects/ores.codegen/src/codegen/change_classification.py for the decision.
+#
+# The environment steps are the ones Continuous Linux runs, so a pull request
+# and the continuous build prove the same thing. Continuous Linux still holds
+# its own copy; it moves onto this workflow once this one has run on real pull
+# requests, so a change to the shared steps cannot break the scheduled runs
+# while it is being brought up.
+
+env:
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  # The compiler cache Continuous Linux fills. The preset names it there --
+  # linux-clang-debug-ninja is the matrix's family, compiler and build type --
+  # so the same key restores the scheduled build's cache and a pull request
+  # compiles only what its change touched, rather than from cold.
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
+
+on:
+  workflow_call:
+    inputs:
+      preset:
+        description: The CMake preset to configure, build and test.
+        type: string
+        default: linux-clang-debug-ninja
+      services:
+        description: Start the services after the tests and check they come up.
+        type: boolean
+        default: false
+
+jobs:
+  verify:
+    name: ${{ inputs.preset }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Free disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/lib/jvm
+          sudo rm -rf /home/linuxbrew/.linuxbrew
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /usr/share/miniconda3
+          sudo rm -rf /opt/az
+          sudo rm -rf /opt/pipx/venvs/azure-cli
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /usr/share/google-cloud-sdk
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/share/chrome_beta
+          sudo rm -rf /opt/google/chrome
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /opt/hostedtoolcache/Ruby
+          sudo rm -rf /opt/hostedtoolcache/node
+          sudo rm -rf /opt/hostedtoolcache/go
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/node_modules
+          sudo snap remove lxd 2>/dev/null || true
+          sudo rm -rf /var/cache/snapd
+          sudo docker image prune --all --force || true
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      # The disk cleanup deletes the image's Node.js, and ores.web needs npm.
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Validate SQL Schema
+        run: |
+          pip install --quiet pystache
+          ./projects/ores.sql/utility/validate_schemas.sh
+
+      - name: Check every Boost header has a vcpkg port behind it
+        run: python3 build/scripts/check_boost_dependencies.py
+
+      - name: Install Clang
+        uses: KyleMayes/install-llvm-action@v2
+        if: ${{ contains(inputs.preset, 'clang') }}
+        with:
+          version: "19"
+          arch: x64
+
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          variant: sccache
+          key: ${{ inputs.preset }}
+          max-size: 2500M
+
+      - name: Install dev packages
+        run: ./projects/ores.compass/compass.sh env install-packages
+
+      - name: Generate postgres password
+        id: pg_password
+        run: |
+          PG_PASS="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
+          echo "admin_password=${PG_PASS}" >> $GITHUB_OUTPUT
+          echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
+
+      - name: Install PostgreSQL extensions
+        run: |
+          ./build/scripts/setup_postgres_extensions.sh --pg-version 18
+
+      - name: Setup postgres
+        uses: ikalnytskyi/action-setup-postgres@v8
+        with:
+          username: postgres
+          password: ${{ steps.pg_password.outputs.admin_password }}
+          database: oresdb
+          port: 5432
+          postgres-version: "18"
+        id: postgres
+
+      - name: Configure shared_preload_libraries
+        run: |
+          PGDATA="$RUNNER_TEMP/pgdata"
+          echo "shared_preload_libraries = 'pg_cron,timescaledb'" >> "$PGDATA/postgresql.conf"
+          pg_ctl restart --pgdata="$PGDATA" --wait
+
+      - name: Init environment
+        env:
+          ORES_DATABASE_NAME: ores_ci
+        run: |
+          ./projects/ores.compass/compass.sh --no-deps env configure -y
+          grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
+            | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
+
+      - name: Setup NATS server
+        run: ./build/scripts/setup_nats_server.sh
+
+      - name: Start NATS server
+        run: |
+          nats_conf="$(ls build/config/nats-*.conf | head -n1)"
+          nats-server --config "$nats_conf" &
+          monitor_port="$(grep '^ORES_NATS_MONITOR_PORT=' .env | cut -d= -f2- | tr -d '"')"
+          ready=false
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${monitor_port}/varz" > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != "true" ]; then
+            echo "::error::nats-server did not become ready within 30s"
+            exit 1
+          fi
+
+      - name: get-cmake
+        uses: lukka/get-cmake@v4.4.2
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-verify-${{ inputs.preset }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-verify-${{ inputs.preset }}-
+
+      - name: run-vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          doNotCache: false
+
+      # A database built from the create scripts is what the tests read, so it
+      # is recreated before anything is compiled: a schema that no longer
+      # applies fails here, in seconds, rather than as a wall of test errors.
+      - name: Recreate the database
+        run: ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
+
+      - name: Configure
+        run: cmake --preset ${{ inputs.preset }} -DBUILD_SHARED_LIBS=ON
+
+      # Every target, not the subset a change's author believes is affected:
+      # a rename that crosses a component boundary compiles in a target the
+      # author never opened, and that is exactly what this step is for.
+      - name: Build every target
+        run: cmake --build --preset ${{ inputs.preset }} -j "$(nproc)"
+
+      - name: Run the tests
+        run: ctest --preset ${{ inputs.preset }} --output-on-failure -j "$(nproc)"
+
+      - name: Start the services and check they come up
+        if: ${{ inputs.services }}
+        run: |
+          ./projects/ores.compass/compass.sh services start --preset ${{ inputs.preset }}
+          ./projects/ores.compass/compass.sh services status
+          ./projects/ores.compass/compass.sh services status | tee /tmp/services.txt
+          if grep -q "missing=\|[0-9] stopped" /tmp/services.txt; then
+            echo "::error::a service did not start"
+            exit 1
+          fi
+
+      - name: Stop the services
+        if: ${{ always() && inputs.services }}
+        run: ./projects/ores.compass/compass.sh services stop || true
+
+      - name: Show sccache statistics
+        if: always()
+        run: sccache --show-stats || true
+

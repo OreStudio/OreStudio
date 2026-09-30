@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 889D6973-D316-4756-B084-DD6174200ADD
+:END:
+#+title: A DSH plugin route is outside the /api trust fence, so it checks the cookie itself
+#+description: DSH fences /api with a Host rule and an authority-bound cookie, and a plugin route registered through webServer.register sits outside that fence. A plugin that acts on the machine must apply the same cookie check, or a page that rebinds its hostname to loopback reaches it as a same-origin caller.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :dsh:plugin:security:memory:project:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+Call ctx.get('connection')?.browserAuth?.isAuthenticated(req) at the top of every plugin route, and refuse with 401 when it is false.
+
+*Why:* A plugin route registered with webServer.register is not behind the fence that guards /api, so it answers any client that can reach the port. The Origin check is not enough on its own: a page that rebinds its own hostname to 127.0.0.1 arrives with Origin and Host agreeing, so it reads as same-origin and can POST to an action route. The browser already holds the cookie dsh web issued for the authority and a same-origin fetch sends it, so checking it costs the client nothing. Found on 2026-09-30 by booting a scratch DSH instance with the ores.dsh_environment plugin installed: both routes answered 200 to an anonymous read, and the action route would have accepted an anonymous fleet-stop.
+
+*How to apply:* (When this memory should kick in — what circumstances, which files, which workflows.)

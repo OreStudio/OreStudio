@@ -182,22 +182,18 @@ begin
 
     insert into ores_dq_market_data_observations_artefact_tbl (
         dataset_id, tenant_id, version,
-        series_type, metric, qualifier, oresmd_uri, key, point_id, observation_date, value, source,
+        oresmd_uri, key, point_id, observation_date, value, source,
         source_url, retrieved_at
     )
     select
         v_dataset_id,
         v_tenant_id,
         0,
-        'FX',
-        'RATE',
-        r.qualifier,
         -- The row is an ORE FX spot quote, so its key is the ORE key for the pair the
         -- release names and its identity is that key's series: the pair, with the SPOT
         -- point left off because a spot's key carries none. Both are stated here rather
         -- than derived, because the projection from a key to its identity is the C++
-        -- grammar's and SQL has no way back to it. The qualifier is the registry's
-        -- decomposition of the same key, which the series row still asks for.
+        -- grammar's and SQL has no way back to it.
         'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
         'FX/RATE/' || r.qualifier,
         'SPOT',

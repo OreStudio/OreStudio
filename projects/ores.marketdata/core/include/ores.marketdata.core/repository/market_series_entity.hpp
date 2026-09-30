@@ -50,9 +50,6 @@ struct market_series_entity {
 
     std::string oresmd_uri;
 
-    std::string series_type;
-    std::string metric;
-    std::string qualifier;
     std::string series_subclass;
     std::string derivation_kind = "OBSERVED";
     std::string derivation_config_id;

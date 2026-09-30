@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/market_series/market_series.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-market_series set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+market_series set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script

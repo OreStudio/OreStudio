@@ -242,9 +242,6 @@ import_service::import(const messaging::import_market_data_request& req) {
         s.id = gen();
         s.tenant_id = ctx_.tenant_id();
         s.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
-        s.series_type = series_type;
-        s.metric = metric;
-        s.qualifier = qualifier;
         s.series_subclass = cl.series_subclass;
         s.oresmd_uri = oresmd_uri;
         s.modified_by = ctx_.actor();

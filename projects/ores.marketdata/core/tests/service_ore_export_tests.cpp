@@ -241,74 +241,43 @@ TEST_CASE("export_reproduces_the_fixings_file_it_imported", tags) {
     CHECK(actual_names == expected_names);
 }
 
-TEST_CASE("export_drops_the_point_the_store_invented_for_a_point_free_series", tags) {
+TEST_CASE("export_refuses_an_observation_a_writer_left_without_a_key", tags) {
     auto lg(make_logger(test_suite));
 
-    // An imported row always carries the producer's key, so the export never
-    // rebuilds a key for one -- the two cases above pin that path and this one
-    // pins the other. A row written by anything else, a feed tick or a curve
-    // bootstrap, has no producer key, and the export rebuilds one from the
-    // series and the observation's point. That is where the stored point is
-    // the store's own answer rather than the producer's, and where emitting it
-    // would invent a key no file writes.
+    // Every writer stores the key its row is written under, so a row without one is
+    // a row no writer produced. The export says so rather than emitting a key it
+    // cannot know: the rebuild that used to serve such rows read the series'
+    // registry columns, and went with them.
     export_tenant t;
     ores::marketdata::repository::market_series_repository series_repo;
     ores::marketdata::repository::market_observations_repository obs_repo;
     boost::uuids::random_generator gen;
 
-    const auto add_series =
-        [&](const std::string& type, const std::string& metric, const std::string& qualifier) {
-            ores::marketdata::domain::market_series s;
-            s.id = gen();
-            s.tenant_id = t.ctx.tenant_id();
-            s.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
-            s.series_type = type;
-            s.metric = metric;
-            s.qualifier = qualifier;
-            // The identity is the series' natural key, and this case builds rows
-            // rather than importing them, so it names each one after its own id:
-            // the case is about the export's key building, not about which URI a
-            // row would arrive under.
-            s.oresmd_uri =
-                "oresmd://generic/ore-export-" + boost::uuids::to_string(s.id) + "?type=fixing";
-            // The insert trigger validates this against ores.refdata's codes, so
-            // it has to be a real one rather than the empty default. Which
-            // subclass a series belongs to is the classifier's business and not
-            // this test's -- the export reads the type, metric and qualifier.
-            s.series_subclass = "spot";
-            s.modified_by = t.ctx.actor();
-            s.performed_by = t.ctx.service_account();
-            s.change_reason_code =
-                std::string(ores::dq::domain::change_reason_constants::codes::external_data_import);
-            s.change_commentary = "ore_export test";
-            series_repo.write(t.ctx, s);
-            return s.id;
-        };
+    ores::marketdata::domain::market_series s;
+    s.id = gen();
+    s.tenant_id = t.ctx.tenant_id();
+    s.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
+    s.oresmd_uri = "oresmd://fx/eurusd?type=quote&quote=spot";
+    s.series_subclass = "spot";
+    s.modified_by = t.ctx.actor();
+    s.performed_by = t.ctx.service_account();
+    s.change_reason_code =
+        std::string(ores::dq::domain::change_reason_constants::codes::external_data_import);
+    s.change_commentary = "ore_export test";
+    series_repo.write(t.ctx, s);
 
-    const auto add_observation = [&](const boost::uuids::uuid& series_id,
-                                     const std::string& point,
-                                     const std::string& value) {
-        ores::marketdata::domain::market_observation o;
-        o.id = gen();
-        o.tenant_id = t.ctx.tenant_id();
-        o.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
-        o.series_id = series_id;
-        o.observation_datetime =
-            std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
-        o.point_id = point;
-        o.value = value;
-        obs_repo.write(t.ctx, o);
-    };
-
-    // The point a point-free series stores, and a real point for one that has
-    // a point dimension. Both values come from series_key_registry, so the
-    // store's answer for the first really is SPOT rather than a guess here.
-    add_observation(add_series("FX", "RATE", "EUR/USD"), "SPOT", "1.132337");
-    add_observation(add_series("IR_SWAP", "RATE", "USD/2D/3M"), "PAR_RATE", "0.043120");
+    ores::marketdata::domain::market_observation o;
+    o.id = gen();
+    o.tenant_id = t.ctx.tenant_id();
+    o.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
+    o.series_id = s.id;
+    o.observation_datetime =
+        std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
+    o.point_id = "SPOT";
+    o.value = "1.132337";
+    // The key is deliberately left empty: this is the row the export must refuse.
+    obs_repo.write(t.ctx, o);
 
     const ore_export_service exporter(t.ctx);
-    const auto exported = exporter.write_all();
-
-    CHECK(body_keys(exported.market_data) ==
-          std::vector<std::string>{"FX/RATE/EUR/USD", "IR_SWAP/RATE/USD/2D/3M/PAR_RATE"});
+    CHECK_THROWS(exporter.write_all());
 }

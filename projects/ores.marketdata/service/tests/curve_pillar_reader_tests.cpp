@@ -141,9 +141,6 @@ struct fixture {
         s.version = 0;
         s.tenant_id = h.tenant_id();
         s.party_id = party_id;
-        s.series_type = key.series_type;
-        s.metric = key.metric;
-        s.qualifier = key.qualifier;
         s.oresmd_uri = ores::marketdata::core::pillar_series_uri(key);
         s.series_subclass = "yield";
         s.derivation_kind = "OBSERVED";

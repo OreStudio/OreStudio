@@ -30,20 +30,12 @@
 -- to an identity is the C++ grammar's, and SQL has no way back to it. A seed
 -- therefore states the two facts its own source names, the way the market-data
 -- import does when it reads a file.
---
--- series_type/metric/qualifier are the registry's decomposition of the same key.
--- They outlive their use here: the market_series row still requires them, so the
--- publish still writes them, and they go when that row stops carrying the
--- decomposition.
 create table if not exists "ores_dq_market_data_observations_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "oresmd_uri" text not null,
     "key" text not null,
-    "series_type" text not null,
-    "metric" text not null,
-    "qualifier" text not null,
     "point_id" text not null,
     "observation_date" date not null,
     "value" numeric not null,
@@ -57,9 +49,6 @@ on "ores_dq_market_data_observations_artefact_tbl" (dataset_id);
 
 create index if not exists market_data_observations_artefact_tenant_idx
 on "ores_dq_market_data_observations_artefact_tbl" (tenant_id);
-
-create index if not exists market_data_observations_artefact_qualifier_idx
-on "ores_dq_market_data_observations_artefact_tbl" (series_type, metric, qualifier);
 
 create index if not exists market_data_observations_artefact_series_idx
 on "ores_dq_market_data_observations_artefact_tbl" (oresmd_uri);

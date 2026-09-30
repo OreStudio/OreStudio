@@ -1,0 +1,18 @@
+{
+  "name": "ores-dsh-environment",
+  "version": "0.0.25",
+  "private": true,
+  "description": "DSH plugin: the session's own checkout as a live environment, read from compass, with service control.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": { "platform": "web" }
+  }
+}

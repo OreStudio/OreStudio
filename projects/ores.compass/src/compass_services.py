@@ -225,20 +225,34 @@ def _log_last_line(log_file: Path) -> str:
     return lines[-1].decode("utf-8", errors="ignore") if lines else ""
 
 
-def _service_units(ctx, only=None):
-    """(unit, log_basename) for every concrete systemd unit this
-    environment's target aggregates -- NOT including nats-server, which
-    has no readiness log file under systemd (see _nats_unit) and is
-    tracked separately. `unit` is the systemd unit basename (carries the
-    -<env> suffix systemd_generate.py uses to keep this checkout's units
-    distinct from a sibling checkout's on the same user session);
-    `log_basename` is what the *binary itself* actually names its log
-    file as, which is NOT unit-name-based -- it's always
-    "<service_name>.<replica_index>.log" (replica_index 0 even for
-    singletons, per the shared args_template), unaffected by env name
-    since each checkout's build/output/<preset>/publish/log/ is already
-    its own directory."""
-    units = []
+def _short_name(service_name):
+    """The name a person uses for a registry service: `ores.web.service`
+    reads as `web`, and `ores.http.server` as `http.server`."""
+    name = service_name
+    if name.startswith("ores."):
+        name = name[len("ores."):]
+    if name.endswith(".service"):
+        name = name[: -len(".service")]
+    return name
+
+
+def _unit_rows(ctx, only=None):
+    """Every concrete systemd unit this environment's target aggregates,
+    as a dict. nats-server is NOT included: it has no readiness log file
+    under systemd (see _nats_unit) and is tracked separately.
+
+    `unit` is the systemd unit basename, and it carries the -<env> suffix
+    systemd_generate.py uses to keep this checkout's units distinct from a
+    sibling checkout's on the same user session. `log` is what the *binary
+    itself* names its log file, which is NOT unit-name-based: it is always
+    "<service_name>.<replica_index>.log", with replica_index 0 even for
+    singletons, per the shared args_template. The environment name does not
+    enter it, because each checkout's build/output/<preset>/publish/log/ is
+    already its own directory.
+
+    `replica` is 0 for a service that runs one copy, and 1..N otherwise.
+    `label` is what the view shows."""
+    rows = []
     services = systemd_generate.load_service_registry(ctx.root)
     for d in systemd_generate.fetch_service_definitions(services):
         if not d["enabled"]:
@@ -246,12 +260,24 @@ def _service_units(ctx, only=None):
         if only is not None and d["service_name"] != only:
             continue
         base = systemd_generate._unit_basename(d["service_name"], ctx.env_name)
+        short = _short_name(d["service_name"])
         if d["desired_replicas"] > 1:
-            units += [(f"{base}-{r}", f"{d['service_name']}.{r}.log")
-                      for r in range(1, d["desired_replicas"] + 1)]
+            rows += [{"unit": f"{base}-{r}",
+                      "service": d["service_name"],
+                      "replica": r,
+                      "label": f"{short}-{r}",
+                      "log": f"{d['service_name']}.{r}.log"}
+                     for r in range(1, d["desired_replicas"] + 1)]
         else:
-            units.append((base, f"{d['service_name']}.0.log"))
-    return units
+            rows.append({"unit": base, "service": d["service_name"],
+                         "replica": 0, "label": short,
+                         "log": f"{d['service_name']}.0.log"})
+    return rows
+
+
+def _service_units(ctx, only=None):
+    """(unit, log_basename) pairs, the shape the start and stop paths use."""
+    return [(row["unit"], row["log"]) for row in _unit_rows(ctx, only=only)]
 
 
 def _registry_names(ctx):
@@ -327,35 +353,91 @@ def _unit_active_state(unit) -> str:
     return state if state else "missing"
 
 
-def gather_counts(ctx):
-    """Service state counts for status displays: dict of state -> count,
-    plus nats state. Mirrors cmd_status's classification, driven by
-    `systemctl --user is-active` instead of PID files."""
-    counts = {"running": 0, "starting": 0, "stopped": 0, "missing": 0}
+# The five states the fleet reports. `stopped` is a unit the manager knows
+# and is not running, which is usually an operator's choice. `failed` is a
+# unit the manager tried to run and could not, and it is separate because a
+# crashed service must not read as a deliberate shutdown. `missing` is a
+# unit the manager has never heard of, which means this environment's units
+# were never deployed.
+SERVICE_STATES = ("running", "starting", "stopped", "failed", "missing")
 
-    def _classify(unit, log_basename):
-        state = _unit_active_state(unit)
-        if state == "missing":
-            return "missing"
-        if state != "active":
-            return "stopped"
-        return ("running" if _log_contains(ctx.log_dir / log_basename, "Service ready")
-                else "starting")
+
+def classify_unit(ctx, unit, log_basename=None):
+    """(state, detail) for one unit.
+
+    `running` needs an active unit AND the readiness line in its own log,
+    because a unit whose listener is not up yet answers no request. A
+    caller passes log_basename=None for a unit that has no readiness log,
+    which is nats-server under systemd: it logs to journald only, so
+    ActiveState alone decides it."""
+    active = _unit_active_state(unit)
+    if active == "missing":
+        return "missing", "unit not loaded"
+    if active == "failed":
+        return "failed", _detail_of(ctx.log_dir / log_basename) if log_basename else "failed"
+    if active == "active":
+        if log_basename is None:
+            return "running", "active"
+        if _log_contains(ctx.log_dir / log_basename, "Service ready"):
+            return "running", "active"
+        return "starting", _detail_of(ctx.log_dir / log_basename)
+    if active == "activating":
+        return "starting", _detail_of(ctx.log_dir / log_basename) if log_basename else active
+    return "stopped", active
+
+
+def _detail_of(log_file):
+    """The last line of a unit's log, trimmed to the message.
+
+    A service logs a JSON envelope, so the interesting part is what follows
+    the closing bracket of the envelope."""
+    last = _log_last_line(log_file).split('\"] ')[-1].strip()
+    return last[:120]
+
+
+def gather_units(ctx):
+    """Every unit this environment runs, with its state and detail.
+
+    One pass, and the only place a unit is classified. The status table,
+    the counts line, and the JSON contract all read this, so they cannot
+    disagree about whether the same unit is up.
+
+    Returns {"nats": row|None, "units": [row], "counts": {state: n}}. The
+    counts cover the service units only; nats-server is reported on its own
+    because it has no readiness log and so is not classified the same way.
+    """
+    counts = {state: 0 for state in SERVICE_STATES}
+    rows = []
+    nats = None
 
     if not ctx.env_name:
-        return {"nats": "missing", "counts": counts, "service_total": 0}
+        return {"nats": None, "units": [], "counts": counts,
+                "service_total": 0}
 
     # nats-server's systemd unit has no -l logfile flag (unlike the old
-    # native-process launch) -- it logs to journald only -- so readiness
-    # here is ActiveState alone, no log-content check available.
-    nats_state = _unit_active_state(_nats_unit(ctx))
-    nats = "missing" if nats_state == "missing" else (
-        "running" if nats_state == "active" else "stopped")
+    # native-process launch), so readiness is ActiveState alone.
+    nats_unit = _nats_unit(ctx)
+    state, detail = classify_unit(ctx, nats_unit, None)
+    nats = {"unit": nats_unit, "service": "", "replica": 0,
+            "label": "nats-server", "log": "", "state": state,
+            "detail": detail}
 
-    units = _service_units(ctx)
-    for unit, log_basename in units:
-        counts[_classify(unit, log_basename)] += 1
-    return {"nats": nats, "counts": counts, "service_total": len(units)}
+    for row in _unit_rows(ctx):
+        state, detail = classify_unit(ctx, row["unit"], row["log"])
+        counts[state] += 1
+        rows.append({**row, "state": state, "detail": detail})
+
+    return {"nats": nats, "units": rows, "counts": counts,
+            "service_total": len(rows)}
+
+
+def gather_counts(ctx):
+    """Service state counts for status displays: dict of state -> count,
+    plus nats state. Reads the same classification as the status table."""
+    gathered = gather_units(ctx)
+    return {"nats": gathered["nats"]["state"] if gathered["nats"] else "missing",
+            "counts": gathered["counts"],
+            "service_total": gathered["service_total"]}
 
 
 # --- subcommands ------------------------------------------------------------
@@ -561,50 +643,36 @@ def cmd_status(ctx, args):
     print(f"ORE Studio service status ({ctx.preset})\n")
     print(f"  {'STATUS':<10} {'SERVICE':<40} DETAIL")
     print(f"  {'-' * 10} {'-' * 40} ------")
-    running = starting = stopped = missing = 0
 
     if not ctx.env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
         return 1
 
-    def _check(unit, log_file=None):
-        nonlocal running, starting, stopped, missing
-        state = _unit_active_state(unit)
-        if state == "missing":
-            print(f"  {'missing':<10} {unit:<40} (unit not loaded)")
-            missing += 1
-            return
-        if state != "active":
-            print(f"  {'stopped':<10} {unit:<40} ({state})")
-            stopped += 1
-            return
-        # nats-server's systemd unit has no log file (journald only).
-        if log_file is None:
-            print(f"  {'running':<10} {unit:<40} (active)")
-            running += 1
-            return
-        if _log_contains(log_file, "Service ready"):
-            print(f"  {'running':<10} {unit:<40} (active)")
-            running += 1
-        else:
-            last = _log_last_line(log_file).split('\"] ')[-1][:60]
-            print(f"  {'starting':<10} {unit:<40}  "
-                  f"{f'({last})' if last else ''}")
-            starting += 1
+    counts = {state: 0 for state in SERVICE_STATES}
 
+    def _check(unit, log_basename=None):
+        state, detail = classify_unit(ctx, unit, log_basename)
+        print(f"  {state:<10} {unit:<40} {f'({detail})' if detail else ''}")
+        counts[state] += 1
+
+    nats = None
     if args.service:
         name, units = _resolve_service_or_report(ctx, args.service)
         if name is None:
             return 1
         for unit, log_basename in units:
-            _check(unit, ctx.log_dir / log_basename)
+            _check(unit, log_basename)
     else:
-        _check(_nats_unit(ctx))
+        # nats-server is reported on its own line below, because it has no
+        # readiness log and so is not classified the way a service is.
+        nats, _ = classify_unit(ctx, _nats_unit(ctx))
         for unit, log_basename in _service_units(ctx):
-            _check(unit, ctx.log_dir / log_basename)
+            _check(unit, log_basename)
 
-    print(f"\nservices: running={running}  starting={starting}  "
-          f"stopped={stopped}  missing={missing}")
+    print("\nservices: " + "  ".join(f"{s}={counts[s]}"
+                                     for s in SERVICE_STATES))
+    if nats is not None:
+        print(f"nats    : {nats}")
     print(f"\nLogs : {ctx.log_dir}")
     return 0
 

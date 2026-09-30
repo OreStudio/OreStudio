@@ -1,0 +1,5 @@
+# Insert the ORE Studio environment plugin into a profile's composition.
+# Node resolves ores-dsh-environment from the profile's node_modules.
+- insert:
+    - id: ores-dsh-environment
+      name: 'ores-dsh-environment'

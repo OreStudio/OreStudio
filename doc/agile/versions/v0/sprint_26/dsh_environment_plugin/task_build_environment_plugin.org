@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 53EF772B-D1E1-4742-B1AD-7E0551C95FEA
+:END:
+#+title: Task: Build the environment plugin for DSH
+#+description: A DSH plugin that shows the session's own checkout as a live environment and can start, stop, and restore it.
+#+type: task
+#+level: s1
+#+filetags: :dsh_environment_plugin:sprint_26:v0:
+#+owner: marco
+#+branch: feature/dsh-environment-plugin
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+projects/ores.dsh_environment is a DSH web plugin, built like ores.dsh_kanban: one host route, one hand-written browser file with no build step, a frozen CONTRACT.md, and an install that copies a versioned tarball into a profile. It resolves the session's own work tree, runs that checkout's compass, and renders the environment: its name, when the database was last restored and how long ago, the schema drift, and every service unit with its state.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The session header carries a health dot and the environment name, and the dot is red when the database is unreachable or a service is failed or missing.
+- The Environment view lists every service unit with a state and a detail, and colours failed and missing red.
+- One service starts and stops from its own row, and the whole fleet starts and stops from the panel header, in one click each.
+- Restoring the database asks for the environment name, and the default flow stops services, rebuilds, then starts them again.
+- A running action reports its elapsed time and the tail of compass output, and a second action on the same work tree is refused while it runs.
+- A work tree whose compass has no env status verb reports that plainly instead of rendering an empty environment.
+
+* Plan
+
+The plugin is two halves that meet at one route, the way =ores.dsh_kanban= is.
+
+The host half registers a state route and an action route. The state route
+resolves the session's work tree through the same rungs the kanban plugin uses,
+then runs =<root>/compass.sh env status --json= and returns the parsed object. It
+never reads an =ORES_*= variable from its own process, because the server that
+hosts it starts from the home directory and holds no checkout's environment.
+=lib/compass.js= owns the only process boundary and models an action as a job:
+one per work tree, with the child's output kept as a tail, so the client can
+show what compass is doing without inventing progress.
+
+The browser half is one hand-written file with no build step. It calls
+=React.createElement= directly and requires nothing but react from the platform
+module table.
+
+Seat 1 is the readout that appears with the session, in
+=conversation.session.header.actions= at order 21. It carries a health dot, the
+environment label in monospace, the database age, and the count of running
+services, so it answers whether this environment is well without opening
+anything.
+
+Seat 2 is the view, in =conversation.view= at order 30 under the label
+Environment. It shows the identity line, three health tiles, the database panel
+with its restore age and drift and its Restore control, the service list, and an
+action strip.
+
+The state palette is one table keyed by the state ids the host sends. Running is
+green, starting amber, stopped grey, failed red, missing red. Failed and missing
+share the red but for different reasons: a failed unit is one systemd tried to
+run and could not, and a missing unit is one the manager has never heard of,
+which usually means the fleet was never deployed in this work tree. Stopped
+stays grey, because it is the state an operator chooses.
+
+Actions cost one click each when they are reversible, which covers starting and
+stopping a single unit and the whole fleet. compass's own verbs do not ask
+either, and a dialog on a reversible action teaches the operator to click
+through the one dialog that matters. The database restore is the single guarded
+action, because it drops the database and its roles. Its dialog names the
+database it is about to drop and requires the environment name to be typed. The
+default flow stops the fleet, recreates, then starts the fleet. A second choice
+rebuilds without touching the services, for when the fleet is already down.
+
+A state route that cannot resolve a work tree, cannot run compass, or finds a
+compass without =env status= answers =ok: false= with a reason, and the client
+names that reason. It never renders an empty environment as though the
+environment were empty.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Plugin tests | 32 passed | =node --test= | working tree on =8536c56f3b= |
+| Host gate checks | 46 passed, 0 failed | =node scripts/verify.mjs= | same |
+| State payload | 5821 bytes | the gate prints it | same |
+| A cold read | 1.8s to 2.1s over three runs | =readEnvironment= timed in node | same |
+| A read while an action runs | 6.8ms, no compass process | the gate measures it | same |
+| Service units reported | 24, plus nats-server apart | =compass env status= | same |
+| Host half | 725 lines across three modules | =wc -l lib/index.js lib/compass.js lib/env.js= | same |
+| Browser half | 1042 lines, one file, no build step | =wc -l lib/client.js= | same |
+| Host gate checks after the cookie check | 49 passed, 0 failed | =node scripts/verify.mjs= | working tree on =8536c56f3b= |
+| Live scratch instance | both routes registered; anonymous read and anonymous =fleet-stop= both 401, authenticated read 200 | curl against the scratch instance on its own port | same |
+| A live action | job settled with code 1 and its tail | the scratch instance's action route | same |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=projects/ores.dsh_environment= is a DSH web plugin that shows the session's
+own checkout as a live environment and can act on it. It is built like
+=ores.dsh_kanban=: one host entry with two routes, one hand-written browser
+file with no build step, a frozen =CONTRACT.md=, and an install that copies a
+versioned tarball into a profile.
+
+The plugin reads =compass env status --json= and nothing else, so the
+readiness rule for a service, the drift comparison for the schema, and the
+thresholds that turn a restore age into a level have one home. A work tree
+whose compass predates the verb reports =compass-too-old= rather than
+rendering a wrong environment.
+
+Two seats. The readout arrives with the session and carries a health dot, the
+environment label, the database age, and the running count. The view carries
+three health tiles, the reasons behind the level, the database panel with its
+guarded Restore control, and the service rows with their counts, filters, and
+start and stop buttons.
+
+Three gates. =node --test= covers the transform, the action table, every
+validation refusal, the work-tree resolver, and the browser bundle loaded the
+way the module loader loads it. =scripts/check-manifest.mjs= covers the wiring
+DSH resolves by name. =scripts/verify.mjs= drives the captured routes against
+the real compass in this work tree: the resolution ladder and the rung each
+request took, the state contract, every failure reason, every action refusal,
+and one real action job with its tail and exit code.
+
+Two defects came out of the gates rather than out of review. The cached read
+carried =tree.source=, so a request that resolved by a different rung reported
+the rung the previous request took. And the read route re-read compass on every
+poll while an action ran, which is a Python process every two seconds for the
+minutes a rebuild takes; it now serves the last read during the action and
+drops it when the action settles.
+
+Not covered: a rendered panel in a real browser. Playwright is not installed in
+this checkout, so a browser gate could not be run here.
+
+A scratch DSH instance was the decisive check, and the one no unit gate could
+have replaced. It booted on its own port with the plugin installed from the
+packed tarball, logged both routes as registered, and then answered 200 to an
+anonymous read. That is what a rebound page would have seen. Both routes now
+require the authority-bound cookie =dsh web= issues, which reproduced live as
+401 anonymous, 401 for a forged cookie, and 200 with the real one. The action
+route is the reason it matters: this is the first ORE Studio plugin that
+changes the machine rather than reporting on it.
+
+A second defect came from re-reading the client after the gates were green. A
+service row's Start or Stop posted the row's label, and for the five compute
+wrapper replicas that label is =compute.wrapper-1=, which compass cannot
+resolve: its registry holds =ores.compute.wrapper= and a selector naming one
+replica matches nothing. Five of the twenty-four rows would have failed. The
+host model now carries the registry service name as a =selector= beside the
+label, rows of a replicated service share it, and the gate asserts that
+compass accepts the value the first row sends.

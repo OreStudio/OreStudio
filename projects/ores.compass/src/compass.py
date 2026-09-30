@@ -2832,31 +2832,6 @@ def _env_systemd_scopes():
     return scopes
 
 
-def _current_session_scope():
-    """Return (scope, slice) for the current session, or (None, None).
-
-    Reads /proc/self/cgroup and extracts both the innermost scope unit
-    name and its parent slice. Falls back gracefully when
-    /proc/self/cgroup is unreadable or the session isn't running under
-    a named scope.
-    """
-    try:
-        cgroup_text = Path("/proc/self/cgroup").read_text(encoding="utf-8")
-    except (OSError, UnicodeError):
-        return None, None
-    parts = cgroup_text.strip().split("/")
-    scope = None
-    s_slice = None
-    for p in reversed(parts):
-        if p.endswith(".scope") and scope is None:
-            scope = p
-        elif p.endswith(".slice") and s_slice is None:
-            s_slice = p
-        if scope is not None and s_slice is not None:
-            break
-    return scope, s_slice
-
-
 def _worktree_services_status(env_name):
     """Check if ores-<env>.target is active via systemctl --user.
 
@@ -4931,6 +4906,9 @@ def cmd_task(argv):
 
 def cmd_env(argv):
     """compass env — Provision pillar: environment setup."""
+    if argv and argv[0] == "status":
+        import compass_env_status
+        return compass_env_status.run(argv[1:], PROJECT_ROOT)
     if argv and argv[0] == "provision":
         import env_create
         return env_create.run_provision(argv[1:], PROJECT_ROOT)
@@ -5676,88 +5654,14 @@ def cmd_bearings(argv):
     _is_at_genesis_path = PROJECT_ROOT.resolve() == _genesis_dir.resolve()
     try:
         import compass_db as _cdb
-        import compass_services as _csv
+        import compass_env_status as _ces
         _env = _cdb.load_env(PROJECT_ROOT)
-        _preset = _env.get("ORES_PRESET", "(not set)")
-        _label = _env.get("ORES_CHECKOUT_LABEL", "?")
-        _envver = _env.get("ORES_ENV_VERSION", "?")
-        print(f"  Preset   : {_preset}  (label: {_label}, env v{_envver})")
-        _scope, _slice = _current_session_scope()
-        if _scope:
-            _slice_info = f"  (slice: {_slice})" if _slice else ""
-            print(f"  Scope    : {_scope}{_slice_info}")
-        else:
-            print("  Scope    : (no named systemd scope — running unscoped)")
-        try:
-            import env_init as _env_init
-            _required_envver = _env_init.current_version(PROJECT_ROOT)
-            _current_envver = int(_envver) if _envver != "?" else 0
-            if _current_envver < _required_envver:
-                print(f"  {_C_YELLOW}⚠  .env is stale (v{_current_envver}, "
-                      f"need v{_required_envver}) — "
-                      f"{_ycmd('compass env configure --preset ' + _preset + ' -y')}"
-                      f"{_C_RESET}")
-            elif _current_envver > _required_envver:
-                print(f"  {_C_YELLOW}⚠  .env version v{_current_envver} is newer "
-                      f"than required v{_required_envver} — proceeding.{_C_RESET}")
-        except Exception:
-            pass
-        try:
-            import env_activity as _env_activity
-            try:
-                _checkout_activity = int(_env.get("ORES_ENV_ACTIVITY", "0"))
-            except ValueError:
-                _checkout_activity = 0
-            _pending_activities = _env_activity.pending(PROJECT_ROOT, _checkout_activity)
-            if _pending_activities:
-                print(f"  {_C_YELLOW}⚠  {len(_pending_activities)} environment "
-                      f"activit{'y' if len(_pending_activities) == 1 else 'ies'} "
-                      f"outstanding for this checkout:{_C_RESET}")
-                for _num, _date, _title, _recipe_id in _pending_activities:
-                    print(f"     {_num}. {_title}  —  compass show {_recipe_id}")
-                print(f"     Then: {_ycmd('compass env activity ack ' + str(_pending_activities[-1][0]))}")
-        except Exception:
-            pass
-        try:
-            _vd = vcpkg_drift(PROJECT_ROOT)
-            if _vd["error"] == "no-submodule":
-                print(f"  {_C_YELLOW}⚠  vcpkg submodule not checked out — "
-                      f"{_ycmd('git submodule update --init vcpkg')}{_C_RESET}")
-            elif _vd["error"] is None and _vd["current"] != _vd["expected"]:
-                print(f"  {_C_YELLOW}⚠  vcpkg is on {_vd['current'][:9]}, "
-                      f"main expects {_vd['expected'][:9]} — "
-                      f"{_ycmd('git submodule update --init vcpkg')}{_C_RESET}")
-        except Exception:
-            pass
-        _info = _cdb.database_info(_env)
-        if _info:
-            _delta, _drift_label, _col, _warning = _cdb.schema_drift(PROJECT_ROOT, _info)
-            _chip = (f" (schema {_info['schema_version']}, built "
-                     f"{_age_human(_delta)} behind HEAD)"
-                     if _delta is not None
-                     else f" (schema {_info['schema_version']})")
-            print(f"  Database : {_col}restored {_info['restored_at']}"
-                  f"{_chip}{_C_RESET}")
-            if _warning:
-                print(f"  {_warning}")
-        else:
-            print(f"  Database : {_C_RED}unreachable{_C_RESET}  "
-                  f"({_ycmd('compass db recreate -y -k')})")
-        try:
-            _ctx = _csv.Ctx(PROJECT_ROOT, _env, None)
-            _st = _csv.gather_counts(_ctx)
-            _c = _st["counts"]
-            _all_up = (_c["running"] and not _c["stopped"]
-                       and not _c["missing"])
-            _tone = _C_GREEN if _all_up else _C_YELLOW
-            _hint = ("" if _c["running"] or _c["starting"]
-                     else f"  ({_ycmd('compass services start')})")
-            print(f"  Services : {_tone}running={_c['running']} "
-                  f"starting={_c['starting']} stopped={_c['stopped']} "
-                  f"missing={_c['missing']}{_C_RESET}  "
-                  f"(nats: {_st['nats']}){_hint}")
-        except SystemExit:
-            print("  Services : (no preset in .env — compass env configure)")
+        # The environment block is read from the same gather `compass env
+        # status` prints and `compass env status --json` emits, so
+        # orientation, the verb, and the DSH plugin cannot disagree about
+        # one checkout's environment.
+        for _line in _ces.render_lines(_ces.gather(PROJECT_ROOT, _env)):
+            print(_line)
         # ── Genesis env check (when .env exists) ────────────────────────────
         if not _is_at_genesis_path and not _genesis_dir.is_dir():
             print(f"  {_C_YELLOW}⚠  Genesis env (ores_dev_prime_origin) not found at "

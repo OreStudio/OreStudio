@@ -143,10 +143,31 @@ def as_number(text: str):
         return None
 
 
+# The schema types a date as xs:date, which admits both the basic ISO 8601
+# spelling (20160203) and the extended one (2016-02-03). The corpus's older
+# documents state the basic form and the exporter states the extended one, so
+# a re-spelled date would read as one lost pair and one unexplained pair.
+# Both sides are canonicalised to the extended form, which is what the gate
+# means by zero loss: the same date, however it is written.
+_BASIC_DATE = re.compile(r"^\d{8}$")
+_EXTENDED_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def canonical_date(text: str) -> str:
+    digits = text.replace("-", "")
+    return f"{digits[0:4]}-{digits[4:6]}-{digits[6:8]}"
+
+
+def is_iso_date(text: str) -> bool:
+    return bool(_BASIC_DATE.match(text) or _EXTENDED_DATE.match(text))
+
+
 def normalise_value(text: str | None) -> str:
     if text is None:
         return ""
     stripped = text.strip()
+    if is_iso_date(stripped):
+        return canonical_date(stripped)
     number = as_number(stripped)
     if number is None:
         return stripped

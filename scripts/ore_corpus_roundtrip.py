@@ -190,8 +190,8 @@ def main() -> int:
     args = parser.parse_args()
 
     work_dir = args.work_dir
-    source_dir = work_dir / "pack"
-    merged_dir = work_dir / "source"
+    pack_dir = work_dir / "pack"
+    union_dir = work_dir / "union"
     output_dir = work_dir / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -200,16 +200,34 @@ def main() -> int:
         f"Bond corpus: {len(portfolios)} portfolio(s) and "
         f"{len(config)} configuration document(s) under {args.corpus_dir}"
     )
-    stage(portfolios + config, source_dir)
-    children = merge_sources(
-        source_dir, merged_dir / "portfolio_roundtrip.xml", len(portfolios)
-    )
+    # Fold the corpus into one document and import *that*, rather than the
+    # documents it came from. The corpus states the same trade id in more
+    # than one document and the import keys on the id, so importing every
+    # document would leave whichever copy it saw last while the comparison
+    # holds the one it was folded from. One document, one write, one
+    # comparison.
+    staging = work_dir / "staged"
+    stage(portfolios + config, staging)
+    union = union_dir / "portfolio_roundtrip.xml"
+    children = merge_sources(staging, union, len(portfolios))
     print(f"Union of the sources: {children} top-level element(s)")
+
+    # The pack holds the union and the configuration documents beside it,
+    # and nothing else: the portfolios it was folded from would import a
+    # second copy of every trade. The classifier sees the union alone,
+    # because the export is one document and a configuration document has
+    # no output of its own to pair with.
+    if pack_dir.exists():
+        shutil.rmtree(pack_dir)
+    pack_dir.mkdir(parents=True)
+    shutil.copy2(union, pack_dir / "000-union.xml")
+    for document in sorted(staging.glob("*.xml"))[len(portfolios):]:
+        shutil.copy2(document, pack_dir / document.name)
 
     output = output_dir / "portfolio_roundtrip.xml"
     if output.exists():
         output.unlink()
-    script = write_script(work_dir, source_dir, output)
+    script = write_script(work_dir, pack_dir, output)
     print(f"Running the import and export ({script.name})...")
     if run_script(script) != 0:
         return 1
@@ -218,9 +236,9 @@ def main() -> int:
         return 1
 
     if not args.keep:
-        shutil.rmtree(source_dir, ignore_errors=True)
+        shutil.rmtree(work_dir, ignore_errors=True)
 
-    return classify(merged_dir, output_dir, args.all_products)
+    return classify(union_dir, output_dir, args.all_products)
 
 
 if __name__ == "__main__":

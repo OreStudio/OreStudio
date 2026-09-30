@@ -35,3 +35,15 @@ Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
 trade Bond
   source: [('StartDate', '20160203'), ('EndDate', '20260203')]
   export: [('StartDate', '2016-02-09'), ('EndDate', '2026-02-09')]
+
+=== the corpus states five securities, one of them inconsistently ===
+distinct SecurityId: 5
+issuer/credit-curve statements for SECURITY_1: 105
+leg notionals stated for SECURITY_1: ['1.000000', '10000000.000000']
+
+=== classifier with dates compared as dates ===
+Documents: 1  Failures: 1  Skipped: 0
+Classified: numeric 31, boolean 128
+In scope, bond products and the trade envelope: lost 1013, unexplained 583
+Out of scope, the other instrument families: lost 7926, unexplained 125
+Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)

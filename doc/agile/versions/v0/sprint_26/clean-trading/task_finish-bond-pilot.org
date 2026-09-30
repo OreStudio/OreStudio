@@ -177,6 +177,25 @@ rows the work touches.
 - The configuration documents make no difference to the numbers: the run
   with them staged and the run without read the same, so whatever the
   import is dropping, it is not the conventions.
+- The corpus is not a set of consistent reference data, and the
+  remaining losses are that, not a defect. It states five distinct
+  =SecurityId= values in total, and about 117 trades state =SECURITY_1=
+  with a different issuer, a different credit curve and a different
+  notional each: =CPTY_1= to =CPTY_100=, =BOND_BB= against =BOND_BBB=
+  against =CPTY_C=, and =10000000= against =1=. Our model holds one issue
+  per security, which is the point of the split, so the export can only
+  return one of the contradictory statements. A gate that reads zero
+  needs the corpus held to its own consistency: one statement per
+  security, with the rest recorded.
+- The classifier now compares a date as a date. =xs:date= admits the
+  basic ISO 8601 spelling the corpus's older documents state and the
+  extended one the exporter states, and the gate read a re-spelled date
+  as one lost pair and one unexplained pair. Normalising both sides took
+  the in-scope reading from lost 1316 to lost 1013.
+- The harness imports the *union*, not the documents it was folded from.
+  Importing every document leaves whichever copy of a duplicated trade id
+  the import saw last, while the comparison holds the one it folded from,
+  and the two disagree for reasons that are not the code's.
 - The in-scope losses are mostly the *spelling* of a date, not its loss.
   Every source document that carries the full bond terms states them in
   the corpus's basic ISO form and the export states the extended one: a

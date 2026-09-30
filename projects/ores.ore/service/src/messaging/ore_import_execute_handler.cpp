@@ -1254,6 +1254,8 @@ save_bond_instrument(Nats& nats,
         issue_req.change.write.price_quote_base_value = issue.price_quote_base_value;
         issue_req.change.write.sub_type = issue.sub_type;
         issue_req.change.write.price_type = issue.price_type;
+        issue_req.change.write.payer = issue.payer;
+        issue_req.change.write.credit_risk = issue.credit_risk;
         auto resp = nats_call(nats, issue_req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue failed" : error;

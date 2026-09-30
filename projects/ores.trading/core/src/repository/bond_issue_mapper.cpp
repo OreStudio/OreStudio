@@ -65,6 +65,8 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.price_quote_base_value = v.price_quote_base_value;
     r.sub_type = v.sub_type;
     r.price_type = v.price_type;
+    r.payer = v.payer;
+    r.credit_risk = v.credit_risk;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -102,6 +104,8 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.price_quote_base_value = v.price_quote_base_value;
     r.sub_type = v.sub_type;
     r.price_type = v.price_type;
+    r.payer = v.payer;
+    r.credit_risk = v.credit_risk;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

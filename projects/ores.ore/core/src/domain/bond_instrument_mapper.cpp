@@ -1127,6 +1127,13 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
         issue.sub_type = std::string(*bd.SubType);
     if (bd.PriceType)
         issue.price_type = to_string(*bd.PriceType);
+    // The datum's own payer and credit-risk flag: bondData states both at
+    // the top level, beside each leg's own payer, and bondReferenceDatum
+    // states neither.
+    if (bd.Payer)
+        issue.payer = std::string(*bd.Payer);
+    if (bd.CreditRisk)
+        issue.credit_risk = to_string(*bd.CreditRisk);
     if (bd.BondNotional)
         data.instrument.notional = to_optional_decimal(std::string(*bd.BondNotional));
 
@@ -1176,10 +1183,13 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     set_present_text(bd.PriceQuoteMethod, issue.price_quote_method);
     set_present_text(bd.PriceQuoteBaseValue, issue.price_quote_base_value);
     set_present_text(bd.SubType, issue.sub_type);
+    set_present_text(bd.Payer, issue.payer);
     if (issue.price_type) {
         if (const auto parsed = parse_price_type(*issue.price_type))
             bd.PriceType = *parsed;
     }
+    if (issue.credit_risk)
+        bd.CreditRisk = parse_code(*issue.credit_risk, bool__count, bool_::N);
     set_present_decimal(bd.BondNotional, data.instrument.notional);
 
     // The legs are emitted when the document held any, or when the issue

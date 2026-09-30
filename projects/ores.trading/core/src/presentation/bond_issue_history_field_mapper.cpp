@@ -59,6 +59,8 @@ std::vector<ores::diff::domain::field_value> render_bond_issue_fields(const doma
                       .value = v.price_quote_base_value.value_or(std::string{})});
     fields.push_back({.name = "Sub Type", .value = v.sub_type.value_or(std::string{})});
     fields.push_back({.name = "Price Type", .value = v.price_type.value_or(std::string{})});
+    fields.push_back({.name = "Payer", .value = v.payer.value_or(std::string{})});
+    fields.push_back({.name = "Credit Risk", .value = v.credit_risk.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

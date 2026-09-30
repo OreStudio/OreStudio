@@ -135,6 +135,45 @@ TEST_CASE("the_six_issue_fields_survive_the_round_trip", tags) {
 }
 
 // =============================================================================
+// The datum's own payer and credit-risk flag
+// =============================================================================
+
+TEST_CASE("the_datum_payer_and_credit_risk_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // bondData states both at the top level, beside each leg's own payer,
+    // and bondReferenceDatum states neither. CreditRisk is ORE's loose
+    // bool, so the column holds the spelling rather than a flag.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Payer_And_Credit_Risk">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567891</SecurityId>
+      <Payer>true</Payer>
+      <CreditRisk>false</CreditRisk>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.issue.payer);
+    CHECK(*r.issue.payer == "true");
+    REQUIRE(r.issue.credit_risk);
+    CHECK(*r.issue.credit_risk == "false");
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    const auto& bd = *rt.BondData;
+    REQUIRE(bd.Payer);
+    CHECK(std::string(*bd.Payer) == "true");
+    REQUIRE(bd.CreditRisk);
+    CHECK(to_string(*bd.CreditRisk) == "false");
+
+    BOOST_LOG_SEV(lg, info) << "The datum's payer and credit-risk flag survive the round trip.";
+}
+
+// =============================================================================
 // The coupon leg keeps its own schedule
 // =============================================================================
 

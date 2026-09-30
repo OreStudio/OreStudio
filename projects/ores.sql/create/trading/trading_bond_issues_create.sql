@@ -42,6 +42,13 @@
  * notional. It stays because a row set that holds an issue and no legs
  * still has to export a leg, and it is what that leg's notional is built
  * from.
+ *
+ * Two columns come from the trade's own copy of the datum and not from
+ * bondReferenceDatum: payer and credit_risk are bondData's top-level
+ * members (instruments.xsd lines 404 and 406), which the reference datum
+ * does not state. They live here because bondData is the trade's copy of
+ * the issue's terms and every other member of it is already mapped to this
+ * row, so leaving the two out would drop them from the round trip.
  */
 
 create table if not exists "ores_trading_bond_issues_tbl" (
@@ -63,6 +70,8 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "price_quote_base_value" text null,
     "sub_type" text null,
     "price_type" text null,
+    "payer" text null,
+    "credit_risk" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,

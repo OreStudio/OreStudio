@@ -152,4 +152,5 @@ builds the wrong thing.
 | [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] | story | The programme this group belongs to, and the order it keeps. |
 | [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] | knowledge | Why a default role is a floor and not a ceiling, which is what the request journey answers. |
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why a journey that waits on a person is a workflow instance. |
+| [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] | knowledge | The rule this group's reads obey: which permission check, why the self read and the privileged read are separate subjects, and where a refusal travels. |
 | [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the screens are held to. |

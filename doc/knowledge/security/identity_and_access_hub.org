@@ -67,6 +67,15 @@ worked example: the allowed-currency set that constrains what may be
 booked shows permissions doing real domain work rather than guarding a
 screen.
 
+** What a read may return
+
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — how a read
+decides whether to answer, which of the tree's two permission checks it uses,
+why a self read and a privileged read are different subjects rather than one
+subject with a parameter, and where a refusal travels. Read it before adding a
+read, and especially before changing one that answers about somebody else's
+access.
+
 ** How a service acts for a user
 
 [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth

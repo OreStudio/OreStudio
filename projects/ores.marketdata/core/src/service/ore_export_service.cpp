@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <sstream>
 #include <stdexcept>
@@ -39,11 +40,9 @@ namespace {
 /**
  * @brief One stored observation as the serializer's input.
  *
- * Every writer stores the key its row is written under -- the import keeps the
- * file's, the ingest loop keeps the tick's, and the republish service and the DQ
- * publish project or carry their own -- so the export no longer rebuilds one. A
- * row with none is a row no writer produced, and the export says so rather than
- * writing a key it cannot know.
+ * The export emits the key the row was written under; a row with none is a row
+ * no writer produced, and the export says so rather than writing a key it
+ * cannot know.
  */
 ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
     if (o.key.empty())
@@ -54,6 +53,18 @@ ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
     d.value = o.value;
     d.key = o.key;
     return d;
+}
+
+/**
+ * @brief Whether a series is a fixing rather than a quote.
+ *
+ * The identity's own type is the authority, as it is for the parser's index-name
+ * projection: asking whether a name projects would confuse a fixing the grammar
+ * cannot name with a quote.
+ */
+bool is_fixing_series(const domain::market_data_identifier& identifier) {
+    return std::visit([](const auto& id) { return id.type == domain::instrument_type::fixing; },
+                      identifier);
 }
 
 /**
@@ -86,12 +97,24 @@ ore_export_result ore_export_service::write_all() const {
     std::vector<ores::ore::market::market_datum> data;
     std::vector<ores::ore::market::fixing> fixings;
     for (const auto& s : series) {
-        // The identity says which kind of series this is: an index name projects
-        // from a fixing's and nothing projects from a quote's, so the export reads
-        // the fixings of the first and the observations of the second without a
-        // classification column to tell them apart.
-        const auto identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
-        if (const auto index_name = core::oresmd_projections::to_index_name(identifier)) {
+        // The identity says which kind of series this is, so the export reads a
+        // fixing's rows and a quote's rows without a classification column. A
+        // series the parser cannot read at all is a data-integrity error and names
+        // itself rather than aborting with the parser's own message.
+        domain::market_data_identifier identifier;
+        try {
+            identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
+        } catch (const std::exception& e) {
+            throw std::runtime_error("market data export: series " +
+                                     boost::uuids::to_string(s.id) + " carries the identity '" +
+                                     s.oresmd_uri + "', which does not parse: " + e.what());
+        }
+        if (is_fixing_series(identifier)) {
+            const auto index_name = core::oresmd_projections::to_index_name(identifier);
+            if (!index_name)
+                throw std::runtime_error("market data export: fixing series " +
+                                         boost::uuids::to_string(s.id) +
+                                         " names no index: " + s.oresmd_uri);
             for (const auto& f : fixings_repo.read_latest(ctx_, s.id))
                 fixings.push_back(to_fixing(*index_name, f));
             continue;

@@ -33,6 +33,11 @@
  * The DQ artefact's rows name the series identity and the observation key now,
  * so its three columns go with the series row's.
  *
+ * A consumer that wants the triple back decomposes the key, which is where its
+ * tokens come from in the first place. The migration assumes every row already
+ * carries a non-empty identity, which the column has required since it became the
+ * natural key.
+ *
  * The schema is applied by recreation, so this migration is for a database built
  * before the change: a rebuild does not have the columns at all.
  */

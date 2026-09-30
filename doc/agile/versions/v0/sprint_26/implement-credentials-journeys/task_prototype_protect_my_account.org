@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: B7F44B5A-2DF4-4A89-9326-1D17A1FFF8E9
+:END:
+#+title: Task: Prototype Protect my account
+#+description: [wayfinder:prototype] The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: prototype/protect-my-account
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer one question with a throwaway prototype: what should the member's
+*Security* screen look like in =ores.web=?
+
+[[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] carries one
+screen. It holds the password form, the sign-in state and the places the
+account is signed in, because the member thinks of them as one thing. The
+prototype decides the layout, the order of the panels, the copy of the empty
+and unavailable states, and how the screen presents the operations the server
+does not have.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. |
+| Next         | Cut the branch and read the journey's wireframe and the runtime it rides. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- A =prototype/protect-my-account= branch, cut from
+  =feature/implement-credentials-journeys=, runs the screen from one command
+  on the journey runtime the Setup group landed.
+- At least two variants of the screen are compared on one route, switchable
+  without a rebuild, and the losing variants stay on the branch.
+- Every panel states the truth about its data. The active sign-ins read the
+  working BFF route, and the panels with no server operation say the data is
+  not available instead of inventing rows.
+- The password form asks for the current password, because the server verifies
+  it on this tree, and it never claims a strength the server does not enforce.
+- The names, the sections and the actions follow the
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]] and the
+  [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]].
+- The branch stays unmerged, and * Result carries the verdict, the rejected
+  variants, the design decisions and every document claim the tree contradicts.
+
+* Plan
+
+1. Cut =prototype/protect-my-account= from
+   =feature/implement-credentials-journeys=.
+2. Read the journey document's wireframe, then
+   =projects/ores.web/packages/web/src/journeys/runtime.ts=, =parts.tsx= and
+   =JourneyPage.tsx=, and follow their conventions.
+3. Build two or three variants on one route, with a switch that needs no
+   rebuild, and state the full screen state after every action.
+4. Hold the state in memory. The prototype reads the account and the sessions
+   from the running fleet, and the panels that have no operation say so.
+5. Drive each variant through the same cases: a member with no other session, a
+   member with three, a locked account, a forced password change, and a failed
+   password change.
+6. Record the verdict in * Result. Leave the branch unmerged.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The journey's gaps, from the * What is missing section of
+[[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]]. The screen
+states each one, and the prototype decides how.
+
+1. *No way to end one session.* =iam.v1.auth.logout= ends only the caller's own
+   session. A member who sees an unfamiliar sign-in cannot end it.
+2. *No TOTP enrolment.* =account.totp_secret= exists, and nothing enrols,
+   replaces or clears a secret for an existing account.
+3. *=iam.v1.sessions.active= returns nothing.* The subject exists and is a stub.
+   The BFF answers =/api/v1/sessions/active= from the session repository, so the
+   panel has a working read today.
+4. *No session statistics.* The continuous aggregates exist with no subject.
+5. *The current password is verified.* The journey document says the handler
+   ignores =current_password=; on this tree
+   =account_operations_service::change_password= verifies it. This claim is
+   stale, and the correction belongs to the extraction pass.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

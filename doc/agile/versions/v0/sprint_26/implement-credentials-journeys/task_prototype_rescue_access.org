@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 0CD0EAD3-1714-432A-9E64-0C41C4F34E45
+:END:
+#+title: Task: Prototype Rescue access
+#+description: [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: prototype/rescue-access
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer one question with a throwaway prototype: how does a tenant
+administrator get one colleague back into the system, or shut the account
+down, on one screen?
+
+[[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] carries one screen.
+It holds the account, its security state, the password form and the actions,
+because the administrator thinks of them as one decision. The screen starts
+from a support call, so the prototype decides how the screen opens, how it
+shows the recommended action, and how it states the actions the server cannot
+perform.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. |
+| Next         | Cut the branch and read the journey's wireframe and the runtime it rides. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- A =prototype/rescue-access= branch, cut from
+  =feature/implement-credentials-journeys=, runs the screen from one command on
+  the journey runtime the Setup group landed.
+- At least two variants are compared on one route, switchable without a
+  rebuild. One variant keeps the account list in view, because the
+  administrator arrives from it.
+- Lock and unlock are one control with the state it produces, not two controls
+  that contradict each other, and the screen states what a lock does not do:
+  it leaves open sessions open.
+- The password form is drawn, and the screen states that the reset flag cannot
+  be set over NATS today.
+- Every panel whose data has no read path says the data is not available.
+- The branch stays unmerged, and * Result carries the verdict, the rejected
+  variants, the design decisions and every document claim the tree contradicts.
+
+* Plan
+
+1. Cut =prototype/rescue-access= from =feature/implement-credentials-journeys=.
+2. Read the journey document's wireframe, then the account and login-record
+   reads the screen needs, and the journey runtime's step parts.
+3. Build two or three variants on one route, with a switch that needs no
+   rebuild, and state the full screen state after every action.
+4. Hold the state in memory, and drive the screen from the running fleet where
+   a read exists.
+5. Drive each variant through the same cases: an account locked by failed
+   attempts, an account with no sign-in history, a successful reset, a reset the
+   policy refuses, and a lock on an account with an open session.
+6. Record the verdict in * Result. Leave the branch unmerged.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The journey's gaps, from the * What is missing section of
+[[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]]. The screen states
+each one, and the prototype decides how.
+
+1. *No forgot-password or self-service recovery.* Nothing lets a member who
+   cannot sign in start recovery. The only password subjects are
+   =iam.v1.accounts.change-password= and =iam.v1.accounts.reset-password=.
+2. *No activate or deactivate.* An account has no active flag. The only state
+   an administrator can change is =login_info.locked=.
+3. *The reset flag cannot be set over NATS.* =password_reset_required= exists,
+   =account_operations_service::set_password_reset_required= implements it, and
+   the HTTP route uses it. No NATS subject calls it.
+4. *Locking does not end sessions.* =iam.v1.accounts.lock= writes the login
+   record only, and an open session stays open until it expires.
+
+The three write subjects exist and each needs its own permission:
+=iam.v1.accounts.reset-password= needs =iam::accounts:reset_password=,
+=iam.v1.accounts.lock= needs =iam::accounts:lock=, and
+=iam.v1.accounts.unlock= needs =iam::accounts:unlock=. A tenant administrator
+who holds the role has all three.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

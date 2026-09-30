@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists stress_test_libraries_tbl_tenant_isolation_policy on "ores_analytics_stress_test_libraries_tbl";
 drop rule if exists ores_analytics_stress_test_libraries_delete_rule on "ores_analytics_stress_test_libraries_tbl";
 drop trigger if exists ores_analytics_stress_test_libraries_insert_trg on "ores_analytics_stress_test_libraries_tbl";
 drop function if exists ores_analytics_stress_test_libraries_insert_fn;

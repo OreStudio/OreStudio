@@ -180,6 +180,7 @@ The order the document wrote the shift in, which is what a reader orders by: the
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_stress_test_shifts_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

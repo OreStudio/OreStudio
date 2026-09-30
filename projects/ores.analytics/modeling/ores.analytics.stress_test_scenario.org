@@ -105,6 +105,7 @@ The order the document wrote the scenario in.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_stress_test_scenarios_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

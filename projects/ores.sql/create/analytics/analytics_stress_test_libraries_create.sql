@@ -139,3 +139,20 @@ on delete to "ores_analytics_stress_test_libraries_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Stress Test Library
+-- =============================================================================
+alter table ores_analytics_stress_test_libraries_tbl enable row level security;
+
+drop policy if exists stress_test_libraries_tbl_tenant_isolation_policy
+    on ores_analytics_stress_test_libraries_tbl;
+
+create policy stress_test_libraries_tbl_tenant_isolation_policy
+on ores_analytics_stress_test_libraries_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

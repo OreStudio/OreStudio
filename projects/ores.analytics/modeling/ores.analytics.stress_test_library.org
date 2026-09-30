@@ -76,6 +76,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_stress_test_libraries_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

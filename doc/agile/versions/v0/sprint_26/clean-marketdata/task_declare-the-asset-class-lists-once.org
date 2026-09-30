@@ -30,9 +30,9 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The catalogue is declared and the taxonomy seed is generated from it. =ores.refdata.asset_class_catalogue= holds the seven product classes with the prose the seed used to carry, the twelve oresmd authorities and the mapping between them; the oresmd batch loader refuses a spec whose authority the namespace does not hold and an authority with no spec; and a new =ores.sql.asset_class= facet generates =refdata_asset_class_codes_populate.sql= from the model, byte-identical to the hand-written script but for its generated banner. |
+| Now          | The catalogue is declared and two outputs are generated from it. =ores.refdata.asset_class_catalogue= holds the seven product classes with the prose the seed used to carry, the twelve oresmd authorities and the mapping between them; the oresmd batch loader refuses a spec whose authority the namespace does not hold and an authority with no spec; a new =ores.sql.asset_class= facet generates =refdata_asset_class_codes_populate.sql= from the model; and the fixing defect is fixed -- the =FIXING= rule reads its class from the index name, through a C++ mapping the catalogue generates into =ores.marketdata.api=. |
 | Waiting on   | Nothing. The fixing-identity task is closed and the =power= authority is in the namespace. |
-| Next         | Generate the DQ asset-class rows from the model, derive the briefs and the documentation list, make a fixing's class follow its index name, and fix or record the census's drifts. |
+| Next         | Generate the DQ asset-class rows from the model, derive the briefs and the documentation list, and fix or record the census's drifts. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -228,3 +228,24 @@ documentation gates all pass.
 
 What remains: the DQ asset-class rows, the briefs and documentation list, a fixing's
 class following its index name, and the census's drifts.
+
+**A second unit made a fixing take its class from its index name.** The one =FIXING=
+rule classified every index fixing as =interest_rates=, which is true of the rates names
+and false of the equity, commodity, power, inflation and security fixings the corpus
+carries -- the defect the task calls the reason it is urgent. The rule now names a third
+=asset_class_source=, =index_name=: the qualifier is the index name, the name projects
+onto an oresmd identifier, and the catalogue's mapping turns that identifier's authority
+into a refdata class. The mapping reaches C++ as a generated header in
+=ores.marketdata.api=, written from the same model by a new =ores.cpp.asset_class= facet;
+an authority the catalogue maps to no class, such as a correlation or the generic
+wrapper, answers nothing, and a name no class can name leaves the fixing's class list
+empty rather than guessing.
+
+The table's check constraint and the entity's domain doc are regenerated, and the seed
+row is =index_name= with a null class. Measured on the branch, on a database recreated
+from the scripts: the classifier suite's corpus walk still classifies all 158 fixing
+keys and its new cases read =USD-SOFR= as interest rates and an unnameable name as no
+class; the workflow suite's recovery case flaked once under the parallel run and passed
+on its own, which is a timing test unrelated to this change; the drift check reports no
+drift for =marketdata= and none across the catalogue; and the codegen, SQL and
+documentation gates all pass.

@@ -28,11 +28,11 @@ It is deliberately its own journey and not a step of [[id:33B0C287-8262-4C2A-9F7
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | The journey is written. The product owner chose a request that a tenant administrator approves, and the document carries the two actors, the two screens, the coverage table and the gaps. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Land the request subjects and the waiting state the journey names. The implementation belongs to the Access group's story. |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -90,7 +90,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The acceptance names =0010510B= as *Know what I may do*. That id is *Register a service account*. | =task_create-the-role-request-journey.org= | Accept | The link went to =3CA48F40=, which is the journey the criterion means. The Result records the defect. |
+| 2 | =misspell-fixer .= exits 1 over the repository. | (repository root) | Decline | Every hit is the upstream identifier =LOAD_PROFILE_1_EXPLICT= in sprint 25 task records, plus files under =node_modules/=. All are present on =origin/main= in files this branch does not touch. An isolated run over this change's paths reports "nothing to replace". |
+| 3 | The journey claims =iam.v1.roles.assign= checks =iam::roles:assign=, and that the reads check nothing further. | =journey_ask_for_more_access.org= | Decline | Checked against =authorization_handler.hpp= and =role_handler.hpp=: assign and revoke gate on their own permissions, while =by-account=, =permissions-by-account=, =permissions= and =roles.list= prove a session only. The claim is what the code does. |
+| 4 | Four-eyes is not enforceable today: an administrator who may answer may also ask. | =journey_ask_for_more_access.org= | Accept | Recorded as the third gap rather than assumed, with the guard named as its candidate. A design document records a missing guard; it cannot add one. |
+| 5 | The journey needs five subjects that do not exist, and a waiting state the engine does not have. | =journey_ask_for_more_access.org= | Accept | Both are in * What is missing, and the coverage table marks the five =missing=. They are the implementation's work, which the task's Notes place in the Access group's story. |
+| 6 | No test surface: the change is one document and two wireframes. | (whole change) | Decline | The verification a journey admits is the extraction standard's: the coverage check against the generated protocol, the wireframe render, and link resolution. All three ran and are clean. There is no executable artefact to test. |
 
 * Result
 

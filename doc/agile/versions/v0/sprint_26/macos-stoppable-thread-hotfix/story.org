@@ -22,10 +22,13 @@ projects/ores.workflow/core/include/ores.workflow.core/service/workflow_engine.h
   error: no type named 'jthread' in namespace 'std'; did you mean 'thread'?
 #+end_src
 
-Apple's libc++ implements =std::stop_token= and =std::stop_source= -- the
-token in the engine's lambda resolves -- but not =std::jthread=. The deadline
-watch the run's step deadline needs is therefore the only thing that fails,
-and it fails on the one platform the rest of the estate cannot check.
+Apple's libc++ has no @c std::jthread. This story first recorded that the
+stop token and the stop source were available, because the engine's lambda
+took one and the compiler did not complain: it did not complain because the
+declaration holding the lambda had already failed. The build after the fix
+named both as missing too, and
+[[id:9C4A1F27-6B38-4E52-8D71-3A5F0C9B2E64][the follow-up hotfix]] implements the
+stop state in the shim as a result.
 
 The gap has cost a build before: =caf6de734d= reverted a comms thread to
 =std::thread= on 2026-03-12 for the same reason. Reverting this one the same

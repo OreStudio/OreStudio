@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 9C4A1F27-6B38-4E52-8D71-3A5F0C9B2E64
+:END:
+#+title: Story: Hotfix: Apple's libc++ has no C++20 stop machinery at all
+#+description: The portable stoppable thread still failed the macOS build, because the earlier diagnostic named only std::jthread and the shim kept std::stop_token and std::stop_source. Xcode 16.2's libc++ has none of the three. The shim now carries its own stop source -- a shared atomic flag -- and depends on nothing but thread, atomic, memory and utility.
+#+type: story
+#+level: s2
++#+filetags: :hotfix:platform:macos:concurrency:sprint_26:v0:
++#+created: 2026-09-30
++#+updated: 2026-09-30
++#+environment: clever_dijkstra
++#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The macOS legs are red again, one hour after the portable thread was added:
+
+#+begin_src text
+stoppable_thread.hpp:99:24: error: no type named 'stop_token' in namespace 'std'
+stoppable_thread.hpp:113:10: error: no type named 'stop_source' in namespace 'std'
+#+end_src
+
+[[id:5D1E7A34-8C26-4B0F-9A73-6E4B2C8D1F05][The earlier story]] assumed the gap was
+=std::jthread= alone, because the error named only that type and the engine's
+lambda took a =std::stop_token= without the compiler complaining. It did not
+complain because the declaration holding the lambda had already failed. With
+that fixed, the next error is the token: Xcode 16.2's libc++ implements
+neither =std::stop_token= nor =std::stop_source=.
+
+The lesson is the one the estate already applies elsewhere: when a platform
+gap is found, do not assume its boundary from one diagnostic. The shim now
+depends on nothing a supported library can be missing.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- =stoppable_thread= carries its own =stop_source=: a shared atomic flag with
+  =request_stop()= and =stop_requested()=.
+- No source in the estate names =std::jthread=, =std::stop_token= or
+  =std::stop_source=.
+- The tree builds, the workflow and platform suites pass, and the macOS legs
+  build and test.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1E8D5B43-7A26-49C0-9F38-2B6D4E1A7C95][Implement Hotfix: Apple's libc++ has no C++20 stop machinery at all]] | DONE | 2026-09-30 | 2026-09-30 | Replace the standard stop types with the shim's own stop source, move the engine onto it, correct the earlier story's premise, and take it to a macOS verification run. |
+
+* Decisions
+
+- The stop machinery is implemented in the shim rather than the standard types
+  kept behind a preprocessor branch. A branch per platform would put the
+  portability decision in the caller, which is what the concurrency header
+  exists to prevent.
+- The callable takes the shim's =stop_source= by value. Copies share the one
+  atomic flag, so the callable can hold it without depending on the thread
+  object's lifetime.
+- The earlier story is corrected in place rather than left standing: it states
+  that Apple implements the stop token and the stop source, which the second
+  build disproved.
+
+* Out of scope
+
+- The other macOS failures, if any, on a main that has moved since.

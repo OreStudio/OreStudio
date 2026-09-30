@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
-#+branch: feature/implement-credentials-journeys
+#+branch: prototype/protect-my-account
 #+pr:
 #+blocked_on:
 #+blocked_since:

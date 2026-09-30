@@ -115,6 +115,11 @@ task.
   =prototype/<journey>=, and left unmerged. This follows the sprint 25
   prototype story and the programme's decision that the prototypes are the
   design record and are ported, not merged.
+- *A prototype task's branch field names its prototype branch, and its record
+  rides this story's branch.* A branch that never merges cannot carry a
+  verdict, so every task's Result and state land here, and the branch field
+  points at the code. Every other task's branch field points at this branch,
+  because that is where both its work and its record are.
 - *The journey documents stay with the extraction pass.* This story does
   not rewrite them. Where a prototype proves a document wrong, the
   correction goes to that document under

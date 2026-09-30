@@ -34,11 +34,11 @@ does not have.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing. |
-| Next         | Cut the branch and read the journey's wireframe and the runtime it rides. |
+| Now          | Three variants run on =/prototype/security=. |
+| Waiting on   | The product owner's choice of variant. |
+| Next          | Record the accepted variant, then write the screen's build task. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -48,9 +48,9 @@ does not have.
   on the journey runtime the Setup group landed.
 - At least two variants of the screen are compared on one route, switchable
   without a rebuild, and the losing variants stay on the branch.
-- Every panel states the truth about its data. The active sign-ins read the
-  working BFF route, and the panels with no server operation say the data is
-  not available instead of inventing rows.
+- Every panel states the truth about its data. No read path exists for the
+  account, the login record or the sessions, so the active sign-ins say so, and
+  no panel invents rows it could not read.
 - The password form asks for the current password, because the server verifies
   it on this tree, and it never claims a strength the server does not enforce.
 - The names, the sections and the actions follow the
@@ -119,3 +119,67 @@ states each one, and the prototype decides how.
 |   |                 |      |          |       |
 
 * Result
+
+Built 2026-09-30. Snapshot: branch =prototype/protect-my-account=. The product
+owner has not chosen a variant yet, so nothing here is carried into the build.
+
+Route =/prototype/security?variant=a|b|c=, switched from the bar at the foot of
+the page. The page needs no server: the prototype answers its path before the
+gate, so a reviewer runs
+
+#+begin_src sh
+npm run dev:web --workspace @ores.web
+#+end_src
+
+and opens =http://localhost:5173/prototype/security?variant=a=.
+
+*Three variants on one screen.*
+
+- *A · Password first.* One column, in the order the member acts: the password
+  form, the sign-in state, then the places the account is signed in.
+- *B · Sessions first.* The sign-ins lead, because a member opens *Security*
+  to check them; the form and the state share a row under it.
+- *C · Two columns.* The password form is a fixed left column, so its rules
+  stay in view while the state and the sessions fill the right one, and the
+  gaps are listed once in a panel at the foot.
+
+*Recommendation: C, on the panels only.* The two-column shape keeps the form's
+rules visible and gives the session rows the width they need, which A and B
+both trade away. The "Not available in this build" panel is the prototype's own
+statement and is not part of the recommended screen: in the build, each line
+becomes a real control or the screen says the data is unavailable where that
+panel sits.
+
+*Decisions the prototype settles.*
+
+- *The session list is the reason the member opens the screen.* The password
+  change is a form they use once; the sign-ins are what they come to read. A
+  and B both put the sessions after the form; C keeps them in view.
+- *The rules come from the server.* The prototype reads its policy from a
+  fixture with the shape of =GET /api/password-policy=, and the built screen
+  reads the route. The rules are the server's record, and the screen states
+  them rather than holding a copy.
+- *The current password is a confirmation the server checks.* The field stays,
+  and the screen may say the server verifies it.
+- *"End session" is drawn unavailable, not hidden.* A member who sees an
+  unfamiliar sign-in must be told what the screen cannot do, because the
+  remedy today is to change the password.
+- *The sign-in state is tags and details, not a panel of its own.* The screen
+  carries the four values the journey document lists without giving them the
+  weight of a separate screen.
+
+*Document claims the tree contradicts.*
+
+- The journey document says the change-password handler ignores
+  =current_password=. It verifies it on this tree
+  (=account_operations_service::change_password=), so the "What is missing"
+  item 5 and the note under the operations table are both stale.
+- The journey document says the BFF answers =/api/v1/sessions/active= and that
+  "the browser has a working read today". No route serves the sessions: the BFF
+  serves the caller's own session and the password change, and nothing else.
+
+The corrections belong to the extraction pass, which owns the document.
+
+*Verification.* =npm run typecheck --workspace @ores/web= passes.
+=npm test --workspace @ores/web= passes, 146 tests in 13 files, on the same
+tree. Each variant was rendered headless at 1440 px and read back.

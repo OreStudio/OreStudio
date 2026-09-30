@@ -287,3 +287,7 @@
 \ir ./refdata_curve_sections_notify_trigger_create.sql
 \ir ./refdata_curve_definitions_create.sql
 \ir ./refdata_curve_definitions_notify_trigger_create.sql
+\ir ./refdata_curve_segments_create.sql
+\ir ./refdata_curve_segments_notify_trigger_create.sql
+\ir ./refdata_curve_quotes_create.sql
+\ir ./refdata_curve_quotes_notify_trigger_create.sql

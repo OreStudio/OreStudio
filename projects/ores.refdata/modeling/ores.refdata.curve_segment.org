@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 24bda9d8-1cac-45f8-8d53-af43767ee229
+:END:
+#+title: ores.refdata.curve_segment
+#+description: Codegen entity model for the refdata =curve_segment= table. One segment of an ORE curve recipe.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One segment of a curve recipe: the instrument the curve is bootstrapped from.
+#+entity_singular: curve_segment
+#+entity_plural: curve_segments
+#+entity_title: Curve Segment
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+A curve is bootstrapped from one or more segments, and each segment names the
+kind of instrument it is built from. The corpus uses ten kinds -- =Simple= in
+1198 entries, =CrossCurrency= in 500, =ZeroSpread= in 66, =Direct= in 50,
+=AverageOIS= in 24, =IborFallback= in 20, =DiscountRatio= in 15 and four more --
+in one =Segments= block per curve.
+
+The kinds look different and share a skeleton: every one of them carries a
+=Type= and a =Conventions=, and each adds its own settings -- =ProjectionCurve=
+for a simple segment, =DiscountCurve= and =SpotRate= for a cross-currency one,
+=ReferenceCurve= for a zero spread. The kind is a column, the =Type= and
+=Conventions= are columns because every kind has them, and the rest is written
+into =extras= as a stated list of name and value pairs, so the ten kinds need
+one table rather than ten.
+
+Each segment's own quote list belongs to the segment, in =curve_quote=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the segment.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve recipe this segment bootstraps.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The segment's element name in the document: Simple, CrossCurrency, ZeroSpread
+and the rest. It is what the export writes the segment back as.
+
+#+begin_src cpp :name generator
+std::string("Simple")
+#+end_src
+
+** segment_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The segment's own =Type= -- FRA, Tenor Basis Swap, Deposit and so on -- which
+chooses the instrument the segment is built from. Named =segment_type= because
+=type= alone reads as the row's own type.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention set the segment's instruments are priced with, by name.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extras
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The segment's remaining settings, one per semicolon, each a pipe-separated name
+and value: =ProjectionCurve=, =DiscountCurve=, =SpotRate=, =PillarChoice=,
+=Priority=, =MinDistance= and whatever a kind adds next.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the segment in, which the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_segments_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression       |
+|------------------|
+| "kind" <> ''     |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: segment
+:entity_plural_short:   segments
+:entity_singular_words: curve segment
+:entity_plural_words:   curve segments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: g
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve this segment belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

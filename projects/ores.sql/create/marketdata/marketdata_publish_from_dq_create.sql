@@ -108,7 +108,6 @@ begin
     for r in
         select
             dq.oresmd_uri, dq.key, dq.point_id,
-            dq.series_type, dq.metric, dq.qualifier,
             dq.observation_date, dq.value, dq.source
         from ores_dq_market_data_observations_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
@@ -156,17 +155,16 @@ begin
             -- is the identity their own ORE source key projects to: the deposit
             -- grid's MM/RATE/USD/2D/3M row names the MM/RATE/USD/2D series. The
             -- dataset states the projection because SQL cannot make it; the
-            -- grammar in C++ is what reads a key back. The registry's
-            -- decomposition is written beside it because the series row still
-            -- requires it, and goes when that row stops carrying it.
+            -- grammar in C++ is what reads a key back. The identity is the only
+            -- name the series row carries now.
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
-                series_type, metric, qualifier, oresmd_uri, series_subclass,
+                oresmd_uri, series_subclass,
                 derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
-                r.series_type, r.metric, r.qualifier, r.oresmd_uri, v_series_subclass,
+                r.oresmd_uri, v_series_subclass,
                 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name

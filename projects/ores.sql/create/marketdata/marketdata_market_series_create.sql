@@ -54,9 +54,6 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "oresmd_uri" text not null,
-    "series_type" text not null,
-    "metric" text not null,
-    "qualifier" text not null,
     "series_subclass" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
@@ -76,9 +73,6 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("oresmd_uri" <> ''),
-    check ("series_type" <> ''),
-    check ("metric" <> ''),
-    check ("qualifier" <> ''),
     check ("series_subclass" <> ''),
     check (("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0))
 );

@@ -157,16 +157,13 @@ begin
 
     insert into ores_dq_market_data_observations_artefact_tbl (
         dataset_id, tenant_id, version,
-        series_type, metric, qualifier, oresmd_uri, key, point_id, observation_date, value, source,
+        oresmd_uri, key, point_id, observation_date, value, source,
         source_url, retrieved_at
     )
     select
         v_dataset_id,
         v_tenant_id,
         0,
-        'RATES',
-        'YIELD',
-        r.qualifier,
         r.oresmd_uri,
         r.key,
         r.point_id,
@@ -180,12 +177,11 @@ begin
         -- FX driver rates dataset's own reference date. The row IS the MM quote ORE's own file
         -- carries, so the key is that file's key and the identity is the series it belongs to:
         -- the currency and the spot lag, with the maturity (3M) left as the point. point_id is
-        -- the DEPOSIT entry's end_tenor_code (see select_vintage_anchor_entry). The qualifier is
-        -- the registry's decomposition of the same key, which the series row still asks for.
-        ('USD/LIBOR-3M', 'oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm',
-         'MM/RATE/USD/2D/3M', '3M', date '2016-02-05', 0.007961,
+        -- the DEPOSIT entry's end_tenor_code (see select_vintage_anchor_entry).
+        ('oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm', 'MM/RATE/USD/2D/3M', '3M',
+         date '2016-02-05', 0.007961,
          'external/ore/examples/Legacy/Example_56/Input/market.txt (MM/RATE/USD/2D/3M)')
-    ) as r(qualifier, oresmd_uri, key, point_id, observation_date, value, source_url);
+    ) as r(oresmd_uri, key, point_id, observation_date, value, source_url);
 
     get diagnostics v_count = row_count;
     raise debug 'Populated % IR deposit rate row(s)', v_count;

@@ -153,16 +153,13 @@ begin
 
     insert into ores_dq_market_data_observations_artefact_tbl (
         dataset_id, tenant_id, version,
-        series_type, metric, qualifier, oresmd_uri, key, point_id, observation_date, value, source,
+        oresmd_uri, key, point_id, observation_date, value, source,
         source_url, retrieved_at
     )
     select
         v_dataset_id,
         v_tenant_id,
         0,
-        'FX',
-        'RATE',
-        r.qualifier,
         -- See marketdata_fx_driver_rates_populate.sql: the row is an ORE FX spot quote,
         -- so the key is the ORE key for its pair and the identity is that key's series.
         'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',

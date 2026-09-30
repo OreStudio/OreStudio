@@ -32,7 +32,7 @@ salt
     Member | jdoe
     Role asked for | Trading
     Why | I price the new book and cannot read curves
-    The role grants | refdata::currencies:read, iam::accounts:read
+    The role grants | refdata::currencies:read, workspace::workspaces:write
   }
   --
   {#

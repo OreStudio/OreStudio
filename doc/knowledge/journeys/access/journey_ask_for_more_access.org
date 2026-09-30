@@ -161,26 +161,29 @@ The existing subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
 =iam.v1.roles.assign= checks =iam::roles:assign= before it writes, so the
 administrator's decision carries the check the member's ask must not. The three
-reads prove that the caller has a session and check no further permission, which
-is what lets a member list the roles on offer without holding an administrator's
-read.
+reads prove that the caller has a session and check no further permission —
+which is what the handlers in =ores.iam.core/messaging/role_handler.hpp= and
+=authorization_handler.hpp= do — so a member can list the roles on offer without
+holding an administrator's read.
 
 * What is missing
 
 1. *No request subject exists.* =iam.v1.roles.*= carries =assign=, =revoke=,
    =by-account=, =permissions=, =permissions-by-account=, =suggest-commands= and
    the registrar's CRUD; nothing submits, lists, withdraws or refuses a request.
-   The candidates are the four subjects in the table above. The approval itself
-   needs no new write: =iam.v1.roles.assign= already grants the role and already
-   checks =iam::roles:assign=.
+   The candidates are the five request subjects in the table above. The approval
+   itself needs no new write: =iam.v1.roles.assign= already grants the role and
+   already checks =iam::roles:assign=.
 2. *The workflow engine cannot wait on a person.* The seeded =workflow_instance=
    states are =pending=, =in_progress=, =completed=, =failed=, =compensating=
    and =compensated=, and the transitions are start, complete, fail, compensate
    and retry. Nothing suspends a run, and nothing resumes it when somebody
-   answers. The candidates are a waiting state beside =in_progress= and a step
-   kind that means "a person decides", or a decision verb that resumes a
-   suspended instance. Until one of them exists, a request cannot be held the
-   way this journey says it is held, and the ask has nowhere to wait.
+   answers. Nor is there anywhere for the run to stop once it is answered: an
+   approved, refused, withdrawn or expired request has no state that means it.
+   The candidates are a waiting state beside =in_progress=, a terminal state per
+   answer, and a step kind that means "a person decides", or a decision verb that
+   resumes a suspended instance and closes it. Until they exist, a request cannot
+   be held the way this journey says it is held, and the ask has nowhere to wait.
 3. *The requester may answer their own request.* Four-eyes means the answer comes
    from an account other than the requester's. An administrator who holds
    =iam::roles:assign= can ask for a role and then approve it, which is the

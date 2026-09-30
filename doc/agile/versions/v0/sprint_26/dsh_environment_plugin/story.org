@@ -21,11 +21,11 @@ A DSH plugin that shows the session's own checkout as a live environment: the en
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-09-30                               |
 
 * Acceptance
@@ -88,3 +88,31 @@ A DSH plugin that shows the session's own checkout as a live environment: the en
 - Resource usage (=compass services top=) and the process tree (=compass services
   tree=).
 - Remote environments. The view reads the work tree its session runs in.
+
+* Result
+
+=compass env status= reports one checkout's environment as text, and as one
+JSON object for the plugin to read, and =compass bearings= prints its
+environment section from the same gather. The service vocabulary gained
+=failed= as a fifth state, so a crashed unit no longer reads as a deliberate
+shutdown.
+
+=projects/ores.dsh_environment= is a DSH web plugin with one host entry, two
+routes, and one hand-written browser file. A readout arrives with the session
+and names the environment, its database age and its running count. The view
+carries three health tiles, the reasons behind the level, the database panel
+with its guarded Restore control, and every service row with its state, its
+detail, and its start and stop button. A failed unit and a unit the manager
+has never heard of are both red; stopped stays grey.
+
+Starting and stopping cost one click each, because both are reversible. The
+database restore is the one guarded action, refused by the host unless the
+browser was shown that database and blocked by the browser until the
+environment name is typed.
+
+A scratch DSH instance was the check no unit test could replace. It found that
+both routes answered an anonymous caller, because a plugin route is registered
+outside the harness's =/api= fence, and that the action route could therefore
+stop the fleet from a page that rebinds its own hostname to loopback. Both
+routes now require the cookie =dsh web= issues.
+

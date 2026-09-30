@@ -55,6 +55,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/asset_class_authorities.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding_table.hpp"

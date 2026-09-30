@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: e0f7d909-9a5c-4061-939f-832929baa455
+:END:
+#+title: ores.cpp.asset_class
+#+description: Asset-class catalogue C++: the mapping from an oresmd authority to the refdata class it names.
+#+type: facet
+#+model_types: asset_class_catalogue
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is the node for the =ores.cpp.asset_class= facet of the codegen
+template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]].
+
+* Summary
+
+One template projecting the catalogue's /mapping/ onto C++: the function
+that reads a resolved oresmd identifier and answers which refdata class it
+belongs to. The classifier calls it for an =index_name= rule, so a fixing
+takes its class from the index name it is written under rather than from one
+literal all fixings share.
+
+The template writes into =ores.marketdata.api= because its subject is the
+oresmd identifier type, which lives there; the catalogue model owns the
+mapping wherever its outputs land.
+
+* The ores.cpp.asset_class facet
+
+Driven by the /asset-class catalogue/ model's =namespace= list — each entry
+an oresmd authority and the refdata class it maps onto — rather than by an
+entity.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:6a6560d4-bfc2-4017-bba6-0ef26ba8dea5][ores.cpp.asset_class.authorities]] | The authority-to-class mapping and the identifier lookup. Output =projects/ores.marketdata/api/include/ores.marketdata.api/domain/asset_class_authorities.hpp=. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

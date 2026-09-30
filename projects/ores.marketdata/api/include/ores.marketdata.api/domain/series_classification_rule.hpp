@@ -96,11 +96,17 @@ struct series_classification_rule final {
     std::string metric;
 
     /**
-     * @brief How this rule obtains its asset classes: literal or correlation_operands.
+     * @brief How this rule obtains its asset classes: literal, correlation_operands or index_name.
      *
      * A literal rule names its class in asset_class_code. A correlation rule reads the classes from
      * the two operands at the front of the qualifier, because a pairwise correlation belongs to the
-     * two classes it relates and to no class of its own.
+     * two classes it relates and to no class of its own. An index_name rule reads the class from
+     * the index name the qualifier carries: the name projects onto an oresmd identifier, whose
+     * authority names the market-data namespace the index is written in, and
+     * ores.refdata.asset_class_catalogue maps that authority onto a refdata class. A fixing is the
+     * case this exists for -- one FIXING row serves every index name, and the class cannot be a
+     * literal because the corpus carries rates, equity, commodity, power, inflation, security and
+     * generic fixings alike.
      */
     std::string asset_class_source;
 

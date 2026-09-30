@@ -54,11 +54,11 @@ are *not* in this task: this is the server the screen will call.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -111,7 +111,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Entities gaining =is_registration_default= | 3 (tenant, party, role) | =grep -rln is_registration_default projects/*/modeling/= | =ae3486b951= |
+| New lookup entities | 1 (=account_status=, seeded with 2 rows) | =grep -c "INSERT 0 2"= against the recreate log | =ae3486b951= |
+| Refusal codes added to the vocabulary | 7 | =grep -c "0x00" projects/ores.utility/include/ores.utility/serialization/error_code.hpp= | =525d95fe07= |
+| "Sign-up decision" cases | 8 cases, 29 assertions, all pass | =ores.iam.core.tests "[signup]"= | =525d95fe07= |
+| IAM core suite | 163 cases, 417 assertions, all pass | =ores.iam.core.tests= | =525d95fe07= |
+| IAM shell suite | 313 cases, 823 assertions, all pass | =ores.shell.iam.tests= | =ae3486b951= |
+| IAM component drift | no drift | =check_component_drift.py --component iam= | =ae3486b951= |
 
 * Notes
 
@@ -148,3 +154,69 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The server can answer the policy the door asks, resolve the tenant an address
+names, and land a registration in the state the defaults allow. The work came
+in two commits, model layer first and behaviour second, because the second
+reads what the first gives a shape to.
+
+*The model layer* (=ae3486b951=). The tenant, the party and the role each carry
+=is_registration_default=, at most one live row per tenant by a partial unique
+index. The flag sits on the row it points at, not on the tenant, because
+row-level security decides who may write that row: the tenant administrator
+owns their parties and roles, the super administrator owns the tenant table. A
+new =account_status= lookup carries =active= and =pending= beside the account
+type pattern, and the account holds one. Two operation models gained the fields
+a refusal or a confirmation needs, and a third, =registration_policy_messages=,
+declares the read itself. The "which row is flagged" reads are paste blocks on
+the party and role models, so regeneration keeps them, and a hand-written
+lookup beside the hostname read answers the same question for the tenant.
+
+*The behaviour* (=525d95fe07=). =iam.v1.auth.registration-policy= reads the
+deployment's switch and approval flag at system scope, resolves the tenant from
+the address the request carries, and answers the destination and the two
+defaults. A deployment with no destination refuses with
+=no_registration_destination= rather than landing the account in the system
+tenant; one that nominates no role refuses with =no_default_role=. Both
+decisions are functions split from the reads, which is what makes them testable
+without a database. The live sign-up path resolves the tenant before it creates
+anything, registers through the service that validates the username, the email
+and the password, grants the nominated role, and writes the association when
+one is nominated. Sign-in answers a code on every refusal, and a pending
+account is refused before a party-less one.
+
+*Verified.* =ores.iam.core.tests= builds and its full suite passes, 163 cases
+and 417 assertions; the eight new decision cases account for 29 of them.
+=ores.shell.iam.tests= passes, 313 cases and 823 assertions, including the two
+command units the new models generated. =ores.shell.exe= links, which is what
+proves the two new command units are registered. The iam component dry-runs
+clean. The protocol twin, shell menu collision and route authentication
+checkers pass.
+
+The strongest check is the data layer: =compass db recreate -y -k= rebuilt the
+environment from the generated SQL and the log shows the new table created and
+seeded with the two account statuses, which is what the integration half needs
+to run at all. Before the recreate the IAM service refused to start with
+=column "account_status" does not exist=, which is the drift the bearings had
+already flagged and the reason the previous suite carried failures.
+
+Four things this task did not do, all recorded rather than hidden:
+
+- *The settings write.* =system.user_signups= can still only be turned on by
+  seeding it. The read is real; the permission-gated write pair is the next
+  task, and until it exists the super administrator's kill switch is honoured
+  but not settable through a screen.
+- *The BFF and the browser.* The policy read has no HTTP route and no client.
+  The route, the hostname forwarding and the dialogs are the door's screen task.
+  The read is reachable over NATS now, which is what the shell command and the
+  core suite exercise.
+- *=bootstrap_mode= as a sign-in refusal.* The target state lists it, but no
+  login path refuses on bootstrap mode today; the handler reports it as
+  =tenant_bootstrap_mode= and admits the sign-in. Rather than claim a code that
+  no refusal produces, the code is not set.
+- *An unexpected sign-in failure* keeps its sentence and no code. No documented
+  code means "the server failed", and inventing one would put a lie on the wire.
+
+The approval workflow behind =system.signup_requires_authorization= stays out
+of scope, as the target state says: the flag closes the door and the read says
+why, and the approval itself belongs to =ores.workflow=.

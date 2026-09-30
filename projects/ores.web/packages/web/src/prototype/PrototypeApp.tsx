@@ -34,6 +34,7 @@ import type { ReactNode } from 'react';
 import { AppShell } from '../components/AppShell.js';
 import { Notice } from '../ui/Primitives.js';
 import { ProtectMyAccountPrototype, PrototypeAccountStrip } from './ProtectMyAccountPrototype.js';
+import { RescueAccessPrototype } from './RescueAccessPrototype.js';
 
 const PREFIX = '/prototype';
 
@@ -66,6 +67,9 @@ function screenFor(pathname: string): ReactNode {
             </>
         );
     }
+    if (pathname === `${PREFIX}/rescue`) {
+        return <RescueAccessPrototype />;
+    }
     return (
         <div className="mx-auto max-w-[700px] space-y-4">
             <Notice tone="warn">PROTOTYPE. Throwaway. Nothing on these routes calls the server.</Notice>
@@ -78,6 +82,12 @@ function screenFor(pathname: string): ReactNode {
                             /prototype/security
                         </a>{' '}
                         — Protect my account
+                    </li>
+                    <li>
+                        <a className="text-accent" href="/prototype/rescue?variant=a">
+                            /prototype/rescue
+                        </a>{' '}
+                        — Rescue access
                     </li>
                 </ul>
             </div>

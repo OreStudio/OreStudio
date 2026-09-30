@@ -75,7 +75,8 @@ if (hostPath !== null && existsSync(resolve(root, hostPath))) {
   }
   if (typeof host.apply !== 'function') failures.push('host apply is not a function')
 
-  const routes = [`/plugins/${name}/state`, `/plugins/${name}/action`]
+  const routes = [`/plugins/${name}/state`, `/plugins/${name}/action`,
+    `/plugins/${name}/logs`]
   const hostText = tryRead(hostPath) ?? ''
   for (const route of routes) {
     if (!hostText.includes(route)) failures.push(`host registers no route under ${route}`)

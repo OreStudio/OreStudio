@@ -40,6 +40,7 @@ if (!existsSync(resolve(REPO, '.env'))) {
 
 const STATE_PATH = '/plugins/ores-dsh-environment/state'
 const ACTION_PATH = '/plugins/ores-dsh-environment/action'
+const LOGS_PATH = '/plugins/ores-dsh-environment/logs'
 
 const results = []
 let section = ''
@@ -150,6 +151,7 @@ const routes = makeHost(REPO)
 heading('1. the plugin registers both routes')
 check('state route registered', routes.has(STATE_PATH))
 check('action route registered', routes.has(ACTION_PATH))
+check('logs route registered', routes.has(LOGS_PATH))
 
 heading('2. both routes need the browser session')
 {
@@ -361,7 +363,30 @@ heading('7. a real action job')
   console.log(`  note  job tail:\n        ${(settled.job?.tail ?? []).join('\n        ')}`)
 }
 
-heading('8. the selector the view posts is one compass accepts')
+heading('8. a real journal read for one unit')
+{
+  const unit = payload.services?.units?.[0]?.unit ?? ''
+  const anon = await call(routes.get(LOGS_PATH),
+    makeReq({ url: `${LOGS_PATH}?cwd=${encodeURIComponent(REPO)}&unit=${unit}`, cookie: null }))
+  check('an unauthenticated log read is 401', anon.status === 401, String(anon.status))
+
+  const read = await call(routes.get(LOGS_PATH),
+    makeReq({ url: `${LOGS_PATH}?cwd=${encodeURIComponent(REPO)}&unit=${encodeURIComponent(unit)}&level=all` }))
+  const body = read.json()
+  check('the unit\'s journal tail comes back', body.ok === true && Array.isArray(body.lines),
+    body.ok ? `${body.count} line(s), truncated=${body.truncated}` : `${body.reason}: ${body.message}`)
+
+  const nats = await call(routes.get(LOGS_PATH),
+    makeReq({ url: `${LOGS_PATH}?cwd=${encodeURIComponent(REPO)}&unit=nats-server-${payload.env?.name ?? ''}` }))
+  check('nats-server is reachable through the same route',
+    nats.json().ok === true || nats.json().reason === 'compass-failed', nats.json().reason ?? 'ok')
+
+  const bad = await call(routes.get(LOGS_PATH),
+    makeReq({ url: `${LOGS_PATH}?cwd=${encodeURIComponent(REPO)}&unit=${encodeURIComponent('nope; rm -rf /')}` }))
+  check('a unit name that is not one is refused', bad.status === 400, String(bad.status))
+}
+
+heading('9. the selector the view posts is one compass accepts')
 {
   const selector = payload.services?.units?.[0]?.selector ?? ''
   check('the row offers a selector at all', selector.startsWith('ores.'), selector || '(empty)')

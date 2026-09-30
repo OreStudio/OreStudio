@@ -2,8 +2,10 @@
 // tree. One reads the environment through compass, and one starts an action.
 // See CONTRACT.md for the frozen interface.
 
-import { jobFor, readEnvironment, resolveWorktree, startAction } from './compass.js'
+import { jobFor, readEnvironment, readLogs, resolveWorktree, startAction } from './compass.js'
 import { buildModel, failure } from './env.js'
+
+const arr = (value) => (Array.isArray(value) ? value : [])
 
 export const name = 'ores-dsh-environment'
 
@@ -11,6 +13,7 @@ export const inject = ['webServer', 'sessions']
 
 const STATE_ROUTE = '/plugins/ores-dsh-environment/state'
 const ACTION_ROUTE = '/plugins/ores-dsh-environment/action'
+const LOGS_ROUTE = '/plugins/ores-dsh-environment/logs'
 
 /* One read is one compass process, about a second and a half, and a session
  * refetches on mount, on Refresh, and while an action runs. An entry expires
@@ -178,6 +181,50 @@ export function apply(ctx) {
     }
   }
 
+  /* A log tail is fetched when a reader asks for one, never with the
+   * environment, because it changes constantly and is only wanted while
+   * somebody is looking at it. */
+  const logsHandler = async (req, res) => {
+    if (!authenticated(req)) return unauthenticated(res)
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return json(res, failure('bad-request', 'Only GET and HEAD are supported'), 405)
+    }
+    try {
+      const query = new URL(req.url, 'http://127.0.0.1').searchParams
+      const sessionId = query.get('session') ?? ''
+      const cwd = query.get('cwd') ?? ''
+      const unit = query.get('unit') ?? ''
+      const level = query.get('level') ?? 'all'
+      const asked = Number(query.get('lines'))
+      const lines = Math.min(Math.max(Number.isFinite(asked) ? asked : 200, 1), 2000)
+
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(unit)) {
+        return json(res, failure('bad-unit',
+          'name a unit, for example ores.web.service-brave_hopper'), 400)
+      }
+      const resolved = await resolveRoot(sessionId, cwd)
+      if (!resolved) return json(res, describeMiss(sessionId))
+
+      const read = await readLogs(resolved.root, unit, level, lines)
+      if (!read.ok) {
+        return json(res, read, read.reason === 'unknown-unit' ? 404 : 200)
+      }
+      const payload = read.payload
+      return json(res, {
+        ok: true,
+        units: arr(payload.units),
+        unit: (payload.units ?? [])[0] ?? unit,
+        level: payload.level ?? level,
+        count: payload.count ?? 0,
+        truncated: payload.truncated === true,
+        lines: arr(payload.lines),
+      })
+    } catch (error) {
+      log('logs route failed: ' + ((error && error.stack) || error))
+      return json(res, failure('bad-request', String((error && error.message) || error)))
+    }
+  }
+
   const route = { registered: false, dispose: null, timer: null, disposed: false }
   const register = () => {
     if (route.registered || route.disposed) return
@@ -187,6 +234,7 @@ export function apply(ctx) {
       const disposers = [
         webServer.register({ kind: 'exact', path: STATE_ROUTE, handler: stateHandler }),
         webServer.register({ kind: 'exact', path: ACTION_ROUTE, handler: actionHandler }),
+        webServer.register({ kind: 'exact', path: LOGS_ROUTE, handler: logsHandler }),
       ]
       route.dispose = () => {
         for (const dispose of disposers) {
@@ -194,7 +242,7 @@ export function apply(ctx) {
         }
       }
       route.registered = true
-      log(`${STATE_ROUTE} and ${ACTION_ROUTE} registered`)
+      log(`${STATE_ROUTE}, ${ACTION_ROUTE} and ${LOGS_ROUTE} registered`)
     } catch (error) {
       log('route registration failed: ' + ((error && error.message) || error))
     }

@@ -286,6 +286,8 @@ test('the view renders a whole environment without throwing', async () => {
   assert.match(painted, /Start all/)
   assert.match(painted, /Stop all/)
   assert.match(painted, /logs:/)
+  /* Every row offers the journal, including nats-server. */
+  assert.match(painted, /Logs/)
 })
 
 test('the view draws the states the host sent, in its order and colours', async () => {
@@ -326,6 +328,44 @@ test('every field the view reads is one the browser model carries', async () => 
       assert.notEqual(model[first][second], undefined, `the browser model has no ${path}`)
     }
   }
+})
+
+test('every field the log panel reads is one the log model carries', async () => {
+  const { plugin } = await seats()
+  const log = plugin.__test.normalizeLogs({
+    ok: true,
+    units: ['ores.web.service-brave_hopper'],
+    unit: 'ores.web.service-brave_hopper',
+    level: 'warnings',
+    count: 2,
+    truncated: false,
+    lines: ['one', 'two'],
+  })
+  const paths = new Set()
+  for (const match of BUNDLE_SOURCE.matchAll(/\blog\.([A-Za-z_$][\w$]*)(?:\.([A-Za-z_$][\w$]*))?/g)) {
+    if (match[2] === undefined) { paths.add(match[1]); continue }
+    paths.add(`${match[1]}.${match[2]}`)
+  }
+  assert.ok(paths.size >= 3, `expected the panel to read the log fields, found ${paths.size}`)
+  for (const path of paths) {
+    const [first, second] = path.split('.')
+    assert.notEqual(log[first], undefined, `the log model has no ${first}`)
+    if (second !== undefined && log[first] !== null) {
+      assert.notEqual(log[first][second], undefined, `the log model has no ${path}`)
+    }
+  }
+})
+
+test('the log model defaults every field of a failure and of an empty read', async () => {
+  const { plugin } = await seats()
+  const failed = plugin.__test.normalizeLogs({ ok: false, reason: 'unknown-unit', message: 'x' })
+  assert.equal(failed.ok, false)
+  assert.deepEqual(failed.lines, [])
+  assert.equal(failed.truncated, false)
+  const empty = plugin.__test.normalizeLogs({ ok: true, count: 0, lines: [] })
+  assert.equal(empty.ok, true)
+  assert.deepEqual(empty.lines, [])
+  assert.equal(empty.level, 'all')
 })
 
 test('the browser model carries the remedies the restore control names', async () => {

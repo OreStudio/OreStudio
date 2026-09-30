@@ -194,6 +194,79 @@ window.__ModuleLoader__.load({
       }
     }
 
+    function normalizeLogs(payload) {
+      const source = payload && typeof payload === 'object' ? payload : {}
+      if (source.ok !== true) {
+        return {
+          ok: false,
+          reason: str(source.reason) || 'unknown',
+          message: str(source.message),
+          unit: str(source.unit),
+          units: asList(source.units),
+          level: str(source.level) || 'all',
+          count: 0,
+          truncated: false,
+          lines: [],
+        }
+      }
+      return {
+        ok: true,
+        unit: str(source.unit),
+        units: asList(source.units),
+        level: str(source.level) || 'all',
+        count: num(source.count),
+        truncated: source.truncated === true,
+        lines: asList(source.lines),
+      }
+    }
+
+    /* Fetched when a reader opens a unit and on Refresh, never with the
+     * environment: a tail changes constantly and is only wanted while
+     * somebody is looking at it. */
+    function useLogs(sessionId, cwd, unit, level) {
+      const [log, setLog] = React.useState(null)
+      const [loading, setLoading] = React.useState(false)
+      const [notice, setNotice] = React.useState('')
+      const [nonce, setNonce] = React.useState(0)
+
+      React.useEffect(() => {
+        if (!str(unit)) {
+          setLog(null)
+          return undefined
+        }
+        let alive = true
+        setLoading(true)
+        const params = ['session=' + encodeURIComponent(str(sessionId))]
+        if (str(cwd)) params.push('cwd=' + encodeURIComponent(str(cwd)))
+        params.push('unit=' + encodeURIComponent(str(unit)))
+        params.push('level=' + encodeURIComponent(str(level) || 'all'))
+        fetch('/plugins/ores-dsh-environment/logs?' + params.join('&'),
+          { credentials: 'same-origin', cache: 'no-store' })
+          .then((response) => response.json())
+          .then((payload) => {
+            if (!alive) return
+            const next = normalizeLogs(payload)
+            setLog(next)
+            setNotice(next.ok ? ''
+              : [next.reason, next.message].filter(Boolean).join(': '))
+          })
+          .catch((error) => {
+            if (!alive) return
+            setNotice('log request failed: '
+              + str(error && error.message ? error.message : error))
+          })
+          .then(() => { if (alive) setLoading(false) })
+        return () => { alive = false }
+      }, [str(unit), str(level), sessionId, str(cwd), nonce])
+
+      return {
+        log,
+        loading,
+        notice,
+        refresh: React.useCallback(() => setNonce((value) => value + 1), []),
+      }
+    }
+
     function useEnvironment(sessionId, cwd) {
       const [snapshot, setSnapshot] = React.useState(null)
       const [stale, setStale] = React.useState(false)
@@ -580,6 +653,111 @@ window.__ModuleLoader__.load({
       return true
     }
 
+    const LOG_LEVELS = [
+      { id: 'all', title: 'Tail' },
+      { id: 'warnings', title: 'Warnings' },
+      { id: 'errors', title: 'Errors' },
+    ]
+
+    function LogPanel(props) {
+      const state = useLogs(props.sessionId, props.cwd, props.unit, props.level)
+      const tailRef = React.useRef(null)
+
+      React.useEffect(() => {
+        const node = tailRef.current
+        if (node) node.scrollTop = node.scrollHeight
+      }, [state.log])
+
+      React.useEffect(() => {
+        const onKey = (event) => { if (event.key === 'Escape') props.onClose() }
+        document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+      }, [props.onClose])
+
+      const log = state.log
+      const lines = log && log.ok ? log.lines : []
+      const empty = log && log.ok && lines.length === 0
+
+      return h('div', {
+        'data-env-logs': props.unit,
+        style: {
+          margin: '0.4rem 0 0.5rem', padding: '0.5rem 0.55rem',
+          borderRadius: '0.5rem', border: '1px solid var(--dsw-alias-border-l2)',
+          borderLeft: '3px solid ' + ACCENT,
+          background: 'var(--dsw-alias-bg-layer-1)',
+        },
+      }, [
+        h('div', {
+          key: 'head',
+          style: { display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' },
+        }, [
+          h('span', {
+            key: 'u',
+            style: { fontFamily: MONO, fontSize: '0.72rem', fontWeight: 600 },
+          }, props.unit),
+          h('span', {
+            key: 'spacer', style: { flex: 1 },
+          }),
+          ...LOG_LEVELS.map((entry) => h('button', {
+            key: entry.id,
+            type: 'button',
+            'data-env-log-level': entry.id,
+            'aria-pressed': props.level === entry.id ? 'true' : 'false',
+            onClick: () => props.onLevel(entry.id),
+            style: {
+              padding: '0.12rem 0.5rem', borderRadius: '1rem', cursor: 'pointer',
+              fontSize: '0.7rem',
+              border: '1px solid ' + (props.level === entry.id
+                ? ACCENT : 'var(--dsw-alias-border-l2)'),
+              background: 'transparent',
+              color: props.level === entry.id
+                ? ACCENT : 'var(--dsw-alias-label-secondary)',
+            },
+          }, entry.title)),
+          h('button', {
+            key: 'refresh', type: 'button', onClick: state.refresh,
+            style: {
+              padding: '0.12rem 0.5rem', borderRadius: '0.3rem', cursor: 'pointer',
+              border: '1px solid var(--dsw-alias-border-l2)', background: 'transparent',
+              fontSize: '0.7rem', color: 'inherit',
+            },
+          }, state.loading ? 'Reading…' : 'Refresh'),
+          h('button', {
+            key: 'close', type: 'button', onClick: props.onClose,
+            style: {
+              padding: '0.12rem 0.5rem', borderRadius: '0.3rem', cursor: 'pointer',
+              border: '1px solid var(--dsw-alias-border-l2)', background: 'transparent',
+              fontSize: '0.7rem', color: 'inherit',
+            },
+          }, 'Close'),
+        ]),
+        h(Notice, { key: 'notice', notice: state.notice }),
+        lines.length > 0 ? h('pre', {
+          key: 'tail',
+          ref: tailRef,
+          style: {
+            margin: '0.35rem 0 0', padding: '0.35rem', maxHeight: '18rem',
+            overflow: 'auto', fontFamily: MONO, fontSize: '0.68rem',
+            lineHeight: 1.35, background: 'var(--dsw-alias-bg-layer-2)',
+            borderRadius: '0.3rem', color: 'var(--dsw-alias-label-secondary)',
+            whiteSpace: 'pre-wrap',
+          },
+        }, lines.join('\n')) : null,
+        /* An empty result and a service that has written nothing are
+         * different facts from a broken read, so each says which it is. */
+        empty ? h('div', {
+          key: 'empty',
+          style: { marginTop: '0.3rem', fontSize: '0.72rem', color: 'var(--dsw-alias-label-tertiary)' },
+        }, props.level === 'all'
+          ? 'The journal holds no output for this unit. It may not have run in this work tree yet.'
+          : `The journal holds no ${props.level} lines for this unit. Try the tail.`) : null,
+        log && log.ok && log.truncated ? h('div', {
+          key: 'capped',
+          style: { marginTop: '0.25rem', fontSize: '0.68rem', color: 'var(--dsw-alias-label-tertiary)' },
+        }, 'Showing the most recent lines.') : null,
+      ])
+    }
+
     function ServiceRow(props) {
       const unit = props.unit
       const busy = props.busy
@@ -616,6 +794,19 @@ window.__ModuleLoader__.load({
             title: unit.detail,
           }, unit.detail) : null,
         ]),
+        h('button', {
+          key: 'logs',
+          type: 'button',
+          disabled: busy,
+          onClick: () => props.onLogs(unit.unit),
+          title: 'compass services logs ' + (unit.selector || unit.unit),
+          style: {
+            flex: '0 0 auto', padding: '0.15rem 0.5rem', borderRadius: '0.3rem',
+            border: '1px solid var(--dsw-alias-border-l2)', background: 'transparent',
+            cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1,
+            fontSize: '0.72rem', color: 'inherit',
+          },
+        }, 'Logs'),
         selector ? h('button', {
           key: 'act',
           type: 'button',
@@ -733,6 +924,8 @@ window.__ModuleLoader__.load({
       const [filter, setFilter] = React.useState('all')
       const [restoring, setRestoring] = React.useState(false)
       const [error, setError] = React.useState('')
+      const [logUnit, setLogUnit] = React.useState('')
+      const [logLevel, setLogLevel] = React.useState('all')
       const snapshot = state.snapshot
       const job = snapshot && snapshot.job ? snapshot.job : null
       const busy = !!(job && job.running)
@@ -912,6 +1105,17 @@ window.__ModuleLoader__.load({
               key: 'n',
               style: { fontSize: '0.7rem', color: 'var(--dsw-alias-label-tertiary)' },
             }, 'starts with the fleet'),
+            h('button', {
+              key: 'logs',
+              type: 'button',
+              onClick: () => { setLogUnit(snapshot.services.nats.unit); setLogLevel('all') },
+              title: 'compass services logs ' + (snapshot.services.nats.unit || 'nats-server'),
+              style: {
+                padding: '0.15rem 0.5rem', borderRadius: '0.3rem', cursor: 'pointer',
+                border: '1px solid var(--dsw-alias-border-l2)', background: 'transparent',
+                fontSize: '0.72rem', color: 'inherit',
+              },
+            }, 'Logs'),
           ]) : null,
           h('div', {
             key: 'filters',
@@ -942,8 +1146,21 @@ window.__ModuleLoader__.load({
                 replicas: ready
                   ? snapshot.services.units.filter((other) => other.selector === unit.selector).length
                   : 1,
+                onLogs: (unitName) => {
+                  setLogUnit(unitName)
+                  setLogLevel('all')
+                },
                 onToggle: (target, action) => act({ action, service: target.selector }),
               })),
+          logUnit ? h(LogPanel, {
+            key: 'logs',
+            sessionId,
+            cwd,
+            unit: logUnit,
+            level: logLevel,
+            onLevel: setLogLevel,
+            onClose: () => setLogUnit(''),
+          }) : null,
           snapshot.services.logDir ? h('div', {
             key: 'logs',
             style: {
@@ -1069,7 +1286,7 @@ window.__ModuleLoader__.load({
     exports.apply = apply
     /* The model builder, exposed so a test can assert that every field the
      * view reads is one this half produces. Nothing in the harness reads it. */
-    exports.__test = { normalize }
+    exports.__test = { normalize, normalizeLogs }
     return module.exports
   },
 })

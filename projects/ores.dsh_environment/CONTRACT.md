@@ -246,6 +246,39 @@ rebuild the database whose name the browser was last shown as
 read, so a request that names another checkout, or arrives before any read,
 is refused. The browser additionally makes the operator type it.
 
+### Read one unit's log
+
+```
+GET /plugins/ores-dsh-environment/logs?session=<id>&cwd=<path>&unit=<unit>&level=all|warnings|errors&lines=<n>
+```
+
+Fetched when a reader opens a unit and on Refresh, never with the environment:
+a tail changes constantly and is only wanted while somebody is looking at it.
+The route requires the same cookie as the other two, applied before anything
+else.
+
+The host runs `compass services logs <unit> -n <lines> [--warnings|--errors]
+--json` and returns:
+
+```json
+{"ok": true, "units": ["…"], "unit": "…", "level": "all",
+ "count": 2, "truncated": false, "lines": ["…"]}
+```
+
+`level` is not journald's own priority. journald records everything a service
+writes to stdout at one priority, so a priority filter returns nothing however
+the service labelled the line; compass matches the token the service printed
+instead. `truncated` says the fetch hit the line cap rather than that the
+journal ended.
+
+Failures carry the same `ok: false` discriminant with `reason` one of
+`unauthenticated`, `bad-unit`, `bad-request`, `compass-too-old`,
+`unknown-unit`, `compass-failed`, `compass-unreadable`. `unknown-unit` answers
+404; the rest answer 200 except the request faults.
+
+A unit name is validated against `^[A-Za-z0-9][A-Za-z0-9._-]*$` before it
+reaches a process argument list.
+
 ### The job
 
 ```

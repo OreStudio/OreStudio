@@ -213,9 +213,19 @@ jobs:
             exit 1
           fi
 
+      # Unconditional, so it runs even when an earlier step aborted the job.
+      # It therefore has to tolerate a checkout whose environment was never
+      # configured: without this guard a job that died before `Init
+      # environment` printed "env file not found", which reads as a second
+      # failure and is not one.
       - name: Stop the services
         if: ${{ always() && inputs.services }}
-        run: ./projects/ores.compass/compass.sh services stop || true
+        run: |
+          if [ -f .env ]; then
+            ./projects/ores.compass/compass.sh services stop || true
+          else
+            echo "No .env: the environment was never configured, so no services were started."
+          fi
 
       - name: Show sccache statistics
         if: always()

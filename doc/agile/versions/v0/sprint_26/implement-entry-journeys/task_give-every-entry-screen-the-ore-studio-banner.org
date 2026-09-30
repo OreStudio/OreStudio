@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :web:ux:journeys:entry:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
-#+branch: feature/implement-entry-journeys
+#+branch: feature/give-every-entry-screen-the-ore-studio-banner
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ Every screen that sets something up draws the same chrome. The rail comes from =
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | Not yet started. The prototype now draws the application's own rail and keeps the splash at its own ratio, so the shape to copy is visible to a reviewer. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Put the banner on the sign-in dialog, then build the registration door on =JourneyPage= rather than on a rail of its own. |
-| Last touched | 2026-09-29                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
 
 * Acceptance
 
@@ -55,6 +55,8 @@ Every screen that sets something up draws the same chrome. The rail comes from =
 |------+-------+---------+--------|
 | Screens that need the banner | 2, sign in and sign up | =grep -rn "heroSplash" projects/ores.web/packages/web/src= | =69d002553c= |
 | Screens that already carry it | 1, the setup screen | =grep -rn "heroSplash" projects/ores.web/packages/web/src/journeys/FirstRunJourney.tsx= | =69d002553c= |
+| Places that render the splash element after this | 4: =JourneyHeader=, the sign-in dialog, the door's closed/failed states, and the door's rail header | =grep -rn "JourneySplash" projects/ores.web/packages/web/src= | =12b08cdc30= |
+| Places that render the artwork directly after this | 1, inside =JourneySplash= itself | =grep -rn "heroSplash" projects/ores.web/packages/web/src= | =12b08cdc30= |
 
 * Notes
 
@@ -62,6 +64,7 @@ Every screen that sets something up draws the same chrome. The rail comes from =
 - The rule the setup screen follows, and this task carries: the image states width 964 and height 323, the class is =h-auto w-full rounded-md border border-line=, and no height is declared anywhere. =JourneyHeader= renders it as the step header, which =JourneyPage= wraps in =mb-5 border-b border-line pb-5=.
 - =PublicShell= already draws the header mark and the application name for a visitor. The splash is the larger artwork above the work, so it is a second element rather than a replacement for the header.
 - The prototype needed both corrections and both are now in it. It drew a rail of its own, and it cropped the splash with =max-height= and =object-fit: cover= — the exact failure the setup screen's comment records. The prototype now borrows the application's tokens from =styles.css= as well, because a prototype in a palette of its own answers the wrong question.
+- *Where the banner lives, decided.* The shell was tried first, as the plan said, and rejected: =PublicShell= serves both the setup journeys and the door, and the journeys draw the splash inside their own panel above the step. A shell-level copy would double it on every setup screen, so the shell cannot tell a door from a journey. The page owns it instead, and =JourneySplash= is the single element each page renders: =JourneyHeader= for the setup journeys, the sign-in dialog above its work, and the door for both its rail header and its closed, failed and loading states.
 
 * Test Scenarios
 
@@ -84,6 +87,43 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The acceptance names a forced password change panel the sign-in dialog does not have. | =pages/SignInPage.tsx= | Accept | Recorded rather than built: the panel belongs to the sign-in scope this story has not reached. The banner stands above the card's body, so any panel the dialog gains sits below it and the constraint holds by construction. |
+| 2 | The door tells a stranger whether a username or an address is already taken, which is account enumeration. | =bff/src/server.ts= | Accept | Inherent to a registration form: it cannot be usable and silent at once. The door is behind the deployment's own switch, the route shares the sign-in limiter, and the alternative — accepting a name already in use — is worse. Recorded rather than mitigated further. |
+| 3 | A closed door renders a narrow card in the wide public shell. | =journeys/SignUpJourney.tsx= | Decline | The route cannot know the policy before the door reads it, and the open door needs the width for its rail. The card is what the prototype draws for the closed state; the extra width is the shell's, not the screen's. |
+| 4 | The confirmation step exists before any registration has happened. | =journeys/signUpSteps.tsx= | Decline | The rail is derived from one step list, which is what keeps the rail and the steps from disagreeing. The step is unreachable until the write resolves, because the review step is final and the page advances only on success. |
+| 5 | =misspell-fixer .= exits 1 over the repository. | (repository root) | Decline | The hits are the upstream identifier in sprint 25 task records and files under =node_modules/=, all present on =origin/main= in files this branch does not touch. An isolated run over this change's paths reports "nothing to replace". |
 
 * Result
+
+The banner is one element and the registration door exists.
+
+- *One element.* =JourneySplash= renders the artwork once, at 964:323, and
+  =JourneyHeader=, the sign-in dialog and the door all render it. The shell was
+  tried first and rejected: it serves the setup journeys as well as the door, and
+  the journeys draw the splash inside their own panel, so a shell-level copy
+  would double it. A test asserts the rendered element states both dimensions and
+  carries no cropping class.
+- *The sign-in dialog.* It carries the banner above its work, and the work — the
+  credentials form or the party picker — stays below it, because the picker
+  replaces the form rather than following it.
+- *The door.* =SignUpJourney= reads =iam.v1.auth.registration-policy= and the
+  password policy before it offers anything, and the answer decides which screen
+  a person gets: the closed notice, which names the closure, or the same rail the
+  setup journeys use. The branch is one function, =doorState=, so it is stated
+  once. The write is deferred to a review step that reads back the tenant, the
+  party and the role, and the confirmation states which of the two accounts was
+  produced.
+- *The routes.* =GET /api/registration-policy= and =POST /api/signup= are new,
+  both unauthenticated, both forwarding the bare hostname — the port is not part
+  of a tenant's address — and the second shares the sign-in limiter. A refusal
+  keeps the server's own code, mapped onto the browser's error contract, so the
+  screen branches on a value rather than a sentence.
+- *Verification.* TypeScript: typecheck clean; 288 tests pass across the three
+  packages (web 167, BFF 70, wire protocol 51), of which the new ones are 6 BFF,
+  8 door, 8 steps, and 3 route-table assertions. Formatting clean. Docs: =compass
+  lint= clean, all seven doc-lint steps pass, and the site publishes the 28
+  changed pages with no broken link.
+- *The documents are corrected with it.* [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]]'s coverage table now
+  names the policy read and the refusal code, and four of its seven gaps have
+  closed. What remains is the release of a waiting account, the approval
+  workflow, and a notice that somebody is waiting.

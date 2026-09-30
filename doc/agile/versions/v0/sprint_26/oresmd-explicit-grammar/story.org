@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 12DAAEC7-2E9D-4487-80E5-E690737071B3
+:END:
+#+title: Story: Make the oresmd URI grammar explicit and typed
+#+description: Rewrite the oresmd URI grammar so that no key's absence carries meaning and no coordinate is an untyped string, then move the stored series identity and coordinate onto it.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:oresmd:codegen:sprint_26:v0:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every oresmd URI states what it means without the reader knowing a default or a family's coordinate convention: each coordinate dimension is a named query key, every key the grammar defines is present, and every key is declared identity or coordinate so the series identity is a declaration rather than a special case.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The defects and the target grammar are agreed and recorded in the investigation. No implementation unit has started. |
+| Waiting on    | Nothing.                               |
+| Next          | Declare the coordinates in the thirteen quote-type models. |
+| Last touched  | 2026-10-01                               |
+
+* Acceptance
+
+- No key's absence carries meaning: a key the grammar defines for a (type, quote) pair is always present, with defaults materialised by the parser and emitted by the writer.
+- No coordinate is a comma-joined bag: each dimension is a named, typed query key, and ATM is a delta rather than a strike.
+- Every query key is declared identity or coordinate in its quote-type model, and the series identity is the declared identity keys and nothing else.
+- One canonical coordinate form exists in the URI and in the database; the registry's point_id is derived, not stored.
+- The full corpus import passes and runs in the default test set, so a regression is visible without a hidden tag.
+- The design record market_data_urn.org describes the grammar that ships.
+- todaysmarket.xml is owned by ores.refdata and the placement rule is recorded beside the other ORE configuration documents.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:86830D2B-9BEE-48C4-B3F7-DFC2F9901C9A][Scaffold story: Make the oresmd URI grammar explicit and typed]] | STARTED | 2026-10-01 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:55EDA7FC-5AD9-4D90-93D0-9D5C48590389][Declare the oresmd coordinates in the models]] | BACKLOG | | | Add the Coordinates table and the identity/coordinate role to the thirteen quote-type models, and remove point. No generated code changes. |
+| [[id:9EC8025D-D661-4BD7-92B0-26EB8AAAB4E2][Generate the oresmd grammar from the models]] | BACKLOG | | | Generate the identifier structs, the parser, the writer and the key projections from the declared coordinates, and rewrite the design record for the new URI spelling. |
+| [[id:4204259C-DBEB-4C63-889F-6552033809D2][Move the stored oresmd identity and coordinate]] | BACKLOG | | | Unify the stored coordinate on one canonical, self-describing form, derive the registry's point_id rather than storing it, and migrate existing rows from the producer's own key. |
+| [[id:43D53663-9D49-4B70-A989-359B390E308E][Close out the grammar change]] | BACKLOG | | | Promote the corpus walk out of the hidden tag, correct the record, and settle the todaysmarket.xml ownership question beside the other ORE configuration documents. |
+
+* Decisions
+
+- **The coordinate is typed, not a bag.** =point= is removed. Each dimension is
+  a named query key: =maturity=, =expiry=, =tenor=, =strike=, =delta=,
+  =call_put=, =premium=, =cap_floor=, =shift=, =strip=, =seniority=,
+  =restructuring=, =from=, =to=, =date=, =second=, =period=, =dst=, =factor=,
+  =second_factor=, =month=. A reader needs no family convention.
+- **No key's absence carries meaning.** Where the grammar defines a default, the
+  parser materialises it and the writer emits it. =model= is always present for
+  =type=vol=, and no reader has to know that an absent =model= once meant
+  lognormal.
+- **ATM is a delta, not a strike.** The parser put the third surface token in
+  =strike=; it belongs in =delta=, which is what ORE's own =curveconfig.xml=
+  calls a dimension.
+- **Identity and coordinate are declared per key.** Each quote-type model gives
+  every query key a role. The series identity is the declared identity keys, so
+  the model subtype leaves the coordinate set and two vol models become two
+  series.
+- **Four volatility families gain a quote type.** =swaption= for IR, and an
+  =option= member for FX, equity and commodity. Without them the grammar would
+  keep a silent default where it has just removed the others.
+- **One canonical coordinate.** The URI and the database use one self-describing
+  form; the registry's ORE-form =point_id= is derived for key projection.
+- **Today's market is configuration, and =ores.refdata= owns it.** The rule:
+  where ORE names a document in the Analytics block it belongs to
+  =ores.analytics=; where a run or an analytic merely references it, it belongs
+  to the component that owns the concept. =curveconfig.xml= and
+  =todaysmarket.xml= name curves and sets of curves, so both are =ores.refdata=.
+  The =<Simulation><Market>= documents configure an analytic's market and are
+  =ores.analytics=. =ore_market.xml= is a run document and is =ores.reporting=.
+
+The full analysis is in
+[[id:1C9EE1D4-651E-49D9-927C-F4891FF1ACEB][The oresmd URI grammar: silent defaults and the untyped coordinate]].
+
+* Out of scope
+
+- Modelling =curveconfig.xml= or =todaysmarket.xml= as entities. This story
+  settles who owns today's market, not what its entities are.

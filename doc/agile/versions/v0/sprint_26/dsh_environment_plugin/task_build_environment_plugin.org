@@ -186,3 +186,12 @@ require the authority-bound cookie =dsh web= issues, which reproduced live as
 401 anonymous, 401 for a forged cookie, and 200 with the real one. The action
 route is the reason it matters: this is the first ORE Studio plugin that
 changes the machine rather than reporting on it.
+
+A second defect came from re-reading the client after the gates were green. A
+service row's Start or Stop posted the row's label, and for the five compute
+wrapper replicas that label is =compute.wrapper-1=, which compass cannot
+resolve: its registry holds =ores.compute.wrapper= and a selector naming one
+replica matches nothing. Five of the twenty-four rows would have failed. The
+host model now carries the registry service name as a =selector= beside the
+label, rows of a replicated service share it, and the gate asserts that
+compass accepts the value the first row sends.

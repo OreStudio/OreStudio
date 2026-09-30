@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: prototype/rescue-access
-#+pr:
+#+pr: 2434
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -35,11 +35,11 @@ perform.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing. |
-| Next         | Cut the branch and read the journey's wireframe and the runtime it rides. |
+| Now          | Three variants run on =/prototype/rescue=. |
+| Waiting on   | The product owner's choice of variant. |
+| Next          | Record the accepted variant, then write the screen's build task. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -112,7 +112,7 @@ who holds the role has all three.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
 
 * Review
 
@@ -121,3 +121,53 @@ who holds the role has all three.
 |   |                 |      |          |       |
 
 * Result
+
+Built 2026-09-30. Snapshot: branch =prototype/rescue-access=. The product owner
+has not chosen a variant yet, so nothing here is carried into the build.
+
+Route =/prototype/rescue?variant=a|b|c=, switched from the bar at the foot of
+the page, reached the same way as the member's screen: run
+=npm run dev:web --workspace @ores.web= and open
+=http://localhost:5173/prototype/rescue?variant=a=. No server is needed.
+
+*Three variants on one screen.*
+
+- *A · One decision screen.* The account, the reset form, the lock control and
+  the gaps, stacked in the order a support call goes.
+- *B · Diagnose, then act.* The security state leads and names the action it
+  suggests; the reset form and the lock control sit side by side under it.
+- *C · Roster and panel.* The account list stays in view on the left with each
+  account's state, and the rescue panel fills the right.
+
+*Recommendation: C, with B's diagnosis.* The administrator arrives from the
+account list, so keeping it in view answers "which colleague" without a second
+screen, and the state-names-the-action panel is what turns a support call into
+a decision. A is the same content with the roster dropped; B repeats what C
+keeps.
+
+*Decisions the prototype settles.*
+
+- *Lock and unlock are one control that shows the state it produces,* not two
+  buttons that can contradict each other. The control is drawn for both states
+  so a reviewer sees them; nothing is sent.
+- *Lock states what it does not do.* The panel says a lock leaves open sessions
+  open, because the journey's fourth gap is invisible otherwise.
+- *The forced change is drawn, and disabled.* No subject carries
+  =password_reset_required= over NATS, so the screen states that the reset
+  writes the password directly and cannot ask for a change at the next sign-in.
+- *Self-service recovery and activate or deactivate are gap lines, not
+  controls.* Neither has an operation, so neither is drawn as a button.
+- *The account's state belongs in the list as well as the panel,* so an
+  administrator scanning the tenant sees who is locked before opening anyone.
+
+*The journey is unreachable from the browser today.* No route serves
+=iam.v1.accounts.list=, =iam.v1.accounts.get=, =iam.v1.login_info.get=,
+=iam.v1.accounts.reset-password=, =iam.v1.accounts.lock= or
+=iam.v1.accounts.unlock=. The subjects exist and each needs its own permission;
+what is missing is the browser's path to them. The screen's build task cannot
+start before those routes do, and that is the largest single item this journey
+adds to the group.
+
+*Verification.* =npm run typecheck --workspace @ores.web= passes.
+=npm test --workspace @ores.web= passes, 146 tests in 13 files, on the same
+tree. Each variant was rendered headless at 1440 px and read back.

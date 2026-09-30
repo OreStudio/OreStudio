@@ -5591,6 +5591,82 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     return {"service_registry": {"services": services}}
 
 
+def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
+    """Load the asset-class catalogue into the shape its readers want.
+
+    One document declares both asset-class lists and the mapping between
+    them. Its ``* Taxonomy`` section holds the refdata product classes, one
+    ``**`` child per class carrying its ``:name:`` and ``:display_order:``;
+    its ``* Namespace`` section holds the oresmd market-data authorities, one
+    ``**`` child per authority carrying the ``:refdata_code:`` it maps onto.
+    An empty ``:refdata_code:`` means the authority names no product class of
+    its own.
+
+    ``authority_to_class`` carries the mapping in the form the classifier and
+    the authority check read, so neither rebuilds it.
+    """
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    _ensure_profile_binding(doc)
+    fm = doc.frontmatter
+
+    catalogue: dict[str, Any] = {}
+    for key in ("component", "brief"):
+        if key in fm:
+            catalogue[key] = fm[key]
+
+    taxonomy: list[dict[str, Any]] = []
+    taxonomy_section = _section(doc.root, "Taxonomy")
+    for node in (taxonomy_section.children if taxonomy_section else []):
+        props = {k.lower(): v for k, v in node.properties.items()}
+        taxonomy.append({
+            "code": node.title,
+            "name": props.get("name", node.title).strip(),
+            "display_order": int(props.get("display_order", len(taxonomy) + 1)),
+            "description": _strip_body(node),
+        })
+
+    namespace: list[dict[str, Any]] = []
+    namespace_section = _section(doc.root, "Namespace")
+    for node in (namespace_section.children if namespace_section else []):
+        props = {k.lower(): v for k, v in node.properties.items()}
+        namespace.append({
+            "authority": node.title,
+            "refdata_code": props.get("refdata_code", "").strip(),
+            "description": _strip_body(node),
+        })
+
+    catalogue["taxonomy"] = taxonomy
+    catalogue["namespace"] = namespace
+    catalogue["authority_to_class"] = {
+        entry["authority"]: entry["refdata_code"] for entry in namespace
+    }
+    return {"asset_class_catalogue": catalogue}
+
+
+# The one model that declares both asset-class lists. It sits with the taxonomy
+# it is the source of, and the oresmd loader reads it to refuse a spec whose
+# authority the namespace does not hold.
+_ASSET_CLASS_CATALOGUE_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "ores.refdata" / "modeling" / "ores.refdata.asset_class_catalogue.org"
+)
+
+
+@lru_cache(maxsize=None)
+def asset_class_catalogue_authorities() -> frozenset[str]:
+    """The oresmd authorities the asset-class catalogue declares.
+
+    Cached because the oresmd batch loader asks once per component
+    generation and the document does not change within a run.
+    """
+    catalogue = load_org_asset_class_catalogue_model(_ASSET_CLASS_CATALOGUE_PATH)
+    return frozenset(
+        entry["authority"]
+        for entry in catalogue["asset_class_catalogue"]["namespace"]
+    )
+
+
 def load_org_dataset_model(path: Path | str) -> dict[str, Any]:
     """Load a promoted ``dataset_overview.org`` into the ``{dataset: {...}}``
     dict that drives data-scope (populate/seed) generation.
@@ -5658,6 +5734,36 @@ _ORESMD_UPPER_FIELDS = {"pair", "ccy", "ticker", "reference_entity", "name",
 _ORESMD_LOWER_FIELDS = {"tenor", "point", "delivery", "source"}
 
 
+def _reject_unknown_oresmd_authorities(specs: list[dict[str, Any]]) -> None:
+    """Refuse a spec whose authority the catalogue's namespace does not hold.
+
+    The namespace is declared once, in ``ores.refdata.asset_class_catalogue``,
+    and a spec naming an authority outside it would generate an identifier, a
+    parser arm and a resolver case for a namespace nothing else knows. The
+    reverse is refused too: an authority the catalogue declares with no spec
+    is a namespace entry that generates nothing.
+    """
+    known = asset_class_catalogue_authorities()
+    for spec in specs:
+        authority = spec.get("authority", "")
+        if authority and authority not in known:
+            raise ValueError(
+                f"{spec.get('source_file', 'an oresmd spec')}: names oresmd "
+                f"authority {authority!r}, which "
+                "ores.refdata.asset_class_catalogue does not hold. Known "
+                f"authorities: {', '.join(sorted(known))}"
+            )
+    declared = {spec.get("authority", "") for spec in specs}
+    orphans = sorted(known - declared)
+    if orphans:
+        noun = "authority" if len(orphans) == 1 else "authorities"
+        raise ValueError(
+            "ores.refdata.asset_class_catalogue declares the oresmd "
+            f"{noun} {', '.join(orphans)} with no *_quote_type.org spec, so "
+            "the namespace generates nothing for them."
+        )
+
+
 def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
     """Load an oresmd quote-type org model into a dict.
 
@@ -5707,6 +5813,7 @@ def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
             spec = _load_single_oresmd_spec(sibling)
             if spec:
                 specs.append(spec)
+        _reject_unknown_oresmd_authorities(specs)
         return {"oresmd_quote_types": specs}
 
     # --- Single spec file ---
@@ -5730,6 +5837,7 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     result["asset_class"] = asset_class
     result["authority"]   = fm.get("authority", "")
     result["component"]   = fm.get("component", "ores.marketdata")
+    result["source_file"] = path.name
 
     # --- Parser template directives ---
     # validate: how the parser rejects an asset class's disallowed query

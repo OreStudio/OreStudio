@@ -33,6 +33,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.dataset":          "dataset",
     "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
     "ores.codegen.operation":        "operation",
+    "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
 }
 
 # The type flags cpp_domain_type_entity.hpp.mustache switches on to give a
@@ -1152,6 +1153,7 @@ def load_model(model_path):
             load_org_component_overview_model,
             load_org_dataset_model,
             load_org_operation_model,
+            load_org_asset_class_catalogue_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
@@ -1175,6 +1177,8 @@ def load_model(model_path):
             return load_org_model(model_path)
         if org_type == 'operation':
             return load_org_operation_model(model_path)
+        if org_type == 'asset_class_catalogue':
+            return load_org_asset_class_catalogue_model(model_path)
 
         # Fallback: no recognised #+type: — use filename suffix (legacy).
         if path_str.endswith('_field_group.org'):

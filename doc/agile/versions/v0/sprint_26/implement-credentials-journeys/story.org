@@ -74,7 +74,7 @@ The build tasks are written when the prototypes are accepted.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0832F089-777E-4E8E-8357-37A043A7B9C1][Scaffold story: Implement the credentials journeys in ores.web]] | BACKLOG | | | Story scaffolding rides this task: the story, the prototype tasks, the sprint wiring and the scaffold PR. Close it before merging that PR. |
+| [[id:0832F089-777E-4E8E-8357-37A043A7B9C1][Scaffold story: Implement the credentials journeys in ores.web]] | DONE | | 2026-09-30 | Story scaffolding rides this task: the story, the prototype tasks, the sprint wiring and the scaffold PR. Close it before merging that PR. |
 | [[id:B7F44B5A-2DF4-4A89-9326-1D17A1FFF8E9][Prototype Protect my account]] | BACKLOG | | | [wayfinder:prototype] The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended. |
 | [[id:0CD0EAD3-1714-432A-9E64-0C41C4F34E45][Prototype Rescue access]] | BACKLOG | | | [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
 | [[id:7F5AA065-212F-4523-924B-1BE38494CF62][Prototype Audit sign-ins]] | BACKLOG | | | [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |

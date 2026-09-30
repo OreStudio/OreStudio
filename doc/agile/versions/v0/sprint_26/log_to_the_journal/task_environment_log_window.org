@@ -68,7 +68,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Plugin tests | 43 passed | =node --test= | =f74db14d91= |
+| Host gate checks | 58 passed, 0 failed | =node scripts/verify.mjs= | =f74db14d91= |
+| A real journal read through the route | 1 line, truncated | the gate's logs section | =f74db14d91= |
+| nats-server reachable through the route | yes | the same section | =f74db14d91= |
+| Anonymous log read | 401 | the gate asserts it | =f74db14d91= |
 
 * Notes
 
@@ -96,3 +100,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A service row offers its journal. The panel opens inside the view, names the
+unit, and switches between the tail, the last warnings and the last errors. An
+empty result says which it is, the journal holding nothing for that unit or
+nothing at that level, because both are different facts from a failed read.
+The =nats-server= row carries the same affordance.
+
+The log is a third route and a second payload shape, fetched on demand rather
+than with the environment. Writing it exposed a smell in the browser half that
+the general field guard caught: two different payloads were both called
+=snapshot=, so the guard could not tell the environment model from the log
+model. The log one is named apart now and the guard covers both.

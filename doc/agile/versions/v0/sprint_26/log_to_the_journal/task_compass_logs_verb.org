@@ -68,7 +68,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Units one selector reaches | 25, including nats-server | =compass services logs nats -n 5= | =8c29601616= |
+| nats lines returned | 5 | the same command | =8c29601616= |
+| web lines returned as JSON | 3, with count and truncation | =compass services logs web -n 3 --json= | =8c29601616= |
+| Compass suite | 294 passed, 1 skipped | =pytest projects/ores.compass/tests -q= | =8c29601616= |
+| Distinct selectors the fleet reports | 20 of 24 units, plus nats | =compass env status= | =8c29601616= |
 
 * Notes
 
@@ -96,3 +100,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One verb reaches every unit: a compiled service, a short name, a full unit
+name, and =nats-server=, which no service selector could resolve before
+because the registry does not carry it.
+
+Two findings shaped it. journald's own priorities are useless as a level
+filter, because it records everything a service writes to stdout at one
+priority, so a filter on warning returns nothing however the service labelled
+the line; the filter reads the token the service printed instead. And two
+vocabularies are in play, so the line is scanned for every bracketed token
+rather than the first: a compiled service formats
+=timestamp [severity] [channel] message=, while nats-server tags a line after
+its process id, as =INF=, =WRN= or =ERR=. Scanning only the first bracket would
+have made nats's level filter silently useless, since that bracket is a PID.

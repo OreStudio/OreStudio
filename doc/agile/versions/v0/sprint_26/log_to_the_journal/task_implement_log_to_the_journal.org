@@ -80,7 +80,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Units still passing a log directory | 0 of 25 | after regenerating them, grep for log-directory | =fba1a973cd= |
+| Units still redirecting to a file | 0 of 25 | grep for StandardOutput=append | =fba1a973cd= |
+| Compiled units now taking --log-to-console | 23 | inspect the generated iam unit | =fba1a973cd= |
+| Node units left to systemd's default | 1 | inspect the generated web unit | =fba1a973cd= |
+| Compass suite | 295 passed, 1 skipped | =pytest projects/ores.compass/tests -q= | =fba1a973cd= |
+| Fleet start on the new units | not run | =compass services start= | pending the rebuild |
 
 * Notes
 
@@ -108,3 +113,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=logging_options.hpp= already documented an empty filename as disabling file
+logging, but =--log-filename= carried a non-empty default and
+=--log-directory= carried =log=, so the documented opt-out could not be
+reached and an empty filename alone would have tripped the validator's
+directory-without-a-filename rule. Both defaults are empty now.
+
+The generator passes =--log-enabled --log-level <level> --log-to-console= and
+no longer passes =--log-directory= or =--log-replica-index=, and the node unit
+keeps no =StandardOutput= or =StandardError= so systemd's own default, the
+journal, applies. Readiness stopped being a log question for twenty-three of
+the twenty-four units, because they are =Type=notify= and systemd reports them
+active only after the service called =sd_notify(READY=1)=. The start path polls
+=ActiveState= rather than a growing file, which deleted the byte-offset waiter
+and its snapshot.
+
+Not yet proven: no service has run on this change. The rebuild is what drops
+the file sink from the compiled binaries, and until it finishes a fleet start
+would still write a file in a relative directory. The open question is whether
+=ores.web=, the one unit whose readiness still reads a line, logs =Service
+ready= to the journal.

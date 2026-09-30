@@ -35,11 +35,11 @@ perform.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Three variants run on =/prototype/rescue=. |
+| Now          | Nothing. |
 | Waiting on   | The product owner's choice of variant. |
-| Next          | Record the accepted variant, then write the screen's build task. |
+| Next          | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -53,8 +53,10 @@ perform.
 - Lock and unlock are one control with the state it produces, not two controls
   that contradict each other, and the screen states what a lock does not do:
   it leaves open sessions open.
-- The password form is drawn, and the screen states that the reset flag cannot
-  be set over NATS today.
+- The recovery action is drawn, and the screen states that nothing sends mail, no
+  subject requests a reset and no table holds a token. The administrator types no
+  password; the fallback that sets one is collapsed and the screen says the
+  record has to admit it.
 - Every panel whose data has no read path says the data is not available.
 - The branch stays unmerged, and * Result carries the verdict, the rejected
   variants, the design decisions and every document claim the tree contradicts.
@@ -122,8 +124,42 @@ who holds the role has all three.
 
 * Result
 
-Built 2026-09-30. Snapshot: branch =prototype/rescue-access=. The product owner
-has not chosen a variant yet, so nothing here is carried into the build.
+Built 2026-09-30. Snapshot: branch =prototype/rescue-access=.
+
+*Accepted by the product owner on 2026-09-30: variant B, diagnose then act — with
+one change to the actions.*
+
+The recommendation below was C, and the acceptance is B, so the roster panel C
+proposed is not carried: the administrator arrives from the account list and
+returns to it, and the diagnosis panel B leads with is the part worth keeping.
+
+*The change: the recovery link replaces the administrator-typed password.* An
+administrator who types a colleague's password knows it, and the record cannot
+pretend otherwise. The screen was revised after the variant comparison:
+
+- The primary action is *Send the recovery link*. The system emails a single-use,
+  time-limited link to the address on the account, and the colleague sets a
+  password that only they know.
+- An administrator-typed password survives as a collapsed fallback for an
+  account whose mailbox cannot receive. The screen says the record has to admit
+  it. *Whether that fallback stays is the open question this prototype raises,*
+  and the build task must answer it.
+- The forced change at the next sign-in drops out of this journey. The member
+  sets their own password at the link, so nothing needs the flag — which also
+  removes the journey's oldest gap, the service method with no caller.
+- The gap list gained the link itself and kept self-service recovery, because
+  that is the same machinery started by the member who cannot sign in.
+
+The revision is commit =3f974a113f= on the branch, and it applies to all three
+variants because they share the panel. Nothing in the tree sends mail, no
+subject requests a reset and no table holds a token, so the machinery behind
+that button is the largest single item this journey adds — and it is new
+platform capability, not a credentials screen. Filed as
+[[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][The tree has no way to send an email, and password recovery needs one]].
+The journey document was corrected with this change, and its wireframe was
+re-rendered.
+
+The accepted variant serves at =/prototype/rescue?variant=b=.
 
 Route =/prototype/rescue?variant=a|b|c=, switched from the bar at the foot of
 the page, reached the same way as the member's screen: run
@@ -132,10 +168,10 @@ the page, reached the same way as the member's screen: run
 
 *Three variants on one screen.*
 
-- *A · One decision screen.* The account, the reset form, the lock control and
-  the gaps, stacked in the order a support call goes.
+- *A · One decision screen.* The account, the recovery action, the lock control
+  and the gaps, stacked in the order a support call goes.
 - *B · Diagnose, then act.* The security state leads and names the action it
-  suggests; the reset form and the lock control sit side by side under it.
+  suggests; the recovery action and the lock control sit side by side under it.
 - *C · Roster and panel.* The account list stays in view on the left with each
   account's state, and the rescue panel fills the right.
 

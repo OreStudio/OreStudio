@@ -24,6 +24,7 @@ on:  # yamllint disable-line rule:truthy
     paths:
       - "projects/**"
       - "build/scripts/check_enum_export_attributes.py"
+      - "build/scripts/check_exported_types_are_compiled.py"
       - ".github/workflows/header-hygiene.yml"
 
   pull_request:
@@ -31,6 +32,7 @@ on:  # yamllint disable-line rule:truthy
     paths:
       - "projects/**"
       - "build/scripts/check_enum_export_attributes.py"
+      - "build/scripts/check_exported_types_are_compiled.py"
       - ".github/workflows/header-hygiene.yml"
 
   workflow_dispatch:
@@ -62,3 +64,27 @@ jobs:
       - name: Check no visibility macro decorates an enum
         run: |
           python3 build/scripts/check_enum_export_attributes.py
+  # A library that exports a type none of its own translation units compiles.
+  # On the Microsoft ABI the export macro is __declspec(dllimport) for
+  # consumers, so the type is imported by everyone and defined by nobody and
+  # the link fails, hours into a Windows build:
+  #
+  #   lld-link: error: undefined symbol: __declspec(dllimport) public: __cdecl
+  #     ores::workflow::service::workflow_registry::workflow_registry(void)
+  #
+  # ores.workflow.api's two hand-written service headers were in exactly that
+  # state on 2026-09-29, and only Windows reported it: on Linux and macOS the
+  # same macro is a visibility attribute that costs nothing. The scan needs no
+  # toolchain and takes a fraction of a second.
+  exported-types:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every exported type is compiled by its own library
+        run: |
+          python3 build/scripts/check_exported_types_are_compiled.py

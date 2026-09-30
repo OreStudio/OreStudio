@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: prototype/audit-sign-ins
-#+pr: 2434
+#+pr: 2448
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -35,11 +35,11 @@ the data it cannot read.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Three variants run on =/prototype/audit=. |
+| Now          | Nothing. |
 | Waiting on   | The product owner's choice of variant. |
-| Next          | Record the accepted variant, then write the screen's build task. |
+| Next          | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -114,6 +114,7 @@ The browser reaches none of them: the BFF is its only HTTP surface.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2448][#2448]] | [agile] Record the accepted credentials variants |
 | [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
 
 * Review
@@ -124,8 +125,19 @@ The browser reaches none of them: the BFF is its only HTTP surface.
 
 * Result
 
-Built 2026-09-30. Snapshot: branch =prototype/audit-sign-ins=. The product owner
-has not chosen a variant yet, so nothing here is carried into the build.
+Built 2026-09-30. Snapshot: branch =prototype/audit-sign-ins=.
+
+*Accepted by the product owner on 2026-09-30: variant B, tabs over one filter
+bar.*
+
+The recommendation below was C. What B settles: the three readings share one
+filter bar and take turns in the body, so the page never grows past one screen
+and a routine review and an incident each get their own view. The design accepts
+the cost: the failures are one click away rather than in view beside the
+sessions, which is what C kept.
+
+The accepted variant is on the branch and serves at
+=/prototype/audit?variant=b=.
 
 Route =/prototype/audit?variant=a|b|c=, reached the same way as the other two:
 =npm run dev:web --workspace @ores.web= and

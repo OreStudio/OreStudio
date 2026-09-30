@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: prototype/protect-my-account
-#+pr: 2434
+#+pr: 2448
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -34,11 +34,11 @@ does not have.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Three variants run on =/prototype/security=. |
+| Now          | Nothing. |
 | Waiting on   | The product owner's choice of variant. |
-| Next          | Record the accepted variant, then write the screen's build task. |
+| Next          | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -110,6 +110,7 @@ states each one, and the prototype decides how.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2448][#2448]] | [agile] Record the accepted credentials variants |
 | [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
 
 * Review
@@ -120,8 +121,18 @@ states each one, and the prototype decides how.
 
 * Result
 
-Built 2026-09-30. Snapshot: branch =prototype/protect-my-account=. The product
-owner has not chosen a variant yet, so nothing here is carried into the build.
+Built 2026-09-30. Snapshot: branch =prototype/protect-my-account=.
+
+*Accepted by the product owner on 2026-09-30: variant B, sessions first.*
+
+The recommendation below was C. What B settles: the places the account is signed
+in are what the member opens *Security* to read, so they lead, and the password
+form — a once-only visit — follows under them beside the sign-in state. The
+two-column shape C proposed is not carried, and the design accepts that the
+password rules sit lower on the page than C put them.
+
+The accepted variant is on the branch and serves at
+=/prototype/security?variant=b=.
 
 Route =/prototype/security?variant=a|b|c=, switched from the bar at the foot of
 the page. The page needs no server: the prototype answers its path before the

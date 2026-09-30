@@ -47,9 +47,9 @@ The build tasks are written when the prototypes are accepted.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The story is scaffolded and the prototype tasks are written. |
+| Now           | The prototype phase is delivered: three screens with three variants each, variant B accepted on all three, and the administrator's screen revised to send a recovery link. |
 | Waiting on    | Nothing. |
-| Next          | Prototype [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]]. |
+| Next          | The build tasks, written from [[id:B9F389C3-0ADE-4169-9789-0A193CFFAF37][the inventory]]. |
 | Last touched  | 2026-09-30                               |
 
 * Acceptance
@@ -75,9 +75,9 @@ The build tasks are written when the prototypes are accepted.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0832F089-777E-4E8E-8357-37A043A7B9C1][Scaffold story: Implement the credentials journeys in ores.web]] | DONE | | 2026-09-30 | Story scaffolding rides this task: the story, the prototype tasks, the sprint wiring and the scaffold PR. Close it before merging that PR. |
-| [[id:B7F44B5A-2DF4-4A89-9326-1D17A1FFF8E9][Prototype Protect my account]] | BACKLOG | | | [wayfinder:prototype] The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended. |
-| [[id:0CD0EAD3-1714-432A-9E64-0C41C4F34E45][Prototype Rescue access]] | BACKLOG | | | [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
-| [[id:7F5AA065-212F-4523-924B-1BE38494CF62][Prototype Audit sign-ins]] | BACKLOG | | | [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |
+| [[id:B7F44B5A-2DF4-4A89-9326-1D17A1FFF8E9][Prototype Protect my account]] | DONE | | 2026-09-30 | [wayfinder:prototype] The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended. |
+| [[id:0CD0EAD3-1714-432A-9E64-0C41C4F34E45][Prototype Rescue access]] | DONE | | 2026-09-30 | [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
+| [[id:7F5AA065-212F-4523-924B-1BE38494CF62][Prototype Audit sign-ins]] | DONE | | 2026-09-30 | [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |
 | [[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]] | DONE | | 2026-09-30 | [wayfinder:task] The three journey documents name the wrong surface, claim a working browser read and name a caller that does not exist. Correct them against the route census and the tree. |
 | [[id:9A07635C-9231-45E4-812D-CB311FDE11EB][Inventory the routes and operations the credentials journeys need]] | DONE | | 2026-09-30 | [wayfinder:research] Per journey, every read and write, its subject, its ores.http route, its BFF route and its permission, so the build tasks can be sized from one page. |
 
@@ -97,6 +97,26 @@ task.
 
 * Decisions
 
+- *The accepted variants are B on all three screens.* Protect my account leads
+  with the places the account is signed in; Rescue access leads with the
+  diagnosis the state suggests; Audit sign-ins puts its three readings behind
+  tabs over one filter bar. Each prototype task's Result records what its
+  accepted variant settles and what the recommendation gave up, so the rejected
+  shapes are not lost.
+- *Rescue access sends a recovery link, and the administrator never chooses the
+  password.* The product owner raised this after the variant comparison, and it
+  is the design. The system emails a single-use, time-limited link to the address
+  on the account, and the colleague sets a password that only they know. Two
+  consequences follow. An administrator-typed password survives only as a
+  collapsed fallback for a mailbox that cannot receive, and whether it stays is
+  the build task's first question. And the forced change at the next sign-in
+  drops out of this journey, which retires its oldest gap: a service method with
+  no caller.
+- *The recovery link is new platform capability, not a credentials screen.*
+  Nothing in the tree sends mail, no subject requests a reset and no table holds
+  a token. Filed as
+  [[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][The tree has no way to send an email, and password recovery needs one]],
+  because sign-up verification and notifications will want the same machinery.
 - *Prototypes precede the build.* A screen with four missing operations
   cannot be sized from its document alone. The prototype shows the shape,
   the copy and the empty states, and it makes the server work visible

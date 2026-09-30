@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2408
+#+pr: 2409
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -661,6 +661,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2409][#2409]] | [agile] Hand the deletion its four places |
 | [[https://github.com/OreStudio/OreStudio/pull/2408][#2408]] | [marketdata,synthetic,sql] Let the config name the series its vintage reads |
 | [[https://github.com/OreStudio/OreStudio/pull/2406][#2406]] | [marketdata,codegen] Name a datum from its series and its point |
 | [[https://github.com/OreStudio/OreStudio/pull/2403][#2403]] | [agile] Record where the coordinate's field is modelled |

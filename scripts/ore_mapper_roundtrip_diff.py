@@ -31,6 +31,14 @@ a difference, and each one is classified:
   unexplained any other pair our output states that the source does not. A
               failure: it needs a decision.
 
+An empty element is not content, so it is the same statement as the
+element's absence: a pair whose value is empty is no difference whichever
+side states it. ORE's date type spells an unset date as the empty string
+and its elements are optional, so a document may write either, and the
+corpus writes both. The pairing above is tried first, because an empty
+element is also how ORE spells a true boolean, and that one has to be
+echoed as a boolean.
+
 Two scopes are reported. The in-scope pairs are the ones the bond programme
 gates on: everything under a bond product element, plus the top-level trade
 envelope. The out-of-scope pairs are the other instrument families, which this
@@ -244,6 +252,29 @@ def normalisation_self_check() -> int:
         if actual != expected:
             print(f"SELF-CHECK FAILED: {text!r} normalises to {actual!r}, expected {expected!r}")
             failures += 1
+
+    # The classification rule, over one path. Each case names the value the
+    # source states, the value the output states, and the kind it is
+    # expected to land in, or None for no difference at all.
+    path = "/Portfolio/Trade/BondData/LegData/ScheduleData/Rules/FirstDate"
+    kinds = ("numeric", "boolean", "lost", "unexplained")
+    classifications = (
+        ("", None, None),
+        (None, "", None),
+        ("", "true", "boolean"),
+        ("true", "", "lost"),
+        ("2016-02-03", None, "lost"),
+        (None, "2016-02-03", "unexplained"),
+    )
+    for stated, written, expected in classifications:
+        source_pairs = Counter({(path, stated): 1}) if stated is not None else Counter()
+        output_pairs = Counter({(path, written): 1}) if written is not None else Counter()
+        found = classify(source_pairs, output_pairs)
+        landed = next((kind for kind in kinds if found[kind]), None)
+        if landed != expected:
+            print(f"SELF-CHECK FAILED: source {stated!r} against output {written!r} "
+                  f"lands in {landed!r}, expected {expected!r}")
+            failures += 1
     return failures
 
 
@@ -292,11 +323,20 @@ def classify(source_pairs: Counter, output_pairs: Counter):
             elif extra and is_boolean_pair(value, extra[0]):
                 extra.pop(0)
                 found["boolean"].append((path, value))
+            elif value == "":
+                # An empty element states no content, so it is the same
+                # statement as the element's absence. ORE's date type
+                # spells an unset date as the empty string and its elements
+                # are optional, so a document may write either, and the
+                # corpus writes both. The pairing above runs first, because
+                # an empty element is also how ORE spells a true boolean.
+                continue
             else:
                 found["lost"].append((path, value))
 
         for value in extra:
-            found["unexplained"].append((path, value))
+            if value != "":
+                found["unexplained"].append((path, value))
 
     found["worst_numeric"] = worst
     return found

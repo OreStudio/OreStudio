@@ -273,9 +273,8 @@ def print_corpus_report(report: dict, canonicalised: bool) -> None:
         print("  the corpus states one statement per security; nothing overridden")
 
 
-def write_script(work_dir: Path, source_dir: Path, output: Path) -> Path:
+def write_script(work_dir: Path, source_dir: Path, output: Path, request_id: str) -> Path:
     """One shell session: pack the sources, import them, export the result."""
-    request_id = str(uuid.uuid4())
     lines = [
         "connect $ORES_NATS_URL",
         f"login {LOGIN}",
@@ -364,17 +363,23 @@ def main() -> int:
     # second copy of every trade. The classifier sees the union alone,
     # because the export is one document and a configuration document has
     # no output of its own to pair with.
+    #
+    # The imported file's name becomes the book's name, and a book name is
+    # unique in a tenant, so the pack's copy carries the run's request id.
+    # Without it a second run against the same database fails at save_book
+    # and the sweep can only be measured once per database.
+    request_id = str(uuid.uuid4())
     if pack_dir.exists():
         shutil.rmtree(pack_dir)
     pack_dir.mkdir(parents=True)
-    shutil.copy2(union, pack_dir / "000-union.xml")
+    shutil.copy2(union, pack_dir / f"000-union-{request_id}.xml")
     for document in sorted(staging.glob("*.xml"))[len(portfolios):]:
         shutil.copy2(document, pack_dir / document.name)
 
     output = output_dir / "portfolio_roundtrip.xml"
     if output.exists():
         output.unlink()
-    script = write_script(work_dir, pack_dir, output)
+    script = write_script(work_dir, pack_dir, output, request_id)
     print(f"Running the import and export ({script.name})...")
     if run_script(script) != 0:
         return 1
@@ -382,10 +387,13 @@ def main() -> int:
         print(f"the exporter wrote no {output.name}", file=sys.stderr)
         return 1
 
+    # The classifier reads the union and the export, so the work directory
+    # goes only once it has run: a run that deleted it first classified a
+    # directory that was gone.
+    exit_code = classify(union_dir, output_dir, args.all_products)
     if not args.keep:
         shutil.rmtree(work_dir, ignore_errors=True)
-
-    return classify(union_dir, output_dir, args.all_products)
+    return exit_code
 
 
 if __name__ == "__main__":

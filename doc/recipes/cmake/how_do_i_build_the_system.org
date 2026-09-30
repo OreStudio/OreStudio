@@ -68,9 +68,12 @@ that slot's =-j=:
 reports each slot as held (with the holding environment's identity,
 pid, and start time) or free, plus a tail of that slot's build log.
 Every build's combined stdout/stderr is also streamed live to a
-well-known path per slot, =/tmp/ores-build.log.<slot>= (overwritten
-each run) — =tail -f= it directly if you want to watch a build you
-(or another environment) kicked off rather than polling =--status=.
+well-known path per slot, =tmp/ores-build.log.<slot>= under the
+checkout (overwritten each run) — =tail -f= it directly if you want
+to watch a build you (or another environment) kicked off rather than
+polling =--status=. The log lives in the checkout rather than in the
+host's =/tmp= so that a sandboxed reader, which mounts its own =/tmp=,
+can still read it.
 If both slots are busy, =compass build= prints a waiting message and
 blocks until one frees — this is expected, not a hang; let it wait
 rather than killing it or falling back to a raw =cmake --build=.

@@ -24,6 +24,7 @@ PartOf=<target>) moved.
 
 import argparse
 import contextlib
+import json
 import os
 import subprocess
 import sys
@@ -152,15 +153,19 @@ JOURNAL_LINES = 400
 JOURNAL_TIMEOUT_S = 20
 
 
-def _journal_lines(unit, lines=JOURNAL_LINES):
-    """The most recent journal lines for one unit, oldest first.
+def _journal_lines(units, lines=JOURNAL_LINES):
+    """The most recent journal lines for one unit or several, oldest first.
 
     `-o cat` drops the journal's own prefix, so a caller sees what the
     service wrote. A journal that cannot be read and a service that has
     written nothing both come back empty; a caller reports the count rather
     than guessing which it was."""
-    cmd = ["journalctl", "--user", "-u", f"{unit}.service", "--no-pager",
-           "-n", str(lines), "-o", "cat"]
+    names = [units] if isinstance(units, str) else list(units)
+    if not names:
+        return []
+    cmd = ["journalctl", "--user", "--no-pager", "-n", str(lines), "-o", "cat"]
+    for name in names:
+        cmd += ["-u", f"{name}.service"]
     try:
         out = subprocess.run(cmd, capture_output=True, text=True,
                              timeout=JOURNAL_TIMEOUT_S)
@@ -169,6 +174,76 @@ def _journal_lines(unit, lines=JOURNAL_LINES):
     if out.returncode:
         return []
     return out.stdout.splitlines()
+
+
+# journald records everything a service writes to stdout at one priority, so
+# `-p` cannot select a level: every line arrives as info whatever the service
+# called it. The level is the token the service prints in square brackets, so
+# these filters match on that.
+#
+# Two vocabularies are in play. A compiled service formats
+# `timestamp [severity] [channel] message`, where severity is one of trace,
+# debug, info, warn, error. nats-server formats its own way and tags a line
+# `[INF]`, `[WRN]`, `[ERR]`, `[FTL]`, `[DBG]` or `[TRC]`. Both are covered,
+# which matters because nats-server is one of the units this verb exists to
+# reach.
+SEVERITY_TOKENS = {
+    "warnings": ("warn", "warning", "wrn"),
+    "errors": ("error", "err", "fatal", "ftl", "crit", "critical"),
+}
+
+
+def _severity_tokens(line):
+    """Every bracketed token in a service's line, lowercased.
+
+    A set rather than one token, because the two formats put the severity in
+    different places: a compiled service leads with a timestamp, while
+    nats-server leads with its process id, so the first bracket is not the
+    severity for both."""
+    tokens = set()
+    rest = line
+    while True:
+        start = rest.find("[")
+        if start < 0:
+            return tokens
+        end = rest.find("]", start)
+        if end < 0:
+            return tokens
+        token = rest[start + 1:end].strip().lower()
+        if token:
+            tokens.add(token)
+        rest = rest[end + 1:]
+
+
+def _journal_tail(units, lines, level=None):
+    """Recent journal lines, narrowed to one level when asked.
+
+    A level filter cannot be pushed into journalctl, so the tail is fetched
+    and filtered here. The caller is told how many lines it got, because an
+    empty result and a silent service are different facts."""
+    fetched = _journal_lines(units, lines=lines)
+    capped = len(fetched) >= lines
+    if level is None:
+        return fetched, capped
+    wanted = set(SEVERITY_TOKENS[level])
+    return [line for line in fetched
+            if set(_severity_tokens(line)) & wanted], capped
+
+
+def _resolve_units(ctx, selector):
+    """The units a log selector names, or [] when it names none.
+
+    Accepts a registry service, the short name of one, a full unit name this
+    environment deployed, and nats-server, which the registry does not carry
+    and which therefore no service selector could reach before."""
+    if selector in ("nats", "nats-server", _nats_unit(ctx)):
+        return [_nats_unit(ctx)]
+    try:
+        name = _resolve_service(ctx, selector)
+    except KeyError:
+        deployed = [row["unit"] for row in _unit_rows(ctx)]
+        return [selector] if selector in deployed else []
+    return [unit for unit, _log in _service_units(ctx, only=name)]
 
 
 def _journal_contains(unit, pattern: str) -> bool:
@@ -714,6 +789,48 @@ def cmd_top(ctx, args):
     return result.returncode
 
 
+def cmd_logs(ctx, args):
+    """Print a unit's recent journal output, optionally at one level.
+
+    One interface for the whole fleet: a compiled service, ores.web and
+    nats-server all reach the journal, so a selector that names any of them
+    works, and a selector that names none says so instead of printing
+    nothing."""
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    units = _resolve_units(ctx, args.selector)
+    if not units:
+        print(f"error: nothing named '{args.selector}' in this environment "
+              f"({ctx.env_name}).", file=sys.stderr)
+        print("       compass services status lists what is deployed.",
+              file=sys.stderr)
+        return 1
+    level = "warnings" if args.warnings else "errors" if args.errors else None
+    found, capped = _journal_tail(units, args.lines, level)
+
+    if args.json:
+        print(json.dumps({
+            "ok": True,
+            "units": units,
+            "level": level or "all",
+            "count": len(found),
+            "truncated": capped,
+            "lines": found,
+        }, indent=2))
+        return 0
+
+    for line in found:
+        print(line)
+    if not found:
+        print(f"the journal holds no {level or 'output'} for "
+              f"{' '.join(units)}; it may not have run yet.")
+    elif capped:
+        print(f"... last {len(found)} line(s); raise -n for more.",
+              file=sys.stderr)
+    return 0
+
+
 def cmd_clear_logs(ctx, args):
     if not ctx.log_dir.is_dir():
         print(f"Nothing to clear: log directory does not exist "
@@ -792,6 +909,20 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
                     help="Extra flags forwarded verbatim to systemd-cgtop "
                          "(e.g. -1, -b, -m)")
 
+    lg = sub.add_parser("logs", help="Tail a unit's journal output: a "
+                                     "compiled service, a short name, a unit "
+                                     "name, or nats-server")
+    _common(lg)
+    lg.add_argument("selector", help="Service, short name, unit name, or "
+                                     "nats-server")
+    lg.add_argument("-n", "--lines", type=int, default=200,
+                    help="How many journal lines to read (default: 200)")
+    lg.add_argument("--warnings", action="store_true",
+                    help="Only lines the service logged at warning level")
+    lg.add_argument("--errors", action="store_true",
+                    help="Only lines the service logged at error level")
+    lg.add_argument("--json", action="store_true",
+                    help="Emit one JSON object instead of plain lines")
     cl = sub.add_parser("clear-logs", help="Delete all *.log / *.err under "
                                            "the preset's log directory")
     _common(cl)
@@ -804,4 +935,5 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
 
     return {"start": cmd_start, "stop": cmd_stop, "status": cmd_status,
             "restart": cmd_restart, "tree": cmd_tree, "top": cmd_top,
+            "logs": cmd_logs,
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)

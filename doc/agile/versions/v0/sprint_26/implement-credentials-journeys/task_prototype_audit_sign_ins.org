@@ -35,11 +35,11 @@ the data it cannot read.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing. |
-| Next         | Cut the branch and read the journey's wireframe and the runtime it rides. |
+| Now          | Three variants run on =/prototype/audit=. |
+| Waiting on   | The product owner's choice of variant. |
+| Next          | Record the accepted variant, then write the screen's build task. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -123,3 +123,53 @@ path does not.
 |   |                 |      |          |       |
 
 * Result
+
+Built 2026-09-30. Snapshot: branch =prototype/audit-sign-ins=. The product owner
+has not chosen a variant yet, so nothing here is carried into the build.
+
+Route =/prototype/audit?variant=a|b|c=, reached the same way as the other two:
+=npm run dev:web --workspace @ores.web= and
+=http://localhost:5173/prototype/audit?variant=a=. No server is needed.
+
+*Three variants on one screen.*
+
+- *A · One log, sections.* One filter bar, then the active sessions, the
+  session activity, the failures and the gap list as sections of one page.
+- *B · Tabs over one filter bar.* The same four readings take turns in the
+  body, so the page never grows past one screen.
+- *C · Session-first timeline.* One row per session, expanded to its activity,
+  with the failures and the gaps in a rail beside it.
+
+*Recommendation: C.* The question this screen answers is asked about a session
+("who is this, and what are they doing"), so the session is the unit and its
+activity belongs under it rather than in a separate reading. The failures rail
+stays visible, which is what explains the support call. A is the safe default
+if the readings grow past three; B hides the failures while an administrator
+reads the sessions, which is exactly when a locked account matters.
+
+*Decisions the prototype settles.*
+
+- *Refresh is the only action,* and no version, diff or revert control appears
+  anywhere. The journey document fixes this, and the prototypes keep it.
+- *The account filter is drawn, and disabled.* =iam.v1.sessions.list= takes no
+  account filter, so the screen says the server cannot apply one rather than
+  offering a control that silently does nothing.
+- *The activity panel states that the data is not available.* Nothing serves
+  =iam.v1.sessions.samples= on either transport, so no empty chart and no
+  fabricated sample rows are drawn; the session row's own totals are shown with
+  the reason beside them.
+- *No events panel is drawn.* The authentication events have no subject at all,
+  so the screen lists them as a gap instead of drawing an empty log. The
+  journey's first two steps therefore cannot be shown until the subject exists.
+- *The failure count and the lock state travel together.* A locked account is
+  the case the screen exists for, so the state is a tag beside the count.
+
+*The whole journey is unreachable from the browser today.* No route serves
+=iam.v1.sessions.list=, =iam.v1.sessions.active=, =iam.v1.sessions.samples= or
+=iam.v1.login_info.list=, and there is no subject or route for the auth events
+or the session statistics. The journey document's claim that
+=/api/v1/sessions/active= "works in the browser today" is stale.
+
+*Verification.* =npm run typecheck --workspace @ores/web= passes.
+=npm test --workspace @ores/web= passes, 146 tests in 13 files, on the same
+tree. Each variant was rendered headless at 1440 px and read back.

@@ -1389,24 +1389,12 @@ save_bond_instrument(Nats& nats,
             return error.empty() ? "save_bond_repo failed" : error;
     } else if (ttc == "BondFuture" && data.future) {
         put_bond_future_request fact_req;
-        fact_req.change.write.trade_id = (*data.future).trade_id;
+        fact_req.change.write.trade_id = instrument.identity.trade_id;
         fact_req.change.write.contract_name = (*data.future).contract_name;
         fact_req.change.write.contract_notional = (*data.future).contract_notional;
         fact_req.change.write.long_short = (*data.future).long_short;
-        fact_req.change.write.currency = (*data.future).currency;
-        fact_req.change.write.contract_month = (*data.future).contract_month;
-        fact_req.change.write.deliverable_grade = (*data.future).deliverable_grade;
-        fact_req.change.write.fair_price = (*data.future).fair_price;
-        fact_req.change.write.settlement = (*data.future).settlement;
-        fact_req.change.write.settlement_dirty = (*data.future).settlement_dirty;
-        fact_req.change.write.root_date = (*data.future).root_date;
-        fact_req.change.write.expiry_basis = (*data.future).expiry_basis;
-        fact_req.change.write.settlement_basis = (*data.future).settlement_basis;
-        fact_req.change.write.expiry_lag = (*data.future).expiry_lag;
-        fact_req.change.write.settlement_lag = (*data.future).settlement_lag;
-        fact_req.change.write.last_trading_date = (*data.future).last_trading_date;
-        fact_req.change.write.last_delivery_date = (*data.future).last_delivery_date;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.apply_conversion_factor = (*data.future).apply_conversion_factor;
+        fact_req.change.write.use_future_price = (*data.future).use_future_price;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_future failed" : error;

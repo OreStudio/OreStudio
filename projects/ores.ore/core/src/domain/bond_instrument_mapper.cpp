@@ -1470,15 +1470,19 @@ bond_instrument_data bond_instrument_mapper::forward_bond_future(const trade& t,
     future.contract_notional =
         ores::utility::decimal::decimal::from_double(number_of(d.ContractNotional, 0.0)).value();
     future.long_short = d.LongShort;
+    if (d.ApplyConversionFactor)
+        future.apply_conversion_factor = *d.ApplyConversionFactor;
+    if (d.UseFuturePrice)
+        future.use_future_price = *d.UseFuturePrice;
     // v17 moved the contract's own terms out of the trade and into the
     // BondFutureReferenceData datum keyed by ContractName: currency,
     // contract month, deliverable grade, settlement and its basis,
     // expiry basis, the two lags, root date, last trading and delivery
     // dates, and the delivery basket. They are properties of the
     // contract rather than of a trade on it, which is why they moved.
-    // Nothing reads them here because the reference data document is
-    // not yet parsed; the fields stay unset rather than being invented
-    // from the trade. FairPrice is not in v17 at all.
+    // Nothing reads them because the reference data document is not yet
+    // parsed, and the table no longer holds them. FairPrice is not in v17
+    // at all.
     stamp_audit(future);
     result.future = future;
     return result;
@@ -1690,6 +1694,12 @@ trade bond_instrument_mapper::reverse_bond_future(const bond_instrument_data& da
         set_text(d.ContractName, f.contract_name);
         set_text(d.ContractNotional, format_number(f.contract_notional.to_double()));
         set_text(d.LongShort, f.long_short);
+        // An absent member stays absent and a stated one is written, so a
+        // document that states false keeps it (decision D24).
+        if (f.apply_conversion_factor)
+            d.ApplyConversionFactor = *f.apply_conversion_factor;
+        if (f.use_future_price)
+            d.UseFuturePrice = *f.use_future_price;
         // The contract's own terms belong to the BondFutureReferenceData
         // datum in v17, not to the trade, so there is nowhere here to
         // write currency, contract month, deliverable grade, settlement

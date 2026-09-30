@@ -11,15 +11,32 @@
 #+entity_plural: bond_futures
 #+entity_title: Bond Future
 #+created: 2026-09-09
-#+updated: 2026-09-09
+#+updated: 2026-09-30
 
-One row per bond future trade, keyed by the instrument row it
-extends. The columns fix the ER row ("delivery date and the facts the
-XSD =bondFutureData= carries") from =external/ore/xsd/instruments.xsd=
-lines 422-448: every single-valued scalar of the structure, minus the
-=DeliveryBasket= list, which has no destination in the nine tables and
-lands in the shared instrument-keyed underlyings of the parent story
-(recorded scope limit, task D7943D7E wave 1.3).
+One row per bond future trade, keyed by the trade. The row carries the
+whole of =bondFutureData=, the only type the ORE schema states for the
+product ([[file:../../../external/ore/xsd/instruments.xsd::428][instruments.xsd:428]]):
+=ContractName=, =ContractNotional= and =LongShort= are required and
+=ApplyConversionFactor= and =UseFuturePrice= are optional booleans.
+
+v17 moved the contract's own terms out of the trade. =Currency=,
+=ContractMonth=, =DeliverableGrade=, =LastTradingDate=,
+=LastDeliveryDate=, =Settlement=, =DirtyQuotation=, =RootDate=,
+=ExpiryBasis=, =SettlementBasis=, =ExpiryLag= and =SettlementLag= are
+elements of =bondFutureReferenceDatum=
+([[file:../../../external/ore/xsd/referencedata.xsd::132][referencedata.xsd:132]]),
+and =DeliveryBasket= is that datum's element too. =FairPrice= is not in
+the schema at all. This table held all thirteen, at the trade, because the
+era it was written in did; they are recorded as dropped rather than kept
+in a place ORE does not state them (decision D25).
+
+The datum reaches only the =ReferenceData= document root, and the
+generated ORE bindings cover the =Portfolio= root, so no trade document
+can state one of these terms and no mapper can read one. The shared entity
+that will hold them is keyed by the contract name, the way
+=ores.trading.bond_issue= is keyed by the security id; it lands when the
+reference-data document becomes importable, and the drop is recorded on
+the bond pilot until then.
 
 * Flags
 :PROPERTIES:
@@ -86,181 +103,30 @@ Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE long
 std::string("Long")
 #+end_src
 
-** currency
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-ISO 4217 currency code of the contract.
-
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
-
-#+begin_src cpp :name generator
-std::string("USD")
-#+end_src
-
-** contract_month
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Delivery month of the contract (YYYY-MM text).
-
-#+begin_src cpp :name generator
-std::string("2029-09")
-#+end_src
-
-** deliverable_grade
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Deliverable grade of the contract, when the contract names one.
-
-#+begin_src cpp :name generator
-std::string("T 2.75 11/15/2042")
-#+end_src
-
-** fair_price
-:PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      ores::utility::decimal::decimal
-:nullable:      false
-:END:
-
-Fair price of the contract at trade time.
-
-#+begin_src cpp :name generator
-ores::utility::decimal::decimal::from_string("98.5").value()
-#+end_src
-
-** settlement
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Settlement type of the contract (Cash, Physical).
-
-#+begin_src cpp :name generator
-std::string("Cash")
-#+end_src
-
-** settlement_dirty
+** apply_conversion_factor
 :PROPERTIES:
 :type:     boolean
-:cpp_type: bool
-:nullable: false
-:END:
-
-True when the settlement price is dirty (includes accrued).
-
-#+begin_src cpp :name generator
-false
-#+end_src
-
-** root_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::optional<std::chrono::year_month_day>
+:cpp_type: std::optional<bool>
 :nullable: true
 :END:
 
-Root date of the contract's expiry basis (ISO 8601 date string).
+True when the delivery is converted by the contract's conversion factor.
 
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2029}/3/1}
-#+end_src
+Optional in the schema, so the column is nullable: null is an absent
+element and a value is a stated one, which keeps a stated =false=
+different from an absent element (decision D24).
 
-** expiry_basis
+** use_future_price
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:     boolean
+:cpp_type: std::optional<bool>
 :nullable: true
 :END:
 
-Expiry basis of the contract, when the contract names one.
+True when the future's own price is used rather than the bond's.
 
-#+begin_src cpp :name generator
-std::string("Futures")
-#+end_src
-
-** settlement_basis
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Settlement basis of the contract, when the contract names one.
-
-#+begin_src cpp :name generator
-std::string("Futures")
-#+end_src
-
-** expiry_lag
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default_value: 0
-:END:
-
-Lag in days between the root date and the expiry basis.
-
-#+begin_src cpp :name generator
-1
-#+end_src
-
-** settlement_lag
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default_value: 0
-:END:
-
-Lag in days between the expiry basis and the settlement basis.
-
-#+begin_src cpp :name generator
-2
-#+end_src
-
-** last_trading_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
-:default_value: {}
-:END:
-
-Last trading date of the contract (ISO 8601 date string).
-
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2029}/9/27}
-#+end_src
-
-** last_delivery_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
-:default_value: {}
-:END:
-
-Last delivery date of the contract (ISO 8601 date string). The ER
-names this the delivery date of the fact row.
-
-#+begin_src cpp :name generator
-std::chrono::year_month_day{std::chrono::year{2029}/9/28}
-#+end_src
+Optional in the schema, so the column is nullable, as for
+=apply_conversion_factor=.
 
 * Foreign keys
 
@@ -288,7 +154,6 @@ trigger checks it there.
 | expression                            |
 |---------------------------------------|
 | "long_short" in ('Long', 'Short')     |
-| "last_delivery_date" >= "last_trading_date" |
 
 * C++
 
@@ -309,7 +174,7 @@ trigger checks it there.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/decimal/decimal.hpp"
@@ -325,11 +190,9 @@ trigger checks it there.
 | column            | header         |
 |-------------------+----------------|
 | contract_name     | Contract       |
-| contract_month    | Contract Month |
 | long_short        | Long/Short     |
-| currency          | Currency       |
-| fair_price        | Fair Price     |
-| last_delivery_date | Last Delivery |
+| apply_conversion_factor | Conversion Factor |
+| use_future_price  | Use Future Price |
 | modified_by       | Modified By    |
 | version           | Version        |
 

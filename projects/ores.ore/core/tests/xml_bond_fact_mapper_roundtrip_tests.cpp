@@ -997,9 +997,9 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     auto lg(make_logger(test_suite));
 
     // No example document states a BondFuture, so the trade is authored
-    // after the schema's bondFutureData. In v17 that type holds only
-    // what belongs to the trade: the contract it is on, the size, and
-    // the direction. The contract's own terms — currency, month,
+    // after the schema's bondFutureData. In v17 that type holds the
+    // contract the future is on, the size, the direction, and two
+    // optional booleans. The contract's own terms — currency, month,
     // deliverable grade, settlement and its basis, expiry basis, the
     // lags, root date, last trading and delivery dates, and the
     // delivery basket — moved to the BondFutureReferenceData datum
@@ -1013,6 +1013,8 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
       <ContractName>Euro-Bund-Future</ContractName>
       <ContractNotional>100000</ContractNotional>
       <LongShort>Long</LongShort>
+      <ApplyConversionFactor>false</ApplyConversionFactor>
+      <UseFuturePrice>true</UseFuturePrice>
     </BondFutureData>
   </Trade>
 </Portfolio>
@@ -1028,11 +1030,15 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     CHECK(f.modified_by == "ores");
     CHECK(f.change_reason_code == "system.external_data_import");
 
-    // The relocated terms have no source in the trade, so they stay at
-    // their defaults rather than being invented from it.
-    CHECK(f.currency.empty());
-    CHECK(f.contract_month.empty());
-    CHECK(f.deliverable_grade.empty());
+    // A stated false is a value and not an absence, so the optional holds
+    // it and the reverse writes it back. This is the case the abandoned
+    // task recorded: a stated member equal to the type's default survives
+    // the export (decision D24).
+    REQUIRE(f.apply_conversion_factor);
+    CHECK_FALSE(*f.apply_conversion_factor);
+    REQUIRE(f.use_future_price);
+    CHECK(*f.use_future_price);
+
     CHECK(r.future_delivery_basket.empty());
 
     // A future carries no bond terms, so the issue row its NOT NULL
@@ -1045,6 +1051,10 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     CHECK(std::string(rt.BondFutureData->ContractName) == "Euro-Bund-Future");
     CHECK(std::string(rt.BondFutureData->LongShort) == "Long");
     CHECK(std::stod(std::string(rt.BondFutureData->ContractNotional)) == Approx(100000.0));
+    REQUIRE(rt.BondFutureData->ApplyConversionFactor);
+    CHECK_FALSE(*rt.BondFutureData->ApplyConversionFactor);
+    REQUIRE(rt.BondFutureData->UseFuturePrice);
+    CHECK(*rt.BondFutureData->UseFuturePrice);
 
     BOOST_LOG_SEV(lg, info) << "BondFuture trade-level facts mapped.";
 }

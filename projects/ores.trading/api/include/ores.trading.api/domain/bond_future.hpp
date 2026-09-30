@@ -28,7 +28,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -37,13 +37,30 @@ namespace ores::trading::domain {
 /**
  * @brief Per-trade bond future facts: one row per future instrument, keyed by trade_id.
  *
- * One row per bond future trade, keyed by the instrument row it
- * extends. The columns fix the ER row ("delivery date and the facts the
- * XSD bondFutureData carries") from external/ore/xsd/instruments.xsd
- * lines 422-448: every single-valued scalar of the structure, minus the
- * DeliveryBasket list, which has no destination in the nine tables and
- * lands in the shared instrument-keyed underlyings of the parent story
- * (recorded scope limit, task D7943D7E wave 1.3).
+ * One row per bond future trade, keyed by the trade. The row carries the
+ * whole of bondFutureData, the only type the ORE schema states for the
+ * product ([[file:../../../external/ore/xsd/instruments.xsd::428][instruments.xsd:428]]):
+ * ContractName, ContractNotional and LongShort are required and
+ * ApplyConversionFactor and UseFuturePrice are optional booleans.
+ *
+ * v17 moved the contract's own terms out of the trade. Currency,
+ * ContractMonth, DeliverableGrade, LastTradingDate,
+ * LastDeliveryDate, Settlement, DirtyQuotation, RootDate,
+ * ExpiryBasis, SettlementBasis, ExpiryLag and SettlementLag are
+ * elements of bondFutureReferenceDatum
+ * ([[file:../../../external/ore/xsd/referencedata.xsd::132][referencedata.xsd:132]]),
+ * and DeliveryBasket is that datum's element too. FairPrice is not in
+ * the schema at all. This table held all thirteen, at the trade, because the
+ * era it was written in did; they are recorded as dropped rather than kept
+ * in a place ORE does not state them (decision D25).
+ *
+ * The datum reaches only the ReferenceData document root, and the
+ * generated ORE bindings cover the Portfolio root, so no trade document
+ * can state one of these terms and no mapper can read one. The shared entity
+ * that will hold them is keyed by the contract name, the way
+ * ores.trading.bond_issue is keyed by the security id; it lands when the
+ * reference-data document becomes importable, and the drop is recorded on
+ * the bond pilot until then.
  */
 struct bond_future final {
     /**
@@ -84,74 +101,19 @@ struct bond_future final {
     std::string long_short;
 
     /**
-     * @brief ISO 4217 currency code of the contract.
+     * @brief True when the delivery is converted by the contract's conversion factor.
      *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
+     * Optional in the schema, so the column is nullable: null is an absent element and a value is a
+     * stated one, which keeps a stated false different from an absent element (decision D24).
      */
-    std::string currency;
+    std::optional<bool> apply_conversion_factor;
 
     /**
-     * @brief Delivery month of the contract (YYYY-MM text).
+     * @brief True when the future's own price is used rather than the bond's.
+     *
+     * Optional in the schema, so the column is nullable, as for apply_conversion_factor.
      */
-    std::string contract_month;
-
-    /**
-     * @brief Deliverable grade of the contract, when the contract names one.
-     */
-    std::string deliverable_grade;
-
-    /**
-     * @brief Fair price of the contract at trade time.
-     */
-    ores::utility::decimal::decimal fair_price;
-
-    /**
-     * @brief Settlement type of the contract (Cash, Physical).
-     */
-    std::string settlement;
-
-    /**
-     * @brief True when the settlement price is dirty (includes accrued).
-     */
-    bool settlement_dirty = false;
-
-    /**
-     * @brief Root date of the contract's expiry basis (ISO 8601 date string).
-     */
-    std::optional<std::chrono::year_month_day> root_date;
-
-    /**
-     * @brief Expiry basis of the contract, when the contract names one.
-     */
-    std::string expiry_basis;
-
-    /**
-     * @brief Settlement basis of the contract, when the contract names one.
-     */
-    std::string settlement_basis;
-
-    /**
-     * @brief Lag in days between the root date and the expiry basis.
-     */
-    int expiry_lag = 0;
-
-    /**
-     * @brief Lag in days between the expiry basis and the settlement basis.
-     */
-    int settlement_lag = 0;
-
-    /**
-     * @brief Last trading date of the contract (ISO 8601 date string).
-     */
-    std::chrono::year_month_day last_trading_date = {};
-
-    /**
-     * @brief Last delivery date of the contract (ISO 8601 date string). The ER names this the
-     * delivery date of the fact row.
-     */
-    std::chrono::year_month_day last_delivery_date = {};
+    std::optional<bool> use_future_price;
 
     /**
      * @brief Username of the person who last modified this bond future.

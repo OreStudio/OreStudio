@@ -829,6 +829,12 @@ export function toPutPartyChange(input: {
              */
             status: 'Inactive',
             image_id: null,
+            /*
+             * A party a person adds is never the place registrations land:
+             * the tenant administrator nominates that one deliberately, on
+             * the tenant's own party.
+             */
+            is_registration_default: false,
         },
         precondition: { kind: 'must_not_exist', version: null },
     };

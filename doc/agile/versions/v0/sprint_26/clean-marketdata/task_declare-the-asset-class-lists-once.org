@@ -8,7 +8,7 @@
 #+filetags: :asset-class:taxonomy:codegen:refdata:clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/declare-the-asset-class-catalogue
-#+pr: 2444
+#+pr: 2445
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-28
@@ -199,6 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2445][#2445]] | [marketdata,refdata] Generate the taxonomy codes the test samplers read |
 | [[https://github.com/OreStudio/OreStudio/pull/2444][#2444]] | [refdata] Stop the entity model restating the taxonomy |
 | [[https://github.com/OreStudio/OreStudio/pull/2443][#2443]] | [refdata,codegen] Generate the asset-class DQ rows from the catalogue |
 | [[https://github.com/OreStudio/OreStudio/pull/2440][#2440]] | [marketdata,refdata] Close the series_subclass gap and settle the census's drifts |

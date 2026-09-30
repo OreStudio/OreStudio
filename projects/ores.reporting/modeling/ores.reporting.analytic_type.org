@@ -87,6 +87,7 @@ The order the analytic appears in a list.
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_analytic_types_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

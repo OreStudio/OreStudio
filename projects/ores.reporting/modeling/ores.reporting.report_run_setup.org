@@ -456,6 +456,7 @@ Whether the run collects the additional results its configuration asks for, as O
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_report_run_setups_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

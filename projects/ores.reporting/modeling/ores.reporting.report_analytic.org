@@ -90,6 +90,7 @@ parameter of every analytic, so the row carries it rather than inferring it.
 ** Flags
 :PROPERTIES:
 :tablename: ores_reporting_report_analytics_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

@@ -197,3 +197,20 @@ on delete to "ores_reporting_report_run_setups_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Report Run Setup
+-- =============================================================================
+alter table ores_reporting_report_run_setups_tbl enable row level security;
+
+drop policy if exists report_run_setups_tbl_tenant_isolation_policy
+    on ores_reporting_report_run_setups_tbl;
+
+create policy report_run_setups_tbl_tenant_isolation_policy
+on ores_reporting_report_run_setups_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

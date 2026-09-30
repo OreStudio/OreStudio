@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: feature/credentials-account-and-login-reads
-#+pr:
+#+pr: 2451
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -130,7 +130,7 @@ answer, so the screens have something to read when their own tasks start.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2451][#2451]] | [web] Give the browser the account and login-record reads |
 
 * Review
 

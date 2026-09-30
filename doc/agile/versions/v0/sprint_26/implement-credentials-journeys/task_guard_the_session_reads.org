@@ -105,6 +105,26 @@ these reads.
 
 * Result
 
-Started 2026-10-01. The three guards are in
-=projects/ores.iam/core/include/ores.iam.core.messaging/session_handler.hpp=;
-the build and the suites have not run, so nothing is claimed about them yet.
+Done 2026-10-01, except for the test that asserts the refusal.
+
+The three guards are in
+=projects/ores.iam/core/include/ores.iam.core.messaging/session_handler.hpp=,
+one per read verb, mirroring the shape the write and delete verbs already use.
+Every verb of the resource now checks the permission its operation needs, and a
+refusal is the same =forbidden= error throughout.
+
+Verification: the library and the suite build, and =ores.iam.core.tests= passes
+whole — =All tests passed (425 assertions in 165 test cases)=. The first run of
+that suite failed 59 of 165 cases, every one of them with a missing column
+(=account_status=, =is_registration_default=, =tenant_type=) because the restored
+database was behind the SQL on main; =compass db recreate -y -k= rebuilt it and
+the suite then passed, which is worth knowing for every later task in this
+story.
+
+*What is still missing.* No test exercises the refusal: the existing
+=messaging_*= suites cover the account-party handler, the registration gate and
+the provision steps, and none of them touches the session handler. The guard is
+verified by the compiler and by the suite staying green, not by a case that
+calls a read without =iam::sessions:read= and asserts =forbidden=. That test is
+the next step on this task, and it should land before the Audit sign-ins screen
+is built on these reads.

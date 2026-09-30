@@ -83,7 +83,11 @@ const checks = [
     ['?variant=B&actor=member&state=view', 'Save identity', 'variant B saves the identity panel on its own'],
     ['?variant=B&actor=member&state=view', 'Save contact details', 'variant B saves the contact panel on its own'],
     ['?variant=C&actor=member&state=view', 'Contact details', 'variant C draws the rail'],
-    ['?variant=C&actor=member&state=photo', 'Photo', 'variant C starts at the photo step']
+    ['?variant=C&actor=member&state=photo', 'Photo', 'variant C starts at the photo step'],
+    ['?variant=A&actor=member&state=photo', 'photos/held_01.jpeg', 'the picker offers the images the tenant holds'],
+    ['?variant=A&actor=member&state=photo', 'Use this photo', 'the picker defers the choice to a confirmation'],
+    ['?variant=A&actor=admin&state=view', 'photos/tom_okafor.jpeg', "the colleague's stock photo is the one shown"],
+    ['?variant=A&actor=member&state=view', 'No photo yet', 'a member without a photo is told so']
 ];
 
 for (const [search, needle, what] of checks) {

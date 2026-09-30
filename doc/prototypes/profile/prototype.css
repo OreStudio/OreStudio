@@ -326,7 +326,8 @@ h2 { font-size: 15px; margin: 0 0 12px; }
 }
 .dropzone .big { font-size: 22px; color: var(--ink-faint); }
 .thumbstrip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-.thumb { width: 56px; height: 56px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel-2); display: grid; place-items: center; color: var(--ink-faint); font-size: 18px; cursor: pointer; }
+.thumb { width: 56px; height: 56px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel-2); display: grid; place-items: center; color: var(--ink-faint); font-size: 18px; cursor: pointer; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumb.on { border-color: var(--accent); }
 .thumb.sm { width: 40px; height: 40px; font-size: 14px; }
 

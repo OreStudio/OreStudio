@@ -78,7 +78,7 @@ Switch with the state buttons, or =?state=.
 | State | What it shows |
 |-------+---------------|
 | =view= | The screen at rest: the writable panels, the read-only panels, and the reporting line. |
-| =photo= | The picker: an upload through =ores.assets=, the images the tenant already holds, and a preview at the size other screens show the photo. The rule — PNG, JPEG or WebP, up to 2 MB, at least 128×128 — is stated beside it. |
+| =photo= | The picker: an upload through =ores.assets=, the images the tenant already holds, a preview at the size other screens show the photo, and the choice deferred to a confirmation. The rule — PNG, JPEG or WebP, up to 2 MB, at least 128×128 — is stated beside it. |
 | =saved= | Both records written, each with its new version. |
 | =partial= | The account write landed and the contact write was refused. The screen names the record that failed and carries the refusal code, because "save failed" would leave the person unable to tell which half is real. |
 | =proposed= | The reporting line with a change waiting for approval, naming who can approve it. |
@@ -106,15 +106,20 @@ about.
 
 ** What is fake
 
-Everything. The tenant, the people, the photo, the roles and the rule are
-hard-coded. There is no policy read, no server, no account, and nothing is
-stored.
+Everything. The tenant, the people, the roles and the rule are hard-coded.
+There is no policy read, no server, no account, and nothing is stored. The
+photos are the repository's own stock faces: six of the 462 AI-generated
+images under =external/facestudio/faces= that the seeder draws account profile
+pictures from. They are copied into =doc/prototypes/profile/photos/= so the
+prototype is self-contained and publishes with everything it needs, and two of
+them stand for people the journey documents name.
 
 ** Where the code lives
 
-=doc/prototypes/profile/=. Three files, plain HTML, CSS and JavaScript, no
-framework and no build step. The site build copies the directory through
-=ores-deploy-web-app=, beside the trade entry and registration door prototypes.
+=doc/prototypes/profile/=. Three files of code plus the photos, plain HTML,
+CSS and JavaScript, no framework and no build step. The site build copies the
+directory through =ores-deploy-web-app=, beside the trade entry and
+registration door prototypes.
 
 ** What it does not settle
 

@@ -44,14 +44,20 @@
     var STATE_STEP = { photo: 0, view: 1, proposed: 1, refused: 1, saved: 3, partial: 3 };
 
     /* The images the deployment already holds, offered beside the upload.
-       Inline SVG so the prototype carries no binary asset. */
-    function held(seed, hue) {
-        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="112" height="112">' +
-            '<rect width="112" height="112" fill="hsl(' + hue + ',38%,34%)"/>' +
-            '<text x="56" y="72" font-family="sans-serif" font-size="42" fill="#e3e3e6" ' +
-            'text-anchor="middle">' + seed + '</text></svg>';
-        return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
+       They are the repository's own stock faces: six of the 462 the seeder
+       picks profile pictures from, copied in so the prototype is
+       self-contained. See external/facestudio/. */
+    var PHOTOS = {
+        jane: 'photos/jane_doe.jpeg',
+        tom: 'photos/tom_okafor.jpeg'
+    };
+
+    var HELD = [
+        ['photos/held_01.jpeg', 'Ana Ribeiro'],
+        ['photos/held_02.jpeg', 'Peter Novak'],
+        ['photos/held_03.jpeg', 'Mei Lin'],
+        ['photos/held_04.jpeg', 'Raj Anand']
+    ];
 
     /* Rachel Smith is the signed-in tenant administrator, so the person whose
        record the screen shows is never the person the header names. */
@@ -87,7 +93,7 @@
             account_type: 'User',
             sign_in_email: 'tom.okafor@example.com',
             manager: { name: 'R. Smith', username: 'rsmith' },
-            image: held('TO', 205),
+            image: PHOTOS.tom,
             last_sign_in: 'yesterday',
             password_age: '12 days',
             places: 2,
@@ -109,6 +115,7 @@
         actor: 'member',
         state: 'view',
         step: 1,
+        chosen: null,
         picked: 'tokafor',
         proposal: { to: 'A. N. Other' }
     };
@@ -219,24 +226,29 @@
 
     function photoInto(rec, opts) {
         if (S.state === 'photo') {
-            var thumbs = [['JO', 265], ['JD', 150], ['RS', 25], ['AN', 95]].map(function (t, i) {
-                return '<div class="thumb' + (i === 0 ? ' on' : '') + '" data-act="photo" data-photo="' +
-                    held(t[0], t[1]) + '">' + esc(t[0]) + '</div>';
+            var chosen = S.chosen || rec.image || HELD[0][0];
+            var thumbs = HELD.map(function (p) {
+                return '<div class="thumb' + (chosen === p[0] ? ' on' : '') + '" title="' + esc(p[1]) +
+                    '" data-act="photo" data-photo="' + p[0] + '"><img src="' + p[0] + '" alt=""></div>';
             }).join('');
             return '<div class="picker">' +
                 '<div><div class="dropzone"><div class="big">\u2191</div>' +
                 '<div>Drop an image, or <b>choose a file</b></div>' +
                 '<div class="hint">PNG, JPEG or WebP \u00b7 up to 2 MB \u00b7 at least 128\u00d7128</div></div>' +
-                (opts.heldOnly ? '' : '<div class="hint">Uploaded through ores.assets; the reply is the new image id.</div>') +
+                '<div class="hint">Uploaded through ores.assets; the reply is the new image id.</div>' +
                 '</div>' +
                 '<div><div class="hint" style="margin:0 0 4px">Images this tenant already holds</div>' +
                 '<div class="thumbstrip">' + thumbs + '</div>' +
                 '<div class="hint" style="display:flex;align-items:center;gap:8px;margin-top:14px">' +
-                'What it looks like at the size other screens use ' + avatarSmall(rec) + '</div>' +
-                '</div></div>';
+                'At the size other screens use ' + avatarSmall(chosen) + '</div>' +
+                '<div class="actions" style="margin-top:14px">' +
+                '<button class="btn primary" data-act="use-photo">Use this photo</button>' +
+                '<button class="btn ghost" data-act="state" data-state="view">Cancel</button>' +
+                '</div></div></div>';
         }
         return '<div class="identity">' +
             '<div class="avatar-wrap">' + avatar(rec) +
+            (rec.image ? '' : '<div class="hint">No photo yet</div>') +
             (opts.canWrite ? '<button class="btn" data-act="state" data-state="photo">Replace photo</button>' : '') +
             '</div>' +
             '<div>' +
@@ -245,14 +257,8 @@
             '</div></div>';
     }
 
-    function avatarSmall(rec) {
-        return '<span class="avatar-small">' + avatarImage(rec) + '</span>';
-    }
-
-    function avatarImage(rec) {
-        return rec.image
-            ? '<img src="' + rec.image + '" alt="">'
-            : '<span style="display:grid;place-items:center;height:100%;font-size:11px">' + esc(initials(rec.full_name)) + '</span>';
+    function avatarSmall(image) {
+        return '<span class="avatar-small"><img src="' + image + '" alt=""></span>';
     }
 
     function identityFields(rec, canWrite) {
@@ -493,7 +499,8 @@
         else if (act === 'step') S.step = Number(el.getAttribute('data-step'));
         else if (act === 'pick') { S.actor = 'admin'; S.picked = el.getAttribute('data-person'); }
         else if (act === 'propose') gotoState('proposed');
-        else if (act === 'photo') { subject().image = el.getAttribute('data-photo'); gotoState('view'); }
+        else if (act === 'photo') S.chosen = el.getAttribute('data-photo');
+        else if (act === 'use-photo') { subject().image = S.chosen; gotoState('view'); }
         else if (act === 'save-identity' || act === 'save-contact') gotoState('saved');
         else if (act === 'save-all') gotoState(S.variant === 'C' ? 'saved' : 'partial');
         else if (act === 'reset') gotoState('view');

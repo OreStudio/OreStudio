@@ -26,7 +26,7 @@ that describes it.
 | [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. | [[file:trade-entry/][Booking screen]] |
 | [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door]] | Registration has five states and one of them is "waiting for an administrator". The door must show that before the person submits, not at sign-in. | [[file:registration-door/][Registration door]] |
 | [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen]] | One profile screen is not in dispute; where the save boundary sits is. One Save, a save per panel, or the panels as rail steps — and how a read-only panel and a proposed reporting line read. | [[file:profile/][Profile screen]] |
-| [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Account menu]] | Every journey reaches its screen from the account menu and no document says what the menu holds. The member's screens, the administrator's screens, and what the trigger shows before the account is read. | [[file:account-menu/][Account menu]] |
+| [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application navigation]] | Every journey reaches its screen by the person "choosing" it and no document owns how. Navbar, sidebar, index, data-only and account menu, each over the catalogue's real 21 journeys in 8 groups. | [[file:navigation/][Navigation]] |
 
 * Adding a prototype
 

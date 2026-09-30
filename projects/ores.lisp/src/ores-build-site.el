@@ -302,10 +302,10 @@ with the site chrome."
   (ores-deploy-web-app
    "./doc/prototypes/profile" site-dir "doc/prototypes/profile"
    "<style>body{display:block;padding:0;align-items:unset;}</style>")
-  ;; Account menu prototype: the same body reset. The shell's navigation, which
-  ;; every journey's first step assumes and no document owns, mock data only.
+  ;; Application navigation prototype: the same body reset. Five structural
+  ;; models for reaching every journey, which no document owns, mock data only.
   (ores-deploy-web-app
-   "./doc/prototypes/account-menu" site-dir "doc/prototypes/account-menu"
+   "./doc/prototypes/navigation" site-dir "doc/prototypes/navigation"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

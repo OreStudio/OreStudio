@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: E6E32AB5-2F25-4230-AB93-E38E75DE23B6
+:END:
+#+title: Application navigation prototype
+#+description: Five structural models for reaching every journey in the catalogue, for a member and a tenant administrator, with mock data, on a throwaway prototype page.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:security:identity:navigation:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+* Summary
+
+Every journey in the catalogue reaches its screen by the person "choosing"
+it, and no document owns how. The shell carries the brand, the session and the
+way out, because "the navigation itself is what the journeys add" — and the
+journeys are about to add the first screen, with nothing to hang it from.
+
+This prototype argues that navigation. It renders five structural models in
+the shell the application actually has, each over the catalogue's real scale,
+so the choice is made against 22 journeys in 8 groups rather than against a
+demonstration subset.
+
+It is throwaway. It is not production code, it reads no service, and every
+value on it is mock data.
+
+Open the [[file:navigation/][navigation]].
+
+* Detail
+
+** The scale, which is the whole question
+
+The catalogue holds 22 journeys in 8 groups, and a person sees only the ones
+they may run:
+
+| Person | Groups | Journeys |
+|--------+--------+----------|
+| A member | 4 | 6 |
+| A tenant administrator | 7 | 20 |
+
+Entry is not among either. It is the door, not a place a signed-in person
+navigates to, so it is outside the navigation — which is why the counts are 7
+and 20 rather than 8 and 22.
+
+That asymmetry is what the models have to survive: the member's navigation is
+small enough for anything, and the administrator's is not.
+
+** The five models
+
+Switch with the bottom bar, the left and right arrow keys, or =?variant=.
+
+| Model | Name | The structural argument |
+|-------+------+-------------------------|
+| =N= | Navbar | The groups in the header, each with its count, opening its own index of journeys. Nothing is hidden, and the arithmetic is plain: seven groups across the top. |
+| =S= | Sidebar | The same groups down the left, the current one open to its journeys. It holds seven without crowding and it can nest, at the cost of a column on every screen. |
+| =I= | Index | The landing page is the index: every journey, grouped by topic, and no global navigation at all. Nothing to hunt for, and nothing beside a journey while it runs. |
+| =D= | Data only | No navigation either: a journey is reached from the thing it acts on. The person's own record opens their screens; a roster row opens that colleague. |
+| =A= | Account menu | The header trigger, prototyped first and kept because it is the shape five journey documents name — and because the comparison needs it. At this scale it holds neither the administrator's work nor the groups. |
+
+** The two actors
+
+Switch with the actor buttons, or =?actor=.
+
+| Actor | What changes |
+|-------+--------------|
+| =member= | Their own screens: profile, credentials, access, membership. The tenant's groups are absent, not disabled. |
+| =admin= | Those, plus Setup, Directory and Tenancy. |
+
+** The four states
+
+Switch with the state buttons, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =home= | The landing surface: the index for every model but the data one, which lands on the person's record instead. |
+| =journey= | A journey running, so the navigation is judged beside a journey rather than on its own. |
+| =today= | Only the groups that have been built — Setup alone, which is what a person sees if this ships now. |
+| =narrow= | A small screen: the top-level navigation goes and the account menu becomes a sheet. |
+
+** What the models cost, measured
+
+The navbar is the model that changes shape with the window. At a wide window
+the seven groups sit across the header; at 900px they no longer do, and the
+bar scrolls rather than pushing the account chip off the edge. That is a real
+property of the model and not a defect in the drawing: the administrator's
+seven groups do not fit a laptop header.
+
+The sidebar pays a column on every screen, including the journeys that draw a
+rail of their own. The setup journeys are the case to look at: a rail inside a
+sidebar is two navigations for one screen.
+
+The index pays nothing on the journey itself and everything on discovery: the
+person has to go back to the index to move, and the index is the only thing
+that says what exists.
+
+The account menu pays for itself in drops, and the arithmetic is the argument
+against it: twenty journeys do not fit in a menu, and the groups the member
+cannot use still have to be kept out of it by hand.
+
+The data model pays nothing at all and is the only one that cannot ship alone:
+with no Directory and no Tenancy, most journeys have nothing to hang from.
+
+** What is real and what is not
+
+The groups and journeys are the catalogue's own, with the routes the journey
+documents use. Which of them has been built is real too: only Setup has, and
+the =today= state renders that rather than pretending otherwise. Every group
+that has not been built says so where it is offered.
+
+Everything else is mock. The tenant, the people, the photos and the roles are
+hard-coded, and the photos are two of the repository's stock faces under
+=external/facestudio/faces=, copied in so the prototype is self-contained.
+
+** Where the code lives
+
+=doc/prototypes/navigation/=. Three files of code plus the two photos, plain
+HTML, CSS and JavaScript, no framework and no build step. The site build copies
+the directory through =ores-deploy-web-app=, beside the other prototypes. The
+CSS holds only the tokens, the shell and the five models: the journey furniture
+belongs to the screen prototypes beside this one and is not repeated here.
+
+** What it does not settle
+
+How a person learns that a journey exists but cannot be run. Nothing here
+states what a deployment's switches are, because no document says a journey
+has one, so every model shows an unbuilt journey as a name and a reason.
+
+And the models are not exclusive. A navbar with an index under it, or an index
+that the data links grow into, are combinations of what is drawn here rather
+than a sixth answer.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]] — the screen these models are drawn reaching.
+- [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]] — the group whose journeys name the account menu first.
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] — the journey that ends by saying the menu shows the new name and photo.

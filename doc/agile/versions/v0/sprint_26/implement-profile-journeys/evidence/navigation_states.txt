@@ -1,0 +1,28 @@
+Evidence: the navigation prototype's matrix, driven without a browser.
+
+Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/navigation_check.js
+Run from: the repository root, on branch feature/prototype-the-account-menu.
+Environment: eager_maxwell.
+
+The harness runs doc/prototypes/navigation/prototype.js against a minimal DOM
+shim and asserts what the prototype promises a reviewer: every combination of
+model, actor and state renders; the shell keeps its brand; the render leaks no
+undefined; the catalogue's own scale is what the models carry, being 22
+journeys in 8 groups, of which a tenant administrator navigates 20 in 7 groups
+and a member 6 in 4; the navbar carries the tenant's groups; the sidebar draws
+a sidebar and opens the current group; the index draws the index and states
+what has not been built; the data model lands on the things a journey hangs
+off; the account menu still opens its menu; every model reaches the same
+journey screen; the today state carries only what has been built, and a member
+with nothing today is told so; and the narrow state is the narrow shell.
+
+Three of the promises are about absence: a member must not reach the tenant's
+groups or an administrator's journey, and the door must not appear as a place a
+signed-in person navigates to.
+
+The screenshots beside this file are the models in Chrome.
+
+--- output ---
+
+rendered 40 model/actor/state combinations and 17 promises
+ALL CHECKS PASSED

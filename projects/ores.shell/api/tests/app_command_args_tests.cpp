@@ -204,9 +204,8 @@ TEST_CASE("parse_args_keeps_every_value_of_a_repeatable_flag_in_order", tags) {
 TEST_CASE("parse_args_keeps_the_last_value_of_a_flag_that_is_not_repeatable", tags) {
     auto lg(make_logger(test_suite));
 
-    auto r = parse_args(
-        {"--tenant-code", "first", "--tenant-code", "second"},
-        {{.name = "tenant-code", .requires_value = true, .default_value = ""}});
+    auto r = parse_args({"--tenant-code", "first", "--tenant-code", "second"},
+                        {{.name = "tenant-code", .requires_value = true, .default_value = ""}});
     REQUIRE(r.has_value());
     CHECK(r->flag("tenant-code") == "second");
     CHECK(r->values("tenant-code").empty());

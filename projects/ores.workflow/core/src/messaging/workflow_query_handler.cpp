@@ -28,10 +28,10 @@
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <rfl/json.hpp>
 
 namespace ores::workflow::messaging {
 

@@ -133,9 +133,9 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
     suffix << "_" << std::put_time(&tm_now, "%Y%m%d_%H%M%S") << "_" << pid << "_" << random_suffix;
 
     const auto suffix_text = suffix.str();
-    const auto room = suffix_text.size() < tenant_code_max_length
-                          ? tenant_code_max_length - suffix_text.size()
-                          : 0;
+    const auto room = suffix_text.size() < tenant_code_max_length ?
+                          tenant_code_max_length - suffix_text.size() :
+                          0;
     auto suite = as_tenant_code(test_suite_name);
     if (suite.size() > room) {
         suite.resize(room);

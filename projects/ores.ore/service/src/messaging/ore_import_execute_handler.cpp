@@ -38,13 +38,13 @@
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_conversion_target_protocol.hpp"
-#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_amortization_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_rate_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_schedule_date_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_schedule_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/bond_leg_amortization_protocol.hpp"
 #include "ores.trading.api/messaging/bond_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/bond_leg_protocol.hpp"
@@ -722,12 +722,12 @@ std::string save_issue_schedule(Nats& nats,
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
-std::string save_issue_leg_amounts(
-    Nats& nats,
-    const boost::uuids::uuid& issue_id,
-    int leg_number,
-    const std::string& amount_role,
-    const std::vector<ores::trading::domain::bond_float_data>& amounts) {
+std::string
+save_issue_leg_amounts(Nats& nats,
+                       const boost::uuids::uuid& issue_id,
+                       int leg_number,
+                       const std::string& amount_role,
+                       const std::vector<ores::trading::domain::bond_float_data>& amounts) {
     using ores::trading::messaging::put_bond_issue_leg_amount_request;
 
     std::string error;
@@ -799,8 +799,8 @@ std::string save_issue_leg(Nats& nats,
         return failure;
 
     if (leg.rate && leg.rate->fixed) {
-        if (auto failure = save_issue_leg_amounts(
-                nats, issue_id, leg_number, "rate", leg.rate->fixed->rates);
+        if (auto failure =
+                save_issue_leg_amounts(nats, issue_id, leg_number, "rate", leg.rate->fixed->rates);
             !failure.empty())
             return failure;
     }

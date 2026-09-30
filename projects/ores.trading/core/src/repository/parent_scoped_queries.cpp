@@ -28,18 +28,18 @@
 #include "ores.trading.core/repository/bond_issue_call_date_mapper.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_mapper.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_entity.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_mapper.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_amount_entity.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_amount_mapper.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_rate_entity.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_rate_mapper.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_amortization_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_amortization_mapper.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_schedule_entity.hpp"
-#include "ores.trading.core/repository/bond_issue_leg_schedule_mapper.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_amount_entity.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_amount_mapper.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_entity.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_mapper.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_rate_entity.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_rate_mapper.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_mapper.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_schedule_entity.hpp"
+#include "ores.trading.core/repository/bond_issue_leg_schedule_mapper.hpp"
 #include "ores.trading.core/repository/bond_leg_amortization_entity.hpp"
 #include "ores.trading.core/repository/bond_leg_amortization_mapper.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
@@ -329,7 +329,8 @@ read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::st
         where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value()) |
         order_by("issue_id"_c, "leg_number"_c, "sequence_number"_c);
 
-    return execute_read_query<bond_issue_leg_amortization_entity, domain::bond_issue_leg_amortization>(
+    return execute_read_query<bond_issue_leg_amortization_entity,
+                              domain::bond_issue_leg_amortization>(
         ctx,
         query,
         [](const auto& entities) { return bond_issue_leg_amortization_mapper::map(entities); },

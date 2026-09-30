@@ -18,15 +18,16 @@
  *
  */
 #include "ores.marketdata.core/service/ore_export_service.hpp"
+#include "ores.marketdata.api/domain/oresmd_uri.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
-#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include <chrono>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
 
 namespace ores::marketdata::service {
@@ -38,50 +39,35 @@ namespace {
 /**
  * @brief One stored observation as the serializer's input.
  *
- * The producer's key wins when the row has one, because the import rewrote it
- * on the way in and only that text reproduces the file. The serializer emits
- * =key= as given whenever the decomposition is left empty, which is the
- * fallback its own contract describes.
- *
- * Without one the key is rebuilt from the series and the observation's point,
- * and the point is dropped for a series type that has no point dimension. Every
- * point-free row stores a point regardless -- =SPOT= for an FX rate, the empty
- * string for a recovery rate -- because a row has to name where it was
- * recorded. Emitting it would turn =FX/RATE/EUR/USD= into
- * =FX/RATE/EUR/USD/SPOT=, a key no producer writes, so the shape table decides
- * rather than the stored value.
+ * Every writer stores the key its row is written under -- the import keeps the
+ * file's, the ingest loop keeps the tick's, and the republish service and the DQ
+ * publish project or carry their own -- so the export no longer rebuilds one. A
+ * row with none is a row no writer produced, and the export says so rather than
+ * writing a key it cannot know.
  */
-ores::ore::market::market_datum to_datum(const domain::market_series& s,
-                                         const domain::market_observation& o,
-                                         const ores::ore::market::series_key_registry& registry) {
+ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
+    if (o.key.empty())
+        throw std::runtime_error("market data export: an observation carries no key to export");
     ores::ore::market::market_datum d;
     d.date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(o.observation_datetime)};
     d.value = o.value;
-    if (!o.key.empty()) {
-        d.key = o.key;
-        return d;
-    }
-    d.series_type = s.series_type;
-    d.metric = s.metric;
-    d.qualifier = s.qualifier;
-    if (registry.has_point_dimension(s.series_type))
-        d.point_id = o.point_id;
+    d.key = o.key;
     return d;
 }
 
 /**
  * @brief One stored fixing as the serializer's input.
  *
- * A fixing's index name is the series' qualifier. The parser stores the name
- * verbatim and fixings do not follow the key grammar, so nothing rewrote it and
- * there is no second spelling to prefer.
+ * A fixing's index name is a projection of the series' identity, the same way a
+ * quote's key is: the identity is what the row is named by, so the name is read
+ * from it rather than from a decomposition column.
  */
-ores::ore::market::fixing to_fixing(const domain::market_series& s,
+ores::ore::market::fixing to_fixing(const std::string& index_name,
                                     const domain::market_fixing& f) {
     ores::ore::market::fixing r;
     r.date = f.fixing_date;
-    r.index_name = s.qualifier;
+    r.index_name = index_name;
     r.value = f.value;
     return r;
 }
@@ -97,21 +83,21 @@ ore_export_result ore_export_service::write_all() const {
     repository::market_fixings_repository fixings_repo;
 
     const auto series = series_repo.read_latest(ctx_);
-    // Read the key grammar once for the whole export: the point-elision rule
-    // consults it per row.
-    const ores::ore::market::series_key_registry registry{
-        ores::ore::repository::series_key_shape_repository{}.read_latest(ctx_)};
-
     std::vector<ores::ore::market::market_datum> data;
     std::vector<ores::ore::market::fixing> fixings;
     for (const auto& s : series) {
-        if (s.series_type == import_service::fixing_series_type) {
+        // The identity says which kind of series this is: an index name projects
+        // from a fixing's and nothing projects from a quote's, so the export reads
+        // the fixings of the first and the observations of the second without a
+        // classification column to tell them apart.
+        const auto identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
+        if (const auto index_name = core::oresmd_projections::to_index_name(identifier)) {
             for (const auto& f : fixings_repo.read_latest(ctx_, s.id))
-                fixings.push_back(to_fixing(s, f));
+                fixings.push_back(to_fixing(*index_name, f));
             continue;
         }
         for (const auto& o : obs_repo.read_latest(ctx_, s.id))
-            data.push_back(to_datum(s, o, registry));
+            data.push_back(to_datum(o));
     }
 
     ore_export_result result;

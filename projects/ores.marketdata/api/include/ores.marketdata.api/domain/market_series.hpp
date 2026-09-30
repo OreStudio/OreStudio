@@ -35,8 +35,7 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Catalog entry identifying what is being observed, by its oresmd URI (with series type,
- * metric, qualifier and subclass).
+ * @brief Catalog entry identifying what is being observed, by its oresmd URI and subclass.
  *
  * A catalog entry for a market data series — it records what is being observed:
  * a yield curve, vol surface, spot rate, fixing index, or similar. Standard
@@ -92,8 +91,9 @@ rows beneath this one, so a series with two points carries one identity rather t
 whichever point arrived first.
      *
      * The natural key with party_id, and unique per party: one party holds one series per identity.
-The series_type, metric and qualifier columns beside it are the registry's decomposition of the same
-key, kept while the readers that ask by the triple are migrated; they do not key the row.
+It is the only name the row carries: the registry's series_type, metric and qualifier columns have
+gone, and a reader that wants the key's tokens decomposes the key itself through
+ores_series_key_shapes rather than reading them off a series.
 
 Every writer supplies one. A caller that leaves it empty stores nothing, because the column is not
 null and the generated service copies the write's fields straight through -- so an update carries
@@ -104,22 +104,6 @@ nothing but a name. Its rows cannot collide on the identity: the party is freshl
 and the party is part of the key.
      */
     std::string oresmd_uri;
-
-    /**
-     * @brief ORE market data type token (e.g. FXSpot, YieldCurve, FXVolatility).
-     */
-    std::string series_type;
-
-    /**
-     * @brief Metric within the series type (e.g. SPOT, DISCOUNT, FLAT_FWD_VOLATILITY).
-     */
-    std::string metric;
-
-    /**
-     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR, EUR-CHF,
-     * EUR-EURIBOR-3M).
-     */
-    std::string qualifier;
 
     /**
      * @brief Subclass within the asset class, as a code from refdata.series_subclass_code

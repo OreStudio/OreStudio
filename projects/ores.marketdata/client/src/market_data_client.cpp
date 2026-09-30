@@ -141,9 +141,7 @@ market_data_client::save_series(const std::vector<domain::market_series>& series
         messaging::put_market_series_request req;
         req.change.write.id = s.id;
         req.change.write.party_id = s.party_id;
-        req.change.write.series_type = s.series_type;
-        req.change.write.metric = s.metric;
-        req.change.write.qualifier = s.qualifier;
+        req.change.write.oresmd_uri = s.oresmd_uri;
         req.change.write.series_subclass = s.series_subclass;
         req.change.write.derivation_kind = s.derivation_kind;
         req.change.write.derivation_config_id = s.derivation_config_id;

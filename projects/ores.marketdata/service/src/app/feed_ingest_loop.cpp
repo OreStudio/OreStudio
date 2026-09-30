@@ -442,9 +442,6 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
             series.id = uuid_gen();
             series.tenant_id = tenant_ctx.tenant_id();
             series.party_id = party_id;
-            series.series_type = series_type;
-            series.metric = metric;
-            series.qualifier = qualifier;
             series.oresmd_uri = oresmd_uri;
             series.series_subclass = series_subclass;
             series.modified_by = ctx.service_account();

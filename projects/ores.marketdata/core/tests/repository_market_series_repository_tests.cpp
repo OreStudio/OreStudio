@@ -43,8 +43,8 @@ using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
 
 // A series built for the identity cases rather than generated: they need two rows
-// that share an identity and nothing else, and a generated triple can collide with
-// another case's row.
+// that share an identity and nothing else, and a generated identity can collide
+// with another case's row.
 ores::marketdata::domain::market_series make_identity_test_series(database_helper& h,
                                                                   const boost::uuids::uuid& party) {
     ores::marketdata::domain::market_series s;
@@ -52,9 +52,6 @@ ores::marketdata::domain::market_series make_identity_test_series(database_helpe
     s.version = 0;
     s.tenant_id = h.tenant_id();
     s.party_id = party;
-    s.series_type = "IDENTITY_TEST";
-    s.metric = "RATE";
-    s.qualifier = "USD/TEST";
     s.oresmd_uri = std::string("oresmd://generic/identity-test-") + boost::uuids::to_string(s.id) +
                    "?type=fixing";
     s.series_subclass = "yield";
@@ -128,8 +125,8 @@ TEST_CASE("read_latest_market_series_by_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read market series: " << read;
 
     REQUIRE(read.size() == 1);
-    CHECK(read[0].qualifier == target.qualifier);
-    CHECK(read[0].series_type == target.series_type);
+    CHECK(read[0].oresmd_uri == target.oresmd_uri);
+    CHECK(read[0].series_subclass == target.series_subclass);
 }
 
 TEST_CASE("read_latest_market_series_by_identity", tags) {
@@ -201,13 +198,10 @@ TEST_CASE("two_series_in_one_party_cannot_share_an_identity", tags) {
     const auto first = make_identity_test_series(h, party);
     repo.write(h.context(), first);
 
-    // The same party and the same identity, with a different decomposition and a
-    // different id: the identity is what the row is keyed by, so it is refused.
+    // The same party and the same identity, with a different id: the identity is
+    // what the row is keyed by, so the second write is refused.
     auto second = first;
     second.id = boost::uuids::random_generator{}();
-    second.series_type = first.series_type + "-other";
-    second.metric = first.metric + "-other";
-    second.qualifier = first.qualifier + "-other";
 
     CHECK_THROWS(repo.write(h.context(), second));
 }

@@ -31,9 +31,9 @@ identifier, the parser, the writer and every declared test case.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
-| Now          | The declaration landed (task 55EDA7FC). The generated grammar that reads it has not started. |
+| Now          | The declaration and the identifier's typed members have landed. The parser, the writer and the projections' key builders are unchanged, so no URI has moved yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Replace =point= with the declared coordinates in the identifier, then in the parser and the writer. |
+| Next         | Make the projections' =from_ore_key()= builders set the typed members, then change the writer and the parser together. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -96,6 +96,21 @@ written like any other value.
 coordinates. The =std::visit= with three IR special cases is deleted, because
 the model now says which keys are which. =model= is identity, so lognormal and
 normal vol become two series and the corpus import can store both.
+
+** The projections' key builders
+
+This is the piece that forces the order. =from_ore_key()= builds the identifier
+from an ORE key, and its per-family blocks set =id.point= to the comma-joined
+coordinate. A writer that emits typed keys reads the typed members, so every one
+of those blocks must set the member its family's =point_keys= names instead --
+~15 sites. The read side (=to_quote_key= and the surface readers) then reads the
+typed members rather than =*id.point=, which is where the =split_point= calls and
+the remaining =id.vol->= uses live.
+
+Attempted first the other way round -- parser and writer changed first -- and it
+fails for this reason: a typed URI parses into typed members, but an identifier
+built by =from_ore_key= has none, so the writer emits a URI with no coordinate.
+The builders move first, or the two directions disagree.
 
 ** The test cases
 

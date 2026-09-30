@@ -8,7 +8,7 @@
 #+filetags: :implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-access-journeys
-#+pr: 2446
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2446][#2446]] | [agile] Scaffold the access journeys group and survey its documents |
+|    |       |
 
 * Review
 

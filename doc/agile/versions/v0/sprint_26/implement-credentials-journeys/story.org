@@ -79,6 +79,7 @@ The build tasks are written when the prototypes are accepted.
 | [[id:0CD0EAD3-1714-432A-9E64-0C41C4F34E45][Prototype Rescue access]] | BACKLOG | | | [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
 | [[id:7F5AA065-212F-4523-924B-1BE38494CF62][Prototype Audit sign-ins]] | BACKLOG | | | [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |
 | [[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]] | DONE | | 2026-09-30 | [wayfinder:task] The three journey documents name the wrong surface, claim a working browser read and name a caller that does not exist. Correct them against the route census and the tree. |
+| [[id:9A07635C-9231-45E4-812D-CB311FDE11EB][Inventory the routes and operations the credentials journeys need]] | DONE | | 2026-09-30 | [wayfinder:research] Per journey, every read and write, its subject, its ores.http route, its BFF route and its permission, so the build tasks can be sized from one page. |
 
 * Plan
 
@@ -178,6 +179,7 @@ task.
 
 | Document | Kind | Purpose |
 |----------+------+---------|
+| [[id:B9F389C3-0ADE-4169-9789-0A193CFFAF37][The routes and operations the credentials journeys need]] | investigation | What each step can reach today, per journey, and the ten BFF routes, two handlers, six subjects and one defect behind the gaps. |
 | [[id:8C1DC5DE-F480-49F4-AA63-77A397D0BC03][Credentials journeys]] | knowledge | The group page: three journeys, three actors, and the audit's screen rule. |
 | [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] | user_journey | The member's own password change and sign-in state, and its five gaps. |
 | [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] | user_journey | The administrator's reset, lock and unlock, and its four gaps. |

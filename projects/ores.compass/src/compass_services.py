@@ -352,45 +352,59 @@ def _service_ready(ctx, unit_pairs, timeout=300):
     ores.web are Type=simple; systemd reports them active when the process
     is up, and nats blocks on its own port check before its start job
     completes."""
-    pending = {unit for unit, _ in unit_pairs}
+    waiting = {unit for unit, _ in unit_pairs}
     ready = {}
-    print(f"  wait    {len(pending)} unit(s) (active)", end="", flush=True)
-    deadline = time.time() + timeout
-    while pending and time.time() < deadline:
-        for unit in sorted(pending):
-            if _unit_active_state(unit) == "active":
-                ready[unit] = True
-                pending.discard(unit)
-        if pending:
-            print(".", end="", flush=True)
-            time.sleep(0.5)
-    if ready:
-        print(" ... done" if not pending else "", end="")
-    if pending:
-        print(f" ... timeout ({len(pending)} still not active: "
-              f"{', '.join(sorted(pending))})")
-    else:
-        print()
-    ready.update({unit: False for unit in pending})
-    # Requires= means a unit whose FIRST start attempt fails (e.g. it
-    # briefly races a dependency) permanently fails that unit's start
-    # job -- systemd does NOT re-trigger it once the dependency's own
-    # Restart=always later succeeds. One reset-failed+start retry pass
-    # for anything still not ready and in a failed/inactive systemd
-    # state covers that race without masking a genuinely broken service
-    # (which will just fail the retry too).
-    broken = [unit for unit, ok in ready.items()
-              if not ok and _unit_active_state(unit) in ("failed", "inactive")]
-    if broken:
-        print(f"[retry: {len(broken)} unit(s) failed their first start "
-              f"attempt -- likely raced a dependency; retrying once]")
+    # Two rounds at most: the first wait, then one retry of whatever systemd
+    # gave up on. An earlier version called itself for the retry, so a unit
+    # that could not come up was retried forever and a start never returned.
+    for attempt in (1, 2):
+        waiting = _await_active(waiting, ready, timeout if attempt == 1 else 120)
+        if not waiting:
+            break
+        broken = [unit for unit in sorted(waiting)
+                  if _unit_active_state(unit) in ("failed", "inactive")]
+        if not broken:
+            break
+        # Requires= means a unit whose first start attempt fails races a
+        # dependency and permanently fails that start job: systemd does not
+        # re-trigger it once the dependency's own Restart=always succeeds.
+        # One reset-failed and start covers that race without masking a
+        # genuinely broken service, which fails the retry too.
+        print(f"[retry: {len(broken)} unit(s) did not become active; "
+              f"resetting and starting them once]")
         for unit in broken:
             _systemctl(["reset-failed", f"{unit}.service"], check=False)
             _systemctl(["start", f"{unit}.service"], check=False)
-    broken_pairs = [(u, log) for u, log in unit_pairs if u in broken]
-    if broken_pairs:
-        return _service_ready(ctx, broken_pairs, timeout=120)
-    return all(ready.values())
+    return not waiting
+
+
+def _await_active(waiting, ready, timeout):
+    """Wait until every unit in `waiting` is active, or the timeout expires.
+
+    ActiveState is the readiness signal for the compiled services, because
+    they are Type=notify: systemd reports the unit active only once the
+    service itself called sd_notify(READY=1). There is no log to scan, and
+    scanning one would only restate that. nats-server and ores.web are
+    Type=simple; systemd reports them active when the process is up, and nats
+    blocks on its own port check before its start job completes.
+
+    Returns the units still not active, and records the rest in `ready`."""
+    print(f"  wait    {len(waiting)} unit(s) (active)", end="", flush=True)
+    deadline = time.time() + timeout
+    while waiting and time.time() < deadline:
+        for unit in sorted(waiting):
+            if _unit_active_state(unit) == "active":
+                ready[unit] = True
+                waiting.discard(unit)
+        if waiting:
+            print(".", end="", flush=True)
+            time.sleep(0.5)
+    if waiting:
+        print(f" ... timeout ({len(waiting)} still not active: "
+              f"{', '.join(sorted(waiting))})")
+    else:
+        print(" ... done")
+    return waiting
 
 
 def _nats_unit(ctx):

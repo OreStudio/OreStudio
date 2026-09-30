@@ -28,7 +28,6 @@ namespace ores::logging {
 namespace {
 
 const std::string logging_log_enabled_arg("log-enabled");
-const std::string logging_log_to_console_arg("log-to-console");
 const std::string logging_log_level_arg("log-level");
 const std::string logging_log_dir_arg("log-directory");
 const std::string logging_log_filename_arg("log-filename");

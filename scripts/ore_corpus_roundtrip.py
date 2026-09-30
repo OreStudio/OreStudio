@@ -104,18 +104,30 @@ def merge_sources(source_dir: Path, merged: Path, portfolios: int) -> int:
     """Fold the staged portfolios into one Portfolio.
 
     The classifier pairs element paths, not files, so the union of the
-    corpus is one document whose children are every source's children. The
-    configuration documents staged beside them are not portfolios and are
-    left out. Staging numbers the files in order, so the first ``portfolios``
-    of them are the portfolios.
+    corpus is one document whose children are every source's children. A
+    trade id stated by more than one document is kept once, because the
+    import keys on the id and saves it once. The configuration documents
+    staged beside them are not portfolios and are left out. Staging numbers
+    the files in order, so the first ``portfolios`` of them are the
+    portfolios.
     """
     merged_root = ET.Element("Portfolio")
+    seen_ids = set()
     for source in sorted(source_dir.glob("*.xml"))[:portfolios]:
         try:
             root = ET.parse(source).getroot()
         except ET.ParseError as error:
             raise SystemExit(f"cannot parse {source}: {error}")
         for child in root:
+            # The import keys a trade on its id, so a corpus that states the
+            # same id in more than one document saves it once. The union is
+            # folded the same way, or the duplicates read as trades the
+            # export lost when they were never imported twice.
+            if child.tag == "Trade":
+                trade_id = child.get("id")
+                if trade_id in seen_ids:
+                    continue
+                seen_ids.add(trade_id)
             merged_root.append(child)
     merged.parent.mkdir(parents=True, exist_ok=True)
     ET.ElementTree(merged_root).write(merged, encoding="utf-8", xml_declaration=True)

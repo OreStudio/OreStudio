@@ -160,13 +160,20 @@ rows the work touches.
   classifier, because the export writes every trade the database holds and
   the classifier pairs element paths rather than files. Evidence:
   =evidence/pr6_corpus_sweep_first_run.txt=.
-- The sweep fails, and it fails on things the single document does not
-  reach. Of the corpus's 374 trades, 354 import and 20 do not; every one
-  of the 374 loses its whole =Envelope= subtree, and roughly 280 lose the
-  bond terms -- leg schedule rules, issue date, issuer, credit curve and
-  the fixed rate. In scope: lost 9736, unexplained 1188. The single
-  document reads zero, so the defect needs more than one document or more
-  than one book to appear, and finding it is the sweep's first job.
+- The union must be deduplicated by trade id before it is classified. The
+  corpus states 727 trades under 354 distinct ids -- 213 ids appear in
+  more than one document -- and the import keys on the id, so it saves
+  exactly the 354 and a raw union reads 373 phantom losses. The corrected
+  evidence file folds the source to one element per id first.
+- What the corrected run says. Of the 354 distinct trades, the export
+  holds 353: one, =KnockOutSwap_example= of type =KnockOutSwap=, never
+  comes out. In scope the classifier reads lost 1745, unexplained 1293,
+  and every lost pair sits under =Trade/BondData=: the leg type, the
+  issue date, the issuer, the credit curve, the fixed rate and the leg
+  schedule's four dates, for about 117 trades each. The single document
+  reads zero, so this is the inline bond case: a document that states its
+  bond inline rather than by reference loses the security's own terms,
+  which is the acceptance bullet the split claimed and the corpus denies.
 - The configuration documents make no difference to the numbers: the run
   with them staged and the run without read the same, so whatever the
   import is dropping, it is not the conventions.

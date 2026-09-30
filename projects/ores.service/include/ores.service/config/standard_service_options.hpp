@@ -63,9 +63,10 @@ public:
      * options_description, merging in @p extra_options if given, and
      * registers NATS as a shared config domain.
      *
-     * @param log_file Default log file name passed to
-     * logging_configuration::make_options_description (e.g.
-     * "ores.iam.service.log").
+     * @param log_file Retained for the services that still name their log
+     * file. File logging is opt-in now, so the name is not a default: a
+     * service that passes --log-enabled and no --log-filename logs to the
+     * console, which systemd captures into the journal.
      * @param extra_options App-specific options to merge in, if any.
      */
     static boost::program_options::options_description

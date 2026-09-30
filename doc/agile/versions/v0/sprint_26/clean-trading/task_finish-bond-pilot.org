@@ -153,6 +153,23 @@ rows the work touches.
   empty message. Recreate, then =bootstrap setup ... --profile
   acme_demo= (the provisioning commands were renamed; =provision system=
   is gone), then the three shell verbs.
+- Corpus sweep, first run (2026-09-30). The harness is
+  =scripts/ore_corpus_roundtrip.py=: it stages every bond portfolio and the
+  configuration documents beside it, packs and imports them in one go,
+  exports once, folds the sources into one Portfolio and runs the
+  classifier, because the export writes every trade the database holds and
+  the classifier pairs element paths rather than files. Evidence:
+  =evidence/pr6_corpus_sweep_first_run.txt=.
+- The sweep fails, and it fails on things the single document does not
+  reach. Of the corpus's 374 trades, 354 import and 20 do not; every one
+  of the 374 loses its whole =Envelope= subtree, and roughly 280 lose the
+  bond terms -- leg schedule rules, issue date, issuer, credit curve and
+  the fixed rate. In scope: lost 9736, unexplained 1188. The single
+  document reads zero, so the defect needs more than one document or more
+  than one book to appear, and finding it is the sweep's first job.
+- The configuration documents make no difference to the numbers: the run
+  with them staged and the run without read the same, so whatever the
+  import is dropping, it is not the conventions.
 - Keep =projects/ores.codegen/venv/bin= first on =PATH= when regenerating.
   The sweep and the in-place regeneration format with whichever
   =clang-format= wins, and 21 wraps a line that 18.1.3 does not, which

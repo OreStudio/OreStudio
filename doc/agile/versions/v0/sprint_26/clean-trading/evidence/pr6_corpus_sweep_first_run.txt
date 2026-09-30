@@ -1,0 +1,32 @@
+ORE bond corpus round trip — first run, 2026-09-30
+commit: 7ba25bb788
+
+=== import outcome ===
+  [1/1] ore_import_execute: completed_with_warnings
+      info: Saved 354 trade(s).
+      warn:  [SWAP_EUR]
+      warn:  [CC_SWAP_EUR_USD]
+      warn:  [CC_SWAP_EUR_USD_RESET]
+      warn:  [FXFWD_EURUSD_10Y]
+      warn: ... a trade name per line, 49 in total
+
+=== classifier summary ===
+Documents: 1  Failures: 1  Skipped: 0
+Classified: numeric 30, boolean 127
+In scope, bond products and the trade envelope: lost 9736, unexplained 1188
+Out of scope, the other instrument families: lost 14627, unexplained 118
+Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
+
+=== in-scope lost, by path ===
+    374 lost:        /Portfolio/Trade/Envelope/NettingSetId
+    374 lost:        /Portfolio/Trade/Envelope/CounterParty
+    374 lost:        /Portfolio/Trade/Envelope
+    370 lost:        /Portfolio/Trade/Envelope/AdditionalFields
+    280 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/StartDate
+    280 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/EndDate
+    278 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/LastDate
+    278 lost:        /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/FirstDate
+    277 lost:        /Portfolio/Trade/BondData/IssueDate
+    276 lost:        /Portfolio/Trade/BondData/LegData/LegType
+    272 lost:        /Portfolio/Trade/BondData/CreditCurveId
+    269 lost:        /Portfolio/Trade/BondData/IssuerId

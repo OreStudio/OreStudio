@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
@@ -267,6 +268,15 @@ series_classification_rule make_correlation_rule(const std::string& series_type,
     return rule;
 }
 
+series_classification_rule make_index_name_rule(const std::string& series_type,
+                                                const std::string& series_subclass_code) {
+    series_classification_rule rule;
+    rule.series_type = series_type;
+    rule.asset_class_source = "index_name";
+    rule.series_subclass_code = series_subclass_code;
+    return rule;
+}
+
 /// Covers each branch the classifier takes: a row keyed by its type alone, a
 /// pair of rows where the metric decides, and the row whose classes come from
 /// the operands in the key.
@@ -457,7 +467,8 @@ TEST_CASE("the_classification_rule_seed_is_well_formed", tags) {
     for (const auto& rule : rules) {
         INFO("rule: " << rule.series_type << "/" << rule.metric);
         CHECK((rule.asset_class_source == "literal" ||
-               rule.asset_class_source == "correlation_operands"));
+               rule.asset_class_source == "correlation_operands" ||
+               rule.asset_class_source == "index_name"));
         CHECK(seen.insert({rule.series_type, rule.metric}).second);
         CHECK(!rule.series_subclass_code.empty());
         CHECK(!rule.description.empty());
@@ -537,6 +548,63 @@ TEST_CASE("classifier_prefers_the_metric_row_and_falls_back_to_the_empty_one", u
     REQUIRE(fallback);
     CHECK(fallback->asset_classes == std::vector<std::string>{"commodity"});
     CHECK(fallback->series_subclass == "forward");
+}
+
+TEST_CASE("the_catalogue_mapping_answers_for_every_authority", unit_tags) {
+    using ores::marketdata::domain::asset_class_for_authority;
+
+    // The mapping the index_name branch reads, exercised directly so the
+    // generated table cannot drift from the catalogue unnoticed.
+    CHECK(asset_class_for_authority("ir") ==
+          std::optional<std::string_view>{"interest_rates"});
+    CHECK(asset_class_for_authority("security") ==
+          std::optional<std::string_view>{"bond"});
+    CHECK(asset_class_for_authority("power") ==
+          std::optional<std::string_view>{"commodity"});
+    CHECK(asset_class_for_authority("rating") ==
+          std::optional<std::string_view>{"credit"});
+
+    // An authority the catalogue maps to no class, and a name it does not
+    // hold, both answer nothing.
+    CHECK_FALSE(asset_class_for_authority("correlation").has_value());
+    CHECK_FALSE(asset_class_for_authority("generic").has_value());
+    CHECK_FALSE(asset_class_for_authority("ghost").has_value());
+}
+
+TEST_CASE("classifier_reads_a_fixings_class_from_its_index_name", unit_tags) {
+    const std::vector<series_classification_rule> rules{
+        make_literal_rule("DISCOUNT", "", "interest_rates", "yield"),
+        make_index_name_rule("FIXING", "index_fixing")};
+    const series_classifier classifier(rules);
+
+    // One FIXING rule serves every index name, and the class follows the name
+    // rather than one literal all fixings would share.
+    const auto rates = classifier.classify("FIXING", "RATE", "USD-SOFR");
+    CHECK(rates.asset_classes == std::vector<std::string>{"interest_rates"});
+    CHECK(rates.series_subclass == "index_fixing");
+
+    // A name no class can name leaves the class list empty rather than
+    // guessing a class or blocking the import.
+    const auto unknown = classifier.classify("FIXING", "RATE", "NOT-AN-INDEX");
+    CHECK(unknown.asset_classes.empty());
+    CHECK(unknown.series_subclass == "index_fixing");
+}
+
+TEST_CASE("classifier_rejects_an_index_name_row_that_also_names_a_class", unit_tags) {
+    auto rules = fixture();
+    auto rule = make_index_name_rule("FIXING", "index_fixing");
+    rule.asset_class_code = "interest_rates";
+    rules.push_back(rule);
+
+    try {
+        const series_classifier classifier(rules);
+        FAIL("accepted a contradictory row, known types: "
+             << classifier.known_series_types().size());
+    } catch (const std::invalid_argument& ex) {
+        const std::string msg{ex.what()};
+        CHECK(msg.find("FIXING") != std::string::npos);
+        CHECK(msg.find("interest_rates") != std::string::npos);
+    }
 }
 
 TEST_CASE("classifier_takes_a_correlations_classes_from_its_operands", unit_tags) {

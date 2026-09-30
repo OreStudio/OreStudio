@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 6a6560d4-bfc2-4017-bba6-0ef26ba8dea5
+:END:
+#+title: ores.cpp.asset_class.authorities
+#+description: The oresmd-authority-to-refdata-class mapping, and the identifier lookup the classifier reads.
+#+type: archetype
+#+output: projects/ores.marketdata/api/include/ores.marketdata.api/domain/asset_class_authorities.hpp
+#+facet: ores.cpp.asset_class
+#+model_types: asset_class_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+The C++ projection of the catalogue's mapping. =asset_class_for_authority=
+takes the authority text; =asset_class_for_identifier= takes a resolved
+identifier and applies the mapping to its alternative, so a caller that has
+already parsed the index name does not turn it back into a string.
+
+An authority the mapping leaves empty -- =correlation= and =generic= -- is
+simply absent from both functions, so each answers =std::nullopt= for it.
+
+The header is written into =ores.marketdata.api= rather than refdata's,
+because the identifier type it names lives there. The build already links
+=ores.refdata.api= into =ores.marketdata.core=, so the dependency direction
+is unchanged.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_asset_class_authorities.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_asset_class_authorities.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.asset_class.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_MARKETDATA_API_DOMAIN_ASSET_CLASS_AUTHORITIES_HPP
+#define ORES_MARKETDATA_API_DOMAIN_ASSET_CLASS_AUTHORITIES_HPP
+
+#include "ores.marketdata.api/domain/market_data_identifier.hpp"
+#include <optional>
+#include <string_view>
+#include <type_traits>
+#include <variant>
+
+namespace ores::marketdata::domain {
+
+/**
+ * @brief The refdata asset class an oresmd authority names, or nullopt where
+ * it names none.
+ *
+ * Generated from ores.refdata.asset_class_catalogue, which declares the oresmd
+ * namespace and the mapping. An authority the catalogue maps to no class, such
+ * as a pairwise correlation or the generic wrapper, answers nullopt.
+ */
+[[nodiscard]] inline std::optional<std::string_view>
+asset_class_for_authority(std::string_view authority) {
+{{#asset_class_catalogue}}
+{{#namespace}}
+{{#refdata_code}}
+    if (authority == "{{authority}}")
+        return std::string_view{"{{refdata_code}}"};
+{{/refdata_code}}
+{{/namespace}}
+{{/asset_class_catalogue}}
+    return std::nullopt;
+}
+
+/**
+ * @brief The refdata asset class a resolved oresmd identifier belongs to.
+ *
+ * The identifier's alternative is the authority it was parsed as, so the
+ * mapping is read from the type rather than from a string a caller rebuilt.
+ * Nullopt where the authority names no class.
+ */
+[[nodiscard]] inline std::optional<std::string_view>
+asset_class_for_identifier(const market_data_identifier& identifier) {
+    return std::visit(
+        [](const auto& concrete) -> std::optional<std::string_view> {
+            using identifier_type = std::decay_t<decltype(concrete)>;
+{{#asset_class_catalogue}}
+{{#namespace}}
+{{#refdata_code}}
+            if constexpr (std::is_same_v<identifier_type, {{authority}}_market_data_identifier>)
+                return std::string_view{"{{refdata_code}}"};
+{{/refdata_code}}
+{{/namespace}}
+{{/asset_class_catalogue}}
+            return std::nullopt;
+        },
+        identifier);
+}
+
+}
+
+#endif
+#+end_src
+
+* See also
+
+- Parent facet: [[id:e0f7d909-9a5c-4061-939f-832929baa455][ores.cpp.asset_class]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — every variable this template may read.

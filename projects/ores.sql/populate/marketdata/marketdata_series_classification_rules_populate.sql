@@ -187,8 +187,8 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of series classification rules'),
 
     -- ─── FIXINGS (index series) ──────────────────────────────────────────────
-    (ores_utility_system_tenant_id_fn(), 'FIXING', '', 0, 'literal', 'interest_rates', 'index_fixing',
-     'A synthetic key the import builds for an index fixing. The index belongs to the rates class, and the subclass records the fixing.',
+    (ores_utility_system_tenant_id_fn(), 'FIXING', '', 0, 'index_name', null, 'index_fixing',
+     'A synthetic key the import builds for an index fixing. The class is the refdata class the index name projects to, so a power fixing is commodity and an equity fixing is equity; the subclass records the fixing.',
      current_user, current_user, 'system.initial_load', 'Initial population of series classification rules'),
 
     -- ─── WRAPPERS ────────────────────────────────────────────────────────────

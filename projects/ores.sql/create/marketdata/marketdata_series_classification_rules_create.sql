@@ -79,7 +79,7 @@ create table if not exists "ores_marketdata_series_classification_rules_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("series_type" <> ''),
-    check ("asset_class_source" in ('literal', 'correlation_operands')),
+    check ("asset_class_source" in ('literal', 'correlation_operands', 'index_name')),
     check (("asset_class_source" <> 'literal') or ("asset_class_code" is not null)),
     check (("asset_class_source" = 'literal') or ("asset_class_code" is null))
 );

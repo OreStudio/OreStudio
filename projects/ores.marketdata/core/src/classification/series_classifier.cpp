@@ -18,6 +18,8 @@
  *
  */
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <string_view>
@@ -27,11 +29,14 @@ namespace ores::marketdata::core {
 
 namespace {
 
-// The two values the asset_class_source column allows. "literal" rows carry
+// The three values the asset_class_source column allows. "literal" rows carry
 // their class in the row; "correlation_operands" rows derive it from the
-// operands the qualifier names, so they carry no class of their own.
+// operands the qualifier names, so they carry no class of their own; and
+// "index_name" rows read it from the index name the qualifier carries, through
+// the oresmd authority the name projects onto.
 constexpr std::string_view k_literal_source = "literal";
 constexpr std::string_view k_correlation_operands_source = "correlation_operands";
+constexpr std::string_view k_index_name_source = "index_name";
 
 /**
  * ORE names a correlation operand after the factor class it belongs to: an
@@ -96,23 +101,24 @@ series_classifier::series_classifier(std::vector<domain::series_classification_r
 
     for (auto& rule : rules) {
         if (rule.asset_class_source != k_literal_source &&
-            rule.asset_class_source != k_correlation_operands_source)
+            rule.asset_class_source != k_correlation_operands_source &&
+            rule.asset_class_source != k_index_name_source)
             throw std::invalid_argument("series classification rule for '" + rule.series_type +
                                         "/" + rule.metric + "' names the asset class source '" +
                                         rule.asset_class_source + "'; the table allows only '" +
-                                        std::string(k_literal_source) + "' and '" +
-                                        std::string(k_correlation_operands_source) + "'.");
+                                        std::string(k_literal_source) + "', '" +
+                                        std::string(k_correlation_operands_source) + "' and '" +
+                                        std::string(k_index_name_source) + "'.");
 
         if (rule.asset_class_source == k_literal_source && !rule.asset_class_code)
             throw std::invalid_argument(
                 "series classification rule for '" + rule.series_type + "/" + rule.metric +
                 "' reads its asset class from the row but carries no asset class code.");
 
-        if (rule.asset_class_source == k_correlation_operands_source && rule.asset_class_code)
+        if (rule.asset_class_source != k_literal_source && rule.asset_class_code)
             throw std::invalid_argument(
                 "series classification rule for '" + rule.series_type + "/" + rule.metric +
-                "' derives its asset classes from the qualifier operands and also carries the "
-                "asset class code '" +
+                "' derives its asset classes from the key and also carries the asset class code '" +
                 *rule.asset_class_code + "'; a reader would not know which of the two to record.");
 
         by_type_[rule.series_type][rule.metric] = std::move(rule);
@@ -146,6 +152,21 @@ std::optional<series_classification> series_classifier::try_classify(
     if (row.asset_class_source == k_correlation_operands_source)
         return series_classification{correlation_asset_classes(qualifier),
                                      row.series_subclass_code};
+
+    if (row.asset_class_source == k_index_name_source) {
+        // The qualifier is the index name. It projects onto an oresmd
+        // identifier, and the catalogue maps that identifier's authority onto a
+        // refdata class: one rule serves every fixing class, and a name no
+        // class can name leaves the class list empty rather than mis-classing
+        // the series.
+        const auto identifier = oresmd_projections::from_index_name(qualifier);
+        if (!identifier)
+            return series_classification{{}, row.series_subclass_code};
+        const auto code = domain::asset_class_for_identifier(*identifier);
+        if (!code)
+            return series_classification{{}, row.series_subclass_code};
+        return series_classification{{std::string(*code)}, row.series_subclass_code};
+    }
 
     return series_classification{{*row.asset_class_code}, row.series_subclass_code};
 }

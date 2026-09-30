@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 16133422-EB26-4695-991B-9F814831C060
+:END:
+#+title: Task: Guard the session reads with the permission the catalogue grants
+#+description: The three session read handlers check no permission while the account and login-record reads check theirs, and the catalogue grants iam::sessions:read for exactly this purpose. Any authenticated caller can list a tenant's sessions today.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: fix/guard-the-session-reads
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the security defect
+[[id:89CD5129-06AA-448A-BED1-78F829ABC952][The session read handlers skip the permission check the catalogue grants]].
+=iam.v1.sessions.list=, =.get= and =.get_many= answer any authenticated caller
+with the tenant's sessions: client, address, country, byte counters and account.
+The catalogue grants =iam::sessions:read= ("View active sessions") for exactly
+this purpose, the account reads check =iam::accounts:read= and the login-record
+reads check =iam::login_info:read=, so the three reads are unguarded by oversight
+and not by design.
+
+This lands before the Audit sign-ins screen, because that screen is built on
+these reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | The three guards are in the handler; the build and the suites have not run yet. |
+| Waiting on   | Nothing. |
+| Next          | Build =ores.iam= and run its suites, then raise the pull request. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- =list_sessions=, =get_session= and =get_many_sessions= each answer
+  =forbidden= when the caller does not hold =iam::sessions:read=, and answer as
+  they do today when it does.
+- The write and delete verbs keep the guards they have.
+- The handler's own comment stops saying the reads check "the permission a write
+  needs".
+- The suites that cover the handler pass, and the whole-tree build is green.
+- The change is recorded on the component's clean-standard registry entry, since
+  the registry is what claims the component has no unguarded read.
+
+* Plan
+
+1. Add the read guard to the three read verbs, mirroring the shape the write and
+   delete verbs use, so a refusal is the same =forbidden= error on every verb of
+   the resource.
+2. Build =ores.iam= and its suites on the preset, and run the tests that cover
+   the handler.
+3. Raise the pull request, with the live check that a caller without the
+   permission is refused.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Unguarded session reads before | 3 | =grep -n has_permission projects/ores.iam/core/include/ores.iam.core/messaging/session_handler.hpp= | 6934fc2cbd |
+| Unguarded session reads after | 0 | the same command | working tree |
+| Guards on the resource | 7, one per verb | the same command | working tree |
+
+* Notes
+
+- The fix is small and the whole resource now reads the same way: every verb
+  checks the permission its operation needs, and a refusal is =forbidden=.
+- The clean-standard registry entry for ores.iam recorded this class of defect
+  as closed for accounts and login records; the session reads arrived later with
+  the CRUD protocol and were never checked. The registry claim should be
+  re-read after this lands rather than assumed.
+- =iam::sessions:delete= is still required by the delete verbs and still granted
+  by no role, which the inventory records as its own gap: only a holder of the
+  =iam::*= wildcard can delete a session row. This task does not change that.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Started 2026-10-01. The three guards are in
+=projects/ores.iam/core/include/ores.iam.core.messaging/session_handler.hpp=;
+the build and the suites have not run, so nothing is claimed about them yet.

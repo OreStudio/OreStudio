@@ -67,7 +67,7 @@ public:
      * @brief Serves iam.v1.sessions.list.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::sessions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_sessions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -108,7 +112,7 @@ public:
      * @brief Serves iam.v1.sessions.get.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::sessions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_session_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -149,7 +157,7 @@ public:
      * @brief Serves iam.v1.sessions.get_many.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::sessions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_sessions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -190,7 +202,7 @@ public:
      * @brief Serves iam.v1.sessions.put.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -235,7 +247,7 @@ public:
      * @brief Serves iam.v1.sessions.put_many.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -280,7 +292,7 @@ public:
      * @brief Serves iam.v1.sessions.delete.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -325,7 +337,7 @@ public:
      * @brief Serves iam.v1.sessions.delete_many.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission a write needs, decodes the canonical request, calls the
+     * permission the operation needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.

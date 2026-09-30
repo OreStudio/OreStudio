@@ -81,6 +81,7 @@ The build tasks are written when the prototypes are accepted.
 | [[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]] | DONE | | 2026-09-30 | [wayfinder:task] The three journey documents name the wrong surface, claim a working browser read and name a caller that does not exist. Correct them against the route census and the tree. |
 | [[id:9A07635C-9231-45E4-812D-CB311FDE11EB][Inventory the routes and operations the credentials journeys need]] | DONE | | 2026-09-30 | [wayfinder:research] Per journey, every read and write, its subject, its ores.http route, its BFF route and its permission, so the build tasks can be sized from one page. |
 | [[id:ED03034A-C78A-4478-8C34-9BA8576C07BE][Give the browser the session reads]] | DONE | | 2026-10-01 | The audit screen reads sessions and no BFF route serves them. Add the page route and the active-sessions route over the subjects that already work, with the wire shapes and the route tests. |
+| [[id:16133422-EB26-4695-991B-9F814831C060][Guard the session reads with the permission the catalogue grants]] | BACKLOG | | | The three session read handlers check no permission while the account and login-record reads check theirs, and the catalogue grants iam::sessions:read for exactly this purpose. Any authenticated caller can list a tenant's sessions today. |
 
 * Plan
 

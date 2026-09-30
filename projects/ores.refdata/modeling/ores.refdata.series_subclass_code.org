@@ -51,7 +51,8 @@ Unique series subclass code.
 
 Examples: 'spot', 'forward', 'volatility', 'yield', 'basis', 'fra',
 'xccy', 'spread', 'index_credit', 'recovery', 'swap', 'capfloor',
-'seasonality', 'price', 'correlation'.
+'seasonality', 'price', 'correlation', 'prepayment',
+'transition_probability', 'index_fixing'.
 
 #+begin_src cpp :name generator
 std::string("SeriesSubclassCode")

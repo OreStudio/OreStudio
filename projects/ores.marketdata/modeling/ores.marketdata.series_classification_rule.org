@@ -152,7 +152,8 @@ CORRELATION.
     static constexpr std::string_view subclasses[] = {
         "spot",    "forward", "volatility", "yield",       "basis",
         "fra",     "xccy",    "spread",     "index_credit", "recovery",
-        "swap",    "capfloor", "seasonality", "price",     "correlation"};
+        "swap",    "capfloor", "seasonality", "price",     "correlation",
+        "prepayment", "transition_probability", "index_fixing"};
     return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
 }()
 #+end_src

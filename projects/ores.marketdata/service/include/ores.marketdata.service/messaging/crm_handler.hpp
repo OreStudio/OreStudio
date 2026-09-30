@@ -25,7 +25,7 @@
 #include "ores.analytics.quant/domain/rate_status.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/messaging/crm_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/domain/message.hpp"

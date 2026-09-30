@@ -18,7 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"

@@ -20,7 +20,7 @@
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
-#include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_registrar.hpp"

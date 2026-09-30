@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/messaging/import_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"

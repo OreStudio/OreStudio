@@ -38,10 +38,10 @@ function run(search) {
     return { app: nodes.app.innerHTML, note: nodes['proto-note'].textContent, bar: nodes['proto-bar'].innerHTML };
 }
 
-const models = ['N', 'S', 'I', 'D', 'A'];
+const models = ['H', 'N', 'S', 'I', 'D', 'A'];
 const actors = ['member', 'admin'];
 const states = ['home', 'journey', 'fullscreen', 'today', 'narrow'];
-const modelNames = { N: 'Navbar', S: 'Sidebar', I: 'Index', D: 'Data only', A: 'Account menu' };
+const modelNames = { H: 'Areas and journeys', N: 'Navbar', S: 'Sidebar', I: 'Index', D: 'Data only', A: 'Account menu' };
 
 let failures = 0;
 let checked = 0;
@@ -89,7 +89,14 @@ const checks = [
     ['?variant=N&actor=admin&state=journey&screen=%2Fprofile', 'Reached from', 'every model reaches the same journey screen'],
     ['?variant=N&actor=admin&state=today', '3 journeys', 'today carries only what has been built'],
     ['?variant=N&actor=member&state=today', 'Nothing here yet', 'a member has nothing today and is told so'],
-    ['?variant=N&actor=admin&state=narrow', 'class="shell narrow"', 'the narrow state is the narrow shell']
+    ['?variant=N&actor=admin&state=narrow', 'class="shell narrow"', 'the narrow state is the narrow shell'],
+    ['?variant=H&actor=admin&state=home', 'class="appnav"', 'the two-axis model puts the areas in the header'],
+    ['?variant=H&actor=admin&state=home', 'class="side"', 'the two-axis model puts journeys down the side'],
+    ['?variant=H&actor=admin&state=home&area=Reference%20Data', 'Reference Data', 'the area whose journeys are not extracted is still named'],
+    ['?variant=H&actor=admin&state=home&area=Reference%20Data', 'No journeys have been extracted', 'an empty area says so rather than inventing screens'],
+    ['?variant=H&actor=admin&state=home&area=Tenant', 'Starts a run', 'a full-screen journey is offered as a run, not as a sidebar entry'],
+    ['?variant=H&actor=admin&state=journey&screen=%2Fprofile', 'class="side"', 'a journey keeps the area sidebar while it runs'],
+    ['?variant=H&actor=member&state=home', 'class="side"', 'a member gets the shell too']
 ];
 
 for (const [search, needle, what] of checks) {
@@ -118,7 +125,8 @@ for (const model of ['N', 'S', 'I', 'D', 'A']) {
 for (const [search, needle, what] of [
     ['?variant=N&actor=member&state=home', 'Directory', 'the member must not reach the tenant groups'],
     ['?variant=N&actor=member&state=home', 'Rescue access', 'the member must not reach an administrator journey'],
-    ['?variant=N&actor=admin&state=home', 'Sign in', 'the door is not a place a signed-in person navigates to']
+    ['?variant=N&actor=admin&state=home', 'Sign in', 'the door is not a place a signed-in person navigates to'],
+    ['?variant=H&actor=member&state=home', 'Reference Data', 'a member is not offered an area with nothing in it']
 ]) {
     if (run(search).app.includes(needle)) {
         console.log(`FAIL ${search}: found "${needle}" -- ${what}`);
@@ -126,6 +134,6 @@ for (const [search, needle, what] of [
     }
 }
 
-console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 3 + 10} promises`);
+console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 4 + 10} promises`);
 console.log(failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);

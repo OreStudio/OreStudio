@@ -11,6 +11,10 @@
     'use strict';
 
     var VARIANTS = {
+        H: {
+            name: 'Areas and journeys',
+            note: 'Both axes, holding different things: the areas across the top, the selected area\u2019s journeys down the side. This is the shape the Qt client got half right \u2014 its top level was already an area of activity, and its second level was a table.'
+        },
         N: {
             name: 'Navbar',
             note: 'The groups sit in the header as a horizontal bar; a group opens its index, and the index lists its journeys. Nothing is hidden, and the arithmetic is plain: eight groups across the header.'
@@ -46,7 +50,7 @@
        all for either. `landed` is whether the group has been built, which is
        what the today state shows. */
     var GROUPS = [
-        { name: 'Setup', landed: true, journeys: [
+        { name: 'Setup', landed: true, fullscreen: true, journeys: [
             ['First run', '/setup/first-run', 'admin'],
             ['New tenant', '/tenants/new', 'admin'],
             ['New party', '/parties/new', 'admin']] },
@@ -78,6 +82,22 @@
             ['Retire or reset a tenant', '/tenant/retire', 'admin']] }
     ];
 
+    /* The areas of activity: the trading floor's own shape, which the Qt menu
+       bar already had right, and the level above a journey group. An area
+       whose journeys have not been extracted yet says so rather than being
+       filled with invented screens. */
+    var AREAS = [
+        { name: 'You', groups: ['Profile', 'Credentials', 'Membership'] },
+        { name: 'People', groups: ['Access', 'Directory'] },
+        { name: 'Tenant', groups: ['Setup', 'Tenancy'] },
+        { name: 'Reference Data', waiting: true },
+        { name: 'Market Data', waiting: true },
+        { name: 'Trading', waiting: true },
+        { name: 'Analytics', waiting: true },
+        { name: 'Reporting', waiting: true },
+        { name: 'System', waiting: true }
+    ];
+
     var PERSON = {
         member: {
             username: 'jdoe', name: 'Jane Doe', tenant: 'Northwind Capital',
@@ -90,7 +110,7 @@
     };
 
     var S = {
-        variant: 'S',
+        variant: 'H',
         actor: 'admin',
         state: 'home',
         at: '/profile',
@@ -105,6 +125,7 @@
         var st = p.get('state');
         for (var i = 0; i < STATES.length; i++) if (STATES[i][0] === st) S.state = st;
         if (p.get('screen')) S.at = p.get('screen');
+        if (p.get('area')) S.area = p.get('area');
         if (p.get('open') === '1') S.open = true;
     }
 
@@ -129,7 +150,7 @@
     function groups(todayOnly) {
         return GROUPS.filter(function (g) { return g.nav !== false; })
           .map(function (g) {
-              return { name: g.name, landed: g.landed, journeys: g.journeys.filter(allowed) };
+              return { name: g.name, landed: g.landed, fullscreen: g.fullscreen, journeys: g.journeys.filter(allowed) };
           })
           .filter(function (g) { return g.journeys.length > 0; })
           .filter(function (g) { return !todayOnly || g.landed; });
@@ -145,6 +166,87 @@
             if (g.journeys.some(function (j) { return here(j[1]); })) found = g;
         });
         return found;
+    }
+
+    // -------------------------------------------------------- the areas
+
+    function areaOf(groupName) {
+        var found = null;
+        AREAS.forEach(function (a) {
+            if ((a.groups || []).indexOf(groupName) >= 0) found = a;
+        });
+        return found;
+    }
+
+    function areaGroups(area) {
+        if (!area || !area.groups) return [];
+        var all = groups(false);
+        return area.groups.map(function (n) {
+            return all.filter(function (g) { return g.name === n; })[0];
+        }).filter(Boolean);
+    }
+
+    /* An area with nothing extracted is offered to a tenant administrator,
+       who is the person who would build it, and not to a member. */
+    function visibleAreas() {
+        return AREAS.filter(function (a) {
+            if (a.waiting) return isAdmin();
+            return areaGroups(a).length > 0;
+        });
+    }
+
+    function areaSize(area) {
+        return journeyCount(areaGroups(area));
+    }
+
+    function activeArea() {
+        var areas = visibleAreas();
+        if (S.area) {
+            var named = areas.filter(function (a) { return a.name === S.area; })[0];
+            if (named) return named;
+        }
+        var current = currentGroup(groups(false));
+        var owner = current ? areaOf(current.name) : null;
+        return owner || areas[0];
+    }
+
+    function areaNav() {
+        var active = activeArea();
+        return '<nav class="appnav">' + visibleAreas().map(function (a) {
+            var hereNow = active && active.name === a.name;
+            var count = a.waiting ? '' : '<span class="count">' + areaSize(a) + '</span>';
+            return '<a href="#" data-act="area" data-area="' + esc(a.name) + '"' +
+                (hereNow ? ' class="here"' : '') + (a.waiting ? ' data-waiting="1"' : '') + '>' +
+                esc(a.name) + count + '</a>';
+        }).join('') + '</nav>';
+    }
+
+    function areaSide() {
+        var area = activeArea();
+        if (!area) return '';
+        var gs = areaGroups(area);
+        var html = '<nav class="side">';
+        if (area.waiting) {
+            html += '<div class="sidewait">No journeys extracted for this area yet.</div>';
+        }
+        gs.filter(function (g) { return !g.fullscreen; }).forEach(function (g) {
+            var open = g.journeys.some(function (j) { return here(j[1]); });
+            html += '<div class="sidegroup' + (open ? ' open' : '') + '">' +
+                '<a href="#" data-act="group" data-group="' + esc(g.name) + '">' + esc(g.name) +
+                '<span class="count">' + g.journeys.length + '</span></a>' +
+                (open ? '<div class="sideitems">' + g.journeys.map(function (j) {
+                    return '<a href="#" data-act="go" data-screen="' + j[1] + '"' + (here(j[1]) ? ' class="here"' : '') + '>' +
+                        esc(j[0]) + '</a>';
+                }).join('') + '</div>' : '') + '</div>';
+        });
+        var runs = gs.filter(function (g) { return g.fullscreen; });
+        if (runs.length) {
+            html += '<div class="sidegroup"><div class="sidehead">Starts a run</div><div class="sideitems">' +
+                runs.reduce(function (all, g) { return all.concat(g.journeys); }, []).map(function (j) {
+                    return '<a href="#" data-act="run">' + esc(j[0]) + '</a>';
+                }).join('') + '</div></div>';
+        }
+        return html + '</nav>';
     }
 
     // ------------------------------------------------------------- chrome
@@ -253,6 +355,34 @@
             '</table></div></div></div>';
     }
 
+    function groupCard(g) {
+        return '<section class="groupcard"><h2>' + esc(g.name) +
+            (g.landed ? '' : '<span class="tag soon">not built yet</span>') + '</h2>' +
+            '<ul>' + g.journeys.map(function (j) {
+                return '<li><a href="#" data-act="go" data-screen="' + j[1] + '">' + esc(j[0]) + '</a></li>';
+            }).join('') + '</ul></section>';
+    }
+
+    /* The landing surface under the two-axis model: one area, its groups, its
+       journeys, and an honest word when the area has none yet. */
+    function areaPage(area) {
+        var p = person();
+        var gs = areaGroups(area);
+        var head = '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>' +
+            '<h1>' + esc(area.name) + '</h1>';
+        if (!gs.length) {
+            return '<div class="card">' + head +
+                '<p class="lead">No journeys have been extracted for this area yet. The area is named because it ' +
+                'exists on the trading floor; it stays empty until a component\u2019s journeys land in it, and ' +
+                'nothing is invented to fill it.</p></div>';
+        }
+        var total = journeyCount(gs);
+        return '<div class="card">' + head +
+            '<p class="lead">' + total + ' journey' + (total === 1 ? '' : 's') + ' in ' + gs.length +
+            ' group' + (gs.length === 1 ? '' : 's') + '.</p></div>' +
+            '<div class="groupgrid">' + gs.map(groupCard).join('') + '</div>';
+    }
+
     function indexPage(oneGroup) {
         var list = oneGroup
             ? groups(false).filter(function (g) { return g.name === oneGroup; })
@@ -273,13 +403,7 @@
                     ' in ' + list.length + ' group' + (list.length === 1 ? '' : 's') +
                     ', for ' + (isAdmin() ? 'a tenant administrator' : 'a member') + '.' +
                     (S.state === 'today' ? ' Only the groups that have been built are listed.' : '') + '</p>');
-        var body = list.map(function (g) {
-            return '<section class="groupcard"><h2>' + esc(g.name) +
-                (g.landed ? '' : '<span class="tag soon">not built yet</span>') + '</h2>' +
-                '<ul>' + g.journeys.map(function (j) {
-                    return '<li><a href="#" data-act="go" data-screen="' + j[1] + '">' + esc(j[0]) + '</a></li>';
-                }).join('') + '</ul></section>';
-        }).join('');
+        var body = list.map(groupCard).join('');
         return '<div class="card">' + head + '</div>' +
             (body ? '<div class="groupgrid">' + body + '</div>' : '');
     }
@@ -336,8 +460,10 @@
     function body() {
         if (S.state === 'fullscreen') return fullscreenPage();
         /* At rest is the landing surface, and today is the same surface with
-           only the groups that exist. */
+           only the groups that exist. Under the two-axis model the landing
+           surface is the area. */
         var atRest = S.state === 'home' || S.state === 'today';
+        if (atRest && S.variant === 'H') return areaPage(activeArea());
         if (atRest && S.variant === 'D') return dataPage();
         if (atRest) return indexPage(null);
         return journeyScreen();
@@ -349,7 +475,10 @@
         var full = S.state === 'fullscreen';
         var head = '';
         if (!full) {
-            if (S.variant === 'N') {
+            if (S.variant === 'H') {
+                head = '<header class="appheader"><div class="appheader-inner">' + brand() + areaNav() +
+                    '<div class="accounts">' + accountChip(false) + '</div></div></header>';
+            } else if (S.variant === 'N') {
                 head = '<header class="appheader"><div class="appheader-inner">' + brand() + navbar() +
                     '<div class="accounts">' + accountChip(false) + '</div></div></header>';
             } else if (S.variant === 'A') {
@@ -362,8 +491,8 @@
         }
 
         var shell = '<div class="shell' + (narrow() ? ' narrow' : '') + '">' + head;
-        shell += (S.variant === 'S' && !full)
-            ? '<div class="withside">' + sidebar() + '<main>' + body() + '</main></div>'
+        shell += ((S.variant === 'S' || S.variant === 'H') && !full)
+            ? '<div class="withside">' + (S.variant === 'H' ? areaSide() : sidebar()) + '<main>' + body() + '</main></div>'
             : '<main>' + body() + '</main>';
         shell += '</div>';
         document.getElementById('app').innerHTML = shell;
@@ -403,6 +532,8 @@
         else if (act === 'actor') { S.actor = el.getAttribute('data-actor'); S.open = false; }
         else if (act === 'state') { S.state = el.getAttribute('data-state'); S.open = false; }
         else if (act === 'toggle') S.open = !S.open;
+        else if (act === 'area') { S.area = el.getAttribute('data-area'); S.at = '/'; }
+        else if (act === 'run') S.state = 'fullscreen';
         else if (act === 'home') S.at = '/';
         else if (act === 'group') { S.at = '/'; S.homeGroup = el.getAttribute('data-group'); }
         else if (act === 'go') S.at = el.getAttribute('data-screen');

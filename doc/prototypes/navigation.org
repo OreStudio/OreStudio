@@ -16,7 +16,7 @@ it, and no document owns how. The shell carries the brand, the session and the
 way out, because "the navigation itself is what the journeys add" — and the
 journeys are about to add the first screen, with nothing to hang it from.
 
-This prototype argues that navigation. It renders five structural models in
+This prototype argues that navigation. It renders six structural models in
 the shell the application actually has, each over the catalogue's real scale,
 so the choice is made against 22 journeys in 8 groups rather than against a
 demonstration subset.
@@ -45,17 +45,50 @@ and 20 rather than 8 and 22.
 That asymmetry is what the models have to survive: the member's navigation is
 small enough for anything, and the administrator's is not.
 
-** The five models
+** The six models
 
 Switch with the bottom bar, the left and right arrow keys, or =?variant=.
 
 | Model | Name | The structural argument |
 |-------+------+-------------------------|
+| =H= | Areas and journeys | Both axes, holding different things: the areas of activity across the top, the selected area's journeys down the side. The shape the Qt client half had right. |
 | =N= | Navbar | The groups in the header, each with its count, opening its own index of journeys. Nothing is hidden, and the arithmetic is plain: seven groups across the top. |
 | =S= | Sidebar | The same groups down the left, the current one open to its journeys. It holds seven without crowding and it can nest, at the cost of a column on every screen. |
 | =I= | Index | The landing page is the index: every journey, grouped by topic, and no global navigation at all. Nothing to hunt for, and nothing beside a journey while it runs. |
 | =D= | Data only | No navigation either: a journey is reached from the thing it acts on. The person's own record opens their screens; a roster row opens that colleague. |
 | =A= | Account menu | The header trigger, prototyped first and kept because it is the shape five journey documents name — and because the comparison needs it. At this scale it holds neither the administrator's work nor the groups. |
+
+** The eight areas, and the level that was missing
+
+The catalogue had two levels — group, then journey — and the shell needs
+three, because a journey group is a topic and an area is a place on the
+trading floor. Qt's first level already said the areas, and it was right:
+
+#+ATTR_HTML: :class hug-leading
+| Area | The groups the catalogue has reached | Journeys today |
+|------+--------------------------------------+----------------|
+| You | Profile, Credentials, Membership | 8 |
+| People | Access, Directory | 7 |
+| Tenant | Setup, Tenancy | 5 |
+| Reference Data | — | none extracted |
+| Market Data | — | none extracted |
+| Trading | — | none extracted |
+| Analytics | — | none extracted |
+| Reporting | — | none extracted |
+| System | — | none extracted |
+
+Six of the nine are empty, and that is the honest state rather than a gap in
+the design: the extraction has been run for one component. An empty area is
+named and says so — it is not filled with invented screens, and it is offered
+to a tenant administrator, who is the person who would build it, rather than to
+a member.
+
+What Qt got wrong was everything below its first level. Its second level was a
+table, and it went three deep where the model did: =Reference Data → Data
+Catalogue → Dimensions → Origin Dimensions=. The replacement's second level is
+a journey, and a journey is an activity, so the depth stops there — the sidebar
+holds the area's journeys, grouped under the catalogue's topics when an area
+has more than one.
 
 ** The two actors
 
@@ -101,27 +134,33 @@ Every model renders that identically, which is the =fullscreen= state. The
 shell's boundary is therefore part of its design: a journey may take the screen
 and give it back.
 
-Against that, the recommendation is the *sidebar*, and the reasons are the
-constrained kind:
+Against that, the recommendation is the *two-axis* model, =H=, and it answers
+the thing the single-axis ones could not: a full trading system has many areas,
+and each area has many journeys, so one axis is either too long or too deep.
 
-- It holds seven groups without crowding, where the navbar does not fit a
-  laptop's header at that count.
-- It shows the current group's journeys open, so a journey is one click from
-  anywhere rather than two — which matters because the menu is what makes
-  journeys selectable at all.
-- It grows by adding a group down the list, not by widening a bar that has no
-  room left.
-- Its cost -- a column on every screen — is paid on the journeys that keep the
-  shell, and the journey that draws a rail of its own is the one that leaves
-  the shell altogether. The rail-inside-a-sidebar clash the earlier draft
-  recorded does not arise.
+- *The areas are the trading floor's own shape* — Reference Data, Market Data,
+  Trading, Reporting — which is what the Qt menu bar already said, and what a
+  person in operations uses to say where they work.
+- *A journey is an activity, so the sidebar stops at one level of depth* under
+  its group headings. The Qt menus went deeper because the model was showing
+  through; there is nothing under a journey to show.
+- *The two axes answer different questions:* "where do I work" at the top, "what
+  am I doing there" at the side. A single axis has to answer both at once, which
+  is why the index model needs a trip back and the account menu runs out of
+  room.
+
+The navbar with nine areas is wide, and it scrolls at a laptop's width rather
+than squeezing the person's own chip off the edge. Qt carried eleven, so this is
+a known cost of the shape rather than a new one; the alternative — folding the
+areas into a menu — is the account menu again.
 
 ** What the shell holds
 
 | Part | What it is |
 |------+------------|
 | The brand | The way home, and the only thing that is always there. |
-| The groups | The menu: the topics this person may reach, each opening to its journeys. |
+| The areas | The horizontal menu: where this person may work. |
+| The groups and journeys | The sidebar: what they may do there, the current group open to its journeys. |
 | The person | Their name and photo, opening their own record, and the way out. |
 | The boundary | Nothing, when a journey owns the screen. |
 

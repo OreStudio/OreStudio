@@ -294,6 +294,19 @@ main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 28px 20
 }
 .sideitems a:hover { color: var(--ink); background: var(--panel-2); }
 .sideitems a.here { color: var(--ink); border-left-color: var(--accent); background: var(--accent-dim); }
+.sidehead {
+    padding: 8px 10px 2px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.sidewait { padding: 12px 10px; font-size: 12px; color: var(--ink-faint); }
+
+/* An area whose journeys have not been extracted yet. Offered to the person
+   who would build it, and plainly empty rather than filled. */
+.appnav a[data-waiting] { color: var(--ink-faint); }
+.appnav a[data-waiting].here { color: var(--ink-dim); }
 
 /* Index: every journey on the landing page, grouped by topic. */
 .groupgrid {

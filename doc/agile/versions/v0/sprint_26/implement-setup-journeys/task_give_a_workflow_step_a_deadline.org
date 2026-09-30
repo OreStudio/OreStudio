@@ -8,7 +8,7 @@
 #+filetags: :implement-setup-journeys:sprint_26:v0:
 #+owner: marco
 #+branch:
-#+pr: 2415
+#+pr: 2418
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -108,6 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2418][#2418]] | [agile] Mark the isolation capture resolved |
 | [[https://github.com/OreStudio/OreStudio/pull/2415][#2415]] | [workflow] Give a step a deadline the engine enforces |
 
 * Review

@@ -33,16 +33,18 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief Top-level asset class taxonomy (fx, interest_rates, credit, equity, commodity, inflation,
- * bond).
+ * @brief The top-level product asset class taxonomy.
  *
  * General-purpose classification of the top-level asset class a market
- * series, instrument, or curve belongs to. This table is the single
- * source of truth for the taxonomy. Code carries no parallel
- * enumeration, because the list is runtime-managed and no compiled list
- * can be exhaustive over it. Other entities (instrument_code,
- * market_series, feed_binding) FK-validate against this table.
- * Managed by the system tenant, like other shared code tables.
+ * series, instrument, or curve belongs to. The taxonomy's codes and their
+ * prose are declared once, in ores.refdata.asset_class_catalogue, which
+ * also declares the oresmd namespace and the mapping between the two; the
+ * seed SQL this table is populated from is generated from it, so this model
+ * carries no copy of the list. Code carries no parallel enumeration, because
+ * the list is runtime-managed and no compiled list can be exhaustive over
+ * it. Other entities (instrument_code, market_series, feed_binding)
+ * FK-validate against this table. Managed by the system tenant, like other
+ * shared code tables.
  */
 struct asset_class_code final {
     /**
@@ -56,9 +58,7 @@ struct asset_class_code final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique asset class code.
-     *
-     * Examples: 'fx', 'interest_rates', 'credit', 'equity', 'commodity', 'inflation', 'bond'.
+     * @brief Unique asset class code, as ores.refdata.asset_class_catalogue declares it.
      */
     std::string code;
 

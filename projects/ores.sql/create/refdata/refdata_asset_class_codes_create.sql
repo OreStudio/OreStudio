@@ -25,12 +25,15 @@
  * Asset Class Code Table
  *
  * General-purpose classification of the top-level asset class a market
- * series, instrument, or curve belongs to. This table is the single
- * source of truth for the taxonomy. Code carries no parallel
- * enumeration, because the list is runtime-managed and no compiled list
- * can be exhaustive over it. Other entities (instrument_code,
- * market_series, feed_binding) FK-validate against this table.
- * Managed by the system tenant, like other shared code tables.
+ * series, instrument, or curve belongs to. The taxonomy's codes and their
+ * prose are declared once, in ores.refdata.asset_class_catalogue, which
+ * also declares the oresmd namespace and the mapping between the two; the
+ * seed SQL this table is populated from is generated from it, so this model
+ * carries no copy of the list. Code carries no parallel enumeration, because
+ * the list is runtime-managed and no compiled list can be exhaustive over
+ * it. Other entities (instrument_code, market_series, feed_binding)
+ * FK-validate against this table. Managed by the system tenant, like other
+ * shared code tables.
  */
 
 create table if not exists "ores_refdata_asset_class_codes_tbl" (

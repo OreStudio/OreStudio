@@ -38,20 +38,27 @@ export const ACTIONS = {
   'service-start': {
     label: (request) => `Start ${request.service}`,
     steps: (request) => [['services', 'start', request.service]],
+    timeoutMs: 900000,
   },
   'service-stop': {
     label: (request) => `Stop ${request.service}`,
     steps: (request) => [['services', 'stop', request.service]],
+    timeoutMs: 300000,
   },
   'fleet-start': {
     label: () => 'Start every service',
     steps: () => [['services', 'start']],
+    timeoutMs: 1800000,
   },
   'fleet-stop': {
     label: () => 'Stop every service',
     steps: () => [['services', 'stop']],
+    timeoutMs: 900000,
   },
   'database-restore': {
+    /* A rebuild is minutes of SQL; the deadline is a safety net against a
+     * wedged process, not a budget. */
+    timeoutMs: 3600000,
     label: (request) => request.stopServices
       ? 'Stop services, rebuild the database, start services'
       : 'Rebuild the database',
@@ -143,11 +150,18 @@ export async function readEnvironment(root) {
 }
 
 function pushTail(job, chunk) {
-  const text = job.lines.join('\n') + String(chunk)
-  job.lines = text.split('\n').slice(-TAIL_LIMIT)
+  const parts = (job.pending + String(chunk)).split('\n')
+  job.pending = parts.pop() ?? ''
+  job.lines = job.lines.concat(parts).slice(-TAIL_LIMIT)
 }
 
-function runStep(root, args, job) {
+function flushTail(job) {
+  if (job.pending === '') return
+  job.lines = job.lines.concat([job.pending]).slice(-TAIL_LIMIT)
+  job.pending = ''
+}
+
+function runStep(root, args, job, timeoutMs) {
   return new Promise((resolve) => {
     const step = {
       name: stepName(args),
@@ -159,7 +173,15 @@ function runStep(root, args, job) {
     }
     job.steps.push(step)
     const child = spawn('bash', [join(root, 'compass.sh'), ...args], { cwd: root })
+    const timer = timeoutMs
+      ? setTimeout(() => {
+          pushTail(job, `\ncompass did not finish within ${Math.round(timeoutMs / 1000)}s; it was killed\n`)
+          child.kill('SIGKILL')
+        }, timeoutMs)
+      : null
     const settle = (code) => {
+      if (timer) clearTimeout(timer)
+      flushTail(job)
       step.code = code
       step.running = false
       step.finishedAt = new Date().toISOString()
@@ -242,7 +264,8 @@ export function startAction(root, request, expectedName, onSettled) {
     }
   }
   const stopServices = request?.stopServices !== false
-  if (kind === 'database-restore' && request?.confirm !== expectedName) {
+  if (kind === 'database-restore'
+      && (!expectedName || request?.confirm !== expectedName)) {
     return {
       ok: false,
       reason: 'not-confirmed',
@@ -261,7 +284,8 @@ export function startAction(root, request, expectedName, onSettled) {
     startedAt: new Date().toISOString(),
     finishedAt: null,
     steps: [],
-    lines: [`$ compass ${spec.steps(resolved).map((args) => args.join(' ')).join('  &&  compass ')}\n`],
+    lines: [`$ compass ${spec.steps(resolved).map((args) => args.join(' ')).join('  &&  compass ')}`],
+    pending: '',
   }
   jobs.set(root, job)
 
@@ -269,7 +293,7 @@ export function startAction(root, request, expectedName, onSettled) {
   void (async () => {
     let code = 0
     for (const args of sequence) {
-      code = await runStep(root, args, job)
+      code = await runStep(root, args, job, spec.timeoutMs)
       if (code !== 0) break
     }
     job.code = code

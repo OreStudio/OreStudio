@@ -57,9 +57,6 @@ window.__ModuleLoader__.load({
 
     /* A state the host sends but this build does not know is kept, not
      * dropped, and `attention` decides whether it joins the red filter. */
-    function isAttention(state) {
-      return state === 'failed' || state === 'missing'
-    }
 
     function basename(path) {
       const trimmed = str(path).replace(/\/+$/, '')
@@ -107,6 +104,7 @@ window.__ModuleLoader__.load({
       const database = source.database && typeof source.database === 'object' ? source.database : {}
       const services = source.services && typeof source.services === 'object' ? source.services : {}
       const health = source.health && typeof source.health === 'object' ? source.health : {}
+      const remedies = source.remedies && typeof source.remedies === 'object' ? source.remedies : {}
       const counts = services.counts && typeof services.counts === 'object' ? services.counts : {}
       /* The vocabulary and its order are the host's; this half only colours
        * what it is sent, so a state this build has never heard of still
@@ -135,12 +133,16 @@ window.__ModuleLoader__.load({
           name: str(database.name),
           restoredAt: str(database.restoredAt),
           restoredAge: str(database.restoredAge),
+          restoredAgeSeconds: database.restoredAgeSeconds === null
+            || database.restoredAgeSeconds === undefined ? null : num(database.restoredAgeSeconds),
           restoredLevel: str(database.restoredLevel) || 'unknown',
           schemaVersion: str(database.schemaVersion),
           builtFrom: str(database.builtFrom),
           builtAt: str(database.builtAt),
           driftLabel: str(database.driftLabel),
           driftLevel: str(database.driftLevel) || 'unknown',
+          driftSeconds: database.driftSeconds === null
+            || database.driftSeconds === undefined ? null : num(database.driftSeconds),
           bootstrapMode: database.bootstrapMode === true,
           warning: str(database.warning),
           confirmPhrase: str(database.confirmPhrase) || str(env.name),
@@ -152,7 +154,12 @@ window.__ModuleLoader__.load({
             id: str(state.id),
             title: str(state.title) || str(state.id),
             count: num(state.count),
+            broken: state.broken === true,
           })),
+          /* Which states count as broken is the host's rule, not a second
+           * list here: the filter reads this set. */
+          brokenStates: states.filter((state) => state.broken === true)
+            .map((state) => str(state.id)),
           units: arr(services.units).map((unit) => ({
             unit: str(unit.unit),
             selector: str(unit.selector) || str(unit.service),
@@ -174,6 +181,12 @@ window.__ModuleLoader__.load({
           tone: str(tile.tone) || 'unknown',
           detail: str(tile.detail),
         })),
+        remedies: {
+          startServices: str(remedies.startServices),
+          stopServices: str(remedies.stopServices),
+          recreateDatabase: str(remedies.recreateDatabase),
+          configureEnv: str(remedies.configureEnv),
+        },
         tree: source.tree && typeof source.tree === 'object'
           ? { root: str(source.tree.root), source: str(source.tree.source) }
           : { root: '', source: '' },
@@ -216,8 +229,10 @@ window.__ModuleLoader__.load({
               setNotice('')
             } else {
               setNotice([next.reason, next.message].filter(Boolean).join(': '))
+              /* A failed refresh keeps the last good model on screen and marks
+               * it stale, so a transient fault does not blank the panel. */
               if (lastGood.current) setStale(true)
-              setSnapshot(next)
+              setSnapshot(lastGood.current || next)
             }
           })
           .catch((error) => {
@@ -257,7 +272,11 @@ window.__ModuleLoader__.load({
         credentials: 'same-origin',
         cache: 'no-store',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ session: sessionId, cwd: cwd, ...body }),
+        body: JSON.stringify({
+          session: sessionId,
+          ...(str(cwd) ? { cwd: str(cwd) } : {}),
+          ...body,
+        }),
       })
       let payload = null
       try { payload = await response.json() } catch { payload = null }
@@ -555,9 +574,9 @@ window.__ModuleLoader__.load({
       { id: 'attention', title: 'Failed or missing' },
     ]
 
-    function matchesFilter(unit, filter) {
+    function matchesFilter(unit, filter, broken) {
       if (filter === 'not-running') return unit.state !== 'running'
-      if (filter === 'attention') return isAttention(unit.state)
+      if (filter === 'attention') return broken.has(unit.state)
       return true
     }
 
@@ -729,7 +748,8 @@ window.__ModuleLoader__.load({
       if (state.firstLoad) return h(Skeleton)
 
       const ready = !!(snapshot && snapshot.ok)
-      const units = ready ? snapshot.services.units.filter((unit) => matchesFilter(unit, filter)) : []
+      const broken = new Set(ready ? snapshot.services.brokenStates : [])
+      const units = ready ? snapshot.services.units.filter((unit) => matchesFilter(unit, filter, broken)) : []
       const counts = ready ? snapshot.services.counts : {}
       const total = ready ? snapshot.services.total : 0
 
@@ -779,7 +799,7 @@ window.__ModuleLoader__.load({
           style: { marginTop: '0.5rem', fontSize: '0.75rem' },
         }, snapshot.health.reasons.map((reason, index) => h('div', {
           key: index,
-          style: { color: snapshot.health.level === 'critical' ? STATE_COLOR.failed : WARN, padding: '0.08rem 0' },
+          style: { color: toneColor(snapshot.health.level), padding: '0.08rem 0' },
         }, '⚠ ' + reason))) : null,
 
         h(JobStrip, { key: 'job', job }),
@@ -1047,6 +1067,9 @@ window.__ModuleLoader__.load({
     exports.name = 'ores-dsh-environment'
     exports.inject = ['slots']
     exports.apply = apply
+    /* The model builder, exposed so a test can assert that every field the
+     * view reads is one this half produces. Nothing in the harness reads it. */
+    exports.__test = { normalize }
     return module.exports
   },
 })

@@ -364,6 +364,7 @@ heading('7. a real action job')
 heading('8. the selector the view posts is one compass accepts')
 {
   const selector = payload.services?.units?.[0]?.selector ?? ''
+  check('the row offers a selector at all', selector.startsWith('ores.'), selector || '(empty)')
   let code = 0
   try {
     execFileSync('bash', [join(REPO, 'compass.sh'), 'services', 'status', selector],

@@ -82,7 +82,7 @@ export function apply(ctx) {
     const read = await readEnvironment(resolved.root)
     if (!read.ok) return failure(read.reason, read.message)
     const model = buildModel(read.payload)
-    cache.set(resolved.root, { at: now, model })
+    cache.set(resolved.root, { at: Date.now(), model })
     shown.set(resolved.root, model)
     return model
   }
@@ -97,10 +97,10 @@ export function apply(ctx) {
   }, status)
 
   const stateHandler = async (req, res) => {
+    if (!authenticated(req)) return unauthenticated(res)
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       return json(res, failure('bad-request', 'Only GET and HEAD are supported'), 405)
     }
-    if (!authenticated(req)) return unauthenticated(res)
     try {
       const query = new URL(req.url, 'http://127.0.0.1').searchParams
       const sessionId = query.get('session') ?? ''
@@ -130,10 +130,10 @@ export function apply(ctx) {
   }
 
   const actionHandler = async (req, res) => {
+    if (!authenticated(req)) return unauthenticated(res)
     if (req.method !== 'POST') {
       return json(res, failure('bad-request', 'Only POST is supported'), 405)
     }
-    if (!authenticated(req)) return unauthenticated(res)
     try {
       const contentType = String((req.headers && req.headers['content-type']) || '').toLowerCase()
       if (!contentType.startsWith('application/json')) {

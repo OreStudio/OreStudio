@@ -175,9 +175,14 @@ while its label stays per replica. It is `""` for nats-server, which is not in
 the registry: a row with no selector offers no action.
 
 A read is cached in the host for two seconds, keyed by the resolved work tree
-root. A hit older than the cache's own TTL is a miss. While an action runs, the
-cached model is served and the cache entry is dropped when the action settles,
-so a rebuild costs one compass process rather than one every poll.
+root. A hit older than the cache's own TTL is a miss, and the entry ages from
+when the read finished rather than from when the request arrived, so a slow
+compass does not shorten its own cache life.
+
+While an action runs the cache is served regardless of its age, and the entry is
+dropped when the action settles. The fleet is mid-change during an action, so a
+fresh read would report a half-applied state, and it would cost one compass
+process every poll for the minutes a rebuild takes.
 
 Failure shape, still HTTP 200:
 
@@ -279,8 +284,13 @@ session store, which is the session's workspace root and not the host process's
 directory:
 
 ```js
-const cwd = ctx.get('sessions')?.list?.getSnapshot()?.byId?.[sessionId]?.cwd
+const hook = ctx.get('sessions')            // or the seat's `useSessions` prop
+const cwd = hook((store) => store?.byId?.[sessionId]?.cwd)
 ```
+
+`ctx.get('sessions')` is the store hook the shipped `ores.dsh_kanban` plugin uses,
+and this half reads it the same way, preferring a `useSessions` prop when the
+seat is given one.
 
 When it is absent, send no `cwd` at all rather than a guess.
 

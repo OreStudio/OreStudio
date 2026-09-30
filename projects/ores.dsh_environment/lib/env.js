@@ -19,8 +19,13 @@
 
 /** The shape a failure takes. The browser switches on `reason`. */
 export function failure(reason, message) {
-  return { ok: false, reason, message }
+  return { ok: false, reason, message, job: null }
 }
+
+/* The states that mean something is broken rather than merely switched off.
+ * One list, read by the tile tone and by the flag each state carries, so the
+ * browser never restates it. */
+const BROKEN_STATES = new Set(['failed', 'missing'])
 
 const isObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
 const str = (value, fallback = '') => (typeof value === 'string' ? value : fallback)
@@ -45,7 +50,9 @@ function worktreeName(path) {
  * could not be read.
  */
 function serviceTone(counts, total) {
-  if (num(counts.failed) > 0 || num(counts.missing) > 0) return 'critical'
+  for (const state of BROKEN_STATES) {
+    if (num(counts[state]) > 0) return 'critical'
+  }
   if (total > 0 && num(counts.running) === total) return 'ok'
   if (total === 0) return 'unknown'
   return 'warn'
@@ -77,6 +84,7 @@ export function buildModel(payload) {
     id,
     title: id.charAt(0).toUpperCase() + id.slice(1),
     count: num(counts[id]),
+    broken: BROKEN_STATES.has(id),
   }))
   const total = num(services.total)
 

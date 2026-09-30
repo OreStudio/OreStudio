@@ -631,6 +631,9 @@ which is the same reason the identity lookups fall back to the triple.
 | The tree, built whole | no error and no warning, with the config's field and the feed's new lookup | =cmake --build --preset linux-clang-debug-make= with no target | =d44d64ba64= |
 | The vintage config's migration, on a database that had a vintage row | the row comes back as =oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm=, from the artefact's own identity | =alter table ores_synthetic_ir_curve_generation_configs_tbl drop column vintage_series_uri=, then the migration, then a read of the row | =42ca72b950= |
 | The publish function's reinstall, with the one-lookup class table | =updated 1=, the same series and key as before the change | =psql -f marketdata_publish_from_dq_create.sql= then the publish call | =42ca72b950= |
+| The build gate's heavy job, on the pull request that adds it | =COMPLETED/SUCCESS= for =build, test and start the services / linux-clang-debug-ninja=: it recreates the database, configures, builds every target, runs ctest, and starts the services | =gh pr checks 2401=, and the check-run API on =a19b874c1d= | =a19b874c1d= |
+| Pull-request checks that compile C++, before the gate | 0: =tests= runs the codegen suite and every other job is a Python gate over generated output | the check rollup on #2392's head | =599a1a06db= |
+| The gate's triage, per class of change | 14 cases: docs, web and check config start nothing heavy; C++, headers, the build description, models, codegen and SQL build and test; a service directory starts the services too; an unclassified path asks for everything | =projects/ores.codegen/tests/test_change_classification.py= | =a19b874c1d= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -664,6 +667,7 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/2409][#2409]] | [agile] Hand the deletion its four places |
 | [[https://github.com/OreStudio/OreStudio/pull/2408][#2408]] | [marketdata,synthetic,sql] Let the config name the series its vintage reads |
 | [[https://github.com/OreStudio/OreStudio/pull/2406][#2406]] | [marketdata,codegen] Name a datum from its series and its point |
+| [[https://github.com/OreStudio/OreStudio/pull/2401][#2401]] | [ci] Build and test the tree when a change can break it |
 | [[https://github.com/OreStudio/OreStudio/pull/2403][#2403]] | [agile] Record where the coordinate's field is modelled |
 | [[https://github.com/OreStudio/OreStudio/pull/2402][#2402]] | [agile] Record what the datum-key projection cannot do |
 | [[https://github.com/OreStudio/OreStudio/pull/2400][#2400]] | [iam] Let a written binding join the freshness list |
@@ -946,6 +950,18 @@ takes both away at once. Measured on the rebuilt tree: the artefact names 339 ro
 14 series, the publish creates the series and the key above, and the suites hold at 65
 synthetic-api assertions in 22 cases, 297 synthetic-service in 46, 6 client in 6 and 1926
 core in 415.
+
+**A thirteenth unit closed the gap that let a rename break the tree.** No pull-request
+check compiled C++: the job named =tests= runs the codegen suite, every other job is a
+Python gate over generated output, and =codegen-drift.yml= narrows itself to generated
+paths -- so the binding rename that stopped =ores.iam= compiling passed sixteen green
+checks. =pull-request-verify.yml= now runs on every pull request, classifies the diff
+against fourteen tested cases, and calls =cpp-verify.yml= when a change can break a
+build; that workflow recreates the database, builds every target, runs ctest, and starts
+the services when the change can affect one. Its heavy job ran green on the pull request
+that adds it: =build, test and start the services / linux-clang-debug-ninja= completed
+successfully, which is the check this record had twice reported as unwritten or unproven.
+A documentation change now costs one light job, and a C++ change costs the build.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:

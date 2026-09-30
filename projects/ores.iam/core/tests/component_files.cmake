@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "account_contact_information_eventing_integration_tests.cpp"
+    "account_status_eventing_integration_tests.cpp"
     "account_type_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_account_party_handler_tests.cpp"

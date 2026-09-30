@@ -142,8 +142,8 @@ void party_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <short_code> <full_name> <codename> <transliterated_name> <party_category> "
-        "<party_type> <parent_party_id> <business_center_code> <status> <image_id> <reason> "
-        "<commentary>");
+        "<party_type> <parent_party_id> <business_center_code> <status> <image_id> "
+        "<is_registration_default> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +151,8 @@ void party_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <short_code> <full_name> <codename> <transliterated_name> <party_category> "
-        "<party_type> <parent_party_id> <business_center_code> <status> <image_id> <reason> "
-        "<commentary> [--version <n>]");
+        "<party_type> <parent_party_id> <business_center_code> <status> <image_id> "
+        "<is_registration_default> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,7 +161,7 @@ void party_commands::register_commands(cli::Menu& root_menu, nats_client& sessio
         },
         "put-many --count <n> <id> <short_code> <full_name> <codename> <transliterated_name> "
         "<party_category> <party_type> <parent_party_id> <business_center_code> <status> "
-        "<image_id> <reason> <commentary>");
+        "<image_id> <is_registration_default> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void party_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -377,6 +377,9 @@ void party_commands::process_add(std::ostream& out,
                    "business_center_code");
         read_token(req.change.write.status, parsed->positionals[next++], "status");
         read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
+        read_token(req.change.write.is_registration_default,
+                   parsed->positionals[next++],
+                   "is_registration_default");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -419,8 +422,8 @@ void party_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -440,6 +443,9 @@ void party_commands::process_set(std::ostream& out,
                    "business_center_code");
         read_token(req.change.write.status, parsed->positionals[next++], "status");
         read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
+        read_token(req.change.write.is_registration_default,
+                   parsed->positionals[next++],
+                   "is_registration_default");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -494,8 +500,8 @@ void party_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -517,6 +523,9 @@ void party_commands::process_put_many(std::ostream& out,
                        "business_center_code");
             read_token(change.write.status, parsed->positionals[next++], "status");
             read_token(change.write.image_id, parsed->positionals[next++], "image_id");
+            read_token(change.write.is_registration_default,
+                       parsed->positionals[next++],
+                       "is_registration_default");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -129,6 +129,18 @@ struct account final {
     std::string account_type = std::string("user");
 
     /**
+     * @brief Lifecycle status of the account, validated against ores.iam.account_status. An account
+     * is active when it has everything it needs to sign in. It is pending when an administrator has
+     * not finished setting it up: the account exists, but it holds no party association, so sign-in
+     * refuses it with its own code.
+     *
+     * An account that registers into a tenant which nominates no default party is created pending.
+     * An administrator who gives it its first party moves it to active; that transition belongs to
+     * the roster's journey and not to a timer.
+     */
+    std::string account_status = std::string("active");
+
+    /**
      * @brief The account holder's full (real) name. Not every account represents a person (service,
      * algorithm and llm accounts leave this empty), and this is the only place a human account's
      * real name is recorded.

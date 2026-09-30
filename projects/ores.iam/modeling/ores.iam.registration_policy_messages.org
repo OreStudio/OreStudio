@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: 42696101-091F-49BE-92A2-061B7787C227
+:END:
+#+title: ores.iam.registration_policy_messages
+#+description: Codegen operation model for the registration policy protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: registration_policy
+#+namespace: ores::iam::messaging
+#+brief: registration policy protocol messages.
+#+filetags: :model:operation:iam:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+The registration policy protocol messages.
+
+The door asks one question before it offers a form, and this read answers
+it: whether the deployment accepts registrations, whether one also waits on
+an approval step, the tenant the registration lands in, the party and role
+the new account receives, and whether the result is usable at once. The
+policy itself is settled in
+[[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding
+defaults]], and the interactions that read it are
+[[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]].
+
+The read needs no session, because the screen that shows the form is the one
+a person who is not in the deployment yet is looking at. It is separate from
+=iam.v1.bootstrap.status=: one answers whether the deployment has been set
+up, the other what it offers a person who is not in it, and they change for
+different reasons.
+
+The address the request arrived at names the tenant. A client states the
+hostname it was served at, and the service resolves the tenant from it,
+falling back to the tenant flagged =is_registration_default= only when the
+address names none.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** registration_policy_request
+:PROPERTIES:
+:subject: iam.v1.auth.registration-policy
+:auth: none
+:response: registration_policy_response
+:END:
+
+*** hostname
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The address the door was served at.
+ *
+ * The tenant is resolved from it. When it names no tenant, the tenant
+ * flagged @c is_registration_default is used, and when the deployment
+ * nominates no default either, the read refuses with
+ * @c no_registration_destination rather than naming the system tenant.
+ */
+#+end_src
+
+** registration_policy_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** error_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stable code a client branches on.
+ *
+ * Empty when the read answered. @c signup_disabled and
+ * @c signup_requires_authorization mean the deployment refuses the form;
+ * @c no_registration_destination means it accepts registrations but has not
+ * said where they land. @c no_default_role means it has not said what a new
+ * account may do. Each names a different thing for an administrator to fix,
+ * so a screen states the reason rather than one closed door.
+ */
+#+end_src
+
+*** signups_enabled
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the deployment accepts registrations at all.
+ *
+ * The setting @c system.user_signups, read at system scope: it is the
+ * deployment's answer rather than a tenant's, because the person who opens
+ * the door is not the person who decides what it opens onto.
+ */
+#+end_src
+
+*** authorization_required
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether a registration also waits on an approval step.
+ *
+ * The setting @c system.signup_requires_authorization. No approval workflow
+ * exists yet, so the honest answer is that a deployment which sets this
+ * refuses registrations and says why.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The party a new account joins, when the tenant nominates one.
+ *
+ * Empty when the tenant nominates none. A registration into a tenant with
+ * no nominated party creates a pending account rather than failing.
+ */
+#+end_src
+
+*** party_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** role_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The role a new account receives.
+ *
+ * Empty when the tenant nominates none, which closes registration: an
+ * account that holds nothing is not an account somebody can use.
+ */
+#+end_src
+
+*** role_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** usable_now
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether a registration can sign in without an administrator.
+ *
+ * True when the destination names a tenant, a party and a role, because an
+ * account needs all three to sign in. False means the account is created
+ * pending and waits for an administrator to finish setting it up.
+ */
+#+end_src

@@ -26,12 +26,43 @@ export interface SignupRequest {
     principal: string;
     password: string;
     email: string;
+    /**
+     * @brief The address the registration arrived at.
+     *
+     * The address names the tenant the account lands in: the service resolves
+     * it by hostname and uses the tenant flagged @c is_registration_default
+     * only when the address names none. Without it a registration lands in the
+     * system tenant by omission, which is the defect the survey found.
+     */
+    hostname: string;
 }
 
 export interface SignupResponse {
     success: boolean;
     message: string;
     account_id: string;
+    /**
+     * @brief The state the account was created in: @c active or @c pending.
+     *
+     * An account is active when its tenant nominated a default party, so it
+     * received an association and can sign in at once. It is pending when the
+     * tenant nominated none: the account exists, but it waits for an
+     * administrator to finish setting it up.
+     */
+    account_status: string;
+    /**
+     * @brief The party the account received, when the tenant nominated one.
+     *
+     * Empty when the account is pending, because a pending account has no
+     * association yet.
+     */
+    party_id: string;
+    /**
+     * @brief The role the account received: the tenant's nominated default.
+     *
+     * Empty when the tenant nominated no role.
+     */
+    role_id: string;
     /**
      * @brief The stable code a client branches on.
      *

@@ -56,6 +56,7 @@ domain::party generate_synthetic_party(utility::generation::generation_context& 
     r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
     r.image_id = std::nullopt;
+    r.is_registration_default = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

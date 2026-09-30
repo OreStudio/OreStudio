@@ -17,19 +17,19 @@ This file documents declared operations at the shell. Its one command is =ores-s
 :ID: 69F081CD-081B-5DF5-8B1E-1057089E116F
 :END:
 
-Sends =signup_request= and prints =signup_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =email=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
+Sends =signup_request= and prints =signup_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =email=, =hostname=, in that order. A caller runs it before it has a session, so the command presents no token and refuses none.
 
 
 The command is shaped like this:
 
 #+begin_example
-signup signup <principal> <password> <email>
+signup signup <principal> <password> <email> <hostname>
 #+end_example
 
 It is addressed at =iam.v1.auth.signup=.
 
 #+name: signup-signup
 #+begin_src ores-shell :tangle signup-signup.ores :exports none
-signup signup __none__ __none__ __none__
+signup signup __none__ __none__ __none__ __none__
 #+end_src
 

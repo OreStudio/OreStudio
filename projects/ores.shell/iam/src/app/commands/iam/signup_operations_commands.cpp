@@ -54,7 +54,7 @@ void signup_operations_commands::register_commands(cli::Menu& root_menu, nats_cl
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_signup(std::ref(out), std::ref(session), std::move(args));
         },
-        "signup <principal> <password> <email>");
+        "signup <principal> <password> <email> <hostname>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -82,7 +82,7 @@ void signup_operations_commands::process_signup(std::ostream& out,
         return;
     }
 
-    constexpr std::size_t positional_count = 3;
+    constexpr std::size_t positional_count = 4;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -95,6 +95,7 @@ void signup_operations_commands::process_signup(std::ostream& out,
         req.principal = parsed->positionals[next++];
         req.password = parsed->positionals[next++];
         req.email = parsed->positionals[next++];
+        req.hostname = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

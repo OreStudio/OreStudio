@@ -22,11 +22,13 @@
 #include "ores.shell/app/commands/iam/account_contact_information_commands.hpp"
 #include "ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_party_commands.hpp"
+#include "ores.shell/app/commands/iam/account_status_commands.hpp"
 #include "ores.shell/app/commands/iam/account_type_commands.hpp"
 #include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/bootstrap_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/login_info_commands.hpp"
 #include "ores.shell/app/commands/iam/permission_commands.hpp"
+#include "ores.shell/app/commands/iam/registration_policy_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/reset_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/role_commands.hpp"
 #include "ores.shell/app/commands/iam/seed_profile_commands.hpp"
@@ -67,8 +69,10 @@ void iam_commands::register_commands(cli::Menu& root_menu,
     reset_operations_commands::register_commands(root_menu, session);
     account_contact_information_commands::register_commands(root_menu, session);
     account_party_commands::register_commands(root_menu, session);
+    account_status_commands::register_commands(root_menu, session);
     account_type_commands::register_commands(root_menu, session);
     permission_commands::register_commands(root_menu, session);
+    registration_policy_operations_commands::register_commands(root_menu, session);
     role_commands::register_commands(root_menu, session);
     seed_profile_commands::register_commands(root_menu, session);
     seed_profile_parameter_commands::register_commands(root_menu, session);

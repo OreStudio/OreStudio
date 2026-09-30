@@ -86,15 +86,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <name> <type> <description> <hostname> <status> <reason> <commentary>
+     * @brief add <code> <name> <type> <description> <hostname> <status> <is_registration_default>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <code> <name> <type> <description> <hostname> <status> <reason> <commentary>
-     * [--version <n>]
+     * @brief set <id> <code> <name> <type> <description> <hostname> <status>
+     * <is_registration_default> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -102,7 +103,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <code> <name> <type> <description> <hostname> <status>
-     * <reason> <commentary>
+     * <is_registration_default> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

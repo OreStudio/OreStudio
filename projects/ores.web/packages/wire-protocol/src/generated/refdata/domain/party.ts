@@ -44,6 +44,7 @@ export interface Party {
     business_center_code: string;
     status: string;
     image_id: string | null;
+    is_registration_default: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

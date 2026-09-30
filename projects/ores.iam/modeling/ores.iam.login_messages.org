@@ -156,6 +156,22 @@ The login protocol messages.
 :cpp_type: std::string
 :END:
 
+*** error_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stable code a client branches on.
+ *
+ * Empty when the sign-in succeeded. The message beside it is for a person
+ * and may change; this is what a screen branches on, so a locked account is
+ * distinguishable from a wrong password without matching English prose. The
+ * codes a sign-in can answer with are collected on the Entry journeys page.
+ */
+#+end_src
+
 *** message
 :PROPERTIES:
 :cpp_type: std::string

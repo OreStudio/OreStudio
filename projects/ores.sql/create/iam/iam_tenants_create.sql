@@ -47,6 +47,7 @@ create table if not exists "ores_iam_tenants_tbl" (
     "description" text null,
     "hostname" text not null,
     "status" text not null,
+    "is_registration_default" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -82,6 +83,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create unique index if not exists tenants_hostname_uniq_idx
 on "ores_iam_tenants_tbl" (hostname)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists tenants_registration_default_tenant_uniq_idx
+on "ores_iam_tenants_tbl" (tenant_id)
+where is_registration_default and valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_iam_tenants_insert_fn()
 returns trigger as $$

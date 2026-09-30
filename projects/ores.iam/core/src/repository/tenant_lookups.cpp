@@ -91,4 +91,18 @@ std::vector<domain::tenant> read_active_tenant_by_hostname(const ores::database:
         "Reading latest tenant by hostname.");
 }
 
+std::vector<domain::tenant> read_registration_default_tenant(const ores::database::context& ctx) {
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<tenant_entity>> |
+                       where("is_registration_default"_c == true && "valid_to"_c == max.value()) |
+                       limit(1);
+
+    return execute_read_query<tenant_entity, domain::tenant>(
+        ctx,
+        query,
+        [](const auto& entities) { return tenant_mapper::map(entities); },
+        lg(),
+        "Reading the registration default tenant.");
+}
+
 } // namespace ores::iam::repository

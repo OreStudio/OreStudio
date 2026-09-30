@@ -36,6 +36,7 @@ export interface Account {
     id: string;
     username: string;
     account_type: string;
+    account_status: string;
     full_name: string;
     email: string;
     default_party_id: string | null;

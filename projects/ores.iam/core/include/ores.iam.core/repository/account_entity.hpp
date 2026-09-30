@@ -49,6 +49,7 @@ struct account_entity {
     std::string username;
 
     std::string account_type = std::string("user");
+    std::string account_status = std::string("active");
     std::optional<std::string> full_name;
     std::string password_hash;
     std::string password_salt;

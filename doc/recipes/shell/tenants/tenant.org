@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-tenants add <code> <name> <type> <description> <hostname> <status> <reason> <commentary>
+tenants add <code> <name> <type> <description> <hostname> <status> <is_registration_default> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.tenants.put=.
 
 #+name: tenants-add
 #+begin_src ores-shell :tangle tenants-add.ores :exports none
-tenants add __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+tenants add __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-tenants set <id> <code> <name> <type> <description> <hostname> <status> <reason> <commentary> [--version <n>]
+tenants set <id> <code> <name> <type> <description> <hostname> <status> <is_registration_default> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.tenants.put=.
 
 #+name: tenants-set
 #+begin_src ores-shell :tangle tenants-set.ores :exports none
-tenants set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+tenants set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-tenants put-many --count <n> <id> <code> <name> <type> <description> <hostname> <status> <reason> <commentary>
+tenants put-many --count <n> <id> <code> <name> <type> <description> <hostname> <status> <is_registration_default> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.tenants.put_many=.
 
 #+name: tenants-put-many
 #+begin_src ores-shell :tangle tenants-put-many.ores :exports none
-tenants put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+tenants put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =delete=

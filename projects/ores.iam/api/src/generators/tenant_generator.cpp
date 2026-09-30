@@ -62,6 +62,7 @@ domain::tenant generate_synthetic_tenant(utility::generation::generation_context
     r.description = std::string(faker::lorem::sentence());
     r.hostname = std::string(faker::word::noun()) + ".example.com" + "-" + std::to_string(idx);
     r.status = "active";
+    r.is_registration_default = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

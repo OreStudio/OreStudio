@@ -47,6 +47,7 @@ struct tenant_write {
     std::string description;
     std::string hostname;
     std::string status;
+    bool is_registration_default;
 };
 
 struct tenant_change {

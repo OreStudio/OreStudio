@@ -53,6 +53,7 @@ struct tenant_entity {
     std::optional<std::string> description;
     std::string hostname;
     std::string status;
+    bool is_registration_default = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

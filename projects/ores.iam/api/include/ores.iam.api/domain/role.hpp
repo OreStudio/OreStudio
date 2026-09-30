@@ -91,6 +91,15 @@ struct role final {
     std::string description;
 
     /**
+     * @brief Whether a self-registered account in this tenant receives this role. At most one live
+     * role per tenant may hold it.
+     *
+     * The flag replaces the hard-coded name the registration path used to assign. A flag on the row
+     * cannot misspell a role that does not exist, which is the failure mode a stored name has.
+     */
+    bool is_registration_default = false;
+
+    /**
      * @brief Username of the person who last modified this role.
      */
     std::string modified_by;

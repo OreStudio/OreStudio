@@ -48,6 +48,7 @@ domain::tenant tenant_mapper::map(const tenant_entity& v) {
     r.description = v.description.value_or("");
     r.hostname = v.hostname;
     r.status = v.status;
+    r.is_registration_default = v.is_registration_default;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -73,6 +74,7 @@ tenant_entity tenant_mapper::map(const domain::tenant& v) {
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.hostname = v.hostname;
     r.status = v.status;
+    r.is_registration_default = v.is_registration_default;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

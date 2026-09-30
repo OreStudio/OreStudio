@@ -46,6 +46,7 @@ export interface PartyWrite {
     business_center_code: string;
     status: string;
     image_id: string | null;
+    is_registration_default: boolean;
 }
 
 export interface PartyChange {

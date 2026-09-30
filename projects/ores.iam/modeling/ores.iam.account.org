@@ -117,6 +117,29 @@ accounts can login with password, while =service=, =algorithm= and
 std::string("user")
 #+end_src
 
+** account_status
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'active'
+:default_value: std::string("active")
+:END:
+
+Lifecycle status of the account, validated against =ores.iam.account_status=.
+An account is =active= when it has everything it needs to sign in. It is
+=pending= when an administrator has not finished setting it up: the account
+exists, but it holds no party association, so sign-in refuses it with its own
+code.
+
+An account that registers into a tenant which nominates no default party is
+created =pending=. An administrator who gives it its first party moves it to
+=active=; that transition belongs to the roster's journey and not to a timer.
+
+#+begin_src cpp :name generator
+std::string("active")
+#+end_src
+
 ** username
 :PROPERTIES:
 :type:        text
@@ -387,6 +410,7 @@ Reporting line, validated against this same table when set.
 | column       | validation_function               |
 |--------------+-----------------------------------|
 | account_type | ores_iam_validate_account_type_fn |
+| account_status | ores_iam_validate_account_status_fn |
 
 * C++
 

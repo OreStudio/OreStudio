@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-roles add <name> <description> <reason> <commentary>
+roles add <name> <description> <is_registration_default> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.roles.put=.
 
 #+name: roles-add
 #+begin_src ores-shell :tangle roles-add.ores :exports none
-roles add __none__ __none__ system.new_record generated_script
+roles add __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-roles set <id> <name> <description> <reason> <commentary> [--version <n>]
+roles set <id> <name> <description> <is_registration_default> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.roles.put=.
 
 #+name: roles-set
 #+begin_src ores-shell :tangle roles-set.ores :exports none
-roles set 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+roles set 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-roles put-many --count <n> <id> <name> <description> <reason> <commentary>
+roles put-many --count <n> <id> <name> <description> <is_registration_default> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.roles.put_many=.
 
 #+name: roles-put-many
 #+begin_src ores-shell :tangle roles-put-many.ores :exports none
-roles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+roles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =delete=

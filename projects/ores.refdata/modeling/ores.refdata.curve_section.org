@@ -84,7 +84,6 @@ std::string(faker::lorem::sentence())
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_sections_tbl
-:rls_tenant_isolation: true
 :END:
 
 * C++

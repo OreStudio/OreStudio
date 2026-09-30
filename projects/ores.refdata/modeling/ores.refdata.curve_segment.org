@@ -141,7 +141,6 @@ The order the document wrote the segment in, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_segments_tbl
-:rls_tenant_isolation: true
 :END:
 
 ** Checks

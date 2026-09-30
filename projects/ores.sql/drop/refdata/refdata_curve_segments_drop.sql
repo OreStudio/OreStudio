@@ -18,7 +18,6 @@
  *
  */
 
-drop policy if exists curve_segments_tbl_tenant_isolation_policy on "ores_refdata_curve_segments_tbl";
 drop rule if exists ores_refdata_curve_segments_delete_rule on "ores_refdata_curve_segments_tbl";
 drop trigger if exists ores_refdata_curve_segments_insert_trg on "ores_refdata_curve_segments_tbl";
 drop function if exists ores_refdata_curve_segments_insert_fn;

@@ -222,7 +222,6 @@ the export restores the document's order from it.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_definitions_tbl
-:rls_tenant_isolation: true
 :END:
 
 ** Checks

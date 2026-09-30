@@ -1,0 +1,154 @@
+# A workflow step's deadline, walked live
+
+Environment: eager_maxwell (linux-clang-debug-make), web/BFF on 127.0.0.1:21402,
+NATS on 21405, workflow service on the system tenant.
+
+The claim this file proves: a step that goes silent is failed by the engine, and
+the failure names the subject that never answered and what the engine knows
+about the service that owns it. A run whose service is dead therefore stops being
+`in_progress` for ever, and a person reads a cause instead of a step that looks
+busy.
+
+## How the runs were arranged
+
+`ores.marketdata.service` was stopped, so every command to
+`marketdata.v1.market-data-observations.publish-from-dq` was dropped by the bus
+with no subscriber and no message, which is the failure the engine cannot see by
+itself. A party was then added through the journey's own route, as the tenant
+administrator of `probe`:
+
+    POST /api/provision-party
+      {"fullName":"PROBE DEADLINE LIMITED","shortCode":"PROBEDEAD","lei":"529900GP8WL0X41AQI95"}
+    → {"success":true,"instanceId":"5359a53d-d064-48b7-b450-9c491b28167c", ...}
+
+The party stage hands its work to a bundle run, and that bundle run has a step
+that publishes market data. So one live run exercises both ends of the chain: a
+step whose service is gone, and the step above it that is waiting on that step.
+
+## What each clock was given
+
+    data_step_timeout            900s   a step that publishes or imports data
+    orchestrating_step_timeout  1200s   a step that waits on another run
+    write_step_timeout           120s   a step that is a write or a handshake
+    step_publish_timeout        7200s   a caller's patience with a nested run,
+                                        which is a backstop and not a deadline
+
+The run states its budgets in the snapshot the engine materialises at start, so
+the numbers a run is judged by are the ones it was started with:
+
+    select materialised_steps_json from ores_workflow_workflow_instances_tbl
+     where id = '4f70c09b-c825-4052-9002-11fe85eb2911';
+
+    [{"name":"ore.report_definitions",...,"timeout_seconds":900},
+     {"name":"marketdata.fx_driver_rates",...,"timeout_seconds":900}, ...]
+
+## What the engine recorded
+
+Fifteen minutes after the dispatch, the pass failed the silent step inside the
+bundle run:
+
+    select s.name, st.name as state, s.error
+      from ores_workflow_workflow_steps_tbl s
+      join ores_dq_fsm_states_tbl st on st.id = s.state_id
+     where s.name = 'marketdata.fx_driver_rates';
+
+    marketdata.fx_driver_rates | failed |
+      The step did not answer within 15m of its command being published
+      (subject marketdata.v1.market-data-observations.publish-from-dq);
+      it has been silent for 15m 4s. Nothing has reported as the marketdata
+      service since this engine started, so the command may have had no handler.
+
+That is the whole point of the change: the subject that never answered, how long
+it has been silent, and the service that owns it.
+
+The step above it -- the provisioning step, which is not itself broken but is
+waiting on work underneath it -- was failed by the same machinery, and the engine
+said something different about it, because the difference is real:
+
+    select s.name, st.name as state, s.error
+      from ores_workflow_workflow_steps_tbl s
+     where s.workflow_id = '5359a53d-d064-48b7-b450-9c491b28167c';
+
+    provision_party | failed |
+      The step did not answer within 15m of its command being published
+      (subject iam.v1.tenants.provision-step); it has been silent for 15m 24s.
+      The iam service was still reporting when the command was published,
+      so the command reached a service that did not finish the step.
+
+Both branches of the presence text were therefore exercised by one live run: a
+component that never reported, and a component that reported and still did not
+finish. The run itself stopped in `failed` with that sentence, and it stopped
+rather than rolling back -- which is what the engine does on a deadline whatever
+the definition's policy declares.
+
+## A rule this walk found broken, and what it cost
+
+The parent's sentence above is true and it is not good enough. The party stage
+and the bundle step it waited on both stated the *same* budget, so the outer
+deadline fired seconds after the inner one and the run recorded the symptom
+instead of the cause: the cause was one level down, in a step the sentence does
+not name.
+
+The fix is the rule the definition contract now states -- a step that waits on
+another run outlasts the steps inside it -- and `orchestrating_step_timeout` is
+the budget that says so. The re-run after that fix is the one below.
+
+## The re-run, after the budget fix
+
+The same arrangement again, with the orchestration budget in place, through the
+journey's own route:
+
+    POST /api/provision-party
+      {"fullName":"PROBE CAUSE LIMITED","shortCode":"PROBECAUSE","lei":"529900GP8WL0X41AQI95"}
+    → {"success":true,"instanceId":"43c2a150-5dc8-43bc-9a09-234e8795843b", ...}
+
+Fifteen minutes later the run failed, and what it recorded is the cause rather
+than the symptom -- the silent step's own sentence, carried up by the step that
+was waiting on it:
+
+    select st.name, i.error from ores_workflow_workflow_instances_tbl i
+      join ores_dq_fsm_states_tbl st on st.id = i.state_id
+     where i.id = '43c2a150-5dc8-43bc-9a09-234e8795843b';
+
+    failed | workflow failed: The step did not answer within 15m of its command
+             being published (subject
+             marketdata.v1.market-data-observations.publish-from-dq); it has been
+             silent for 15m. Nothing has reported as the marketdata service
+             since this engine started, so the command may have had no handler.
+
+    select s.step_index, s.name, st.name as state, s.error ...
+     where s.workflow_id = '43c2a150-5dc8-43bc-9a09-234e8795843b';
+
+    0 | provision_party | failed | workflow failed: The step did not answer
+      within 15m ... (subject marketdata.v1.market-data-observations.publish-from-dq)
+      ... Nothing has reported as the marketdata service ...
+
+The party stage states 1200 seconds, the step it waits on states 900, and the
+caller's backstop states 7200, so the only clock that fires is the one whose
+work it actually was. That ordering is the rule the definition contract states,
+and this run is what it buys: a person reads which service to bring back.
+
+## A defect the watch itself had, found the same way
+
+The first live pass did not reach the silent step at all. A leftover run in a
+test tenant that had been dropped could not be failed -- the store refuses a row
+whose tenant is gone -- and the exception aborted the whole pass, so every
+deadline behind that entry waited, pass after pass. The pass now judges each
+entry in its own right, drops the ones it cannot reach, and says so once. The
+entry that starved the pass was invisible from outside: the only sign was the
+watch's own log line:
+
+    Deadline watch pass failed: Repository error: Executing INSERT failed:
+    ERROR: Invalid or inactive tenant_id: 6741b517-... Tenant must exist and be
+    active or bootstrapping.
+
+## What this walk does not prove
+
+- *A retry after a live deadline, against the real server.* The engine's cases
+  cover it, including the late answer that arrives after the deadline: the
+  failure stands, and the retry re-dispatches the step under its own identity.
+- *Automatic recovery when a service returns.* Nothing resumes a stopped run on
+  its own: the engine fails it and a person retries, which is what the rail
+  offers.
+- *A deadline on a step whose service comes back mid-flight.* Covered by the
+  engine's cases as a late answer, not by a live walk.

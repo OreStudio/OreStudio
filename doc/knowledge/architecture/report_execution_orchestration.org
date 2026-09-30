@@ -131,11 +131,16 @@ Note also that a phase which answered with warnings rather than plain completion
 is not compensated at all, because the engine walks only the steps whose state is
 exactly completed. No reporting phase answers with warnings today.
 
-Two failure modes are not covered by this and must be designed for:
+A phase that never answers is covered by the step's deadline: every step states
+how long it may run, the engine fails the one that outlives it and stops the run,
+and the failure names the subject and what the engine knows about the service that
+owns it. The two phases here that wait on the compute grid state a longer budget
+than the ones that prepare it, because a pricing run takes as long as it takes.
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]]
+states the rule.
 
-- *A phase that never answers.* With no acknowledgement and no timeout, a phase
-  whose service is unavailable leaves the run in progress indefinitely and is
-  re-dispatched on every restart. The run needs a deadline.
+One failure mode is not covered by this and must be designed for:
+
 - *A phase list the engine cannot satisfy.* An unknown workflow type is logged
   and dropped while the trigger has already answered that the run started, so a
   mis-selected chain looks like a success. A run must fail when its chain cannot

@@ -32,6 +32,21 @@
 
 namespace ores::reporting::workflow {
 
+// The budgets a step states belong to the engine's vocabulary, so a definition
+// reads them from one place rather than inventing its own numbers.
+using ores::workflow::service::data_step_timeout;
+using ores::workflow::service::write_step_timeout;
+
+/**
+ * @brief The budget for a step that waits on the compute grid.
+ *
+ * A pricing run is the tenant's own work and takes as long as it takes: a
+ * large portfolio on a small grid is hours, not minutes. The hour here is a
+ * deadline for a grid that has gone, not a target for how fast a run should
+ * be; a deployment whose runs are longer states its own.
+ */
+inline constexpr std::chrono::seconds compute_step_timeout{3600};
+
 /**
  * @brief The run configuration codes a report definition states.
  *
@@ -121,6 +136,7 @@ template <typename Command>
     s.name = "gather_trades";
     s.description = "Fetch trades matching the report's book scope.";
     s.command_subject = std::string(gather_trades_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -146,6 +162,7 @@ template <typename Command>
     s.name = "gather_market_data";
     s.description = "Fetch market data (price series) for the report period.";
     s.command_subject = std::string(gather_market_data_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -172,6 +189,7 @@ template <typename Command>
     s.name = "assemble_bundle";
     s.description = "Assemble aggregated input data bundle from trades and market data.";
     s.command_subject = std::string(assemble_bundle_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -207,6 +225,7 @@ template <typename Command>
     s.name = "resolve_prepared_input";
     s.description = "Resolve the prepared input archive the run configuration names.";
     s.command_subject = std::string(resolve_prepared_input_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -233,6 +252,7 @@ template <typename Command>
     s.name = "prepare_ore_package";
     s.description = "Package trades and market data into ORE XML tarballs for compute.";
     s.command_subject = std::string(prepare_ore_package_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -271,6 +291,7 @@ template <typename Command>
     s.name = "submit_compute";
     s.description = "Submit ORE packages to the compute grid for pricing.";
     s.command_subject = std::string(submit_compute_request::nats_subject);
+    s.timeout = compute_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command =
@@ -300,6 +321,7 @@ template <typename Command>
     s.name = "collect_compute_results";
     s.description = "Collect and aggregate compute grid results.";
     s.command_subject = std::string(collect_compute_results_request::nats_subject);
+    s.timeout = compute_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -332,6 +354,7 @@ template <typename Command>
     s.name = "ignore_compute_results";
     s.description = "Record the compute batch and leave its results unread.";
     s.command_subject = std::string(ignore_compute_results_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
@@ -361,6 +384,7 @@ template <typename Command>
     s.name = "finalise";
     s.description = "Mark the report instance as completed.";
     s.command_subject = std::string(finalise_report_request::nats_subject);
+    s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,

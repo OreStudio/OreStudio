@@ -21,6 +21,7 @@
 #define ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 
 #include "ores.workflow.api/export.hpp"
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -113,6 +114,22 @@ struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
     std::string compensation_subject;
 
     /**
+     * @brief How long the step may run before the engine declares it dead.
+     *
+     * The definition states it, because how long a step may take is knowledge
+     * the step's author has and no default is right for both a write that
+     * answers in milliseconds and an import that publishes tens of thousands
+     * of rows. A step states no deadline and the engine refuses the run: a
+     * command published into silence is the one failure nothing else in the
+     * engine can see.
+     *
+     * A run that waits on another run budgets more than the steps it waits
+     * for, so the inner deadline is what fails and the outer wait sees a
+     * reason rather than running out of its own patience first.
+     */
+    std::chrono::seconds timeout{};
+
+    /**
      * @brief Builds the step command payload.
      *
      * @param request_json  The workflow instance's originating request JSON.
@@ -150,7 +167,52 @@ struct ORES_WORKFLOW_API_EXPORT materialised_step {
     std::string description;
     std::string command_subject;
     std::string compensation_subject;
+    /**
+     * @brief The deadline the run was started with, in seconds.
+     *
+     * Carried with the run rather than read from the definition, because the
+     * engine must be able to say when a step should have answered for a run
+     * that a later build started: a definition that shortened a deadline would
+     * otherwise expire runs that were started under a longer one.
+     */
+    std::uint32_t timeout_seconds = 0;
 };
+
+/**
+ * @brief The budget for a step whose work is publishing or importing data.
+ *
+ * Such a step hands its work to another run and waits for it, so its budget is
+ * minutes rather than seconds. A run that waits on another run states more than
+ * the steps it waits for, so the inner deadline is the one that fails and the
+ * outer wait sees a reason instead of running out of patience first.
+ */
+inline constexpr std::chrono::seconds data_step_timeout{900};
+
+/**
+ * @brief The budget for a step that waits on another run.
+ *
+ * A step that hands its work to another run states more than the steps inside
+ * that run do. Its deadline is the second clock on the same work, and if the
+ * two are equal the outer one can fire first and report that it did not finish
+ * -- which is the least useful thing it could say, because the cause is one
+ * level down: the step inside failed, and it knew why. The margin covers the
+ * dispatch and the reporting either side of the inner deadline.
+ *
+ * A live proof of this rule's absence is in the task that introduced the
+ * deadline: a party stage and the bundle run it waited on both stated the data
+ * budget, and the party stage expired one second after the step that actually
+ * had something to say.
+ */
+inline constexpr std::chrono::seconds orchestrating_step_timeout{1200};
+
+/**
+ * @brief The budget for a step whose work is a write or a handshake.
+ *
+ * Such a step answers in milliseconds when it answers at all, so a minute-scale
+ * budget is already generous: the deadline is there to catch a service that has
+ * gone, not to police a slow one.
+ */
+inline constexpr std::chrono::seconds write_step_timeout{120};
 
 /**
  * @brief What a definition asks the engine to do when one of its steps fails.

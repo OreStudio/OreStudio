@@ -33,6 +33,12 @@
 
 namespace ores::iam::workflow {
 
+// The budgets a step states belong to the engine's vocabulary, so a definition
+// reads them from one place rather than inventing its own numbers.
+using ores::workflow::service::data_step_timeout;
+using ores::workflow::service::orchestrating_step_timeout;
+using ores::workflow::service::write_step_timeout;
+
 /// The workflow type a provision tenant run declares in its start message. It is
 /// not the request's subject: =iam.v1.tenants.provision= starts the run, and the
 /// run names this type.
@@ -93,6 +99,14 @@ inline constexpr std::string_view provision_step_kinds[] = {publish_bundle_step_
 struct step_kind_words {
     std::string_view label;
     std::string_view description;
+    /**
+     * @brief How long the kind may run before the engine fails it.
+     *
+     * The value belongs beside the words for the same reason they do: how long
+     * a kind takes is knowledge about the kind, and a new kind cannot be added
+     * here without stating both.
+     */
+    std::chrono::seconds timeout;
 };
 
 /**
@@ -105,28 +119,38 @@ struct step_kind_words {
     if (kind == publish_bundle_step_kind)
         return {"Publish the reference data",
                 "Publishes the reference data the tenant works from: the bundles the starting "
-                "point orders, and the datasets those bundles name."};
+                "point orders, and the datasets those bundles name.",
+                orchestrating_step_timeout};
     if (kind == import_lei_hierarchy_step_kind)
         return {"Import the legal entities",
                 "Reads the legal entity the starting point names by its LEI and the entities it "
-                "consolidates, and publishes them as the tenant's parties."};
+                "consolidates, and publishes them as the tenant's parties.",
+                orchestrating_step_timeout};
     if (kind == provision_party_step_kind)
         return {"Provision the parties",
                 "Publishes each party's reference data, records the legal entity it was built "
-                "from, activates it, marks its onboarding complete and joins the caller to it."};
+                "from, activates it, marks its onboarding complete and joins the caller to it.",
+                orchestrating_step_timeout};
     if (kind == load_staff_step_kind)
         return {"Load the staff",
                 "Creates an account for each person the starting point lists, each in its own "
-                "party."};
+                "party.",
+                orchestrating_step_timeout};
     if (kind == attach_photos_step_kind)
         return {"Attach the photographs",
-                "Gives the accounts their photographs, and the tenant's party its logo."};
+                "Gives the accounts their photographs, and the tenant's party its logo.",
+                write_step_timeout};
     if (kind == start_market_feeds_step_kind)
         return {"Start the market feeds",
-                "Starts the synthetic market data the tenant's curves and prices are built from."};
+                "Starts the synthetic market data the tenant's curves and prices are built from.",
+                orchestrating_step_timeout};
     if (kind == complete_provisioning_step_kind)
-        return {"Finish", "Marks the tenant ready: it stops bootstrapping and becomes active."};
-    return {kind, {}};
+        return {"Finish",
+                "Marks the tenant ready: it stops bootstrapping and becomes active.",
+                write_step_timeout};
+    // A kind this build does not execute, which is refused before a run exists
+    // to order it; the budget it states is the one that would never be reached.
+    return {kind, {}, write_step_timeout};
 }
 
 /// Whether the catalogue knows the kind.
@@ -266,6 +290,7 @@ make_step(const provision_tenant_workflow_request& run,
     step.description = std::string(words.description);
     step.command_subject = std::string(provision_tenant_step_subject);
     step.compensation_subject = "";
+    step.timeout = words.timeout;
 
     provision_tenant_step_command command;
     command.kind = kind;

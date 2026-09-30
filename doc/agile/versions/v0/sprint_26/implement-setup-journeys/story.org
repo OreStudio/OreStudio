@@ -112,6 +112,7 @@ state and the progress are real.
 | [[id:C7487AE2-CC23-4FF3-AAB1-E4FF30F331CD][Mop up the provisioning surface and the synthetic organisation]] | DONE | 2026-09-29 | 2026-09-29 | Rename the first-run command to bootstrap setup, retire the generated duplicates of the provision verbs, delete the synthetic organisation generator and its recipe, and close the story with its documents brought up to date. |
 | [[id:77CFDF61-0AE6-4176-9ADA-2D15207767EA][Build the New tenant and New party journeys and the scripted browser proof]] | STARTED | 2026-09-29 | | Two acceptance lines of the story are unmet: the New tenant and New party journeys are not journeys of their own (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database. |
 | [[id:39AE2A8D-9680-4395-A9E9-596217C13593][Name the bootstrap commands consistently]] | DONE | 2026-09-29 | 2026-09-29 | The bootstrap menu repeats its own name in one of its verbs: a caller types bootstrap bootstrap-status. The generated command verb comes from the message name, and the message is named bootstrap_status_request, so the model needs a way to state the verb it wants. |
+| [[id:EE8AD3DD-73FE-495E-B4A7-B899729C87D9][Give a workflow step a deadline the engine enforces]] | BACKLOG | | | A step declares how long it may run and the engine fails it when it does not answer, so a run whose service is gone stops being in_progress forever and a waiter sees the truth. |
 
 * Plan
 

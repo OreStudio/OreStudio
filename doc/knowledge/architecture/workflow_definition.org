@@ -38,10 +38,20 @@ Regenerate with
 =plantuml -tpng doc/knowledge/architecture/workflow_definition.puml=.
 
 A step definition carries a name, a description, the subject that answers
-its command, an optional subject that answers its compensation, a function
-that builds the command payload, and an optional function that builds the
-compensation payload. A step is addressed by its name, so a later step
-reads the result of an earlier one by name rather than by position.
+its command, an optional subject that answers its compensation, the deadline
+it must answer inside, a function that builds the command payload, and an
+optional function that builds the compensation payload. A step is addressed by
+its name, so a later step reads the result of an earlier one by name rather
+than by position.
+
+The deadline is required, and the engine refuses a run whose definition built a
+step without one: a step that states none is a command the engine would wait on
+for ever, because nothing else in the dispatch path can tell a service that has
+died from one that is slow. Definitions read their budgets from
+=data_step_timeout= and =write_step_timeout=, which the definition contract in
+=ores.workflow.api= states, and a step whose work is neither states its own.
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]]
+states how the engine enforces it and what a run does when it expires.
 
 ** Definitions are code
 
@@ -66,7 +76,9 @@ Four changes add a workflow, and they belong to two owners.
 2. The owning component implements the handlers that answer the step
    command subjects.
 3. The workflow service registers the definition in its registrar, beside
-   the definitions of the other components.
+   the definitions of the other components. Every step it builds must state a
+   deadline, and the engine refuses a run whose definition states none, so a
+   new step kind states its budget where it states its words.
 4. The caller publishes a start message that names the new type.
 
 A start message that names a type the registry does not hold is refused at

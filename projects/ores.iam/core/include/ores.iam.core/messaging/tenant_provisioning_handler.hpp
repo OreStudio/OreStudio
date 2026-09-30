@@ -635,9 +635,19 @@ private:
         std::string tenant_id;
     };
 
-    /// How long a nested publication may take before the step gives up. The
-    /// base bundle is the slowest the ACME path published, and it waited 1500s.
-    static constexpr std::chrono::seconds step_publish_timeout{1500};
+    /**
+     * @brief How long a step waits on the publication it started.
+     *
+     * A backstop for a workflow service that has gone, and not a deadline for
+     * the work: the engine fails a step that outlives the budget its definition
+     * states, so this patience sits above every budget a definition states and
+     * the engine's deadline is always the one that fails. The value it replaces
+     * was read as a timetable -- "the base bundle is the slowest the ACME path
+     * published, and it waited 1500s" -- when 1500s was the length of a hang
+     * that a dead service produced, which is how a timeout came to name a step
+     * instead of a cause.
+     */
+    static constexpr std::chrono::seconds step_publish_timeout{7200};
 
     /**
      * @brief Resolves the administrator a step acts as.

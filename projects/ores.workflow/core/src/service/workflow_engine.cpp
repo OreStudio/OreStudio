@@ -41,8 +41,83 @@ std::string materialise_steps_json(const std::vector<workflow_step_def>& steps) 
     std::vector<materialised_step> ms;
     ms.reserve(steps.size());
     for (const auto& s : steps)
-        ms.push_back({s.name, s.label, s.description, s.command_subject, s.compensation_subject});
+        ms.push_back({s.name,
+                      s.label,
+                      s.description,
+                      s.command_subject,
+                      s.compensation_subject,
+                      static_cast<std::uint32_t>(s.timeout.count())});
     return rfl::json::write(ms);
+}
+
+/**
+ * @brief The deadline each step of a run was started with, by step name.
+ *
+ * The run is the authority on this rather than the definition: a run started
+ * under a longer deadline keeps it, however the definition changes afterwards.
+ * A run whose snapshot cannot be read yields no deadlines, and the expiry pass
+ * leaves such a run alone rather than guessing at one -- a run it cannot
+ * reason about is a run it must not kill.
+ */
+std::unordered_map<std::string, std::chrono::seconds>
+deadlines_from_snapshot(const std::string& materialised_steps_json) {
+    std::unordered_map<std::string, std::chrono::seconds> deadlines;
+    if (materialised_steps_json.empty())
+        return deadlines;
+    const auto parsed = rfl::json::read<std::vector<materialised_step>>(materialised_steps_json);
+    if (!parsed)
+        return deadlines;
+    for (const auto& step : *parsed)
+        deadlines.emplace(step.name, std::chrono::seconds{step.timeout_seconds});
+    return deadlines;
+}
+
+/**
+ * @brief The reason a built step list cannot be run, or nothing when it can.
+ *
+ * A step with no deadline is a command the engine would wait on for ever, and
+ * no default is right for it: the number depends on what the step does. The
+ * refusal is here rather than at registration because a definition builds its
+ * steps per run, so this is the first place a step exists at all.
+ */
+std::optional<std::string> undeclared_deadline(const std::vector<workflow_step_def>& steps) {
+    for (const auto& step : steps)
+        if (step.timeout.count() <= 0)
+            return "The definition built step '" + step.name +
+                   "' with no deadline, so the engine would wait on it for ever.";
+    return std::nullopt;
+}
+
+/**
+ * @brief A duration a person reads, at the resolution a log is read at.
+ */
+std::string describe_seconds(std::chrono::seconds value) {
+    const auto total = value.count();
+    const auto minutes = total / 60;
+    const auto seconds = total % 60;
+    if (minutes == 0)
+        return std::to_string(seconds) + "s";
+    if (seconds == 0)
+        return std::to_string(minutes) + "m";
+    return std::to_string(minutes) + "m " + std::to_string(seconds) + "s";
+}
+
+/**
+ * @brief The component a command subject belongs to.
+ *
+ * Subjects are @c <component>.v1.<resource>.<verb> throughout, and a service
+ * reports itself as @c ores.<component>.service, so the first token is what
+ * ties a step to the service that owes it an answer.
+ */
+std::string component_of_subject(const std::string& subject) {
+    const auto dot = subject.find('.');
+    return dot == std::string::npos ? subject : subject.substr(0, dot);
+}
+
+/// Whether a service name is the one a component's commands belong to.
+bool service_owns_component(const std::string& service_name, const std::string& component) {
+    return service_name == "ores." + component + ".service" ||
+           service_name.starts_with("ores." + component + ".");
 }
 
 } // namespace
@@ -132,8 +207,27 @@ void workflow_engine::stamp_command_published(const boost::uuids::uuid& step_id)
     if (rows.empty())
         return;
     auto step = rows.front();
+    // A re-dispatch -- a retry, or a recovery -- starts the step's silence
+    // again, so the deadline it is judged by starts again with it.
     step.command_published_at = std::chrono::system_clock::now();
     step_repo_.write(ctx_, step);
+}
+
+void workflow_engine::note_awaiting(const domain::workflow_step& step,
+                                    const boost::uuids::uuid& instance_id,
+                                    const boost::uuids::uuid& tenant_id) {
+    const auto instance = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    if (instance.empty())
+        return;
+    const auto deadlines = deadlines_from_snapshot(instance.front().materialised_steps_json);
+    const auto budget = deadlines.find(step.name);
+    if (budget == deadlines.end() || budget->second.count() <= 0)
+        return;
+    awaiting_.insert_or_assign(boost::uuids::to_string(step.id),
+                               awaiting_step{.instance_id = instance_id,
+                                             .tenant_id = tenant_id,
+                                             .name = step.name,
+                                             .budget = budget->second});
 }
 
 void workflow_engine::set_step_state(const boost::uuids::uuid& step_id,
@@ -187,6 +281,14 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     const auto steps = def->build_steps(instance.request_json,
                                         boost::uuids::to_string(instance.tenant_id.to_uuid()),
                                         instance.correlation_id);
+
+    if (const auto undeclared = undeclared_deadline(steps)) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Cannot advance workflow " << instance.type << ": " << *undeclared;
+        set_instance_state(instance.id, instance_states_.require("failed"), "", *undeclared);
+        publish_status_event(instance.id, instance.tenant_id.to_uuid());
+        return;
+    }
 
     if (next_index >= static_cast<int>(steps.size())) {
         BOOST_LOG_SEV(lg(), error)
@@ -253,7 +355,8 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
     // Persist before publishing (ensures restart can re-dispatch).
     step_repo_.write(ctx_, next_step);
 
-    // Publish the command.
+    // Publish the command, and record what its deadline is judged by.
+    note_awaiting(next_step, instance.id, instance.tenant_id.to_uuid());
     publish_command(next_step, instance.id, instance.tenant_id.to_uuid());
 
     // Record that the command was published.
@@ -425,12 +528,36 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     }
     const auto* step = &found_steps.front();
 
-    // Guard: duplicate event if step is already out of in_progress.
+    /*
+     * Guard: an event for a step the engine is no longer waiting on.
+     *
+     * Two arrivals look alike and mean different things. A duplicate is a
+     * service that published its outcome twice, which changes nothing. A late
+     * answer is a service that finished after the engine gave up on it -- the
+     * deadline pass has already failed the step and stopped the run -- and the
+     * work it did is real. Either way the engine keeps the state it recorded,
+     * because the run's record is the one a person acted on; what differs is
+     * what the log says, and a late answer is worth saying out loud. A retry
+     * re-dispatches this step under the same identity, so the same service
+     * replays the outcome it already holds instead of doing the work twice.
+     */
     if (step->state_id != step_states_.require("in_progress")) {
-        BOOST_LOG_SEV(lg(), info) << "Duplicate step-completed event for step " << event.step_id
-                                  << " (state is not in_progress); ignoring.";
+        const bool late_answer =
+            step->state_id == step_states_.require("failed") && !step->error.empty();
+        if (late_answer)
+            BOOST_LOG_SEV(lg(), warn)
+                << "Step " << event.step_id << " (" << step->name
+                << ") answered after the engine stopped waiting for it; the run keeps the "
+                   "failure it recorded: "
+                << step->error;
+        else
+            BOOST_LOG_SEV(lg(), info) << "Duplicate step-completed event for step " << event.step_id
+                                      << " (state is not in_progress); ignoring.";
         return;
     }
+
+    // The engine is no longer waiting on this step, whatever the outcome says.
+    awaiting_.erase(std::string(event.step_id));
 
     // Serialize log entries (empty string when there are none).
     const auto log_json = event.log.empty() ? std::string{} : rfl::json::write(event.log);
@@ -539,6 +666,11 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     std::vector<workflow_step_def> steps;
     try {
         steps = def->build_steps(req.request_json, req.tenant_id, req.correlation_id);
+        if (const auto undeclared = undeclared_deadline(steps)) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Cannot run workflow type " << req.type << ": " << *undeclared;
+            return;
+        }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Cannot build the step list for workflow type " << req.type << ": " << e.what();
@@ -630,6 +762,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
 
         step_repo_.write(ctx_, step);
         step_created = true;
+        note_awaiting(step, instance_id, tenant_id);
         publish_command(step, instance_id, tenant_id);
         stamp_command_published(step_id);
 
@@ -731,7 +864,13 @@ void workflow_engine::recover_in_progress() {
                     << "Re-dispatching step " << s.step_index << " (" << s.name << ") for instance "
                     << boost::uuids::to_string(instance.id);
 
+                note_awaiting(s, instance.id, instance.tenant_id.to_uuid());
                 publish_command(s, instance.id, instance.tenant_id.to_uuid());
+                // The deadline measures how long this dispatch has been silent,
+                // so the step that was in flight when the fleet went down gets
+                // its full budget again rather than the one it was already
+                // part-way through.
+                stamp_command_published(s.id);
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Recovery failed for instance "
@@ -740,6 +879,167 @@ void workflow_engine::recover_in_progress() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Workflow recovery pass complete.";
+}
+
+std::string workflow_engine::deadline_failure_text(const domain::workflow_step& step,
+                                                   std::chrono::seconds budget,
+                                                   std::chrono::seconds silent_for) {
+    std::string reason = "The step did not answer within " + describe_seconds(budget) +
+                         " of its command being published (subject " + step.command_subject +
+                         "); it has been silent for " + describe_seconds(silent_for) + ".";
+
+    // What the engine knows about the service that owes this step an answer.
+    // It states the evidence and stops there: a service that is running but
+    // wedged reports for duty as well, so presence is not proof of handling.
+    const auto component = component_of_subject(step.command_subject);
+    std::optional<std::chrono::system_clock::time_point> last_seen;
+    {
+        const std::lock_guard<std::mutex> guard(service_last_seen_mutex_);
+        for (const auto& [name, seen_at] : service_last_seen_) {
+            if (service_owns_component(name, component) && (!last_seen || seen_at > *last_seen))
+                last_seen = seen_at;
+        }
+    }
+
+    if (!last_seen) {
+        reason += " Nothing has reported as the " + component +
+                  " service since this engine started, so the command may have had no handler.";
+        return reason;
+    }
+    if (step.command_published_at && *last_seen < *step.command_published_at) {
+        reason += " The " + component +
+                  " service was not reporting when the command was "
+                  "published: it last reported " +
+                  describe_seconds(std::chrono::duration_cast<std::chrono::seconds>(
+                      *step.command_published_at - *last_seen)) +
+                  " before it.";
+        return reason;
+    }
+    reason += " The " + component +
+              " service was still reporting when the command was published, so the command "
+              "reached a service that did not finish the step.";
+    return reason;
+}
+
+void workflow_engine::start_deadline_watch() {
+    deadline_watch_ =
+        std::jthread([this](std::stop_token stop) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Deadline watch started: a step that outlives the deadline its run states is "
+                   "failed every "
+                << expiry_pass_interval.count() << "s.";
+            constexpr auto slice = std::chrono::milliseconds{250};
+            while (!stop.stop_requested()) {
+                // Sleep in slices so a stop is honoured promptly rather than at the
+                // end of a whole interval.
+                for (auto waited = std::chrono::milliseconds{0};
+                     waited < expiry_pass_interval && !stop.stop_requested();
+                     waited += slice) {
+                    std::this_thread::sleep_for(slice);
+                }
+                if (stop.stop_requested())
+                    break;
+                try {
+                    expire_overdue_steps();
+                } catch (const std::exception& e) {
+                    // A pass that fails must not take the watch down with it: the
+                    // next pass is the one that matters.
+                    BOOST_LOG_SEV(lg(), error) << "Deadline watch pass failed: " << e.what();
+                }
+            }
+            BOOST_LOG_SEV(lg(), info) << "Deadline watch stopped.";
+        });
+}
+
+void workflow_engine::note_service_seen(const std::string& service_name,
+                                        std::chrono::system_clock::time_point seen_at) {
+    const std::lock_guard<std::mutex> guard(service_last_seen_mutex_);
+    auto& last = service_last_seen_[service_name];
+    if (seen_at > last)
+        last = seen_at;
+}
+
+std::size_t workflow_engine::expire_overdue_steps() {
+    const std::lock_guard<std::mutex> lock(mutex_);
+    const auto now = std::chrono::system_clock::now();
+    const auto step_running = step_states_.require("in_progress");
+    const auto step_failed = step_states_.require("failed");
+
+    std::size_t expired = 0;
+    // The pass walks the steps the engine dispatched, not every run the store
+    // holds: what it is looking for is work in flight, and that is what the
+    // engine itself handed out. The step row decides whether the step is still
+    // running, so an entry that outlived its step is dropped here.
+    for (auto it = awaiting_.begin(); it != awaiting_.end();) {
+        const auto& waiting = it->second;
+        /*
+         * One entry the pass cannot judge must not starve the others.
+         *
+         * A run in a tenant that has gone -- the test tenants a case creates
+         * and drops are the everyday example -- cannot be read or failed, and
+         * an exception thrown from here would abandon every deadline behind it
+         * on this pass and on the next, because the entry stays. The entry is
+         * dropped instead: a run the engine cannot reach is not one it can
+         * fail, and saying so once is the most it can do.
+         */
+        try {
+            const auto rows = step_repo_.read_latest(ctx_, it->first);
+            if (rows.empty() || rows.front().state_id != step_running) {
+                it = awaiting_.erase(it);
+                continue;
+            }
+
+            const auto& step = rows.front();
+            // When the step was dispatched is the row's to state, because a
+            // restart, a retry and a recovery all rewrite it there.
+            if (!step.command_published_at) {
+                ++it;
+                continue;
+            }
+            const auto silent_for =
+                std::chrono::duration_cast<std::chrono::seconds>(now - *step.command_published_at);
+            if (silent_for < waiting.budget) {
+                ++it;
+                continue;
+            }
+            const auto reason = deadline_failure_text(step, waiting.budget, silent_for);
+            BOOST_LOG_SEV(lg(), error) << "Step outlived its deadline:" << " workflow="
+                                       << boost::uuids::to_string(waiting.instance_id)
+                                       << " step=" << step.name << " reason=" << reason;
+
+            set_step_state(step.id, step_failed, "", reason);
+            ++expired;
+            it = awaiting_.erase(it);
+
+            const auto instances =
+                instance_repo_.read_latest(ctx_, boost::uuids::to_string(waiting.instance_id));
+            if (instances.empty())
+                continue;
+
+            /*
+             * The run stops, whatever failure policy its definition declares.
+             *
+             * A rollback is the right answer for a step that reported that it
+             * failed, because such a step did nothing. A step that went silent is a
+             * step whose work is unknown: it may have died before writing anything,
+             * or it may be slow and about to finish. Compensating on that guess
+             * would undo a run whose work was in fact done, so the engine stops and
+             * leaves the decision to a person -- retrying is safe because a step is
+             * idempotent, and discarding is a separate action.
+             */
+            stop_on_failure(instances.front(), reason);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Dropping a step the deadline pass cannot judge: step=" << waiting.name
+                << " workflow=" << boost::uuids::to_string(waiting.instance_id)
+                << " reason=" << e.what();
+            it = awaiting_.erase(it);
+        }
+    }
+
+    if (expired > 0)
+        BOOST_LOG_SEV(lg(), warn) << "Expiry pass failed " << expired << " overdue step(s).";
+    return expired;
 }
 
 workflow_engine::retry_outcome

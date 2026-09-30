@@ -52,6 +52,7 @@ target_link_libraries(${lib_target_name}
         ores.ore.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib
+        ores.telemetry.core.lib
         sqlgen::sqlgen
         Boost::boost)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)

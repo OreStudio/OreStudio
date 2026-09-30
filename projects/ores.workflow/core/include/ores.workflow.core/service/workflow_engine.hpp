@@ -33,9 +33,14 @@
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <chrono>
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <string>
+#include <thread>
+#include <unordered_map>
 
 namespace ores::workflow::service {
 
@@ -133,6 +138,71 @@ public:
     void recover_in_progress();
 
     /**
+     * @brief Fails every step that has outlived the deadline its run states.
+     *
+     * A step command is published and the engine waits for the owning service
+     * to report the outcome. Nothing in that path notices a service that has
+     * died, a command that was dropped, or a handler that wedged: the step
+     * stays =in_progress= for good, and every waiter eventually gives up on a
+     * run that never failed. This pass is what ends that: a step whose command
+     * was published more than the run's deadline ago is failed.
+     *
+     * The run stops, whatever failure policy its definition declares. A
+     * rollback answers a step that reported that it failed, because such a step
+     * did nothing; a step nobody heard from is a step whose work is unknown, so
+     * the engine leaves the decision to a person. What it fails is retryable,
+     * which is what makes a service that comes back one retry away.
+     *
+     * The failure names the step, its command subject and how long it has been
+     * silent, together with what the engine knows about the component that owns
+     * that subject -- see =note_service_seen=.
+     *
+     * @return how many steps it failed, so a caller can log a pass that did
+     *         something without logging every pass that did nothing.
+     */
+    std::size_t expire_overdue_steps();
+
+    /**
+     * @brief Starts the clock that enforces the deadlines.
+     *
+     * A deployed engine runs this for the life of the process; a test drives
+     * =expire_overdue_steps= itself, so the pass is a method the clock calls
+     * rather than something the engine starts by existing. The watch stops and
+     * joins when the engine is destroyed.
+     */
+    void start_deadline_watch();
+
+    /**
+     * @brief Records that a service reported for duty.
+     *
+     * A component's liveness is the one thing the engine cannot observe from a
+     * step: a command published to a subject whose service is gone is dropped
+     * by the bus in silence. The heartbeats a service publishes are what say
+     * otherwise, and the engine keeps the last time it heard from each so a
+     * deadline failure can state whether the component that owns the step's
+     * subject was alive when the step was dispatched.
+     *
+     * A report is evidence and not proof: a service that is running but wedged
+     * still reports, and the engine says what it saw rather than concluding.
+     *
+     * @param service_name the canonical service name a heartbeat carries, for
+     *                     example @c ores.marketdata.service.
+     * @param seen_at      when the heartbeat arrived.
+     */
+    void note_service_seen(const std::string& service_name,
+                           std::chrono::system_clock::time_point seen_at);
+
+    /**
+     * @brief How long the engine waits between passes over the steps it
+     * waits on.
+     *
+     * A deadline is honoured to within one pass, so this is how late a failure
+     * may be. It is well below the shortest budget any definition states, so a
+     * deadline is late by a fraction of itself.
+     */
+    static constexpr std::chrono::seconds expiry_pass_interval{30};
+
+    /**
      * @brief What a retry did, so its caller can answer without reading again.
      */
     struct retry_outcome {
@@ -195,6 +265,40 @@ private:
 
     /** @brief Stamps a step as having published its command. */
     void stamp_command_published(const boost::uuids::uuid& step_id);
+
+    /**
+     * @brief One step the engine is waiting on an answer for.
+     *
+     * Enough to find the step and to judge it. When the step was dispatched is
+     * not here: the step row states that, and the row is the record a restart,
+     * a retry and a recovery all agree on. The list says which steps to look
+     * at; the store says what is true of them.
+     */
+    struct awaiting_step {
+        boost::uuids::uuid instance_id;
+        boost::uuids::uuid tenant_id;
+        std::string name;
+        std::chrono::seconds budget;
+    };
+
+    /** @brief Records a step as dispatched. */
+    void note_awaiting(const domain::workflow_step& step,
+                       const boost::uuids::uuid& instance_id,
+                       const boost::uuids::uuid& tenant_id);
+
+    /**
+     * @brief What to record against a step that has outlived its deadline.
+     *
+     * The reason names the step's command subject and how long it has been
+     * silent, and states what the engine knows about the component that owns
+     * that subject: whether it was reporting when the command was published,
+     * and when it last reported. The engine states the evidence it holds and
+     * draws no conclusion from it, because a service that is running but
+     * wedged reports for duty too.
+     */
+    std::string deadline_failure_text(const domain::workflow_step& step,
+                                      std::chrono::seconds budget,
+                                      std::chrono::seconds silent_for);
 
     /**
      * @brief Publishes a step command to the domain service.
@@ -263,6 +367,38 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     repository::workflow_instance_repository instance_repo_;
     repository::workflow_step_repository step_repo_;
+
+    /**
+     * @brief When each service last reported for duty, by canonical name.
+     *
+     * Written by the heartbeat subscription and read by the expiry pass, which
+     * run on different threads, so it carries its own lock rather than the
+     * engine's: a heartbeat has nothing to do with the read-modify-write of a
+     * run and must not queue behind one.
+     */
+    std::unordered_map<std::string, std::chrono::system_clock::time_point> service_last_seen_;
+    std::mutex service_last_seen_mutex_;
+
+    /// The clock that calls the expiry pass, and nothing until it is started.
+    std::jthread deadline_watch_;
+
+    /**
+     * @brief The steps the engine is waiting on, by step id.
+     *
+     * The pass walks this rather than scanning the store. The engine dispatched
+     * each entry, so it knows the step exists, and a pass that read every run of
+     * every tenant would grow with the deployment's history rather than with
+     * the work in flight. The map decides nothing: the pass reads each entry's
+     * step row, which is the authority on whether the step is still running and
+     * on when it was dispatched, so the worst a lost entry costs is a deadline
+     * that fires late -- and a start re-dispatches whatever a restart
+     * interrupted, which fills the map again.
+     *
+     * It is guarded by the engine's own lock, because every writer of it is
+     * already inside one: a dispatch, a completion, a retry and the pass are all
+     * engine entry points.
+     */
+    std::unordered_map<std::string, awaiting_step> awaiting_;
 
     /**
      * @brief Serialises the entry points against each other.

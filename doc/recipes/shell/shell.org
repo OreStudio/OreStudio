@@ -1086,3 +1086,7 @@ tangled into the runnable script library
 * Registration Policy
 
 - [[id:CF9073DF-02CD-5832-9479-32E5C361BD15][How do I run the registration_policy commands from the shell?]]
+
+* Curve Sections
+
+- [[id:162FF364-E401-5F52-A44E-3398B7F3AA3F][How do I run the curve_sections commands from the shell?]]

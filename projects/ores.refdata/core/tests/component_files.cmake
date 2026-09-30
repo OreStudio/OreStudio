@@ -57,6 +57,7 @@ set(files
     "currency_pair_convention_eventing_integration_tests.cpp"
     "currency_pair_eventing_integration_tests.cpp"
     "curve_role_eventing_integration_tests.cpp"
+    "curve_section_eventing_integration_tests.cpp"
     "day_count_fraction_type_eventing_integration_tests.cpp"
     "deposit_convention_eventing_integration_tests.cpp"
     "derivation_kind_eventing_integration_tests.cpp"

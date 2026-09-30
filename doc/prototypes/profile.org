@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 0AB29C42-742A-4E63-AE31-E8B6787D314E
+:END:
+#+title: Profile screen prototype
+#+description: Three structural variants of the Profile journeys' screen, for both actors, with mock data, on a throwaway prototype page.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:security:identity:profile:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+* Summary
+
+The profile screen prototype argues what the [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys']] screen
+should look like before any of it is built. It carries three structural
+variants of the same screen, for the two actors who use it, and the six states
+the requirement work named, so the layout can be judged with something concrete
+in front of you rather than in the abstract.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. It exists because the journey documents settle what the
+screen *does*; nothing yet settles where the save boundary sits, and that one
+question decides the other three.
+
+Open the [[file:profile/][screen]].
+
+* Detail
+
+** The question
+
+One screen with panels is not in dispute: the photo, the identity fields, the
+contact details and the sign-in summary are panels of one screen, because a
+person thinks of them as one thing. What is undecided is *where the write
+happens*.
+
+The account and the contact record are different records, and one Save is two
+writes that nothing makes atomic. So the screen must decide, visibly:
+
+1. Whether one Save writes everything the caller may write, or each panel
+   carries its own action and its own reason.
+2. What a panel the caller may not write says, so the read-only rule is stated
+   on the screen rather than discovered by a refusal.
+3. Where a reporting-line change goes, now that it is a proposal and not an
+   edit.
+
+** The three variants
+
+Switch with the bottom bar, the left and right arrow keys, or =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | One page, one save | The journey document read literally: one screen, panels, one Save for everything the caller may write. One reason, asked once. The two writes are still two writes. |
+| =B= | One page, per-panel save | Each writable panel carries its own action and its own reason, so a half-finished edit is never sent with the other record. The cost is two reasons and two confirmations. |
+| =C= | Panels as rail steps | The shape the setup journeys use: photo, identity, contact, review, one step at a time, with the write deferred to the review step. The most work for the least certainty. |
+
+The variants disagree about structure, not colour. A puts everything on one
+page and asks for one reason. B keeps the page and moves the boundary down to
+the panel. C is the same panels drawn as a rail, which is consistent with
+[[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] and with the registration door's accepted variant.
+
+** The two actors
+
+Switch with the actor buttons, or =?actor=.
+
+| Actor | The screen |
+|-------+------------|
+| =member= | *My profile*, on their own record. Writes full name, job title, photo and the contact record through the self-service subjects. The username, the sign-in address, the account type and the reporting line are shown and not writable. |
+| =admin= | *Change someone's details*, with the person search above the same panels. Holds =iam::accounts:update= and =iam::account_contact_informations:write=, which is the whole difference from the member. |
+
+The signed-in person is never the person whose record is shown. The header names
+both, because an administrator who edits their own record by accident is the
+failure this screen has to prevent.
+
+** The six states
+
+Switch with the state buttons, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =view= | The screen at rest: the writable panels, the read-only panels, and the reporting line. |
+| =photo= | The picker: an upload through =ores.assets=, the images the tenant already holds, and a preview at the size other screens show the photo. The rule — PNG, JPEG or WebP, up to 2 MB, at least 128×128 — is stated beside it. |
+| =saved= | Both records written, each with its new version. |
+| =partial= | The account write landed and the contact write was refused. The screen names the record that failed and carries the refusal code, because "save failed" would leave the person unable to tell which half is real. |
+| =proposed= | The reporting line with a change waiting for approval, naming who can approve it. |
+| =refused= | A write the caller does not own, refused with =field_not_self_writable=. |
+
+** The reporting line
+
+This is the state the review added. A reporting-line change is not an edit: a
+person proposes it, and the person's hierarchical superior or a tenant
+administrator approves it. The proposal is drawn on the identity panel, next to
+the value it would replace, and the value does not change while the proposal
+waits.
+
+Nothing in the platform holds such an approval today. The workflow engine can
+hold the instance; the queue, the notification and the decision are the
+[[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] journey's, and the prototype says so on the panel
+rather than inventing an approval that nothing performs.
+
+** Driving it
+
+Every control is live: choose a variant, an actor and a state; pick a person;
+choose a photo; press a Save. Save on variant =A= produces the half-written
+state on purpose, because that is the state a one-Save screen has to be honest
+about.
+
+** What is fake
+
+Everything. The tenant, the people, the photo, the roles and the rule are
+hard-coded. There is no policy read, no server, no account, and nothing is
+stored.
+
+** Where the code lives
+
+=doc/prototypes/profile/=. Three files, plain HTML, CSS and JavaScript, no
+framework and no build step. The site build copies the directory through
+=ores-deploy-web-app=, beside the trade entry and registration door prototypes.
+
+** What it does not settle
+
+The approval. The prototype draws a proposal waiting for a decision; it does not
+argue how the approver is told, where the queue lives, or what happens when a
+superior and an administrator disagree. That is the Membership group's work and
+it is recorded on the journey.
+
+The two email fields. The screen labels the sign-in address and the contact
+address apart and shows both, because the journey exposes two fields where a
+person expects one. Which one other screens treat as authoritative is a
+modelling decision that this prototype does not make.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]] — the group this screen belongs to.
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]], [[id:71515FD0-8089-493F-9D9C-36877392DB33][Keep my details current]] and [[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]] — the three journeys this one screen implements.
+- [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] and [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — the journeys that own the sign-in and access panel.
+- [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door prototype]] — the sibling prototype, and the reason the tokens and the rail classes are copied rather than invented.

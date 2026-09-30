@@ -296,6 +296,11 @@ with the site chrome."
   ;; variants of the Entry story's registration screen, mock data only.
   (ores-deploy-web-app
    "./doc/prototypes/registration-door" site-dir "doc/prototypes/registration-door"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Profile screen prototype: the same body reset. Three structural variants
+  ;; of the Profile journeys' screen, for both actors, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/profile" site-dir "doc/prototypes/profile"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

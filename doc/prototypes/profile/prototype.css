@@ -1,0 +1,359 @@
+/* Profile screen prototype. Self-contained: the site build publishes this
+ * file through its existing css project, so there is no import to wire.
+ *
+ * The tokens are the application's own, copied from
+ * projects/ores.web/packages/web/src/styles.css so a reviewer sees the
+ * prototype in the colours the real screens use. A prototype in a palette of
+ * its own answers the wrong question. */
+
+:root {
+    --bg: #121214;
+    --panel: #1a1a1e;
+    --panel-2: #26262b;
+    --line: #30363d;
+    --line-soft: #21262d;
+    --ink: #e3e3e6;
+    --ink-dim: #a1a1aa;
+    --ink-faint: #71717a;
+    --accent: #58a6ff;
+    --accent-bright: #8ab4f8;
+    --accent-dim: #21262d;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --radius: 0.5rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#app { min-height: 100vh; }
+
+/* The prototype's own chrome, deliberately unlike the design on trial. */
+.proto-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: 6px 14px;
+    background: repeating-linear-gradient(45deg, #2a2113, #2a2113 10px, #241d11 10px, #241d11 20px);
+    border-bottom: 1px solid #4a3a17;
+    color: var(--warn);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.proto-bar {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 7px;
+    background: #0b0e13;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+}
+
+.proto-bar button {
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 16px;
+    line-height: 1;
+    padding: 5px 11px;
+    cursor: pointer;
+    border-radius: 999px;
+}
+
+.proto-bar button:hover { background: var(--panel-2); color: var(--ink); }
+.proto-bar .label { padding: 0 10px; color: var(--ink); white-space: nowrap; }
+.proto-bar .label b { color: var(--accent); }
+
+/* States control, top right, also prototype chrome. */
+.proto-states {
+    position: fixed;
+    top: 32px;
+    right: 14px;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 260px;
+    justify-content: flex-end;
+}
+
+.proto-states button {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.proto-states button.on { background: var(--accent-dim); border-color: var(--accent); color: var(--ink); }
+
+/* ------------------------------------------------------------------ */
+/* Shared page furniture                                               */
+/* ------------------------------------------------------------------ */
+
+.page { padding: 78px 24px 90px; max-width: 1100px; margin: 0 auto; }
+.page.narrow { max-width: 660px; }
+.page.wide { max-width: 1140px; }
+
+.brand { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.tenant { margin-top: 6px; color: var(--ink-dim); font-size: 13px; }
+.tenant b { color: var(--ink); font-weight: 600; }
+
+h1 { font-size: 26px; margin: 18px 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 15px; margin: 0 0 12px; }
+.lede { color: var(--ink-dim); margin: 0 0 24px; max-width: 62ch; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.panel + .panel { margin-top: 14px; }
+.panel h2 { color: var(--ink); font-weight: 600; }
+.panel-soft { background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 16px 18px; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+.field input {
+    width: 100%;
+    background: #0e1218;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    padding: 10px 12px;
+    font: inherit;
+}
+.field input:focus { outline: none; border-color: var(--accent); }
+
+/* A field the caller may not write. It reads as a value, not as a broken
+   input: dashed, dimmed, and never focusable. */
+.field input:disabled { color: var(--ink-faint); background: #101014; border-style: dashed; }
+.hint { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+
+.rules { margin: 8px 0 0; padding-left: 18px; color: var(--ink-faint); font-size: 12px; }
+.rules li { margin: 2px 0; }
+.rules li.met { color: var(--ok); }
+
+.btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    font: inherit;
+    cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+.btn.ghost { background: none; border-color: transparent; color: var(--ink-dim); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.actions { display: flex; align-items: center; gap: 12px; margin-top: 22px; }
+
+.notice { border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-bottom: 18px; }
+.notice.bad { background: #2b1614; border: 1px solid #5c2a24; color: #f0b7ae; }
+.notice.warn { background: #2a2113; border: 1px solid #4a3a17; color: #efd39a; }
+.notice.ok { background: #12281d; border: 1px solid #23543a; color: #a8e6c4; }
+
+.kv { width: 100%; border-collapse: collapse; }
+.kv td { padding: 9px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.kv tr:last-child td { border-bottom: none; }
+.kv td:first-child { color: var(--ink-faint); width: 40%; }
+.kv td:last-child { color: var(--ink); }
+.kv .none { color: var(--warn); }
+.kv .given { color: var(--ok); }
+
+.code { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--ink-faint); background: #0e1218; border: 1px solid var(--line-soft); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+
+/* Variant B: the two columns. */
+.split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .proto-states { max-width: 160px; } }
+
+.status-banner { border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px; }
+.status-banner.ok { background: #12281d; border: 1px solid #23543a; }
+.status-banner.warn { background: #2a2113; border: 1px solid #4a3a17; }
+.status-banner .head { font-size: 15px; font-weight: 600; }
+.status-banner.ok .head { color: var(--ok); }
+.status-banner.warn .head { color: var(--warn); }
+.status-banner p { margin: 6px 0 0; color: var(--ink-dim); font-size: 13px; }
+
+/* Variant C: the journey page, and it is the application's own.
+   Every declaration here answers to JourneyPage.tsx and its tokens: a 14rem
+   rail column with a 2rem gap, `space-y-1` between entries, each entry
+   `flex items-center gap-3 rounded-md px-3 py-2 text-sm`, a `size-6` circled
+   mark, the step in a `card p-6` with `text-lg` title and `text-sm` lead, and
+   the action in a `mt-6 border-t pt-4` footer split by `justify-between`. */
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent-bright); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+.card h2 { font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem; }
+.card .lead { margin: 0 0 1.25rem; color: var(--ink-dim); font-size: 0.875rem; }
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+
+/* The step header: what stands above every step and does not change while the
+   steps do. JourneyPage wraps it in `mb-5 border-b border-line pb-5`. */
+.stepheader { margin-bottom: 1.25rem; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; }
+
+/* The banner every dialog carries: the project's own artwork, at its own
+   ratio. Nothing states a height and nothing crops it, because a height that
+   is not the ratio's is what cuts the top and the foot off the wordmark. */
+.banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.banner-caption {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+.banner-caption .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner-caption .from { font-size: 0.75rem; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.outcome { text-align: center; padding: 10px 0 4px; }
+.outcome .mark { font-size: 34px; line-height: 1; }
+.outcome .mark.ok { color: var(--ok); }
+.outcome .mark.warn { color: var(--warn); }
+
+/* ------------------------------------------------------------------ */
+/* Profile-specific: the record panels, the identity block, the photo, */
+/* and the reporting line that is proposed rather than set.            */
+/* ------------------------------------------------------------------ */
+
+/* A panel the caller may not write. The reason sits under the title, so a
+   reviewer can see the read-only rule without hunting for it. */
+.panel.readonly { background: #16161a; border-style: dashed; }
+.panel.readonly h2 { color: var(--ink-dim); }
+.panel .why { font-size: 12px; color: var(--ink-faint); margin: -6px 0 14px; }
+.panel .why b { color: var(--warn); font-weight: 500; }
+
+/* The identity block: the photo beside the fields it belongs with. */
+.identity { display: grid; grid-template-columns: 104px 1fr; gap: 18px; align-items: start; }
+@media (max-width: 640px) { .identity { grid-template-columns: 1fr; } }
+
+.avatar {
+    width: 104px;
+    height: 104px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    display: grid;
+    place-items: center;
+    color: var(--ink-faint);
+    font-size: 30px;
+    overflow: hidden;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-wrap { text-align: center; }
+.avatar-wrap .btn { margin-top: 10px; font-size: 12px; padding: 6px 12px; }
+
+/* The size other screens show the photo at, so the preview answers the
+   question a person actually has: will this read at 28px? */
+.avatar-small { width: 28px; height: 28px; border-radius: 999px; overflow: hidden; border: 1px solid var(--line); display: inline-block; vertical-align: middle; }
+.avatar-small img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.picker { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 700px) { .picker { grid-template-columns: 1fr; } }
+.dropzone {
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 22px 16px;
+    text-align: center;
+    color: var(--ink-dim);
+    background: #0e1218;
+}
+.dropzone .big { font-size: 22px; color: var(--ink-faint); }
+.thumbstrip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.thumb { width: 56px; height: 56px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel-2); display: grid; place-items: center; color: var(--ink-faint); font-size: 18px; cursor: pointer; }
+.thumb.on { border-color: var(--accent); }
+.thumb.sm { width: 40px; height: 40px; font-size: 14px; }
+
+/* The reporting line: a current value, and a proposal beside it. */
+.line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.line .who { color: var(--ink); }
+.line .tag { font-size: 11px; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--line); color: var(--ink-faint); }
+.line .tag.proposed { border-color: var(--warn); color: var(--warn); }
+.line .tag.approved { border-color: var(--ok); color: var(--ok); }
+.proposal { margin-top: 12px; border-left: 2px solid var(--warn); padding: 10px 0 10px 14px; }
+.proposal p { margin: 0 0 8px; font-size: 13px; color: var(--ink-dim); }
+.proposal .approvers { color: var(--ink); }
+
+/* Which record a write landed on. The point of the partial state: the screen
+   names the record that failed rather than saying "save failed". */
+.wrote { display: block; width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+.wrote td { padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+.wrote tr:last-child td { border-bottom: none; }
+.wrote .rec { color: var(--ink); }
+.wrote .ok { color: var(--ok); }
+.wrote .bad { color: var(--bad); }
+
+/* The administrator's person search, above the same panels. */
+.search { display: flex; gap: 10px; align-items: flex-end; }
+.search .field { flex: 1; margin-bottom: 0; }
+.results { margin-top: 12px; border-top: 1px solid var(--line-soft); }
+.results .row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; cursor: pointer; }
+.results .row:last-child { border-bottom: none; }
+.results .row:hover { color: var(--accent-bright); }
+.results .row .sub { color: var(--ink-faint); font-size: 12px; }

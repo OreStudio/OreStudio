@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profile screen prototype — Profile journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Three structural variants of the profile screen, switchable with
+  ?variant=A|B|C, for two actors, switchable with ?actor=member|admin,
+  and six states, switchable with ?state=.
+
+  The variants disagree about where the save boundary sits: A saves the
+  whole screen once, B saves each panel on its own, C walks the panels as
+  rail steps. Nothing here reads a service.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

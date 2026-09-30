@@ -83,19 +83,20 @@
     ];
 
     /* The areas of activity: the trading floor's own shape, which the Qt menu
-       bar already had right, and the level above a journey group. An area
-       whose journeys have not been extracted yet says so rather than being
-       filled with invented screens. */
+       bar already had right, and the level above a journey group. Identity,
+       access, tenancy and standing the installation up are one area and not
+       four, because no trading floor has a menu for "you". An area whose
+       journeys have not been extracted yet says so rather than being filled
+       with invented screens. */
     var AREAS = [
-        { name: 'You', groups: ['Profile', 'Credentials', 'Membership'] },
-        { name: 'People', groups: ['Access', 'Directory'] },
-        { name: 'Tenant', groups: ['Setup', 'Tenancy'] },
         { name: 'Reference Data', waiting: true },
         { name: 'Market Data', waiting: true },
         { name: 'Trading', waiting: true },
         { name: 'Analytics', waiting: true },
+        { name: 'Compute', waiting: true },
         { name: 'Reporting', waiting: true },
-        { name: 'System', waiting: true }
+        { name: 'Administration', groups: [
+            'Directory', 'Access', 'Membership', 'Tenancy', 'Credentials', 'Profile', 'Setup'] }
     ];
 
     var PERSON = {

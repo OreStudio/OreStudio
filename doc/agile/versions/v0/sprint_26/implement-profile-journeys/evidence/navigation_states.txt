@@ -33,5 +33,5 @@ The screenshots beside this file are the models in Chrome.
 
 --- output ---
 
-rendered 60 model/actor/state combinations and 35 promises
+rendered 60 model/actor/state combinations and 40 promises
 ALL CHECKS PASSED

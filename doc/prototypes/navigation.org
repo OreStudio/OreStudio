@@ -67,21 +67,27 @@ trading floor. Qt's first level already said the areas, and it was right:
 #+ATTR_HTML: :class hug-leading
 | Area | The groups the catalogue has reached | Journeys today |
 |------+--------------------------------------+----------------|
-| You | Profile, Credentials, Membership | 8 |
-| People | Access, Directory | 7 |
-| Tenant | Setup, Tenancy | 5 |
 | Reference Data | — | none extracted |
 | Market Data | — | none extracted |
 | Trading | — | none extracted |
 | Analytics | — | none extracted |
+| Compute | — | none extracted |
 | Reporting | — | none extracted |
-| System | — | none extracted |
+| Administration | Directory, Access, Membership, Tenancy, Credentials, Profile, Setup | 20 in 7 groups |
 
-Six of the nine are empty, and that is the honest state rather than a gap in
+Six of the seven are empty, and that is the honest state rather than a gap in
 the design: the extraction has been run for one component. An empty area is
 named and says so — it is not filled with invented screens, and it is offered
 to a tenant administrator, who is the person who would build it, rather than to
 a member.
+
+*Administration is one area and not four.* Identity, access, membership,
+tenancy and standing the installation up are all administration, and no trading
+floor has a menu for "you" or for "people": those are the administrative
+surfaces that happen to be about people. The person's own record keeps its
+shortcut anyway, because the header carries their name and photo and that is
+what a person clicks to fix their own — but it is a shortcut on the person, not
+an area of the product.
 
 What Qt got wrong was everything below its first level. Its second level was a
 table, and it went three deep where the model did: =Reference Data → Data
@@ -139,8 +145,9 @@ the thing the single-axis ones could not: a full trading system has many areas,
 and each area has many journeys, so one axis is either too long or too deep.
 
 - *The areas are the trading floor's own shape* — Reference Data, Market Data,
-  Trading, Reporting — which is what the Qt menu bar already said, and what a
-  person in operations uses to say where they work.
+  Trading, Analytics, Compute, Reporting — which is what the Qt menu bar already
+  said, plus Administration, which is where the Qt client's System menu went and
+  where the identity and tenancy journeys belong.
 - *A journey is an activity, so the sidebar stops at one level of depth* under
   its group headings. The Qt menus went deeper because the model was showing
   through; there is nothing under a journey to show.
@@ -149,17 +156,18 @@ and each area has many journeys, so one axis is either too long or too deep.
   is why the index model needs a trip back and the account menu runs out of
   room.
 
-The navbar with nine areas is wide, and it scrolls at a laptop's width rather
-than squeezing the person's own chip off the edge. Qt carried eleven, so this is
-a known cost of the shape rather than a new one; the alternative — folding the
-areas into a menu — is the account menu again.
+The navbar with seven areas fits a laptop's header where nine did not, and it
+still scrolls rather than squeezing the person's own chip off the edge when it
+must. Qt carried eleven, so the width is a known cost of the shape rather than a
+new one; the alternative — folding the areas into a menu — is the account menu
+again.
 
 ** What the shell holds
 
 | Part | What it is |
 |------+------------|
 | The brand | The way home, and the only thing that is always there. |
-| The areas | The horizontal menu: where this person may work. |
+| The areas | The horizontal menu: where this person may work. Administration is last, where the Qt client kept its System menu. |
 | The groups and journeys | The sidebar: what they may do there, the current group open to its journeys. |
 | The person | Their name and photo, opening their own record, and the way out. |
 | The boundary | Nothing, when a journey owns the screen. |

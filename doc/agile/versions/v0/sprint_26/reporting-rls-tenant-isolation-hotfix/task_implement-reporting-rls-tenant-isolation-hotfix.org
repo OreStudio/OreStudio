@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 4E4A437A-F965-4561-960A-C9E2A9F3B3F5
+:END:
+#+title: Task: Implement Hotfix: three reporting tables carry a tenant and no row-level security
+#+description: Declare the tenant isolation facet on the analytic type, report analytic and report run setup models, regenerate the reporting component so the create and drop SQL carry the policy, and verify the validator, the hygiene check and the suites.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:reporting:sql:security:sprint_26:v0:reporting-rls-tenant-isolation-hotfix:
+#+owner: marco
++#+branch: hotfix/reporting-rls-tenant-isolation
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-09-30
++#+updated: 2026-09-30
++#+environment: clever_dijkstra
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:199C3BFB-275D-482A-ADE7-546C3DA5E1E8][Hotfix: three reporting tables carry a tenant and no row-level security]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take =validate_schemas.sh= to 0 warnings, so the continuous builds and the
+pull-request verifier stop failing before they build anything.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:199C3BFB-275D-482A-ADE7-546C3DA5E1E8][Hotfix: three reporting tables carry a tenant and no row-level security]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The three models carry =:rls_tenant_isolation: true= in the SQL flags
+  drawer.
+- The generated create SQL enables row-level security and creates the
+  tenant isolation policy; the drop SQL drops the policy.
+- =validate_schemas.sh= is green and =check_sql_hygiene.py= is clean.
+- The full suite passes on a database created from the new SQL.
+
+* Plan
+
+1. Add the facet to the three models.
+2. Regenerate the reporting component and read the SQL diff.
+3. Run the validator and the hygiene check.
+4. Recreate the database, then run the reporting suites and the full suite,
+   because row-level security changes what a write is allowed to do.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Validator before | 3 RLS_001 warnings, exit 1 | =validate_schemas.sh= | main at ed5e7756cf |
+| Validator after | 0 warnings, 1796 files checked, exit 0 | same | this branch |
+| SQL hygiene | 1796 files checked, 0 problems | =check_sql_hygiene.py projects/ores.sql= | this branch |
+| Tables now carrying the policy | 3, in both the create and the drop tree | =git diff projects/ores.sql= | this branch |
+| Full suite | on a database created from the new SQL | =ctest --preset linux-clang-debug-make -j 4= | this branch |
+
+* Notes
+
+- The tables did not exist in the worktree's database at all: main added them
+  after the last recreation, which is also why three suites failed on a
+  column main had added. The verification therefore needs a database built
+  from this branch's SQL, not a patch applied to the old one.
+- =check_cmake_component_files.py= and the generator's file list are untouched:
+  no source file was added.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The three models declare the tenant isolation facet and their create and drop
+SQL carry the policy. =validate_schemas.sh= reports 0 warnings over 1796
+files and the hygiene check is clean; the suites run on a database built from
+the new SQL.

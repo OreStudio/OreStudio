@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists report_run_setups_tbl_tenant_isolation_policy on "ores_reporting_report_run_setups_tbl";
 drop rule if exists ores_reporting_report_run_setups_delete_rule on "ores_reporting_report_run_setups_tbl";
 drop trigger if exists ores_reporting_report_run_setups_insert_trg on "ores_reporting_report_run_setups_tbl";
 drop function if exists ores_reporting_report_run_setups_insert_fn;

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 199C3BFB-275D-482A-ADE7-546C3DA5E1E8
+:END:
+#+title: Story: Hotfix: three reporting tables carry a tenant and no row-level security
+#+description: validate_schemas.sh fails with three RLS_001 warnings: ores_reporting_analytic_types_tbl, ores_reporting_report_analytics_tbl and ores_reporting_report_run_setups_tbl have a tenant_id but no ENABLE ROW LEVEL SECURITY, so every build that runs the validator -- the continuous builds and the new pull-request verifier -- is red. The three models declare the tenant isolation facet and their SQL is regenerated.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:reporting:sql:security:sprint_26:v0:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every build that validates the SQL tree is red:
+
+#+begin_src text
+WARNING [RLS_001] create/reporting/reporting_analytic_types_create.sql:0
+  Table 'ores_reporting_analytic_types_tbl' has tenant_id but no ENABLE ROW LEVEL SECURITY found in any *_create.sql file
+WARNING [RLS_001] create/reporting/reporting_report_analytics_create.sql:0
+WARNING [RLS_001] create/reporting/reporting_report_run_setups_create.sql:0
+Warnings: 3
+#+end_src
+
+The three tables arrived with the run document and analytics model, and their
+models declare a =tenant_id= without the row-level security facet every other
+tenant-scoped reporting table declares. The validator is doing its job: a
+tenant column without the policy that reads it is how one tenant comes to see
+another's rows.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- Each of the three models declares =:rls_tenant_isolation: true= in its SQL
+  flags drawer, as its siblings do.
+- Their create and drop SQL enable row-level security and carry the tenant
+  isolation policy; the drop SQL removes it.
+- =validate_schemas.sh= reports 0 warnings and passes, and the SQL hygiene
+  check is clean.
+- The reporting suites and the full suite pass on a database built from the
+  new SQL.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4E4A437A-F965-4561-960A-C9E2A9F3B3F5][Implement Hotfix: three reporting tables carry a tenant and no row-level security]] | DONE | 2026-09-30 | 2026-09-30 | Declare the facet on the three models, regenerate the reporting component, verify the validator and the hygiene check, and run the suites on a database built from the new SQL. |
+
+* Decisions
+
+- The facet is declared in the model rather than the SQL hand-edited: the
+  create and drop trees are generated, and the model is where the estate
+  states that a table is tenant-scoped.
+- =analytic_type='s facet first went into the component-level =* Flags=
+  drawer, which also carries a =tablename=. The SQL facet is the one under
+  =* SQL / ** Flags=; only that one reaches the generated SQL. The validator
+  caught the mistake, because the analytic-type warning survived the first
+  regeneration.
+
+* Out of scope
+
+- The three tables' other SQL: only the row-level security section is added.

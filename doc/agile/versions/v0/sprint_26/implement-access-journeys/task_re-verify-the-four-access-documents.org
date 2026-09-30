@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 52698A77-6BB0-4A1D-AB53-41AC443E0073
+:END:
+#+title: Task: Re-verify the four access documents against the tree
+#+description: Check every gap the four documents record against the current code, close the ones the IAM clean standard and the hardening already closed, and leave the rest with the subject that would close each.
+#+type: task
+#+level: s1
+#+filetags: :implement-access-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/implement-access-journeys
+#+pr: 2446
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- Every gap the four documents record is checked against the current tree,
+  with the command that proves each verdict.
+- A gap that has closed is corrected in the document that records it, so a
+  reader does not build work that is already done.
+- A gap that is still open names the subject that would close it.
+- The open list is short enough to size the group's remaining tasks.
+
+* Plan
+
+1. Read each document's * What is missing and its * Operations and messages,
+   because a gap is claimed in both.
+2. Check each claim against the tree: the handler's permission check, the
+   message's fields, the entity model's =:no_wire:= flags, the seeded
+   permission codes, the junction table's columns and the generated protocol's
+   subjects.
+3. Correct the documents whose claims the tree contradicts, in place, and
+   record the correction on this task.
+4. Leave the open gaps as they stand and name the subject that closes each.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Gaps the four documents record | 19 | =grep -c "^[0-9]" doc/knowledge/journeys/access/journey_*.org= (per the three older documents; the fourth was written from the tree) | =669c52eec5= |
+| Gaps already closed | 2 | =grep -n "no_wire" projects/ores.iam/modeling/ores.iam.account.org= and =grep -n "roles_assign" projects/ores.iam/core/include/ores.iam.core/messaging/authorization_handler.hpp= | =669c52eec5= |
+| Permission codes a handler asks for and no seed defines | 2, =iam::roles:write= and =iam::permissions:write= | =grep -rhn "has_permission(req_ctx" projects/ores.iam/core/include/ores.iam.core/messaging/role_handler.hpp projects/ores.iam/core/include/ores.iam.core/messaging/permission_handler.hpp= against =grep -n "iam::roles:update\|iam::permissions:write" projects/ores.sql/populate/iam/iam_permissions_populate.sql= | =669c52eec5= |
+| Subjects that write a role's permissions | 0 | =ls projects/ores.iam/api/include/ores.iam.api/messaging/ | grep -i role_permission= | =669c52eec5= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2446][#2446]] | [agile] Scaffold the access journeys group and survey its documents |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Nineteen gaps across the three documents written on 2026-09-23, plus the seven
+the role request records. Two have closed and their documents no longer claim
+them. The rest are confirmed open, each with the subject that would close it.
+
+** Closed
+
+| Gap | Document | The evidence that closed it |
+|-----+----------+------------------------------|
+| =iam.v1.roles.assign= checks no permission, so any signed-in account could grant any role in its tenant | Change someone's access | =authorization_handler.hpp= refuses an assign from a caller without =iam::roles:assign=, and a revoke without =iam::roles:revoke=. |
+| The account read carries credential material | Change someone's access | =password_hash=, =password_salt=, =service_password_hash= and =totp_secret= are =:no_wire:= in =ores.iam.account.org=, so no read returns them. |
+
+** Open
+
+| Gap | Document | What would close it |
+|-----+----------+---------------------|
+| The role reads prove a session only and take an arbitrary account id, so a member can read a colleague's access | Know what I may do | A self-scoped form of each read, or =iam::roles:read= plus an own-account check. |
+| A permission is not attributed to the role that grants it: =permissions-by-account= answers a flat list | Know what I may do | A response that pairs each code with the role it arrives through. |
+| The roles read carries no assignment dates | Know what I may do | The assignment read below. |
+| No subject returns the =account_role= row, so =assigned_by=, =assigned_at= and the reason cannot be shown | Change someone's access | =iam.v1.roles.assignments-by-account=. |
+| The grant and the revoke carry no reason | Change someone's access | =change_reason_code= and =change_commentary= on both requests. |
+| Nothing warns before the last role is revoked | Change someone's access | A screen rule rather than a subject; it belongs to the access screen. |
+| No subject adds or removes a permission on a role | Shape the role catalogue | =iam.v1.roles.permissions.put= and =.put_many=, with a change reason. |
+| The role handler asks for =iam::roles:write=, which no seed defines; the seed defines =iam::roles:update= | Shape the role catalogue | Seed the code the handler asks for, or change the handler to the code the seed defines. |
+| The =role_permission= link has no audit tail, while =account_role= has one | Shape the role catalogue | =assigned_by=, =assigned_at= and a reason on the junction, as its sibling carries. |
+| The permission CRUD asks for =iam::permissions:write= and =:delete=, and no seed defines either | Shape the role catalogue | Seed both, or drop the subjects, because the model says permissions are seeded constants. |
+| Five request subjects do not exist | Ask for more access | =iam.v1.roles.request=, =.requests-by-me=, =.withdraw-request=, =.requests= and =.refuse-request=. |
+| The engine cannot hold a request that waits on a person | Ask for more access | A waiting state and a decision verb in =ores.workflow=, or an approval step kind. |
+| Nothing stops the requester answering their own request | Ask for more access | A guard on the decision. |
+| Nothing says which roles may be asked for | Ask for more access | An =is_requestable= flag on the role row. |
+| Nothing tells either person that something happened | Ask for more access | A notification of its own. |
+| No query returns a request as a row | Ask for more access | A projection beside the workflow instance read. |
+| A request nobody answers waits forever | Ask for more access | A review window, as a setting. |
+
+** What this sizes
+
+The member's own read needs three of the open gaps closed, and the
+administrator's grant needs one more: those four are
+[[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]]. The
+catalogue needs all four of its own, which is
+[[id:D8305768-6F61-4A67-99DE-DE837E2026A2][Let a role's permission bundle be
+written]] plus the two permission-code corrections. The role request needs the
+seven it records, which is
+[[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]], and two of
+those are =ores.workflow='s rather than this component's.
+
+** Corrected in the documents
+
+[[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] no longer
+claims either closed gap. Its * Operations and messages states that both writes
+check their own permission, and its * What is missing drops the
+credential-material item in favour of a paragraph recording that it closed and
+why. The correction is recorded rather than deleted, because a reader who finds
+no gap there would otherwise go looking for one that is not there — the same
+rule [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][the entry group]] followed when
+the registration policy landed.

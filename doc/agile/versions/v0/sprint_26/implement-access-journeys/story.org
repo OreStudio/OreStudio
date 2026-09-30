@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: D5A29471-B0E3-4C69-B7CE-3477752C8ED7
+:END:
+#+title: Story: Implement the access journeys in ores.web
+#+description: The fifth group: the member's own access, the administrator's grants, the role catalogue, and the request for more.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:access:v0:sprint_26:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The four [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] journeys run in
+=ores.web= against the real server:
+
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — the
+  member reads the roles they hold and the permissions those roles carry.
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the
+  tenant administrator grants and revokes a colleague's roles.
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — the
+  tenant administrator defines roles and the permissions each one bundles.
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the member
+  asks for a role beyond the one registration gave them, and the tenant
+  administrator answers.
+
+This is the fifth group of
+[[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]].
+It reuses the journey runtime the Setup group landed and adds no journey
+entity. The journey documents stay with the extraction pass, except where
+this group's survey proves one wrong.
+
+Three of the four documents were written on 2026-09-23, before the IAM
+clean standard and the security hardening, and two of the gaps they record
+have already closed: =iam.v1.roles.assign= checks =iam::roles:assign= now,
+and the account's credential fields are =:no_wire:=, so no read returns
+them. What is left is a shorter and sharper list, and the build is sized
+from the survey rather than from the documents as they stand.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The survey is done: two of the recorded gaps have closed, seventeen are open with the subject that closes each, and the group's tasks are sized from that list. |
+| Waiting on    | Nothing. |
+| Next          | [[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]]. |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- Every claim in the four journey documents is checked against the tree, and
+  every gap is either closed with its evidence or still open with the subject
+  that would close it.
+- A member reads only their own access: the role reads are self-scoped or
+  permission-gated, and a test proves that another account's access is
+  refused.
+- A role's permission bundle can be written, so the catalogue journey can save
+  what it composes rather than reading it back unchanged.
+- An assignment read exists, so who granted a role, when, and why is visible
+  to the member and to the administrator from the same answer.
+- The four journeys run in =ores.web= against the real server, and the shell
+  reaches the same subjects for the operations it carries today.
+- The role request's gaps are either closed or stated on the screen, and the
+  waiting state it needs in =ores.workflow= is recorded as its own decision
+  rather than assumed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:52698A77-6BB0-4A1D-AB53-41AC443E0073][Re-verify the four access documents against the tree]] | BACKLOG | | | Check every gap the four documents record against the current code, close the ones the IAM clean standard and the hardening already closed, and leave the rest with the subject that would close each. |
+| [[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]] | BACKLOG | | | Make the role reads self-scoped or permission-gated, add the read that pairs a permission with the role that grants it, and add the assignment read that carries who granted a role, when and why. |
+| [[id:D8305768-6F61-4A67-99DE-DE837E2026A2][Let a role's permission bundle be written]] | BACKLOG | | | Add the write the catalogue journey has never had: a role's permission list can be composed and saved, permission-gated, with the change reason every other write carries. |
+| [[id:B4F02275-33F8-4C7E-828C-5EA1649E7851][Build the access screen in ores.web]] | BACKLOG | | | The three original journeys as screens against the real server: the member's own access, the administrator's grant and revoke with its audit, and the role catalogue with its permission picker. |
+| [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | BACKLOG | | | The five request subjects the journey names, the four-eyes guard, and the member's ask screen and the administrator's queue. |
+
+* Plan
+
+The survey comes first and the reads come second, because the documents are
+older than the code they describe and a screen drawn from a stale gap list
+builds the wrong thing.
+
+| # | Step | What it leaves behind |
+|---+------+-----------------------|
+| 1 | Scaffold the story and wire it into the programme | The story, its tasks, the sprint row and the programme's order table. |
+| 2 | Re-verify the four documents against the tree | A corrected gap list per journey, and the corrections in the documents that are wrong. |
+| 3 | Close the access reads | Self-scoping or a permission gate, the permission-to-role attribution, and the assignment read. |
+| 4 | Let a role's bundle be written | The write subject, its handler and its permission. |
+| 5 | Build the access screen | The three original journeys in =ores.web=. |
+| 6 | Land the role request | The request subjects, the four-eyes guard, the ask screen and the queue. |
+
+* Decisions
+
+- *The survey precedes the build.* Three of the four documents predate the
+  clean standard that changed the code they describe, and two of their gaps
+  have closed without anybody saying so. A build sized from the documents as
+  they stand would re-do work that is done and miss what is left.
+- *The reads are closed before any screen shows them.* A read that proves only
+  a session and takes an arbitrary account id lets a member read a colleague's
+  access. That is a defect with a screen in front of it, so it is fixed at the
+  subject rather than guarded in the browser.
+- *The catalogue's write is one subject, not a screen.* The journey's whole gap
+  is that a role's permissions can be read and not written, so the unit is the
+  write and its permission, and the screen is the group's own screen task.
+- *A cross-sprint group closes DONE and gets a successor.* The programme's rule
+  applies here: if the role request's waiting state does not land in sprint 26,
+  what lands is recorded and the rest continues in a successor story.
+- *The role request's waiting state belongs to =ores.workflow=.* The journey
+  says so: a request that waits on a person keeps its state as a workflow
+  instance, and the engine has no state that means "a person decides" yet. That
+  is a workflow decision with a workflow owner, recorded here and not assumed.
+- *Both clients reach one operation.* =ores.web= and =ores.shell= call the same
+  subjects, so the group carries the shell side of its journeys and does not
+  move the disagreement to the other client.
+- *A journey a person cannot reach from a screen is not finished.* The four
+  documents each carry a * Related journeys list, and each entry is a link on
+  the screen. A screen that omits them has not implemented the journey.
+- *The screens follow the accepted contracts.* The
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]], the
+  [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] and the
+  [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] bind
+  the work. The [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][entity specification]]
+  is void and binds no screen.
+
+* Out of scope
+
+- The journey extraction and the journey documents, which
+  [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]]
+  owns, except where this group's survey proves one wrong.
+- The notification that tells an administrator a request is waiting, and that
+  tells the member the answer. The journey records it as a gap of its own.
+- The approval workflow behind =system.signup_requires_authorization=, which is
+  a workflow in =ores.workflow= and the Entry group's recorded gap.
+- Two-factor authentication, and the credential journeys' screens, which are the
+  Credentials group's.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access journeys]] | knowledge | The group page: four journeys, two actors, and the chain from account to permission. |
+| [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] | user_journey | The member's own read, and its three gaps. |
+| [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] | user_journey | The administrator's grant and revoke, and its five gaps. |
+| [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] | user_journey | The role and its permission bundle, and the write it does not have. |
+| [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] | user_journey | The member's request and the administrator's answer, and its seven gaps. |
+| [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] | story | The programme this group belongs to, and the order it keeps. |
+| [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] | knowledge | Why a default role is a floor and not a ceiling, which is what the request journey answers. |
+| [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why a journey that waits on a person is a workflow instance. |
+| [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the screens are held to. |

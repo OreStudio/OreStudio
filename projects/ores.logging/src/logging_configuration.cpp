@@ -55,7 +55,8 @@ logging_configuration::make_options_description(const std::string& log_file) {
         value<std::string>()->default_value("info"),
         "What level to use for logging. Valid values: trace, debug, info, "
         "warn, error.")(
-        "log-to-console", "Output logging to the console, as well as to file.")(
+        "log-to-console",
+        "Accepted for compatibility: logging always goes to the console.")(
         "log-directory",
         value<std::string>()->default_value(""),
         "Where to place the log files. Only used with --log-filename.")(
@@ -79,7 +80,12 @@ logging_configuration::read_options(const boost::program_options::variables_map&
 
     logging_options r;
     r.filename = vm[logging_log_filename_arg].as<std::string>();
-    r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
+    /* The console is where logging goes, and it is not optional: systemd
+     * captures a service's stdout into the journal, which is how the fleet is
+     * read. A file is added only when a filename is given, so a caller that
+     * asks for logging and nothing else gets the console rather than a
+     * validator error. --log-to-console is still accepted and is now implied. */
+    r.output_to_console = true;
     r.output_directory = vm[logging_log_dir_arg].as<std::string>();
     r.include_pid = vm.count(logging_log_include_pid_arg) != 0;
     if (vm.count(logging_log_replica_index_arg))

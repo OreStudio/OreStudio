@@ -34,6 +34,23 @@
 namespace ores::marketdata::domain {
 
 /**
+ * @brief The taxonomy's codes, in display order, as the catalogue declares
+ * them.
+ *
+ * A test-data generator that must emit a code the catalogue holds reads this
+ * rather than restating the list, so the taxonomy has one author.
+ */
+inline constexpr std::string_view asset_class_codes[] = {
+    "fx",
+    "interest_rates",
+    "credit",
+    "equity",
+    "commodity",
+    "inflation",
+    "bond",
+};
+
+/**
  * @brief The refdata asset class an oresmd authority names, or nullopt where
  * it names none.
  *

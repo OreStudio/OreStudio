@@ -28,11 +28,11 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Nothing. |
+| Now          | Reopened. The task was closed with acceptance 1 unmet: two files still hold a hand-written copy of the seven codes. The classification rule and feed binding models each carry the same seven-element array in a test-data generator block, and a literal list of the taxonomy in a file that is not the catalogue is the copy the acceptance forbids. |
 | Waiting on   | Nothing. |
-| Next         | Nothing. |
+| Next         | Generate the codes into the header the catalogue already writes into ores.marketdata.api and read them from both generator blocks, then close the task. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance

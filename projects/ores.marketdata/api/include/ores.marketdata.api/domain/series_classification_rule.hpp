@@ -25,6 +25,7 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_SERIES_CLASSIFICATION_RULE_HPP
 #define ORES_MARKETDATA_API_DOMAIN_SERIES_CLASSIFICATION_RULE_HPP
 
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>

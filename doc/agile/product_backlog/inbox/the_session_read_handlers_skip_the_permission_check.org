@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 89CD5129-06AA-448A-BED1-78F829ABC952
+:END:
+#+title: The session read handlers skip the permission check the catalogue grants
+#+description: projects/ores.iam/core/include/ores.iam.core/messaging/session_handler.hpp guards put_session, put_many_sessions, delete_session and delete_many_sessions with iam::sessions:write and iam::sessions:delete, and list_sessions, get_session and get_many_sessions check no permission at all. The catalogue grants iam::sessions:read ('View active sessions') for exactly this purpose, and the account and login-record reads check their equivalents (iam::accounts:read, iam::login_info:read), so the three session reads are unguarded by oversight. Any authenticated caller can list the tenant's sessions, with client, address, country, byte counters and account. Found while inventorying the routes and operations the credentials journeys need; the Audit sign-ins screen would be built on these reads.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

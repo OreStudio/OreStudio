@@ -628,6 +628,20 @@ row is updated as each PR lands.
   reshape. D21's shape stands as the design for that work; the second arm
   is recorded as a kind that says URI or product, the URI, and the
   product's own name.
+- *D27, how a delete removes the family.* The row a caller deletes is the
+  header of a family, so the store closes the family with it rather than
+  leaving it to each caller to remember. An entity names the rows it owns
+  in a =* Delete cascade= section -- a table and the column in it that
+  names the entity's key -- and the generated delete rule calls a
+  generated function that closes them. An optional =:cascade_orphan:= on a
+  foreign key takes the referenced row too when the deleted row was the
+  last to name it, which is what a parent shared by security id needs. The
+  cascade is a plpgsql function the rule calls and not a rule body,
+  because a rule resolves the tables it names when it is created and a
+  child may be created after its parent. The rule is D15's, applied to the
+  delete side: the relationship is enforced where the schema can hold it,
+  so the shell verb, the import rollback and every later caller get it
+  without repeating it.
 
 * Delivery plan
 

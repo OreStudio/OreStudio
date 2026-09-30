@@ -130,40 +130,19 @@ rows the work touches.
 
 * Notes
 
-- *The delete and add paths are the next unit, and their shape is now
-  known.* =bond_instrument_service::delete_bond_instrument= removes the
-  header row alone, so every family row and any minted issue stay behind.
-  The family is the trade-keyed =bond_legs=, =bond_leg_amounts=,
-  =bond_leg_rates=, =bond_leg_amortizations=, =instrument_schedules=,
-  =instrument_schedule_dates=, =instrument_options=,
-  =instrument_option_premiums=, =instrument_option_exercise_fees=,
-  =instrument_option_payment_dates=, =instrument_strikes=,
-  =bond_forwards= and =bond_future_delivery_baskets=; the product rows
-  =bond_futures=, =bond_options=, =bond_repos= and =bond_trs=; and the
-  issue-keyed =bond_issue_legs= and its four children,
-  =bond_issue_call_dates= and =bond_issue_conversion_targets=.
-  Three shapes can fix it, and the recommendation is the second:
-  1. *A cascade in a custom service method.* It calls each family
-     repository's batch =remove=. It is the most code and the least safe:
-     the removals are separate transactions, and
-     =bond_leg=, =instrument_schedule=, =bond_issue_leg=,
-     =bond_issue_call_date= and =bond_issue_conversion_target= have no
-     batch removal, so each needs a new parent-scoped one.
-  2. *A delete trigger the generator emits.* The entity declares the
-     children a delete closes and the create script gains an
-     =after delete= trigger that closes them. It is atomic by
-     construction, it is enforced where the schema can hold it (D15's
-     rule), and it serves the import rollback, which has the same defect
-     at a larger scale. No entity declares children today, so the
-     template gains the feature for one model to use.
-  3. *A refusal with a stated reason.* The smallest, and the acceptance
-     allows it, but it leaves the verb unable to delete a bond that has
-     any row at all.
-  The transaction primitive a cascade would need is
-  =ores.database/repository/bitemporal_operations.hpp='s
-  =session(...).and_then(begin_transaction).and_then(...).and_then(commit)=,
-  because each generated repository's =remove= commits its own. An issue is
-  shared by security id, so it goes only when no other instrument names it.
+- *The delete closes the family now, from the model (D27).* The generated
+  delete rule calls a generated function that closes the rows the entity
+  owns, so one delete removes the family and not the header alone. The
+  entity declares its children in a =* Delete cascade= section, and an
+  optional =:cascade_orphan:= on a foreign key takes the referenced row
+  when the deleted row was the last to name it. =bond_instrument= declares
+  the eighteen trade-keyed tables and marks =issue_id= as an orphan;
+  =bond_issue= declares its eight issue-keyed tables. Two tests pin it:
+  =the_delete_closes_the_family_and_the_issue_it_owns= and
+  =the_issue_outlives_the_instrument_that_still_shares_it=.
+  The cascade is a plpgsql function rather than a rule body because a rule
+  resolves the tables it names when it is created, and =bond_issue_legs= is
+  created after =bond_issues=; a plpgsql body resolves them when it runs.
 - *The add path over the shell is already one transaction; the note that
   said otherwise was stale.* The sprint 25 hand-written verb minted an
   issue, then wrote the instrument, then the product row, and recorded the

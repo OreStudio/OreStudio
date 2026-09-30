@@ -110,12 +110,20 @@ has thrown the attribution away.
 |------+---------+-----+-------+---------|
 | The caller's own access | =iam.v1.roles.mine= | any signed-in account | a session | the account's roles, each with the permissions it grants and its assignment tail |
 | Another account's access | =iam.v1.roles.by-account= | a tenant administrator | =iam::roles:read= | the same shape, for the account named |
-| One role's bundle | =iam.v1.roles.permissions= | unchanged | unchanged | the permission codes one role bundles, which the role catalogue's picker reads |
+| One role's bundle | =iam.v1.roles.permissions= | any signed-in account | a session | the permission codes one role bundles |
 | The old flat list | =iam.v1.roles.permissions-by-account= | retired | — | folded into the composed read, because a flat list is what loses the attribution |
 
-Both access reads carry a =result=. Both answer =denied= when the caller may not
-have what it asked for, with the permission that was required as the code, so a
-caller can tell a refusal from an empty account without reading a sentence.
+The three that remain each carry a =result=, which the contract above requires of
+every operation. The first two answer =denied= when the caller may not have what
+it asked for, with the permission that was required as the code, so a caller can
+tell a refusal from an empty account without reading a sentence.
+
+One role's bundle needs no permission, and that is deliberate rather than an
+omission: registration gives a person one role, asking for more is the journey
+[[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] runs, and a
+person deciding what to ask for reads what the role grants. The tenant's roles
+are already listable by any member, so gating the bundle would hide the half of
+the answer that makes the ask informed.
 
 ** The divergence this page does not settle
 

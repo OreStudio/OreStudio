@@ -181,6 +181,56 @@ def database_info(env):
             "git_commit": commit, "git_date": git_date}
 
 
+# How old a restore may be before it stops reading as healthy. `compass db
+# status` colours the line from these, and `compass env status --json`
+# reports the same level, so the two cannot disagree about one database.
+RESTORED_WARN_HOURS = 4
+RESTORED_CRITICAL_HOURS = 24
+
+# How much of the connection budget may be in use before it stops reading
+# as healthy, on the same terms.
+CONNECTION_WARN_PERCENT = 60
+CONNECTION_CRITICAL_PERCENT = 85
+
+
+def level_of(value, warn_at, critical_at):
+    """ok / warn / critical for a number against two thresholds.
+
+    The one place a threshold becomes a level, so a caller renders a colour
+    and a caller emits JSON from the same rule."""
+    if value is None:
+        return "unknown"
+    if value >= critical_at:
+        return "critical"
+    if value >= warn_at:
+        return "warn"
+    return "ok"
+
+
+def bootstrap_mode(env):
+    """The system.bootstrap_mode setting, or None when it cannot be read.
+
+    True means the provisioning wizard has not run, so the database carries
+    seed data only."""
+    db_name = env.get("ORES_TEST_DB_DATABASE", "")
+    pw = env.get("PGPASSWORD", "")
+    if not db_name or not pw:
+        return None
+    try:
+        out = _psql(env, "-At", "-c",
+                    "SELECT value FROM ores_variability_system_settings_tbl "
+                    "WHERE name = 'system.bootstrap_mode' "
+                    "AND valid_to = ores_utility_infinity_timestamp_fn() "
+                    "LIMIT 1;",
+                    password=pw, database=db_name, check=False, capture=True)
+    except OSError:
+        return None
+    value = (out.stdout or "").strip()
+    if out.returncode or not value:
+        return None
+    return value.lower() == "true"
+
+
 # --- subcommands ------------------------------------------------------------
 
 def cmd_sql(project_root, env, args, passthrough):
@@ -582,7 +632,9 @@ def cmd_db_status(project_root, env):
         except (ValueError, TypeError):
             return restored_at
         age_hours = (datetime.now() - dt).total_seconds() / 3600
-        col = _green if age_hours < 4 else _yellow if age_hours < 24 else _red
+        level = level_of(age_hours, RESTORED_WARN_HOURS,
+                         RESTORED_CRITICAL_HOURS)
+        col = {"ok": _green, "warn": _yellow}.get(level, _red)
         return col(f"{restored_at}  ({age_hours:.0f}h ago)")
 
     print(f"    version   : {_cyan(info['schema_version'])}")
@@ -605,16 +657,12 @@ def cmd_db_status(project_root, env):
 
     # ── Bootstrap mode ────────────────────────────────────────────────────────
 
-    boot_val = _query(
-        "SELECT value FROM ores_variability_system_settings_tbl "
-        "WHERE name = 'system.bootstrap_mode' "
-        "AND valid_to = ores_utility_infinity_timestamp_fn() LIMIT 1;"
-    )
+    boot_val = bootstrap_mode(env)
     print(f"🔧  Bootstrap mode")
     print()
     if boot_val is None:
         print(f"    {_yellow('? (could not read)')}")
-    elif boot_val.lower() == "true":
+    elif boot_val:
         print(f"    {_yellow('true')}  — system provisioning wizard not yet run")
         print(f"    {_ycmd('compass db setup')} or run the provisioning wizard")
     else:
@@ -653,7 +701,9 @@ def cmd_db_status(project_root, env):
     else:
         total, cap = int(conn_total), int(conn_max)
         pct = (total / cap * 100) if cap else 0
-        col = _red if pct >= 85 else _yellow if pct >= 60 else _green
+        level = level_of(pct, CONNECTION_WARN_PERCENT,
+                         CONNECTION_CRITICAL_PERCENT)
+        col = {"ok": _green, "warn": _yellow}.get(level, _red)
         print(f"    total: {col(f'{total} / {cap}')}  ({pct:.0f}% used)")
         by_env = _query(
             "SELECT datname, count(*) FROM pg_stat_activity "

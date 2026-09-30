@@ -21,11 +21,11 @@ The fleet logs to the console and systemd captures it into the user journal, so 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-09-30                               |
 
 * Acceptance
@@ -41,10 +41,10 @@ The fleet logs to the console and systemd captures it into the user journal, so 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:09E9DDB9-DA17-4C12-8210-A7C2D3F93F73][Scaffold story: Log the fleet to the journal]] | STARTED | 2026-09-30 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B1D026B6-18AD-4A98-A84F-EA14C9B6F2C7][Log to the console and read readiness from the journal]] | BACKLOG | | | Initial task for: Log the fleet to the journal |
-| [[id:4023B258-1B3B-4BD9-8EAB-4473D273CBF4][Add compass services logs over the journal]] | BACKLOG | | | One verb that tails any service unit from the user journal, including nats-server, with filters for the last warnings and the last errors. |
-| [[id:7982A502-15D6-46EC-8A1A-326126406C41][Add the per-service log overview to the environment plugin]] | BACKLOG | | | A log overview for one service in the Environment view: the tail, and the last warnings and errors. |
+| [[id:09E9DDB9-DA17-4C12-8210-A7C2D3F93F73][Scaffold story: Log the fleet to the journal]] | DONE | 2026-09-30 | 2026-09-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B1D026B6-18AD-4A98-A84F-EA14C9B6F2C7][Log to the console and read readiness from the journal]] | DONE | | 2026-09-30 | Initial task for: Log the fleet to the journal |
+| [[id:4023B258-1B3B-4BD9-8EAB-4473D273CBF4][Add compass services logs over the journal]] | DONE | | 2026-09-30 | One verb that tails any service unit from the user journal, including nats-server, with filters for the last warnings and the last errors. |
+| [[id:7982A502-15D6-46EC-8A1A-326126406C41][Add the per-service log overview to the environment plugin]] | DONE | | 2026-09-30 | A log overview for one service in the Environment view: the tail, and the last warnings and errors. |
 
 * Decisions
 
@@ -102,3 +102,49 @@ The fleet logs to the console and systemd captures it into the user journal, so 
 - Bringing logs back up from a remote or containerised deployment.
 
 -
+
+* Result
+
+The fleet logs to the console and systemd captures it into the user journal.
+No service writes a log file, and one verb reads any of them.
+
+Three mechanisms became one. Twenty-three compiled units wrote their own file
+with the console sink off, ores.web's unit redirected stdout and stderr to
+that same file, and nats-server already reached the journal. Now the compiled
+units pass =--log-to-console= and no log directory, the node unit is left to
+systemd's own default, and nats needed nothing but the verb that can name it.
+
+Compass reads the journal. Readiness stopped being a log question for
+twenty-three units, because they are =Type=notify= and systemd reports them
+active only after the service declared itself ready; only =ores.web= still
+reads a line, and it does log one. The start path polls ActiveState instead of
+a growing file, which deleted the byte-offset waiter and its snapshot.
+
+File logging is opt-in, and the console is not. A caller that asks for logging
+and nothing else gets the console, which is what keeps =compass shell
+--log-enabled= working and stops the shell and the tools writing files nobody
+read.
+
+=compass services logs= takes a service, a short name, a unit name or
+nats-server, and can return only the warnings or only the errors. The level is
+not journald's priority, which records all console output at one priority, so
+the filter reads the token the service printed: a compiled service formats
+=timestamp [severity] [channel] message=, and nats tags a line after its
+process id.
+
+The environment plugin shows it. Every service row, nats included, opens a log
+overview that switches between the tail, the warnings and the errors, and says
+which kind of empty it is when there is nothing to show.
+
+Proven by a fleet start on the new units: 22 of 24 reported running, nats
+reported running, nothing failed, and the journal held the services' own
+records in their own format. =marketdata= and =synthetic= read =starting=;
+they are almost certainly the schema drift rather than this change, because
+the database is a day behind HEAD. The fleet was stopped again afterwards.
+
+Three defects came out of running it rather than reading it. The retry pass
+called itself, so an unstartable unit made a start loop forever. The console
+flag left an unused constant, which the build caught because warnings are
+errors here. And the first test run failed against a stale library, because
+the source was edited after the build had compiled it.
+

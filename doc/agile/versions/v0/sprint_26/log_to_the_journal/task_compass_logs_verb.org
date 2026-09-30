@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ compass services logs prints a tail from the user journal for any unit in this e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance

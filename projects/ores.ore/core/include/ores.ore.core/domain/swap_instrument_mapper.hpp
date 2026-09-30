@@ -50,6 +50,7 @@ namespace ores::ore::domain {
  *   - CapFloor (CapFloorData)
  *   - Swaption (SwaptionData — European and Bermudan)
  *   - CallableSwap (CallableSwapData)
+ *   - KnockOutSwap (KnockOutSwapData)
  *   - FlexiSwap (FlexiSwapData — forward-only; domain has no tranche fields)
  *   - BalanceGuaranteedSwap (BalanceGuaranteedSwapData — forward-only)
  *
@@ -78,6 +79,23 @@ public:
      * ORES domain types, producing a vanilla_swap_instrument.
      */
     static trading::domain::swap_instrument_data forward_swap(const trade& t);
+
+    /**
+     * @brief Forward-maps a KnockOutSwap trade (KnockOutSwapData) to ORES
+     * domain types, producing a knock_out_swap_instrument.
+     *
+     * The barrier is the instrument's own; the type's two LegData elements
+     * become swap_leg rows, because ORE requires exactly two of them.
+     */
+    static trading::domain::swap_instrument_data forward_knock_out_swap(const trade& t);
+
+    /**
+     * @brief Reverse-maps ORES domain types back to a KnockOutSwap ORE XSD
+     * trade.
+     */
+    static trade reverse_knock_out_swap(
+        const ores::trading::domain::knock_out_swap_instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Forward-maps an InflationSwap trade (InflationSwapData) to ORES

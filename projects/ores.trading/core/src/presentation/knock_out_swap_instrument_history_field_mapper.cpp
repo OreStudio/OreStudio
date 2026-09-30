@@ -41,6 +41,9 @@ render_knock_out_swap_instrument_fields(const domain::knock_out_swap_instrument&
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
+    fields.push_back(
+        {.name = "Barrier Start Date",
+         .value = ores::platform::time::datetime::to_iso8601_date(v.barrier_start_date)});
     fields.push_back({.name = "Barrier Level", .value = std::to_string(v.barrier_level)});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
     fields.push_back({.name = "Description", .value = v.description});

@@ -1889,6 +1889,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.barrier_start_date = instr.barrier_start_date;
                                 req.change.write.barrier_level = instr.barrier_level;
                                 req.change.write.barrier_type = instr.barrier_type;
                                 req.change.write.description = instr.description;

@@ -48,6 +48,7 @@ knock_out_swap_instrument_mapper::map(const knock_out_swap_instrument_entity& v)
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
+    r.barrier_start_date = ores::platform::time::datetime::from_iso8601_date(v.barrier_start_date);
     r.barrier_level = v.barrier_level;
     r.barrier_type = v.barrier_type;
     r.description = v.description.value_or("");
@@ -74,6 +75,7 @@ knock_out_swap_instrument_mapper::map(const domain::knock_out_swap_instrument& v
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
+    r.barrier_start_date = ores::platform::time::datetime::to_iso8601_date(v.barrier_start_date);
     r.barrier_level = v.barrier_level;
     r.barrier_type = v.barrier_type;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);

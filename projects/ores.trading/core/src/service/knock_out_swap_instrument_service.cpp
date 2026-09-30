@@ -88,6 +88,7 @@ to_domain(const messaging::knock_out_swap_instrument_write& write) {
     v.identity.trade_type_code = write.trade_type_code;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
+    v.barrier_start_date = write.barrier_start_date;
     v.barrier_level = write.barrier_level;
     v.barrier_type = write.barrier_type;
     v.description = write.description;

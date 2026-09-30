@@ -57,6 +57,13 @@ struct knock_out_swap_instrument final {
     std::chrono::year_month_day maturity_date;
 
     /**
+     * @brief Date the barrier starts to be monitored.
+     *
+     * ORE states it as BarrierStartDate, separately from the legs' own schedule.
+     */
+    std::chrono::year_month_day barrier_start_date;
+
+    /**
      * @brief Barrier level that triggers knock-out.
      *
      * Expressed as a decimal fraction.
@@ -64,9 +71,7 @@ struct knock_out_swap_instrument final {
     double barrier_level = 0.0;
 
     /**
-     * @brief Barrier type: UpAndOut or DownAndOut.
-     *
-     * UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls below.
+     * @brief Barrier type: the ORE barrierType set.
      *
      * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
      * 4 tightens the soft reference into a real foreign key.

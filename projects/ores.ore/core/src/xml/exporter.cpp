@@ -153,6 +153,10 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                             std::get<trading::domain::callable_swap_instrument>(r.instrument),
                             r.legs,
                             r.call_dates);
+                    else if (tt == "KnockOutSwap")
+                        xsd_t = swap_instrument_mapper::reverse_knock_out_swap(
+                            std::get<trading::domain::knock_out_swap_instrument>(r.instrument),
+                            r.legs);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for swap type: " << tt;
                         return;
@@ -408,8 +412,6 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         xsd_t = scripted_instrument_mapper::reverse_double_digital_option(r);
                     else if (tt == "PerformanceOption_01")
                         xsd_t = scripted_instrument_mapper::reverse_performance_option_01(r);
-                    else if (tt == "KnockOutSwap")
-                        xsd_t = scripted_instrument_mapper::reverse_knock_out_swap(r);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for scripted type: " << tt;
                         return;

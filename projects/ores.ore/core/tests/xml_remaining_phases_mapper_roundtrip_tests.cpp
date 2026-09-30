@@ -37,7 +37,7 @@ using Catch::Approx;
  * @brief Mapper fidelity tests for instrument types added in Phase 10:
  *   FxDoubleBarrierOption, FxEuropeanBarrierOption, FxKIKOBarrierOption,
  *   EquityDoubleBarrierOption, EquityEuropeanBarrierOption,
- *   DoubleDigitalOption, PerformanceOption_01, KnockOutSwap,
+ *   DoubleDigitalOption, PerformanceOption_01,
  *   TotalReturnSwap, ContractForDifference, BondRepo.
  */
 
@@ -311,31 +311,6 @@ TEST_CASE("performance_option_01_reverse", tags) {
     REQUIRE(rt.PerformanceOption01Data.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "PerformanceOption_01 reverse test passed";
-}
-
-// =============================================================================
-// KnockOutSwap
-// =============================================================================
-
-TEST_CASE("knock_out_swap_forward", tags) {
-    auto lg(make_logger(test_suite));
-    const auto r = load_and_map_scripted("Exotic_KnockOutSwap.xml");
-
-    CHECK(r.identity.trade_type_code == "KnockOutSwap");
-    CHECK(!r.parameters_json.empty());
-
-    BOOST_LOG_SEV(lg, info) << "KnockOutSwap forward test passed. "
-                            << "params=" << r.parameters_json;
-}
-
-TEST_CASE("knock_out_swap_reverse", tags) {
-    auto lg(make_logger(test_suite));
-    const auto r = load_and_map_scripted("Exotic_KnockOutSwap.xml");
-
-    const auto rt = scripted_instrument_mapper::reverse_knock_out_swap(r);
-    REQUIRE(rt.KnockOutSwapData.operator bool());
-
-    BOOST_LOG_SEV(lg, info) << "KnockOutSwap reverse test passed";
 }
 
 // =============================================================================

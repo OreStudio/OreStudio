@@ -50,6 +50,7 @@ generate_synthetic_knock_out_swap_instrument(utility::generation::generation_con
     r.identity.party_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
+    r.barrier_start_date = std::chrono::year_month_day{std::chrono::year{2027} / 5 / 3};
     r.barrier_level = 0.05;
     r.barrier_type = std::string("UpAndOut");
     r.audit.modified_by = modified_by;

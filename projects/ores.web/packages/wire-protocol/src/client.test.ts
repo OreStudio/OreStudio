@@ -237,7 +237,7 @@ describe('OresClient authenticated calls', () => {
         expect(headers['Nats-Correlation-Id']).toMatch(/^[0-9a-f-]{36}$/);
     });
 
-    it('sends offset and limit even when the caller omits them', async () => {
+    it('sends offset, limit and an order even when the caller omits them', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.auth.login': [{ body: loginReply() }],
             'iam.v1.accounts.list': [{ body: accountsReply }],
@@ -248,8 +248,13 @@ describe('OresClient authenticated calls', () => {
         await client.listAccounts();
 
         // The server does not apply defaults on a missing field, so the client
-        // must always write every declared field.
-        expect(transport.decodeCall(1)).toEqual({ offset: 0, limit: 100 });
+        // must always write every declared field. An empty order field means the
+        // key, which is what makes a page of an unordered set reproducible.
+        expect(transport.decodeCall(1)).toEqual({
+            offset: 0,
+            limit: 100,
+            order: { field: '', descending: false },
+        });
     });
 
     it('refreshes once and retries when the server reports an expired token', async () => {

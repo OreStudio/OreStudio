@@ -20,7 +20,13 @@
  */
 
 import { z } from 'zod';
-import { accountSchema, partySummarySchema, uuidSchema, wireTimestampSchema } from './domain.js';
+import {
+    accountSchema,
+    partySummarySchema,
+    uuidSchema,
+    wireTimestampSchema,
+    type LoginInfo,
+} from './domain.js';
 import type { Account, PartySummary } from './domain.js';
 import { subjects as httpInfoSubjects } from './generated/http/protocol/http_info_protocol.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
@@ -326,10 +332,24 @@ export const changePasswordResultSchema = z.object({
 });
 export type ChangePasswordResult = z.infer<typeof changePasswordResultSchema>;
 
+/** How a list request orders its page. An empty field means the key. */
+export const orderSchema = z.object({
+    field: z.string().default(''),
+    descending: z.boolean().default(false),
+});
+
 /** `get_accounts_request_typed`, sent on `iam.v1.accounts.list`. */
 export const listAccountsRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(100),
+    order: orderSchema.default({ field: '', descending: false }),
+});
+
+/** `list_login_info_request`, sent on `iam.v1.login_info.list`. */
+export const listLoginInfoRequestSchema = z.object({
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(1000).default(100),
+    order: orderSchema.default({ field: '', descending: false }),
 });
 export type ListAccountsRequest = z.infer<typeof listAccountsRequestSchema>;
 
@@ -393,21 +413,95 @@ function parseAccountType(value: string): Account['accountType'] {
 /**
  * `get_accounts_response`.
  *
- * `total_available_count` is renamed to `totalCount` for the HTTP contract, so
- * this schema is the HTTP shape directly.
+ * The count is the wire's `total`, renamed to `totalCount` for the HTTP
+ * contract, so this schema is the HTTP shape directly. `total_available_count`
+ * belongs to other components' list replies; IAM states `total`.
  */
 export const accountPageSchema = z
     .object({
         accounts: z.array(wireAccountSchema).default([]),
-        total_available_count: z.int().nonnegative().default(0),
+        total: z.int().nonnegative().default(0),
     })
     .transform((row) => ({
         accounts: row.accounts.map(mapAccount),
-        totalCount: row.total_available_count,
+        totalCount: row.total,
     }));
 
 /** The translated page the BFF returns and the browser consumes. */
 export type WireAccountPage = z.infer<typeof accountPageSchema>;
+
+/** `get_account_response`: the account, or nothing when the username is unknown. */
+export const accountReplySchema = z
+    .object({ account: wireAccountSchema.nullable().default(null) })
+    .transform((row) => (row.account === null ? null : mapAccount(row.account)));
+
+/** One login record, as the server writes it. */
+const wireLoginInfoSchema = z.object({
+    tenant_id: uuidSchema,
+    account_id: uuidSchema,
+    last_ip: text,
+    last_attempt_ip: text,
+    failed_logins: z.int().nonnegative().default(0),
+    locked: z.boolean().default(false),
+    last_login: text,
+    online: z.boolean().default(false),
+    password_reset_required: z.boolean().default(false),
+});
+
+/**
+ * Translates one wire login record into the domain type.
+ *
+ * Field by field rather than by renaming keys, so a column added to the server's
+ * struct is not forwarded until somebody decides a screen may show it.
+ */
+function mapLoginInfo(row: z.infer<typeof wireLoginInfoSchema>): LoginInfo {
+    return {
+        tenantId: row.tenant_id,
+        accountId: row.account_id,
+        lastIp: row.last_ip,
+        lastAttemptIp: row.last_attempt_ip,
+        failedLogins: row.failed_logins,
+        locked: row.locked,
+        lastLogin: row.last_login,
+        online: row.online,
+        passwordResetRequired: row.password_reset_required,
+    };
+}
+
+/** `get_login_info_response`: the record, or nothing when the account has none. */
+export const loginInfoReplySchema = z
+    .object({ login_info: wireLoginInfoSchema.nullable().default(null) })
+    .transform((row) => (row.login_info === null ? null : mapLoginInfo(row.login_info)));
+
+/** `list_login_info_response`. IAM states the count as `total`. */
+export const loginInfoPageSchema = z
+    .object({
+        login_info: z.array(wireLoginInfoSchema).default([]),
+        total: z.int().nonnegative().default(0),
+    })
+    .transform((row) => ({
+        loginInfo: row.login_info.map(mapLoginInfo),
+        totalCount: row.total,
+    }));
+
+/** The translated page the BFF returns and the browser consumes. */
+export type WireLoginInfoPage = z.infer<typeof loginInfoPageSchema>;
+
+/**
+ * `get_account_request`, and `get_login_info_request` beside it.
+ *
+ * Both reads name one row by a key object rather than by a bare field, which is
+ * the shape the server decodes: a `get` over the derived CRUD protocol takes
+ * `{key: {...}}` so that a `get_many` can take `{keys: [...]}` without a second
+ * request shape.
+ */
+export const accountUsernameRequestSchema = z.object({
+    key: z.object({ username: z.string().min(1) }),
+});
+
+export const loginInfoKeyRequestSchema = z.object({
+    key: z.object({ account_id: uuidSchema }),
+});
 
 /** Narrowing helper: a UUID the endpoint will accept. */
 export const partyIdSchema = z.string().regex(/^[0-9a-f-]{36}$/);

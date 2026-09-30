@@ -68,7 +68,8 @@ struct series_subclass_code final {
      * @brief Unique series subclass code.
      *
      * Examples: 'spot', 'forward', 'volatility', 'yield', 'basis', 'fra', 'xccy', 'spread',
-     * 'index_credit', 'recovery', 'swap', 'capfloor', 'seasonality', 'price', 'correlation'.
+     * 'index_credit', 'recovery', 'swap', 'capfloor', 'seasonality', 'price', 'correlation',
+     * 'prepayment', 'transition_probability', 'index_fixing'.
      */
     std::string code;
 

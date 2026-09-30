@@ -69,7 +69,10 @@ generate_synthetic_series_classification_rule(utility::generation::generation_co
                                                           "capfloor",
                                                           "seasonality",
                                                           "price",
-                                                          "correlation"};
+                                                          "correlation",
+                                                          "prepayment",
+                                                          "transition_probability",
+                                                          "index_fixing"};
         return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
     }();
     r.description = std::string(faker::word::noun());

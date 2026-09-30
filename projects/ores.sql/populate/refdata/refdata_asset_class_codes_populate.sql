@@ -19,10 +19,16 @@
  */
 
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_asset_class_codes_populate.mustache
+ *
  * Asset Class Codes Population Script
  *
  * Populates the top-level asset class classification codes. This table is
  * the source of truth for the taxonomy; no C++ enum mirrors it.
+ *
+ * Generated from ores.refdata.asset_class_catalogue, which also declares the
+ * oresmd market-data namespace and the mapping between the two lists.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */

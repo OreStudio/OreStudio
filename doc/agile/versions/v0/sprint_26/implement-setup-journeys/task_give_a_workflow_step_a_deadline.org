@@ -109,6 +109,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/2415][#2415]] | [workflow] Give a step a deadline the engine enforces |
+| [[https://github.com/OreStudio/OreStudio/pull/2418][#2418]] | [agile] Mark the isolation capture resolved — bookkeeping for a defect another change fixed, not this task's delivery |
 
 * Review
 

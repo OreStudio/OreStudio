@@ -68,6 +68,7 @@ struct ir_curve_generation_config_entity {
     std::string price_source = "fixed";
     std::string vintage_source;
     std::string vintage_date;
+    std::string vintage_series_uri;
     std::optional<std::string> description;
     std::string fixed_leg_payment_frequency_code = "Annual";
     std::string source_name;

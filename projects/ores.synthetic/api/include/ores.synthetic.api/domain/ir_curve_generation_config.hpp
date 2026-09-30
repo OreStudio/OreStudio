@@ -197,6 +197,20 @@ struct ir_curve_generation_config final {
     std::string vintage_date;
 
     /**
+     * @brief Identity of the market-data series this curve's vintage observation is read from, as
+     * an oresmd URI (e.g. "oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm"). Only
+     * populated (and required) when price_source is "vintage"; empty when "fixed" -- see
+     * price_source.
+     *
+     * The series is named by the config rather than looked up by the registry's decomposition of
+     * its key: the dataset that publishes the vintage -- the IR deposit grid or the FX driver rates
+     * -- names its rows' own ORE keys, and a series' identity is what the catalog is keyed by, so
+     * the config is where the coupling belongs. vintage_source and vintage_date say which
+     * observation, this says which series.
+     */
+    std::string vintage_series_uri;
+
+    /**
      * @brief Free-text description of what this configuration represents -- what
      * regime/vintage/index it targets, and, for a legacy index (e.g. USD LIBOR-3M, EONIA), that it
      * is historical/discontinued and why it is still offered (testing pre-cessation scenarios).

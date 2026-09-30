@@ -144,8 +144,8 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         },
         "add <party_id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
         "<ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> "
-        "<description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason> "
-        "<commentary>");
+        "<vintage_series_uri> <description> <fixed_leg_payment_frequency_code> <source_name> "
+        "<folder_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,8 +154,8 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         },
         "set <id> <party_id> <config_id> <currency_code> <index_family> <tenor> <role> "
         "<process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> "
-        "<vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> "
-        "<reason> <commentary> [--version <n>]");
+        "<vintage_date> <vintage_series_uri> <description> <fixed_leg_payment_frequency_code> "
+        "<source_name> <folder_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -164,8 +164,8 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         },
         "put-many --count <n> <id> <party_id> <config_id> <currency_code> <index_family> <tenor> "
         "<role> <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> "
-        "<vintage_source> <vintage_date> <description> <fixed_leg_payment_frequency_code> "
-        "<source_name> <folder_id> <reason> <commentary>");
+        "<vintage_source> <vintage_date> <vintage_series_uri> <description> "
+        "<fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,8 +359,8 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 18 + 2) {
+            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -378,6 +378,8 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.price_source, parsed->positionals[next++], "price_source");
         read_token(req.change.write.vintage_source, parsed->positionals[next++], "vintage_source");
         read_token(req.change.write.vintage_date, parsed->positionals[next++], "vintage_date");
+        read_token(
+            req.change.write.vintage_series_uri, parsed->positionals[next++], "vintage_series_uri");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.fixed_leg_payment_frequency_code,
                    parsed->positionals[next++],
@@ -426,8 +428,8 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 18 + 2) {
-            fail(out) << "Expected " << (18 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -445,6 +447,8 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.price_source, parsed->positionals[next++], "price_source");
         read_token(req.change.write.vintage_source, parsed->positionals[next++], "vintage_source");
         read_token(req.change.write.vintage_date, parsed->positionals[next++], "vintage_date");
+        read_token(
+            req.change.write.vintage_series_uri, parsed->positionals[next++], "vintage_series_uri");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.fixed_leg_payment_frequency_code,
                    parsed->positionals[next++],
@@ -505,8 +509,8 @@ void ir_curve_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 18 + 2) {
-            fail(out) << "Expected " << (change_count * 18 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 19 + 2) {
+            fail(out) << "Expected " << (change_count * 19 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -526,6 +530,8 @@ void ir_curve_generation_config_commands::process_put_many(std::ostream& out,
             read_token(change.write.price_source, parsed->positionals[next++], "price_source");
             read_token(change.write.vintage_source, parsed->positionals[next++], "vintage_source");
             read_token(change.write.vintage_date, parsed->positionals[next++], "vintage_date");
+            read_token(
+                change.write.vintage_series_uri, parsed->positionals[next++], "vintage_series_uri");
             read_token(change.write.description, parsed->positionals[next++], "description");
             read_token(change.write.fixed_leg_payment_frequency_code,
                        parsed->positionals[next++],

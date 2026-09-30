@@ -55,6 +55,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "price_source" text not null,
     "vintage_source" text not null,
     "vintage_date" text not null,
+    "vintage_series_uri" text not null,
     "description" text null,
     "fixed_leg_payment_frequency_code" text not null,
     "source_name" text not null,
@@ -80,7 +81,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("source_name" <> ''),
     check ("ticks_per_hour" > 0),
     check ("price_source" in ('fixed', 'vintage')),
-    check (("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> ''))
+    check (("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '' and "vintage_series_uri" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '' and "vintage_series_uri" <> ''))
 );
 
 -- Composite natural key: unique combination for active records

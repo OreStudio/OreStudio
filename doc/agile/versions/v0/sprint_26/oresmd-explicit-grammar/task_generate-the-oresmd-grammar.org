@@ -13,39 +13,112 @@
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The oresmd grammar that ships is the one the models declare. A URI names every
+coordinate dimension with its own query key, writes every key the grammar
+defines for its type, and names no default by silence. =point= is gone from the
+identifier, the parser, the writer and every declared test case.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
-| Now          | Not yet started.                       |
+| Now          | The declaration landed (task 55EDA7FC). The generated grammar that reads it has not started. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Replace =point= with the declared coordinates in the identifier, then in the parser and the writer. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
 
-- No query key is silently defaulted: the parser materialises a grammar default and the writer emits it, so model, metric and quote are always present where the grammar defines them.
-- No coordinate is a comma-joined string: point is gone from the identifier, the parser and the writer.
-- ATM is a delta and not a strike.
-- The generated parser and projection tests use the new spelling, and the old point= forms are rejected by the parser.
-- doc/knowledge/domain/market_data_urn.org describes the grammar that ships.
+- No query key is silently defaulted: the parser materialises a grammar default
+  and the writer emits it, so =model= is always present for =type=vol= and
+  =metric= and =quote= always for =type=quote=.
+- No coordinate is a comma-joined string: =point= is gone from the identifier,
+  the parser and the writer.
+- =ATM= is a =delta= and not a =strike=.
+- Every URI in every model's test tables uses the new spelling, the generated
+  tests pass, and a URI carrying =point= is refused.
+- =doc/knowledge/domain/market_data_urn.org= describes the grammar that ships.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The identifier
+
+Every declared coordinate key becomes a top-level member of its asset class's
+identifier, =std::optional<std::string>=, named exactly as the query key:
+=maturity=, =expiry=, =tenor=, =contract_month=, =contract_code=, =strike=,
+=delta=, =smile=, =seniority=, =restructuring=, =from=, =to=, =date=, =second=,
+=period=, =dst=, =month=, =cap_floor=, =call_put=, =premium=.
+
+=volatility_surface_point= is deleted. Its members are the surface's declared
+coordinates, and keeping them in a nested struct while the quote coordinates sit
+at the top level is two storage shapes for one idea. =point= is deleted with it.
+
+A key already declared in =Fields= (=tenor=, =contract_month=, =contract_code=)
+keeps its member and gains no second one.
+
+** The parser
+
+The per-family point blocks are deleted. Each =parse_<asset>()= reads every
+declared coordinate key by its query-key name, rejects a key the resolved quote
+type does not carry, and rejects =point= outright with a message naming the
+replacement. The resolved quote type's =coordinates= list drives the check, so a
+key on the wrong family fails at the boundary rather than being stored.
+
+The three-token swaption form is where =ATM= stops being a strike: the last
+token is a =delta= when it matches the declared delta vocabulary and a =strike=
+when it is a number. The four-token smile form carries =smile= as its own key.
+
+** The writer
+
+=to_uri()= emits, in the declared order, every identity key that is set and
+every declared coordinate that is set, and always emits =model= for =type=vol=,
+=metric= and =quote= for =type=quote=, and =type=. The six per-asset
+=if (model_subtype != rate_lnvol)= suppressions are deleted; the default is
+written like any other value.
+
+** The series identity
+
+=to_series_uri()= keeps the declared identity keys and clears the declared
+coordinates. The =std::visit= with three IR special cases is deleted, because
+the model now says which keys are which. =model= is identity, so lognormal and
+normal vol become two series and the corpus import can store both.
+
+** The test cases
+
+Every =point==-bearing URI in the twelve models' test tables is rewritten to the
+named keys, from the inventory in task 55EDA7FC. The rewrite is mechanical and
+scripted, and the script is not kept: the shape the models carry afterwards is
+the source. New cases assert that =point= is refused, that =model= is written
+even when it is =rate_lnvol=, and that a malformed coordinate is refused.
+
+** The projection switches**
+
+The generated switches follow the models. The one hand-written switch the new
+members reached, =default_metric(ir_quote_type)=, already carries =swaption=.
+The build is the check for any other.
+
+** The design record**
+
+=doc/knowledge/domain/market_data_urn.org= is rewritten in the same unit,
+because the URI text changes under it: the query-key table loses =point= and
+gains the coordinate keys, the =model= default becomes "always written", and the
+per-family worked examples move to the new spelling.
+
+** Sequencing**
+
+One commit, because the spells cannot half-change: the parser, the writer and
+every declared test case must move together or the suite is red between them.
+The unit is verified by the codegen suite, the full marketdata core suite, and a
+full-tree build, before unit 4 touches the stored data.
 
 * Measurements
 

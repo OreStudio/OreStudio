@@ -36,6 +36,28 @@
 alter table ores_synthetic_ir_curve_generation_configs_tbl
     add column if not exists vintage_series_uri text not null default '';
 
+-- A vintage row cannot be left empty: the check below requires the column when
+-- the price source is vintage, so the rows are named before it lands. The
+-- dataset that publishes a config names the series it reads -- the deposit
+-- grid's own ORE key projects to it -- so the artefact answers first, and only
+-- a row no dataset publishes falls back to the spelling a currency's deposit
+-- grid has: the currency and the two-day spot lag almost every market uses.
+update ores_synthetic_ir_curve_generation_configs_tbl c
+set vintage_series_uri = a.vintage_series_uri
+from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
+where c.price_source = 'vintage'
+  and a.vintage_series_uri is not null
+  and a.vintage_series_uri <> ''
+  and a.currency_code = c.currency_code
+  and a.index_family = c.index_family
+  and a.tenor = c.tenor;
+
+update ores_synthetic_ir_curve_generation_configs_tbl
+set vintage_series_uri =
+    'oresmd://ir/' || lower(currency_code) || '?tenor=2d&type=quote&metric=rate&quote=mm'
+where price_source = 'vintage'
+  and vintage_series_uri = '';
+
 alter table ores_synthetic_ir_curve_generation_configs_tbl
     alter column vintage_series_uri drop default;
 

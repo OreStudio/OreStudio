@@ -36,6 +36,9 @@
 
 \echo '--- DQ market data observations artefact: identity and key ---'
 
+-- The clear comes first and the two columns are not null without a default, so
+-- the order is a dependency rather than a style: a row left in the table would
+-- refuse the column.
 delete from ores_dq_market_data_observations_artefact_tbl;
 
 alter table ores_dq_market_data_observations_artefact_tbl

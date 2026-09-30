@@ -115,27 +115,26 @@ begin
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
         order by dq.oresmd_uri, dq.point_id
     loop
-        -- The asset class a series joins is the identity's own authority, which is
-        -- the one part of an oresmd URI every class shares: oresmd://fx/... is an FX
-        -- series and oresmd://ir/... an interest-rates one. The dataset's old
-        -- series_type/metric pair said the same thing, and the identity says it
-        -- without a vocabulary the series row no longer carries.
-        v_asset_class := case split_part(replace(r.oresmd_uri, 'oresmd://', ''), '/', 1)
-                             when 'fx' then 'fx'
-                             when 'ir' then 'interest_rates'
-                             else null
-                         end;
-        if v_asset_class is null then
-            raise exception 'Unclassified series identity: % - extend this function', r.oresmd_uri;
-        end if;
-        -- 'fx', not the FpML 'ForeignExchange': asset_class is validated against
+        -- The asset class and the subclass a series joins are read off the identity's
+        -- own authority, which is the one part of an oresmd URI every class shares:
+        -- oresmd://fx/... is an FX series and oresmd://ir/... an interest-rates one.
+        -- The two are one row here rather than two cases over the same token, so a
+        -- class cannot gain an arm in one and not the other. 'fx' rather than the
+        -- FpML 'ForeignExchange': asset_class is validated against
         -- ores_refdata_asset_class_codes_tbl (the taxonomy table itself -- see
         -- marketdata_market_series_create.sql's insert trigger), not the unrelated
         -- FpML Bond/Commodity/.../ForeignExchange/... taxonomy.
-        v_series_subclass := case split_part(replace(r.oresmd_uri, 'oresmd://', ''), '/', 1)
-                                 when 'fx' then 'spot'
-                                 when 'ir' then 'yield'
-                             end;
+        v_asset_class := null;
+        v_series_subclass := null;
+        select c.asset_class, c.series_subclass
+        into v_asset_class, v_series_subclass
+        from (values ('fx', 'fx', 'spot'), ('ir', 'interest_rates', 'yield'))
+             as c(authority, asset_class, series_subclass)
+        where c.authority = split_part(replace(r.oresmd_uri, 'oresmd://', ''), '/', 1);
+
+        if v_asset_class is null then
+            raise exception 'Unclassified series identity: % - extend this function', r.oresmd_uri;
+        end if;
 
         select id into v_series_id
         from ores_marketdata_market_series_tbl

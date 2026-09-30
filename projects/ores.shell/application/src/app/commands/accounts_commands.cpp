@@ -45,6 +45,7 @@
 #include <map>
 #include <ostream>
 #include <sstream>
+#include <vector>
 
 namespace ores::shell::app::commands {
 
@@ -150,8 +151,7 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
 
             // The four account-role verbs this menu used to carry are retired:
             // the generated authorization menu answers all four as
-            // get-account-roles, assign-role, revoke-role and
-            // get-account-permissions.
+            // get-account-roles, assign-role, revoke-role and get-my-roles.
 
             // Session commands
             accounts_menu.Insert(
@@ -656,7 +656,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "  Recorded:  " << format_time(account.recorded_at) << " by " << account.modified_by
         << std::endl;
 
-    // Step 2: Get roles for this account
+    // Step 2: Get the account's roles, each with its permissions and assignment tail
     iam::messaging::get_account_roles_request roles_req;
     roles_req.account_id = boost::uuids::to_string(account.id);
 
@@ -664,40 +664,39 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "Roles" << std::endl;
     out << "-----" << std::endl;
 
+    std::vector<std::string> permission_codes;
     auto roles_result = do_auth_request<iam::messaging::get_account_roles_response>(
         out, session, iam::messaging::get_account_roles_request::nats_subject, roles_req);
     if (!roles_result) {
         out << "  (failed to retrieve roles)" << std::endl;
+    } else if (roles_result->result.outcome != ores::utility::domain::outcome::ok) {
+        out << "  (" << roles_result->result.message << ")" << std::endl;
     } else if (roles_result->roles.empty()) {
         out << "  (no roles assigned)" << std::endl;
     } else {
-        for (const auto& role : roles_result->roles) {
-            out << "  - " << role.name;
-            if (!role.description.empty()) {
-                out << " (" << role.description << ")";
+        for (const auto& entry : roles_result->roles) {
+            out << "  - " << entry.role.name;
+            if (!entry.role.description.empty()) {
+                out << " (" << entry.role.description << ")";
             }
             out << std::endl;
+            permission_codes.insert(permission_codes.end(),
+                                    entry.permission_codes.begin(),
+                                    entry.permission_codes.end());
         }
     }
 
-    // Step 3: Get effective permissions for this account
-    iam::messaging::get_account_permissions_request perms_req;
-    perms_req.account_id = boost::uuids::to_string(account.id);
-
+    // Step 3: Show the effective permissions the roles above carry
     out << std::endl;
     out << "Effective Permissions" << std::endl;
     out << "---------------------" << std::endl;
 
-    auto perms_result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, iam::messaging::get_account_permissions_request::nats_subject, perms_req);
-    if (!perms_result) {
-        out << "  (failed to retrieve permissions)" << std::endl;
-    } else if (perms_result->permission_codes.empty()) {
+    if (permission_codes.empty()) {
         out << "  (no permissions)" << std::endl;
     } else {
         // Check for wildcard
         bool has_wildcard = false;
-        for (const auto& code : perms_result->permission_codes) {
+        for (const auto& code : permission_codes) {
             if (code == "*") {
                 has_wildcard = true;
                 break;
@@ -710,7 +709,7 @@ void accounts_commands::process_account_info(std::ostream& out,
 
         // Group permissions by component
         std::map<std::string, std::vector<std::string>> by_component;
-        for (const auto& code : perms_result->permission_codes) {
+        for (const auto& code : permission_codes) {
             if (code == "*")
                 continue;
 
@@ -731,8 +730,7 @@ void accounts_commands::process_account_info(std::ostream& out,
         }
 
         out << std::endl;
-        out << "  Total: " << perms_result->permission_codes.size() << " permission(s)"
-            << std::endl;
+        out << "  Total: " << permission_codes.size() << " permission(s)" << std::endl;
     }
 
     out << std::endl;

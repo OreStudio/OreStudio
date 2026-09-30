@@ -257,6 +257,73 @@ authorization_service::get_account_roles(const boost::uuids::uuid& account_id) {
 }
 
 // ============================================================================
+// Composed Access Reads
+// ============================================================================
+
+account_access authorization_service::read_own_access(const boost::uuids::uuid& account_id) {
+    account_access answer;
+    answer.roles = compose_account_access(account_id);
+    return answer;
+}
+
+account_access authorization_service::read_account_access(
+    const boost::uuids::uuid& caller_id, const boost::uuids::uuid& account_id) {
+    account_access answer;
+    if (!has_permission(caller_id, domain::permissions::roles_read)) {
+        BOOST_LOG_SEV(lg(), warn) << "Access read for account " << account_id << " denied: caller "
+                                  << caller_id << " lacks " << domain::permissions::roles_read;
+        answer.result.outcome = ores::utility::domain::outcome::denied;
+        answer.result.code = domain::permissions::roles_read;
+        answer.result.message = std::string("Permission denied: ") +
+                                std::string(domain::permissions::roles_read) + " required";
+        return answer;
+    }
+    answer.roles = compose_account_access(account_id);
+    return answer;
+}
+
+std::vector<account_access_entry>
+authorization_service::compose_account_access(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Composing access for account: " << account_id;
+
+    /*
+     * The junction row carries the assignment tail and names the role; the
+     * role and its permission codes are read per assignment. The joined shape
+     * reaches a caller as one answer, so the round trips a screen would make
+     * are made here instead.
+     */
+    const auto assignments = account_role_repo_.read_latest_by_account(account_id);
+
+    std::vector<account_access_entry> result;
+    result.reserve(assignments.size());
+
+    for (const auto& assignment : assignments) {
+        auto roles = role_repo_.read_latest(ctx_, boost::uuids::to_string(assignment.role_id));
+        if (roles.empty()) {
+            continue;
+        }
+        account_access_entry entry;
+        entry.role = std::move(roles.front());
+        entry.permission_codes = get_role_permissions(assignment.role_id);
+        entry.assigned_by = assignment.assigned_by;
+        entry.assigned_at = assignment.assigned_at;
+        entry.change_reason_code = assignment.change_reason_code;
+        entry.change_commentary = assignment.change_commentary;
+        result.push_back(std::move(entry));
+    }
+
+    std::sort(result.begin(),
+              result.end(),
+              [](const account_access_entry& lhs, const account_access_entry& rhs) {
+                  return lhs.role.name < rhs.role.name;
+              });
+
+    BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " holds " << result.size()
+                               << " role(s).";
+    return result;
+}
+
+// ============================================================================
 // Permission Checking
 // ============================================================================
 

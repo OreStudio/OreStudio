@@ -81,29 +81,6 @@ Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/permissions-by-account=
-:PROPERTIES:
-:ID: 8210F786-82E7-5973-B1D0-09288524FE0A
-:END:
-
-Get account permissions. It needs a session.
-
-It forwards to =iam.v1.roles.permissions-by-account=.
-
-The request is:
-
-#+begin_example
-POST /api/v1/iam/roles/permissions-by-account
-#+end_example
-
-#+name: authorization-get-account-permissions
-#+begin_src hurl :tangle authorization-get-account-permissions.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/permissions-by-account
-Accept: application/json
-Authorization: Bearer {{token}}
-HTTP 200
-#+end_src
-
 ** =POST /api/v1/iam/roles/permissions=
 :PROPERTIES:
 :ID: D657A55F-ED53-5C39-92DC-F532C984173E

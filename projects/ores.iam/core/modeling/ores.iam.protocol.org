@@ -72,7 +72,7 @@ the header named below.
 | =iam.v1.auth.*= | =ores.iam.login_messages.org=, =ores.iam.signup_messages.org= | =login_protocol.hpp=, =signup_protocol.hpp= | =login=, =logout=, =refresh=, =service-login=, =public-key=, =signup= |
 | =iam.v1.bootstrap.*= | =ores.iam.bootstrap_messages.org= | =bootstrap_protocol.hpp= | =status=, =create-admin=, =provision-tenant= |
 | =iam.v1.accounts.*= (operation verbs) | =ores.iam.account_messages.org= | =account_operations_protocol.hpp= | =save=, =update=, =delete=, =lock=, =unlock=, =reset-password=, =update-email=, =set-default-party=, =select-party=, =switch-party=, =change-password=, =publish-from-dq= |
-| =iam.v1.roles.*= (operation verbs) | =ores.iam.authorization_messages.org= | =authorization_protocol.hpp= | =assign=, =assign-by-name=, =revoke=, =revoke-by-name=, =by-account=, =permissions=, =permissions-by-account=, =suggest-commands= |
+| =iam.v1.roles.*= (operation verbs) | =ores.iam.authorization_messages.org= | =authorization_protocol.hpp= | =assign=, =assign-by-name=, =revoke=, =revoke-by-name=, =by-account=, =mine=, =permissions=, =suggest-commands= |
 | =iam.v1.system.*= | =ores.iam.reset_messages.org= | =reset_protocol.hpp= | =reset=, =reset-tenant= |
 | =iam.v1.sessions.*= (operation verb) | =ores.iam.session_messages.org= | =session_operations_protocol.hpp= | =active= |
 | =iam.v1.sessions.*= (samples) | =ores.iam.session_samples_messages.org= | =session_samples_protocol.hpp= | =samples= |

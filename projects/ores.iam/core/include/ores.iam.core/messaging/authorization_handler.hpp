@@ -47,6 +47,41 @@ inline auto& authorization_handler_lg() {
     return instance;
 }
 
+/*
+ * The service answers a composed read; the response is the wire shape of that
+ * answer. The mapping is field for field so the two shapes stay one change
+ * apart rather than two declarations that drift.
+ */
+inline get_account_roles_response to_response(service::account_access answer) {
+    get_account_roles_response response;
+    response.result = std::move(answer.result);
+    response.roles.reserve(answer.roles.size());
+    for (auto& entry : answer.roles) {
+        response.roles.push_back(account_role_access{.role = std::move(entry.role),
+                                                     .permission_codes =
+                                                         std::move(entry.permission_codes),
+                                                     .assigned_by = std::move(entry.assigned_by),
+                                                     .assigned_at = entry.assigned_at,
+                                                     .change_reason_code =
+                                                         std::move(entry.change_reason_code),
+                                                     .change_commentary =
+                                                         std::move(entry.change_commentary)});
+    }
+    return response;
+}
+
+/*
+ * A response for a failure that stopped the work rather than a refusal the
+ * operation decided. The outcome is set because the default is ok, and an
+ * exception reported as ok would read as an account that holds nothing.
+ */
+inline ores::utility::domain::result failed_result(const std::string& message) {
+    ores::utility::domain::result result;
+    result.outcome = ores::utility::domain::outcome::failed;
+    result.message = message;
+    return result;
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -158,26 +193,21 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
-            auto roles = svc.get_account_roles(sg(req->account_id));
+            service::authorization_service svc(ctx);
+            auto answer = svc.read_account_access(sg(ctx.actor()), sg(req->account_id));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_account_roles_response{.roles = std::move(roles)});
+            reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_roles_response{});
+            reply(nats_, msg, get_account_roles_response{.result = failed_result(e.what())});
         }
     }
 
-    void account_permissions(ores::nats::message msg) {
+    void mine(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);
-        auto req = decode<get_account_permissions_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -186,16 +216,15 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
-            auto codes = svc.get_effective_permissions(sg(req->account_id));
+            service::authorization_service svc(ctx);
+            auto answer = svc.read_own_access(sg(ctx.actor()));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(
-                nats_, msg, get_account_permissions_response{.permission_codes = std::move(codes)});
+            reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_permissions_response{});
+            reply(nats_, msg, get_account_roles_response{.result = failed_result(e.what())});
         }
     }
 
@@ -223,7 +252,7 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(authorization_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_role_permissions_response{});
+            reply(nats_, msg, get_role_permissions_response{.result = failed_result(e.what())});
         }
     }
 

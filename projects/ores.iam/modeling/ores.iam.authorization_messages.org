@@ -21,6 +21,8 @@ The authorization protocol messages.
 
 #+begin_src cpp :name includes
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -158,30 +160,66 @@ The authorization protocol messages.
 :cpp_type: std::string
 :END:
 
-** get_account_roles_response
-
-*** roles
+** get_my_roles_request
 :PROPERTIES:
-:cpp_type: std::vector<ores::iam::domain::role>
+:subject: iam.v1.roles.mine
+:response: get_account_roles_response
 :END:
 
-** get_account_permissions_request
-:PROPERTIES:
-:subject: iam.v1.roles.permissions-by-account
-:response: get_account_permissions_response
-:http_route: true
-:END:
+** account_role_access
 
-*** account_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
+#+begin_src cpp :name comment
+/**
+ * @brief One role an account holds, with the permissions it grants and the
+ * record of its assignment.
+ *
+ * The element both access reads answer with, so the member's screen and the
+ * administrator's render one type. The permissions are attributed to the
+ * role rather than flattened into one list, and the tail is the junction
+ * row's own record of who granted the role, when and why.
+ */
+#+end_src
 
-** get_account_permissions_response
+*** role
+:PROPERTIES:
+:cpp_type: ores::iam::domain::role
+:END:
 
 *** permission_codes
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
+:END:
+
+*** assigned_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** assigned_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_account_roles_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** roles
+:PROPERTIES:
+:cpp_type: std::vector<account_role_access>
 :END:
 
 ** get_role_permissions_request
@@ -197,6 +235,11 @@ The authorization protocol messages.
 :END:
 
 ** get_role_permissions_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
 
 *** permission_codes
 :PROPERTIES:

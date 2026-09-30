@@ -94,13 +94,6 @@ public:
                              ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/permissions-by-account — Get account permissions.
-     */
-    static boost::asio::awaitable<ores::http::domain::http_response>
-    handle_get_account_permissions(const ores::http::domain::http_request& req,
-                                   ores::nats::service::nats_client& session);
-
-    /**
      * @brief POST /api/v1/iam/roles/permissions — Get role permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>

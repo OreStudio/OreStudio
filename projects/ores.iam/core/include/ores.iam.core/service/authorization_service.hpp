@@ -31,13 +31,43 @@
 #include "ores.iam.core/repository/role_permission_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::iam::service {
+
+/**
+ * @brief One role an account holds, with its permissions and assignment tail.
+ *
+ * The permissions are attributed to the role that grants them rather than
+ * flattened into one list, and the tail is the account-role junction row's own
+ * record of who granted the role, when and why.
+ */
+struct account_access_entry {
+    domain::role role;
+    std::vector<std::string> permission_codes;
+    std::string assigned_by;
+    std::chrono::system_clock::time_point assigned_at;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+/**
+ * @brief The answer to an access read: the outcome and the rows it names.
+ *
+ * A refusal is a value rather than an empty list: @c result.outcome is
+ * @c denied with the permission that was required, so a caller can tell a
+ * refusal from an account that holds nothing.
+ */
+struct account_access {
+    ores::utility::domain::result result;
+    std::vector<account_access_entry> roles;
+};
 
 /**
  * @brief Service for managing role-based access control (RBAC).
@@ -172,6 +202,34 @@ public:
     std::vector<domain::role> get_account_roles(const boost::uuids::uuid& account_id);
 
     // ========================================================================
+    // Composed Access Reads
+    // ========================================================================
+
+    /**
+     * @brief Reads an account's own access.
+     *
+     * The caller names no other account, so a session is the whole of the
+     * requirement and no permission is checked.
+     *
+     * @param account_id The authenticated caller's own account
+     * @return Each role the account holds, with its permissions and tail
+     */
+    account_access read_own_access(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Reads another account's access, refusing a caller who may not.
+     *
+     * The database-backed roles:read check runs before the account is looked
+     * up, so a caller without it learns nothing about the account. A refusal
+     * answers @c denied with roles:read as its code.
+     *
+     * @param caller_id The authenticated caller's account
+     * @param account_id The account whose access was asked for
+     */
+    account_access read_account_access(const boost::uuids::uuid& caller_id,
+                                       const boost::uuids::uuid& account_id);
+
+    // ========================================================================
     // Permission Checking
     // ========================================================================
 
@@ -209,6 +267,15 @@ public:
                                  std::string_view required_permission);
 
 private:
+    /**
+     * @brief Composes one account's roles, their permissions and their tails.
+     *
+     * The only place the joined shape is assembled; both access reads reach
+     * the rows through it.
+     */
+    std::vector<account_access_entry>
+    compose_account_access(const boost::uuids::uuid& account_id);
+
     /**
      * @brief Publishes an account_permissions_changed_event for the given account.
      */

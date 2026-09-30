@@ -5619,12 +5619,23 @@ def load_org_asset_class_catalogue_model(path: Path | str) -> dict[str, Any]:
     taxonomy_section = _section(doc.root, "Taxonomy")
     for node in (taxonomy_section.children if taxonomy_section else []):
         props = {k.lower(): v for k, v in node.properties.items()}
-        taxonomy.append({
+        entry = {
             "code": node.title,
             "name": props.get("name", node.title).strip(),
             "display_order": int(props.get("display_order", len(taxonomy) + 1)),
             "description": _strip_body(node),
-        })
+        }
+        # A SQL literal carries the prose on one line and doubles its quotes.
+        entry["description_sql"] = " ".join(
+            entry["description"].split()).replace("'", "''")
+        taxonomy.append(entry)
+    for index, entry in enumerate(taxonomy):
+        last = index == len(taxonomy) - 1
+        entry["last"] = last
+        # The separator is carried per row rather than emitted by a section:
+        # the section form leaves the last row's closing tag adjacent to the
+        # statement that follows the list.
+        entry["comma"] = "" if last else ","
 
     namespace: list[dict[str, Any]] = []
     namespace_section = _section(doc.root, "Namespace")

@@ -2494,6 +2494,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         _mark_last_item(db_services)
         data['service_registry_db_services'] = db_services
 
+    # The asset-class catalogue renders at a top-level key of its own name, as
+    # service_registry does above: the taxonomy and namespace tables are
+    # consumed by the SQL archetypes and, later, by the C++ and doc ones.
+    if (model_type == 'asset_class_catalogue' and isinstance(model, dict)
+            and 'asset_class_catalogue' in model):
+        data['asset_class_catalogue'] = model['asset_class_catalogue']
+
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:
         entity = model['entity']

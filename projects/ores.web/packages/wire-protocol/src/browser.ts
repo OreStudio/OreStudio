@@ -59,7 +59,10 @@ export {
     loginResultSchema,
     loginSuccessSchema,
     partyChoiceSchema,
+    registrationPolicyViewSchema,
     sessionViewSchema,
+    signupRequestSchema,
+    signupResultSchema,
     sseEnvelopeSchema,
 } from './contracts.js';
 export type {
@@ -70,7 +73,10 @@ export type {
     LoginResult,
     LoginSuccess,
     PartyChoice,
+    RegistrationPolicyView,
     SessionView,
+    SignupRequest,
+    SignupResult,
 } from './contracts.js';
 
 // Subjects, so a browser-side module can name one without importing the

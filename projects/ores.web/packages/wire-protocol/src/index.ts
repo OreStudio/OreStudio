@@ -169,6 +169,18 @@ export type {
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
 
+// The door: what the deployment offers somebody who is not in it yet, and the
+// registration that acts on that answer.
+export {
+    registrationPolicyReplySchema,
+    registrationPolicyRequestSchema,
+    signupCommandSchema,
+    signupReplySchema,
+    toRegistrationPolicy,
+    toSignupOutcome,
+} from './operations.js';
+export type { RegistrationPolicy, SignupOutcome } from './operations.js';
+
 export {
     retryWorkflowInstanceRequestSchema,
     retryWorkflowInstanceResultSchema,
@@ -214,8 +226,11 @@ export {
     loginResultSchema,
     loginSuccessSchema,
     partyChoiceSchema,
+    registrationPolicyViewSchema,
     selectPartyRequestSchema,
     sessionViewSchema,
+    signupRequestSchema,
+    signupResultSchema,
     sseEnvelopeSchema,
 } from './contracts.js';
 export type {
@@ -226,5 +241,8 @@ export type {
     LoginResult,
     LoginSuccess,
     PartyChoice,
+    RegistrationPolicyView,
     SessionView,
+    SignupRequest,
+    SignupResult,
 } from './contracts.js';

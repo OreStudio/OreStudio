@@ -218,18 +218,21 @@ write path the settings have ever had:
 - A write that sets one setting by name, permission-gated, with the writer and
   the change reason recorded as every other write records them.
 
-Until that pair exists, =system.user_signups= is advisory: the live registration
-path does not read it at all, which is the defect the survey found, and a
-deployment that believes it has closed the door has not.
+Until that pair exists, the switch can only be set by seeding it: there is no
+screen and no subject that writes a named setting. What the door does with the
+value is settled — the live path reads it through
+=iam.v1.auth.registration-policy= and refuses the registration it should never
+have accepted — so the missing write is a convenience for an operator rather
+than the difference between a closed door and an open one.
 
 ** The authorisation flag
 
 =system.signup_requires_authorization= must not claim an approval nothing
-performs. Today the code that reads it refuses the registration outright, and the
-code that refuses is the one nothing calls; once the live path reads the flags,
-the honest behaviour is that the flag *closes* registration and the policy read
-reports =authorization_required= so the screen shows why. The approval workflow
-itself is out of scope for this story and belongs to =ores.workflow=.
+performs. The live path reads it now, and the behaviour is the honest one: a
+deployment that sets it *closes* registration, the policy read reports
+=authorization_required=, and the door states why rather than accepting a form it
+would refuse. The approval workflow itself is out of scope here and belongs to
+=ores.workflow=.
 
 * Where the defaults come from
 

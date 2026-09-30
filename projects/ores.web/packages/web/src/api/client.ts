@@ -27,9 +27,11 @@ import {
     passwordPolicySchema,
     provisionPartyResultSchema,
     provisionTenantResultSchema,
+    registrationPolicyViewSchema,
     retryWorkflowInstanceResultSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
+    signupResultSchema,
     workflowProgressSchema,
     type BootstrapStatus,
     type CreateAdministratorRequest,
@@ -41,9 +43,12 @@ import {
     type ProvisionPartyResult,
     type ProvisionTenantRequest,
     type ProvisionTenantResult,
+    type RegistrationPolicyView,
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
     type SessionView,
+    type SignupRequest,
+    type SignupResult,
     type WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
@@ -135,6 +140,36 @@ export const api = {
      */
     async passwordPolicy(): Promise<PasswordPolicy> {
         return passwordPolicySchema.parse(await request('/api/password-policy', { method: 'GET' }));
+    },
+
+    /**
+     * What the deployment offers somebody who is not in it yet.
+     *
+     * Asked before the door offers a form, because a deployment that refuses
+     * registrations should say so rather than accept a form and refuse it. The
+     * answer is a value rather than an error: a closed door is a state the
+     * screen renders, and the code beside it says which closure it is.
+     */
+    async registrationPolicy(): Promise<RegistrationPolicyView> {
+        return registrationPolicyViewSchema.parse(
+            await request('/api/registration-policy', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Registers an account.
+     *
+     * The address the person arrived at is not sent: the BFF forwards the
+     * hostname the request was served at, because the tenant is resolved from
+     * the address rather than typed into the form.
+     */
+    async signup(input: SignupRequest): Promise<SignupResult> {
+        const payload = await request('/api/signup', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+        return signupResultSchema.parse(payload);
     },
 
     /**

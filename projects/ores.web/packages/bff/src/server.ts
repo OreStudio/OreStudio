@@ -51,10 +51,13 @@ import {
     provisionPartyResultSchema,
     provisionTenantRequestSchema,
     provisionTenantResultSchema,
+    registrationPolicyViewSchema,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
+    signupRequestSchema,
+    signupResultSchema,
     workflowProgressSchema,
     NotAuthenticatedError,
     type LoginOutcome,
@@ -72,6 +75,7 @@ import {
     invalidCredentials,
     invalidRequest,
     notAuthenticated,
+    signupRefused,
     toHttpFailure,
     HttpFailure,
 } from './errors.js';
@@ -310,6 +314,90 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             return initialAdministratorSchema.parse({
                 accountId: created.accountId,
                 tenantId: created.tenantId,
+            });
+        } finally {
+            await client.close().catch(() => undefined);
+        }
+    });
+
+    /**
+     * What the deployment offers somebody who is not in it yet.
+     *
+     * Unauthenticated on purpose: this is the read the door makes before it
+     * offers a form, and it answers the switch, the destination and whether a
+     * registration can be used at once. The address the request arrived at
+     * travels with it, because the tenant is resolved from the address rather
+     * than typed into the form, and a registration that resolves to no tenant
+     * is refused rather than landing in the system tenant by omission.
+     *
+     * A refusal is an answer rather than an error here: the screen states why
+     * the door is closed, which is a state it renders rather than a failure it
+     * recovers from.
+     */
+    server.get('/api/registration-policy', async (request) => {
+        const { client, connect } = createClient();
+        try {
+            await connect();
+            const policy = await client.registrationPolicy(request.hostname);
+            return registrationPolicyViewSchema.parse({
+                success: policy.success,
+                message: policy.message,
+                errorCode: policy.errorCode,
+                signupsEnabled: policy.signupsEnabled,
+                authorizationRequired: policy.authorizationRequired,
+                tenantId: policy.tenantId,
+                tenantName: policy.tenantName,
+                partyId: policy.partyId,
+                partyName: policy.partyName,
+                roleId: policy.roleId,
+                roleName: policy.roleName,
+                usableNow: policy.usableNow,
+            });
+        } finally {
+            await client.close().catch(() => undefined);
+        }
+    });
+
+    /**
+     * Registers an account.
+     *
+     * Unauthenticated, because the person has no account yet: this is the
+     * request that makes one. It shares the sign-in limiter, because both are
+     * unauthenticated writes a stranger can drive, and the thing being
+     * protected is the same account.
+     *
+     * The answer is the account and its state, not a session: a pending account
+     * cannot sign in, and an active one arrives at the door deliberately.
+     */
+    server.post('/api/signup', async (request) => {
+        const parsed = signupRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('A username, an email address and a password are required.');
+        }
+        if (!loginLimiter.allow(request.ip)) {
+            throw invalidRequest('Too many attempts. Wait a minute and try again.');
+        }
+
+        const { client, connect } = createClient();
+        try {
+            await connect();
+            const outcome = await client.signup({
+                principal: parsed.data.principal,
+                password: parsed.data.password,
+                email: parsed.data.email,
+                hostname: request.hostname,
+            });
+            if (!outcome.success) {
+                throw signupRefused(outcome.errorCode, outcome.message);
+            }
+            return signupResultSchema.parse({
+                success: outcome.success,
+                message: outcome.message,
+                errorCode: outcome.errorCode,
+                accountId: outcome.accountId,
+                accountStatus: outcome.accountStatus,
+                partyId: outcome.partyId,
+                roleId: outcome.roleId,
             });
         } finally {
             await client.close().catch(() => undefined);

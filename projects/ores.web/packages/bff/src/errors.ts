@@ -105,6 +105,32 @@ export function bootstrapComplete(): HttpFailure {
 }
 
 /**
+ * A registration the server refused.
+ *
+ * The refusal keeps the server's own code rather than flattening to one
+ * sentence, because the door branches on it: a tenant that nominates no default
+ * role needs different words from a deployment that does not accept
+ * registrations at all, and each names a different thing for an administrator
+ * to fix.
+ */
+export function signupRefused(code: string, message: string): HttpFailure {
+    const known: Record<string, ApiError['code']> = {
+        signup_disabled: 'signups-disabled',
+        signup_requires_authorization: 'signup-requires-authorization',
+        no_registration_destination: 'no-registration-destination',
+        no_default_role: 'no-default-role',
+        username_taken: 'username-taken',
+        email_taken: 'email-taken',
+        weak_password: 'weak-password',
+        invalid_request: 'invalid-request',
+    };
+    return new HttpFailure(409, {
+        code: known[code] ?? 'invalid-request',
+        message: message.length > 0 ? message : 'The registration was refused.',
+    });
+}
+
+/**
  * Translates any thrown value into an {@link HttpFailure}.
  *
  * Returns the original failure when it already is one, so a route can throw a

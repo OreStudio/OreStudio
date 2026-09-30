@@ -20,9 +20,11 @@
  */
 
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { PasswordInput } from '../ui/PasswordField.js';
+import { JourneySplash } from '../journeys/parts.js';
 import type { SignInOutcome } from '../session/SessionProvider.js';
 import type { PartySummary } from '@ores/wire-protocol/browser';
 
@@ -38,6 +40,10 @@ import type { PartySummary } from '@ores/wire-protocol/browser';
  * then: the gate renders the setup page instead. Both are deliberate, and the
  * server's refusal is what makes the rule hold for a caller that ignores this
  * one.
+ *
+ * The banner stands above the work and the work stays below it, because the
+ * party picker replaces the form rather than following it: a screen that drew
+ * the banner inside one branch would lose it the moment the branch changed.
  */
 export interface SignInPageProps {
     readonly onSignIn: (credentials: {
@@ -71,32 +77,30 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
         }
     };
 
-    if (parties !== undefined) {
-        return (
-            <div className="card p-6">
-                <h1 className="text-lg font-semibold text-ink">{t('signIn.chooseParty')}</h1>
-                <p className="mt-2 text-sm text-ink-muted">{t('signIn.choosePartyHint')}</p>
-                <ul className="mt-4 space-y-2">
-                    {parties.map((party) => (
-                        <li key={party.id}>
-                            <Button
-                                variant="secondary"
-                                className="w-full justify-start"
-                                onClick={() => {
-                                    void onChooseParty(party.id, parties);
-                                }}
-                            >
-                                {party.name}
-                            </Button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        );
-    }
+    const picker = (
+        <>
+            <h1 className="text-lg font-semibold text-ink">{t('signIn.chooseParty')}</h1>
+            <p className="mt-2 text-sm text-ink-muted">{t('signIn.choosePartyHint')}</p>
+            <ul className="mt-4 space-y-2">
+                {(parties ?? []).map((party) => (
+                    <li key={party.id}>
+                        <Button
+                            variant="secondary"
+                            className="w-full justify-start"
+                            onClick={() => {
+                                void onChooseParty(party.id, parties ?? []);
+                            }}
+                        >
+                            {party.name}
+                        </Button>
+                    </li>
+                ))}
+            </ul>
+        </>
+    );
 
-    return (
-        <form className="card p-6" onSubmit={(event) => void submit(event)}>
+    const form = (
+        <form onSubmit={(event) => void submit(event)}>
             <h1 className="text-lg font-semibold text-ink">{t('signIn.title')}</h1>
             {failure !== undefined && (
                 <div className="mt-4">
@@ -119,7 +123,13 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
                     />
                 </Field>
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex items-center justify-between gap-3">
+                <p className="text-sm text-ink-muted">
+                    {t('signIn.noAccount')}{' '}
+                    <Link to="/signup" className="font-medium text-accent-bright hover:underline">
+                        {t('signIn.createOne')}
+                    </Link>
+                </p>
                 <Button
                     type="submit"
                     variant="primary"
@@ -130,5 +140,14 @@ export function SignInPage({ onSignIn, onChooseParty }: SignInPageProps): ReactN
                 </Button>
             </div>
         </form>
+    );
+
+    return (
+        <div className="card p-6">
+            <div className="mb-5 border-b border-line pb-5">
+                <JourneySplash />
+            </div>
+            {parties !== undefined ? picker : form}
+        </div>
     );
 }

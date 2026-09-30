@@ -69,6 +69,14 @@ import {
     toRetryWorkflowInstanceResult,
     passwordPolicyReplySchema,
     toPasswordPolicy,
+    registrationPolicyRequestSchema,
+    registrationPolicyReplySchema,
+    toRegistrationPolicy,
+    signupCommandSchema,
+    signupReplySchema,
+    toSignupOutcome,
+    type RegistrationPolicy,
+    type SignupOutcome,
     workflowProgressSchema,
     workflowStepsRequestSchema,
     type LoginResponse,
@@ -488,6 +496,47 @@ export class OresClient {
             },
         );
         return toPasswordPolicy(reply);
+    }
+
+    /**
+     * What the deployment offers somebody who is not in it yet.
+     *
+     * `hostname` is the address the browser arrived at, and it is how the
+     * service resolves the tenant: the person types a username and not a
+     * `user@hostname`, and a registration that resolves to no tenant is
+     * refused rather than landing in the system tenant by omission.
+     */
+    async registrationPolicy(hostname: string): Promise<RegistrationPolicy> {
+        const reply = await this.#call(
+            SUBJECTS.registrationPolicy,
+            registrationPolicyRequestSchema.parse({ hostname }),
+            registrationPolicyReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        return toRegistrationPolicy(reply);
+    }
+
+    /**
+     * Registers an account, and answers with the state it was created in.
+     *
+     * The answer is not a session: a pending account cannot sign in, and an
+     * active one arrives at the door deliberately. A refusal is an answer
+     * rather than an error here, because the code it carries is what the
+     * screen branches on.
+     */
+    async signup(input: {
+        readonly principal: string;
+        readonly password: string;
+        readonly email: string;
+        readonly hostname: string;
+    }): Promise<SignupOutcome> {
+        const reply = await this.#call(
+            SUBJECTS.signup,
+            signupCommandSchema.parse(input),
+            signupReplySchema,
+            { timeoutMs: this.#timeouts.slowMs },
+        );
+        return toSignupOutcome(reply);
     }
 
     /**

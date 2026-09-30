@@ -26,12 +26,12 @@ ores.marketdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | PRs 1 to 4 are merged, the last as #2321 and #2327, and the fixing identity task has closed two of the eight index-name classes: interest rates 57 of 57 and FX 7 of 7, so 64 of the corpus's 158 names resolve. |
-| Waiting on   | A decision on the FX source and on the power contract-hour shape, before PR 5 can start. |
-| Next         | Take the power contract-hour shape to the owner as a worked example (task AB2922AA). Six fixing index classes remain: inflation 7 names, equity 8, commodity 25, power 48, security 2, =GENERIC= 4. PR 5 is blocked until they are mapped, or the type is refused at the boundary. |
-| Last touched | 2026-09-28                               |
+| Now          | Complete. 28 checklist items Pass, four Fail and one Partial; the five are recorded with their dispositions in =* Result= and none is left untracked. The story's four other tasks are merged. |
+| Waiting on   | Nothing. The four deferred items are tracked outside this story. |
+| Next         | Pick up the grammar work in story 12DAAEC7, which this story's identity cutover exposed. |
+| Last touched | 2026-10-01                               |
 
 * Acceptance
 
@@ -241,3 +241,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The checklist closes with 28 items Pass, one Partial and four Fail. The story's
+acceptance says every applicable item passes, so this task closes the story with
+those five recorded rather than met, and each names where it is tracked.
+
+| Item | State | Disposition |
+|------+-------+-------------|
+| M06 | Fail | Six hand-written protocol headers carry wire types no model covers. Deferred to a capture: =six-marketdata-protocol-headers-have-no-model=. |
+| P04 | Fail | No operation model anywhere. The same six headers and the same generator gap as M06, deferred with it. |
+| P01 | Fail | The canonical =as_of= read is absent from every marketdata list request. Re-scoped and deferred with H02 to backlog story =F15A8480=, "Generalize as-of and as-of-bucket queries across repositories". |
+| W02 | Fail | The permission check passes vacuously because =marketdata= is not in its registry: 16 codes are checked, none is seeded as checked, and seven seeded =marketdata::= codes are checked by no handler. Captured as =CCB1D9D1=, "Nothing gates a hand-written operation handler". |
+| H01 | Partial | The composite root =modeling/ores.marketdata.puml= carries no diagram sentinel. A deliberate stop, not an oversight: it is a hand-authored data-model diagram for the oresmd identifier grammar, so the automated pass has nothing to contribute to a component whose root owns no code. |
+
+What the four other tasks delivered: the checklist itself (28 items), the oresmd
+identity for every fixing index name (AB2922AA), the asset class lists declared
+once (E205D30E), and the oresmd URI as the series identity (4050BF6C). The
+follow-on work those units exposed is the story
+[[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit
+and typed]], which carries the grammar defects this story's identity cutover
+surfaced.

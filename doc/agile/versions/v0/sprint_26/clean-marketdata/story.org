@@ -21,12 +21,12 @@ ores.marketdata meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. |
-| Waiting on    | Nothing.                               |
-| Next          | Start the task. |
-| Last touched  | 2026-09-23                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-01                               |
 
 * Acceptance
 
@@ -39,7 +39,7 @@ ores.marketdata meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F9E8C6BE-9606-48E5-AEE3-431642C0EB28][Bring ores.marketdata to the clean standard]] | STARTED | 2026-09-26 | | Work ores.marketdata through the Component Clean Standard in order and record each item. |
+| [[id:F9E8C6BE-9606-48E5-AEE3-431642C0EB28][Bring ores.marketdata to the clean standard]] | DONE | 2026-09-26 | 2026-10-01 | Work ores.marketdata through the Component Clean Standard in order and record each item. 28 Pass, four Fail and one Partial, with each item that is not met named and its disposition recorded. |
 | [[id:AB2922AA-8208-442C-B39C-156877E83D64][Give every fixing index name an oresmd identity]] | DONE | 2026-09-28 | 2026-09-30 | Map the fixing key space to oresmd so the identity cutover can land: a fixing's key is an index name, not the series key grammar, and the corpus carries 158 distinct ones across six asset classes. |
 | [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Declare the asset class lists once]] | DONE | 2026-09-30 | 2026-09-30 | The refdata product taxonomy and the oresmd market-data namespace are two different lists that overlap, and each is hand-copied in dozens of places. Declare both once in a codegen model, generate the seed SQL, the DQ badges, the briefs and the docs from it, and validate the oresmd authorities against it. |
 | [[id:4050BF6C-DBC3-4E75-A204-A75CE4AFA323][Make the oresmd URI the series identity]] | DONE | | 2026-09-30 | Cut the market series identity over to the oresmd URI: the column on market_series and feed_binding, the import writing it, and the registry triple gone. |
@@ -50,6 +50,39 @@ ores.marketdata meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 - Eight models are oresmd quote types, a metatype of their own. Classify them under B02.
 
 * Decisions
+- **The identity is the oresmd URI.** =market_series.oresmd_uri= is not null,
+  non-empty and unique with =party_id=, and the registry's three columns no
+  longer key the row. A key the grammar cannot name is dropped and reported
+  rather than stored with no identity.
+- **A fixing's key is an index name, not the series key grammar.** The fixing
+  key space has its own identity path, and the corpus's index names read back as
+  they arrived.
+- **The asset class lists are declared once.** The refdata product taxonomy and
+  the oresmd namespace are two different lists that overlap; one codegen model
+  declares both and generates the seed SQL, the DQ badges, the briefs and the
+  docs, and validates the oresmd authorities against it.
+
+* Result
+
+Closed with the checklist at 28 items Pass, four Fail and one Partial. The
+acceptance says every applicable item passes; the record does not, and names
+each item that is not met with its disposition in
+[[id:F9E8C6BE-9606-48E5-AEE3-431642C0EB28][the checklist task]]'s =* Result=.
+Two are captured for follow-up (the six unmapped protocol headers, and the
+vacuous permission check), one is deferred to backlog story =F15A8480=, and one
+is a deliberate stop recorded rather than forced.
+
+Three things this story delivered, and one thing it exposed:
+
+- Every fixing index name has an oresmd identity.
+- The asset class lists are declared once and generated.
+- The oresmd URI is the series identity.
+- Cutting the identity over to the URI exposed that the grammar cannot say what
+  a datum is: a surface coordinate is one comma-joined string, and the model
+  subtype is dropped from the series identity, so the corpus's lognormal and
+  normal vol for one underlying collide. That is
+  [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit
+  and typed]], opened at this close.
 
 * Out of scope
 

@@ -73,6 +73,11 @@ type does not carry, and rejects =point= outright with a message naming the
 replacement. The resolved quote type's =coordinates= list drives the check, so a
 key on the wrong family fails at the boundary rather than being stored.
 
+Placing an ORE key's tokens is driven by the =point_keys= column added in
+=c917ad6c2d=: it names, in order, the keys a type's old point corresponds to,
+identity keys included. That is what lets both directions be generated rather
+than hand-written per family.
+
 The three-token swaption form is where =ATM= stops being a strike: the last
 token is a =delta= when it matches the declared delta vocabulary and a =strike=
 when it is a number. The four-token smile form carries =smile= as its own key.

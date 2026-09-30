@@ -28,11 +28,11 @@ market-data namespace stop being two sets of hand-copied prose and numbers.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The catalogue is declared and three outputs are generated from it. =ores.refdata.asset_class_catalogue= holds the seven product classes with the prose the seed used to carry, the twelve oresmd authorities and the mapping between them, and the DQ badge each class wears; the oresmd batch loader refuses a spec whose authority the namespace does not hold and an authority with no spec; a new =ores.sql.asset_class= facet generates =refdata_asset_class_codes_populate.sql= and the two DQ fragments from the model; and the fixing defect is fixed -- the =FIXING= rule reads its class from the index name, through a C++ mapping the catalogue generates into =ores.marketdata.api=. |
-| Waiting on   | Nothing. The fixing-identity task is closed and the =power= authority is in the namespace. |
-| Next         | Derive the briefs and the documentation list from the model. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -307,3 +307,18 @@ hold 108 definitions, 40 code domains and 159 mappings, the staging tables 107, 
 of 89 targets, the codegen suite passes 1046, the drift check reports no drift for
 =refdata= and none across the catalogue, and every codegen, SQL and documentation gate
 passes.
+
+**A fourth unit stopped the entity model restating the taxonomy, and closes the task.**
+=ores.refdata.asset_class_code='s brief named all seven codes and its column carried them
+again as examples, and both reach the generated header and the create script's column
+comment. The brief now states the taxonomy without the list, the column points at the
+catalogue, and the model's prose says the catalogue is the one declaration, so the entity
+and its generated layer hold no second copy. The analysis document that decided the
+taxonomy keeps its resulting-list table: it is the conclusion of a dated piece of
+analysis rather than a copy of the source, and rewriting it from the model would lose the
+reasoning around it.
+
+With that, every acceptance is met. The drift check reports no drift for =refdata= and
+none across the catalogue, the codegen suite passes 1046, =validate_docs.sh= passes all
+41 components, and SQL hygiene, the schema validation, the populate references and the
+CMake lists all pass.

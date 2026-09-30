@@ -26,6 +26,7 @@
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
+#include "ores.iam.api/messaging/registration_policy_protocol.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
@@ -153,6 +154,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_password_policy_request::nats_subject, qg, [ah](ores::nats::message msg) {
             ah->password_policy(std::move(msg));
+        }));
+    // What the deployment offers a person who is not in it: the switch, the
+    // destination and the defaults. The door asks this before it offers a
+    // form, so it is answered without a session too.
+    subs.push_back(nats.queue_subscribe(
+        registration_policy_request::nats_subject, qg, [ah](ores::nats::message msg) {
+            ah->registration_policy(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(public_key_request::nats_subject, qg, [ah](ores::nats::message msg) {

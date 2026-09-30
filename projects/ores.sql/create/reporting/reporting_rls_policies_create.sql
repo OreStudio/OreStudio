@@ -258,3 +258,54 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Analytic Types
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_analytic_types_tbl enable row level security;
+
+drop policy if exists analytic_types_tenant_isolation_policy
+    on ores_reporting_analytic_types_tbl;
+
+create policy analytic_types_tenant_isolation_policy
+on ores_reporting_analytic_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Report Analytics
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_report_analytics_tbl enable row level security;
+
+drop policy if exists report_analytics_tenant_isolation_policy
+    on ores_reporting_report_analytics_tbl;
+
+create policy report_analytics_tenant_isolation_policy
+on ores_reporting_report_analytics_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Report Run Setups
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_report_run_setups_tbl enable row level security;
+
+drop policy if exists report_run_setups_tenant_isolation_policy
+    on ores_reporting_report_run_setups_tbl;
+
+create policy report_run_setups_tenant_isolation_policy
+on ores_reporting_report_run_setups_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

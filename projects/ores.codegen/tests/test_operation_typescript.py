@@ -99,7 +99,26 @@ def test_a_type_with_no_projection_stays_none():
     # utility table; anything else stays a gap the guard refuses.
     assert _ts_type("std::optional<ores::iam::domain::role>") == "Role | null"
     assert _ts_type("ores::utility::domain::hierarchy_flat_row") is None
-    assert _ts_type("std::map<std::string, int>") is None
+    assert _ts_type("std::map<ores::utility::domain::hierarchy_flat_row, int>") is None
+
+
+def test_a_map_projects_onto_a_record():
+    # rfl::json writes a map as a JSON object whose keys are the map's own,
+    # so the member is a Record keyed by the map's key type. The value is
+    # projected by the same rules as any other member.
+    assert _ts_type("std::map<std::string, int>") == "Record<string, number>"
+    assert _ts_type("std::map<std::string, thing_item>") == (
+        "Record<string, ThingItem>")
+    # A nested map's comma is not a separator of the outer argument list.
+    assert _ts_type("std::map<std::string, std::map<std::string, int>>") == (
+        "Record<string, Record<string, number>>")
+
+
+def test_a_date_projects_onto_a_string():
+    # A date crosses the wire as the ISO 8601 string its rfl reflector
+    # writes, the same shape boost::uuids::uuid takes.
+    assert _ts_type("std::chrono::year_month_day") == "string"
+    assert _ts_type("std::optional<std::chrono::year_month_day>") == "string | null"
 
 
 def test_a_registered_utility_type_projects_onto_its_shared_interface():

@@ -48,7 +48,7 @@ state and the progress are real.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Both clients run the three Setup journeys' work against the same contract, and nothing is left of the provisioning the wizards did client-side. The browser sets an empty installation up from the setup page — the first administrator, the first tenant from a registered starting point, the hand-over, the first sign-in and *Ready* — and a reload comes back to the rail rather than stranding the person. The shell says the same things with =bootstrap setup=, =provision tenant= and =provision party=, each sending one request per stage and following the run through the same progress read the browser's rail renders, and the end-to-end recipes each ran from their own empty installation to a working tenant. The two verbs the generic request replaced retired with the shell, and so did the generated duplicates of the porcelain commands and the synthetic organisation generator. Every acceptance line is met, the last one by =scripts/verify-first-run.ts=. |
+| Now           | Both clients run the three Setup journeys' work against the same contract, and nothing is left of the provisioning the wizards did client-side. The browser sets an empty installation up from the setup page — the first administrator, the first tenant from a registered starting point, the hand-over, the first sign-in and *Ready* — and a reload comes back to the rail rather than stranding the person. The shell says the same things with =bootstrap setup=, =provision tenant= and =provision party=, each sending one request per stage and following the run through the same progress read the browser's rail renders, and the end-to-end recipes each ran from their own empty installation to a working tenant. The two verbs the generic request replaced retired with the shell, and so did the generated duplicates of the porcelain commands and the synthetic organisation generator. Every acceptance line is met, the last one by =scripts/verify-first-run.ts=, and the *Operational* card now chooses its root legal entity from the deployment's register rather than taking a code it cannot check. |
 | Waiting on    | Nothing. |
 | Next          | Nothing. |
 | Last touched  | 2026-09-30                               |
@@ -113,6 +113,7 @@ state and the progress are real.
 | [[id:77CFDF61-0AE6-4176-9ADA-2D15207767EA][Build the New tenant and New party journeys and the scripted browser proof]] | DONE | 2026-09-29 | 2026-09-30 | Two acceptance lines of the story are unmet: the New tenant and New party journeys are not journeys of their own (their step library exists and first run inlines it, but no route renders them alone), and no scripted end-to-end run proves the browser's path on a fresh database. |
 | [[id:39AE2A8D-9680-4395-A9E9-596217C13593][Name the bootstrap commands consistently]] | DONE | 2026-09-29 | 2026-09-29 | The bootstrap menu repeats its own name in one of its verbs: a caller types bootstrap bootstrap-status. The generated command verb comes from the message name, and the message is named bootstrap_status_request, so the model needs a way to state the verb it wants. |
 | [[id:EE8AD3DD-73FE-495E-B4A7-B899729C87D9][Give a workflow step a deadline the engine enforces]] | DONE | | 2026-09-30 | A step declares how long it may run and the engine fails it when it does not answer, so a run whose service is gone stops being in_progress forever and a waiter sees the truth. |
+| [[id:566403F4-ADCA-47C2-95F4-4796EEB4F6C7][Choose the root legal entity from the register]] | DONE | 2026-09-30 | 2026-09-30 | The Operational starting point's root LEI is a free text field while the GLEIF card searches the entities the deployment holds. A person must know a code the deployment can check nothing about, and a wrong one arrives as the publication's SQL rather than as a sentence about the entity. Make the Operational card ask the same read the GLEIF card asks. |
 
 * Plan
 
@@ -294,6 +295,13 @@ none of them depends on it and all of them are permanent.
   administrator, and a deployment that is already set up is refused rather than
   half-walked. The alternative — a script that sets a deployment back into
   bootstrap mode — would prove a state no person reaches.
+- *A starting point that needs a legal entity asks the deployment for it.* The
+  *Operational* card declared its root LEI as free text while the *GLEIF entity*
+  card searched the register, so one card could be answered only by somebody who
+  already knew a code. Both now declare =legal_entity=, which the form renders as
+  the search over the deployment's entities and the parameter check guards, and
+  the entity stays optional because a tenant nobody holds an entity for is still
+  a tenant: its parties come from the party stage.
 
 * Gaps the journeys still record
 
@@ -308,11 +316,6 @@ stated here:
   schema reads a country-shaped field. The progress read is the contract
   instead, and the mismatch is
   [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][captured]].
-- The *Operational* card's root LEI is typed rather than chosen. Only the
-  *GLEIF entity* card searches the deployment's register, and a code the
-  deployment does not hold arrives as the publication's SQL rather than as a
-  sentence about the entity. A person who has no LEI leaves it empty, which is
-  the case the scripted proof walks.
 - The party describe step carries no accounts picker. Nothing writes the chosen
   associations — the run joins the caller alone — and a picker whose choices
   went nowhere would be worse than no picker.

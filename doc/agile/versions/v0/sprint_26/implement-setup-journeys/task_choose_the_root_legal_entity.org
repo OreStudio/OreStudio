@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 566403F4-ADCA-47C2-95F4-4796EEB4F6C7
+:END:
+#+title: Task: Choose the root legal entity from the register
+#+description: The Operational starting point's root LEI is a free text field while the GLEIF card searches the entities the deployment holds. A person must know a code the deployment can check nothing about, and a wrong one arrives as the publication's SQL rather than as a sentence about the entity. Make the Operational card ask the same read the GLEIF card asks.
+#+type: task
+#+level: s1
+#+filetags: :implement-setup-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/choose-the-root-legal-entity
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The *Operational* card asks for the tenant's root legal entity the way the
+*GLEIF entity* card already does: by name or LEI, from the entities the
+deployment holds. A person with no entity yet leaves it out, which is the case
+the card supports today and keeps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The *Operational* card's root entity is chosen from a search over the
+  deployment's legal entities, not typed, and the card still allows the entity
+  to be left out.
+- A value that does not name an LEI is refused with a sentence about the field,
+  not by the publication.
+- The card's own words and the journey documents say the same thing.
+- A browser walk on the live deployment shows the search, the matches the
+  deployment holds, and the chosen entity carried into the review.
+
+* Plan
+
+The card's difference from the *GLEIF entity* card is one column: the seeded row
+declares =data_type: string=, so the form renders a text box, while
+=legal_entity= renders the search. So the change is the row, not the form:
+
+1. The seeded row: =empty_operational='s =root_lei= becomes =legal_entity=, and
+   its label and hint are brought in line with what the field now does.
+2. The form needs no change: =parts.tsx= already renders =legal_entity= as
+   =LegalEntitySearch=, and that component shows its search box while the value
+   is empty, so the optional case is the empty state rather than a new branch.
+3. The server already checks the shape: a =legal_entity= value must be twenty
+   alphanumeric characters, so a code that is not an LEI is refused naming the
+   field instead of reaching the publication.
+4. The live database predates the seed, so the row is set there by hand for the
+   walk, and the walk is what proves the card. A fresh installation reads the
+   seeded row.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The card on the live deployment | A search over the deployment's entities; BARCLAYS PLC chosen and carried to the review | =evidence/operational_root_legal_entity.txt= | 5a67ef6f04 |
+| Tests in =ores.iam.core= | 1 suite passing, the new =legal_entity= case included | =compass test run -- -R ores.iam.core= | 5a67ef6f04 |
+| Populate references | resolve | =check_populate_references.py= | 5a67ef6f04 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The *Operational* card now asks the deployment for its root legal entity the way
+the *GLEIF entity* card does, and the change was one seeded row: =legal_entity=
+instead of =string=. The form was already able to render that type as the
+search, and the server already checked its shape, so no screen and no handler
+changed.
+
+The card was walked in a browser on the live deployment. It shows a search box
+naming the field; the search answers with the entities the deployment holds, two
+of them for =barclays=; the chosen entity stands in the field with its LEI, its
+country and the parties its hierarchy would create; and the review carries the
+LEI. The walk is =evidence/operational_root_legal_entity.txt=, with four
+screenshots.
+
+The gap the story recorded is closed: a person can no longer type a code the
+deployment cannot check. The value that used to reach the publication and come
+back as its SQL is the one the parameter check now refuses first, and its new
+test states that with the eighteen-character code an earlier walk mistyped. The
+card stays optional, so a tenant with no entity yet is built from the party
+stage, which the scripted first-run proof still walks.

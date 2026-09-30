@@ -8,7 +8,7 @@
 #+filetags: :iam_eventing_tests_idempotent:sprint_26:v0:
 #+owner: marco
 #+branch: feature/make-the-seed-profile-code-unique
-#+pr:
+#+pr: 2429
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -82,7 +82,7 @@ it is not the same property.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2429][#2429]] | [iam] Make the synthetic seed profile code unique per deployment |
 
 * Review
 

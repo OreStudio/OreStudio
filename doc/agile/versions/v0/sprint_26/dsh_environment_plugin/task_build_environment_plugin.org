@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ projects/ores.dsh_environment is a DSH web plugin, built like ores.dsh_kanban: o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -103,7 +103,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Plugin tests | 32 passed | =node --test= | working tree on =8536c56f3b= |
+| Host gate checks | 46 passed, 0 failed | =node scripts/verify.mjs= | same |
+| State payload | 5821 bytes | the gate prints it | same |
+| A cold read | 1.8s to 2.1s over three runs | =readEnvironment= timed in node | same |
+| A read while an action runs | 6.8ms, no compass process | the gate measures it | same |
+| Service units reported | 24, plus nats-server apart | =compass env status= | same |
+| Host half | 725 lines across three modules | =wc -l lib/index.js lib/compass.js lib/env.js= | same |
+| Browser half | 1042 lines, one file, no build step | =wc -l lib/client.js= | same |
 
 * Notes
 
@@ -131,3 +138,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=projects/ores.dsh_environment= is a DSH web plugin that shows the session's
+own checkout as a live environment and can act on it. It is built like
+=ores.dsh_kanban=: one host entry with two routes, one hand-written browser
+file with no build step, a frozen =CONTRACT.md=, and an install that copies a
+versioned tarball into a profile.
+
+The plugin reads =compass env status --json= and nothing else, so the
+readiness rule for a service, the drift comparison for the schema, and the
+thresholds that turn a restore age into a level have one home. A work tree
+whose compass predates the verb reports =compass-too-old= rather than
+rendering a wrong environment.
+
+Two seats. The readout arrives with the session and carries a health dot, the
+environment label, the database age, and the running count. The view carries
+three health tiles, the reasons behind the level, the database panel with its
+guarded Restore control, and the service rows with their counts, filters, and
+start and stop buttons.
+
+Three gates. =node --test= covers the transform, the action table, every
+validation refusal, the work-tree resolver, and the browser bundle loaded the
+way the module loader loads it. =scripts/check-manifest.mjs= covers the wiring
+DSH resolves by name. =scripts/verify.mjs= drives the captured routes against
+the real compass in this work tree: the resolution ladder and the rung each
+request took, the state contract, every failure reason, every action refusal,
+and one real action job with its tail and exit code.
+
+Two defects came out of the gates rather than out of review. The cached read
+carried =tree.source=, so a request that resolved by a different rung reported
+the rung the previous request took. And the read route re-read compass on every
+poll while an action ran, which is a Python process every two seconds for the
+minutes a rebuild takes; it now serves the last read during the action and
+drops it when the action settles.
+
+Not covered: a rendered panel in a real browser. Playwright is not installed in
+this checkout, so a browser gate could not be run here.

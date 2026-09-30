@@ -154,10 +154,10 @@ do nothing;
 -- The parameters the form declares. A parameter is what the administrator
 -- supplies; the step kinds and the demonstration take nothing.
 --
--- Operational's pair is the contract's: a GLEIF root LEI to import the parties
--- under, and the size of the counterparty set it publishes. The size is a
--- declared choice rather than a number, so a value the run cannot use is not
--- typeable.
+-- Operational's pair is the contract's: the root legal entity the tenant is
+-- built around, chosen from the entities the deployment holds, and the size of
+-- the counterparty set it publishes. The size is a declared choice rather than a
+-- number, so a value the run cannot use is not typeable.
 insert into ores_iam_seed_profile_parameters_tbl (
     id, tenant_id, seed_profile_id, name, label, data_type, choices_json,
     default_value, is_required, description, display_order,

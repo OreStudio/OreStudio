@@ -41,8 +41,10 @@ the card supports today and keeps.
 - The *Operational* card's root entity is chosen from a search over the
   deployment's legal entities, not typed, and the card still allows the entity
   to be left out.
-- A value that does not name an LEI is refused with a sentence about the field,
-  not by the publication.
+- A value that is not an LEI's shape is refused with a sentence about the field,
+  so a mistyped code cannot reach the publication. A twenty-character code the
+  register does not hold is still the publication's to refuse; the browser
+  cannot produce one, because its field is a search.
 - The card's own words and the journey documents say the same thing.
 - A browser walk on the live deployment shows the search, the matches the
   deployment holds, and the chosen entity carried into the review.
@@ -104,7 +106,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The check guards the LEI's shape only, so a twenty-character code the register does not hold still reaches the publication, and the acceptance claimed the wrong code was fully refused | =seed_profile_parameter_check.hpp= | Declined, restated | The check is shape-only by contract. The browser's field is a search and cannot produce such a code, so the acceptance and the Result now state the boundary rather than claiming it closed. |
+| 2 | The comment above the seeded parameters still called Operational's root LEI a free-text GLEIF code | =iam_seed_profiles_populate.sql= | Accepted | The comment now says the entity is chosen from the register. |
+| 3 | =Everything else the journey reaches for exists...= appears twice in a row | =journey_first_run.org= | Accepted | The duplicate is removed. |
+| 4 | The fixture keeps =is_required = true=, so "the card still allows the entity to be left out" had no unit proof | =service_seed_profile_parameter_check_tests.cpp= | Accepted | A new case proves an optional =legal_entity= accepts the entity omitted and cleared. |
+| 5 | =REQUIRE= where the sibling tests use =CHECK= | =service_seed_profile_parameter_check_tests.cpp= | Accepted | Changed to =CHECK=. |
+| 6 | The tool-written bookkeeping commit carries no =Environment:= or =Co-Authored-By:= trailer, and one commit body line is 73 characters | git history | Declined, recorded | The trailer-less commit is written by =compass pr create=, and both are already pushed; rewriting published history to wrap a line is not worth the churn. |
 
 * Result
 
@@ -121,9 +128,12 @@ country and the parties its hierarchy would create; and the review carries the
 LEI. The walk is =evidence/operational_root_legal_entity.txt=, with four
 screenshots.
 
-The gap the story recorded is closed: a person can no longer type a code the
-deployment cannot check. The value that used to reach the publication and come
-back as its SQL is the one the parameter check now refuses first, and its new
-test states that with the eighteen-character code an earlier walk mistyped. The
-card stays optional, so a tenant with no entity yet is built from the party
-stage, which the scripted first-run proof still walks.
+The gap the story recorded is closed for the browser: its field is a search, so
+nobody can type a code the deployment cannot check. The value that used to reach
+the publication and come back as its SQL is the one the parameter check now
+refuses first, and its new test states that with the eighteen-character code an
+earlier walk mistyped. What the check guards is the LEI's shape and not its
+existence, so a twenty-character code the register does not hold is still the
+publication's to refuse; that path is the shell's. The card stays optional, and
+a second test proves the check accepts the entity left out, which is the tenant
+whose parties come from the party stage.

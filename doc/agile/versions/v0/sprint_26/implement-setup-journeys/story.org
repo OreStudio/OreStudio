@@ -306,8 +306,7 @@ none of them depends on it and all of them are permanent.
 * Gaps the journeys still record
 
 The three journey documents name what they still reach for, and none of it is
-silent. Two of the gaps are owned by documents of their own, and the rest are
-stated here:
+silent. Each gap is either owned by a document of its own or stated here:
 
 - A tenant cannot be reset in a way that also stops its run.
   [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]]

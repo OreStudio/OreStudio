@@ -189,9 +189,6 @@ fresh database and asserts every answer.
 Everything else the journey reaches for exists, and the list below is the
 record of what each part turned out to be.
 
-Everything else the journey reaches for exists, and the list below is the
-record of what each part turned out to be.
-
 1. *The journey's state is a workflow instance.* A journey is a definition and
    not a server-side object, so no journey entity was added anywhere. The
    run's state is a workflow instance in =ores.workflow=, and the page follows

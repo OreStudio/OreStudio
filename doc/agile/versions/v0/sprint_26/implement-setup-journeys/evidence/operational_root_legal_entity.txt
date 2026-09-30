@@ -94,9 +94,16 @@ character code one earlier walk mistyped:
   check_parameters(declared, {"root_lei=9DJT3UXIJIZJI4WXO774"})
     -> accepted
 
-Its fixture also now describes the seeded pair: the root legal entity, named by
-its LEI, rather than a free-text root LEI.
+Its fixture now describes the entity the way the seeded pair does — named by its
+LEI rather than a free-text root LEI — and a second case proves the optional
+card accepts the entity left out, which is the tenant nobody holds an entity
+for.
 
   ./compass.sh test run -- -R ores.iam.core
   1/1 Test #32: ores.iam.core.tests ..............   Passed   16.38 sec
   100% tests passed, 0 tests failed out of 1
+
+What the check guards is the LEI's shape, not its existence: a twenty-character
+code the register does not hold is still the publication's to refuse. That path
+is the shell's, because the browser's field is a search and a person cannot type
+one into it.

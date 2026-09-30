@@ -156,8 +156,24 @@ TEST_CASE("check_parameters_refuses_a_legal_entity_that_is_not_an_LEI", tags) {
 
     const auto named = check_parameters(declared_parameters(), {"root_lei=9DJT3UXIJIZJI4WXO774"});
 
-    REQUIRE(named.accepted());
+    CHECK(named.accepted());
     CHECK(named.values[0].value == "9DJT3UXIJIZJI4WXO774");
+}
+
+TEST_CASE("check_parameters_allows_an_optional_legal_entity_to_be_left_out", tags) {
+    // The Operational card declares its entity optional, so a tenant nobody
+    // holds an entity for is still a tenant: the import step says it had
+    // nothing to read and the parties come from the party stage.
+    auto declared = declared_parameters();
+    declared[0].is_required = false;
+
+    const auto omitted = check_parameters(declared, {});
+    CHECK(omitted.accepted());
+    CHECK(omitted.values[0].value == "");
+
+    const auto cleared = check_parameters(declared, {"root_lei="});
+    CHECK(cleared.accepted());
+    CHECK(cleared.values[0].value == "");
 }
 
 TEST_CASE("check_parameters_refuses_an_entry_that_is_not_a_name_value_pair", tags) {

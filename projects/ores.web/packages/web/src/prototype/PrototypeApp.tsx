@@ -35,6 +35,7 @@ import { AppShell } from '../components/AppShell.js';
 import { Notice } from '../ui/Primitives.js';
 import { ProtectMyAccountPrototype, PrototypeAccountStrip } from './ProtectMyAccountPrototype.js';
 import { RescueAccessPrototype } from './RescueAccessPrototype.js';
+import { AuditSignInsPrototype } from './AuditSignInsPrototype.js';
 
 const PREFIX = '/prototype';
 
@@ -70,6 +71,9 @@ function screenFor(pathname: string): ReactNode {
     if (pathname === `${PREFIX}/rescue`) {
         return <RescueAccessPrototype />;
     }
+    if (pathname === `${PREFIX}/audit`) {
+        return <AuditSignInsPrototype />;
+    }
     return (
         <div className="mx-auto max-w-[700px] space-y-4">
             <Notice tone="warn">PROTOTYPE. Throwaway. Nothing on these routes calls the server.</Notice>
@@ -88,6 +92,12 @@ function screenFor(pathname: string): ReactNode {
                             /prototype/rescue
                         </a>{' '}
                         — Rescue access
+                    </li>
+                    <li>
+                        <a className="text-accent" href="/prototype/audit?variant=a">
+                            /prototype/audit
+                        </a>{' '}
+                        — Audit sign-ins
                     </li>
                 </ul>
             </div>

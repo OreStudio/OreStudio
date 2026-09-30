@@ -74,8 +74,56 @@ Switch with the state buttons, or =?state=.
 |-------+---------------|
 | =home= | The landing surface: the index for every model but the data one, which lands on the person's record instead. |
 | =journey= | A journey running, so the navigation is judged beside a journey rather than on its own. |
+| =fullscreen= | A journey that takes over the screen, which every model renders the same: no shell at all. |
 | =today= | Only the groups that have been built — Setup alone, which is what a person sees if this ships now. |
 | =narrow= | A small screen: the top-level navigation goes and the account menu becomes a sheet. |
+
+** The shell, and where it stops
+
+The intention this was built against is settled: the application is designed
+from what a person is trying to do, a journey is one such intent, and a menu
+holds *journey groups* because a group is the topic a journey is looked up
+under. The words are
+[[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]]'s; the short
+version is that a journey, a screen and a step are three different things, and
+the Profile group is the case that separates them — three journeys, one screen.
+
+Two consequences shape the shell and neither is a matter of taste.
+
+*The menu holds groups, not journeys.* The groups are stable and few: a member
+sees four and a tenant administrator seven. That is the whole reason the top
+level can be small while the catalogue grows to 22 journeys and beyond — the
+growth lands inside a group, not in the chrome.
+
+*Some journeys are outside the shell.* The setup journeys stand an installation
+up, so they own the whole screen and offer no way past until they are done.
+Every model renders that identically, which is the =fullscreen= state. The
+shell's boundary is therefore part of its design: a journey may take the screen
+and give it back.
+
+Against that, the recommendation is the *sidebar*, and the reasons are the
+constrained kind:
+
+- It holds seven groups without crowding, where the navbar does not fit a
+  laptop's header at that count.
+- It shows the current group's journeys open, so a journey is one click from
+  anywhere rather than two — which matters because the menu is what makes
+  journeys selectable at all.
+- It grows by adding a group down the list, not by widening a bar that has no
+  room left.
+- Its cost -- a column on every screen — is paid on the journeys that keep the
+  shell, and the journey that draws a rail of its own is the one that leaves
+  the shell altogether. The rail-inside-a-sidebar clash the earlier draft
+  recorded does not arise.
+
+** What the shell holds
+
+| Part | What it is |
+|------+------------|
+| The brand | The way home, and the only thing that is always there. |
+| The groups | The menu: the topics this person may reach, each opening to its journeys. |
+| The person | Their name and photo, opening their own record, and the way out. |
+| The boundary | Nothing, when a journey owns the screen. |
 
 ** What the models cost, measured
 

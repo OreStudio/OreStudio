@@ -16,6 +16,10 @@ off; the account menu still opens its menu; every model reaches the same
 journey screen; the today state carries only what has been built, and a member
 with nothing today is told so; and the narrow state is the narrow shell.
 
+The full-screen journey is asserted against every model at once: it always
+offers the way out, and it never draws a header, a navbar or a sidebar, because
+a journey that owns the screen is outside all five.
+
 Three of the promises are about absence: a member must not reach the tenant's
 groups or an administrator's journey, and the door must not appear as a place a
 signed-in person navigates to.
@@ -24,5 +28,5 @@ The screenshots beside this file are the models in Chrome.
 
 --- output ---
 
-rendered 40 model/actor/state combinations and 17 promises
+rendered 50 model/actor/state combinations and 27 promises
 ALL CHECKS PASSED

@@ -36,6 +36,7 @@
     var STATES = [
         ['home', 'At rest'],
         ['journey', 'On a journey'],
+        ['fullscreen', 'Full screen'],
         ['today', 'Today'],
         ['narrow', 'Narrow']
     ];
@@ -89,7 +90,7 @@
     };
 
     var S = {
-        variant: 'N',
+        variant: 'S',
         actor: 'admin',
         state: 'home',
         at: '/profile',
@@ -257,17 +258,21 @@
             ? groups(false).filter(function (g) { return g.name === oneGroup; })
             : groups(S.state === 'today');
         var p = person();
+        var empty = list.length === 0;
         var head = oneGroup
             ? '<div class="crumb"><a href="#" data-act="home">Home</a> \u00b7 ' + esc(oneGroup) + '</div>' +
               '<h1>' + esc(oneGroup) + '</h1>' +
               '<p class="lead">The journeys in this group, for ' +
               (isAdmin() ? 'a tenant administrator' : 'a member') + '.</p>'
             : '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>' +
-              '<h1>What you can do here</h1>' +
-              '<p class="lead">' + journeyCount(list) + ' journey' + (journeyCount(list) === 1 ? '' : 's') +
-              ' in ' + list.length + ' group' + (list.length === 1 ? '' : 's') +
-              ', for ' + (isAdmin() ? 'a tenant administrator' : 'a member') + '.' +
-              (S.state === 'today' ? ' Only the groups that have been built are listed.' : '') + '</p>';
+              '<h1>' + (empty ? 'Nothing here yet' : 'What you can do here') + '</h1>' +
+              (empty
+                  ? '<p class="lead">No journey has been built for this person yet. The shell holds none of them ' +
+                    'hostage: the groups appear here as they land.</p>'
+                  : '<p class="lead">' + journeyCount(list) + ' journey' + (journeyCount(list) === 1 ? '' : 's') +
+                    ' in ' + list.length + ' group' + (list.length === 1 ? '' : 's') +
+                    ', for ' + (isAdmin() ? 'a tenant administrator' : 'a member') + '.' +
+                    (S.state === 'today' ? ' Only the groups that have been built are listed.' : '') + '</p>');
         var body = list.map(function (g) {
             return '<section class="groupcard"><h2>' + esc(g.name) +
                 (g.landed ? '' : '<span class="tag soon">not built yet</span>') + '</h2>' +
@@ -276,8 +281,7 @@
                 }).join('') + '</ul></section>';
         }).join('');
         return '<div class="card">' + head + '</div>' +
-            (body ? '<div class="groupgrid">' + body + '</div>'
-                  : '<div class="card"><p class="lead">Nothing has been built for this person yet.</p></div>');
+            (body ? '<div class="groupgrid">' + body + '</div>' : '');
     }
 
     /* The data-only model has no navigation, so its landing surface is the
@@ -302,7 +306,35 @@
             '</div></div></div>';
     }
 
+    /* A journey that takes over the screen: the first-run journeys stand an
+       installation up, so there is nothing to navigate to until they finish,
+       and the shell is not drawn at all. Every model renders this the same,
+       which is the point -- the shell has a boundary. */
+    var SETUP_STEPS = ['Administrator', 'Tenant', 'Seed profiles', 'Sign in', 'Ready'];
+
+    function fullscreenPage() {
+        var at = 1;
+        var rail = '<nav class="railnav"><ol>' + SETUP_STEPS.map(function (s, i) {
+            var cls = i === at ? 'current' : (i < at ? 'done' : 'ahead');
+            return '<li class="railentry ' + cls + '"><span class="railmark ' + cls + '">' +
+                (i < at ? '\u2713' : String(i + 1)) + '</span>' + esc(s) + '</li>';
+        }).join('') + '</ol></nav>';
+        var card = '<div class="card"><h1>New tenant</h1>' +
+            '<p class="lead">This journey stands up the installation, so it owns the whole screen and offers no way ' +
+            'past it until it is done. The shell is not drawn: there is nothing yet to navigate to.</p>' +
+            '<div class="mini"><h2>Step 2 of 5 \u00b7 Tenant</h2>' +
+            '<table class="kv">' +
+            '<tr><td>Shell drawn</td><td>no</td></tr>' +
+            '<tr><td>Models that differ</td><td>none: this is outside all five</td></tr>' +
+            '<tr><td>Way out</td><td>Exit, which abandons the run</td></tr>' +
+            '</table></div>' +
+            '<div class="stepfoot"><button class="btn ghost" data-act="go" data-screen="/">Exit setup</button>' +
+            '<button class="btn primary mlauto" data-act="go" data-screen="/">Continue</button></div></div>';
+        return '<div class="journey">' + rail + '<div>' + card + '</div></div>';
+    }
+
     function body() {
+        if (S.state === 'fullscreen') return fullscreenPage();
         /* At rest is the landing surface, and today is the same surface with
            only the groups that exist. */
         var atRest = S.state === 'home' || S.state === 'today';
@@ -314,20 +346,23 @@
     // --------------------------------------------------------------- page
 
     function render() {
-        var head;
-        if (S.variant === 'N') {
-            head = '<header class="appheader"><div class="appheader-inner">' + brand() + navbar() +
-                '<div class="accounts">' + accountChip(false) + '</div></div></header>';
-        } else if (S.variant === 'A') {
-            head = '<header class="appheader"><div class="appheader-inner">' + brand() +
-                '<div class="mlauto"></div><div class="accounts">' + accountChip(true) + accountMenu() + '</div></div></header>';
-        } else {
-            head = '<header class="appheader"><div class="appheader-inner">' + brand() +
-                '<div class="mlauto"></div><div class="accounts">' + accountChip(false) + '</div></div></header>';
+        var full = S.state === 'fullscreen';
+        var head = '';
+        if (!full) {
+            if (S.variant === 'N') {
+                head = '<header class="appheader"><div class="appheader-inner">' + brand() + navbar() +
+                    '<div class="accounts">' + accountChip(false) + '</div></div></header>';
+            } else if (S.variant === 'A') {
+                head = '<header class="appheader"><div class="appheader-inner">' + brand() +
+                    '<div class="mlauto"></div><div class="accounts">' + accountChip(true) + accountMenu() + '</div></div></header>';
+            } else {
+                head = '<header class="appheader"><div class="appheader-inner">' + brand() +
+                    '<div class="mlauto"></div><div class="accounts">' + accountChip(false) + '</div></div></header>';
+            }
         }
 
         var shell = '<div class="shell' + (narrow() ? ' narrow' : '') + '">' + head;
-        shell += S.variant === 'S'
+        shell += (S.variant === 'S' && !full)
             ? '<div class="withside">' + sidebar() + '<main>' + body() + '</main></div>'
             : '<main>' + body() + '</main>';
         shell += '</div>';

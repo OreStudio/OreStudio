@@ -40,7 +40,7 @@ function run(search) {
 
 const models = ['N', 'S', 'I', 'D', 'A'];
 const actors = ['member', 'admin'];
-const states = ['home', 'journey', 'today', 'narrow'];
+const states = ['home', 'journey', 'fullscreen', 'today', 'narrow'];
 const modelNames = { N: 'Navbar', S: 'Sidebar', I: 'Index', D: 'Data only', A: 'Account menu' };
 
 let failures = 0;
@@ -65,7 +65,7 @@ for (const model of models) {
                 console.log(`FAIL ${where}: the render leaks undefined`);
                 failures++;
             }
-            if (!out.app.includes('ORE Studio')) {
+            if (state !== 'fullscreen' && !out.app.includes('ORE Studio')) {
                 console.log(`FAIL ${where}: the shell lost its brand`);
                 failures++;
             }
@@ -88,7 +88,7 @@ const checks = [
     ['?variant=A&actor=admin&state=journey&open=1', 'class="menu"', 'the account menu model still opens its menu'],
     ['?variant=N&actor=admin&state=journey&screen=%2Fprofile', 'Reached from', 'every model reaches the same journey screen'],
     ['?variant=N&actor=admin&state=today', '3 journeys', 'today carries only what has been built'],
-    ['?variant=N&actor=member&state=today', 'Nothing has been built', 'a member has nothing today and is told so'],
+    ['?variant=N&actor=member&state=today', 'Nothing here yet', 'a member has nothing today and is told so'],
     ['?variant=N&actor=admin&state=narrow', 'class="shell narrow"', 'the narrow state is the narrow shell']
 ];
 
@@ -96,6 +96,20 @@ for (const [search, needle, what] of checks) {
     const out = run(search);
     if (!out.app.includes(needle)) {
         console.log(`FAIL ${search}: missing "${needle}" -- ${what}`);
+        failures++;
+    }
+}
+
+/* The full-screen journey is outside every model, which is the shell's
+   boundary and not a variation of it. */
+for (const model of ['N', 'S', 'I', 'D', 'A']) {
+    const out = run(`?variant=${model}&actor=admin&state=fullscreen`);
+    if (!out.app.includes('Exit setup')) {
+        console.log(`FAIL ${model}/fullscreen: no way out of a full-screen journey`);
+        failures++;
+    }
+    if (out.app.includes('class="side"') || out.app.includes('class="appnav"') || out.app.includes('class="appheader"')) {
+        console.log(`FAIL ${model}/fullscreen: the shell is drawn around a journey that owns the screen`);
         failures++;
     }
 }
@@ -112,6 +126,6 @@ for (const [search, needle, what] of [
     }
 }
 
-console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 3} promises`);
+console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 3 + 10} promises`);
 console.log(failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);

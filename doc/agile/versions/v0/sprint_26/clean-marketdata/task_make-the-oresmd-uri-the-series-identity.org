@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/market-series-uri-identity
+#+branch: feature/the-component-joins
 #+pr: 2414
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
-#+updated: 2026-09-29
+#+updated: 2026-09-30
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The cutover's four acceptances are delivered. =market_series= is named by its =oresmd_uri= alone -- =series_type=, =metric= and =qualifier= have gone, with the DQ artefact's and the publish's -- and every writer of an observation stores the key the row is written under: the import keeps the file's, the ingest loop keeps the tick's, the republish service projects its own from the output series and the pillar's point, and the DQ publish copies the key its dataset names. The vintage decision is built, the client's triple lookup is gone with its last caller, and the export reads each datum's own key rather than rebuilding one from columns that no longer exist. |
+| Now          | V06 is delivered. =marketdata= is listed in =COMPONENTS_UNDER_TEST=, the seven hand-written protocol headers are one generated operation model whose every interface has its TypeScript twin, and every gate the standard asks for passes over the component. The cutover's four acceptances and the registry entry are both in. |
 | Waiting on   | Nothing. |
-| Next         | V06: join =COMPONENTS_UNDER_TEST= and run the standard's gates. =marketdata= is one modelling pass short of it, because seven hand-written protocol headers carry no TypeScript twin and a twin is generated from an operation model; the pattern to follow is read off =ores.variability.operations=. The Plan's step four records the deletion as delivered, and the identity note says what each earlier unit settled. |
-| Last touched | 2026-09-29                               |
+| Next         | The story's close. =task_clean_marketdata='s V05 and V06 are recorded from this pass, and the story is reviewed for closing. |
+| Last touched | 2026-09-30                               |
 
 * Acceptance
 
@@ -359,6 +359,18 @@ is left is the cutover the task takes its name from.
    clears the identity. The DQ artefact and its publish lose the three columns with the
    series row, and the FOMC seed's insert loses them too.
 
+5. *The component joins the registry.* Delivered. The seven hand-written protocol
+   headers are one operation model, =ores.marketdata.operations=, so each interface's
+   header and its TypeScript twin generate from one declaration and no header is left
+   without a twin. The model holds the CRM rate reads, the curve bootstrap, republish
+   and snapshot subjects, the whole-tenant ORE import and export, and the folder feed
+   control: twenty-eight messages, every field keeping the type, the initialiser and the
+   subject the hand-written header carried, so the wire does not move. The one shared
+   codegen change it needed was a projection for =std::map=, which now renders a
+   TypeScript =Record=. The seven headers are deleted and their sixteen includers read
+   =operations_protocol.hpp=. With the twin gate green, =marketdata= joins
+   =COMPONENTS_UNDER_TEST= and the standard's gates check it from now on.
+
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
 the row. Two writers had to change with it, because both could previously store a row
@@ -652,7 +664,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Messages the operation model declares, and the types they carry | 28 messages, all 20 distinct field types project to TypeScript | =load_org_operation_model()= over =ores.marketdata.operations.org= | =53bb7a59fc= |
+| Protocol headers, over the listed component | 199 in 13 committed components all have a twin, and no model opts out | =check_protocol_twin_coverage.py= | =25d58d7ca1= |
+| Components under test | 15 listed, 5 accepted exceptions across 49 items | =check_registry_exceptions.py= | =25d58d7ca1= |
+| The component's regeneration, listed | no drift at every address for =marketdata=, and =--all --dry-run= reports no drift | =check_component_drift.py --component marketdata= and =--all --dry-run= | =25d58d7ca1= |
+| The other codegen gates, over the component | =model drift=, =handler permissions= (7 components, 290 codes), =populate references=, =route auth declarations=, =shell menu collisions=, the recipe inventory and =validate_docs.sh= (41 components) all exit 0 | each gate by name | =25d58d7ca1= |
+| CMake source lists | =marketdata= is current; =iam/api= and =workflow/api= are stale on trunk and are not this branch's | =regenerate_cmake_component_files.py --all --check= | =25d58d7ca1= |
+| The =codegen= suite, with the map projection | 1032 passed | =pytest projects/ores.codegen/tests -q= | =25d58d7ca1= |
+| The tree, built whole, with the model | exit 0 | =cmake --build --preset linux-clang-debug-make -j 4= | =53bb7a59fc= |
+| The whole test suite, with the model | 88 of 89 targets pass; =ores.service.tests= fails on a stale log-filename expectation that =91cf5273ab= left, and this branch does not touch =ores.service= | =ctest --preset linux-clang-debug-make -j 4= | =53bb7a59fc= |
+| The cutover's suites | unchanged at 68 in 14 marketdata-api, 1923 in 415 marketdata-core, 176 in 28 marketdata-service, 144 in 51 shell-marketdata and 297 in 46 synthetic-service | the five test binaries | =53bb7a59fc= |
 
 * Notes
 
@@ -800,6 +821,10 @@ via its "Verifies task" field.
 | 84 | The vintage config's migration could not land on a database that had a vintage row, because the check requires the column the migration had just left empty | the migration | accepted, fixed | The migration names every vintage row before the check arrives, from the publishing dataset's own identity where it covers the row and from the currency's deposit-grid spelling otherwise, and it was proved by dropping the column on the live database and running it. |
 | 85 | A force-push after a rebase can leave GitHub's mergeability stale, and a =pull_request= workflow then runs nothing | the PR | recorded | =mergeable: UNKNOWN= and an empty check rollup after rebasing #2406 onto main; closing and reopening the pull request recomputed the merge state and dispatched all fifteen checks. Rebasing is still right, and the reopen is the step that follows it. |
 | 86 | An entity's regeneration also moves the recipe its shell library is tangled from, and the tangled scripts are a separate gate | =doc/recipes/shell/ir_curve_generation_configs/= | accepted, fixed | =drift= failed on three =ir_curve_generation_configs-*.ores= scripts that still wrote the record without the new field; =compass build --direct tangle_shell_scripts= and a commit fixed it. A model field now costs a tangle beside the entity regeneration. |
+| 87 | The wire must not move when a hand-written header becomes generated | the seven headers, =ores.marketdata.operations= | answered | Every field keeps its type, its initialiser and its subject, and the map the feed-config response carries stays a C++ =std::map=; the TypeScript twin is new output, not a change to what crosses the wire. |
+| 88 | A model that hides an unmappable field is refused, and the twin gate forbids the opt-out | =std::map<...>=, the twin gate | answered, fixed | =std::map= had no projection, so the model was refused. =_ts_type= now projects it to =Record=, which satisfies the gate rather than working around it. The =std::chrono::year_month_day= the earlier survey also named already projected to =string=; the survey's second blocker was stale. |
+| 89 | The include cutover reaches components the marketdata pass does not own | =ores.iam=, =ores.reporting=, =ores.synthetic=, =ores.shell= | answered | Sixteen files include one of the seven headers. Each now includes =operations_protocol.hpp=, which declares the same messages in the same namespace, so the change is an include rename and no behaviour moves. |
+| 90 | =ores.service.tests= fails under =ctest= | =standard_service_options_tests.cpp= | recorded | Pre-existing and unrelated: =91cf5273ab= on trunk stopped defaulting a log filename, and the test still expects the caller's name to be the default. The logging branch owns it and this branch does not touch =ores.service=. |
 
 * Result
 
@@ -988,7 +1013,7 @@ creates the identity-only series and keeps the observation's key, the tree build
 and the suites hold at 68 in 14 marketdata-api cases, 1923 in 415 marketdata-core, 176 in
 28 marketdata-service, 6 in 6 client, 144 in 51 shell-marketdata, 65 in 22 synthetic-api,
 297 in 46 synthetic-service and 432 in 153 shell-synthetic, with the codegen suite at
-1030 and reachability at 7741 declared cases. What is left is V06.
+1030 and reachability at 7741 declared cases. The fifteenth unit below delivers V06.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:
@@ -1007,3 +1032,24 @@ What the deletion still owes is recorded where it belongs: the internal series'
 identity, a backfill or a recreated database, the unique index on the identity, and
 the behaviour that a write omitting the identity clears it until the column is
 =not null=.
+
+**A fifteenth unit joined the component to the registry.** V06 was the whole of what
+stood between the pass and its close: seven hand-written protocol headers carried no
+TypeScript twin, and a twin generates from an operation model. They are one model now,
+=ores.marketdata.operations= -- twenty-eight messages covering the CRM rate reads, the
+curve bootstrap, republish and snapshot subjects, the whole-tenant ORE import and
+export, and the folder feed control -- and the C++ header and =operations_protocol.ts=
+both generate from it. Every field keeps the type, the initialiser and the subject the
+hand-written header carried, so no subject and no payload on the wire changed; the one
+shared codegen change was a projection for =std::map=, which now renders a TypeScript
+=Record= rather than leaving the model refused. The seven headers are deleted, and the
+sixteen files that included them read the one generated header. Measured on the branch:
+=marketdata= regenerates byte for byte at every address, the twin gate reports 199
+headers in 13 committed components with no model opting out, the drift check reports no
+drift across the catalogue, the registry lists 15 components, and the codegen suite
+passes 1032. The tree builds whole, and =ctest= passes 88 of 89 targets; the one
+failure is =ores.service.tests=, which asserts a log filename that =91cf5273ab= on trunk
+("Make the console where logging goes, not a default filename") deliberately stopped
+defaulting. That failure is pre-existing, unrelated, and owned by the logging branch,
+which this branch does not touch. V06 is met, and the component is under the gates from
+now on.

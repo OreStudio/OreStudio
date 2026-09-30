@@ -26,6 +26,9 @@
  * standard library does not implement, so the portability decision lives here
  * rather than as a preprocessor branch in every caller.
  */
+#include "ores.platform/concurrency/stoppable_thread.hpp"
+
 namespace ores::platform::concurrency {}
+
 
 #endif

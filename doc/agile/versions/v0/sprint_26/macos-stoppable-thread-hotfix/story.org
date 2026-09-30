@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 5D1E7A34-8C26-4B0F-9A73-6E4B2C8D1F05
+:END:
+#+title: Story: Hotfix: the workflow deadline watch uses a thread Apple's libc++ lacks
+#+description: Both macOS legs fail with "no type named 'jthread' in namespace 'std'": the workflow engine's deadline watch declares a std::jthread, and Apple's libc++ implements std::stop_token and std::stop_source but not std::jthread. A portable stoppable_thread joins ores.platform, beside the other types that stand in for a standard facility a supported library does not implement.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:platform:workflow:macos:concurrency:sprint_26:v0:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Both macOS legs are red at one declaration:
+
+#+begin_src text
+projects/ores.workflow/core/include/ores.workflow.core/service/workflow_engine.hpp:383:10:
+  error: no type named 'jthread' in namespace 'std'; did you mean 'thread'?
+#+end_src
+
+Apple's libc++ implements =std::stop_token= and =std::stop_source= -- the
+token in the engine's lambda resolves -- but not =std::jthread=. The deadline
+watch the run's step deadline needs is therefore the only thing that fails,
+and it fails on the one platform the rest of the estate cannot check.
+
+The gap has cost a build before: =caf6de734d= reverted a comms thread to
+=std::thread= on 2026-03-12 for the same reason. Reverting this one the same
+way would leave the next author free to reintroduce it a third time, so the
+fix is the portable type, in the component that exists for exactly that.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- =ores.platform::concurrency::stoppable_thread= provides the part of
+  =std::jthread= the estate uses: it carries a stop token to its callable, and
+  it requests a stop and joins in its destructor.
+- The workflow engine uses it, and no source in the estate names
+  =std::jthread=.
+- The tree builds, the workflow and platform suites pass, and both macOS legs
+  link and test.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7B3F9C58-2E41-4D86-A5C7-9F0E6B3A2D14][Implement Hotfix: the workflow deadline watch uses a thread Apple's libc++ lacks]] | DONE | 2026-09-30 | 2026-09-30 | Add the portable stoppable thread to ores.platform, move the engine onto it, run the affected suites, and take it to a macOS verification run. |
+
+* Decisions
+
+- The portable type goes in =ores.platform=, whose concurrency header already
+  says it holds "the types that stand in for a C++20 standard facility a
+  supported standard library does not implement". A revert to raw
+  =std::thread= in the engine would fix this instance and leave the gap open.
+- The callable keeps its =std::stop_token= signature. The token is the part
+  Apple implements, so the caller's code is unchanged and the portability
+  difference is confined to who owns the thread.
+- The type carries no export attribute: every member is defined in the header,
+  and an export attribute on a header-only type is the link failure fixed
+  earlier today in ores.workflow.api.
+
+* Out of scope
+
+- The estate's remaining =std::thread= uses, which are portable already.

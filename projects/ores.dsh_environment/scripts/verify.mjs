@@ -19,8 +19,9 @@
  * Run: node projects/ores.dsh_environment/scripts/verify.mjs
  */
 
+import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { basename, dirname, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { apply } from '../lib/index.js'
@@ -259,6 +260,16 @@ let payload = null
     `${payload.health?.level}: ${(payload.health?.reasons ?? []).length} reason(s)`)
   check('a job slot is always present', payload.job === null || typeof payload.job === 'object')
 
+  /* The selector is what a row's Start or Stop posts, and compass resolves a
+   * registry service rather than one replica of it, so a per-replica label
+   * such as compute.wrapper-1 would fail its registry lookup. */
+  const selectors = [...new Set((payload.services?.units ?? []).map((unit) => unit.selector))]
+  check('every unit carries a registry service as its selector',
+    selectors.length > 0 && selectors.every((selector) => selector.startsWith('ores.')),
+    `${selectors.length} distinct`)
+  check('a replicated service shares one selector across its rows',
+    (payload.services?.units ?? []).filter((unit) => unit.selector === 'ores.compute.wrapper').length > 1)
+
   /* The restore age is a live difference against the clock, so two reads a
    * moment apart legitimately differ by a second. Everything else must hold. */
   const comparable = (body) => JSON.stringify({
@@ -348,6 +359,19 @@ heading('7. a real action job')
     `${(settled.job?.tail ?? []).length} line(s)`)
   check('a finished job reports its elapsed time', settled.job?.elapsedSeconds >= 0)
   console.log(`  note  job tail:\n        ${(settled.job?.tail ?? []).join('\n        ')}`)
+}
+
+heading('8. the selector the view posts is one compass accepts')
+{
+  const selector = payload.services?.units?.[0]?.selector ?? ''
+  let code = 0
+  try {
+    execFileSync('bash', [join(REPO, 'compass.sh'), 'services', 'status', selector],
+      { cwd: REPO, stdio: 'pipe' })
+  } catch (error) {
+    code = typeof error?.status === 'number' ? error.status : 1
+  }
+  check(`compass services status ${selector} exits 0`, code === 0, `exit ${code}`)
 }
 
 /* ------------------------------------------------------------- report */

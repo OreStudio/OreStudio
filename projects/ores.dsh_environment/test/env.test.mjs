@@ -160,6 +160,42 @@ test('the work tree name drops the ores_dev_ prefix', () => {
   assert.equal(buildModel(PAYLOAD).env.worktreeName, 'brave_hopper')
 })
 
+test('a replicated service carries the service name as its selector', () => {
+  const payload = {
+    ...PAYLOAD,
+    services: {
+      ...PAYLOAD.services,
+      total: 2,
+      units: [
+        { unit: 'ores.compute.wrapper-brave_hopper-1', service: 'ores.compute.wrapper',
+          replica: 1, label: 'compute.wrapper-1', state: 'stopped', detail: '' },
+        { unit: 'ores.compute.wrapper-brave_hopper-2', service: 'ores.compute.wrapper',
+          replica: 2, label: 'compute.wrapper-2', state: 'stopped', detail: '' },
+      ],
+    },
+  }
+  const units = buildModel(payload).services.units
+  /* compass resolves a registry service and never one replica of it, so a
+   * start or stop must send the service name. Sending the per-replica label
+   * fails its registry lookup, which is what this pins. */
+  assert.deepEqual(units.map((unit) => unit.selector),
+    ['ores.compute.wrapper', 'ores.compute.wrapper'])
+  assert.deepEqual(units.map((unit) => unit.label),
+    ['compute.wrapper-1', 'compute.wrapper-2'])
+})
+
+test('a unit with no registry service carries no selector', () => {
+  const payload = {
+    ...PAYLOAD,
+    services: {
+      ...PAYLOAD.services,
+      units: [{ unit: 'nats-server-brave_hopper', service: '', replica: 0,
+                label: 'nats-server', state: 'stopped', detail: '' }],
+    },
+  }
+  assert.equal(buildModel(payload).services.units[0].selector, '')
+})
+
 test('a payload with nothing in it still produces a whole model', () => {
   /* No counts means no states, not five invented ones: a fleet nobody could
    * read must not render as an empty but healthy one. */

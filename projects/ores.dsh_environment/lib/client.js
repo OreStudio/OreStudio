@@ -155,6 +155,7 @@ window.__ModuleLoader__.load({
           })),
           units: arr(services.units).map((unit) => ({
             unit: str(unit.unit),
+            selector: str(unit.selector) || str(unit.service),
             service: str(unit.service),
             label: str(unit.label) || str(unit.unit),
             state: str(unit.state) || 'unknown',
@@ -565,6 +566,11 @@ window.__ModuleLoader__.load({
       const busy = props.busy
       const color = stateColor(unit.state)
       const canStop = unit.state === 'running' || unit.state === 'starting'
+      /* compass resolves a registry service, so a replicated service's rows
+       * all act on the service. The title says so, because the row names one
+       * replica and the action does not. */
+      const selector = unit.selector
+      const shared = props.replicas > 1
       return h('div', {
         'data-env-unit': unit.label,
         style: {
@@ -591,19 +597,20 @@ window.__ModuleLoader__.load({
             title: unit.detail,
           }, unit.detail) : null,
         ]),
-        h('button', {
+        selector ? h('button', {
           key: 'act',
           type: 'button',
           disabled: busy,
           onClick: () => props.onToggle(unit, canStop ? 'service-stop' : 'service-start'),
-          title: canStop ? `compass services stop ${unit.label}` : `compass services start ${unit.label}`,
+          title: (canStop ? 'compass services stop ' : 'compass services start ')
+            + selector + (shared ? ` (all ${props.replicas} copies of this service)` : ''),
           style: {
             flex: '0 0 auto', padding: '0.15rem 0.5rem', borderRadius: '0.3rem',
             border: '1px solid var(--dsw-alias-border-l2)', background: 'transparent',
             cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1,
             fontSize: '0.72rem', color: canStop ? WARN : STATE_COLOR.running,
           },
-        }, canStop ? 'Stop' : 'Start'),
+        }, canStop ? 'Stop' : 'Start') : null,
       ])
     }
 
@@ -912,7 +919,10 @@ window.__ModuleLoader__.load({
                 key: unit.unit,
                 unit,
                 busy,
-                onToggle: (target, action) => act({ action, service: target.label }),
+                replicas: ready
+                  ? snapshot.services.units.filter((other) => other.selector === unit.selector).length
+                  : 1,
+                onToggle: (target, action) => act({ action, service: target.selector }),
               })),
           snapshot.services.logDir ? h('div', {
             key: 'logs',

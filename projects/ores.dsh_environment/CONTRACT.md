@@ -150,8 +150,8 @@ owns exactly two rules:
                "builtFrom", "builtAt", "driftLabel", "driftLevel",
                "driftSeconds", "bootstrapMode", "warning", "confirmPhrase"},
   "services": {"total", "counts", "states": [{"id", "title", "count"}],
-               "units": [{"unit", "service", "replica", "label", "state",
-                          "detail"}],
+               "units": [{"unit", "selector", "service", "replica", "label",
+                          "state", "detail"}],
                "nats": {"label", "state", "detail"}, "logDir"},
   "health": {"level", "reasons"},
   "tiles": [{"id": "database"|"services"|"config", "label", "value", "tone",
@@ -168,8 +168,16 @@ when compass could not read them. The browser defaults every field before
 rendering and never indexes a missing object, so a partial payload renders as
 an incomplete panel rather than a blank one.
 
+`unit.selector` is the value a Start or Stop posts, and it is the registry
+service name, not the label. compass resolves a registry service and never one
+replica of it, so every row of a replicated service carries the same selector
+while its label stays per replica. It is `""` for nats-server, which is not in
+the registry: a row with no selector offers no action.
+
 A read is cached in the host for two seconds, keyed by the resolved work tree
-root. A hit older than the cache's own TTL is a miss.
+root. A hit older than the cache's own TTL is a miss. While an action runs, the
+cached model is served and the cache entry is dropped when the action settles,
+so a rebuild costs one compass process rather than one every poll.
 
 Failure shape, still HTTP 200:
 

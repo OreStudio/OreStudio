@@ -82,6 +82,12 @@ export function buildModel(payload) {
 
   const units = arr(services.units).map((unit) => ({
     unit: str(unit.unit),
+    /* The selector a start or stop must send. compass resolves a registry
+     * service and never one replica of it, so every row of a replicated
+     * service carries the service name while its label stays per replica.
+     * Empty for nats-server, which is not in the registry and has no
+     * selector. */
+    selector: str(unit.service),
     service: str(unit.service),
     replica: num(unit.replica),
     label: str(unit.label, str(unit.unit)),

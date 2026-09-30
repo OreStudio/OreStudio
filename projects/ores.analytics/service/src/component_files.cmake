@@ -35,6 +35,9 @@ set(files
     "messaging/pricing_model_config_event_registrar.cpp"
     "messaging/pricing_model_product_event_registrar.cpp"
     "messaging/pricing_model_product_parameter_event_registrar.cpp"
+    "messaging/stress_test_library_event_registrar.cpp"
+    "messaging/stress_test_scenario_event_registrar.cpp"
+    "messaging/stress_test_shift_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -56,5 +59,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_config_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_product_parameter_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/stress_test_library_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/stress_test_scenario_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/stress_test_shift_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/ores.analytics.service.hpp"
 )

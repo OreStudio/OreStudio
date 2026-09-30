@@ -83,6 +83,7 @@ set(files
     "xml_scripted_golden_roundtrip_tests.cpp"
     "xml_sensitivityanalysis_roundtrip_tests.cpp"
     "xml_simulation_roundtrip_tests.cpp"
+    "xml_stress_test_mapper_roundtrip_tests.cpp"
     "xml_stresstesting_roundtrip_tests.cpp"
     "xml_swaption_mapper_roundtrip_tests.cpp"
     "xml_todaysmarket_roundtrip_tests.cpp"

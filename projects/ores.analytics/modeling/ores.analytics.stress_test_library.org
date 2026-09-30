@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: EE9AA4BA-BBC9-4D69-83D1-79A5180FCBD1
+:END:
+#+title: ores.analytics.stress_test_library
+#+description: Codegen entity model for the analytics =stress_test_library= table. A named collection of stress scenarios, one per stress document.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: A named collection of stress scenarios, one per stress document.
+#+entity_singular: stress_test_library
+#+entity_plural: stress_test_libraries
+#+entity_title: Stress Test Library
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+The root of an ORE stress document: =StressTesting= in =stresstest.xml=, which
+holds the scenarios a run may apply and the one setting that governs how they
+are applied. Twenty documents ship, holding forty-six scenarios between them.
+
+Each row is one document. The scenarios hang off it, because a scenario is only
+meaningful inside the library that names it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:nullable:      false
+:END:
+
+Surrogate key for the library.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:END:
+
+Name of the library, which is the name of the document it came from.
+
+#+begin_src cpp :name generator
+std::string("stresstest")
+#+end_src
+
+** use_spreaded_term_structures
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      std::optional<bool>
+:nullable:      true
+:END:
+
+Whether the scenarios spread their shifts across the term structures rather than shifting them as a block.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_stress_test_libraries_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: stress_test_library
+:entity_plural_short:   stress_test_libraries
+:entity_singular_words: stress test library
+:entity_plural_words:   stress test libraries
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: stl
+:END:
+
+** Table display
+
+| column                      | header                      |
+|-----------------------------+-----------------------------|
+| name                        | Name                        |
+| use_spreaded_term_structures | Spreaded Term Structures    |
+| modified_by                 | Modified By                 |
+| version                     | Version                     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:        stress_test_libraries
+:key_field:              id
+:delete_request_id_field: ids
+:save_request_item_field: stress_test_library
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.analytics]] — component group overview.

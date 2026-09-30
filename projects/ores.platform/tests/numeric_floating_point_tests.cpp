@@ -22,6 +22,7 @@
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <charconv>
+#include <limits>
 #include <string>
 
 namespace {
@@ -73,6 +74,23 @@ TEST_CASE("a_value_outside_the_range_of_a_double_is_refused", tags) {
 
     CHECK(parse_double("1e400") == std::nullopt);
     CHECK(parse_double("-1e400") == std::nullopt);
+
+    // A value below the smallest denormal rounds to zero, which the type
+    // cannot tell from a real zero, so it is out of range as well.
+    CHECK(parse_double("1e-400") == std::nullopt);
+}
+
+TEST_CASE("a_subnormal_is_a_value_and_not_a_range_error", tags) {
+    auto lg(make_logger(test_suite));
+
+    // 5e-324 is the shortest decimal that rounds to the smallest denormal a
+    // double has, and the conversion reports the same range error for it that
+    // it reports for an underflow. libc++ turns that error into a stream
+    // failure, which is how this parser's round trip failed on macOS alone.
+    const auto smallest = parse_double("5e-324");
+    REQUIRE(smallest.has_value());
+    CHECK(*smallest == std::numeric_limits<double>::denorm_min());
+    CHECK(parse_double("1e-320").has_value());
 }
 
 TEST_CASE("every_formatted_double_parses_back_to_itself", tags) {

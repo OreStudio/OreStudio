@@ -8,7 +8,7 @@
 #+filetags: :log_to_the_journal:sprint_26:v0:
 #+owner: marco
 #+branch: feature/environment-log-window
-#+pr:
+#+pr: 2428
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2428][#2428]] | [dsh] Name the cause when the log route is missing |
 
 * Review
 

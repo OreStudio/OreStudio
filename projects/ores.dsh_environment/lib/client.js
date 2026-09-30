@@ -242,7 +242,37 @@ window.__ModuleLoader__.load({
         params.push('level=' + encodeURIComponent(str(level) || 'all'))
         fetch('/plugins/ores-dsh-environment/logs?' + params.join('&'),
           { credentials: 'same-origin', cache: 'no-store' })
-          .then((response) => response.json())
+          .then(async (response) => {
+            /* A route the running server has not registered answers 404 with an
+             * empty body, and parsing that throws a bare JSON error that says
+             * nothing about the cause. A plugin's host routes are registered
+             * once at boot, so a server that has not been restarted since the
+             * plugin was installed is the case this names. */
+            if (response.status === 404) {
+              return {
+                ok: false,
+                reason: 'no-route',
+                message: 'this server has no log route: it was started before '
+                  + 'the plugin was installed, so restart DSH',
+              }
+            }
+            if (!response.ok) {
+              return {
+                ok: false,
+                reason: 'transport',
+                message: 'the log route answered ' + response.status,
+              }
+            }
+            try {
+              return await response.json()
+            } catch {
+              return {
+                ok: false,
+                reason: 'unreadable',
+                message: 'the log route answered no JSON',
+              }
+            }
+          })
           .then((payload) => {
             if (!alive) return
             const next = normalizeLogs(payload)

@@ -19,30 +19,55 @@
 #ifndef ORES_PLATFORM_CONCURRENCY_STOPPABLE_THREAD_HPP
 #define ORES_PLATFORM_CONCURRENCY_STOPPABLE_THREAD_HPP
 
-#include <stop_token>
+#include <atomic>
+#include <memory>
 #include <thread>
 #include <utility>
 
 namespace ores::platform::concurrency {
 
 /**
- * @brief A thread that carries a stop token and joins when it is destroyed.
+ * @brief The stop state a @c stoppable_thread shares with its callable.
  *
- * The part of @c std::jthread Apple's libc++ does not implement. It has
- * @c std::stop_token and @c std::stop_source, so the only thing missing is the
- * thread that owns them and joins in its destructor:
+ * A faithful subset of @c std::stop_source: it answers @c request_stop() and
+ * @c stop_requested(), and copies share the one flag. It exists because
+ * Apple's libc++ has neither @c std::stop_source nor @c std::stop_token, which
+ * the macOS build reports as:
  *
- *     error: no type named 'jthread' in namespace 'std'; did you mean 'thread'?
+ *     error: no type named 'stop_token' in namespace 'std'
+ *     error: no type named 'stop_source' in namespace 'std'
+ */
+class stop_source final {
+public:
+    stop_source()
+        : stopped_(std::make_shared<std::atomic<bool>>(false)) {}
+
+    void request_stop() const {
+        stopped_->store(true, std::memory_order_relaxed);
+    }
+
+    [[nodiscard]] bool stop_requested() const {
+        return stopped_->load(std::memory_order_relaxed);
+    }
+
+private:
+    std::shared_ptr<std::atomic<bool>> stopped_;
+};
+
+/**
+ * @brief A thread that carries a stop state and joins when it is destroyed.
  *
- * The gap has stopped the macOS build twice. A comms thread was reverted to
- * @c std::thread for it on 2026-03-12, and the workflow engine's deadline
- * watch reintroduced @c std::jthread on 2026-09-30 and stopped both macOS
- * legs. It lives here so the next thread that wants a stop token reaches for
- * the portable type rather than for the standard one, and so the portability
- * decision is made once instead of in every caller.
+ * The portable counterpart of @c std::jthread. Apple's libc++ implements none
+ * of the C++20 stop machinery -- no @c jthread, no @c stop_token and no
+ * @c stop_source -- and that has stopped the macOS build twice: a comms thread
+ * was reverted to @c std::thread for it on 2026-03-12, and the workflow
+ * engine's deadline watch hit it on 2026-09-30. It lives here, beside the
+ * concurrency header's other stand-ins for a standard facility a supported
+ * library does not implement, so the next author reaches for the portable type
+ * instead of the standard one.
  *
- * The class is deliberately not exported: every member is defined here, and an
- * export attribute on a header-only type makes each consumer import symbols no
+ * It is deliberately not exported: every member is defined here, and an export
+ * attribute on a header-only type makes each consumer import symbols no
  * translation unit of this library defines.
  */
 class stoppable_thread final {
@@ -50,18 +75,17 @@ public:
     stoppable_thread() = default;
 
     /**
-     * @brief Starts a thread that runs @p callable with this thread's token.
+     * @brief Starts a thread that runs @p callable with the stop state.
      *
      * The callable is stored by value, as @c std::thread stores it, so a
-     * temporary is safe to pass.
+     * temporary is safe to pass. It takes the @c stop_source by value and asks
+     * it whether a stop was requested.
      */
     template <typename Callable>
     explicit stoppable_thread(Callable&& callable) {
-        // The token is taken before the thread starts, and the callable is
-        // stored by value, as std::thread would store it.
-        auto token = source_.get_token();
+        auto source = source_;
         thread_ = std::thread(
-            [token, callable = std::forward<Callable>(callable)]() mutable { callable(token); });
+            [source, callable = std::forward<Callable>(callable)]() mutable { callable(source); });
     }
 
     stoppable_thread(const stoppable_thread&) = delete;
@@ -86,7 +110,7 @@ public:
         join();
     }
 
-    /// Asks the thread to stop; a thread that never looks at its token still
+    /// Asks the thread to stop. A thread that never looks at the flag still
     /// joins, because the destructor waits for it either way.
     void request_stop() {
         source_.request_stop();
@@ -94,10 +118,6 @@ public:
 
     [[nodiscard]] bool stop_requested() const {
         return source_.stop_requested();
-    }
-
-    [[nodiscard]] std::stop_token get_stop_token() const {
-        return source_.get_token();
     }
 
     [[nodiscard]] bool joinable() const {
@@ -110,7 +130,7 @@ public:
     }
 
 private:
-    std::stop_source source_;
+    stop_source source_;
     std::thread thread_;
 };
 

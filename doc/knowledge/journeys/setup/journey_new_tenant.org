@@ -48,12 +48,14 @@ thing that happens on an empty database.
    /ACME demo/ for demos and testing. The ACME card carries the ACME logo. The
    person picks one. Nothing is created yet.
 2. *Describe the tenant.* The person names the tenant and its administrator.
-   /Empty operational/ asks for the code, name and hostname, the root LEI, the
-   counterparty set and the administrator's password. /ACME demo/ fills in the
-   code (=acme_corporation=), the name, the hostname, and the administrator
-   username and email; the details sit behind *Change settings*, and only the
-   administrator's password stays blank. Every new password uses the shared
-   =NewPasswordField=, which shows the policy, the strength and a confirmation.
+   /Empty operational/ asks for the code, name and hostname, the root legal
+   entity — found by name or LEI among the entities the deployment holds, or
+   left out — the counterparty set and the administrator's password. /ACME demo/
+   fills in the code (=acme_corporation=), the name, the hostname, and the
+   administrator username and email; the details sit behind *Change settings*,
+   and only the administrator's password stays blank. Every new password uses
+   the shared =NewPasswordField=, which shows the policy, the strength and a
+   confirmation.
 3. *Review.* The person reads one summary: starting point, tenant name and
    code, administrator, and the profile's parameters. The screen states how many
    steps the profile runs. Nothing is created until the person confirms.

@@ -58,8 +58,10 @@ journey that can happen on an empty database.
    operational/, /GLEIF entity/ or /ACME demo/. Each card shows a tagline,
    three bullets and its counts. The ACME card also shows the ACME logo.
    Nothing is created yet.
-4. *Describe the tenant.* For /Empty operational/ the person enters the root
-   LEI and the counterparty set, and sets the administrator's password. For
+4. *Describe the tenant.* For /Empty operational/ the person searches the legal
+   entities the deployment holds for the tenant's root — or leaves it out, when
+   there is no entity yet — chooses the counterparty set, and sets the
+   administrator's password. For
    /GLEIF entity/ the person searches the legal entities the deployment holds
    and chooses the one the tenant is built around; the card states how many
    parties that entity's hierarchy would create. For /ACME demo/ the profile
@@ -193,17 +195,8 @@ every tenant, the first one included.
 
 * What is missing
 
-Two things the journey reaches for are not in place:
+One thing the journey reaches for is not in place:
 
-- The *Operational* card's root LEI is typed rather than chosen, so a person has
-  to know a code the deployment can check nothing about. The deployment
-  answers a legal-entity search the *GLEIF entity* card uses to choose its root
-  LEI, and the *Operational* card's optional parameter still takes a string, so
-  a code the deployment does not hold fails inside the publication and arrives
-  as its SQL error rather than as a sentence about the entity. A card that names
-  no entity at all is the supported case: the parameter is optional, the import
-  step says it had nothing to read, and the tenant's parties come from the party
-  stage.
 - The registration step has nothing to write to yet. The read that reports the
   switch and the defaults exists — =iam.v1.auth.registration-policy= — but no
   interface sets the switch outside SQL, so the step and the two nominations are
@@ -211,10 +204,11 @@ Two things the journey reaches for are not in place:
   nominations point at are settable now, as =is_registration_default= on the
   tenant, the party and the role.
 
-The *New tenant* and *New party* journeys have rails of their own, and
+Nothing else is missing from the journey's own path: the starting point asks the
+deployment for the tenant's root legal entity rather than taking a code nobody
+can check, both other Setup journeys have rails of their own, and
 =projects/ores.web/scripts/verify-first-run.ts= walks this journey's path on a
-fresh database and asserts every answer, so the gap that used to sit here is
-closed.
+fresh database and asserts every answer.
 
 Everything else the journey reaches for exists, and the list below is the
 record of what each part turned out to be.

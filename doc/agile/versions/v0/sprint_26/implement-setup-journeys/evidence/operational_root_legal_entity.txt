@@ -1,0 +1,109 @@
+The Operational card's root legal entity, proved on the live deployment.
+
+Environment: eager_maxwell, commit 5a67ef6f04 (the seeded row and its test).
+The running database was seeded before the change, so the row was set there
+first, which is the same row a fresh installation now seeds. The fleet was
+already up and the installation already set up, so the walk ran on
+/tenants/new, which renders the same tenant steps the first run inlines.
+
+-------------------------------------------------------------------------------
+The change: one seeded row
+-------------------------------------------------------------------------------
+
+projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql, the
+empty_operational parameters:
+
+  before   ('empty_operational', 'root_lei', 'Root LEI', 'string', ...)
+  after    ('empty_operational', 'root_lei', 'Root legal entity', 'legal_entity', ...)
+
+The form renders a legal_entity parameter as the same search the GLEIF card
+uses, and the parameter check refuses a value that is not twenty alphanumeric
+characters, naming the field. The parameter stays optional, so a person with
+no entity yet leaves the search empty.
+
+The live row, after the update, read back:
+
+       code        |       name        |        label        |  data_type   | is_required | default_value
+  -------------------+-------------------+---------------------+--------------+-------------+---------------
+   empty_operational | root_lei          | Root legal entity   | legal_entity | f           |
+   empty_operational | counterparty_size | Counterparty set    | choice       | t           | small
+   gleif_entity      | root_lei          | Parent legal entity | legal_entity | t           |
+   gleif_entity      | counterparty_size | Counterparty set    | choice       | t           | small
+
+-------------------------------------------------------------------------------
+The walk, in a browser
+-------------------------------------------------------------------------------
+
+  node build/evidence/lei_search_walk.mjs
+
+Its output, verbatim:
+
+  already signed in
+  shot 01-home
+  shot 02-starting-points
+  shot 03-details
+    settings legend: Operational settings
+    input placeholder="Search by name or LEI" type=text
+    [PASS] the root entity is a search box, not a text box
+    [PASS] the field is named the legal entity
+    matches for 'barclays': 2
+      213800LBQA1Y9L22JB70 BARCLAYS PLC
+      636700Z1VAKUC3AIMJ25 Ossiam Shiller Barclays CAPE® US Sector Screened UCITS ETF
+    [PASS] the search answered with entities the deployment holds
+    [PASS] every match names an LEI
+  shot 04-search-matches
+    [PASS] a match can be chosen
+  shot 05-chosen-entity
+    [PASS] the chosen entity stands in the field (213800LBQA1Y9L22JB70)
+    [PASS] the chosen entity states the parties it would create
+    [PASS] the entity proposal named the tenant after it (BARCLAYS PLC | barclays_plc | barclaysplc.com |  |  |  | )
+    [PASS] the administrator is the field left blank
+  shot 06-details-filled
+    [PASS] the step opens once the administrator is named
+  shot 07-review
+    [PASS] the review carries the chosen LEI (213800LBQA1Y9L22JB70)
+
+  chosen: 213800LBQA1Y9L22JB70 BARCLAYS PLC
+  the walk reached the review with the entity chosen from the register
+
+The screenshots beside this file:
+
+- operational_root_legal_entity_search.png -- the Operational card's describe
+  step. The root entity is a search box naming the field, not a text box.
+- operational_root_legal_entity_matches.png -- the search answered with the two
+  entities the deployment holds for "barclays".
+- operational_root_legal_entity_chosen.png -- BARCLAYS PLC stands in the field
+  with its LEI, its country and the parties its hierarchy would create.
+- operational_root_legal_entity_review.png -- the review carries the chosen
+  LEI.
+
+The walk stops at the review: it proves the field and what it carries, and
+provisioning is the run the other evidence covers. The walk does not create a
+tenant.
+
+-------------------------------------------------------------------------------
+The check the server applies
+-------------------------------------------------------------------------------
+
+projects/ores.iam/core/tests/service_seed_profile_parameter_check_tests.cpp
+gained the case the legal_entity branch had none of, using the eighteen
+character code one earlier walk mistyped:
+
+  check_parameters(declared, {"root_lei=9DJT3UXIJZI4WXO774"})
+    -> "The value '9DJT3UXIJZI4WXO774' for 'root_lei' is not an LEI."
+  check_parameters(declared, {"root_lei=9DJT3UXIJIZJI4WXO774"})
+    -> accepted
+
+Its fixture now describes the entity the way the seeded pair does — named by its
+LEI rather than a free-text root LEI — and a second case proves the optional
+card accepts the entity left out, which is the tenant nobody holds an entity
+for.
+
+  ./compass.sh test run -- -R ores.iam.core
+  1/1 Test #32: ores.iam.core.tests ..............   Passed   16.38 sec
+  100% tests passed, 0 tests failed out of 1
+
+What the check guards is the LEI's shape, not its existence: a twenty-character
+code the register does not hold is still the publication's to refuse. That path
+is the shell's, because the browser's field is a search and a person cannot type
+one into it.

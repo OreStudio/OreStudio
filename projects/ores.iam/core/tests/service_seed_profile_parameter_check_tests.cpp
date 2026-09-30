@@ -28,13 +28,13 @@ const std::string tags("[seed_profile]");
 using ores::iam::domain::seed_profile_parameter;
 using ores::iam::service::check_parameters;
 
-/// The two parameters the seeded profiles declare: a required free-text root
-/// LEI, and a counterparty set with a choice and a default.
+/// The two parameters the seeded profiles declare: the root legal entity of the
+/// tenant, named by its LEI, and a counterparty set with a choice and a default.
 std::vector<seed_profile_parameter> declared_parameters() {
     seed_profile_parameter root_lei;
     root_lei.name = "root_lei";
-    root_lei.label = "Root LEI";
-    root_lei.data_type = "string";
+    root_lei.label = "Root legal entity";
+    root_lei.data_type = "legal_entity";
     root_lei.default_value = "";
     root_lei.is_required = true;
 
@@ -144,6 +144,36 @@ TEST_CASE("check_parameters_refuses_a_boolean_that_is_not_true_or_false", tags) 
         check_parameters(declared, {"root_lei=9695ACMEGROUP0000030", "counterparty_size=TRUE"});
     CHECK(written.accepted());
     CHECK(written.values[1].value == "TRUE");
+}
+
+TEST_CASE("check_parameters_refuses_a_legal_entity_that_is_not_an_LEI", tags) {
+    // The code one walk mistyped, which the publication used to refuse from
+    // inside its own SQL: eighteen characters, so it never named an entity.
+    const auto mistyped = check_parameters(declared_parameters(), {"root_lei=9DJT3UXIJZI4WXO774"});
+
+    CHECK_FALSE(mistyped.accepted());
+    CHECK(mistyped.refusal == "The value '9DJT3UXIJZI4WXO774' for 'root_lei' is not an LEI.");
+
+    const auto named = check_parameters(declared_parameters(), {"root_lei=9DJT3UXIJIZJI4WXO774"});
+
+    CHECK(named.accepted());
+    CHECK(named.values[0].value == "9DJT3UXIJIZJI4WXO774");
+}
+
+TEST_CASE("check_parameters_allows_an_optional_legal_entity_to_be_left_out", tags) {
+    // The Operational card declares its entity optional, so a tenant nobody
+    // holds an entity for is still a tenant: the import step says it had
+    // nothing to read and the parties come from the party stage.
+    auto declared = declared_parameters();
+    declared[0].is_required = false;
+
+    const auto omitted = check_parameters(declared, {});
+    CHECK(omitted.accepted());
+    CHECK(omitted.values[0].value == "");
+
+    const auto cleared = check_parameters(declared, {"root_lei="});
+    CHECK(cleared.accepted());
+    CHECK(cleared.values[0].value == "");
 }
 
 TEST_CASE("check_parameters_refuses_an_entry_that_is_not_a_name_value_pair", tags) {

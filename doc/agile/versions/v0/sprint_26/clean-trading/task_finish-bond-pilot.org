@@ -130,6 +130,40 @@ rows the work touches.
 
 * Notes
 
+- *The eight residue elements are resolved.* Six of them --
+  =CreditGroup=, =VolatilityCurveId=, =PriceQuoteMethod=,
+  =PriceQuoteBaseValue=, =PriceType= and =SubType= -- became columns of
+  =bond_issue= in the split, and the leg's own =Payer= is
+  =bond_issue_leg.payer=. The last two are =bondData='s *top-level*
+  =Payer= (instruments.xsd:404, an =xs:string=) and =CreditRisk= (406,
+  ORE's loose =bool=), which =bondReferenceDatum= does not state at all, so
+  neither had a home. Both are columns of =bond_issue= now: =payer= holds
+  the spelling as text, =credit_risk= holds the code the way =end_of_month=
+  does, and =the_datum_payer_and_credit_risk_survive_the_round_trip= pins
+  both directions.
+- *The bond future is reshaped to v17 (D25).* The table keeps the three
+  members =bondFutureData= requires, =contract_name=, =contract_notional=
+  and =long_short=, and gains its two optional booleans,
+  =apply_conversion_factor= and =use_future_price=, which the mapper had
+  ignored since the first pilot. The other thirteen columns are dropped:
+  twelve of them are elements of =bondFutureReferenceDatum=, which the
+  generated ORE bindings never emit because the datum reaches only the
+  =ReferenceData= document root, and =fair_price= is not in the schema at
+  all. A dropped column is recorded, not migrated, and the shared entity
+  that will hold the terms is keyed by the contract name, the way
+  =bond_issue= is keyed by the security id.
+- *The presence bullet is met by the optional type, not by a new column
+  (D24).* A stated =false= is a value and an absent element is null, so the
+  two stay different and the export writes the one the document stated.
+  =bond_future_maps_the_trade_level_facts= proves it: the authored document
+  states =ApplyConversionFactor=false= and =UseFuturePrice=true=, and both
+  survive the reverse.
+- *=bond_future_delivery_basket= is retired separately.* ORE's
+  =DeliveryBasket= is the reference datum's element, the table is keyed by
+  the trade, and the exporter never writes it, so nothing fills it from a
+  trade. Removing a generated entity touches five components and no tool
+  prunes the files it leaves behind, so it is the next unit rather than
+  part of the reshape.
 - *The corpus sweep reads in scope lost 0, unexplained 0, with all 354
   trades exported.* That is the pilot's zero-loss acceptance over the whole
   corpus of 49 bond portfolios, not over the two documents the sprint 25

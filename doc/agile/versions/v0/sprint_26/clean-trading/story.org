@@ -601,12 +601,14 @@ row is updated as each PR lands.
   that will hold them is keyed by the contract name, the way =bond_issue=
   is keyed by the security id, and it lands with the reference-data
   import; recorded rather than invented.
-  =bond_future_delivery_basket= goes the same way for the same reason:
-  ORE's =DeliveryBasket= is that datum's element, the table is keyed by
-  the trade, and the exporter never writes it, so nothing can fill it from
-  a trade and nothing reads it back. The two optional booleans are
-  nullable, so a stated =false= and an absent element stay different
-  values, which is D24's rule.
+  =bond_future_delivery_basket= is in the same position and is retired
+  separately: ORE's =DeliveryBasket= is that datum's element, the table is
+  keyed by the trade, and the exporter never writes it, so nothing fills it
+  from a trade and nothing reads it back. Removing a generated entity
+  touches five components and no tool prunes the files it leaves behind,
+  so it is its own unit rather than a footnote of this one. The two
+  optional booleans are nullable, so a stated =false= and an absent element
+  stay different values, which is D24's rule.
 
 * Delivery plan
 

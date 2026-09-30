@@ -103,6 +103,15 @@ from dataclasses import dataclass
 # resolution-order and workspace-validation functions, the trade-scope
 # whitelist, the RLS layer, and the two operation handlers:
 # doc/agile/versions/v0/sprint_26/clean-workspace/task_clean_workspace.org.
+#
+# marketdata joins at the end of its clean-standard pass. Its regeneration is
+# byte-identical at every address, every one of its protocol headers has a
+# TypeScript twin, its seeds are complete and its populate references resolve.
+# The seven protocol headers that had no twin are one operation model now,
+# ores.marketdata.operations, so each interface generates beside its C++
+# header; the component's domain, entity protocol and entity-handler output
+# does not move. The task records what the pass left hand-written and why:
+# doc/agile/versions/v0/sprint_26/clean-marketdata/task_make-the-oresmd-uri-the-series-identity.org.
 @dataclass(frozen=True)
 class AcceptedException:
     """One checklist item a listed component does not pass.
@@ -240,4 +249,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "marketdata", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")

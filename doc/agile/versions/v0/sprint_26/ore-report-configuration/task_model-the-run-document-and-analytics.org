@@ -8,12 +8,12 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-the-run-document-and-analytics
-#+pr:
+#+pr: 2383
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,18 +26,19 @@ A report definition's run is configured by typed entities for its setup, its mar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
 
-- report_run_setup carries the setup parameters as typed columns and replaces the corresponding part of risk_report_config.
+- report_run_setup carries the setup parameters as typed columns.
 - report_analytic holds one row per analytic, keyed to a seeded lookup of the thirty-five analytic types.
-- An analytic with parameters has a typed parameter entity; adding a type adds a lookup row and a table, never a column on the report definition.
+- An analytic's parameters are held as values keyed to a parameter definition, so adding a parameter adds a lookup row and never a column on the report definition. The plan said a table per analytic type; the work changed that and the reason is in the notes.
+- The superseded columns on risk_report_config are still there. Retiring them is not this task: they are the run configuration the report definition carries, and the story scopes their replacement with the report kind classification in [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]], which is where the columns' consumers are decided.
 
 * Plan
 
@@ -57,9 +58,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Analytic types a run can ask for | 35 in the corpus, seeded | =psql -f projects/ores.sql/populate/reporting/reporting_analytic_types_populate.sql= | =86dacf950d= |
+| Setup parameters in use | 40, of which asofDate, inputPath, outputPath and logFile appear in all 416 run documents | =python3= census over =external/ore/examples/= | =69f11695db= |
+| Run documents in the corpus | 416 | the same | =69f11695db= |
+| Analytics the corpus runs | 1874 rows across the 416 documents, in all 35 types, each carrying an active flag | =python3= census over =external/ore/examples/= | =9b8a773a50= |
+| Run documents whose Setup block round trips | 416 of 416 | =ores.ore.core.tests "[run_document]"= | =17070aeae7= |
+| Analytics that round trip | 1874 of 1874, across the same 416 documents | the same | =64a9838858= |
+| Market bindings that round trip | 1915 of 1915, in 413 documents, across 8 roles | the same | =c75073ec27= |
+| Run document through the database | setup, analytics and market bindings written, read back and exported, agreeing with the original | =ores.ore.core.tests "[database][roundtrip]"= | =64f1377dcc= |
+| Analytic parameter definitions | 365, one per analytic type and parameter name, across all 35 types; domains 200 string, 118 boolean, 22 integer, 22 double, 3 date | applied in a scratch database, because the reporting tables are owned by postgres here | =ce21236a38= |
+| Analytic parameters through the database | each analytic's parameters written as values keyed to a definition, read back, resolved to names and compared with the document | =ores.ore.core.tests "[database][roundtrip]"=, and the CI tests job, which recreates the database | =15078c2b55= |
 
 * Notes
+
+- The plan said each analytic type would own a typed parameter table. The work
+  changed that, and the reason is on the record: thirty-five tables, one of them
+  around seventy columns wide, is not a shape to maintain, and the reporting
+  registry already solved this exact problem when it modelled a configuration's
+  parameters -- a definition lookup, a value domain, and a row per value. The
+  run's analytics use that pattern too, so a parameter is added as a lookup row
+  and never as a column, which is the acceptance's own test. One table replaces
+  the plan's thirty-five. The decision is stated in
+  =ores.reporting.report_analytic_parameter='s model prose for review.
 
 * Test Scenarios
 
@@ -76,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2383][#2383]] | [reporting] Model the run document and the analytic list |
 
 * Review
 
@@ -85,3 +105,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The acceptance is met. The run document is five parameter lists, and four of
+them are modelled: the setup block as forty-three typed columns, the ordered
+analytic list as a row per analytic keyed to a seeded lookup of the thirty-five
+types, the analytics' parameters as values keyed to a parameter definition, and
+the market bindings as a role and the configuration set it names. Logging and
+Restore are not modelled and no shipped document's round trip depends on them.
+
+All four map both ways and round trip: the setup block and the analytic list
+over all four hundred and sixteen run documents, the market bindings over the
+four hundred and thirteen that carry them, and the whole document through
+PostgreSQL, with the parameters resolved back to names on the way out.
+
+Three decisions the work settled:
+
+- An analytic's parameters are rows keyed to a definition, not a table per
+  analytic type. The plan said a table per type; thirty-five tables, one of them
+  around seventy columns wide, is not a shape to maintain, and the reporting
+  registry had already solved this exact problem the same way. Adding a
+  parameter is a lookup row, which is the acceptance's own test, and the
+  vocabulary is seeded from the corpus: three hundred and sixty-five
+  definitions across the thirty-five types.
+- The setup values are held as ORE spells them. The flags are not all booleans
+  -- the fixing and cashflow flags are Y or N, the model flags are true or
+  false, and accrualDate may be the literal ASOF -- so the mapping is a rename
+  and not a conversion.
+- The mapper refuses what it cannot represent: a setup parameter the entity has
+  no column for, or a value the column cannot hold, is an error rather than a
+  silent drop. A name that appears twice is read from its last occurrence, which
+  three shipped documents need.
+
+What is left is not this task's: risk_report_config still carries the run
+parameters it held before, and retiring them belongs with the classification of
+report kinds, where their consumers are decided.

@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "analytic_type_commands_tests.cpp"
     "concurrency_policy_commands_tests.cpp"
     "configuration_commands_tests.cpp"
     "configuration_parameter_commands_tests.cpp"

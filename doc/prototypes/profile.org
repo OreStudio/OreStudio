@@ -121,6 +121,27 @@ CSS and JavaScript, no framework and no build step. The site build copies the
 directory through =ores-deploy-web-app=, beside the trade entry and
 registration door prototypes.
 
+** The verdict
+
+Variant *B*, one page with a save per panel, is accepted. The profile and the
+contact record carry their own versions and their own change reasons, so one
+reason for both would make the version history contradict the screen a moment
+after it was saved; and a half-finished edit must not ride along with the
+record that is ready. Variant *A* stays on the page as the record of the
+simpler reading the journey documents first gave, and a panel from it may still
+be borrowed.
+
+*C* is not accepted. This screen is a page a person returns to, not a run that
+proceeds from a beginning to an end, so a rail implies a sequence the work does
+not have. The registration door's rail is right for the door because
+registration *is* a run.
+
+The reporting line is proposed by the person whose line it is, and approved by
+their hierarchical superior or by a tenant administrator. An administrator
+acting on a colleague's record is the approver, so their own change takes
+effect; the proposal exists for the person who cannot make the change
+themselves.
+
 ** What it does not settle
 
 The approval. The prototype draws a proposal waiting for a decision; it does not

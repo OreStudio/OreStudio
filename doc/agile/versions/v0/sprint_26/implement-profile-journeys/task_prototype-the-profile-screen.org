@@ -72,7 +72,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Variant, actor and state combinations rendered head-less | 36 | =node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_prototype_check.js= (output in =evidence/profile_prototype_states.txt=) | =ab4c684d97= |
+| Promises asserted on those states | 14 | same | =ab4c684d97= |
+| Screens captured in Chrome | 6 | =google-chrome --headless=new --screenshot=… "file://…#?variant=…&actor=…&state=…"= | =ab4c684d97= |
+| Files in the prototype, no build step | 3 | =ls doc/prototypes/profile/= | =ab4c684d97= |
+| Decisions the product owner settled, marked on the story | 4 | =grep -c "Product owner" doc/agile/versions/v0/sprint_26/implement-profile-journeys/story.org= | =cc66cb16e6= |
 
 * Notes
 
@@ -100,3 +104,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototype is [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]], at
+=doc/prototypes/profile/= and published on the site beside the trade entry and
+registration door prototypes. It renders three structural variants, for the
+member and for a tenant administrator, in the six states the requirement work
+named, and it uses the repository's own stock faces.
+
+The verdict is recorded on that page: variant *B*, one page with a save per
+panel, is accepted; *A* and *C* stay as the record. The reporting line is
+proposed by the person whose line it is and approved by their hierarchical
+superior or a tenant administrator.
+
+The requirement work this task opened is on the parent story: four decisions
+the product owner took, and two journey documents corrected where the
+reporting-line decision changes them.
+
+What the review did not settle is recorded rather than hidden: how an approver
+is told, where the queue lives and what happens when a superior and an
+administrator disagree are the Membership group's, and the prototype states the
+gap where a claim would otherwise be implied.

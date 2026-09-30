@@ -23,9 +23,9 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The story is scaffolded, the requirements are settled from the three journey documents, and the screen prototype is built and waiting for its review. |
+| Now           | The requirements are settled, the screen prototype is built, and its verdict is recorded: one page with a save per panel, and a reporting line the person proposes and their superior or an administrator approves. No profile code has changed. |
 | Waiting on    | Nothing.                               |
-| Next          | Review the prototype, record its verdict, then schedule the implementation from the requirements below. |
+| Next          | Schedule the implementation from the acceptance below: the two self-service subjects and the image upload first, because the screen cannot keep its promises without them, then the screen itself on the setup journeys' runtime. |
 | Last touched  | 2026-09-30                               |
 
 * Acceptance
@@ -58,6 +58,13 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 
 * Decisions
 
+- *The screen is one page, and each panel saves itself.* Variant *B* of the
+  prototype is accepted: the profile and the contact record carry their own
+  versions and their own change reasons, so each panel writes its own record
+  with its own reason and a half-finished edit never rides along with the one
+  that is ready. The rail variant is rejected because this screen is a page a
+  person returns to, not a run with a beginning and an end, which is what makes
+  a rail right for the registration door. (Prototype verdict, 2026-09-30.)
 - *The member writes their own record.* =iam.v1.accounts.update-self= and
   =iam.v1.account_contact_informations.update-self= are added, restricted to
   the caller's own account and to the fields a member owns: =full_name=,
@@ -68,11 +75,13 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   returns an image id, and the accepted formats and the maximum size are
   stated. Step 2 of the flagship journey cannot happen at all otherwise.
   (Product owner, 2026-09-30.)
-- *A reporting-line change is a proposal.* A person proposes it, the person's
-  hierarchical superior or a tenant administrator approves it, and the line
-  changes only then. (Product owner, 2026-09-30.) It is not a plain edit on the
-  profile screen, and it is not a plain edit on Membership's tree either: both
-  documents change to record the proposal.
+- *A reporting-line change is a proposal.* The person whose line it is proposes
+  the change; their hierarchical superior or a tenant administrator approves it,
+  and the line changes only then. An administrator acting on a colleague's
+  record is the approver, so their own change takes effect. (Product owner,
+  2026-09-30.) It is not a plain edit on the profile screen, and it is not a
+  plain edit on Membership's tree either: both documents change to record the
+  proposal.
 - *One Save, two writes, and the failure is named.* The profile and the contact
   record are separate records and no composite operation is added now, so the
   screen sends both and names the record that failed. (Product owner,

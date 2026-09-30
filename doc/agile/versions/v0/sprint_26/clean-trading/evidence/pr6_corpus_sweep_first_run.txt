@@ -32,13 +32,21 @@ one of those pairs is a contradiction the model cannot hold. The fold is
 what makes the reading a statement about the code.
 
 === classifier, canonicalised union against the one export ===
-Documents: 1  Failures: 1  Skipped: 0
+Documents: 1  Failures: 0  Skipped: 0
 Classified: numeric 158, boolean 128
-In scope, bond products and the trade envelope: lost 256, unexplained 0
-Out of scope, the other instrument families: lost 7947, unexplained 125
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 5778, unexplained 95
 Worst relative error on a numeric pair: 4.750e-8 (tolerance 0.000001)
 
-The 256 in-scope losses are one thing, in three products:
+The gate reads zero in scope over the whole corpus. The out-of-scope
+residue is the other families, which this programme does not own yet, and
+its largest block is the swap legs the import never writes (defect 18):
+268 =SwapData/LegData/Notionals/Notional= pairs, 184 spread pairs and 120
+of each leg member.
+
+=== the residue that was left before the content rule ===
+Before D24 the same run read in-scope lost 256, unexplained 0, and all 256
+pairs were one thing in three products:
     116  /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/FirstDate = ''
     116  /Portfolio/Trade/BondData/LegData/ScheduleData/Rules/LastDate = ''
      11  /Portfolio/Trade/ForwardBondData/BondData/.../FirstDate = ''
@@ -47,10 +55,9 @@ The 256 in-scope losses are one thing, in three products:
       1  /Portfolio/Trade/AscotData/ReferenceSwapData/.../LastDate = ''
 ORE's date type spells an unset date as the empty string, and the corpus
 uses both spellings: 414 empty FirstDate/LastDate elements corpus-wide and
-278 omissions. The model holds an optional date, which cannot tell the two
-apart, so the export omits the element and the source's empty element reads
-as lost. That is the presence question the pilot owns; the decision and the
-flag are the next unit.
+278 omissions. Both spell the same statement, so the gate compares content
+and treats an empty element as no content; the boolean pairing runs first,
+because an empty element is also how ORE spells a true boolean.
 
 === corrections this run made ===
 1. The union is deduplicated by trade id AND folded to one statement per

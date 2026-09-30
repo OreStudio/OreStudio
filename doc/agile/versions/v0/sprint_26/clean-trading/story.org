@@ -572,19 +572,41 @@ row is updated as each PR lands.
   (AMC)", which is how the wrong home was available; D12's ban on a JSON
   collection decides it the other way, because the type's two =LegData=
   elements have nowhere to go in a flat scripted row.
-- *D24, how a member that ORE may state empty keeps its presence.* ORE's
-  =date= type spells an unset date as the empty string, and the elements
-  that carry one are =minOccurs="0"=. The corpus uses both spellings: 414
+- *D24, what an empty element states.* ORE's =date= type spells an unset
+  date as the empty string and the elements that carry one are
+  =minOccurs="0"=, so a document may write an unset date as an empty
+  element or omit the element, and the corpus does both: 414
   =FirstDate=/=LastDate= elements corpus-wide are empty and 278 are absent.
-  A column that holds an optional date cannot tell those apart, so the
-  export omits the element and the source's empty element reads as a loss:
-  the corpus sweep's whole in-scope residue, 256 pairs across the bond, the
-  forward bond and the ascot. The model records presence: a member ORE may
-  state empty gains a =<member>_present= boolean, so absent, stated-empty
-  and stated-valued are three states and the export echoes the one the
-  document stated. A nullable boolean needs no flag, because null and
-  =false= are already two states; that is why the bond future's
-  =ApplyConversionFactor= and =UseFuturePrice= need none.
+  Both spell the same statement -- ORE's own reader resolves either to an
+  unset date -- so the gate compares content rather than element presence:
+  an empty element is no difference whichever side states it, and a
+  boolean spelling is paired first, because an empty element is also how
+  ORE spells =true= and that one has to be echoed as a boolean. The model
+  therefore needs one state and not three, and no presence flag is modelled
+  for an unset date. Where a member's *value* equals its type's default,
+  the optional column is the presence record: absent is null and a stated
+  =false= or =0= is the value, which is what the bond future's two optional
+  booleans rely on (definition of done, presence bullet).
+- *D25, the bond future's columns.* The synced XSD is the ground truth and
+  the table is older than it. =bondFutureData= states three required
+  members -- =ContractName=, =ContractNotional= and =LongShort= -- and two
+  optional booleans, =ApplyConversionFactor= and =UseFuturePrice=, which
+  the mapper has never read and the table has never held. The other
+  thirteen columns leave the table: twelve of them are elements of
+  =bondFutureReferenceDatum=, which v17 moved the contract terms to, and
+  the thirteenth, =fair_price=, is not in the schema at all. None of them
+  can be read from a trade, because the reference datum reaches only the
+  =ReferenceData= document root and the generated ORE bindings cover the
+  =Portfolio= root, so =input.xsd= never emits the type. The shared entity
+  that will hold them is keyed by the contract name, the way =bond_issue=
+  is keyed by the security id, and it lands with the reference-data
+  import; recorded rather than invented.
+  =bond_future_delivery_basket= goes the same way for the same reason:
+  ORE's =DeliveryBasket= is that datum's element, the table is keyed by
+  the trade, and the exporter never writes it, so nothing can fill it from
+  a trade and nothing reads it back. The two optional booleans are
+  nullable, so a stated =false= and an absent element stay different
+  values, which is D24's rule.
 
 * Delivery plan
 

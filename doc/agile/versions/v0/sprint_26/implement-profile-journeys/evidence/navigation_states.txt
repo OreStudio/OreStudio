@@ -17,9 +17,11 @@ journey screen; the today state carries only what has been built, and a member
 with nothing today is told so; and the narrow state is the narrow shell.
 
 The two-axis model has its own promises: the areas sit in the header and the
-journeys down the side; an area whose journeys have not been extracted is named
-rather than filled; an empty area says so in as many words; and a full-screen
-journey is offered as a run from the area that owns it, not as a sidebar entry.
+journeys are cards on the area landing; it has no sidebar, because the cards
+already say what one would; an area whose journeys have not been extracted is
+named rather than filled, and says so in as many words; and a full-screen
+journey is offered as a run from the area that owns it, not as a journey that
+keeps the shell.
 
 The full-screen journey is asserted against every model at once: it always
 offers the way out, and it never draws a header, a navbar or a sidebar, because
@@ -33,5 +35,5 @@ The screenshots beside this file are the models in Chrome.
 
 --- output ---
 
-rendered 60 model/actor/state combinations and 40 promises
+rendered 60 model/actor/state combinations and 41 promises
 ALL CHECKS PASSED

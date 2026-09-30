@@ -222,34 +222,6 @@
         }).join('') + '</nav>';
     }
 
-    function areaSide() {
-        var area = activeArea();
-        if (!area) return '';
-        var gs = areaGroups(area);
-        var html = '<nav class="side">';
-        if (area.waiting) {
-            html += '<div class="sidewait">No journeys extracted for this area yet.</div>';
-        }
-        gs.filter(function (g) { return !g.fullscreen; }).forEach(function (g) {
-            var open = g.journeys.some(function (j) { return here(j[1]); });
-            html += '<div class="sidegroup' + (open ? ' open' : '') + '">' +
-                '<a href="#" data-act="group" data-group="' + esc(g.name) + '">' + esc(g.name) +
-                '<span class="count">' + g.journeys.length + '</span></a>' +
-                (open ? '<div class="sideitems">' + g.journeys.map(function (j) {
-                    return '<a href="#" data-act="go" data-screen="' + j[1] + '"' + (here(j[1]) ? ' class="here"' : '') + '>' +
-                        esc(j[0]) + '</a>';
-                }).join('') + '</div>' : '') + '</div>';
-        });
-        var runs = gs.filter(function (g) { return g.fullscreen; });
-        if (runs.length) {
-            html += '<div class="sidegroup"><div class="sidehead">Starts a run</div><div class="sideitems">' +
-                runs.reduce(function (all, g) { return all.concat(g.journeys); }, []).map(function (j) {
-                    return '<a href="#" data-act="run">' + esc(j[0]) + '</a>';
-                }).join('') + '</div></div>';
-        }
-        return html + '</nav>';
-    }
-
     // ------------------------------------------------------------- chrome
 
     function face(cls) {
@@ -378,10 +350,21 @@
                 'nothing is invented to fill it.</p></div>';
         }
         var total = journeyCount(gs);
+        var navs = gs.filter(function (g) { return !g.fullscreen; });
+        var runs = gs.filter(function (g) { return g.fullscreen; });
+        var runsCard = runs.length
+            ? '<div class="card" style="margin-top:14px"><h2>Starts a run</h2>' +
+              '<p class="lead">These journeys stand something up, so they take the whole screen and give it back ' +
+              'when they are done.</p>' +
+              runs.reduce(function (all, g) { return all.concat(g.journeys); }, []).map(function (j) {
+                  return '<button class="btn" data-act="run" style="margin-right:8px">' + esc(j[0]) + '</button>';
+              }).join('') + '</div>'
+            : '';
         return '<div class="card">' + head +
             '<p class="lead">' + total + ' journey' + (total === 1 ? '' : 's') + ' in ' + gs.length +
             ' group' + (gs.length === 1 ? '' : 's') + '.</p></div>' +
-            '<div class="groupgrid">' + gs.map(groupCard).join('') + '</div>';
+            (navs.length ? '<div class="groupgrid">' + navs.map(groupCard).join('') + '</div>' : '') +
+            runsCard;
     }
 
     function indexPage(oneGroup) {
@@ -492,8 +475,8 @@
         }
 
         var shell = '<div class="shell' + (narrow() ? ' narrow' : '') + '">' + head;
-        shell += ((S.variant === 'S' || S.variant === 'H') && !full)
-            ? '<div class="withside">' + (S.variant === 'H' ? areaSide() : sidebar()) + '<main>' + body() + '</main></div>'
+        shell += (S.variant === 'S' && !full)
+            ? '<div class="withside">' + sidebar() + '<main>' + body() + '</main></div>'
             : '<main>' + body() + '</main>';
         shell += '</div>';
         document.getElementById('app').innerHTML = shell;

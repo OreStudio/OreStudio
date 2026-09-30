@@ -92,9 +92,9 @@ an area of the product.
 What Qt got wrong was everything below its first level. Its second level was a
 table, and it went three deep where the model did: =Reference Data → Data
 Catalogue → Dimensions → Origin Dimensions=. The replacement's second level is
-a journey, and a journey is an activity, so the depth stops there — the sidebar
-holds the area's journeys, grouped under the catalogue's topics when an area
-has more than one.
+a journey, and a journey is an activity, so the depth stops there — the area's
+landing page holds its journeys as cards, one card per catalogue topic, and
+nothing hangs below a journey because there is nothing below one to show.
 
 ** The two actors
 
@@ -148,13 +148,16 @@ and each area has many journeys, so one axis is either too long or too deep.
   Trading, Analytics, Compute, Reporting — which is what the Qt menu bar already
   said, plus Administration, which is where the Qt client's System menu went and
   where the identity and tenancy journeys belong.
-- *A journey is an activity, so the sidebar stops at one level of depth* under
-  its group headings. The Qt menus went deeper because the model was showing
-  through; there is nothing under a journey to show.
+- *The area's landing page is the second axis*, and its cards are the
+  navigation: one card per catalogue topic, each listing its journeys. There is
+  no sidebar, because the cards already list everything a sidebar would, and a
+  second list of the same thing beside the first is a cost with no reader.
+- *The depth stops at a journey.* The Qt menus went deeper because the model was
+  showing through; there is nothing under a journey to show.
 - *The two axes answer different questions:* "where do I work" at the top, "what
-  am I doing there" at the side. A single axis has to answer both at once, which
-  is why the index model needs a trip back and the account menu runs out of
-  room.
+  am I doing there" on the area's own page. A single axis has to answer both at
+  once, which is why the index model needs a trip back and the account menu runs
+  out of room.
 
 The navbar with seven areas fits a laptop's header where nine did not, and it
 still scrolls rather than squeezing the person's own chip off the edge when it
@@ -168,7 +171,7 @@ again.
 |------+------------|
 | The brand | The way home, and the only thing that is always there. |
 | The areas | The horizontal menu: where this person may work. Administration is last, where the Qt client kept its System menu. |
-| The groups and journeys | The sidebar: what they may do there, the current group open to its journeys. |
+| The area landing | The cards: what they may do there, one card per catalogue topic, and the runs that take the screen. |
 | The person | Their name and photo, opening their own record, and the way out. |
 | The boundary | Nothing, when a journey owns the screen. |
 
@@ -181,8 +184,9 @@ property of the model and not a defect in the drawing: the administrator's
 seven groups do not fit a laptop header.
 
 The sidebar pays a column on every screen, including the journeys that draw a
-rail of their own. The setup journeys are the case to look at: a rail inside a
-sidebar is two navigations for one screen.
+rail of their own — which is why the two-axis model does not use one: its cards
+already say what a sidebar would, so a sidebar beside them would be the same
+list twice.
 
 The index pays nothing on the journey itself and everything on discovery: the
 person has to go back to the index to move, and the index is the only thing

@@ -91,15 +91,18 @@ const checks = [
     ['?variant=N&actor=member&state=today', 'Nothing here yet', 'a member has nothing today and is told so'],
     ['?variant=N&actor=admin&state=narrow', 'class="shell narrow"', 'the narrow state is the narrow shell'],
     ['?variant=H&actor=admin&state=home', 'class="appnav"', 'the two-axis model puts the areas in the header'],
-    ['?variant=H&actor=admin&state=home', 'class="side"', 'the two-axis model puts journeys down the side'],
+    ['?variant=H&actor=admin&state=home', 'class="groupgrid"', 'the area landing carries the journeys as cards'],
+    ['?variant=H&actor=admin&state=home&area=Administration', 'Starts a run', 'a full-screen journey is offered on the area landing'],
+    ['?variant=H&actor=admin&state=journey&screen=%2Fprofile', 'My profile', 'a journey runs under the areas'],
     ['?variant=H&actor=admin&state=home&area=Reference%20Data', 'Reference Data', 'the area whose journeys are not extracted is still named'],
     ['?variant=H&actor=admin&state=home&area=Reference%20Data', 'No journeys have been extracted', 'an empty area says so rather than inventing screens'],
-    ['?variant=H&actor=admin&state=home&area=Administration', 'Starts a run', 'a full-screen journey is offered as a run, not as a sidebar entry'],
-    ['?variant=H&actor=admin&state=journey&screen=%2Fprofile', 'class="side"', 'a journey keeps the area sidebar while it runs'],
-    ['?variant=H&actor=member&state=home', 'class="side"', 'a member gets the shell too'],
+
+
+    ['?variant=H&actor=member&state=home', 'class="appnav"', 'a member gets the shell too'],
     ['?variant=H&actor=member&state=home', 'data-screen="/profile"', "the header chip still reaches the person's own record"],
     ['?variant=H&actor=admin&state=home&area=Administration', 'Administration', 'administration is one area, not four'],
-    ['?variant=H&actor=admin&state=home&area=Administration', 'Directory', 'administration holds the directory']
+    ['?variant=H&actor=admin&state=home&area=Administration', 'Directory', 'administration holds the directory'],
+    ['?variant=H&actor=admin&state=home&area=Administration', 'Tenancy', 'administration holds the tenancy groups']
 ];
 
 for (const [search, needle, what] of checks) {
@@ -129,7 +132,8 @@ for (const [search, needle, what] of [
     ['?variant=N&actor=member&state=home', 'Directory', 'the member must not reach the tenant groups'],
     ['?variant=N&actor=member&state=home', 'Rescue access', 'the member must not reach an administrator journey'],
     ['?variant=N&actor=admin&state=home', 'Sign in', 'the door is not a place a signed-in person navigates to'],
-    ['?variant=H&actor=member&state=home', 'Reference Data', 'a member is not offered an area with nothing in it']
+    ['?variant=H&actor=member&state=home', 'Reference Data', 'a member is not offered an area with nothing in it'],
+    ['?variant=H&actor=admin&state=home', 'class="side"', 'the two-axis model has no sidebar']
 ]) {
     if (run(search).app.includes(needle)) {
         console.log(`FAIL ${search}: found "${needle}" -- ${what}`);
@@ -137,6 +141,6 @@ for (const [search, needle, what] of [
     }
 }
 
-console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 4 + 12} promises`);
+console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 5 + 11} promises`);
 console.log(failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);

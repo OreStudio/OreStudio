@@ -119,6 +119,7 @@ the gap this journey exposes.
 - [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — see the permissions a role you hold actually bundles
 - [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the administrator's side of the same question, where roles are granted and revoked
 - [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — permissions are exercised in a party, and the session picks one
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — when the roles I hold are not enough, and somebody else has to answer
 
 * Related knowledge
 

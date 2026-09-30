@@ -8,7 +8,7 @@
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
 #+branch: feature/market-series-uri-identity
-#+pr: 2408
+#+pr: 2409
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -345,6 +345,20 @@ is left is the cutover the task takes its name from.
    checklist. The import classification table is not among them: it classifies a key's own
    tokens rather than a series row, and the fourth acceptance is corrected to say so.
 
+   Read off the tree, the hand-written half of that work is four places rather than
+   twenty-one files, because most of the census's hits are the generated entity, mapper,
+   history field mapper, protocol, generator, service and shell command, which a
+   regeneration takes: =import_service='s =find_or_create_series= stops writing the three
+   columns (the parameters that feed the classifier stay, since they name a key), the
+   ingest loop stops writing them on the series it auto-creates, =ore_export_service='s
+   rebuild goes and the datum is emitted under =obs.key= -- which every writer supplies
+   now, so an empty one is a writer that forgot and should say so -- with a fixing's index
+   name projected from the identity through =to_index_name()= instead of read off the
+   =qualifier= column, and =market_data_client::save_series= stops copying the three and
+   starts copying =oresmd_uri=, which it never did and which the write's own contract says
+   clears the identity. The DQ artefact and its publish lose the three columns with the
+   series row, and the FOMC seed's insert loses them too.
+
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
 the row. Two writers had to change with it, because both could previously store a row
@@ -615,6 +629,8 @@ which is the same reason the identity lookups fall back to the triple.
 | =ores.shell.synthetic= suite, with the regenerated command | 432 assertions in 153 cases | =ores.shell.synthetic.tests= | =d44d64ba64= |
 | =reachability=, with the added field | 7741 declared cases in 952 sources | =check_test_case_reachability.py= | =d44d64ba64= |
 | The tree, built whole | no error and no warning, with the config's field and the feed's new lookup | =cmake --build --preset linux-clang-debug-make= with no target | =d44d64ba64= |
+| The vintage config's migration, on a database that had a vintage row | the row comes back as =oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm=, from the artefact's own identity | =alter table ores_synthetic_ir_curve_generation_configs_tbl drop column vintage_series_uri=, then the migration, then a read of the row | =42ca72b950= |
+| The publish function's reinstall, with the one-lookup class table | =updated 1=, the same series and key as before the change | =psql -f marketdata_publish_from_dq_create.sql= then the publish call | =42ca72b950= |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -645,6 +661,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2409][#2409]] | [agile] Hand the deletion its four places |
 | [[https://github.com/OreStudio/OreStudio/pull/2408][#2408]] | [marketdata,synthetic,sql] Let the config name the series its vintage reads |
 | [[https://github.com/OreStudio/OreStudio/pull/2406][#2406]] | [marketdata,codegen] Name a datum from its series and its point |
 | [[https://github.com/OreStudio/OreStudio/pull/2403][#2403]] | [agile] Record where the coordinate's field is modelled |
@@ -766,6 +783,10 @@ via its "Verifies task" field.
 | 80 | The test helper's comment says it goes with the columns; linking it to the task would stop it being orphaned | =service_import_service_tests.cpp= | accepted, fixed | The comment names task 4050BF6C-DBC3-4E75-A204-A75CE4AFA323 now. |
 | 81 | The revision could not be diffed against a merge base, so the build and tests were not re-run | the PR | answered | CI's =tests= job builds its database from the create scripts and passed, together with the other fifteen checks. |
 | 82 | A dated plan still mentions =read_latest_by_type= | =doc/plans/2026-03-31-ore-marketdata-domain-model.org= | recorded | It is a historical plan document; the record's own measurement counts C++, headers and models, and the plan is left as the dated artefact it is. |
+| 83 | The projection's helper could be exposed for a test, and a surface's coordinate is not a point | =curve_republish_service.cpp=, =oresmd_parser.cpp= | answered | The helper is ten lines over the grammar's own projection, so exposing it would be an interface with one test as its caller; the service's missing harness is recorded with the others. The surface refusal is deliberate and pinned: its coordinate is the vol point, which is not one string. |
+| 84 | The vintage config's migration could not land on a database that had a vintage row, because the check requires the column the migration had just left empty | the migration | accepted, fixed | The migration names every vintage row before the check arrives, from the publishing dataset's own identity where it covers the row and from the currency's deposit-grid spelling otherwise, and it was proved by dropping the column on the live database and running it. |
+| 85 | A force-push after a rebase can leave GitHub's mergeability stale, and a =pull_request= workflow then runs nothing | the PR | recorded | =mergeable: UNKNOWN= and an empty check rollup after rebasing #2406 onto main; closing and reopening the pull request recomputed the merge state and dispatched all fifteen checks. Rebasing is still right, and the reopen is the step that follows it. |
+| 86 | An entity's regeneration also moves the recipe its shell library is tangled from, and the tangled scripts are a separate gate | =doc/recipes/shell/ir_curve_generation_configs/= | accepted, fixed | =drift= failed on three =ir_curve_generation_configs-*.ores= scripts that still wrote the record without the new field; =compass build --direct tangle_shell_scripts= and a commit fixed it. A model field now costs a tangle beside the entity regeneration. |
 
 * Result
 

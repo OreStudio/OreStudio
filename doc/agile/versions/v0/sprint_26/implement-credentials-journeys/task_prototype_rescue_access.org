@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 0CD0EAD3-1714-432A-9E64-0C41C4F34E45
+:END:
+#+title: Task: Prototype Rescue access
+#+description: [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: prototype/rescue-access
+#+pr: 2434
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer one question with a throwaway prototype: how does a tenant
+administrator get one colleague back into the system, or shut the account
+down, on one screen?
+
+[[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] carries one screen.
+It holds the account, its security state, the password form and the actions,
+because the administrator thinks of them as one decision. The screen starts
+from a support call, so the prototype decides how the screen opens, how it
+shows the recommended action, and how it states the actions the server cannot
+perform.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Three variants run on =/prototype/rescue=. |
+| Waiting on   | The product owner's choice of variant. |
+| Next          | Record the accepted variant, then write the screen's build task. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- A =prototype/rescue-access= branch, cut from
+  =feature/implement-credentials-journeys=, runs the screen from one command on
+  the journey runtime the Setup group landed.
+- At least two variants are compared on one route, switchable without a
+  rebuild. One variant keeps the account list in view, because the
+  administrator arrives from it.
+- Lock and unlock are one control with the state it produces, not two controls
+  that contradict each other, and the screen states what a lock does not do:
+  it leaves open sessions open.
+- The password form is drawn, and the screen states that the reset flag cannot
+  be set over NATS today.
+- Every panel whose data has no read path says the data is not available.
+- The branch stays unmerged, and * Result carries the verdict, the rejected
+  variants, the design decisions and every document claim the tree contradicts.
+
+* Plan
+
+1. Cut =prototype/rescue-access= from =feature/implement-credentials-journeys=.
+2. Read the journey document's wireframe, then the account and login-record
+   reads the screen needs, and the journey runtime's step parts.
+3. Build two or three variants on one route, with a switch that needs no
+   rebuild, and state the full screen state after every action.
+4. Hold the state in memory, and drive the screen from the running fleet where
+   a read exists.
+5. Drive each variant through the same cases: an account locked by failed
+   attempts, an account with no sign-in history, a successful reset, a reset the
+   policy refuses, and a lock on an account with an open session.
+6. Record the verdict in * Result. Leave the branch unmerged.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The journey's gaps, from the * What is missing section of
+[[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]]. The screen states
+each one, and the prototype decides how.
+
+1. *No forgot-password or self-service recovery.* Nothing lets a member who
+   cannot sign in start recovery. The only password subjects are
+   =iam.v1.accounts.change-password= and =iam.v1.accounts.reset-password=.
+2. *No activate or deactivate.* An account has no active flag. The only state
+   an administrator can change is =login_info.locked=.
+3. *The reset flag cannot be set over NATS.* =password_reset_required= exists,
+   =account_operations_service::set_password_reset_required= implements it, and
+   the HTTP route uses it. No NATS subject calls it.
+4. *Locking does not end sessions.* =iam.v1.accounts.lock= writes the login
+   record only, and an open session stays open until it expires.
+
+The three write subjects exist and each needs its own permission:
+=iam.v1.accounts.reset-password= needs =iam::accounts:reset_password=,
+=iam.v1.accounts.lock= needs =iam::accounts:lock=, and
+=iam.v1.accounts.unlock= needs =iam::accounts:unlock=. A tenant administrator
+who holds the role has all three.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built 2026-09-30. Snapshot: branch =prototype/rescue-access=. The product owner
+has not chosen a variant yet, so nothing here is carried into the build.
+
+Route =/prototype/rescue?variant=a|b|c=, switched from the bar at the foot of
+the page, reached the same way as the member's screen: run
+=npm run dev:web --workspace @ores.web= and open
+=http://localhost:5173/prototype/rescue?variant=a=. No server is needed.
+
+*Three variants on one screen.*
+
+- *A · One decision screen.* The account, the reset form, the lock control and
+  the gaps, stacked in the order a support call goes.
+- *B · Diagnose, then act.* The security state leads and names the action it
+  suggests; the reset form and the lock control sit side by side under it.
+- *C · Roster and panel.* The account list stays in view on the left with each
+  account's state, and the rescue panel fills the right.
+
+*Recommendation: C, with B's diagnosis.* The administrator arrives from the
+account list, so keeping it in view answers "which colleague" without a second
+screen, and the state-names-the-action panel is what turns a support call into
+a decision. A is the same content with the roster dropped; B repeats what C
+keeps.
+
+*Decisions the prototype settles.*
+
+- *Lock and unlock are one control that shows the state it produces,* not two
+  buttons that can contradict each other. The control is drawn for both states
+  so a reviewer sees them; nothing is sent.
+- *Lock states what it does not do.* The panel says a lock leaves open sessions
+  open, because the journey's fourth gap is invisible otherwise.
+- *The forced change is drawn, and disabled.* No subject carries
+  =password_reset_required= over NATS, so the screen states that the reset
+  writes the password directly and cannot ask for a change at the next sign-in.
+- *Self-service recovery and activate or deactivate are gap lines, not
+  controls.* Neither has an operation, so neither is drawn as a button.
+- *The account's state belongs in the list as well as the panel,* so an
+  administrator scanning the tenant sees who is locked before opening anyone.
+
+*The journey is unreachable from the browser today.* =ores.http= serves
+=iam.v1.accounts.list=, =.get=, =iam.v1.login_info.get=,
+=iam.v1.accounts.reset-password=, =.lock= and =.unlock=, one forwarding route
+each, and the browser never reaches =ores.http=: the BFF is its only HTTP
+surface and serves none of them. So every step of this journey needs a BFF route
+before the screen can do anything, and that is the largest single item this
+journey adds to the group.
+
+*Verification.* =npm run typecheck --workspace @ores.web= passes.
+=npm test --workspace @ores.web= passes, 146 tests in 13 files, on the same
+tree. Each variant was rendered headless at 1440 px and read back.

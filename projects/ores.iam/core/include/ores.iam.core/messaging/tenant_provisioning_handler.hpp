@@ -45,7 +45,7 @@
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
-#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.nats/domain/headers.hpp"

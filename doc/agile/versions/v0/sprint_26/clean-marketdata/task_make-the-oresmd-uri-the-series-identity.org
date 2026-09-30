@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :clean-marketdata:sprint_26:v0:
 #+owner: marco
-#+branch: feature/market-series-uri-identity
-#+pr: 2414
+#+branch: feature/the-component-joins
+#+pr: 2430
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
-#+updated: 2026-09-29
+#+updated: 2026-09-30
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every identity-bearing market-data row carries the oresmd_uri that its key or it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | The cutover's four acceptances are delivered. =market_series= is named by its =oresmd_uri= alone -- =series_type=, =metric= and =qualifier= have gone, with the DQ artefact's and the publish's -- and every writer of an observation stores the key the row is written under: the import keeps the file's, the ingest loop keeps the tick's, the republish service projects its own from the output series and the pillar's point, and the DQ publish copies the key its dataset names. The vintage decision is built, the client's triple lookup is gone with its last caller, and the export reads each datum's own key rather than rebuilding one from columns that no longer exist. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | V06: join =COMPONENTS_UNDER_TEST= and run the standard's gates. =marketdata= is one modelling pass short of it, because seven hand-written protocol headers carry no TypeScript twin and a twin is generated from an operation model; the pattern to follow is read off =ores.variability.operations=. The Plan's step four records the deletion as delivered, and the identity note says what each earlier unit settled. |
-| Last touched | 2026-09-29                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
 
 * Acceptance
 
@@ -359,6 +359,18 @@ is left is the cutover the task takes its name from.
    clears the identity. The DQ artefact and its publish lose the three columns with the
    series row, and the FOMC seed's insert loses them too.
 
+5. *The component joins the registry.* Delivered. The seven hand-written protocol
+   headers are one operation model, =ores.marketdata.operations=, so each interface's
+   header and its TypeScript twin generate from one declaration and no header is left
+   without a twin. The model holds the CRM rate reads, the curve bootstrap, republish
+   and snapshot subjects, the whole-tenant ORE import and export, and the folder feed
+   control: twenty-eight messages, every field keeping the type, the initialiser and the
+   subject the hand-written header carried, so the wire does not move. The one shared
+   codegen change it needed was a projection for =std::map=, which now renders a
+   TypeScript =Record=. The seven headers are deleted and their sixteen includers read
+   =operations_protocol.hpp=. With the twin gate green, =marketdata= joins
+   =COMPONENTS_UNDER_TEST= and the standard's gates check it from now on.
+
 **The identity is the key, and what that costs.** =market_series.oresmd_uri= is not
 null, non-empty, and unique with =party_id=; the registry's three columns no longer key
 the row. Two writers had to change with it, because both could previously store a row
@@ -652,7 +664,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Messages the operation model declares, and the types they carry | 28 messages, all 20 distinct field types project to TypeScript | =load_org_operation_model()= over =ores.marketdata.operations.org= | =53bb7a59fc= |
+| Protocol headers, over the listed component | 199 in 13 committed components all have a twin, and no model opts out | =check_protocol_twin_coverage.py= | =25d58d7ca1= |
+| Components under test | 15 listed, 5 accepted exceptions across 49 items | =check_registry_exceptions.py= | =25d58d7ca1= |
+| The component's regeneration, listed | no drift at every address for =marketdata=, and =--all --dry-run= reports no drift | =check_component_drift.py --component marketdata= and =--all --dry-run= | =25d58d7ca1= |
+| The other codegen gates, over the component | =model drift=, =handler permissions= (7 components, 290 codes), =populate references=, =route auth declarations=, =shell menu collisions=, the recipe inventory and =validate_docs.sh= (41 components) all exit 0 | each gate by name | =25d58d7ca1= |
+| CMake source lists | =marketdata= is current; =iam/api= and =workflow/api= are stale on trunk and are not this branch's | =regenerate_cmake_component_files.py --all --check= | =25d58d7ca1= |
+| The =codegen= suite, with the map projection | 1032 passed | =pytest projects/ores.codegen/tests -q= | =25d58d7ca1= |
+| The tree, built whole, with the model | exit 0 | =cmake --build --preset linux-clang-debug-make -j 4= | =53bb7a59fc= |
+| The database, recreated from the scripts, with the model | exit 0; the schema, every seed and the Acme publish ran (the pre-existing missing-image warnings aside) | =compass db recreate -y -k= | =53bb7a59fc= |
+| The fleet, after the recreate | 24 running, 0 stopped, 0 failed, 0 missing; NATS running | =compass services start= and =compass services status= | =53bb7a59fc= |
+| The whole test suite, on the recreated database and the running fleet | 89 of 89 targets pass | =ctest --preset linux-clang-debug-make --output-on-failure -j 4= | =6eceb87cc7= |
+| The console default's stale test | =ores.service.tests= goes from 42 cases and 117 assertions with one failure to 43 cases and 123 assertions, all green | the test binary | =6eceb87cc7= |
+| The workflow component's CMake list | adds =workflow_retry_protocol.hpp=, the header =45f36c0d66= left out; =--all --check= then exits 0 with no stale list | =regenerate_cmake_component_files.py --all --check= | =b4bc41c59c= |
+| The pull-request check set, run locally on the rebased tree | all 35 checks pass, and the TypeScript typecheck, format check and 51 tests pass beside them. The set covers header hygiene, the boost dependency check, populate references and its tests, component drift, the ER diagram, SQL hygiene, twin coverage (201 headers in 13 components), model drift, handler permissions, the shell menu check and its self-test, route auth, both recipe inventories, the registry, reachability, the codegen suite (1032), the sweep, paste blocks, =validate_docs.sh= (41 components), =validate_schemas.sh= (1802 files), =compass lint=, the org link check, the six skill checks, the shell tangle and its drift check | each gate by name | =b4bc41c59c= |
+| The cutover's suites | unchanged at 68 in 14 marketdata-api, 1923 in 415 marketdata-core, 176 in 28 marketdata-service, 144 in 51 shell-marketdata and 297 in 46 synthetic-service | the five test binaries | =53bb7a59fc= |
 
 * Notes
 
@@ -671,6 +697,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2430][#2430]] | [agile] Close the series identity task |
+| [[https://github.com/OreStudio/OreStudio/pull/2425][#2425]] | [marketdata,codegen] Join the component to the components under test |
 | [[https://github.com/OreStudio/OreStudio/pull/2414][#2414]] | [marketdata,sql] Let the identity be the only name a series carries |
 | [[https://github.com/OreStudio/OreStudio/pull/2410][#2410]] | [agile] Record the gate that compiles C++ |
 | [[https://github.com/OreStudio/OreStudio/pull/2409][#2409]] | [agile] Hand the deletion its four places |
@@ -800,6 +828,12 @@ via its "Verifies task" field.
 | 84 | The vintage config's migration could not land on a database that had a vintage row, because the check requires the column the migration had just left empty | the migration | accepted, fixed | The migration names every vintage row before the check arrives, from the publishing dataset's own identity where it covers the row and from the currency's deposit-grid spelling otherwise, and it was proved by dropping the column on the live database and running it. |
 | 85 | A force-push after a rebase can leave GitHub's mergeability stale, and a =pull_request= workflow then runs nothing | the PR | recorded | =mergeable: UNKNOWN= and an empty check rollup after rebasing #2406 onto main; closing and reopening the pull request recomputed the merge state and dispatched all fifteen checks. Rebasing is still right, and the reopen is the step that follows it. |
 | 86 | An entity's regeneration also moves the recipe its shell library is tangled from, and the tangled scripts are a separate gate | =doc/recipes/shell/ir_curve_generation_configs/= | accepted, fixed | =drift= failed on three =ir_curve_generation_configs-*.ores= scripts that still wrote the record without the new field; =compass build --direct tangle_shell_scripts= and a commit fixed it. A model field now costs a tangle beside the entity regeneration. |
+| 87 | The map projection keys the Record by the C++ key type, and a numeric key would state =Record<number, V>= while the wire carries text | =org_loader.py= | accepted, fixed | The Record is keyed by =string= always, because a JSON object's keys are strings whatever the C++ key type is. Only the value decides the projection, so a key type with no projection is no longer a gap; the test covers a non-string key and an unmapped value. |
+| 88 | The ORE-side docs and backlog still name the deleted headers | =doc/plans/…=, =product_backlog= | answered | The one current recipe that named a deleted header is updated to =operations_protocol.hpp=. The remaining hits are a dated plan, idea captures under =product_backlog= and sprint 23's task records, and one is a different component's =ore_import_protocol.hpp=; all are historical artefacts. |
+| 89 | The claim that the wire does not move rests on the gates, and the reviewer did not diff each field against the deleted headers | the seven headers, =operations_protocol.hpp= | answered | Checked by hand as well. A parser over the seven deleted headers and the generated one reports the same 28 structs with the same field names, types, initialisers and subjects; the only difference is =std::chrono::year_month_day date{}= rendering as =date = {}=, which value-initialises the same. |
+| 90 | =ores.service.tests= fails under =ctest= | =standard_service_options_tests.cpp= | accepted, fixed | The reviewer agreed it is unrelated to the model. =91cf5273ab= on trunk made the console the always-on sink and file logging opt-in, updated the two logging suites that pinned the old defaults, and missed this third one. The test now asserts the new contract and keeps the file path covered with an explicit =--log-filename=; the two signatures that still promised a default now say the name is retained for the caller. |
+| 91 | =regenerate_cmake_component_files.py --all --check= names =iam/api= and =workflow/api= | =component_files.cmake= | accepted, fixed | The IAM list was fixed on trunk while this branch waited, so the rebase took it. The workflow list was not: =45f36c0d66= added =workflow_retry_protocol.hpp= and never regenerated the list. The regeneration adds it, and =--all --check= then exits 0. |
+| 92 | The local check run was made before the branch was rebased, so it verified the branch rather than the merged tree | the whole set | accepted, fixed | The branch was rebased onto trunk and the whole set re-run there, with the database recreated from the new scripts and the fleet started: the tree builds whole, =ctest= passes 89 of 89, all 35 local checks pass, and the TypeScript checks pass. |
 
 * Result
 
@@ -988,7 +1022,7 @@ creates the identity-only series and keeps the observation's key, the tree build
 and the suites hold at 68 in 14 marketdata-api cases, 1923 in 415 marketdata-core, 176 in
 28 marketdata-service, 6 in 6 client, 144 in 51 shell-marketdata, 65 in 22 synthetic-api,
 297 in 46 synthetic-service and 432 in 153 shell-synthetic, with the codegen suite at
-1030 and reachability at 7741 declared cases. What is left is V06.
+1030 and reachability at 7741 declared cases. The fifteenth unit below delivers V06.
 
 Three measurements taken here changed the plan rather than the code, and each is
 recorded with its number:
@@ -1007,3 +1041,38 @@ What the deletion still owes is recorded where it belongs: the internal series'
 identity, a backfill or a recreated database, the unique index on the identity, and
 the behaviour that a write omitting the identity clears it until the column is
 =not null=.
+
+**A fifteenth unit joined the component to the registry.** V06 was the whole of what
+stood between the pass and its close: seven hand-written protocol headers carried no
+TypeScript twin, and a twin generates from an operation model. They are one model now,
+=ores.marketdata.operations= -- twenty-eight messages covering the CRM rate reads, the
+curve bootstrap, republish and snapshot subjects, the whole-tenant ORE import and
+export, and the folder feed control -- and the C++ header and =operations_protocol.ts=
+both generate from it. Every field keeps the type, the initialiser and the subject the
+hand-written header carried, so no subject and no payload on the wire changed; the one
+shared codegen change was a projection for =std::map=, which now renders a TypeScript
+=Record= rather than leaving the model refused. The seven headers are deleted, and the
+sixteen files that included them read the one generated header. Measured on the branch:
+=marketdata= regenerates byte for byte at every address, the twin gate reports 199
+headers in 13 committed components with no model opting out, the drift check reports no
+drift across the catalogue, the registry lists 15 components, and the codegen suite
+passes 1032. The whole pull-request check set was then run locally. The first run found
+two breaks, both pre-existing on trunk, and both were fixed rather than recorded:
+
+- =ores.service.tests= pinned a log filename that =91cf5273ab= ("Make the console where
+  logging goes, not a default filename") deliberately stopped defaulting. That commit
+  updated the two logging suites and missed this third one, whose expectation was the
+  old contract. The test now asserts the new one -- =--log-enabled= alone gives the
+  console and an empty filename -- and keeps the file path covered through the composed
+  options with an explicit =--log-filename=. Both signatures that still promised a
+  default now say the name is retained for the caller and is not one.
+- =regenerate_cmake_component_files.py --all --check= named =iam/api= and
+  =workflow/api=. The IAM list was already fixed on trunk while this branch waited, so
+  the rebase took it; the workflow list was not, because =45f36c0d66= added
+  =workflow_retry_protocol.hpp= and never regenerated the list. The regeneration adds
+  the header.
+
+On the rebased tree, with the database recreated and the 24-service fleet running, the
+tree builds whole, =ctest= passes 89 of 89 targets, all 35 local checks pass, and the
+TypeScript typecheck, format check and 51 tests pass beside them. V06 is met, and the
+component is under the gates from now on.

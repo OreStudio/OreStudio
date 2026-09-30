@@ -24,15 +24,16 @@ _COMPONENT_FILES_TEMPLATES = {
 
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
-    "ores.codegen.entity":           "domain_entity",
-    "ores.codegen.junction":         "junction",
-    "ores.codegen.component":        "component",
-    "ores.codegen.field_group":      "field_group",
-    "ores.codegen.lookup_entity":    "schema",
-    "ores.codegen.service_registry": "service_registry",
-    "ores.codegen.dataset":          "dataset",
+    "ores.codegen.entity":            "domain_entity",
+    "ores.codegen.junction":          "junction",
+    "ores.codegen.component":         "component",
+    "ores.codegen.field_group":       "field_group",
+    "ores.codegen.lookup_entity":     "schema",
+    "ores.codegen.service_registry":  "service_registry",
+    "ores.codegen.dataset":           "dataset",
     "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
-    "ores.codegen.operation":        "operation",
+    "ores.codegen.operation":         "operation",
+    "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
 }
 
 # The type flags cpp_domain_type_entity.hpp.mustache switches on to give a
@@ -1152,6 +1153,7 @@ def load_model(model_path):
             load_org_component_overview_model,
             load_org_dataset_model,
             load_org_operation_model,
+            load_org_asset_class_catalogue_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
@@ -1175,6 +1177,8 @@ def load_model(model_path):
             return load_org_model(model_path)
         if org_type == 'operation':
             return load_org_operation_model(model_path)
+        if org_type == 'asset_class_catalogue':
+            return load_org_asset_class_catalogue_model(model_path)
 
         # Fallback: no recognised #+type: — use filename suffix (legacy).
         if path_str.endswith('_field_group.org'):
@@ -2489,6 +2493,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         db_services = copy.deepcopy([s for s in services if s.get('psql_var')])
         _mark_last_item(db_services)
         data['service_registry_db_services'] = db_services
+
+    # The asset-class catalogue renders at a top-level key of its own name, as
+    # service_registry does above: the taxonomy and namespace tables are
+    # consumed by the SQL archetypes and, later, by the C++ and doc ones.
+    if (model_type == 'asset_class_catalogue' and isinstance(model, dict)
+            and 'asset_class_catalogue' in model):
+        data['asset_class_catalogue'] = model['asset_class_catalogue']
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:

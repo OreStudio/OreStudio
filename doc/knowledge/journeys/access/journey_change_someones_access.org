@@ -148,6 +148,7 @@ the missing check is the gap below.
 - [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — define or fix a role before the picker offers it
 - [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the roster you pick the colleague from and return to afterwards
 - [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Register a service account]] — create the non-human account when the role belongs to a service or an algorithm
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the same grant, requested by the colleague rather than started by the administrator
 
 * Related knowledge
 

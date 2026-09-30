@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :web:iam:journeys:entry:access:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
-#+branch: feature/implement-entry-journeys
-#+pr:
+#+branch: feature/create-the-role-request-journey
+#+pr: 2435
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -28,12 +28,12 @@ It is deliberately its own journey and not a step of [[id:33B0C287-8262-4C2A-9F7
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] |
-| Now          | Not yet started. The question is recorded and the journey has no document. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write the journey under =doc/knowledge/journeys/access/=, wire it into the Access hub, and record the server gaps it needs. |
-| Last touched | 2026-09-29                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
 
 * Acceptance
 
@@ -59,10 +59,13 @@ It is deliberately its own journey and not a step of [[id:33B0C287-8262-4C2A-9F7
 |------+-------+---------+--------|
 | Journeys in the Access group before this | 3 | =ls doc/knowledge/journeys/access/= | =69d002553c= |
 | Self-service role-request subjects in the protocol | 0 | =grep -rn "role" projects/ores.iam/modeling/ores.iam.authorization_messages.org= | =69d002553c= |
+| Journeys in the Access group after this | 4 | =ls doc/knowledge/journeys/access/journey_*.org= | =e87d7489c9= |
+| Request subjects in the generated IAM protocol | 0 of 5 | =grep -rh "iam.v1.roles\." projects/ores.iam/api/include/ores.iam.api/messaging/authorization_protocol.hpp projects/ores.iam/api/include/ores.iam.api/messaging/role_protocol.hpp= | =e87d7489c9= |
 
 * Notes
 
 - The product owner's steer while reviewing the registration prototype: "we will give users some kind of default role. how does one ask for additional roles? add a task to create a journey to allow users to request changes to their roles. this can be separate from the sign up journey to make things easier."
+- The product owner's decision on the shape (2026-09-30): a member asks and a tenant administrator approves, the four-eyes shape. A self-service grant from a tenant-approved catalogue was the alternative and was not taken. The decision is what makes the request wait on a person, and therefore what makes its state server-side.
 - The default role itself is settled in [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]]: a flag on the role row, nominated by the tenant administrator. This task owns the answer to "and what if it is not enough?".
 - The implementation is not this task's. It lands in the Access group's story, which owns those screens; this task produces the design the implementation is built from.
 
@@ -81,12 +84,58 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2435][#2435]] | [docs] Write the role-request journey |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The acceptance names =0010510B= as *Know what I may do*. That id is *Register a service account*. | =task_create-the-role-request-journey.org= | Accept | The link went to =3CA48F40=, which is the journey the criterion means. The Result records the defect. |
+| 2 | =misspell-fixer .= exits 1 over the repository. | (repository root) | Decline | Every hit is one misspelled upstream identifier that the sprint 25 task records quote verbatim, plus files under =node_modules/=. All are present on =origin/main= in files this branch does not touch, and the row is left without the literal spelling so that this branch adds no hit of its own. An isolated run over this change's paths reports "nothing to replace". |
+| 3 | The journey claims =iam.v1.roles.assign= checks =iam::roles:assign=, and that the reads check nothing further. | =journey_ask_for_more_access.org= | Decline | Checked against =authorization_handler.hpp= and =role_handler.hpp=: assign and revoke gate on their own permissions, while =by-account=, =permissions-by-account=, =permissions= and =roles.list= prove a session only. The claim is what the code does. |
+| 4 | Four-eyes is not enforceable today: an administrator who may answer may also ask. | =journey_ask_for_more_access.org= | Accept | Recorded as the third gap rather than assumed, with the guard named as its candidate. A design document records a missing guard; it cannot add one. |
+| 5 | The journey needs five subjects that do not exist, and a waiting state the engine does not have. | =journey_ask_for_more_access.org= | Accept | Both are in * What is missing, and the coverage table marks the five =missing=. They are the implementation's work, which the task's Notes place in the Access group's story. |
+| 6 | No test surface: the change is one document and two wireframes. | (whole change) | Decline | The verification a journey admits is the extraction standard's: the coverage check against the generated protocol, the wireframe render, and link resolution. All three ran and are clean. There is no executable artefact to test. |
+| 7 | * What is missing item 1 says "the four subjects in the table above"; the table lists five. | =journey_ask_for_more_access.org= | Accept | Corrected to five. |
+| 8 | The PR description said the design exposes two gaps; the page lists seven. | PR #2435 body | Accept | The description now names the subject set and the waiting state as the two that block the design, and says the page records the rest beside them. |
+| 9 | The page claims the three reads check no further permission, and gives no source. | =journey_ask_for_more_access.org= | Accept | The sentence now names =role_handler.hpp= and =authorization_handler.hpp=, which is where the claim was checked. |
+| 10 | The approver wireframe lists grants that do not match the Trading role's description. | =wireframe_answer_a_request.puml= | Accept | The row now shows two permissions the seeded =Trading= role actually bundles, =refdata::currencies:read= and =workspace::workspaces:write=, which is what "reads reference data and manages workspaces" means. |
+| 11 | A withdrawn or expired request has no terminal state in the engine, and item 2 does not say so. | =journey_ask_for_more_access.org= | Accept | Item 2 now names the four answers the run must be able to stop at: approved, refused, withdrawn and expired. |
+| 12 | The task file may not match the page's gap list. | =task_create-the-role-request-journey.org= | Accept | The Result now says the page records seven gaps, which is what it does. |
 
 * Result
+
+The journey is [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]], in the Access group, with one
+wireframe per actor.
+
+- *The shape.* The product owner chose a request that a tenant administrator
+  approves. A self-service grant from a tenant-approved catalogue was the
+  alternative, and it was not taken.
+- *One journey, two actors.* The request is one record with one lifecycle, and
+  each actor owns one end of it. The screens stay apart, and the administrator's
+  unprompted version of the same write stays
+  [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]].
+- *The state.* A request waits on a person, so the document states that its
+  state is a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+  =ores.workflow=. That is the rule
+  [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] and the
+  user_journey contract already state, applied to a request rather than to a
+  provisioning run.
+- *The coverage.* Five of the ten subjects the journey needs exist:
+  =iam.v1.roles.by-account=, =.list= and =.permissions= for the reads,
+  =iam.v1.roles.assign= for the grant, and =workflow.v1.instances.steps= for the
+  progress. The five request subjects are missing. The page records seven gaps in
+  all, of which the subject set and the engine's inability to wait on a person are
+  the two that block the design; the other five are the self-approval guard, a
+  flag for what may be asked for, notification, a joined request read, and a
+  review window.
+- *Wired in.* The Access hub lists the journey and describes it, and
+  [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]],
+  [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] and
+  [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] each
+  link to it under * Related journeys*.
+- *A defect in the acceptance.* The criterion names =0010510B= as *Know what I
+  may do*; that id is
+  [[id:0010510B-470E-4B67-98DC-B6DBF44E1680][Register a service account]]. The
+  link was added to [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may
+  do]], which is the journey the criterion means.

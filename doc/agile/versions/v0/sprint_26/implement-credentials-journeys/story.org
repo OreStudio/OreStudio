@@ -1,0 +1,189 @@
+:PROPERTIES:
+:ID: EF81A497-5C91-45D8-9A90-5D6E0357BAD8
+:END:
+#+title: Story: Implement the credentials journeys in ores.web
+#+description: The fourth group: the member's own security screen, the administrator's rescue actions, and the sign-in audit. Prototypes first.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The three [[id:8C1DC5DE-F480-49F4-AA63-77A397D0BC03][Credentials]] journeys run in
+=ores.web= against the real server:
+
+- [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] — the member
+  changes their own password and reads where the account is signed in.
+- [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] — the tenant
+  administrator resets one colleague's password and locks or unlocks the
+  account.
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the tenant
+  administrator reviews the active sessions, the session activity and the
+  failed attempts of the tenant.
+
+This is the fourth group of
+[[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]].
+It reuses the journey runtime the Setup group landed and adds no journey
+entity. The journey documents stay with the extraction pass.
+
+The group is prototype-first. Four steps the journeys need have no server
+operation today: self-service recovery, two-factor enrolment, ending one
+other session, and the authentication event log. Two more read subjects
+that exist and return no rows. The shape of the three screens is not
+settled either. A prototype settles the screen before the server work is
+sized, and it states each gap instead of hiding it.
+
+The build tasks are written when the prototypes are accepted.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The story is scaffolded and the prototype tasks are written. |
+| Waiting on    | Nothing. |
+| Next          | Prototype [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]]. |
+| Last touched  | 2026-09-30                               |
+
+* Acceptance
+
+- Each Credentials journey has an accepted prototype on a
+  =prototype/<journey>= branch, with the variants it compared, the verdict
+  and the rejected variants recorded on its task.
+- No prototype merges. The branches stay as the design record, and the
+  accepted decisions are ported by the build.
+- Every prototype states the gaps its journey document records. A panel
+  with no server operation says so, and no screen claims a read or a write
+  the server does not serve.
+- Every claim in the three journey documents that the tree contradicts is
+  recorded on this story, and is corrected in the document with the
+  extraction pass or filed as a capture.
+- The build tasks are written from the accepted prototypes, and each one
+  names the server gap it depends on.
+- Every journey runs in =ores.web= against the real server, and the shell
+  reaches the same subjects for the operations it carries today.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0832F089-777E-4E8E-8357-37A043A7B9C1][Scaffold story: Implement the credentials journeys in ores.web]] | DONE | | 2026-09-30 | Story scaffolding rides this task: the story, the prototype tasks, the sprint wiring and the scaffold PR. Close it before merging that PR. |
+| [[id:B7F44B5A-2DF4-4A89-9326-1D17A1FFF8E9][Prototype Protect my account]] | BACKLOG | | | [wayfinder:prototype] The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended. |
+| [[id:0CD0EAD3-1714-432A-9E64-0C41C4F34E45][Prototype Rescue access]] | BACKLOG | | | [wayfinder:prototype] The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
+| [[id:7F5AA065-212F-4523-924B-1BE38494CF62][Prototype Audit sign-ins]] | BACKLOG | | | [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |
+| [[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]] | DONE | | 2026-09-30 | [wayfinder:task] The three journey documents name the wrong surface, claim a working browser read and name a caller that does not exist. Correct them against the route census and the tree. |
+
+* Plan
+
+The prototypes come first, because the screen decides what the server must
+serve. Each prototype leaves a branch a person can run and a verdict on the
+task.
+
+| # | Step | What it leaves behind |
+|---+------+-----------------------|
+| 1 | Scaffold the story and wire it into the programme | The story, the four prototype tasks, the sprint row and the programme's order table. |
+| 2 | Prototype Protect my account | The member's screen: the password form, the sign-in state, the active sign-ins, and the gap where one other session cannot be ended. |
+| 3 | Prototype Rescue access | The administrator's screen: the account, its security state, the reset form, lock and unlock, and the gaps for activate and deactivate and for self-service recovery. |
+| 4 | Prototype Audit sign-ins | The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action. |
+| 5 | Write the build tasks from the accepted prototypes | One task per screen and one per server gap, each with the accepted prototype named as its design record. |
+
+* Decisions
+
+- *Prototypes precede the build.* A screen with four missing operations
+  cannot be sized from its document alone. The prototype shows the shape,
+  the copy and the empty states, and it makes the server work visible
+  before anybody plans it.
+- *The group starts before Profile, on the prototypes.* The programme's order
+  puts Entry and Profile first. The prototypes here settle three screens and
+  change no server code, so they collide with neither group. The build waits on
+  the Entry group for the sign-in screen that owns the forced password change,
+  and on the server gaps the prototypes record.
+- *The prototypes ride the shell and the shared primitives, not the step rail.*
+  A credentials journey is one screen, so the ordered-step runtime the Setup
+  group landed does not apply:
+  =projects/ores.web/packages/web/src/journeys/runtime.ts= and
+  =JourneyPage.tsx= render a rail of steps, and =parts.tsx= is tenant
+  provisioning. The screens compose =src/components/AppShell.tsx= with
+  =src/ui/Primitives.tsx=, =src/ui/PasswordField.tsx= and
+  =src/ui/passwordPolicy.ts= instead, which is the material the build uses.
+- *The prototype branches are throwaway and never merge.* Each branch is
+  cut from =feature/implement-credentials-journeys=, named
+  =prototype/<journey>=, and left unmerged. This follows the sprint 25
+  prototype story and the programme's decision that the prototypes are the
+  design record and are ported, not merged.
+- *A prototype task's branch field names its prototype branch, and its record
+  rides this story's branch.* A branch that never merges cannot carry a
+  verdict, so every task's Result and state land here, and the branch field
+  points at the code. Every other task's branch field points at this branch,
+  because that is where both its work and its record are.
+- *The journey documents stay with the extraction pass, except for the claims
+  the prototypes disproved.* Those are corrected in place and recorded here,
+  because a design document that names the wrong surface misleads the build.
+  Corrected 2026-09-30, in
+  [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]]'s
+  documents: the change-password verification note in Protect my account, the
+  =sessions.active= read path in Protect my account and Audit sign-ins, and the
+  reset-flag caller note in Rescue access.
+- *The browser has no credentials path, and the routes that exist serve other
+  clients.* =ores.http= serves the IAM subjects — =/api/v1/iam/sessions=,
+  =/sessions/active=, =/login_info=, =/accounts=, =/accounts/lock=,
+  =/accounts/unlock= and =/accounts/reset-password= — and each forwards to the
+  matching subject. The BFF is the browser's only HTTP surface and serves none
+  of them, so every credentials screen needs BFF routes before it can read or
+  write anything. =sessions/active= answers with no rows on every path, and the
+  samples, the statistics and the auth events have neither a subject nor a
+  route.
+- *The screen states the gap, and never simulates it.* A panel whose
+  subject returns no rows says the data is not available. A control the
+  server cannot perform is drawn as unavailable with its reason. A
+  prototype that fabricates the missing operation answers a different
+  question than the one it was built for.
+- *The credentials screens are panels of one screen each.* The journeys
+  compose them that way, and the sprint 25 IAM exercise settled that an
+  owned record is a panel inside a journey, not a screen of its own.
+- *Both clients reach one operation.* =ores.web= and =ores.shell= call the
+  same subjects. Where the shell carries no credential command today, the
+  gap is recorded for the build rather than closed here.
+- *The prototypes follow the accepted contracts.* The
+  [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][component specification]],
+  the [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]],
+  the [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]] and the
+  [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]]
+  bind the work. The
+  [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][entity specification]] is
+  void and binds no screen.
+
+* Out of scope
+
+- The journey extraction and the journey documents, which
+  [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]]
+  owns.
+- The server operations the journeys need and do not have. The prototypes
+  record them, and the build tasks size them.
+- The Entry group's sign-in screen, which owns the forced password change
+  and the recovery paths.
+- The permanent homes of the account list and the account page. The
+  journeys link to them, and the pages are their own work.
+- Two-factor authentication as a feature. The gap is recorded, and the
+  enrolment operation is not designed here.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:8C1DC5DE-F480-49F4-AA63-77A397D0BC03][Credentials journeys]] | knowledge | The group page: three journeys, three actors, and the audit's screen rule. |
+| [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] | user_journey | The member's own password change and sign-in state, and its five gaps. |
+| [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] | user_journey | The administrator's reset, lock and unlock, and its four gaps. |
+| [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] | user_journey | The tenant-wide session and failure review, and its four gaps. |
+| [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] | story | The programme this group belongs to, and the order it keeps. |
+| [[id:7B475E38-C7C4-4FEC-A36C-93B0A79ABBB8][Prototype ORE Studio bootstrap in ores.web]] | story | The prototype method this story follows: one branch per journey, a verdict per branch. |
+| [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes and the transaction boundary. |
+| [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] | knowledge | The section contract every journey document carries. |
+| [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the prototype and the build are held to. |

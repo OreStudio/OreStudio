@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 4043de4c-5cdb-455e-b208-5aff69aa76ae
+:END:
+#+title: ores.refdata.asset_class_catalogue
+#+description: The one declaration of the refdata product taxonomy, the oresmd market-data namespace and the mapping between them.
+#+type: ores.codegen.asset_class_catalogue
+#+component: refdata
+#+filetags: :model:asset_class:taxonomy:refdata:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+Two lists answer two different questions about an asset, and the repository
+kept a hand-written copy of each in dozens of places. The refdata product
+taxonomy answers what a trade or a market series *is*; it is FK-validated by
+=ores_refdata_validate_asset_class_code_fn= and is what
+=market_series_asset_classes=, =feed_bindings=, =series_classification_rules=
+and =instrument_codes= check against. The oresmd market-data namespace answers
+which key grammar a market-data item is written in, and it is what an
+=oresmd_uri='s authority carries.
+
+The two overlap without being the same list: =ir= and =interest_rates= are one
+concept under two spellings, as are =security= and =bond=, and =correlation=,
+=shape_profile=, =rating=, =power= and =generic= exist only in the namespace.
+The =Namespace= table below states the mapping, which nothing declared before
+this model.
+
+This model is the single source for both lists. The refdata seed SQL, the DQ
+badge rows, the briefs and the documentation are generated from it, and a
+codegen run fails when an oresmd model names an authority this namespace does
+not hold.
+
+* Taxonomy
+
+The refdata product taxonomy, in display order. One entry per class a product
+or a market series can carry.
+
+** fx
+:PROPERTIES:
+:name:          FX
+:display_order: 1
+:END:
+
+Foreign exchange: instruments whose value derives from the exchange rate between two currencies. Covers FX spot, forwards, swaps, and vanilla/exotic options, along with the market data that prices them -- spot rates, forward points, and volatility surfaces quoted by currency pair. FX is unique among asset classes in that every trade inherently involves two currencies rather than one underlying, which is why FX risk shows up as a cross-cutting concern in every other asset class (a USD-denominated equity option still carries FX risk for a EUR-based book).
+
+** interest_rates
+:PROPERTIES:
+:name:          Interest Rate
+:display_order: 2
+:END:
+
+Interest rate products: instruments whose value derives from the level or shape of a yield curve for a given currency and index (e.g. USD SOFR, EUR ESTR). Covers deposits, forward rate agreements, interest rate swaps and swaptions, caps/floors, and cross-currency swaps, together with the curve-construction market data -- discount factors, zero rates, and forward rates bootstrapped from quoted instruments at standard tenors. Interest rates is typically the first curve built in any pricing pipeline, since discounting and forward-rate projection for every other asset class ultimately depends on it.
+
+** credit
+:PROPERTIES:
+:name:          Credit
+:display_order: 3
+:END:
+
+Credit risk products: instruments whose value derives from the likelihood and severity of an issuer or reference entity defaulting on its obligations. Covers credit default swaps (single-name and index), credit-linked notes, and the underlying market data -- CDS spreads, hazard rate curves bootstrapped from those spreads, and assumed recovery rates. Credit curves are quoted per reference entity (or index series) and are combined with a rates curve to produce risky discount factors for defaultable cashflows.
+
+** equity
+:PROPERTIES:
+:name:          Equity
+:display_order: 4
+:END:
+
+Equity products: instruments whose value derives from the price of a single stock, a basket of stocks, or an equity index. Covers equity spot and forward positions, vanilla and exotic equity options (including barrier, Asian, and variance-swap structures), and the associated market data -- spot prices, dividend yield curves, and implied volatility surfaces quoted by strike and expiry. Equity derivatives pricing typically layers a dividend/borrow-cost forward curve and a volatility surface on top of the rates discount curve.
+
+** commodity
+:PROPERTIES:
+:name:          Commodity
+:display_order: 5
+:END:
+
+Commodity products: instruments whose value derives from the price of a physical commodity (energy, metals, agriculturals) or a commodity index/future. Covers commodity forwards, swaps, and options (including Asian and spread structures), and the associated market data -- forward curves (which, unlike FX or rates, are often in backwardation or contango driven by storage cost and convenience yield rather than pure interest-rate parity) and volatility surfaces per delivery point/contract month.
+
+** inflation
+:PROPERTIES:
+:name:          Inflation
+:display_order: 6
+:END:
+
+Inflation-linked products: instruments whose value derives from a published price index (e.g. US CPI, UK RPI/CPI, EU HICP). Covers zero-coupon and year-on-year inflation swaps, inflation caps/floors, and inflation-linked bonds, together with the associated market data -- the inflation fixing/index curve (historical and forward-projected, with a seasonality adjustment for the index's known within-year pattern) and inflation volatility surfaces. Inflation curves are built and discounted against the nominal rates curve for the same currency.
+
+** bond
+:PROPERTIES:
+:name:          Bond
+:display_order: 7
+:END:
+
+Bond products: fixed-income securities that pay a defined schedule of coupons and a principal redemption, whose value derives from a discount curve plus an issuer-specific credit/liquidity spread. Covers vanilla fixed and floating-rate bonds, callable/convertible bonds, and bond futures/options, together with the associated market data -- clean/dirty prices, yield-to-maturity, and issuer spread curves quoted over the risk-free (or asset-swap) curve. Government bonds are also a primary source instrument for bootstrapping the risk-free rates curve itself.
+
+* Namespace
+
+The oresmd market-data namespace, one entry per authority an =oresmd_uri= can
+carry. =refdata_code= is the taxonomy class a series in this authority belongs
+to, and is empty where the authority names no product class of its own.
+
+** ir
+:PROPERTIES:
+:refdata_code: interest_rates
+:END:
+
+Interest-rate curves, deposits, FRAs, swaps, caps and floors, quoted per currency and index.
+
+** credit
+:PROPERTIES:
+:refdata_code: credit
+:END:
+
+Credit spreads and hazard-rate curves, quoted per reference entity or index series.
+
+** equity
+:PROPERTIES:
+:refdata_code: equity
+:END:
+
+Equity spots, forwards, dividends and volatility surfaces, quoted per name or index.
+
+** commodity
+:PROPERTIES:
+:refdata_code: commodity
+:END:
+
+Commodity forwards and volatilities, quoted per name, delivery point and contract month.
+
+** fx
+:PROPERTIES:
+:refdata_code: fx
+:END:
+
+Foreign-exchange spots, forward points and volatility surfaces, quoted per currency pair.
+
+** inflation
+:PROPERTIES:
+:refdata_code: inflation
+:END:
+
+Inflation fixings, zero-coupon and year-on-year swap curves and volatilities, quoted per price index.
+
+** correlation
+:PROPERTIES:
+:refdata_code: 
+:END:
+
+Pairwise correlations between two underlyings. The key's operands name the two classes it relates, so the authority names no class of its own.
+
+** security
+:PROPERTIES:
+:refdata_code: bond
+:END:
+
+Bond prices, yields and spread curves, quoted per issuer and seniority. The taxonomy calls this product class bond; the oresmd namespace calls it security.
+
+** shape_profile
+:PROPERTIES:
+:refdata_code: commodity
+:END:
+
+A named power price shape: the within-year pattern the class carries.
+
+** rating
+:PROPERTIES:
+:refdata_code: credit
+:END:
+
+Credit ratings and the transitions between them, which measure the credit class.
+
+** power
+:PROPERTIES:
+:refdata_code: commodity
+:END:
+
+Intraday and forward power prices, quoted per contract hour and delivery area.
+
+** generic
+:PROPERTIES:
+:refdata_code: 
+:END:
+
+A wrapper whose metric slot names the instrument inside it, so the metric decides the class rather than the authority.
+
+* See also
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the analysis behind the two axes.
+- [[id:78CCF7BC-7D0A-437C-9E4B-395DB3CB03E9][ores.marketdata.series_classification_rule]] — the rules that class a series by its type.

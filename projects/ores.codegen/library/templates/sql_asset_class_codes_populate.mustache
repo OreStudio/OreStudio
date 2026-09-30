@@ -1,0 +1,39 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.asset_class.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_asset_class_codes_populate.mustache
+ *
+ * Asset Class Codes Population Script
+ *
+ * Populates the top-level asset class classification codes. This table is
+ * the source of truth for the taxonomy; no C++ enum mirrors it.
+ *
+ * Generated from ores.refdata.asset_class_catalogue, which also declares the
+ * oresmd market-data namespace and the mapping between the two lists.
+ *
+ * This script is idempotent - uses INSERT ON CONFLICT.
+ */
+
+\echo '--- Asset Class Codes ---'
+
+insert into ores_refdata_asset_class_codes_tbl (
+    tenant_id, code, version, name, description, display_order,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+{{#asset_class_catalogue}}
+{{#taxonomy}}
+    (ores_utility_system_tenant_id_fn(), '{{code}}', 0, '{{name}}',
+     '{{description_sql}}',
+     {{display_order}}, current_user, current_user, 'system.initial_load', 'Initial population of asset class codes'){{comma}}
+{{/taxonomy}}
+{{/asset_class_catalogue}}
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+-- Summary
+select 'refdata_asset_class_codes' as entity, count(*) as count
+from ores_refdata_asset_class_codes_tbl;

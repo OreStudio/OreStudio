@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 7F5AA065-212F-4523-924B-1BE38494CF62
+:END:
+#+title: Task: Prototype Audit sign-ins
+#+description: [wayfinder:prototype] The event log: the filters, the active sessions, the session activity, the failed attempts, and Refresh as the only action.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: prototype/audit-sign-ins
+#+pr: 2434
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer one question with a throwaway prototype: how does a tenant
+administrator read who is signed in, what they are doing, and who is failing
+to get in?
+
+[[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] carries one
+screen and one action. It is an event log, not a versioned entity, so it
+carries no versions, no diff and no revert, and *Refresh* is the only action.
+The prototype decides how the filters, the active sessions, the session
+activity and the failed attempts share one screen, and how the screen states
+the data it cannot read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Three variants run on =/prototype/audit=. |
+| Waiting on   | The product owner's choice of variant. |
+| Next          | Record the accepted variant, then write the screen's build task. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- A =prototype/audit-sign-ins= branch, cut from
+  =feature/implement-credentials-journeys=, runs the screen from one command on
+  the journey runtime the Setup group landed.
+- At least two variants are compared on one route, switchable without a
+  rebuild. One variant leads with the sessions and one leads with the failures,
+  because the journey serves a routine review and an incident.
+- The screen carries *Refresh* as its only action, and no version, diff or
+  revert control appears anywhere on it.
+- The filters name the fields the reads take. A filter the server cannot apply
+  is drawn as unavailable, with its reason.
+- Every panel whose data has no read path says the data is not available.
+- The branch stays unmerged, and * Result carries the verdict, the rejected
+  variants, the design decisions and every document claim the tree contradicts.
+
+* Plan
+
+1. Cut =prototype/audit-sign-ins= from
+   =feature/implement-credentials-journeys=.
+2. Read the journey document's wireframe, then the session and login-record
+   reads the screen needs, and the journey runtime's step parts.
+3. Build two or three variants on one route, with a switch that needs no
+   rebuild, and state the full screen state after every refresh and filter.
+4. Hold the state in memory, and drive the screen from the running fleet where
+   a read exists. The active-session panel reads the working BFF route.
+5. Drive each variant through the same cases: an idle tenant, a tenant with
+   eight open sessions, a burst of failed attempts, and a session with activity
+   samples.
+6. Record the verdict in * Result. Leave the branch unmerged.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The journey's gaps, from the * What is missing section of
+[[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]]. The screen states
+each one, and the prototype decides how.
+
+1. *No subject for the auth events.* =ores_iam_auth_events_tbl= holds one row
+   per login, failure, logout and token refresh, with continuous aggregates and
+   no subject.
+2. *No subject for the session statistics.* The three continuous aggregates
+   exist with no subject.
+3. *No operation to end another account's session.* The repository method
+   =session_repository::end_session= writes the end time, and only the logout
+   path calls it for the caller's own session.
+4. *The activity and the audit data have no path the browser can use.* The
+   sessions and the login records have =ores.http= routes, which the browser
+   never reaches, and the samples have no route at all. Until the BFF serves
+   them, the session-activity panel must state that the data is not available.
+
+Three of the reads are =partial=: =iam.v1.sessions.list= takes no account
+filter, and =iam.v1.sessions.active= and =iam.v1.sessions.samples= exist and
+reply with success and no rows. =ores.http= exposes the sessions and the active
+sessions, each forwarding to its subject, and exposes nothing for the samples.
+The browser reaches none of them: the BFF is its only HTTP surface.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built 2026-09-30. Snapshot: branch =prototype/audit-sign-ins=. The product owner
+has not chosen a variant yet, so nothing here is carried into the build.
+
+Route =/prototype/audit?variant=a|b|c=, reached the same way as the other two:
+=npm run dev:web --workspace @ores.web= and
+=http://localhost:5173/prototype/audit?variant=a=. No server is needed.
+
+*Three variants on one screen.*
+
+- *A · One log, sections.* One filter bar, then the active sessions, the
+  session activity, the failures and the gap list as sections of one page.
+- *B · Tabs over one filter bar.* The same four readings take turns in the
+  body, so the page never grows past one screen.
+- *C · Session-first timeline.* One row per session, expanded to its activity,
+  with the failures and the gaps in a rail beside it.
+
+*Recommendation: C.* The question this screen answers is asked about a session
+("who is this, and what are they doing"), so the session is the unit and its
+activity belongs under it rather than in a separate reading. The failures rail
+stays visible, which is what explains the support call. A is the safe default
+if the readings grow past three; B hides the failures while an administrator
+reads the sessions, which is exactly when a locked account matters.
+
+*Decisions the prototype settles.*
+
+- *Refresh is the only action,* and no version, diff or revert control appears
+  anywhere. The journey document fixes this, and the prototypes keep it.
+- *The account filter is drawn, and disabled.* =iam.v1.sessions.list= takes no
+  account filter, so the screen says the server cannot apply one rather than
+  offering a control that silently does nothing.
+- *The activity panel states that the data is not available.* Nothing serves
+  =iam.v1.sessions.samples= on either transport, so no empty chart and no
+  fabricated sample rows are drawn; the session row's own totals are shown with
+  the reason beside them.
+- *No events panel is drawn.* The authentication events have no subject at all,
+  so the screen lists them as a gap instead of drawing an empty log. The
+  journey's first two steps therefore cannot be shown until the subject exists.
+- *The failure count and the lock state travel together.* A locked account is
+  the case the screen exists for, so the state is a tag beside the count.
+
+*The whole journey is unreachable from the browser today.* =ores.http= serves
+=iam.v1.sessions.list=, =.active= and =iam.v1.login_info.list=, one forwarding
+route each, and the browser never reaches =ores.http=. The samples, the auth
+events and the statistics have neither a subject nor a route on any surface. The
+journey document's claim that =/api/v1/sessions/active= "works in the browser
+today" named the wrong surface, and it is corrected there.
+
+*Verification.* =npm run typecheck --workspace @ores/web= passes.
+=npm test --workspace @ores/web= passes, 146 tests in 13 files, on the same
+tree. Each variant was rendered headless at 1440 px and read back.

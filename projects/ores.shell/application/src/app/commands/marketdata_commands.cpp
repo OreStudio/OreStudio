@@ -18,8 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/marketdata_commands.hpp"
-#include "ores.marketdata.api/messaging/import_protocol.hpp"
-#include "ores.marketdata.api/messaging/ore_export_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"

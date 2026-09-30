@@ -36,7 +36,7 @@ The findings and the target grammar are recorded in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -45,35 +45,112 @@ The findings and the target grammar are recorded in
 
 * Acceptance
 
-- Every dimension a =point==-bearing URI carries is a declared query key, with a
-  role, a value kind and an order.
-- Every query key of every quote type has =role= of =identity= or =coordinate=.
+- Every dimension a =point==-bearing URI carries is a declared coordinate key.
+- Every query key of every quote type is either a declared coordinate or
+  identity, and the generated series identity is the identity keys alone.
 - The four volatility families with no quote type of their own gain one:
   =swaption= for IR, and an =option= member for FX, equity and commodity.
 - A codegen test walks every =point==-bearing URI in the model test tables and
   fails while any is not expressible as declared keys. It passes at the end of
   this unit and its check is the record's evidence.
-- The generated C++ is unchanged by this unit, and every existing test still
-  passes.
+- The generated parser and writer accept and produce exactly what they do
+  today, except that the quote-type enums gain the four new members. No URI that
+  parses today stops parsing.
 
 * Plan
 
-1. Read the census in the investigation: every quote type, its
-   =point_semantics=, its =qualifier_shape=, and every =point==-bearing URI in
-   the model test tables.
-2. Add the =Coordinates= table to each of the thirteen =*.org= models under
-   =projects/ores.marketdata/modeling/oresmd/=.
-3. Add =role= to every row of each model's =Fields= table and mark the =point=
-   rows for removal.
-4. Add the four missing quote types.
-5. Add the codegen check, and record its before and after counts in
-   =* Measurements=.
+** The model change
+
+One new table per model, and one row removed:
+
+- Each model gains a =* Coordinates= table:
+
+  | query_key | cpp_type | value_kind | order | quote_types | notes |
+  |-----------+----------+------------+-------+-------------+-------|
+
+  =value_kind= is =string= or =enum=. =order= is the position the key takes in
+  the canonical coordinate string. =quote_types= is the comma list of the quote
+  types that carry the key.
+- The =point= row leaves the =* Fields= table. Identity is then every field that
+  is not a declared coordinate, so there is no =role= column to keep in step: the
+  Coordinates table is the role declaration, and its absence means identity.
+- A quote type whose last coordinate is either a number or a moneyness token
+  lists both =strike= and =delta=. The parser tries the enum first, so =ATM= is
+  a delta and a decimal is a strike.
+
+** The coordinate inventory
+
+Union per asset class, from the census in the investigation:
+
+| Asset class | Coordinate keys, in order |
+|-------------+--------------------------|
+| fx | maturity; expiry, delta |
+| ir | maturity; tenor; contract_code, tenor (mm_future); contract_month, contract_code, tenor (oi_future); expiry, strike/delta, smile |
+| equity | maturity; expiry, delta, premium, call_put, strike |
+| commodity | maturity; expiry, delta, premium, call_put, strike |
+| credit | seniority, restructuring, tenor; expiry, strike |
+| inflation | maturity; month; expiry, cap_floor, strike |
+| correlation | expiry, delta |
+| rating | from, to |
+| shape_profile | date, second, period, dst |
+| security, generic, power | none |
+
+Per quote type:
+
+| Quote type | Coordinates, in order |
+|------------+-----------------------|
+| fx spot | — |
+| fx fwd | maturity |
+| fx option (new) | expiry, delta |
+| ir ir_swap, mm, fra, imm_fra, bma_swap, basis_swap, cc_basis_swap, cc_fix_float_swap, zero | maturity |
+| ir discount | tenor |
+| ir mm_future | contract_code, tenor |
+| ir oi_future | contract_month, contract_code, tenor |
+| ir capfloor | expiry, strike |
+| ir swaption (new), bond_option | expiry, smile, strike/delta |
+| equity spot | — |
+| equity dividend, fwd | maturity |
+| equity option (new) | expiry, delta, premium, call_put, strike |
+| commodity spot | — |
+| commodity fwd | maturity |
+| commodity option (new) | expiry, delta, premium, call_put, strike |
+| credit cds, hazard_rate | seniority, restructuring, tenor |
+| credit recovery_rate | seniority, restructuring |
+| credit cds_index, index_cds_tranche | tenor, strike |
+| credit index_cds_option | tenor, expiry, strike |
+| inflation zc_swap, yy_swap | maturity |
+| inflation seasonality | month |
+| inflation zc_capfloor, yy_capfloor, cf_price | expiry, cap_floor, strike |
+| correlation pairwise | expiry, delta |
+| rating transition_probability | from, to |
+| shape_profile shape_factor | date, second, period, dst |
+
+** The loader
+
+=load_org_oresmd_quote_type_model()= reads the new table into
+=result["coordinate_keys"]= (per asset class) and attaches each quote type's
+ordered keys to =result["quote_types"]= rows as =coordinates=. Nothing else in
+the loader changes in this unit; the templates that consume the new keys are
+unit 3's work, and this unit must leave the generated C++ byte-identical.
+
+** The check
+
+A codegen test reads every model's test tables, takes each URI that carries
+=point=, resolves its quote type (the =quote= key, or the asset class's default
+when absent), and compares the token count with the number of declared
+coordinates for that type. It reports the URI, the tokens and the declared keys
+when they differ. It fails until the last model is declared, which is the
+evidence the unit is done.
 
 * Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Market payloads under =external/ore/examples= | 96 | python predicate, =is_market_payload= in =corpus_files.hpp= | 80d03bab8f |
+| Fixing payloads under =external/ore/examples= | 66 | python predicate, =is_fixing_payload= | 80d03bab8f |
+| Payloads carrying a lognormal and a normal vol at one date and coordinate | 22 | python scan of =*market*.txt/csv= | 80d03bab8f |
+| Such groups across the corpus | 23,828 | same scan | 80d03bab8f |
+| Whole-corpus import | Fails on its 32nd file, duplicate key | =ores.marketdata.core.tests "every_line_of_the_whole_corpus_reaches_the_database"= | 80d03bab8f |
 
 * Notes
 

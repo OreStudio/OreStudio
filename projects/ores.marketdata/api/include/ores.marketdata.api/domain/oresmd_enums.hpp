@@ -88,7 +88,8 @@ enum class ir_quote_type {
     mm_future,         ///< MM_FUTURE (money market future price).
     oi_future,         ///< OI_FUTURE (overnight index future price).
     capfloor,          ///< CAPFLOOR (cap/floor volatility on a strike grid).
-    bond_option        ///< BOND_OPTION (bond option implied vol).
+    bond_option,       ///< BOND_OPTION (bond option implied vol).
+    swaption           ///< SWAPTION (swaption implied vol).
 };
 
 /**
@@ -244,17 +245,12 @@ inline bool requires_tenor(index_family f) {
  * METRIC column. Credit-only; only meaningful when `type=quote`.
  */
 enum class credit_quote_type {
-    cds, ///< CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR, and the seven-segment form carrying the
-         ///< restructuring clause between the currency and the tenor (XR14, MR14)
-    hazard_rate,   ///< HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR, with the same optional
-                   ///< restructuring clause
-    recovery_rate, ///< RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on
-                   ///< the keys that name one
-    cds_index,     ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
+    cds,               ///< CDS (single-name CDS spread).
+    hazard_rate,       ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
+    recovery_rate,     ///< RECOVERY_RATE/RATE (recovery rate assumption).
+    cds_index,         ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
     index_cds_tranche, ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
-    index_cds_option   ///< INDEX_CDS_OPTION/MODEL/INDEX/TENOR/EXPIRY/STRIKE, plus the four-segment
-                       ///< term-vol form INDEX_CDS_OPTION/MODEL/INDEX/TENOR; the metric segment is
-                       ///< the vol model, not this table's ore_metric
+    index_cds_option   ///< INDEX_CDS_OPTION (index CDS option implied vol).
     // rating descoped — RATING/TRANSITION_PROBABILITY needs provider/from_rating/to_rating
     // fields the current credit_market_data_identifier has no equivalent for; tracked for
     // its own task.
@@ -267,7 +263,8 @@ enum class credit_quote_type {
 enum class equity_quote_type {
     spot,     ///< EQUITY/PRICE (spot price, the default).
     dividend, ///< EQUITY_DIVIDEND/RATE (dividend yield rate).
-    fwd       ///< EQUITY_FWD/PRICE (equity forward price).
+    fwd,      ///< EQUITY_FWD/PRICE (equity forward price).
+    option    ///< EQUITY_OPTION (equity option implied vol).
 };
 
 /**
@@ -277,9 +274,7 @@ enum class equity_quote_type {
 enum class commodity_quote_type {
     spot,  ///< COMMODITY/PRICE (spot price, the default).
     fwd,   ///< COMMODITY_FWD/PRICE (commodity forward price).
-    option ///< COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity
-           ///< option's three shapes, with a commodity code where the equity has a ticker; the
-           ///< metric segment is the vol model, not this table's ore_metric
+    option ///< COMMODITY_OPTION (commodity option implied vol).
 };
 
 /**
@@ -287,8 +282,9 @@ enum class commodity_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class fx_quote_type {
-    spot, ///< FX/RATE (spot rate, the default).
-    fwd   ///< FXFWD/RATE (forward points).
+    spot,  ///< FX/RATE (spot rate, the default).
+    fwd,   ///< FXFWD/RATE (forward points).
+    option ///< FX_OPTION (FX option implied vol).
 };
 
 /**

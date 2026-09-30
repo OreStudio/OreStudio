@@ -15,14 +15,14 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_constant      | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+-------------------+------------+-----------------+-----------------+------------------------------------------------------------|
-| zc_swap | ZC_INFLATIONSWAP | zc_inflation_swap | RATE | tenor | simple | ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate). |
-| yy_swap | YY_INFLATIONSWAP | yy_inflation_swap | RATE | tenor | simple | YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate). |
-| seasonality | SEASONALITY | seasonality | RATE | tenor | mult_literal | SEASONALITY/RATE (seasonality adjustment factor). |
-| zc_capfloor | ZC_INFLATIONCAPFLOOR | zc_inflation_capfloor | PRICE | surface | capfloor_price | 6-segment: ZC_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the same shape under RATE_NVOL. |
-| yy_capfloor | YY_INFLATIONCAPFLOOR | yy_inflation_capfloor | PRICE | surface | capfloor_price | 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the same shape under RATE_NVOL. |
-| cf_price | CAPFLOOR | capfloor | PRICE | surface | capfloor_price | 6-segment: CAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE -- the inflation cap/floor price under the older CAPFLOOR type name, which the corpus carries beside ZC_INFLATIONCAPFLOOR/PRICE for the same instrument. |
+| enum_name   | ore_type             | ore_constant          | ore_metric | point_semantics | qualifier_shape | comment                                                                                                                                                                                                               | coordinates             |
+|-------------+----------------------+-----------------------+------------+-----------------+-----------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------|
+| zc_swap     | ZC_INFLATIONSWAP     | zc_inflation_swap     | RATE       | tenor           | simple          | ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).                                                                                                                                                              | maturity                |
+| yy_swap     | YY_INFLATIONSWAP     | yy_inflation_swap     | RATE       | tenor           | simple          | YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).                                                                                                                                                             | maturity                |
+| seasonality | SEASONALITY          | seasonality           | RATE       | tenor           | mult_literal    | SEASONALITY/RATE (seasonality adjustment factor).                                                                                                                                                                     | month                   |
+| zc_capfloor | ZC_INFLATIONCAPFLOOR | zc_inflation_capfloor | PRICE      | surface         | capfloor_price  | 6-segment: ZC_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the same shape under RATE_NVOL.                                                                                                         | expiry,cap_floor,strike |
+| yy_capfloor | YY_INFLATIONCAPFLOOR | yy_inflation_capfloor | PRICE      | surface         | capfloor_price  | 6-segment: YY_INFLATIONCAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE, and the same shape under RATE_NVOL.                                                                                                         | expiry,cap_floor,strike |
+| cf_price    | CAPFLOOR             | capfloor              | PRICE      | surface         | capfloor_price  | 6-segment: CAPFLOOR/PRICE/INDEX/MATURITY/CAP_OR_FLOOR/STRIKE -- the inflation cap/floor price under the older CAPFLOOR type name, which the corpus carries beside ZC_INFLATIONCAPFLOOR/PRICE for the same instrument. | expiry,cap_floor,strike |
 
 * Enum brief
 
@@ -71,6 +71,21 @@ refused rather than reshaped on the way back. A code ORE adds is a row here.
 | quote_type | std::optional<inflation_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |
 | vol | std::optional<volatility_surface_point> | no | | |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| maturity | std::optional<std::string> | string | The quoted instrument's own term. |
+| month | std::optional<std::string> | enum | The month a seasonality factor is quoted for. |
+| expiry | std::optional<std::string> | string | A surface point's expiry. |
+| cap_floor | std::optional<std::string> | enum | The cap or floor flag the surface point carries. |
+| strike | std::optional<std::string> | string | A surface point's fixed strike. |
 
 * Reject keys
 

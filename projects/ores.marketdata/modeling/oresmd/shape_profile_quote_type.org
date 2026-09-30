@@ -21,9 +21,9 @@ profile is sampled on. ORE writes the metric as the second segment, so the one
 metric is its own quote type here -- the `metric` query key is one of the IR-only
 keys every other class rejects.
 
-| enum_name | ore_type | ore_constant | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+--------------+------------+-----------------+-----------------+---------|
-| shape_factor | SHAPE_PROFILE | shape_profile | SHAPE_FACTOR | composite | no_ccy | SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the corpus writes as a seventh segment. |
+| enum_name    | ore_type      | ore_constant  | ore_metric   | point_semantics | qualifier_shape | comment                                                                                                          | coordinates            |
+|--------------+---------------+---------------+--------------+-----------------+-----------------+------------------------------------------------------------------------------------------------------------------+------------------------|
+| shape_factor | SHAPE_PROFILE | shape_profile | SHAPE_FACTOR | composite       | no_ccy          | SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, plus the DST flag the corpus writes as a seventh segment. | date,second,period,dst |
 
 * Enum brief
 
@@ -46,6 +46,20 @@ A logical, possibly-partial oresmd requirement for a shape profile.
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<shape_profile_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| date | std::optional<std::string> | string | The date the shape factor is quoted for. |
+| second | std::optional<std::string> | string | The second of the day within the period. |
+| period | std::optional<std::string> | enum | The period the second is counted in. |
+| dst | std::optional<std::string> | enum | The daylight-saving flag the corpus appends. |
 
 * Reject keys
 

@@ -21,9 +21,9 @@ ORE writes the metric as the second segment, so the one metric is its own quote
 type here -- the `metric` query key is one of the IR-only keys every other class
 rejects.
 
-| enum_name | ore_type | ore_constant | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+--------------+------------+-----------------+-----------------+---------|
-| transition_probability | RATING | rating | TRANSITION_PROBABILITY | composite | no_ccy | RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form the corpus also writes, which names the provider and no grades. |
+| enum_name              | ore_type | ore_constant | ore_metric             | point_semantics | qualifier_shape | comment                                                                                                                                   | coordinates |
+|------------------------+----------+--------------+------------------------+-----------------+-----------------+-------------------------------------------------------------------------------------------------------------------------------------------+-------------|
+| transition_probability | RATING   | rating       | TRANSITION_PROBABILITY | composite       | no_ccy          | RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form the corpus also writes, which names the provider and no grades. | from,to     |
 
 * Enum brief
 
@@ -46,6 +46,18 @@ A logical, possibly-partial oresmd requirement for a rating provider.
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<rating_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| from | std::optional<std::string> | string | The grade the migration runs from. |
+| to | std::optional<std::string> | string | The grade the migration runs to. |
 
 * Reject keys
 

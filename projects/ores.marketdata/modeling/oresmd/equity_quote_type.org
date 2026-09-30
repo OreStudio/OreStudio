@@ -16,11 +16,12 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_constant    | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+-----------------+------------+-----------------+-----------------+-----------------------------------------------|
-| spot      | EQUITY   | equity          | PRICE      | scalar          | with_ccy        | EQUITY/PRICE (spot price, the default). |
-| dividend  | EQUITY_DIVIDEND | equity_dividend | RATE    | tenor           | with_ccy        | EQUITY_DIVIDEND/RATE (dividend yield rate). |
-| fwd       | EQUITY_FWD | equity_fwd      | PRICE      | tenor           | with_ccy        | EQUITY_FWD/PRICE (equity forward price). |
+| enum_name | ore_type        | ore_constant    | ore_metric | point_semantics | qualifier_shape | comment                                     | coordinates                          |
+|-----------+-----------------+-----------------+------------+-----------------+-----------------+---------------------------------------------+--------------------------------------|
+| spot      | EQUITY          | equity          | PRICE      | scalar          | with_ccy        | EQUITY/PRICE (spot price, the default).     |                                      |
+| dividend  | EQUITY_DIVIDEND | equity_dividend | RATE       | tenor           | with_ccy        | EQUITY_DIVIDEND/RATE (dividend yield rate). | maturity                             |
+| fwd       | EQUITY_FWD      | equity_fwd      | PRICE      | tenor           | with_ccy        | EQUITY_FWD/PRICE (equity forward price).    | maturity                             |
+| option    | EQUITY_OPTION   | equity_option   | RATE       | surface         | with_ccy        | EQUITY_OPTION (equity option implied vol).  | expiry,delta,premium,call_put,strike |
 
 * Enum brief
 
@@ -58,6 +59,22 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | quote_type | std::optional<equity_quote_type> | no | quote | |
 | point | std::optional<std::string> | no | point | |
 | vol | std::optional<volatility_surface_point> | no | | |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| maturity | std::optional<std::string> | string | The quoted instrument's own term. |
+| expiry | std::optional<std::string> | string | A surface point's option expiry. |
+| delta | std::optional<std::string> | enum | The moneyness or delta convention: atmf, del, ... |
+| premium | std::optional<std::string> | enum | Where the premium is read: spot, fwd. |
+| call_put | std::optional<std::string> | enum | The option's call or put flag. |
+| strike | std::optional<std::string> | string | A surface point's fixed strike. |
 
 * Reject keys
 
@@ -107,6 +124,7 @@ A logical, possibly-partial oresmd requirement for an equity/index instrument.
 | oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf | round_trip_equity_option_vol |
 | oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price | round_trip_equity_option_price |
 | oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1 | round_trip_equity_option_delta |
+| oresmd://equity/sp5?ccy=usd&type=vol&quote=option&point=6m,atmf | round_trip_equity_option_vol_named |
 
 ** Rejection
 

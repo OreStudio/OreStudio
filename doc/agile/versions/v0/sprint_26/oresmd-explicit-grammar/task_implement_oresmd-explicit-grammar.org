@@ -2,7 +2,7 @@
 :ID: 55EDA7FC-5AD9-4D90-93D0-9D5C48590389
 :END:
 #+title: Task: Declare the oresmd coordinates in the models
-#+description: Add a Coordinates table and an identity/coordinate role to the thirteen oresmd quote-type models, and remove the point field from them. The grammar is declared before it is generated.
+#+description: Add a Coordinates table and an identity/coordinate role to the twelve oresmd quote-type models, and remove the point field from them. The grammar is declared before it is generated.
 #+type: task
 #+level: s1
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 The oresmd grammar is declared in its models rather than in the generated
-parser. Each of the thirteen quote-type models states, for every query key, its
+parser. Each of the twelve quote-type models states, for every query key, its
 role (identity or coordinate), its value kind and its order; and it states, per
 quote type, which coordinate keys that type carries. The =point= bag is removed.
 
@@ -61,22 +61,28 @@ The findings and the target grammar are recorded in
 
 ** The model change
 
-One new table per model, and one row removed:
+One new table per model, one new column per quote type, and one row added:
 
 - Each model gains a =* Coordinates= table:
 
-  | query_key | cpp_type | value_kind | order | quote_types | notes |
-  |-----------+----------+------------+-------+-------------+-------|
+  | query_key | cpp_type | value_kind | notes |
+  |-----------+----------+------------+-------|
 
-  =value_kind= is =string= or =enum=. =order= is the position the key takes in
-  the canonical coordinate string. =quote_types= is the comma list of the quote
-  types that carry the key.
-- The =point= row leaves the =* Fields= table. Identity is then every field that
-  is not a declared coordinate, so there is no =role= column to keep in step: the
-  Coordinates table is the role declaration, and its absence means identity.
+  =value_kind= is =string= or =enum=.
+- Each row of the =* Quote types= table gains a =coordinates= column: the ordered
+  comma list of the coordinate keys that quote type carries. The order is per
+  quote type, because one key sits at different positions in different types
+  (=tenor= is first for =cds_index= and second for =index_cds_option=).
+- The =point= field, the identifier structs and the parser are untouched here.
+  Removing =point= is unit 3's work, so this diff reads as a specification rather
+  than as a grammar.
 - A quote type whose last coordinate is either a number or a moneyness token
   lists both =strike= and =delta=. The parser tries the enum first, so =ATM= is
   a delta and a decimal is a strike.
+- The four surfaces that had no quote type of their own gain one: =swaption= for
+  IR, and an =option= member for FX and equity. Commodity already had one. Each
+  gains a round-trip case, so the coverage record that requires both directions
+  of every modelled type stays empty rather than gaining an exemption.
 
 ** The coordinate inventory
 
@@ -128,19 +134,28 @@ Per quote type:
 ** The loader
 
 =load_org_oresmd_quote_type_model()= reads the new table into
-=result["coordinate_keys"]= (per asset class) and attaches each quote type's
-ordered keys to =result["quote_types"]= rows as =coordinates=. Nothing else in
-the loader changes in this unit; the templates that consume the new keys are
-unit 3's work, and this unit must leave the generated C++ byte-identical.
+=result["coordinate_keys"]= (per asset class), splits each quote type's
+=coordinates= cell into an ordered list, and refuses a key that is declared as a
+coordinate in one table and as another type in the other, or that a quote type
+lists and nothing declares. The templates that consume the keys are unit 3's
+work.
 
 ** The check
 
-A codegen test reads every model's test tables, takes each URI that carries
-=point=, resolves its quote type (the =quote= key, or the asset class's default
-when absent), and compares the token count with the number of declared
-coordinates for that type. It reports the URI, the tokens and the declared keys
-when they differ. It fails until the last model is declared, which is the
-evidence the unit is done.
+=projects/ores.codegen/tests/test_oresmd_coordinates.py= reads the same models
+the generator reads and asks, of every declared test-case URI that still spells
+a =point=: does it name a quote type, once the asset class's own default is
+applied, and does that type declare the coordinates its key carries? It pins a
+floor on the number of URIs it looked at, so a loader that returns nothing fails
+there instead of passing over an empty set.
+
+It deliberately does not compare the token count with the declared key count.
+The old =point= mixes coordinate and identity dimensions -- a capfloor's
+=5y,6m,0,0,0.03= is an expiry, a float tenor, two surface flags and a strike, of
+which only two are coordinates -- and its arity varies with the key's shape, as
+a swaption's smile form shows. Asserting that mapping here would restate the old
+grammar rather than check the new declaration; the generated parser of unit 3 is
+what replaces it.
 
 * Measurements
 
@@ -173,3 +188,40 @@ evidence the unit is done.
 |   |                 |      |          |       |
 
 * Result
+
+The twelve quote-type models declare their coordinates, and the generator reads
+them. Every =point=-bearing test URI resolves to a quote type that declares what
+its key carries.
+
+Delivered:
+
+- A =* Coordinates= table in each of the twelve models, and a =coordinates=
+  column on every =* Quote types= row.
+- =load_org_oresmd_quote_type_model()= reads both, and refuses a key declared as
+  a coordinate in one table and another type in the other, or listed by a quote
+  type and declared nowhere.
+- =test_oresmd_coordinates.py=, the declaration check described above.
+- Three quote types: =ir.swaption=, =fx.option= and =equity.option=.
+  =commodity.option= already existed. Each gained a round-trip case, so
+  =TEST_COVERAGE_EXEMPT= stays empty.
+- A generator defect fixed at its source: the =* Quote types= header of
+  =credit_quote_type.org= and =commodity_quote_type.org= declared no =notes=
+  column while their rows carried one, so the notes text landed in the =comment=
+  slot and the generated enum documented the key shape where the meaning
+  belonged. The header now declares =notes=, and the regenerated enums carry the
+  real comments.
+- The one hand-written switch the new members reached,
+  =default_metric(ir_quote_type)=, gained its case in
+  =ores.cpp.oresmd.projections.org=, from which the template is tangled.
+
+Evidence:
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| codegen suite | 1,049 passed | =venv/bin/python -m pytest projects/ores.codegen/tests -q= | uncommitted at measurement |
+| oresmd core tests | 1,940 assertions in 420 cases, all passed | =ores.marketdata.core.tests= | uncommitted at measurement |
+
+Not done here, and unit 3's work: the =point= field still exists, the parser
+still reads the old spelling, and the series identity still clears the volatility
+struct. The corpus import therefore still fails, and the investigation's
+measurement of that failure stands.

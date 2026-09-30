@@ -15,22 +15,23 @@
 
 * Quote types
 
-| enum_name           | ore_type          | ore_constant           | ore_metric      | point_semantics | qualifier_shape         | notes | comment |
-|---------------------+-------------------+------------------------+-----------------+-----------------+-------------------------+-------+--------------------------------------------------------------------------------------------------|
-| ir_swap             | IR_SWAP           | ir_swap                | RATE            | tenor           | includes_index_2d       | two forms: IR_SWAP/RATE/CCY/SETTLE/TENOR/POINT and IR_SWAP/RATE/CCY/INDEX/SETTLE/TENOR/POINT; the settle is a per-currency spot lag the corpus writes as 2D, 0D or 1D | IR_SWAP (par swap rate). |
-| discount            | DISCOUNT          | discount               | RATE            | tenor           | curve_id                | 5-segment: DISCOUNT/RATE/CCY/CURVE/TENOR, where the curve is the name curveconfig.xml gives it (USD3M, USD-SOFR-3M, USD-FedFunds, or the bare currency), kept verbatim | DISCOUNT (curve-sampled discount factor). |
-| mm                  | MM                | mm                     | RATE            | tenor           | no_index                | two forms: MM/RATE/CCY/SETTLE/TENOR when the producer names no index (94% of the corpus), MM/RATE/CCY/INDEX/SETTLE/TENOR when it does | MM (money market rate). |
-| fra                 | FRA               | fra                    | RATE            | tenor           | no_index                | 5-segment: FRA/RATE/CCY/START_TENOR/LENGTH | FRA (forward rate agreement rate). |
-| imm_fra             | IMM_FRA           | imm_fra                | RATE            | tenor           | no_index                | 5-segment: IMM_FRA/RATE/CCY/IMM_DATE/LENGTH | IMM_FRA (IMM-settled FRA rate). |
-| basis_swap          | BASIS_SWAP        | basis_swap             | BASIS_SPREAD    | tenor           | two_tenors              | 6-segment: BASIS_SWAP/BASIS_SPREAD/FIRST_TENOR/SECOND_TENOR/CCY/MATURITY, and a seventh segment naming the basis itself between the currency and the maturity (SOFR_FedFunds, LIBOR_PRIME); the name has no index family, so it is carried whole | BASIS_SWAP (single-currency basis swap spread). |
-| bma_swap            | BMA_SWAP          | bma_swap               | RATIO           | tenor           | no_index                | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT | BMA_SWAP (Bond Market Association swap ratio). |
-| cc_basis_swap       | CC_BASIS_SWAP     | cc_basis_swap          | BASIS_SPREAD    | tenor           | cross_currency          | 7-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY1/TENOR1/CCY2/TENOR2/MATURITY | CC_BASIS_SWAP (cross-currency basis swap spread). |
-| cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | cc_fix_float_swap      | RATE            | tenor           | cross_currency          | 7-segment: CC_FIX_FLOAT_SWAP/RATE/CCY1/TENOR1/CCY2/TENOR2/MATURITY | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). |
-| zero                | ZERO              | zero                   | RATE            | tenor           | curve_id_day_count      | 6-segment: ZERO/RATE/CCY/CURVE_ID/DAY_COUNT/POINT, where the curve id is a free-text name and the day count a token like A365 | ZERO (zero-coupon rate). |
-| mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | futures                 | 6-segment: MM_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR, where the contract code is the exchange-qualified token ORE writes (XICE:FEI, XCME:SRA) | MM_FUTURE (money market future price). |
-| oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | futures                 | 6-segment: OI_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR | OI_FUTURE (overnight index future price). |
-| capfloor            | CAPFLOOR          | capfloor               | RATE            | surface         | capfloor_vol            | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric | CAPFLOOR (cap/floor volatility on a strike grid). |
-| bond_option         | BOND_OPTION       | bond_option            | RATE            | surface         | swaption_vol            | 6-segment: BOND_OPTION/RATE_LNVOL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption shape over a bond, so the underlying is a generic name rather than a currency | BOND_OPTION (bond option implied vol). |
+| enum_name         | ore_type          | ore_constant      | ore_metric   | point_semantics | qualifier_shape    | notes                                                                                                                                                                                                                                            | comment                                                 | coordinates                        |
+|-------------------+-------------------+-------------------+--------------+-----------------+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------+------------------------------------|
+| ir_swap           | IR_SWAP           | ir_swap           | RATE         | tenor           | includes_index_2d  | two forms: IR_SWAP/RATE/CCY/SETTLE/TENOR/POINT and IR_SWAP/RATE/CCY/INDEX/SETTLE/TENOR/POINT; the settle is a per-currency spot lag the corpus writes as 2D, 0D or 1D                                                                            | IR_SWAP (par swap rate).                                | maturity                           |
+| discount          | DISCOUNT          | discount          | RATE         | tenor           | curve_id           | 5-segment: DISCOUNT/RATE/CCY/CURVE/TENOR, where the curve is the name curveconfig.xml gives it (USD3M, USD-SOFR-3M, USD-FedFunds, or the bare currency), kept verbatim                                                                           | DISCOUNT (curve-sampled discount factor).               | tenor                              |
+| mm                | MM                | mm                | RATE         | tenor           | no_index           | two forms: MM/RATE/CCY/SETTLE/TENOR when the producer names no index (94% of the corpus), MM/RATE/CCY/INDEX/SETTLE/TENOR when it does                                                                                                            | MM (money market rate).                                 | maturity                           |
+| fra               | FRA               | fra               | RATE         | tenor           | no_index           | 5-segment: FRA/RATE/CCY/START_TENOR/LENGTH                                                                                                                                                                                                       | FRA (forward rate agreement rate).                      | maturity                           |
+| imm_fra           | IMM_FRA           | imm_fra           | RATE         | tenor           | no_index           | 5-segment: IMM_FRA/RATE/CCY/IMM_DATE/LENGTH                                                                                                                                                                                                      | IMM_FRA (IMM-settled FRA rate).                         | maturity                           |
+| basis_swap        | BASIS_SWAP        | basis_swap        | BASIS_SPREAD | tenor           | two_tenors         | 6-segment: BASIS_SWAP/BASIS_SPREAD/FIRST_TENOR/SECOND_TENOR/CCY/MATURITY, and a seventh segment naming the basis itself between the currency and the maturity (SOFR_FedFunds, LIBOR_PRIME); the name has no index family, so it is carried whole | BASIS_SWAP (single-currency basis swap spread).         | maturity                           |
+| bma_swap          | BMA_SWAP          | bma_swap          | RATIO        | tenor           | no_index           | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT                                                                                                                                                                                                        | BMA_SWAP (Bond Market Association swap ratio).          | maturity                           |
+| cc_basis_swap     | CC_BASIS_SWAP     | cc_basis_swap     | BASIS_SPREAD | tenor           | cross_currency     | 7-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY1/TENOR1/CCY2/TENOR2/MATURITY                                                                                                                                                                           | CC_BASIS_SWAP (cross-currency basis swap spread).       | maturity                           |
+| cc_fix_float_swap | CC_FIX_FLOAT_SWAP | cc_fix_float_swap | RATE         | tenor           | cross_currency     | 7-segment: CC_FIX_FLOAT_SWAP/RATE/CCY1/TENOR1/CCY2/TENOR2/MATURITY                                                                                                                                                                               | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). | maturity                           |
+| zero              | ZERO              | zero              | RATE         | tenor           | curve_id_day_count | 6-segment: ZERO/RATE/CCY/CURVE_ID/DAY_COUNT/POINT, where the curve id is a free-text name and the day count a token like A365                                                                                                                    | ZERO (zero-coupon rate).                                | maturity                           |
+| mm_future         | MM_FUTURE         | mm_future         | PRICE        | tenor           | futures            | 6-segment: MM_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR, where the contract code is the exchange-qualified token ORE writes (XICE:FEI, XCME:SRA)                                                                                       | MM_FUTURE (money market future price).                  | contract_code,tenor                |
+| oi_future         | OI_FUTURE         | oi_future         | PRICE        | tenor           | futures            | 6-segment: OI_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR                                                                                                                                                                                | OI_FUTURE (overnight index future price).               | contract_month,contract_code,tenor |
+| capfloor          | CAPFLOOR          | capfloor          | RATE         | surface         | capfloor_vol       | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric                                                    | CAPFLOOR (cap/floor volatility on a strike grid).       | expiry,strike                      |
+| bond_option       | BOND_OPTION       | bond_option       | RATE         | surface         | swaption_vol       | 6-segment: BOND_OPTION/RATE_LNVOL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption shape over a bond, so the underlying is a generic name rather than a currency                                                                              | BOND_OPTION (bond option implied vol).                  | expiry,smile,strike                |
+| swaption          | SWAPTION          | swaption          | RATE         | surface         | swaption_vol       | 6- or 7-segment: SWAPTION/RATE_LNVOL/CCY/EXPIRY/SWAP_TENOR/STRIKE, and the smile form with a marker ahead of the strike; the metric segment comes from the vol model, not from this table's ore_metric                                           | SWAPTION (swaption implied vol).                        | expiry,smile,strike                |
 
 * Enum brief
 
@@ -143,6 +144,24 @@ arrived is carried beside it, so a name reads back as it came.
 | quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
 | point      | std::optional<std::string>      | no        | point     |                        |
 | vol        | std::optional<volatility_surface_point> | no  |           |                        |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| maturity | std::optional<std::string> | string | The quoted instrument's own term: a swap's maturity, a deposit's or a curve pillar's end. |
+| expiry | std::optional<std::string> | string | A surface point's option expiry. |
+| tenor | std::optional<std::string> | string | The underlying's or the contract's term, for the families whose coordinate it is. |
+| contract_month | std::optional<std::string> | string | A future's delivery month. |
+| contract_code | std::optional<std::string> | string | A future's exchange-qualified contract code. |
+| strike | std::optional<std::string> | string | A surface point's fixed strike. |
+| delta | std::optional<std::string> | enum | The moneyness or delta convention the strike slot holds when it is not a number: atm, 25rr, ... |
+| smile | std::optional<std::string> | enum | The smile convention marker ORE writes between the tenor and the strike. |
 
 * Reject keys
 
@@ -282,6 +301,7 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | round_trip_ir_capfloor_normal_vol |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | round_trip_ir_capfloor_shift |
 | oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm | round_trip_ir_bond_option_vol |
+| oresmd://ir/eur?type=vol&quote=swaption&point=5y,2y,atm | round_trip_ir_swaption_named |
 
 ** Round-trip (extended)
 

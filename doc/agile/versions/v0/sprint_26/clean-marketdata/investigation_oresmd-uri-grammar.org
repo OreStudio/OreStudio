@@ -33,7 +33,7 @@ is the same defect seen from the database side, and it is recorded here too.
 Read, in this order:
 
 - =doc/knowledge/domain/market_data_urn.org= — the grammar's design record.
-- The thirteen quote-type models under
+- The twelve quote-type models under
   =projects/ores.marketdata/modeling/oresmd/= — the per-asset-class specification
   of every quote type, its =point_semantics=, its =qualifier_shape=, its query
   keys and their defaults.
@@ -50,7 +50,7 @@ Ran:
 - A temporary probe case in =oresmd_oresmd_projections_tests.cpp=, to print the
   identifier, the series identity and the datum identity of the two colliding
   keys. The probe was reverted after the run.
-- A census over the thirteen models: every quote type with its =point_semantics=,
+- A census over the twelve quote-type models: every quote type with its =point_semantics=,
   its =qualifier_shape=, and every =point==-shaped URI in its test tables.
 
 * Paths taken
@@ -306,7 +306,7 @@ projection and no longer written to the observation.
 
 ** The model change
 
-Each of the thirteen =*.org= quote-type models gains a =Coordinates= table:
+Each of the twelve =*.org= quote-type models gains a =Coordinates= table:
 
 | query_key | role | value_kind | order | required_when |
 |-----------+------+------------+-------+---------------|
@@ -356,7 +356,7 @@ and is not part of the clean standard. One unit per verifiable state:
 
 1. *This investigation* — the findings and the target grammar. Delivered.
 2. *Declare the coordinates in the models.* Add the =Coordinates= table and the
-   =role= attribute to the thirteen models; no generated code changes yet. A
+   =role= attribute to the twelve quote-type models; no generated code changes yet. A
    codegen test proves every =point=-bearing URI in the model test tables is
    expressible as declared keys.
 3. *Generate the grammar.* Identifiers, parser and writer from the tables.

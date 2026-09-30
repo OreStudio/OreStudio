@@ -5945,7 +5945,16 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     qts: list[dict[str, Any]] = []
     if qt_section:
         for row in _parse_org_table_rows(qt_section):
-            qts.append({k: v for k, v in row.items()})
+            row = {k: v for k, v in row.items()}
+            # The `coordinates` cell is the ordered list of coordinate query
+            # keys this quote type carries. The order is per type, because one
+            # key sits at different positions in different types (`tenor` is
+            # first for cds_index and second for index_cds_option).
+            row["coordinates"] = [
+                key.strip() for key in row.get("coordinates", "").split(",")
+                if key.strip()
+            ]
+            qts.append(row)
     result["quote_types"] = qts
 
     # --- Enum brief: the class enum's doc comment, verbatim (line breaks
@@ -6038,6 +6047,43 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         if fm.get("ccy_optional_for_fixing", "false") == "true":
             result["ccy_optional_for_fixing"] = True
     result["fields"] = fields
+
+    # --- Coordinates table: the dimensions an asset class's keys carry, as a
+    # declaration rather than as a comma-joined string. Every key a Quote types
+    # row lists must be declared here or be a field above; a key declared in
+    # both must agree on its cpp_type, so the two tables cannot drift.
+    coords_section = _section(doc.root, "Coordinates")
+    coordinate_keys: list[dict[str, Any]] = []
+    if coords_section:
+        for row in _parse_org_table_rows(coords_section):
+            key = row.get("query_key", "")
+            if not key:
+                continue
+            coordinate_keys.append({
+                "query_key": key,
+                "cpp_type": row.get("cpp_type", "std::string"),
+                "value_kind": row.get("value_kind", "string"),
+                "notes": row.get("notes", ""),
+            })
+    result["coordinate_keys"] = coordinate_keys
+
+    declared = {c["query_key"]: c for c in coordinate_keys}
+    field_types = {f["name"]: f["cpp_type"] for f in fields}
+    for field in fields:
+        if field["name"] in declared:
+            declared_type = declared[field["name"]]["cpp_type"]
+            if declared_type != field["cpp_type"]:
+                raise ValueError(
+                    f"{path.name}: '{field['name']}' is declared as "
+                    f"{declared_type} in Coordinates but {field['cpp_type']} in Fields"
+                )
+    for qt in qts:
+        for key in qt["coordinates"]:
+            if key not in declared and key not in field_types:
+                raise ValueError(
+                    f"{path.name}: quote type '{qt.get('enum_name')}' lists "
+                    f"coordinate '{key}', which is declared nowhere"
+                )
 
     # --- Per-struct doc comments: identifier/requirement briefs, in the
     # same " * " continuation scheme as the enum brief (the header

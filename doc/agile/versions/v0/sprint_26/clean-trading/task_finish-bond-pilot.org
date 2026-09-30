@@ -36,10 +36,10 @@ identity keys and the security split, because those touch every family.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR 4 merged, so the security keys are stable. |
-| Next         | Re-model the bond future against the current schema. |
-| Last touched | 2026-09-26                               |
+| Now          | The corpus sweep reads lost 0 and unexplained 0 in scope over the whole corpus; the KnockOutSwap round trips; the bond future matches v17; the eight residue elements are resolved; the underlyings table is recorded as out of scope |
+| Waiting on   | Nothing. PR 4 and PR 5 are merged, so the security keys are stable. |
+| Next         | The delete and add paths: one transaction in a custom repository method, per the note below |
+| Last touched | 2026-09-30                               |
 
 * Acceptance
 
@@ -130,6 +130,32 @@ rows the work touches.
 
 * Notes
 
+- *The delete and add paths are the next unit, and their shape is now
+  known.* =bond_instrument_service::delete_bond_instrument= removes the
+  header row alone, so every family row and any minted issue stay behind,
+  and =bond_instrument_service= is a generated file, so the fix belongs in
+  a custom repository method the model declares rather than in the service
+  body. What the family owns, read off
+  =projects/ores.trading/core/src/repository/parent_scoped_queries.cpp=:
+  the trade-keyed rows =bond_legs=, =bond_leg_amounts=, =bond_leg_rates=,
+  =bond_leg_amortizations=, =instrument_schedules=,
+  =instrument_schedule_dates=, =instrument_options=,
+  =instrument_option_premiums=, =instrument_option_exercise_fees=,
+  =instrument_option_payment_dates=, =instrument_strikes=,
+  =bond_forwards= and =bond_future_delivery_baskets=; the product rows
+  =bond_futures=, =bond_options=, =bond_repos= and =bond_trs=; and the
+  issue-keyed rows =bond_issue_legs= and its four children,
+  =bond_issue_call_dates= and =bond_issue_conversion_targets=. An issue is
+  shared by security id, so it goes only when no other instrument names it,
+  and three products mint one (BondFuture, Ascot and any product with no
+  =BondData=). The transaction primitive is
+  =ores.database/repository/bitemporal_operations.hpp='s
+  =session(...).and_then(begin_transaction).and_then(...).and_then(commit)=,
+  because each generated repository's =remove= commits its own. The add
+  path's three saves -- issue, instrument, product row -- become one
+  request carrying all three, which is the same custom-method work. The
+  acceptance allows a refusal with a stated reason instead, and the refusal
+  is the smaller half of the same change.
 - *The underlyings table is recorded as out of scope, with the reason
   (D26).* D21 settled its shape and left the second arm to the pilot. No
   bond product states an underlying: all eleven =underlyingTypes= sites in

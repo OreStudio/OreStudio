@@ -250,3 +250,38 @@ class; the workflow suite's recovery case flaked once under the parallel run and
 on its own, which is a timing test unrelated to this change; the drift check reports no
 drift for =marketdata= and none across the catalogue; and the codegen, SQL and
 documentation gates all pass.
+
+**The census's drifts, each fixed or deferred with its reason.** The census found seven,
+and re-reading the tree against them is what decides which still stand.
+
+- *The =series_subclass= three-way mismatch.* Fixed. The seed carries eighteen codes and
+  the classification rule model's sampler named fifteen; =prepayment=,
+  =transition_probability= and =index_fixing= were missing, and the rules use the last of
+  them for =FIXING=, so a generated sampler could emit a code the catalogue does not
+  hold. Both the sampler and the code table's doc examples now carry all eighteen.
+- *The =market_data_requirement.hpp= "seven" against ten.* No longer stands. The file's
+  variant lists twelve alternatives and carries no count claim, so the census's finding
+  was measured before a later change and has nothing left to fix.
+- *The stale =asset_class= in =ores.marketdata.puml=.* Deferred. The component diagram is
+  hand-authored, and it is stale in several places at once: an =enum asset_class= the
+  code deleted, an =asset_class= class beside it, and correlation identifier fields the
+  struct no longer carries. A refresh pass has to redraw it against the current types and
+  re-render its PNG, which is its own unit rather than a line edit here.
+- *The DQ artefact headers' counts.* Deferred to the unit that generates the DQ rows.
+  The headers claim 56 definitions, 108 mappings and 31 code domains against 107, 161 and
+  40; rewriting the numbers by hand would only reset the same clock, and the generation
+  that ends the hand sync is the next unit.
+- *The =ore_asset_class= =rates= and =cross_asset= spellings.* Deferred, because the
+  census's reading is wrong. The file declares ORE's own eight-code asset-class
+  vocabulary under the =ORE_ASSET_CLASS= coding scheme, where =rates= and =cross_asset=
+  are ORE's spellings rather than stale copies of the refdata taxonomy. Whether that
+  artefact should carry the refdata codes instead is a mapping decision the catalogue
+  now makes possible but does not settle.
+- *The byte-identical sampler arrays in two models.* Deferred. The classification rule
+  and feed binding models each carry the same seven-element array in their generator
+  blocks. Sharing it means a codegen construct the tree does not have -- a generated
+  constant both read, or a field group -- and the array is test data rather than the
+  taxonomy, so the duplication is recorded rather than refactored under this task.
+- *The oresmd reject-URI list written three times.* No longer a drift. The two of the
+  three are the template and its tangle source, which are the literate-codegen pair by
+  construction, and the third is the test generated from them.

@@ -41,9 +41,12 @@ import type {
     ProvisionPartyResult,
     ProvisionTenantRequest,
     ProvisionTenantResult,
+    RegistrationPolicyView,
     RetryWorkflowInstanceResult,
     LeiEntityChoice,
     SeedProfileChoice,
+    SignupRequest,
+    SignupResult,
     WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 
@@ -60,6 +63,10 @@ export interface JourneyServer {
     readonly switchParty: (partyId: string) => Promise<void>;
     readonly signOut: () => Promise<void>;
     readonly passwordPolicy: () => Promise<PasswordPolicy>;
+    /** What the deployment offers somebody who is not in it yet. */
+    readonly registrationPolicy: () => Promise<RegistrationPolicyView>;
+    /** Registers an account, and answers with the state it was created in. */
+    readonly signup: (request: SignupRequest) => Promise<SignupResult>;
     readonly seedProfiles: () => Promise<readonly SeedProfileChoice[]>;
     /** The entities matching what a person typed, which the read matches. */
     readonly leiEntities: (search: string) => Promise<readonly LeiEntityChoice[]>;
@@ -86,6 +93,8 @@ export function useJourneyServer(): JourneyServer {
             switchParty,
             signOut,
             passwordPolicy: api.passwordPolicy,
+            registrationPolicy: api.registrationPolicy,
+            signup: api.signup,
             seedProfiles: api.seedProfiles,
             leiEntities: api.leiEntities,
             provision: api.provisionTenant,

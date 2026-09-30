@@ -116,18 +116,21 @@ account is readable by the caller.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Open sign-up | Ask whether the deployment is provisioned | =iam.v1.bootstrap.status= | exists |
-| Open sign-up | Read =system.user_signups= to decide whether to offer the form | none | missing |
+| Open sign-up | Read the deployment's registration policy, which decides whether a form is offered at all | =iam.v1.auth.registration-policy= | exists |
 | Submit | Create the account, its login record and its baseline role | =iam.v1.auth.signup= | exists |
-| Refusals | Say why registration was refused | =signup_response.message= | exists |
+| Refusals | Say which refusal it is | =signup_response.error_code= | exists |
 | The account cannot sign in | Refuse an account that works in no party | carried by =iam.v1.auth.login= | exists |
 | Fix it | Give the new account a party | =iam.v1.account_parties.put= | partial |
 
 =iam.v1.auth.signup= comes from
 [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]]: the
-request carries =principal=, =password= and =email=, and the response carries
-=success=, =message= and =account_id=. It is one of the few subjects that needs
-no session, because it is what a person without a session uses.
-=iam.v1.bootstrap.status= comes from
+request carries =principal=, =password=, =email= and =hostname=, and the
+response carries =success=, =message=, =error_code=, =account_id=,
+=account_status=, =party_id= and =role_id=. It is one of the few subjects that
+needs no session, because it is what a person without a session uses.
+=iam.v1.auth.registration-policy= comes from
+[[id:42696101-091F-49BE-92A2-061B7787C227][ores.iam.registration_policy_messages]],
+and =iam.v1.bootstrap.status= from
 [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]].
 
 =partial= on =iam.v1.account_parties.put= means the junction subject exists —
@@ -138,54 +141,29 @@ somebody else's action.
 
 * What is missing
 
-1. *The web client cannot sign up at all.* The generator emits a sign-up
-   protocol for the browser, but =wire-protocol/src/browser.ts= does not export
-   it and =wire-protocol/src/operations.ts= has no entry for it, so the browser
-   cannot call =iam.v1.auth.signup=. Commit =e47043269f= also deleted
-   =SignUpPage.tsx=, which was a destination rather than a form: it said accounts
-   come from an administrator and offered no fields. The candidate is a sign-up
-   call in the wire client and a real form. Server-side, the subject exists, and
-   the external HTTP gateway answers it at =POST /api/v1/iam/auth/signup=,
-   registered in
-   =projects/ores.http/iam/src/routes/iam/signup_routes.cpp= at line 124. The
-   browser never reaches that gateway, and the BFF holds no sign-up route,
-   which is how the gap stayed invisible.
-2. *The screen cannot read the flag that gates it.* =system.user_signups= lives
-   in the variability settings, and the web protocol generates no settings
-   subject at all: the generated set covers =iam=, =refdata=, =dq=, =compute=
-   and the rest, but not =variability=. So the screen cannot know whether the
-   tenant allows registration, and the person learns the answer only by
-   submitting. The candidate is a readable tenant policy surface — a
-   public settings read for the flags that shape the door, or a field on the
-   bootstrap status.
-3. *A new account has no party, and nothing closes that gap.* Registration
-   creates the account and grants the =Viewer= role, and stops. The account is
-   refused at sign-in until an administrator adds it to a party. The candidate
-   is one of: registration places the account in a party the tenant nominates as
-   the default for new sign-ups, or the confirmation screen states what happens
-   next and to whom, or an approval step creates the association. This is the
-   journey's central gap: as built, registration alone does not get a person to
-   work.
-4. *The stated baseline and the built behaviour disagree.* The server assigns the
-   =Viewer= role at registration, so a new account does have a role. The
-   intended model is that an account gains a role when an administrator gives it
-   one. Either the grant is deliberate and should be documented as the baseline
-   every self-registered account receives, or it should be removed. The journey
-   cannot say which until that is decided.
-5. *The approval flag cannot be turned on.* =system.signup_requires_authorization=
-   is defined, and the sign-up service refuses registration outright when it is
-   set, with *Signup authorization workflow is not yet implemented.* Turning the
-   flag on therefore closes the door rather than gating it. The candidate is the
-   approval workflow itself, or the removal of the flag until it exists.
-6. *No confirmation reaches the person.* Registration returns an account id and
-   nothing else: no email, no verification link, no notice to an administrator
-   that somebody is waiting. A person can register and no one in the tenant ever
-   learns of it. The candidate is a notification on account creation, and an
-   email-verification step if the tenant wants one.
-7. *No rate limit on the door.* =rate-limit.ts= in the BFF guards the login
-   route. Registration is open to anyone who can reach the address and has no
-   comparable guard, so a tenant with sign-ups enabled can be filled with
-   accounts. The candidate is the same limiter on the sign-up route.
+The door itself is built. The policy read answers, the BFF serves
+=GET /api/registration-policy= and =POST /api/signup=, the wire client reaches
+both, and the screen renders the closed notice or the rail and states which of
+the two accounts a registration produced. Three things it still waits on.
+
+1. *Nothing releases a waiting account.* A tenant that nominates no default
+   party produces a =pending= account, and the person is told so. What does not
+   exist is the administrator's side: nothing lists the pending accounts and
+   nothing gives one its first party. The requirement is stated in
+   [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding
+   Defaults]] and the screen belongs to
+   [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]].
+2. *The approval flag closes the door rather than gating it.*
+   =system.signup_requires_authorization= is read, and a deployment that sets it
+   is refused with =signup_requires_authorization= and told why: the door says
+   so rather than pretending an approval happened. No approval workflow exists,
+   and it is a workflow in =ores.workflow= rather than part of the door.
+3. *No confirmation reaches the person.* Registration answers the caller and
+   nothing else: no email, no verification link, and no notice to an
+   administrator that somebody is waiting. A person can register and nobody in
+   the tenant learns of it, which is the sharper half of the gap above. The
+   candidate is a notification on account creation, and an email-verification
+   step if the tenant wants one.
 
 * Related journeys
 

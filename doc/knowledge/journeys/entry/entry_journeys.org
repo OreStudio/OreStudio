@@ -147,7 +147,8 @@ that branches on the message breaks the first time a sentence is improved.
 ** What this note commits the implementation to
 
 The change table is [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and onboarding defaults]]. Read against this
-page, the parts that touch the interaction are:
+page, the parts that touch the interaction are these, and every one of them has
+landed:
 
 - =iam.v1.auth.registration-policy= is a new read, and the door asks it first.
 - =iam.v1.auth.signup= gains the flag reads, the tenant resolution, the status
@@ -157,10 +158,12 @@ page, the parts that touch the interaction are:
 - The BFF gains two routes, =GET /api/registration-policy= and
   =POST /api/signup=, the second under the same limiter family as the first, and
   forwards the hostname on both Entry paths.
-- The wire protocol gains the exports and the operation entries those calls need.
-  It has the sign-up schemas generated already; the browser cannot reach them.
-- Every Entry dialog carries the same rail and the same splash header, and the
-  registration door is drawn on =JourneyPage= rather than on a rail of its own.
+- The wire protocol exports the sign-up and policy schemas and carries the two
+  calls, so the browser reaches them.
+- Every Entry dialog carries the same splash header, and the registration door
+  is drawn on =JourneyPage= rather than on a rail of its own. The sign-in dialog
+  carries the banner above its work and no rail, because it has one step rather
+  than a sequence.
 
 * See also
 

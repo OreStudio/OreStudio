@@ -75,6 +75,7 @@ const authenticated: SessionState = { status: 'authenticated', session };
 const journey = <p>First run journey</p>;
 const newTenantJourney = <p>New tenant journey</p>;
 const newPartyJourney = <p>New party journey</p>;
+const signUpJourney = <p>Registration door</p>;
 
 function render(
     path: string,
@@ -91,6 +92,7 @@ function render(
                     journey={journey}
                     newTenantJourney={newTenantJourney}
                     newPartyJourney={newPartyJourney}
+                    signUpJourney={signUpJourney}
                     journeyInProgress={false}
                     onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                     onChooseParty={async () => undefined}
@@ -148,6 +150,22 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('type="password"');
     });
 
+    it('carries the banner on the sign-in dialog, above the work', () => {
+        const html = render('/login', ready, anonymous);
+
+        // The same element the setup journeys carry, at the ratio nothing may
+        // crop, and it stands above the form rather than inside it.
+        expect(html).toContain('width="964"');
+        expect(html).toContain('height="323"');
+        expect(html.indexOf('width="964"')).toBeLessThan(html.indexOf('current-password'));
+    });
+
+    it('offers the way to the registration door from the sign-in dialog', () => {
+        const html = render('/login', ready, anonymous);
+
+        expect(html).toContain('/signup');
+    });
+
     it('does not render the application to a visitor', () => {
         const html = render('/', ready, anonymous);
 
@@ -202,6 +220,27 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('/tenants/new');
         expect(html).toContain('New party');
         expect(html).toContain('/parties/new');
+    });
+});
+
+describe('the registration door', () => {
+    it('is offered to a visitor at its own route', () => {
+        const html = render('/signup', ready, anonymous);
+
+        expect(html).toContain('Registration door');
+    });
+
+    it('is not offered to somebody who already has an account to sign in with', () => {
+        const html = render('/signup', ready, authenticated);
+
+        expect(html).not.toContain('Registration door');
+    });
+
+    it('is not offered while the installation has nobody in it', () => {
+        const html = render('/signup', inBootstrap, anonymous);
+
+        expect(html).toContain('First run journey');
+        expect(html).not.toContain('Registration door');
     });
 });
 

@@ -166,6 +166,15 @@ export const apiErrorSchema = z.object({
         'invalid-request',
         'bootstrap-mode',
         'bootstrap-complete',
+        'signups-disabled',
+        'signup-requires-authorization',
+        'no-registration-destination',
+        'no-default-role',
+        'username-taken',
+        'email-taken',
+        'weak-password',
+        'signup-refused',
+        'too-many-requests',
         'upstream-unavailable',
         'upstream-timeout',
         'internal',
@@ -173,6 +182,58 @@ export const apiErrorSchema = z.object({
     message: z.string(),
 });
 export type ApiError = z.infer<typeof apiErrorSchema>;
+
+/**
+ * What the deployment offers somebody who is not in it yet.
+ *
+ * The door reads this before it offers a form, so the answer is a value rather
+ * than an error: a deployment that refuses registrations is a state the screen
+ * states, not a failure it recovers from. `errorCode` carries the refusal when
+ * there is one, and `usableNow` says whether a registration can sign in without
+ * an administrator.
+ */
+export const registrationPolicyViewSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    errorCode: z.string(),
+    signupsEnabled: z.boolean(),
+    authorizationRequired: z.boolean(),
+    tenantId: z.string(),
+    tenantName: z.string(),
+    partyId: z.string(),
+    partyName: z.string(),
+    roleId: z.string(),
+    roleName: z.string(),
+    usableNow: z.boolean(),
+});
+export type RegistrationPolicyView = z.infer<typeof registrationPolicyViewSchema>;
+
+/**
+ * A registration.
+ *
+ * The address the person arrived at is not a field here: the BFF forwards the
+ * hostname the request was served at, because the tenant is resolved from the
+ * address rather than typed into the form.
+ */
+export const signupRequestSchema = z.object({
+    principal: z.string().min(1),
+    password: z.string().min(1),
+    email: z.string().min(1),
+});
+export type SignupRequest = z.infer<typeof signupRequestSchema>;
+
+/** What a registration produced: the account, and what it waits for. */
+export const signupResultSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    errorCode: z.string(),
+    accountId: z.string(),
+    /** `active` when it can sign in at once, `pending` when it cannot. */
+    accountStatus: z.string(),
+    partyId: z.string(),
+    roleId: z.string(),
+});
+export type SignupResult = z.infer<typeof signupResultSchema>;
 
 /** The account's active party, as the handover carries it. */
 export { activePartySchema };

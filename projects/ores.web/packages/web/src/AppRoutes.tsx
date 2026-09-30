@@ -28,6 +28,7 @@ import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { NewPartyJourney } from './journeys/NewPartyJourney.js';
+import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
@@ -73,6 +74,14 @@ export interface AppRoutesProps {
      * rather than asking which one.
      */
     readonly newPartyJourney: ReactNode;
+    /**
+     * The registration door, which a visitor with no account runs.
+     *
+     * It is a route rather than a gate for the same reason the other two are:
+     * the installation is set up, and this is a screen a person arrives at from
+     * the sign-in dialog and leaves for it.
+     */
+    readonly signUpJourney: ReactNode;
     /** Whether that journey is running, which keeps the browser on its rail. */
     readonly journeyInProgress: boolean;
     readonly onSignIn: SignInPageProps['onSignIn'];
@@ -87,6 +96,7 @@ export function AppRoutes({
     journey,
     newTenantJourney,
     newPartyJourney,
+    signUpJourney,
     journeyInProgress,
     onSignIn,
     onChooseParty,
@@ -139,6 +149,18 @@ export function AppRoutes({
                     ) : (
                         <PublicShell serverVersion={gate.version}>
                             <SignInPage onSignIn={onSignIn} onChooseParty={onChooseParty} />
+                        </PublicShell>
+                    )
+                }
+            />
+            <Route
+                path="/signup"
+                element={
+                    session.status === 'authenticated' ? (
+                        <Navigate to="/" replace />
+                    ) : (
+                        <PublicShell wide serverVersion={gate.version}>
+                            {signUpJourney}
                         </PublicShell>
                     )
                 }
@@ -218,6 +240,7 @@ export function ConnectedApp(): ReactNode {
                     onFinished={() => navigate('/')}
                 />
             }
+            signUpJourney={<SignUpJourney server={server} />}
             journeyInProgress={journeyInProgress}
             onSignIn={signIn}
             onChooseParty={chooseParty}

@@ -27,6 +27,8 @@ import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstra
 import { subjects as seedProfileSubjects } from './generated/iam/protocol/seed_profile_protocol.js';
 import { subjects as seedProfileParameterSubjects } from './generated/iam/protocol/seed_profile_parameter_protocol.js';
 import { subjects as seedProfileStepSubjects } from './generated/iam/protocol/seed_profile_step_protocol.js';
+import { subjects as registrationPolicySubjects } from './generated/iam/protocol/registration_policy_protocol.js';
+import { subjects as signupSubjects } from './generated/iam/protocol/signup_protocol.js';
 import { subjects as tenantProvisioningSubjects } from './generated/iam/protocol/tenant_provisioning_protocol.js';
 import type {
     ProvisionPartyCommand,
@@ -74,6 +76,8 @@ export const SUBJECTS = {
     workflowInstanceSteps: 'workflow.v1.instances.steps',
     retryWorkflowInstance: 'workflow.v1.instances.retry',
     passwordPolicy: 'iam.v1.auth.password-policy',
+    registrationPolicy: registrationPolicySubjects.registration_policy_request,
+    signup: signupSubjects.signup_request,
     leiEntitiesSummary: 'dq.v1.lei-entities.summary',
     leiEntitiesSearch: 'dq.v1.lei-entities.search',
 } as const;
@@ -1184,5 +1188,107 @@ export function toPasswordPolicy(reply: z.infer<typeof passwordPolicyReplySchema
         requireDigit: reply.require_digit,
         requireSpecial: reply.require_special,
         specialChars: reply.special_chars,
+    };
+}
+
+/**
+ * What the deployment offers somebody who is not in it yet.
+ *
+ * The door asks this before it offers a form, because a deployment that refuses
+ * registrations should say so rather than accept a form and refuse it. The
+ * tenant is resolved from the address the request arrived at, so it is a field
+ * of the request rather than something the person types.
+ */
+export const registrationPolicyRequestSchema = z.object({
+    hostname: z.string().default(''),
+});
+
+export const registrationPolicyReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    error_code: z.string().default(''),
+    signups_enabled: z.boolean().default(false),
+    authorization_required: z.boolean().default(false),
+    tenant_id: z.string().default(''),
+    tenant_name: z.string().default(''),
+    party_id: z.string().default(''),
+    party_name: z.string().default(''),
+    role_id: z.string().default(''),
+    role_name: z.string().default(''),
+    usable_now: z.boolean().default(false),
+});
+
+export type RegistrationPolicy = {
+    readonly success: boolean;
+    readonly message: string;
+    readonly errorCode: string;
+    readonly signupsEnabled: boolean;
+    readonly authorizationRequired: boolean;
+    readonly tenantId: string;
+    readonly tenantName: string;
+    readonly partyId: string;
+    readonly partyName: string;
+    readonly roleId: string;
+    readonly roleName: string;
+    readonly usableNow: boolean;
+};
+
+export function toRegistrationPolicy(
+    reply: z.infer<typeof registrationPolicyReplySchema>,
+): RegistrationPolicy {
+    return {
+        success: reply.success,
+        message: reply.message,
+        errorCode: reply.error_code,
+        signupsEnabled: reply.signups_enabled,
+        authorizationRequired: reply.authorization_required,
+        tenantId: reply.tenant_id,
+        tenantName: reply.tenant_name,
+        partyId: reply.party_id,
+        partyName: reply.party_name,
+        roleId: reply.role_id,
+        roleName: reply.role_name,
+        usableNow: reply.usable_now,
+    };
+}
+
+/** A registration to make, with the address the person arrived at. */
+export const signupCommandSchema = z.object({
+    principal: z.string().default(''),
+    password: z.string().default(''),
+    email: z.string().default(''),
+    hostname: z.string().default(''),
+});
+
+export const signupReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    error_code: z.string().default(''),
+    account_id: z.string().default(''),
+    account_status: z.string().default(''),
+    party_id: z.string().default(''),
+    role_id: z.string().default(''),
+});
+
+export type SignupOutcome = {
+    readonly success: boolean;
+    readonly message: string;
+    readonly errorCode: string;
+    readonly accountId: string;
+    /** The state the account was created in: `active` or `pending`. */
+    readonly accountStatus: string;
+    readonly partyId: string;
+    readonly roleId: string;
+};
+
+export function toSignupOutcome(reply: z.infer<typeof signupReplySchema>): SignupOutcome {
+    return {
+        success: reply.success,
+        message: reply.message,
+        errorCode: reply.error_code,
+        accountId: reply.account_id,
+        accountStatus: reply.account_status,
+        partyId: reply.party_id,
+        roleId: reply.role_id,
     };
 }

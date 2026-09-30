@@ -101,9 +101,38 @@ const fr: SourceCatalogue = {
 
     signUp: {
         title: "S'inscrire",
-        notAvailable:
-            "Les comptes sont créés par un administrateur ou via l'assistant de provisioning du client de bureau. L'inscription en libre-service n'est pas encore disponible.",
         haveAccount: 'Vous avez déjà un compte ?',
+        detailsTitle: 'Vos informations',
+        detailsLead: 'Le compte avec lequel vous vous connecterez.',
+        principal: "Nom d'utilisateur",
+        email: 'Courriel',
+        password: 'Mot de passe',
+        confirmation: 'Confirmer le mot de passe',
+        mismatch: 'Les deux mots de passe ne correspondent pas.',
+        review: 'Vérifier',
+        reviewTitle: 'Vérification',
+        reviewLead: 'Ce qui sera créé.',
+        tenant: 'Locataire',
+        party: 'Partie',
+        role: 'Rôle',
+        noParty: 'Pas encore. Un administrateur vous en ajoutera une.',
+        usableNow: 'Vous pourrez vous connecter dès que le compte existera.',
+        pending:
+            'Un administrateur doit vous ajouter à une partie avant que vous puissiez vous connecter.',
+        create: 'Créer le compte',
+        createFailed: "Le compte n'a pas été créé.",
+        createdTitle: 'Compte créé',
+        waitingTitle: 'Compte en attente',
+        createdLead:
+            'Votre compte existe. Connectez-vous avec le mot de passe que vous avez choisi.',
+        waitingLead: 'Votre compte existe et attend un administrateur.',
+        waitingFor: 'Il attend une partie où travailler.',
+        received: 'Il détient le rôle {role} dans {tenant}.',
+        goToSignIn: 'Se connecter',
+        closedTitle: "L'inscription est fermée",
+        closedFallback: "Ce déploiement n'accepte pas les inscriptions.",
+        unavailable: "Le déploiement n'a pas pu dire s'il accepte les inscriptions.",
+        tryAgain: 'Réessayer',
     },
 
     accounts: {

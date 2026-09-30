@@ -49,6 +49,31 @@ import type {
 const POLL_INTERVAL_MS = 1500;
 
 /**
+ * The project's banner.
+ *
+ * One element rather than one per screen: the setup journeys carry it as
+ * `JourneyPage`'s header, and every Entry dialog carries it above its work, so
+ * a person sees the same artwork at every door into the deployment. A screen
+ * that draws its own banner is a defect this exists to prevent.
+ *
+ * The artwork's own dimensions are stated, so the panel reserves the room
+ * before the image arrives and the width it has scales it by the ratio
+ * 964:323. Nothing here states a height: a height that is not the ratio's is
+ * what cut the top and the foot off the wordmark.
+ */
+export function JourneySplash(): ReactNode {
+    return (
+        <img
+            src={heroSplash}
+            alt=""
+            width={964}
+            height={323}
+            className="h-auto w-full rounded-md border border-line"
+        />
+    );
+}
+
+/**
  * What the panel says above every step of a tenant journey.
  *
  * The splash frames the panel, and once a starting point is chosen the tenant
@@ -56,10 +81,6 @@ const POLL_INTERVAL_MS = 1500;
  * hand-over are all about that tenant, and a person who looked away should not
  * have to walk back up the rail to remember which one it is. Both tenant
  * journeys show it, so it lives with the parts they share.
- *
- * The lockup keeps its own proportions. The artwork is wider than it is tall
- * and the panel is wider than the artwork, so a band of a fixed height crops
- * the top and the foot off the wordmark.
  */
 export function JourneyHeader({ tenant }: { readonly tenant: NewTenant }): ReactNode {
     const tenantName = tenant.details?.name ?? '';
@@ -74,20 +95,7 @@ export function JourneyHeader({ tenant }: { readonly tenant: NewTenant }): React
     const builtFrom = tenantName !== '' ? profileName : '';
     return (
         <div>
-            {/*
-             * The artwork's own dimensions are stated, so the panel reserves
-             * the room before the image arrives, and the width the panel has
-             * scales it by the ratio 964:323. Nothing here crops it or states a
-             * height: a height that is not the ratio's is what cut the top and
-             * the foot off the wordmark.
-             */}
-            <img
-                src={heroSplash}
-                alt=""
-                width={964}
-                height={323}
-                className="h-auto w-full rounded-md border border-line"
-            />
+            <JourneySplash />
             {tenant.profile !== undefined && (
                 <div className="mt-3 flex items-baseline justify-between gap-3 text-sm">
                     <span className="truncate font-medium">{heading}</span>

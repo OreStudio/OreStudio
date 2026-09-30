@@ -28,6 +28,11 @@
 
 namespace ores::ore::workflow {
 
+// The budgets a step states belong to the engine's vocabulary, so a definition
+// reads them from one place rather than inventing its own numbers.
+using ores::workflow::service::data_step_timeout;
+using ores::workflow::service::write_step_timeout;
+
 /**
  * @brief Registers the ore_import_workflow definition.
  *
@@ -70,6 +75,9 @@ inline void register_ore_import_workflow(ores::workflow::service::workflow_regis
                             "domain entities, and persist all to repositories.";
             s.command_subject =
                 std::string(ores::ore::messaging::ore_import_execute_request::nats_subject);
+            // The step fetches an archive, parses XML and persists every entity
+            // it holds, so its budget is the data budget.
+            s.timeout = data_step_timeout;
             s.compensation_subject =
                 std::string(ores::ore::messaging::ore_import_rollback_request::nats_subject);
 

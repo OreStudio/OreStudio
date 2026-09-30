@@ -1,0 +1,88 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A step's deadline, and the answer that arrives too late
+
+actor "Person" as P
+participant "workflow engine" as E
+participant "domain service" as S
+database "store" as D
+
+P -> E : start a run
+E -> D : instance in_progress, step 0 in_progress
+E -> D : command_published_at = now
+note right of E
+  The deadline is measured from
+  command_published_at, so it asks
+  "how long has this dispatch been
+  silent", not "how old is this run".
+  The run carries the budget its
+  definition stated, so a later build
+  cannot expire a run started under
+  a longer one.
+end note
+E -> S : step command
+
+alt the service answers inside its budget
+    S -> E : step completed
+    E -> D : step completed
+    E -> S : the next step's command
+else the service is silent past its budget
+    note over E
+        A pass every 30s looks for a step
+        whose command was published more
+        than its budget ago. One pass, one
+        step, one run: a step no longer
+        in_progress is invisible to the next.
+    end note
+    E -> D : step failed\n"The step did not answer within 15m\n of its command being published (subject ...);\n it has been silent for 15m 30s. ..."
+    E -> D : run failed
+    note right of E
+        A silent step is stopped, never
+        rolled back, whatever the definition's
+        failure policy declares: a step that
+        reported failure did nothing, and a
+        step that went silent is a step whose
+        work is unknown. Rolling back a run
+        whose work was in fact done would be
+        the worse guess.
+    end note
+    E -> P : the rail reads a failed step, and why
+    P -> E : retry the step
+    E -> D : step in_progress again, error cleared
+    E -> S : the step's command, under its own step id
+    note over S
+        The step id is the idempotency key, so a
+        service that had already finished replays
+        the outcome it holds instead of doing the
+        work twice.
+    end note
+else the service answers after the deadline
+    S -> E : step completed (late)
+    E -> D : nothing: the step is no longer in_progress
+    note over E
+        The engine keeps the failure it recorded,
+        because that is the record a person was
+        shown, and it logs the arrival as an answer
+        that came too late rather than as a
+        duplicate. One retry advances the run.
+    end note
+end
+
+@enduml

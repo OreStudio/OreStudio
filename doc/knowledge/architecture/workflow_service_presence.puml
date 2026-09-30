@@ -1,0 +1,62 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title How the engine knows a service is gone
+
+start
+
+:engine publishes a step command to a subject;
+
+note right
+  The bus drops a command whose subject has
+  no subscriber, and says nothing about it.
+  From the engine's side a dead service and a
+  slow one are the same silence, which is why
+  the deadline decides and presence only
+  explains.
+end note
+
+:engine waits, and each pass asks\n"has this dispatch been silent\nlonger than its budget?";
+
+if (past the budget?) then (no)
+    :keep waiting;
+    stop
+else (yes)
+    :fail the step, naming the subject\nand how long it has been silent;
+    :read what the engine knows about\nthe component that owns that subject;
+    note right
+      Every service publishes a heartbeat, and the
+      engine keeps the last time it heard from each.
+      The component is the subject's first token:
+      marketdata.v1.… belongs to ores.marketdata.service.
+    end note
+    if (heard from it at all?) then (no)
+        :"Nothing has reported as the marketdata\nservice since this engine started, so the\ncommand may have had no handler.";
+    else (yes)
+        if (reporting when the command\nwas published?) then (no)
+            :"The marketdata service was not reporting\nwhen the command was published: it last\nreported 11m 3s before it.";
+        else (yes)
+            :"The marketdata service was still reporting\nwhen the command was published, so the command\nreached a service that did not finish the step.";
+        endif
+    endif
+    :stop the run with that reason, so a person\nreads a cause and not a step that looks busy;
+    stop
+endif
+
+@enduml

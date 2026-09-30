@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: prototype/audit-sign-ins
-#+pr: 2434
+#+pr: 2448
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -114,6 +114,7 @@ The browser reaches none of them: the BFF is its only HTTP surface.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2448][#2448]] | [agile] Record the accepted credentials variants |
 | [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
 
 * Review

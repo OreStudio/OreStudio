@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: prototype/protect-my-account
-#+pr: 2434
+#+pr: 2448
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -110,6 +110,7 @@ states each one, and the prototype decides how.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2448][#2448]] | [agile] Record the accepted credentials variants |
 | [[https://github.com/OreStudio/OreStudio/pull/2434][#2434]] | [agile] Record the credentials prototypes |
 
 * Review

@@ -923,7 +923,7 @@ std::string workflow_engine::deadline_failure_text(const domain::workflow_step& 
 
 void workflow_engine::start_deadline_watch() {
     deadline_watch_ =
-        std::jthread([this](std::stop_token stop) {
+        ores::platform::concurrency::stoppable_thread([this](std::stop_token stop) {
             BOOST_LOG_SEV(lg(), info)
                 << "Deadline watch started: a step that outlives the deadline its run states is "
                    "failed every "

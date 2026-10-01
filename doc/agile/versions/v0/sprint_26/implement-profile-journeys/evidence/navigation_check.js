@@ -93,12 +93,12 @@ const checks = [
     ['?variant=H&actor=admin&state=home', 'class="appnav"', 'the areas sit in the header'],
     ['?variant=H&actor=admin&state=home', 'class="groupgrid"', 'the area landing carries the journeys as cards'],
     ['?variant=H&actor=admin&state=home', 'People', 'the people scope is an area of its own'],
-    ['?variant=H&actor=admin&state=home&area=Tenant', 'Starts a run', 'a full-screen journey is offered on the area landing'],
+    ['?variant=H&actor=admin&state=home&area=Tenant&mode=tenant', 'Starts a run', 'a full-screen journey is offered on the area landing'],
     ['?variant=H&actor=admin&state=journey&screen=%2Fprofile', 'My profile', 'a journey runs under the areas'],
     ['?variant=H&actor=admin&state=home&area=People', 'Draw the reporting line', 'people holds the journeys about other people'],
     ['?variant=H&actor=admin&state=home&area=People', 'Audit sign-ins', 'people holds the audit of who signed in'],
-    ['?variant=H&actor=admin&state=home&area=Tenant', 'Shape the role catalogue', 'the tenant holds the role catalogue'],
-    ['?variant=H&actor=admin&state=home&area=Tenant', 'Tune the tenant', 'the tenant holds the tenancy'],
+    ['?variant=H&actor=admin&state=home&area=Tenant&mode=tenant', 'Shape the role catalogue', 'the tenant holds the role catalogue'],
+    ['?variant=H&actor=admin&state=home&area=Tenant&mode=tenant', 'Tune the tenant', 'the tenant holds the tenancy'],
     ['?variant=H&actor=admin&state=home&area=Reference%20Data', 'Reference Data', 'the area whose journeys are not extracted is still named'],
     ['?variant=H&actor=admin&state=home&area=Reference%20Data', 'No journeys have been extracted', 'an empty area says so rather than inventing screens'],
 
@@ -108,7 +108,16 @@ const checks = [
     ['?variant=H&actor=admin&state=home&open=1', 'Rescue access', 'the administrator keeps the avatar menu too'],
     ['?variant=H&actor=member&state=home&open=1', 'Present myself', 'the avatar carries the journeys about me'],
     ['?variant=H&actor=member&state=home&open=1', 'Protect my account', 'the avatar carries my own security'],
-    ['?variant=H&actor=member&state=home&open=1', 'Choose where I work', 'the avatar carries where I work']
+    ['?variant=H&actor=member&state=home&open=1', 'Choose where I work', 'the avatar carries where I work'],
+    ['?variant=H&actor=admin&state=home&mode=tenant', 'Tenant administration', 'the mode is named in the header'],
+    ['?variant=H&actor=admin&state=home&mode=tenant', 'Shape the role catalogue', 'the tenant mode holds the role catalogue'],
+    ['?variant=H&actor=admin&state=home&mode=tenant', 'Tune the tenant', 'the tenant mode holds the tenancy'],
+    ['?variant=H&actor=admin&state=home&mode=system', 'System administration', 'the system mode is its own context'],
+    ['?variant=H&actor=admin&state=home&mode=system', 'First run', 'the system mode holds standing an installation up'],
+    ['?variant=H&actor=admin&state=home&mode=system', 'New tenant', 'the system mode holds creating a tenant'],
+    ['?variant=H&actor=admin&state=home&mode=tenant', 'New party', 'the tenant mode holds standing up a party'],
+    ['?variant=H&actor=admin&state=home&open=1', 'Switch mode', 'the person who may enter more than one mode is offered the switch'],
+    ['?variant=H&actor=admin&state=home&mode=system&open=1', 'Application', 'the switch leads back to the application']
 ];
 
 for (const [search, needle, what] of checks) {
@@ -142,7 +151,8 @@ for (const [search, needle, what] of [
     ['?variant=H&actor=admin&state=home', 'class="side"', 'the two-axis model has no sidebar'],
     ['?variant=H&actor=admin&state=home', 'Administration', 'administration is not an area'],
     ['?variant=H&actor=member&state=home&open=1', 'Rescue access', 'a member is not offered an administrator journey under the avatar'],
-    ['?variant=H&actor=member&state=home&open=1', 'Audit sign-ins', 'a member is not offered the sign-in audit']
+    ['?variant=H&actor=member&state=home&open=1', 'Audit sign-ins', 'a member is not offered the sign-in audit'],
+    ['?variant=H&actor=member&state=home&open=1', 'Switch mode', 'a member has one mode and no switch']
 ]) {
     if (run(search).app.includes(needle)) {
         console.log(`FAIL ${search}: found "${needle}" -- ${what}`);
@@ -150,6 +160,6 @@ for (const [search, needle, what] of [
     }
 }
 
-console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 8 + 13} promises`);
+console.log(`rendered ${checked} model/actor/state combinations and ${checks.length + 12 + 14} promises`);
 console.log(failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);

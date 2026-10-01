@@ -16,6 +16,11 @@ off; the account menu still opens its menu; every model reaches the same
 journey screen; the today state carries only what has been built, and a member
 with nothing today is told so; and the narrow state is the narrow shell.
 
+The modes are asserted as well as drawn: the tenant mode holds the role
+catalogue, the tenancy and standing up a party; the system mode holds creating a
+tenant and standing an installation up; the switch is offered to the person who
+may enter more than one mode and to nobody else.
+
 The two-axis model has its own promises: the areas sit in the header and the
 journeys are cards on the area landing; it has no sidebar, because the cards
 already say what one would; People holds the journeys about other people and
@@ -38,5 +43,5 @@ The screenshots beside this file are the models in Chrome.
 
 --- output ---
 
-rendered 60 model/actor/state combinations and 52 promises
+rendered 60 model/actor/state combinations and 66 promises
 ALL CHECKS PASSED

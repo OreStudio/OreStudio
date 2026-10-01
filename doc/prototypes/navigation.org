@@ -74,13 +74,45 @@ trading floor. Qt's first level already said the areas, and it was right:
 | Compute | — | none extracted |
 | Reporting | — | none extracted |
 | People | Profile, Credentials, Access, Membership, Directory | 8 in 5 groups |
-| Tenant | Access, Tenancy, Setup | 6 in 3 groups |
+| Tenant | Access, Tenancy, Setup | 3, and a run, in tenant administration |
+| System | Setup | 2 runs, in system administration |
 
 Six of the eight are empty, and that is the honest state rather than a gap in
 the design: the extraction has been run for one component. An empty area is
 named and says so — it is not filled with invented screens, and it is offered
 to a tenant administrator, who is the person who would build it, rather than to
 a member.
+
+** The three modes, which sit above the areas
+
+The header answers to the *mode* before it answers to the area, and the mode is
+not a new invention: it is the context the session is already in, and the server
+already scopes everything by it.
+
+| Mode | The context | Journeys |
+|------+-------------+----------|
+| Application | A tenant and a party | Reference data, market data, trading, reporting, and the people in them |
+| Tenant administration | A tenant, and no party | Its parties, its role catalogue, its own settings — not its data |
+| System administration | The system tenant | Its tenants, the registry the tenants share, and standing an installation up |
+
+Two things make this a real boundary rather than a label.
+
+*The tenant administrator is not a trader.* Reference data and market data
+belong to a party, so editing them means working in a party's context, which is
+the application mode. Running the tenant — its parties, its roles, its settings
+— is a different context, so it is a different mode. The two never appear in the
+same header.
+
+*The system tenant is already in the model.* It holds the deployment's registry
+and the shared reference data, it has its own fixed id, and a tenant row is
+stored under it. A session acting across tenants is a session in the system
+tenant's context, which is why system administration is a mode and not a menu.
+
+The modes are permission-scoped, not chosen freely, which is what makes them
+safe: a member has one mode and sees no switch at all; the person who runs the
+tenant has two or three. Every product with a console above the product behaves
+this way, and the switch lives where the person already is — under their own
+name and photo, beside the journeys about them.
 
 ** The three scopes
 
@@ -195,7 +227,8 @@ alternative — folding the areas into a menu — is the account menu again.
 | Part | What it is |
 |------+------------|
 | The brand | The way home, and the only thing that is always there. |
-| The areas | The horizontal menu: where this person may work, the two admin scopes last. |
+| The mode | The context the session is in, named in the header, because the areas answer to it. |
+| The areas | The horizontal menu: where this person may work, in this mode. |
 | The avatar menu | The journeys about the person, which no area holds. |
 | The area landing | The cards: what they may do there, one card per catalogue topic, and the runs that take the screen. |
 | The person | Their name and photo, opening their own record, and the way out. |

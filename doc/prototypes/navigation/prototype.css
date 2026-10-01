@@ -246,6 +246,17 @@ main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 28px 20
 
 .mlauto { margin-left: auto; }
 
+/* The mode the session is in. The header answers to it, so it is named there. */
+.modechip {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 10px;
+    color: var(--ink-dim);
+    white-space: nowrap;
+}
+
 /* Navbar: the groups across the header, with their counts. */
 .appnav .count {
     margin-left: 7px;

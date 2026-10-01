@@ -51,8 +51,8 @@
        what the today state shows. */
     var GROUPS = [
         { name: 'Setup', landed: true, fullscreen: true, journeys: [
-            ['First run', '/setup/first-run', 'admin', 'Tenant'],
-            ['New tenant', '/tenants/new', 'admin', 'Tenant'],
+            ['First run', '/setup/first-run', 'admin', 'System'],
+            ['New tenant', '/tenants/new', 'admin', 'System'],
             ['New party', '/parties/new', 'admin', 'Tenant']] },
         { name: 'Entry', landed: false, nav: false, journeys: [
             ['Sign in', '/login', 'all'],
@@ -89,14 +89,29 @@
        journeys have not been extracted yet says so rather than being filled
        with invented screens. */
     var AREAS = [
-        { name: 'Reference Data', waiting: true },
-        { name: 'Market Data', waiting: true },
-        { name: 'Trading', waiting: true },
-        { name: 'Analytics', waiting: true },
-        { name: 'Compute', waiting: true },
-        { name: 'Reporting', waiting: true },
-        { name: 'People' },
-        { name: 'Tenant' }
+        { name: 'Reference Data', mode: 'app', waiting: true },
+        { name: 'Market Data', mode: 'app', waiting: true },
+        { name: 'Trading', mode: 'app', waiting: true },
+        { name: 'Analytics', mode: 'app', waiting: true },
+        { name: 'Compute', mode: 'app', waiting: true },
+        { name: 'Reporting', mode: 'app', waiting: true },
+        { name: 'People', mode: 'app' },
+        { name: 'Tenant', mode: 'tenant' },
+        { name: 'System', mode: 'system' }
+    ];
+
+    /* A mode is the context the session is in, which is the context the server
+       already scopes everything by: the system tenant holds the registry and
+       the shared reference data, a tenant is an organisation, and a party is
+       where the work happens. The areas, and therefore the whole header,
+       answer to the mode. */
+    var MODES = [
+        { id: 'app', name: 'Application',
+          note: 'Working in a tenant and a party: reference data, market data, trading, reporting, and the people in them.' },
+        { id: 'tenant', name: 'Tenant administration',
+          note: 'Running the tenant itself: its parties, its role catalogue and its own settings. Not its data.' },
+        { id: 'system', name: 'System administration',
+          note: 'The deployment: its tenants, the registry the tenants share, and standing an installation up.' }
     ];
 
     var PERSON = {
@@ -115,6 +130,7 @@
         actor: 'admin',
         state: 'home',
         at: '/profile',
+        mode: 'app',
         open: false
     };
 
@@ -127,6 +143,7 @@
         for (var i = 0; i < STATES.length; i++) if (STATES[i][0] === st) S.state = st;
         if (p.get('screen')) S.at = p.get('screen');
         if (p.get('area')) S.area = p.get('area');
+        if (p.get('mode')) S.mode = p.get('mode');
         if (p.get('open') === '1') S.open = true;
     }
 
@@ -200,11 +217,30 @@
 
     /* An area with nothing extracted is offered to a tenant administrator,
        who is the person who would build it, and not to a member. */
+    function modeAreas() {
+        return AREAS.filter(function (a) { return a.mode === S.mode; });
+    }
+
+    function modeInfo() {
+        return MODES.filter(function (m) { return m.id === S.mode; })[0] || MODES[0];
+    }
+
+    /* A mode with nothing to offer is not offered. The trading areas are shown
+       to the person who would build them and not to a member. */
     function visibleAreas() {
-        return AREAS.filter(function (a) {
+        return modeAreas().filter(function (a) {
             if (a.waiting) return isAdmin();
             return areaCards(a.name).length > 0;
         });
+    }
+
+    function areaModeOf(path) {
+        var owner = null;
+        groups(false).forEach(function (g) {
+            g.journeys.forEach(function (j) { if (j[1] === path && j[3] && j[3] !== 'me') owner = j[3]; });
+        });
+        var found = AREAS.filter(function (a) { return a.name === owner; })[0];
+        return found ? found.mode : null;
     }
 
     function activeArea() {
@@ -213,15 +249,19 @@
             var named = areas.filter(function (a) { return a.name === S.area; })[0];
             if (named) return named;
         }
-        var owner = null;
-        groups(false).forEach(function (g) {
-            g.journeys.forEach(function (j) {
-                if (j[1] === S.at && j[3] && j[3] !== 'me') owner = j[3];
+        var owner = areaModeOf(S.at);
+        if (owner === S.mode) {
+            var inMode = groups(false);
+            var hit = null;
+            inMode.forEach(function (g) {
+                g.journeys.forEach(function (j) {
+                    if (j[1] === S.at && j[3] === S.mode) hit = j[3];
+                });
             });
-        });
-        if (owner) {
-            var match = areas.filter(function (a) { return a.name === owner; })[0];
-            if (match) return match;
+            if (hit) {
+                var match = areas.filter(function (a) { return a.name === hit; })[0];
+                if (match) return match;
+            }
         }
         var withCards = areas.filter(function (a) { return !a.waiting; });
         return withCards[0] || areas[0];
@@ -261,7 +301,7 @@
     function meMenu() {
         if (!S.open) return '';
         var p = person();
-        var mine = meJourneys();
+        var mine = S.mode === 'app' ? meJourneys() : [];
         var byGroup = [];
         mine.forEach(function (row) {
             var found = byGroup.filter(function (b) { return b.name === row.group; })[0];
@@ -279,7 +319,21 @@
                             esc(j[0]) + '</a>';
                     }).join('') + '</div>';
             }).join('') +
+            modeSwitch() +
             '<div class="group"><button class="item out" data-act="signout">Sign out</button></div></div>';
+    }
+
+    /* The modes this person may enter. A member has one and sees no switch;
+       the person who runs the tenant has two or three, which is how every
+       product with a console above the product behaves. */
+    function modeSwitch() {
+        if (!isAdmin()) return '';
+        var others = MODES.filter(function (m) { return m.id !== S.mode; });
+        if (!others.length) return '';
+        return '<div class="group"><div class="groupname">Switch mode</div>' +
+            others.map(function (m) {
+                return '<a href="#" data-act="mode" data-mode="' + m.id + '">' + esc(m.name) + '</a>';
+            }).join('') + '</div>';
     }
 
     function accountMenu() {
@@ -382,11 +436,12 @@
        journeys, and an honest word when the area has none yet. */
     function areaPage(area) {
         var p = person();
-        var head = '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>';
+        var head = '<div class="crumb">' + esc(modeInfo().name) + ' \u00b7 ' + esc(p.tenant) +
+            ' \u00b7 ' + esc(p.party) + '</div>';
         if (!area) {
             return '<div class="card">' + head + '<h1>Nothing here yet</h1>' +
-                '<p class="lead">No journey has been built for this person yet. The areas appear in the header as ' +
-                'they land, and the avatar holds the journeys about you.</p></div>';
+                '<p class="lead">' + esc(modeInfo().note) +
+                ' No journey has been built for this person in this mode yet.</p></div>';
         }
         var cards = areaCards(area.name);
         if (!cards.length) {
@@ -507,7 +562,8 @@
         var head = '';
         if (!full) {
             if (S.variant === 'H') {
-                head = '<header class="appheader"><div class="appheader-inner">' + brand() + areaNav() +
+                head = '<header class="appheader"><div class="appheader-inner">' + brand() +
+                    '<span class="modechip">' + esc(modeInfo().name) + '</span>' + areaNav() +
                     '<div class="accounts">' + accountChip(true) + meMenu() + '</div></div></header>';
             } else if (S.variant === 'N') {
                 head = '<header class="appheader"><div class="appheader-inner">' + brand() + navbar() +
@@ -532,7 +588,7 @@
         document.getElementById('proto-note').textContent =
             'PROTOTYPE \u00b7 mock data, no service \u00b7 ' + VARIANTS[S.variant].name +
             ' \u00b7 ' + (isAdmin() ? 'tenant administrator' : 'member') +
-            ' \u00b7 state ' + S.state +
+            ' \u00b7 state ' + S.state + ' \u00b7 mode ' + S.mode +
             ' \u00b7 ' + visible.length + ' groups, ' + journeyCount(visible) + ' journeys';
 
         renderBar();
@@ -564,6 +620,7 @@
         else if (act === 'state') { S.state = el.getAttribute('data-state'); S.open = false; }
         else if (act === 'toggle') S.open = !S.open;
         else if (act === 'area') { S.area = el.getAttribute('data-area'); S.at = '/'; }
+        else if (act === 'mode') { S.mode = el.getAttribute('data-mode'); S.area = null; S.at = '/'; S.open = false; }
         else if (act === 'run') S.state = 'fullscreen';
         else if (act === 'home') S.at = '/';
         else if (act === 'group') { S.at = '/'; S.homeGroup = el.getAttribute('data-group'); }

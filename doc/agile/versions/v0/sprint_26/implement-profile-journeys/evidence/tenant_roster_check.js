@@ -175,21 +175,39 @@ function connect(url) {
         check(text.includes('New tenant'), 'the page offers the journey that creates a tenant');
 
         /*
-         * The status is painted by the platform's badge catalogue, not by a
-         * table on the screen. The check reads the catalogue itself and compares
-         * the painted colour against it, so a hardcoded colour that happens to
-         * look right still fails.
+         * The status is painted by the badge its status row names, and the words
+         * are the status row's own. The check reads the statuses themselves and
+         * compares the pill the browser drew against them, so a screen that fell
+         * back to a hardcoded colour or to the badge's own label still fails.
          */
-        const catalogueRead = await client.send('Runtime.evaluate', {
+        const statusesRead = await client.send('Runtime.evaluate', {
             expression: `(async () => {
-                const answer = await fetch('/api/badges/tenant_status');
-                return answer.status === 200 ? await answer.json() : null;
+                const answer = await fetch('/api/tenant-statuses');
+                const text = await answer.text();
+                return { status: answer.status, text };
             })()`,
             awaitPromise: true,
             returnByValue: true,
         });
-        const catalogue = catalogueRead.result.value;
-        check(catalogue !== null, 'the badge catalogue answers for tenant_status');
+        const statusAnswer = statusesRead.result.value ?? {};
+        if (statusAnswer.status !== 200) {
+            console.log(`      the route answered ${statusAnswer.status}: ${statusAnswer.text}`);
+        }
+        const statuses = JSON.parse(
+            statusAnswer.status === 200 ? statusAnswer.text : '{"statuses":[]}',
+        ).statuses ?? [];
+        check(statuses.length > 0, 'the tenant statuses answer');
+
+        /*
+         * The split this whole change is about: the row says `Suspended`, the
+         * badge that paints it is called `Frozen`, and a pill shows the row's
+         * word.
+         */
+        const suspended = statuses.find((status) => status.code === 'suspended');
+        check(
+            suspended?.name === 'Suspended' && suspended?.badge?.label === 'Frozen',
+            `a status keeps its own word (${suspended?.name}) while the badge paints it (${suspended?.badge?.label})`,
+        );
 
         const paintedRead = await client.send('Runtime.evaluate', {
             expression: `(() => {
@@ -204,33 +222,25 @@ function connect(url) {
             returnByValue: true,
         });
         const painted = paintedRead.result.value;
-        const expected = catalogue?.badges?.[tenants[0]?.status];
+        const expected = statuses.find((status) => status.code === tenants[0]?.status);
         const toRgb = (hex) => {
             const value = hex.replace('#', '');
             return `rgb(${parseInt(value.slice(0, 2), 16)}, ${parseInt(value.slice(2, 4), 16)}, ${parseInt(value.slice(4, 6), 16)})`;
         };
+        check(expected !== undefined, 'the first row carries a status the deployment holds');
         check(
-            expected !== undefined && painted !== null,
-            'the first row carries a status the catalogue maps',
+            painted?.colour === toRgb(expected?.badge?.backgroundColour ?? '#000000'),
+            `the pill is painted with the badge's colour (${painted?.colour} for ${expected?.badge?.backgroundColour})`,
         );
         check(
-            painted?.colour === toRgb(expected?.backgroundColour ?? '#000000'),
-            `the pill is painted with the catalogue's colour (${painted?.colour} for ${expected?.backgroundColour})`,
-        );
-        check(
-            painted?.text === expected?.label,
-            `the pill carries the catalogue label (${painted?.text})`,
+            painted?.text === expected?.name,
+            `the pill carries the status row's word (${painted?.text})`,
         );
         check(
             painted?.title === expected?.description,
-            'the pill carries the catalogue description behind it',
+            'the pill carries the status row description behind it',
         );
 
-        /*
-         * The table is the page. A card around it makes it narrower than the
-         * screen the shell gave it, which is the whole of what a list-shaped
-         * screen asks for.
-         */
         const boxed = await client.send('Runtime.evaluate', {
             expression: `(() => {
                 const table = document.querySelector('table');

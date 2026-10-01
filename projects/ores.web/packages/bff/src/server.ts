@@ -33,6 +33,7 @@ import {
     OresClient,
     SUBJECTS,
     SYSTEM_TENANT_ID,
+    badgeCatalogueSchema,
     bootstrapStatusSchema,
     changeOwnPassword,
     changeOwnPasswordRequestSchema,
@@ -61,6 +62,7 @@ import {
     readAccount,
     readAccountsPage,
     readActiveSessions,
+    readBadgesForDomain,
     readLoginInfo,
     readLoginInfoPage,
     readSessionsPage,
@@ -841,6 +843,33 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return tenantPageSchema.parse({
             tenants: read.tenants.filter((tenant) => tenant.id !== SYSTEM_TENANT_ID),
             totalCount: Math.max(0, read.totalCount - 1),
+        });
+    });
+
+    /**
+     * How the values of one code domain are painted.
+     *
+     * The badge catalogue is the platform's, not a screen's: `ores.dq` holds the
+     * badges and the mapping from a domain value to one, so two screens showing
+     * the same status paint it the same way. The route joins the two reads,
+     * because the alternative is every screen holding both tables to answer one
+     * question.
+     *
+     * The domain is named by the screen, because which domain paints a column is
+     * a fact about the column and not about the caller. A domain nobody has
+     * mapped answers an empty catalogue rather than a refusal: a value with no
+     * badge is a normal state, and the screen shows the value as it is.
+     */
+    server.get('/api/badges/:domain', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { domain?: string };
+        const domain = params.domain ?? '';
+        if (domain.length === 0) {
+            throw invalidRequest('A code domain is required.');
+        }
+        return badgeCatalogueSchema.parse({
+            domain,
+            badges: await readBadgesForDomain(session.client, domain),
         });
     });
 

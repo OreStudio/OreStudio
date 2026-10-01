@@ -21,10 +21,19 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import type { TenantSummary } from '@ores/wire-protocol/browser';
+import type { BadgePresentation, TenantSummary } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+
+/**
+ * The code domain that paints a tenant's status.
+ *
+ * A tenant row carries the status code and nothing else about how to draw it.
+ * The badge catalogue holds that, keyed by the domain, so the screen names the
+ * domain rather than a colour.
+ */
+const TENANT_STATUS_DOMAIN = 'tenant_status';
 
 /**
  * The tenants a deployment holds.
@@ -45,6 +54,16 @@ import { LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 export function TenantsPage(): ReactNode {
     const { t, plural } = useTranslation();
     const roster = useQuery({ queryKey: ['tenants'], queryFn: api.tenants });
+    /*
+     * The badges are a second read because they are reference data shared by
+     * every screen that shows a tenant status. A failure to read them is not a
+     * failure to read the roster: the status is still shown, as the value the
+     * server sent.
+     */
+    const badges = useQuery({
+        queryKey: ['badges', TENANT_STATUS_DOMAIN],
+        queryFn: () => api.badges(TENANT_STATUS_DOMAIN),
+    });
 
     if (roster.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -82,12 +101,22 @@ export function TenantsPage(): ReactNode {
                     </LinkButton>
                 }
             />
-            {tenants.length === 0 ? <EmptyRoster /> : <Roster tenants={tenants} />}
+            {tenants.length === 0 ? (
+                <EmptyRoster />
+            ) : (
+                <Roster tenants={tenants} badges={badges.data?.badges ?? {}} />
+            )}
         </div>
     );
 }
 
-function Roster({ tenants }: { readonly tenants: readonly TenantSummary[] }): ReactNode {
+function Roster({
+    tenants,
+    badges,
+}: {
+    readonly tenants: readonly TenantSummary[];
+    readonly badges: Readonly<Record<string, BadgePresentation>>;
+}): ReactNode {
     const { t } = useTranslation();
 
     return (
@@ -110,7 +139,7 @@ function Roster({ tenants }: { readonly tenants: readonly TenantSummary[] }): Re
                             <td className="py-2.5 pr-4 font-mono text-xs">{tenant.hostname}</td>
                             <td className="py-2.5 pr-4 text-ink-muted">{tenant.type}</td>
                             <td className="py-2.5">
-                                <StatusTag status={tenant.status} />
+                                <StatusBadge status={tenant.status} badge={badges[tenant.status]} />
                             </td>
                         </tr>
                     ))}
@@ -121,25 +150,36 @@ function Roster({ tenants }: { readonly tenants: readonly TenantSummary[] }): Re
 }
 
 /**
- * The state a tenant is in, in words.
+ * The state a tenant is in, painted by the badge catalogue.
  *
- * The four statuses are seeded rows rather than free text, so the screen names
- * them. A status the catalogue does not hold is shown as the server wrote it
- * rather than hidden, because a tenant in a state nobody expected is exactly
- * the row somebody needs to see.
+ * The colours, the label and the words behind the badge are reference data:
+ * `ores.dq` holds the badge catalogue, and a mapping says which badge a
+ * `tenant_status` value gets. The screen decides none of it, so a status looks
+ * the same wherever it is shown.
+ *
+ * A value with no badge is drawn as the server wrote it rather than hidden. A
+ * tenant in a state nobody has mapped is exactly the row somebody needs to see,
+ * and a screen that swallowed it would be hiding the interesting case.
  */
-function StatusTag({ status }: { readonly status: string }): ReactNode {
-    const { t } = useTranslation();
-    const known: Readonly<
-        Record<string, { readonly key: string; readonly tone: 'accent' | 'warn' | 'muted' }>
-    > = {
-        bootstrapping: { key: 'tenants.state.bootstrapping', tone: 'warn' },
-        active: { key: 'tenants.state.active', tone: 'accent' },
-        suspended: { key: 'tenants.state.suspended', tone: 'muted' },
-        terminated: { key: 'tenants.state.terminated', tone: 'muted' },
-    };
-    const entry = known[status];
-    return entry === undefined ? <Tag>{status}</Tag> : <Tag tone={entry.tone}>{t(entry.key)}</Tag>;
+function StatusBadge({
+    status,
+    badge,
+}: {
+    readonly status: string;
+    readonly badge: BadgePresentation | undefined;
+}): ReactNode {
+    if (badge === undefined || badge.backgroundColour === '') {
+        return <span className="text-ink-muted">{status}</span>;
+    }
+    return (
+        <span
+            className="inline-block rounded-full px-2 py-0.5 text-[11px] leading-tight"
+            style={{ backgroundColor: badge.backgroundColour, color: badge.textColour }}
+            title={badge.description === '' ? undefined : badge.description}
+        >
+            {badge.label}
+        </span>
+    );
 }
 
 /**

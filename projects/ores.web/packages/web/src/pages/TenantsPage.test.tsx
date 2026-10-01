@@ -47,9 +47,24 @@ const acme: TenantSummary = {
     registrationDefault: false,
 };
 
-function render(tenants: readonly TenantSummary[], totalCount: number): string {
+/** The badge the catalogue maps `active` to, as the BFF answers it. */
+const activeBadge = {
+    code: 'active',
+    label: 'Active',
+    description: 'Record is active and operational.',
+    backgroundColour: '#22c55e',
+    textColour: '#ffffff',
+    severity: 'success',
+};
+
+function render(
+    tenants: readonly TenantSummary[],
+    totalCount: number,
+    badges: Readonly<Record<string, unknown>> = { active: activeBadge },
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['tenants'], { tenants, totalCount });
+    client.setQueryData(['badges', 'tenant_status'], { domain: 'tenant_status', badges });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -78,6 +93,31 @@ describe('the tenant roster', () => {
         for (const column of ['Code', 'Name', 'Hostname', 'Type', 'Status']) {
             expect(html).toContain(column);
         }
+    });
+
+    /*
+     * The status is painted by the platform's badge catalogue, not by a table on
+     * this screen: the label, the two colours and the words behind it all come
+     * from the answer, so two screens showing the same status agree.
+     */
+    it('paints the status with the badge the catalogue maps it to', () => {
+        const html = render([acme], 1);
+
+        expect(html).toContain('background-color:#22c55e');
+        expect(html).toContain('color:#ffffff');
+        expect(html).toContain('title="Record is active and operational."');
+        expect(html).toContain('>Active<');
+    });
+
+    /*
+     * A value with no badge is shown as the server wrote it. A tenant in a state
+     * nobody has mapped is the row somebody needs to see, so swallowing it would
+     * hide the interesting case.
+     */
+    it('shows a status the catalogue does not hold as it was written', () => {
+        const html = render([{ ...acme, status: 'quarantined' }], 1, {});
+
+        expect(html).toContain('quarantined');
     });
 
     /*

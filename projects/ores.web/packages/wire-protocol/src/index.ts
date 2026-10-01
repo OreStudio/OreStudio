@@ -46,6 +46,7 @@ export {
     accountPageSchema,
     accountSchema,
     activePartySchema,
+    badgePresentationSchema,
     partySummarySchema,
     tenantPageSchema,
     tenantSummarySchema,
@@ -55,10 +56,19 @@ export type {
     AccountPage,
     AccountType,
     ActiveParty,
+    BadgePresentation,
     PartySummary,
     TenantPage,
     TenantSummary,
 } from './domain.js';
+
+export {
+    BADGE_SUBJECTS,
+    listBadgeDefinitionsRequestSchema,
+    listBadgeMappingsRequestSchema,
+    readBadgesForDomain,
+} from './badges.js';
+export type { BadgeCatalogue } from './badges.js';
 
 export {
     TENANT_SUBJECTS,
@@ -256,6 +266,7 @@ export {
 // these definitions, so the network boundary is checked at runtime.
 export {
     apiErrorSchema,
+    badgeCatalogueSchema,
     bootstrapStatusSchema,
     createAdministratorRequestSchema,
     initialAdministratorSchema,
@@ -273,6 +284,7 @@ export {
 } from './contracts.js';
 export type {
     ApiError,
+    BadgeCatalogueView,
     BootstrapStatus,
     CreateAdministratorRequest,
     InitialAdministrator,

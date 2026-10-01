@@ -96,12 +96,6 @@ export const en: SourceCatalogue = {
             title: 'This deployment holds no tenant of its own yet.',
             body: 'The system administrator exists, so the deployment is set up. A tenant is the next step, and the first one is created the same way as any other.',
         },
-        state: {
-            bootstrapping: 'Provisioning',
-            active: 'Active',
-            suspended: 'Suspended',
-            terminated: 'Terminated',
-        },
     },
 
     landing: {

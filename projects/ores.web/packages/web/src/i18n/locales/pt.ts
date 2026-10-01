@@ -95,12 +95,6 @@ const pt: SourceCatalogue = {
             title: 'Esta instalação ainda não tem um inquilino próprio.',
             body: 'O administrador do sistema existe, portanto a instalação está configurada. Um inquilino é o passo seguinte, e o primeiro cria-se como qualquer outro.',
         },
-        state: {
-            bootstrapping: 'Aprovisionamento',
-            active: 'Ativo',
-            suspended: 'Suspenso',
-            terminated: 'Terminado',
-        },
     },
 
     landing: {

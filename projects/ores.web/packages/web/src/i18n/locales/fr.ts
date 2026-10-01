@@ -90,12 +90,6 @@ const fr: SourceCatalogue = {
             title: 'Ce déploiement ne détient encore aucun locataire propre.',
             body: 'L’administrateur système existe, donc le déploiement est configuré. Un locataire est l’étape suivante, et le premier se crée comme tous les autres.',
         },
-        state: {
-            bootstrapping: 'Provisionnement',
-            active: 'Actif',
-            suspended: 'Suspendu',
-            terminated: 'Résilié',
-        },
     },
 
     landing: {

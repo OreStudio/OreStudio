@@ -23,7 +23,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <string>
-#include <vector>
 
 namespace cli {
 

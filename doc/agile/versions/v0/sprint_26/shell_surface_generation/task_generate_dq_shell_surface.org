@@ -81,6 +81,20 @@ task and name that file in the Command column.
 
 * Notes
 
+The generated read does not reproduce everything the retired commands did, and
+the review of PR #2467 asked for that to be stated. =lei entities <country>
+--filter <text>= matched the legal name case-insensitively on the client and
+printed an "N of M shown" line. Its replacement, =lei_entity_summary
+search-lei-entities <text> [--country_filter <cc>]=, runs the server-side query,
+which matches an LEI from its start as well as a legal name anywhere in it, and
+states how many parties each match would import. The replacement is a wider read,
+and the narrower client-side filter is intentionally gone.
+
+The default bundle survived the move. =reports templates= sent the request's own
+default, and so does the generated command: =bundle_code= defaults to
+=risk_management= in the model and in the protocol struct, and the unit writes
+the field only when the flag carries a value.
+
 The generated commands renamed the reads a person types, so
 =doc/manual/user_guide/chapter_shell_provisioning.org= moved with them:
 =bundles list= is now =dataset_bundles list=, =reports templates= is now

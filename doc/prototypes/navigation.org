@@ -122,6 +122,19 @@ How a person learns that a journey exists but cannot be run. Nothing here states
 what a deployment switches on or off, because no document says a journey has a
 switch.
 
+The mode is read from the sign-in, and the contract that delivers it — the
+server stating the mode with the session, and the menu taking its authority from
+the permission codes the session holds — is
+[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]].
+
+How the account a person signs in with comes to *be* the privileged one. The
+mode is read from the sign-in, which is only honest if a super administrator's
+account is distinguishable from a person who happens to hold the role — and
+today nothing distinguishes them, or says when they held it. That is its own
+problem, with its own process, and it is captured at
+[[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][Privileged access needs a recorded
+break-glass process]].
+
 Where a party user with no areas of their own lands once the party's data is
 real: today six of their seven areas are empty and their avatar is where the
 work is.

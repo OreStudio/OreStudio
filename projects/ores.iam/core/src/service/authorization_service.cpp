@@ -300,6 +300,15 @@ authorization_service::compose_account_access(const boost::uuids::uuid& account_
     for (const auto& assignment : assignments) {
         auto roles = role_repo_.read_latest(ctx_, boost::uuids::to_string(assignment.role_id));
         if (roles.empty()) {
+            /*
+             * A junction row whose role cannot be read is a dangling
+             * reference, and the answer would carry fewer roles than the
+             * account holds. The caller is told why rather than left to
+             * notice the difference.
+             */
+            BOOST_LOG_SEV(lg(), warn)
+                << "Account " << account_id << " holds a role that cannot be read: "
+                << assignment.role_id;
             continue;
         }
         account_access_entry entry;

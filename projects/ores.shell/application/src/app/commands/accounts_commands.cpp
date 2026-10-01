@@ -30,6 +30,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include <algorithm>
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
@@ -684,6 +685,14 @@ void accounts_commands::process_account_info(std::ostream& out,
                                     entry.permission_codes.begin(),
                                     entry.permission_codes.end());
         }
+        /*
+         * Two roles may grant the same permission, and the count below is of
+         * distinct permissions rather than of grants, so the codes are
+         * deduplicated before anything reads them.
+         */
+        std::sort(permission_codes.begin(), permission_codes.end());
+        permission_codes.erase(std::unique(permission_codes.begin(), permission_codes.end()),
+                               permission_codes.end());
     }
 
     // Step 3: Show the effective permissions the roles above carry

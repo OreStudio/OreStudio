@@ -71,6 +71,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/domain_xsd.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/equity_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/fx_instrument_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/ore_code_tables.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/payment_frequency_conversion.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/run_document_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/scripted_instrument_mapper.hpp"

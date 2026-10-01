@@ -26,11 +26,11 @@ The target state a later sprint builds from, so the shell can be implemented aga
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing: the contract is written and the shell can be built against it. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -86,3 +86,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]] is
+the target state, at =doc/knowledge/security/= and listed in the identity and
+access hub's reading order.
+
+It fixes the mode as computed by the server and delivered with the session, the
+menu's authority as the permission codes the server already answers, and the
+protocol change that implies. It marks two things to confirm rather than assume:
+the permission =iam.v1.roles.permissions-by-account= demands of its caller, and
+whether a member may ask for their own account.
+
+What it does not settle is recorded: how a person comes to hold a privileged
+mode, which is [[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][captured]] on its
+own, and whether a deployment can switch a journey off for everybody as against
+a person not holding its permission.

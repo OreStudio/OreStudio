@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-pricing-engine-configuration
-#+pr:
+#+pr: 2489
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2489][#2489]] | [agile] Scaffold the pricing engine round trip task |
 
 * Review
 

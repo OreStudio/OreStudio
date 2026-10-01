@@ -71,7 +71,7 @@ for (const who of whos) {
 const checks = [
     ['?as=super&state=home', 'System administration', 'the super administrator lands in the system mode'],
     ['?as=super&state=home', 'New tenant', 'the system mode holds creating a tenant'],
-    ['?as=super&state=home', 'First run', 'the system mode holds standing an installation up'],
+    ['?as=super&state=home', 'Retire or reset a tenant', 'the system mode holds retiring a tenant'],
     ['?as=tenant&state=home', 'Tenant administration', 'the tenant administrator lands in the tenant mode'],
     ['?as=tenant&state=home', 'New party', 'the tenant mode holds standing up a party'],
     ['?as=tenant&state=home', 'Shape the role catalogue', 'the tenant mode holds the role catalogue'],
@@ -97,22 +97,26 @@ for (const [search, needle, what] of checks) {
 
 /* The promises that are about absence: the mode decides the menu, and a menu
    never offers what the person may not run. */
-for (const [search, needle, what] of [
+const absences = [
     ['?as=super&state=home', 'Reference Data', 'the super administrator is not offered a party area'],
     ['?as=super&state=home', 'People', 'the super administrator is not offered the people of a party'],
+    ['?as=super&state=home', 'First run', 'the bootstrap journey is a door, not an area'],
+    ['?as=super&state=home', 'Bootstrap', 'the bootstrap area is gone'],
     ['?as=tenant&state=home', 'Bootstrap', 'the tenant administrator is not offered the bootstrap'],
     ['?as=tenant&state=home', 'Reference Data', 'the tenant administrator is not offered a party area'],
     ['?as=regular&state=home', '>People<', 'a regular party user is not offered the people of the party'],
     ['?as=regular&state=home&open=1', 'Audit sign-ins', 'a regular party user is not offered the sign-in audit'],
     ['?as=super&state=home&open=1', 'Choose where I work', 'the system mode has no party to choose'],
     ['?as=regular&state=home', 'class="side"', 'there is no sidebar']
-]) {
+];
+
+for (const [search, needle, what] of absences) {
     if (run(search).app.includes(needle)) {
         console.log(`FAIL ${search}: found "${needle}" -- ${what}`);
         failures++;
     }
 }
 
-console.log(`rendered ${checked} sign-in/state combinations and ${checks.length + 9} promises`);
+console.log(`rendered ${checked} sign-in/state combinations and ${checks.length + absences.length} promises`);
 console.log(failures === 0 ? 'ALL CHECKS PASSED' : `${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);

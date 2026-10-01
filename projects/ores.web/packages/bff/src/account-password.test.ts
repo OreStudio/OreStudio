@@ -107,6 +107,7 @@ function buildTestServer(result: unknown): {
         accountId: '11111111-1111-1111-1111-111111111111',
         tenantId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         tenantName: 'Northwind Capital',
+        mode: 'application',
         version: 'v0.0.25 (test)',
         availableParties: [northwind],
         accessLifetimeSeconds: 1800,

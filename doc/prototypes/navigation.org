@@ -47,6 +47,7 @@ themselves are not drawn any more.
 | One axis of journey groups across the header | A journey group is a topic ("Profile", "Credentials"); an *area* of activity is above it ("Reference Data", "Trading"). A trading system has the areas, and the Qt client's first level already said so. |
 | A sidebar beside the area's cards | It listed the same journeys the cards already list, one beside the other. The cards are the navigation; a second copy of them is a cost with no reader. |
 | "Administration" as an area | A name that means everything we could not place. The scopes are Me, People and Tenant, and they account for all twenty journeys with nothing left over. |
+| *Bootstrap* as an area | The first run journey belongs to a plain installation, where there is no account to sign in with and so no shell to draw a menu in. An area nobody can be in while it is open is a door, not a destination. |
 | A mode the person chooses | The mode is the context the server already scopes everything by — the system tenant, the tenant, the party the session acts for. Reading it from the sign-in is the only version that cannot disagree with the data. |
 
 ** The mode comes from the sign-in
@@ -71,7 +72,7 @@ menu bar already had right. It changes with the mode:
 
 | Mode | The menu |
 |------+----------|
-| System administration | Tenants, Bootstrap |
+| System administration | Tenants |
 | Tenant administration | Parties, Access, Tenant |
 | Application | Reference Data, Market Data, Trading, Analytics, Compute, Reporting, People |
 
@@ -79,6 +80,27 @@ An area the catalogue has not reached stays in the menu and says so in as many
 words. An area that belongs to somebody else does not: a regular party user is
 not shown the door to the people of their party, and no mode offers an
 administrator journey to the person who may not run it.
+
+*** The bootstrap journey is not an area
+
+*First run* was drawn under a *Bootstrap* area, and that was wrong. It belongs to
+a plain installation: an empty database with no account in it. Nobody can be
+signed in while it is the screen, so it is not a place the shell can be in and
+not a door the shell can offer. It is the way out of the state the shell cannot
+be entered from, and that makes it a door rather than a destination.
+
+The system administrator's work is what the first run leaves behind: a
+deployment with an account, and no tenant until one is made. So the *Tenants*
+area is the whole of the system administration menu, and it holds the tenant
+management journeys the catalogue has: creating one, and retiring or resetting
+one. *Tune the tenant* is not among them — the tenant administrator maintains
+their own tenant's details, from inside it.
+
+This is the one place the extraction's grouping was not the menu's grouping, and
+the correction is recorded here rather than in the catalogue: the catalogue's
+*Setup* group and its *Tenancy* group both hold journeys the *Tenants* area
+offers, because a group is what a designer looks a journey up under and an area
+is where a person goes to find it.
 
 The cards are one per catalogue topic, and they are where a journey is chosen.
 One area's cards, or every area's, depending on whether the person picked an
@@ -103,7 +125,7 @@ party journeys, because there is no party to choose.
 ** What is real and what is not
 
 The areas, the journeys, the modes, the routes and which journeys have been
-built are the catalogue's own. Six of the nine areas are empty because the
+built are the catalogue's own. Six of the eleven areas are empty because the
 extraction has been run for one component, and the prototype renders that
 rather than inventing screens to fill them.
 

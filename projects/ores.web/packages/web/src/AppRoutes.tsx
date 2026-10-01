@@ -173,6 +173,7 @@ export function AppRoutes({
                         email={view.email}
                         tenantName={view.tenantName}
                         partyName={view.party.name}
+                        mode={view.mode}
                     />
                 ))}
             />
@@ -281,6 +282,7 @@ function signedIn(
             username={view.username}
             tenantName={view.tenantName}
             partyName={view.party.name}
+            mode={view.mode}
             serverVersion={version}
             onSignOut={onSignOut}
         >

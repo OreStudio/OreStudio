@@ -60,6 +60,25 @@ const pt: SourceCatalogue = {
         searchHint: 'Pesquisar entidades e ações',
         noResults: 'Nada corresponde.',
         allEntities: 'Todas as entidades',
+        mode: 'Modo',
+        areas: 'Áreas',
+    },
+
+    shell: {
+        mode: {
+            'system-administration': 'Administração do sistema',
+            'tenant-administration': 'Administração do inquilino',
+            application: 'Aplicação',
+        },
+        journeyCount: { one: '{count} jornada', other: '{count} jornadas' },
+        notBuilt: 'Ainda não construído',
+        area: {
+            tenants: 'Inquilinos',
+        },
+        journey: {
+            newTenant: 'Novo inquilino',
+            retireTenant: 'Retirar ou reiniciar um inquilino',
+        },
     },
 
     landing: {

@@ -396,7 +396,7 @@ row is updated as each PR lands.
 | S02 | Entity | Not met: 0 trading recipes, 22 wanted | PR 6 |
 | H01 | All | Not met: no audit record; three diagrams carry a sentinel | PR 6 |
 | H02 | All | To review: no Qt code; two generator trees; 24 unmodelled domain types | PR 6 |
-| H03 | All | To review: comment pass | PR 6 |
+| H03 | All | Met in PR 7: the pass changes nothing — the added comments sit above the code, narrate no edit and comment out no code | PR 7 |
 | H04 | All | Met: only the standard =_WIN32= export macro | - |
 | H05 | All | Structure met; the ER diagram is stale | PR 6 |
 | V01 | All | Met in PR 2: the whole tree builds clean | PR 2 |
@@ -404,9 +404,9 @@ row is updated as each PR lands.
 | V03 | Entity | To run: database recreate and fleet start | PR 6 |
 | V04 | Entity | Depends on S01 and S02 | PR 6 |
 | V05 | All | Partly in PR 2: the trading source lists are up to date and the drift dry run is empty; the remaining gates stay green only by exclusion until PR 6 | PR 6 |
-| V06 | All | Not met: absent from =COMPONENTS_UNDER_TEST= | PR 6 |
+| V06 | All | Met in PR 7: =trading-cpp= is listed, =--all= exits 0 with no drift, the twin gate is 293 of 293, the registry gate is 16 components and 5 exceptions | PR 7 |
 | V07 | All | To run: vacuous-test review | PR 6 |
-| V08 | All | Not met: 732 sources and 58 test files | PR 6 |
+| V08 | All | Met in PR 7: 456 of 1062 sources reached; of the 606 untouched, 593 are generated and 13 hand-written and each is recorded with its reason | PR 7 |
 
 * Decisions
 

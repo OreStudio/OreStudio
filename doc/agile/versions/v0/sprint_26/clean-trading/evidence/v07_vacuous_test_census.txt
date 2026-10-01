@@ -1,0 +1,110 @@
+# Vacuous-test survey: trading
+
+1175 test case(s) in 134 source(s); 71 with no strong assertion.
+
+| Test source | Cases |
+|-------------+-------|
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp= | 6 |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp= | 6 |
+| =projects/ores.trading/api/tests/domain_trade_identifier_tests.cpp= | 4 |
+| =projects/ores.trading/api/tests/domain_trade_party_role_tests.cpp= | 4 |
+| =projects/ores.trading/api/tests/domain_trade_tests.cpp= | 4 |
+| =projects/ores.trading/api/tests/domain_fpml_event_type_tests.cpp= | 2 |
+| =projects/ores.trading/api/tests/domain_lifecycle_event_tests.cpp= | 2 |
+| =projects/ores.trading/api/tests/domain_party_role_type_tests.cpp= | 2 |
+| =projects/ores.trading/api/tests/domain_trade_id_type_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/messaging_export_portfolio_codec_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_accumulator_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_asian_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_barrier_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_digital_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_forward_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_position_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_swap_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_equity_variance_swap_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_accumulator_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_asian_forward_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_digital_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_forward_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_vanilla_option_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/core/tests/repository_fx_variance_swap_instrument_repository_tests.cpp= | 2 |
+| =projects/ores.trading/service/tests/config_parser_tests.cpp= | 2 |
+| =projects/ores.trading/api/tests/domain_activity_type_tests.cpp= | 1 |
+| =projects/ores.trading/api/tests/domain_instrument_payload_tests.cpp= | 1 |
+| =projects/ores.trading/api/tests/domain_trade_type_tests.cpp= | 1 |
+
+| Case | Only asserts |
+|------+--------------|
+| =projects/ores.trading/api/tests/domain_activity_type_tests.cpp=::activity_type_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_fpml_event_type_tests.cpp=::create_multiple_random_fpml_event_types | =CHECK(!sut.code.empty())= |
+| =projects/ores.trading/api/tests/domain_fpml_event_type_tests.cpp=::fpml_event_type_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_instrument_payload_tests.cpp=::instrument_payload_round_trips_every_alternative | (nothing) |
+| =projects/ores.trading/api/tests/domain_lifecycle_event_tests.cpp=::create_multiple_random_lifecycle_events | =CHECK(!sut.code.empty())= |
+| =projects/ores.trading/api/tests/domain_lifecycle_event_tests.cpp=::lifecycle_event_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_party_role_type_tests.cpp=::create_multiple_random_party_role_types | =CHECK(!sut.code.empty())= |
+| =projects/ores.trading/api/tests/domain_party_role_type_tests.cpp=::party_role_type_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_id_type_tests.cpp=::create_multiple_random_trade_id_types | =CHECK(!sut.code.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_id_type_tests.cpp=::trade_id_type_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_identifier_tests.cpp=::trade_identifier_convert_single_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_identifier_tests.cpp=::trade_identifier_convert_multiple_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_identifier_tests.cpp=::trade_identifier_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_identifier_tests.cpp=::trade_identifier_table_with_faker_data | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_party_role_tests.cpp=::trade_party_role_convert_single_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_party_role_tests.cpp=::trade_party_role_convert_multiple_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_party_role_tests.cpp=::trade_party_role_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_party_role_tests.cpp=::trade_party_role_table_with_faker_data | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_tests.cpp=::trade_convert_single_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_tests.cpp=::trade_convert_multiple_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_tests.cpp=::trade_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_tests.cpp=::trade_table_with_faker_data | =CHECK(!table.empty())= |
+| =projects/ores.trading/api/tests/domain_trade_type_tests.cpp=::trade_type_convert_empty_vector_to_table | =CHECK(!table.empty())= |
+| =projects/ores.trading/core/tests/messaging_export_portfolio_codec_tests.cpp=::export_portfolio_response_survives_the_json_codec | (nothing) |
+| =projects/ores.trading/core/tests/messaging_export_portfolio_codec_tests.cpp=::export_portfolio_response_survives_the_msgpack_codec | (nothing) |
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp=::write_single_activity_type | =CHECK_NOTHROW(repo.write(h.context(), at))= |
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp=::write_multiple_activity_types | =CHECK_NOTHROW(repo.write(h.context(), activity_types))= |
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp=::read_latest_activity_types | =CHECK(!read.empty())=; =CHECK(read.size() >= written.size())= |
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp=::read_all_versions_of_activity_type | =CHECK(all.size() >= 2)= |
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp=::remove_activity_type | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(h.context(), at.code))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_activity_type_repository_tests.cpp=::read_nonexistent_activity_type | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_accumulator_instrument_repository_tests.cpp=::equity_accumulator_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_accumulator_instrument_repository_tests.cpp=::equity_accumulator_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_asian_option_instrument_repository_tests.cpp=::equity_asian_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_asian_option_instrument_repository_tests.cpp=::equity_asian_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_barrier_option_instrument_repository_tests.cpp=::equity_barrier_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_barrier_option_instrument_repository_tests.cpp=::equity_barrier_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_digital_option_instrument_repository_tests.cpp=::equity_digital_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_digital_option_instrument_repository_tests.cpp=::equity_digital_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_forward_instrument_repository_tests.cpp=::equity_forward_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_forward_instrument_repository_tests.cpp=::equity_forward_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_option_instrument_repository_tests.cpp=::equity_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_option_instrument_repository_tests.cpp=::equity_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_position_instrument_repository_tests.cpp=::equity_position_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_position_instrument_repository_tests.cpp=::equity_position_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_swap_instrument_repository_tests.cpp=::equity_swap_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_swap_instrument_repository_tests.cpp=::equity_swap_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_variance_swap_instrument_repository_tests.cpp=::equity_variance_swap_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_equity_variance_swap_instrument_repository_tests.cpp=::equity_variance_swap_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_accumulator_instrument_repository_tests.cpp=::fx_accumulator_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_accumulator_instrument_repository_tests.cpp=::fx_accumulator_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_asian_forward_instrument_repository_tests.cpp=::fx_asian_forward_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_asian_forward_instrument_repository_tests.cpp=::fx_asian_forward_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp=::fx_barrier_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp=::fx_barrier_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_digital_option_instrument_repository_tests.cpp=::fx_digital_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_digital_option_instrument_repository_tests.cpp=::fx_digital_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_forward_instrument_repository_tests.cpp=::fx_forward_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_forward_instrument_repository_tests.cpp=::fx_forward_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_vanilla_option_instrument_repository_tests.cpp=::fx_vanilla_option_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_vanilla_option_instrument_repository_tests.cpp=::fx_vanilla_option_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_variance_swap_instrument_repository_tests.cpp=::fx_variance_swap_instrument_read_nonexistent | =CHECK(read.empty())= |
+| =projects/ores.trading/core/tests/repository_fx_variance_swap_instrument_repository_tests.cpp=::fx_variance_swap_instrument_remove | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(ctx, id_str))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp=::write_single_trade_type | =CHECK_NOTHROW(repo.write(h.context(), tt))= |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp=::write_multiple_trade_types | =CHECK_NOTHROW(repo.write(h.context(), trade_types))= |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp=::read_latest_trade_types | =CHECK(!read.empty())=; =CHECK(read.size() >= written.size())= |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp=::read_all_versions_of_trade_type | =CHECK(all.size() >= 2)= |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp=::remove_trade_type | =REQUIRE(!before.empty())=; =CHECK_NOTHROW(repo.remove(h.context(), tt.code))=; =CHECK(after.empty())= |
+| =projects/ores.trading/core/tests/repository_trade_type_repository_tests.cpp=::read_nonexistent_trade_type | =CHECK(read.empty())= |
+| =projects/ores.trading/service/tests/config_parser_tests.cpp=::parse_help_returns_empty | =CHECK_FALSE(result.has_value())=; =CHECK_FALSE(info.str().empty())= |
+| =projects/ores.trading/service/tests/config_parser_tests.cpp=::parse_version_returns_empty | =CHECK_FALSE(result.has_value())=; =CHECK_FALSE(info.str().empty())= |

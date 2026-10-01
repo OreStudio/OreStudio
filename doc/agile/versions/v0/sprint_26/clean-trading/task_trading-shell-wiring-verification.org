@@ -324,6 +324,51 @@ file, and the reason for each not-applicable.
 - The scheduler pass learned that a private constructor is an invariant
   rather than an obstacle, that a cited figure is evidence, and that
   only a live run finds some defects. Apply all three here.
+- *V08 is measured, and 593 of the 606 untouched sources are generated.*
+  =survey_test_reachability.py --component trading= indexes 5453 headers,
+  reads 134 test sources, reaches 698 headers and touches 456 of the
+  component's 1062 sources. The 606 it does not reach are 593 files
+  carrying the =AUTO-GENERATED FILE= marker and 13 hand-written files.
+  The generated ones are not a coverage gap: the file is the template's
+  output and the component drift check already proves it is byte for
+  byte, so a test asserting the generated body would assert the template
+  and be regenerated into silence. The generator is tested where it
+  lives, by =api/tests/generators_tests.cpp= and the 1063-case
+  =pytest projects/ores.codegen/tests= run. The survey is static
+  reachability and not coverage: a path that only runs against a live
+  server is invisible to it. The evidence is
+  =evidence/v08_test_reachability_survey.txt=.
+- *V08's 13 hand-written untouched files are the fleet's wiring.* Ten are
+  the umbrella registrars under =core/src/messaging/= -- =registrar.cpp=
+  and the nine per-product ones for bond, commodity, composite, credit,
+  equity, fx, rates, scripted and trades -- and three are the service
+  application: =service/src/app/application.cpp=, =app/host.cpp= and
+  =main.cpp=. They run only inside a started fleet: the registrars are
+  called from =application.cpp= to bind the generated per-entity
+  registrars to the wire, and =main.cpp= builds the host. They are
+  exercised by the live run this task performs -- the fleet starts and
+  serves (V03), and every generated shell command is replayed against it
+  (V04) -- and not by a unit test. That is the tree's uniform position:
+  no component carries a test for its own =application.cpp=,
+  =host.cpp= or =main.cpp=; all eleven service test trees hold a
+  =config_parser_tests.cpp= and a =main.cpp= and nothing else. Trading
+  matches the fleet rather than departing from it, and the coverage work
+  item this survey names is the fleet-wide one.
+- *H03: the comment pass finds nothing to change.* The diff of record is
+  the ten commits over =3c522bd219=; every comment it adds sits in the
+  generated shell command units and their generated tests. Read against
+  =doc/llm/skills/compass-code-review-comments/SKILL.org= and its
+  =comment-rules.md=, the added comments sit above the code they
+  describe and carry non-obvious reasoning -- why the menu's completion
+  list is the only public view of its children, and why the arity
+  guard's case pins the received count rather than restating arithmetic
+  the command already computes. No added line narrates an edit
+  (=added=, =removed=, =changed=, =updated=, =previously=), none comments
+  out code, and no work marker appears. The only end-of-line comments
+  are the two the rules preserve: =// IWYU pragma: keep.=, a tooling
+  directive, and =} // namespace=, an enclosing scope marker. The rules
+  say to record compliance rather than force a change onto compliant
+  code, so the pass changes nothing.
 
 * Test Scenarios
 

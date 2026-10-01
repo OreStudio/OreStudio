@@ -8,7 +8,7 @@
 #+filetags: :implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-access-journeys
-#+pr: 2484
+#+pr: 2455
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -111,7 +111,6 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2484][#2484]] | [iam] Write a role's permission bundle |
 | [[https://github.com/OreStudio/OreStudio/pull/2455][#2455]] | [iam] Authorise the access reads and compose them |
 
 * Review

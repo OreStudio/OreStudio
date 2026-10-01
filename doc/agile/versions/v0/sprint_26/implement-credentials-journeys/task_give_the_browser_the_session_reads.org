@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: ED03034A-C78A-4478-8C34-9BA8576C07BE
+:END:
+#+title: Task: Give the browser the session reads
+#+description: The audit screen reads sessions and no BFF route serves them. Add the page route and the active-sessions route over the subjects that already work, with the wire shapes and the route tests.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: feature/credentials-session-reads
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the browser the session reads the Audit sign-ins screen starts from: the
+tenant's sessions, one page at a time, and the sessions with no end time. Both
+subjects already answer and =ores.http= forwards them; the browser reaches
+neither, because the BFF is its only HTTP surface and serves no session route.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next          | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- =GET /api/sessions= answers the page of sessions the caller may see, with
+  =totalCount= from the wire's =total=.
+- =GET /api/sessions/active= answers the sessions with no end time, and answers
+  an empty list while the handler behind the subject is a stub rather than
+  treating that as a failure.
+- Both routes need a session and answer 401 without one.
+- The wire client gains the session shape, the two request and reply shapes and
+  the two read functions.
+- Each route has a test asserting the subject, the body and a literal expected
+  response.
+- The workspace typechecks, matches Prettier, and passes every suite.
+
+* Plan
+
+1. Add the browser-facing session shape and its wire schema with the
+   field-by-field translation.
+2. Add the two reads to =credentials.ts= beside the account and login-record
+   ones, and the two subjects to =CREDENTIAL_SUBJECTS=.
+3. Add the two routes, the page one parsing its query and the active one taking
+   nothing.
+4. Test both against the fake client, including the stub's empty answer.
+5. Verify against the running fleet and raise the pull request.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Routes added | 2 | the =* Acceptance= list | working tree |
+| BFF suite | 17 files, 87 tests passed | =npm test --workspace @ores/bff= | working tree |
+| Whole workspace | 305 tests passed in 3 packages | =npm test= | working tree |
+| Typecheck and Prettier | 0 errors; every file matches | =npm run typecheck=, =npm run format:check= | working tree |
+| Route without a session, live | 401 on both | =curl .../api/sessions=, =curl .../api/sessions/active= | bff on 21803 |
+| Unknown path under them, live | 404 | =curl .../api/sessions/nonsense= | bff on 21803 |
+
+* Notes
+
+- *An empty active list is the server's answer.* The handler behind
+  =iam.v1.sessions.active= replies ={success: true}= with no rows, so the route
+  answers ={sessions: []}=. Reporting a failure would break the screen the day
+  the handler starts answering, and reporting nothing would hide that the read
+  is a stub: the screen says so instead.
+- *The count is the wire's =total= again*, as on the accounts page, because IAM
+  names it that way and other components do not.
+- *No authenticated live call this time.* The database was recreated for the
+  previous task, and the fresh one holds no human account whose password is
+  known to me — only seeded synthetic users and service accounts — so the live
+  check here proves the routes are registered and gated (401, and 404 for a path
+  that does not exist) and the behaviour is proven by the route tests. A
+  signed-in call should be added when a seeded test account exists again.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done 2026-10-01.
+
+The browser can read sessions. =GET /api/sessions= answers the page with
+=totalCount=, and =GET /api/sessions/active= answers the open ones — an empty
+list today, which is the stub's answer and not an error. =@ores/wire-protocol=
+gained the session shape, the wire schema with its field-by-field translation,
+the two request and reply shapes and the two reads, and four route tests came
+with them.
+
+Verification: 305 tests green in three packages (bff 87 in 17 files, web 167 in
+15, wire-protocol 51 in 7), typecheck clean, Prettier clean. Live against the
+fleet with the BFF run from source: both routes answer 401 without a session and
+an unknown path under them answers 404.

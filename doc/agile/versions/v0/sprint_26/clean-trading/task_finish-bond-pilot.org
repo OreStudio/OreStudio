@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/finish-bond-pilot
-#+pr:
+#+pr: 2476
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -438,6 +438,7 @@ rows the work touches.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2476][#2476]] | [trading] Finish the bond pilot |
 |    | Finish the bond pilot |
 
 * Review

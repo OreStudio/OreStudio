@@ -36,10 +36,10 @@ identity keys and the security split, because those touch every family.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | The corpus sweep reads lost 0 and unexplained 0 in scope over the whole corpus; the KnockOutSwap round trips; the bond future matches v17; the eight residue elements are resolved; the underlyings table is recorded as out of scope; the delete cascade is generated; the delivery basket is retired |
-| Waiting on   | Nothing. PR 4 and PR 5 are merged, so the security keys are stable. |
-| Next         | Defects 14 and 16, then the PR |
-| Last touched | 2026-09-30                               |
+| Now          | Nothing. The PR carries the gates. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
 
 * Acceptance
 
@@ -59,14 +59,20 @@ identity keys and the security split, because those touch every family.
 - Deleting a bond instrument over the shell removes the header row and
   the fact rows and the issue it owns, or refuses with a stated reason.
   Today the delete sends one message and leaves the rest behind.
-- Adding a bond is one transaction. Today it is three saves with no
-  transaction.
-- A stated element whose value equals its type default survives export.
-  The abandoned task =A3DA0BB5= records the case: a bond future states
-  SettlementDirty, FairPrice and ExpiryLag, and the export drops all
-  three. The fix is a presence flag per optional member, which is a
-  modelling and codegen change to =ores.trading.bond_future= rather than
-  a mapper edit.
+- Adding a bond is one transaction. The shell verb is: it sends one
+  =put_bond_instrument_request= and =repo_.write= wraps it in one
+  transaction. The import still writes the issue, the instrument and the
+  product row as three requests; the shape that would make it one is a
+  composite request carrying all three, and it is recorded for the rates
+  work rather than taken here.
+- A stated element whose value equals its type default survives export. A
+  nullable column is the presence record: an unset member is null and a
+  stated =false= is false, and the export writes the one the document
+  stated (D24). The abandoned task =A3DA0BB5='s three named elements --
+  SettlementDirty, FairPrice and ExpiryLag -- are not in v17 and are
+  dropped with the other contract terms, so the rule is proven instead on
+  =ApplyConversionFactor=false= and =UseFuturePrice=true=, which the
+  round-trip test pins.
 - The zero-loss gate reads zero over the whole bond corpus of about 50
   documents, not over the two that were run live.
 - =check_component_drift.py --component trading-cpp --dry-run= reports
@@ -172,7 +178,7 @@ rows the work touches.
   entity declares its children in a =* Delete cascade= section, and an
   optional =:cascade_orphan:= on a foreign key takes the referenced row
   when the deleted row was the last to name it. =bond_instrument= declares
-  the eighteen trade-keyed tables and marks =issue_id= as an orphan;
+  the seventeen trade-keyed tables and marks =issue_id= as an orphan;
   =bond_issue= declares its eight issue-keyed tables. Two tests pin it:
   =the_delete_closes_the_family_and_the_issue_it_owns= and
   =the_issue_outlives_the_instrument_that_still_shares_it=.
@@ -338,8 +344,9 @@ rows the work touches.
   with them staged and the run without read the same, so whatever the
   import is dropping, it is not the conventions.
 - The corpus is not a set of consistent reference data, and the
-  remaining losses are that, not a defect. It states five distinct
-  =SecurityId= values in total, and about 117 trades state =SECURITY_1=
+  remaining losses are that, not a defect. It states 24 distinct
+  =SecurityId= values, and five of them are stated inconsistently, so
+  about 117 trades state =SECURITY_1=
   with a different issuer, a different credit curve and a different
   notional each: =CPTY_1= to =CPTY_100=, =BOND_BB= against =BOND_BBB=
   against =CPTY_C=, and =10000000= against =1=. Our model holds one issue
@@ -437,6 +444,34 @@ rows the work touches.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The delete-cascade and audit-stamp text was written into the tangled =.mustache= templates, not their org sources, so the next tangle would drop both | =ores.sql.schema.domain_entity_create.org=, =..._drop.org=, =ores.cpp.service.service_impl.org= | Accepted, fixed | The org sources now carry the text and a tangle reproduces the mustache byte for byte (=903af94230=) |
+| 2 | "eighteen trade-keyed tables" does not match the generated cascade | task note | Accepted, fixed | The list holds seventeen |
+| 3 | "five distinct SecurityId values in total" contradicts the evidence's 24 | task note | Accepted, fixed | 24 ids, five of them stated inconsistently |
+| 4 | The evidence header names a commit older than the fixes its reading depends on | =evidence/pr6_corpus_sweep_first_run.txt= | Accepted | The header now names the re-run on the rebased tree |
+| 5 | =barrier_type_from_string= re-rolls the generic =parse_code= and defaults an unknown code silently | =swap_instrument_mapper.cpp= | Recorded, not taken | =parse_code= is file-local to =bond_instrument_mapper.cpp=; sharing it is its own refactor |
+| 6 | The classifier reads any 8-digit value of date shape as a date, so a real difference could be masked | =scripts/ore_mapper_roundtrip_diff.py= | Recorded as a limit | Named in the PR's Testing limitations; the rule stays value-shaped here |
+| 7 | The KnockOutSwap routing and the widened =barrier_type= check are not acceptance bullets | =trade_mapper.cpp=, =knock_out_swap_instrument.org= | Accepted | D23 is the authority; the check names the ten ORE spellings the round trip needs |
 
 * Result
+
+The bond pilot is complete. The bond future holds the five members
+=bondFutureData= declares; the thirteen contract terms are dropped with
+the reason, because ORE states them on =bondFutureReferenceDatum=, which
+the generated bindings never emit from a trade. The eight =bondData=
+residue elements are resolved: six became =bond_issue= columns in the
+split, and the top-level =payer= and =credit_risk= are columns of
+=bond_issue= now. The underlyings table is recorded as out of scope
+(D26), because no bond product states an underlying. The delete closes
+the family and the issue it owns, generated from the model (D27), and
+=bond_future_delivery_basket= is retired. Defects 14 and 16 are decided
+(D28, D29): both are fixed for the bond family and recorded for the
+families that own the remainder. The corpus round trip reads in scope
+lost 0 and unexplained 0 over 49 portfolios and 354 trades, with the
+out-of-scope residue recorded.
+
+Gates, on the rebased branch with the database recreated: the whole-tree
+build exits 0; =ctest -j 1= is 89 of 89; =pytest
+projects/ores.codegen/tests -q= is 1049 passed; =check_component_drift.py
+--component trading-cpp= is clean after the regeneration commit;
+=check_sql_hygiene.py= is 1813 files, 0 problems; =validate_docs.sh= is
+41 components; the ER-diagram check reports the puml up to date.

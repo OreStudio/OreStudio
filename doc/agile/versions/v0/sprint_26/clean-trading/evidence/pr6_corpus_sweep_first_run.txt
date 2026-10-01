@@ -1,5 +1,7 @@
-ORE bond corpus round trip — first corpus-wide run, 2026-09-30
-commit: 72eb01d1a9 (working tree, before the bond-future reshape)
+ORE bond corpus round trip — corpus-wide run, 2026-09-30, re-run 2026-10-01
+commit: 903af94230 on the rebased branch. The first header named
+72eb01d1a9, which predates the empty-element and KnockOutSwap fixes this
+reading depends on; the re-run on the rebased tree reads the same numbers.
 
 === what the run covers ===
 Bond corpus: 49 portfolio(s) and 93 configuration document(s) under

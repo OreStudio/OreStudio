@@ -95,8 +95,8 @@ task and name that file in the Command column.
 | New IAM test cases | 7 | =ctest -R ores.iam.core.tests -V= | [iam] Let a role's permission bundle be written |
 | IAM suites | 5 of 5 pass | =ctest -R "ores.iam.*\|ores.http.iam.*\|ores.shell.iam.*"= | branch tip, PR #2484 |
 | Permission codes seeded for iam | 3 added, 12 still unseeded | =check_handler_permissions.required_codes('iam')= | [iam] Let a role's permission bundle be written |
-| Permissions in a freshly created database | 555 | =compass db recreate -y -k= | [iam] Let a role's permission bundle be written |
-| Role-permission assignments in a freshly created database | 133 | =compass db recreate -y -k= | [iam] Let a role's permission bundle be written |
+| Permissions in a freshly created database | 555 | =compass db recreate -y -k= | branch tip, PR #2484 |
+| Role-permission assignments in a freshly created database | 133 | =compass db recreate -y -k= | branch tip, PR #2484 |
 | Permission upserts the seed defines | 555 | =grep -c ores_iam_permissions_upsert_fn iam_permissions_populate.sql= | branch tip, PR #2484 |
 | Local gates | 22 pass, 0 fail | =build/audit/run_local_gates.sh= | branch tip, PR #2484 |
 | Codegen test suite | 1052 pass | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | branch tip, PR #2484 |
@@ -106,7 +106,8 @@ task and name that file in the Command column.
 * Notes
 
 - The Commit column names a commit by its subject or by the branch tip, not by a hash, because this branch has been rebased three times onto =origin/main= and every rebase rewrites the hashes. A subject survives that, and the branch is PR #2484. Where a row names the branch tip it means the head of that pull request at the time of the measurement.
-- The database rows were measured before the first rebase. The iam seed files are byte-identical between that base and the current one, and the seed defines 555 permission upserts, so the figures reproduce; the row above records that count at a commit a reader can reach.
+- The database was recreated a second time after the third rebase, so the two rows above are measured on the current base. The first run, on the first base, produced the same two figures.
+- The IAM core suite failed on the rebased base until that recreate: =origin/main= added =badge_code= to =ores_iam_tenant_statuses_tbl=, and a database created before it answers =column "badge_code" does not exist=. Nothing in this branch was involved, and the suite passes on the recreated schema.
 - All 22 local gates pass on the rebased base. The one failure the battery reported before the first rebase, =projects/ores.ore/core/src/component_files.cmake=, was stale on the older =origin/main= and has since been fixed there by its owner, so this branch no longer inherits it.
 - Tangling the shell and HTTP recipes materialised =projects/ores.shell/scripts/library/curve_sections/= and =projects/ores.http/scripts/library/currencies/=, whose recipe sources were committed and whose generated artefacts were not. =curve_sections= has since been committed on =origin/main= by its owner, and the duplicate the tangle wrote here was moved aside to =build/audit/superseded/= before the rebase; =currencies= is still outstanding on =main=.
 - The migration was not replayed against a database that predates the columns. A fresh database proves the create script, which is what the environment runs; the migration exists for the rollout, and its own docstring says so.

@@ -36,10 +36,10 @@ namespace ores::shell::app::commands {
 /**
  * @brief Commands for dataset bundles.
  *
- * Lists the bundles available for publication and publishes one,
- * mirroring what the provisioning wizards do behind their bundle
- * pages. Publication dispatches a workflow; --wait blocks on it via
- * workflow_operation_commands::wait_for_instance.
+ * Publishes a bundle, mirroring what the provisioning wizards do behind
+ * their bundle pages. Publication dispatches a workflow; --wait blocks on
+ * it via workflow_operation_commands::wait_for_instance. The listing is a
+ * generated unit of its own, under the dataset_bundles menu.
  */
 class bundles_commands {
 private:
@@ -55,14 +55,9 @@ public:
     /**
      * @brief Register bundle-related commands.
      *
-     * Creates the bundles submenu with list and publish operations.
+     * Creates the bundles submenu with the publish operation.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
-
-    /**
-     * @brief List the dataset bundles available on the server.
-     */
-    static void process_list(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Publish a bundle: bundles publish <code> [--wait]

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: F4400538-681A-5F03-9E68-244A9860E727
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the report_definition_template commands from the shell?
+#+description: Every command the report_definition_template submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_definition_template:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> report_definition_template list-dq-report-definition-templates=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =list-dq-report-definition-templates=
+:PROPERTIES:
+:ID: 99399D7D-1499-5AAD-826F-028789FF581E
+:END:
+
+Sends =list_dq_report_definition_templates_request= and prints =list_dq_report_definition_templates_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_definition_template list-dq-report-definition-templates [--bundle_code <v>]
+#+end_example
+
+It is addressed at =dq.v1.report-definition-templates.list=.
+
+#+name: report_definition_template-list-dq-report-definition-templates
+#+begin_src ores-shell :tangle report_definition_template-list-dq-report-definition-templates.ores :exports none
+report_definition_template list-dq-report-definition-templates
+#+end_src
+

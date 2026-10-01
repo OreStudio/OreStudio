@@ -38,9 +38,9 @@ Each component the clean standard has cleared has a shell surface that generatio
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:93348F63-EB20-4F88-81A5-6AE127556E42][Generate the analytics shell surface]] | BACKLOG | | | Check every analytics command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
-| [[id:E22DB681-A200-47CA-9746-F3CDADCC2ADF][Generate the assets shell surface]] | BACKLOG | | | Check every assets command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
-| [[id:7385010B-E4AB-4CC8-94F0-4D48F9977C7C][Generate the dq shell surface]] | BACKLOG | | | Check every dq command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
+| [[id:93348F63-EB20-4F88-81A5-6AE127556E42][Generate the analytics shell surface]] | STARTED | 2026-10-01 | | Check every analytics command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
+| [[id:E22DB681-A200-47CA-9746-F3CDADCC2ADF][Generate the assets shell surface]] | STARTED | 2026-10-01 | | Check every assets command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
+| [[id:7385010B-E4AB-4CC8-94F0-4D48F9977C7C][Generate the dq shell surface]] | STARTED | 2026-10-01 | | Check every dq command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:BEC3DCC2-CF43-4B90-9155-11B209715764][Generate the iam shell surface]] | BACKLOG | | | Check every iam command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:2BBD64F2-E5CE-41EC-8848-CD13897364F6][Generate the refdata shell surface]] | BACKLOG | | | Check every refdata command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:DFE84302-EB58-4414-9ACA-D96790A44DE8][Generate the storage shell surface]] | BACKLOG | | | Check every storage command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |

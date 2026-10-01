@@ -255,14 +255,14 @@ command printed.
 #+attr_latex: :environment tabularx :width \linewidth :align p{5.2cm}X
 | Command | Purpose |
 |---------+---------|
-| =bundles list= | The reference data catalogues available for publication. |
+| =dataset_bundles list= | The reference data catalogues available for publication. |
 | =bundles publish <code> [--wait]= | Publish a catalogue; =--wait= blocks until the backend finishes. |
 | =workflow wait <instance_id> [--timeout <seconds>] [--expect-steps <n>] [--expect-state <state>]= | Follow a run, or assert the terminal state a run that is meant to fail must reach. |
 | =workflow_steps by-workflow-id <id>= | Read a run's steps by the instance id the provision command printed. |
-| =lei countries= / =lei entities <country> [--filter <text>]= / =lei search <name or LEI>= | Browse the GLEIF registry for a root LEI. |
+| =lei countries= / =lei_entity_summary search-lei-entities <text> [--country_filter <code>]= | Browse the GLEIF registry for a root LEI. |
 | =parties list= | List the parties of the signed-in tenant. |
 | =accounts set-default-party <party-uuid-or-full-name>= | Set the logged-in account's default party. |
-| =reports templates= | The standard report definitions seeded in a bundle. |
+| =report_definition_template list-dq-report-definition-templates [--bundle_code <code>]= | The standard report definitions seeded in a bundle. |
 
 ** Scripts
 

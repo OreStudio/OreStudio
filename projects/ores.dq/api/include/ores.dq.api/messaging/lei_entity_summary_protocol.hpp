@@ -69,7 +69,7 @@ struct get_lei_entities_summary_request {
     /**
      * @brief The country to list, or empty for every country's count.
      */
-    std::string country_filter;
+    std::string country_filter = "";
     /**
      * @brief How many rows to skip.
      */
@@ -156,7 +156,7 @@ struct search_lei_entities_request {
     /**
      * @brief The country to restrict the matches to, or empty for every country.
      */
-    std::string country_filter;
+    std::string country_filter = "";
     /**
      * @brief How many matches to skip.
      */

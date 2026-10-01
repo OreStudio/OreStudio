@@ -1,0 +1,6 @@
+# =search-lei-entities=
+#
+# GENERATED from doc/recipes/shell/lei_entity_summary/lei_entity_summary.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+lei_entity_summary search-lei-entities __none__

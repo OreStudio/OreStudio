@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8E3EF28A-A3B9-40CD-AFD6-36C526895885
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.dq.lei_entity_summary
 #+description: Codegen operation model for the LEI entity summary read, rendered to C++ and TypeScript from one source.
@@ -111,6 +112,7 @@ hierarchy would create.
 *** country_filter
 :PROPERTIES:
 :cpp_type: std::string
+:default:  ""
 :END:
 
 #+begin_src cpp :name comment
@@ -292,6 +294,7 @@ hierarchy would create.
 *** country_filter
 :PROPERTIES:
 :cpp_type: std::string
+:default:  ""
 :END:
 
 #+begin_src cpp :name comment

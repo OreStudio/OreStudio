@@ -89,3 +89,51 @@ The census scripts are throwaway and live outside the tree in the session
 scratch directory; each prints the tables quoted above. The file counts are
 reproducible with the =find= command at the top of this page, and the shape
 tables with any XML reader over the same glob.
+
+* The corpus round trip, run outside the build system
+
+=compass build= could not run when this task was worked — it wraps =cmake
+--build= in =systemd-run --user --scope=, and the sandbox does not expose the
+user manager's private socket. The corpus round trip was therefore run by
+linking a driver directly against the already-built =libores.ore.core=, using
+the library list from the test target's own =link.txt= and the compile flags
+from its own =flags.make=. The driver is:
+
+#+begin_src cpp
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include <cstdio>
+#include <filesystem>
+#include <string>
+
+int main() {
+    using namespace ores::ore;
+    const auto kind =
+        xml::make_roundtrip_kind<domain::pricingengines, domain::mapped_pricing_engines>(
+            "pricing engines", "pricingengine",
+            &domain::pricing_engine_mapper::map,
+            &domain::pricing_engine_mapper::reverse,
+            xml::parsed_text_difference<domain::pricingengines>);
+    const auto walk = xml::walk_kind(kind, std::filesystem::path(CORPUS_ROOT));
+    std::printf("kind=%s files=%d passed=%d failures=%zu\n", walk.kind.c_str(), walk.files,
+                walk.passed, walk.failures.size());
+    for (const auto& failure : walk.failures)
+        std::printf("FAIL %s\n", failure.c_str());
+    return (walk.files > 0 && walk.failures.empty()) ? 0 : 1;
+}
+#+end_src
+
+Built with =-DCORPUS_ROOT="<checkout>/external/ore/examples"= and the compile
+flags of the =ores.ore.core.lib= target, then linked ahead of the =ores.ore.core=
+tests target's library list. It printed:
+
+#+begin_src
+kind=pricing engines files=125 passed=125 failures=0
+#+end_src
+
+The committed test
+[[file:../task_round-trip-the-pricing-engine-configuration.org][xml_pricing_engine_mapper_roundtrip_tests.cpp]]
+runs the same walk under Catch2 and is the artefact that should be cited once a
+build is available; this driver only stands in for it while a build is not.
+

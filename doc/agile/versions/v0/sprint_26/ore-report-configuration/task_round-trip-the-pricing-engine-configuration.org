@@ -28,9 +28,9 @@ Every pricingengine*.xml in the corpus round trips through the entities, both wa
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The mapper and both tests are written. The corpus census is measured and recorded. |
-| Waiting on   | A build: =compass build= cannot reach the systemd user bus inside the workspace sandbox, and the escalation is refused without a direct authorisation. Nothing has been compiled by the build system, linked, or run. |
-| Next         | Compile, recreate the database for the =position= columns, run the corpus walk and the database round trip, then commit. |
+| Now          | The mapper and both tests are written, and the mapper is proven over the whole corpus: 125 of 125 files round trip, 0 failures. The database leg has not been run. |
+| Waiting on   | A build. =compass build= cannot reach the systemd user bus inside the workspace sandbox, and the escalation is refused without a direct authorisation. Without it the analytics libraries cannot be relinked, so the database case cannot run. |
+| Next         | Recreate the database for the =position= columns, run the corpus walk and the database round trip through the build system, then raise the PR. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -62,6 +62,8 @@ task and name that file in the Command column.
 | Files carrying GlobalParameters | 55, none of them empty | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
 | Files repeating a Product type | 34 | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
 | Files repeating a parameter name in one scope | 24 | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
+| Pricing engine files that round trip through the mapper | 125 of 125, 0 failures | corpus driver linked against the built =libores.ore.core= | =c000c2add4= |
+| New and regenerated sources that compile under =-Werror= | 15 of 15 | each compiled with its own target's recorded =flags.make= | =c000c2add4= |
 
 The five corpus facts above are recorded with their raw output in
 [[file:evidence/pricing_engine_corpus.md][evidence/pricing_engine_corpus.md]].
@@ -95,3 +97,60 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The mapper pair and both tests are written, and the corpus is proven.
+
+** What round trips
+
+=125= of the =125= pricing engine files in the corpus round trip through
+=pricing_engine_mapper=, with no failure. The walk is the harness every other
+kind uses: each file is parsed, mapped to the entities, mapped back, and
+compared as a parsed document against the original, so a field the mapper drops
+makes the two disagree and the first difference is named.
+
+This was measured by linking a driver against the already-built
+=libores.ore.core= and running it over =external/ore/examples=. The output was:
+
+#+begin_src
+kind=pricing engines files=125 passed=125 failures=0
+#+end_src
+
+The driver is throwaway and lives outside the tree; the committed test runs the
+same walk inside Catch2.
+
+The mapper and the two new test files also compile clean under their own
+targets' recorded =flags.make= with =-Wall -Wextra -Werror=, as do the twelve
+regenerated sources in =ores.analytics= and =ores.shell=. Fifteen of fifteen.
+
+** What is not proven
+
+The database leg has not been run.
+=pricing_engine_database_roundtrip_tests.cpp= is written but has never
+executed, so nothing here shows that PostgreSQL holds what the mapper produces.
+The walk above proves the mapper and the entity shape; it does not prove the
+tables.
+
+It needs a real build, and =compass build= cannot run: it wraps =cmake --build=
+in =systemd-run --user --scope=, which fails with "Failed to connect to user
+scope bus via local transport" because the sandbox does not expose the user
+manager's private socket. Compiling by hand is not a substitute, because
+=pricing_model_product= gained a field and so every unchanged translation unit
+that includes it needs recompiling too — only the build system's dependency
+tracking does that, and a hand-linked binary would mix two struct layouts.
+
+** Why =position= had to be added
+
+=34= of the 125 files write the same =Product/@type= more than once and =24=
+write the same =Parameter/@name= twice within one scope, so neither field
+identifies its row and neither can be sorted back into the order the document
+wrote. The column follows =ores.reporting.configuration_parameter=, which
+documents the same reason for the same solution.
+
+** A corrected description
+
+The task description claimed that no entity model existed and that the document
+carried engine-to-currency and engine-to-product assignments and grid and script
+settings. Both claims were wrong: the three entities already mirrored the
+document element for element, and the schema has none of those settings. The
+description is corrected, and the three entities were left as they were apart
+from the two =position= columns.

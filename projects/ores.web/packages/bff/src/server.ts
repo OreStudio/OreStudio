@@ -49,6 +49,7 @@ import {
     loginInfoKeyRequestSchema,
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
+    listSessionsRequestSchema,
     passwordPolicySchema,
     provisionPartyRequestSchema,
     provisionPartyResultSchema,
@@ -57,8 +58,10 @@ import {
     registrationPolicyViewSchema,
     readAccount,
     readAccountsPage,
+    readActiveSessions,
     readLoginInfo,
     readLoginInfoPage,
+    readSessionsPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
@@ -755,6 +758,38 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw invalidRequest('An account id is required.');
         }
         return { loginInfo: await readLoginInfo(session.client, key.data.key.account_id) };
+    });
+
+    /**
+     * The tenant's sessions, one page at a time.
+     *
+     * The audit screen reads the sign-in record from here: who is signed in,
+     * from where, and how much they have moved. A session with no end time is
+     * an open one, which is what makes a row the kind an administrator acts on.
+     */
+    server.get('/api/sessions', async (request) => {
+        const session = requireSession(request);
+        const query = request.query as Record<string, string | undefined>;
+        const page = listSessionsRequestSchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 100),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        return readSessionsPage(session.client, page.data);
+    });
+
+    /**
+     * The sessions with no end time.
+     *
+     * The handler behind the subject answers with success and no rows today, so
+     * this answers an empty list rather than an error: the screen says the read
+     * is a stub, which is the truth about the server and not about the tenant.
+     */
+    server.get('/api/sessions/active', async (request) => {
+        const session = requireSession(request);
+        return readActiveSessions(session.client);
     });
 
     /**

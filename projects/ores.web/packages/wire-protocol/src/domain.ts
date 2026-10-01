@@ -151,6 +151,38 @@ export const loginInfoPageSchema = z.object({
 export type LoginInfoPage = z.infer<typeof loginInfoPageSchema>;
 
 /**
+ * A session as a screen reads it.
+ *
+ * `endTime` is empty while the session is open, which is what makes a row an
+ * active one; the read that answers only open sessions carries the same shape.
+ */
+export const sessionSchema = z.object({
+    tenantId: uuidSchema,
+    id: uuidSchema,
+    accountId: uuidSchema,
+    startTime: z.string(),
+    endTime: z.string(),
+    clientIp: z.string(),
+    clientIdentifier: z.string(),
+    clientVersionMajor: z.int().nonnegative(),
+    clientVersionMinor: z.int().nonnegative(),
+    bytesSent: z.int().nonnegative(),
+    bytesReceived: z.int().nonnegative(),
+    countryCode: z.string(),
+    protocol: z.string(),
+});
+
+export type Session = z.infer<typeof sessionSchema>;
+
+/** One page of sessions. `totalCount` counts every session the caller can see. */
+export const sessionPageSchema = z.object({
+    sessions: z.array(sessionSchema),
+    totalCount: z.int().nonnegative(),
+});
+
+export type SessionPage = z.infer<typeof sessionPageSchema>;
+
+/**
  * The live session's selected party, as the handover carries it.
  *
  * The account and tenant identifiers travel alongside the party because the

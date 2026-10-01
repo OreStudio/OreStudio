@@ -26,6 +26,7 @@ import {
     uuidSchema,
     wireTimestampSchema,
     type LoginInfo,
+    type Session,
 } from './domain.js';
 import type { Account, PartySummary } from './domain.js';
 import { subjects as httpInfoSubjects } from './generated/http/protocol/http_info_protocol.js';
@@ -486,6 +487,77 @@ export const loginInfoPageSchema = z
 
 /** The translated page the BFF returns and the browser consumes. */
 export type WireLoginInfoPage = z.infer<typeof loginInfoPageSchema>;
+
+/** One session, as the server writes it. */
+const wireSessionSchema = z.object({
+    tenant_id: uuidSchema,
+    id: uuidSchema,
+    account_id: uuidSchema,
+    start_time: text,
+    end_time: text,
+    client_ip: text,
+    client_identifier: text,
+    client_version_major: z.int().nonnegative().default(0),
+    client_version_minor: z.int().nonnegative().default(0),
+    bytes_sent: z.int().nonnegative().default(0),
+    bytes_received: z.int().nonnegative().default(0),
+    country_code: text,
+    protocol: text,
+});
+
+/** Translates one wire session into the domain type, field by field. */
+function mapSession(row: z.infer<typeof wireSessionSchema>): Session {
+    return {
+        tenantId: row.tenant_id,
+        id: row.id,
+        accountId: row.account_id,
+        startTime: row.start_time,
+        endTime: row.end_time,
+        clientIp: row.client_ip,
+        clientIdentifier: row.client_identifier,
+        clientVersionMajor: row.client_version_major,
+        clientVersionMinor: row.client_version_minor,
+        bytesSent: row.bytes_sent,
+        bytesReceived: row.bytes_received,
+        countryCode: row.country_code,
+        protocol: row.protocol,
+    };
+}
+
+/** `list_sessions_response`. IAM states the count as `total`. */
+export const sessionPageSchema = z
+    .object({
+        sessions: z.array(wireSessionSchema).default([]),
+        total: z.int().nonnegative().default(0),
+    })
+    .transform((row) => ({
+        sessions: row.sessions.map(mapSession),
+        totalCount: row.total,
+    }));
+
+/** The translated page the BFF returns and the browser consumes. */
+export type WireSessionPage = z.infer<typeof sessionPageSchema>;
+
+/**
+ * `get_active_sessions_response`.
+ *
+ * The reply carries `success` and a message beside the rows, and the handler
+ * behind it answers `{success: true}` with no rows today: the read is a stub, so
+ * an empty list here is the server's answer rather than a failure.
+ */
+export const activeSessionsReplySchema = z
+    .object({ sessions: z.array(wireSessionSchema).default([]) })
+    .transform((row) => ({ sessions: row.sessions.map(mapSession) }));
+
+/** The active sessions the BFF returns and the browser consumes. */
+export type WireActiveSessions = z.infer<typeof activeSessionsReplySchema>;
+
+/** `list_sessions_request`, sent on `iam.v1.sessions.list`. */
+export const listSessionsRequestSchema = z.object({
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(1000).default(100),
+    order: orderSchema.default({ field: '', descending: false }),
+});
 
 /**
  * `get_account_request`, and `get_login_info_request` beside it.

@@ -22,18 +22,25 @@
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { Account, LoginInfo } from './domain.js';
 import { subjects as loginInfoSubjects } from './generated/iam/protocol/login_info_protocol.js';
+import { subjects as sessionSubjects } from './generated/iam/protocol/session_protocol.js';
+import { subjects as sessionOperationSubjects } from './generated/iam/protocol/session_operations_protocol.js';
 import {
     SUBJECTS,
     accountPageSchema,
     accountReplySchema,
     accountUsernameRequestSchema,
+    activeSessionsReplySchema,
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
+    listSessionsRequestSchema,
     loginInfoKeyRequestSchema,
     loginInfoPageSchema,
     loginInfoReplySchema,
+    sessionPageSchema,
     type WireAccountPage,
+    type WireActiveSessions,
     type WireLoginInfoPage,
+    type WireSessionPage,
 } from './operations.js';
 
 /**
@@ -52,6 +59,8 @@ import {
 export const CREDENTIAL_SUBJECTS = {
     getAccount: 'iam.v1.accounts.get',
     getLoginInfo: loginInfoSubjects.get_login_info_request,
+    listSessions: sessionSubjects.list_sessions_request,
+    activeSessions: sessionOperationSubjects.get_active_sessions_request,
 } as const;
 
 /** The page of accounts the caller may see. */
@@ -104,5 +113,32 @@ export async function readLoginInfo(
         CREDENTIAL_SUBJECTS.getLoginInfo,
         loginInfoKeyRequestSchema.parse({ key: { account_id: accountId } }),
         loginInfoReplySchema,
+    );
+}
+
+/** The page of sessions the caller may see, open and closed alike. */
+export async function readSessionsPage(
+    caller: AuthenticatedCaller,
+    input: { readonly offset?: number; readonly limit?: number } = {},
+): Promise<WireSessionPage> {
+    return caller.callAuthenticated(
+        CREDENTIAL_SUBJECTS.listSessions,
+        listSessionsRequestSchema.parse(input),
+        sessionPageSchema,
+    );
+}
+
+/**
+ * The sessions with no end time.
+ *
+ * The handler behind this subject answers `{success: true}` and no rows today,
+ * so an empty list is the server's answer and not a failure. The screen states
+ * that the read is a stub rather than pretending the tenant has no sessions.
+ */
+export async function readActiveSessions(caller: AuthenticatedCaller): Promise<WireActiveSessions> {
+    return caller.callAuthenticated(
+        CREDENTIAL_SUBJECTS.activeSessions,
+        {},
+        activeSessionsReplySchema,
     );
 }

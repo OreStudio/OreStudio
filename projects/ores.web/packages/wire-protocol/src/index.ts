@@ -100,12 +100,14 @@ export {
     accountPageSchema as wireAccountPageSchema,
     accountReplySchema,
     accountUsernameRequestSchema,
+    activeSessionsReplySchema,
     changePasswordRequestSchema,
     changePasswordResultSchema,
     emptyRequestSchema,
     httpInfoResponseSchema,
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
+    listSessionsRequestSchema,
     loginInfoKeyRequestSchema,
     loginInfoPageSchema as wireLoginInfoPageSchema,
     loginInfoReplySchema,
@@ -116,6 +118,7 @@ export {
     partyRequestSchema,
     partyResponseSchema,
     refreshResponseSchema,
+    sessionPageSchema as wireSessionPageSchema,
     wirePartySchema,
 } from './operations.js';
 export type {
@@ -225,8 +228,10 @@ export {
     CREDENTIAL_SUBJECTS,
     readAccount,
     readAccountsPage,
+    readActiveSessions,
     readLoginInfo,
     readLoginInfoPage,
+    readSessionsPage,
 } from './credentials.js';
 
 // The HTTP contract shared by the BFF and the browser. Both sides parse with

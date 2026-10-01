@@ -122,3 +122,8 @@ export type { PasswordPolicy } from './operations.js';
 // column, so nothing secret travels with it.
 export { loginInfoPageSchema, loginInfoSchema } from './domain.js';
 export type { LoginInfo, LoginInfoPage } from './domain.js';
+
+// The sessions the audit screen reads: one page of every session, and the open
+// ones on their own. An empty endTime is what makes a row active.
+export { sessionPageSchema, sessionSchema } from './domain.js';
+export type { Session, SessionPage } from './domain.js';

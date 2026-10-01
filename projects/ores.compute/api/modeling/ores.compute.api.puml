@@ -104,7 +104,6 @@ namespace ores #F2F2F2 {
                 +id : boost::uuids::uuid
                 +workunit_id : boost::uuids::uuid
                 +host_id : boost::uuids::uuid
-                +pgmq_msg_id : int64_t
                 +server_state : int
                 +outcome : int
                 +output_uri : string

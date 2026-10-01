@@ -209,7 +209,6 @@ namespace ores #F2F2F2 {
                 +version : int
                 +workunit_id : string
                 +host_id : optional<string>
-                +pgmq_msg_id : optional<int64_t>
                 +server_state : int
                 +outcome : optional<int>
                 +output_uri : optional<string>

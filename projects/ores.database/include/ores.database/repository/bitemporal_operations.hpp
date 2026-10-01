@@ -372,9 +372,9 @@ ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
  *
  * @example
  * auto rows = execute_parameterized_multi_column_query(ctx_,
- *     "SELECT * FROM pgmq.read($1, $2, $3)",
- *     {queue_name, "30", "1"},
- *     lg(), "Reading pgmq messages");
+ *     "SELECT id, status FROM ores_mq_messages_tbl WHERE queue_id = $1::uuid",
+ *     {queue_id},
+ *     lg(), "Reading queue messages");
  */
 ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
 execute_parameterized_multi_column_query(context ctx,

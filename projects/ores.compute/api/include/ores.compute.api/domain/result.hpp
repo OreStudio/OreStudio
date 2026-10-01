@@ -38,8 +38,8 @@ namespace ores::compute::domain {
  * @brief A specific execution instance of a workunit assigned to a host.
  *
  * Bridges the workunit definition and the actual execution on a grid node.
- * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
- * and the location of output data. The BOINC equivalent of 'result'.
+ * Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+ * location of output data. The BOINC equivalent of 'result'.
  *
  * The entity carries no change-reason cache: the grid machinery writes results
  * and there is no human edit flow.
@@ -76,11 +76,6 @@ struct result final {
      * @brief FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched.
      */
     boost::uuids::uuid host_id;
-
-    /**
-     * @brief PGMQ lease pointer; NULL when not actively queued.
-     */
-    std::int64_t pgmq_msg_id = 0;
 
     /**
      * @brief State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.

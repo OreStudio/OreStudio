@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T09:40:28.028982Z
+' Generated: 2026-10-03T09:41:34.034593Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10595,7 +10595,6 @@ package "compute" #EDE7F6 {
         * version : integer
         * workunit_id : uuid <<FK>>
           host_id : uuid <<FK>>
-          pgmq_msg_id : bigint <<FK>>
         * server_state : integer
           outcome : integer
           output_uri : text
@@ -10615,8 +10614,8 @@ package "compute" #EDE7F6 {
     To modify, update the template and regenerate.
     Result Table
     Bridges the workunit definition and the actual execution on a grid node.
-    Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
-    and the location of output data. The BOINC equivalent of 'result'.
+    Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+    location of output data. The BOINC equivalent of 'result'.
     The entity carries no change-reason cache: the grid machinery writes results
     and there is no human edit flow.
     Generator-signature exception: the generator takes only the generation

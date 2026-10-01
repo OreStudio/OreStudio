@@ -14,8 +14,8 @@
 #+updated: 2026-08-11
 
 Bridges the workunit definition and the actual execution on a grid node.
-Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
-and the location of output data. The BOINC equivalent of 'result'.
+Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+location of output data. The BOINC equivalent of 'result'.
 
 The entity carries no change-reason cache: the grid machinery writes results
 and there is no human edit flow.
@@ -66,20 +66,6 @@ FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched.
 
 #+begin_src cpp :name generator
 boost::uuids::uuid{}
-#+end_src
-
-** pgmq_msg_id
-:PROPERTIES:
-:type:     bigint
-:cpp_type: std::int64_t
-:nullable: true
-:default_value: 0
-:END:
-
-PGMQ lease pointer; NULL when not actively queued.
-
-#+begin_src cpp :name generator
-0
 #+end_src
 
 ** server_state

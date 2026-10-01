@@ -36,7 +36,6 @@ export interface Result {
     id: string;
     workunit_id: string;
     host_id: string;
-    pgmq_msg_id: number;
     server_state: number;
     outcome: number;
     output_uri: string;

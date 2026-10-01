@@ -32,6 +32,7 @@ import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { AppShell } from './components/AppShell.js';
 import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
+import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
@@ -214,6 +215,18 @@ export function AppRoutes({
                 path="/rescue"
                 element={signedIn(gate.version, session, onSignOut, () => (
                     <RescuePage />
+                ))}
+            />
+            {/*
+             * The record of what happened: the tenant's sessions, their
+             * activity and the sign-ins that failed. It is the administrator's
+             * third screen rather than a panel of Security, because it reads
+             * the tenant and not the member.
+             */}
+            <Route
+                path="/audit"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <AuditPage />
                 ))}
             />
             <Route

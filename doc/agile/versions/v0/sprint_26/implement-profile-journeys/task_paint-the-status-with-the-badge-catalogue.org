@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 0DD8A141-2D77-47A0-A0EC-B4662767CCF6
+:END:
+#+title: Task: Paint the tenant status with the badge catalogue
+#+description: The roster hardcodes the colours and the labels of the tenant statuses. Use the platform's badge catalogue, which already maps tenant_status to badges with their own colours, labels and tooltips.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:badges:dq:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/paint-the-status-with-the-badge-catalogue
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The roster stops deciding what a tenant status looks like. The badge catalogue
+in =ores.dq= already maps every =tenant_status= value to a badge with its own
+label, tooltip and colours, and the screen uses that instead of a table of its
+own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Built and read against the running deployment. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The screen paints a tenant's status with the badge the catalogue maps that
+  value to, and holds no colours, labels or tones of its own.
+- The read joins the domain's mappings to the badge catalogue, so a screen asks
+  one question and holds one table.
+- A value the catalogue does not map is written plainly rather than hidden or
+  painted like everything else.
+- A mapping whose badge has left the catalogue is dropped rather than answered
+  with empty colours.
+- A domain nobody has mapped answers an empty catalogue, not a refusal.
+- Every new behaviour is proved by a test, and the pill was read in a browser
+  against the running deployment, colour and label compared to the catalogue.
+
+* Plan
+
+1. *Read the catalogue, not the colours.* The mapping subject already filters by
+   code domain and the catalogue is a few dozen shared rows, so the two reads
+   are one join. The join belongs on the server, because a screen asking how to
+   paint one value should not hold two tables to find out.
+2. *Say which domain, not which colour.* The screen names the code domain its
+   column belongs to. That is a fact about the column, and it is the only thing
+   the screen decides.
+3. *Then the pill.* The badge's label, the two colours and the words behind it
+   all come from the answer, and a value with no badge is written as the server
+   sent it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The badge the catalogue maps a tenant's status to | =active=, =#22c55e=, label =Active= | =curl -b cookie http://127.0.0.1:21402/api/badges/tenant_status= | the branch tip |
+| BFF suite | 20 files, 97 tests | =npm run test= in =projects/ores.web/packages/bff= | the branch tip |
+| Web suite | 17 files, 184 tests | =npm run test= in =projects/ores.web/packages/web= | the branch tip |
+| Wire contract suite | 7 files, 51 tests | =npm run test= in =projects/ores.web/packages/wire-protocol= | the branch tip |
+| Live roster harness | 19 promises | =node evidence/tenant_roster_check.js= | the branch tip |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The roster's status pill is the platform's, not the screen's.
+
+- *The catalogue answers, and the screen asks by domain.* A new
+  =GET /api/badges/:domain= joins the domain's mappings to the badge catalogue
+  and answers what each value looks like. The roster names =tenant_status= and
+  nothing else; the label, the two colours and the tooltip all come from the
+  answer. The hardcoded tone map and the four =tenants.state.*= translations it
+  needed are gone.
+
+- *A value with no badge is written plainly.* It is a normal state, not an
+  error: a tenant in a state nobody has mapped is exactly the row somebody needs
+  to see, and the screen would hide the interesting case by swallowing it. A
+  mapping whose badge has left the catalogue is dropped for the same reason — a
+  pill with no colours is worse than the value written out.
+
+Proved live: the harness reads the catalogue, then reads the pill the browser
+drew and compares the two. The pill is painted =rgb(34, 197, 94)= for the
+catalogue's =#22c55e=, carries its label =Active=, and carries its description
+behind it. A colour that merely looked right would fail the check.
+
+One thing the review should decide. The catalogue maps =suspended= to a badge
+named **Frozen** and =terminated= to one named **Archived**. That is the seed's
+own vocabulary, and the same mapping serves =party_status=, whose =Suspended=
+value also becomes *Frozen*: the platform reuses a small badge vocabulary across
+domains rather than naming a badge after every value. So a suspended tenant will
+read *Frozen*. It is faithful to the model and it may be exactly what was
+intended. If it is not, the fix is a row in the mapping or a badge of its own,
+not a table on the screen.
+
+What this task does not do. The badge label is server data in English, so a
+French or Portuguese interface now shows an English status. The answer carries
+the badge's own code, so a screen can key a translation on it later; nothing
+does yet. No other screen uses the catalogue, and none is changed.

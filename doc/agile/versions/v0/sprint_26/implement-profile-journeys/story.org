@@ -65,6 +65,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]] | DONE | 2026-10-01 | 2026-10-01 | Give the system administration area a read-only tenant roster, as its own journey, and the read the screen needs. |
 | [[id:618DDCAD-49A8-4161-A2BD-8AAE3C36CC47][Bound the signed-in layout and unblock the tenant details step]] | DONE | 2026-10-01 | 2026-10-01 | The splash is unbounded on a signed-in journey, and a seed profile that inherits the administrator password leaves the second step of New tenant with a disabled Continue. |
 | [[id:1D532014-FD6C-4EBE-982D-3D17C1B768F1][Make the tenant roster a workspace]] | DONE | 2026-10-01 | 2026-10-01 | Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens. |
+| [[id:0DD8A141-2D77-47A0-A0EC-B4662767CCF6][Paint the tenant status with the badge catalogue]] | STARTED | 2026-10-01 | | The roster hardcodes the colours and the labels of the tenant statuses. Use the platform's badge catalogue, which already maps tenant_status to badges with their own colours, labels and tooltips. |
 
 * Decisions
 
@@ -141,6 +142,12 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   journey a row action would open is not built. They wait for the things behind
   them rather than appearing as buttons that do nothing. (Implementation,
   2026-10-01.)
+- *A status is painted by the badge catalogue, not by the screen.* =ores.dq=
+  holds the badge catalogue and the mapping from a code domain value to a badge,
+  so a screen names the domain and holds no colours of its own. Two screens
+  showing the same status then agree with each other, and a value the catalogue
+  does not map is written plainly rather than painted like everything else.
+  (Product owner, 2026-10-01.)
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own

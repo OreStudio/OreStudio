@@ -102,7 +102,7 @@ these reads.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | The edited header is generated, so the next regeneration removes the guards | =session_handler.hpp= | Fixed | The model owns the flag now: =ores.iam.session.org= sets =:guard_reads: true=, and the regeneration emits the same three guards. Verified by regenerating and rebuilding. |
-| 2 | The comment rewording belongs in the template, not in one generated file | =cpp_nats_handler.hpp.mustache= | Declined here, captured | The rewording was dropped rather than kept, and the template-wide fix filed as [[id:EC7C2C75-5408-4350-AF9F-638A82AEE585][a capture]]: the sentence is emitted for every verb of every component. |
+| 2 | The comment rewording belongs in the template, not in one generated file | =cpp_nats_handler.hpp.mustache= | Declined here, captured | The rewording was dropped rather than kept, and the template-wide fix filed as [[id:EC7C2C75-5408-4350-AF9F-638A82EEC585][a capture]]: the sentence is emitted for every verb of every component. |
 | 3 | Confirm the guard does not refuse a user-facing read of the caller's own session | =session_handler.hpp= | Answered | =iam::sessions:read= is held by =TenantAdmin= through its =*= permission and by =HttpService= explicitly; no other role reads sessions, and the BFF's and =ores.http='s session routes are reached by those two. The browser's own session comes from =GET /api/session=, which is the BFF's cookie store and not this subject. |
 | 4 | A test that the model sets =guard_reads= would close the regression risk | the codegen suite | Accepted as the next step | The codegen suite already covers a model with the flag generating guarded reads; asserting that this model sets it is the cheap case, and it is recorded as the remaining work on this task. |
 
@@ -125,7 +125,7 @@ The comment rewording the review also flagged was dropped rather than kept: that
 sentence lives in =cpp_nats_handler.hpp.mustache= and is emitted for every verb
 of every component, so fixing it in one generated file would revert on the next
 run. Filed as
-[[id:EC7C2C75-5408-4350-AF9F-638A82AEE585][Every generated NATS handler says its reads check the permission a write needs]]
+[[id:EC7C2C75-5408-4350-AF9F-638A82EEC585][Every generated NATS handler says its reads check the permission a write needs]]
 so it is fixed once, in the template.
 
 Verification: the library and the suite build with the regenerated handler, and

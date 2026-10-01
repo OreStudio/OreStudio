@@ -26,11 +26,11 @@ Every shell command assets answers is produced by a generated unit. All three as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Measured; assets needs no code change. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The dq task.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

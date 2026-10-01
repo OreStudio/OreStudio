@@ -43,6 +43,9 @@ retirement notice.
 | An agent spawned by another      | delegate  | subagent                                 |
 | The typed thing acted upon       | target    | object, candidate, entity                |
 | The operation applied to it      | action    | command, verb, skill                     |
+| The topic a journey is grouped under | journey group | menu section, module, area, category |
+| Where a journey happens          | screen    | page, surface, view                      |
+| A position within a screen       | step      | stage, phase                             |
 
 Two terms admit a misreading, and both are worth stating negatively.
 
@@ -464,6 +467,55 @@ journey is executed.
 |-----------------+---------------------------------------------|
 | Owner           | cross-cutting                               |
 | How to generate | [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]] in the codegen recipe |
+| Inventory       | [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] |
+
+* Journey screen
+:PROPERTIES:
+:ID: FA7DCE9E-FB6B-439D-86C8-8BF138D38A96
+:END:
+
+Where a journey happens. A screen is not a journey and not an entity: it is the
+arrangement a person meets, and several journeys may share one.
+
+The work has already produced the case that separates the three. The
+[[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile]] group holds three
+journeys — [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]],
+[[id:71515FD0-8089-493F-9D9C-36877392DB33][Keep my details current]] and
+[[id:4A98E343-6EAE-4969-8E83-01F507D92490][Change someone's details]] — and
+one screen. Three intents, two actors, one arrangement. A menu built from
+journeys would therefore offer three entries that open the same screen, which
+is why a menu holds a *journey group* and not a journey.
+
+#+ATTR_HTML: :class hug-leading
+| Term          | What it is                                                   |
+|---------------+--------------------------------------------------------------|
+| Journey group | The topic a journey is looked up under. What a menu holds. Small and stable, because it is a topic and not a component. |
+| Journey       | What one person is trying to do. A design document, and the unit the catalogue counts. |
+| Screen        | Where journeys happen. May serve several journeys and several actors. |
+| Step          | A position within a screen. An ordered list of steps is a *rail*, which is one screen shape among several. |
+
+A journey whose screen is a rail is not more of a journey than one whose screen
+is a page. The rail is a shape, and the shape answers to the work: the
+[[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] journey is a run and
+takes a rail, and the profile screen is a page a person returns to and does
+not.
+
+* Journey group
+:PROPERTIES:
+:ID: 272B7F9A-69A4-419E-B0FF-B20A823749DA
+:END:
+
+The topic a journey is looked up under, and what a menu holds. The
+[[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] catalogue's groups
+are the definition: a group is a logical topic, never a component, because a
+component is an implementation concept and it moves while what a person is
+trying to do does not. A journey that does not belong to a group is a
+catalogue defect, not a group of its own.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Value                                       |
+|-----------------+---------------------------------------------|
+| Owner           | cross-cutting                               |
 | Inventory       | [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] |
 
 * TODO state

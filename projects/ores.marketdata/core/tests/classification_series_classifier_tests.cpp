@@ -555,14 +555,10 @@ TEST_CASE("the_catalogue_mapping_answers_for_every_authority", unit_tags) {
 
     // The mapping the index_name branch reads, exercised directly so the
     // generated table cannot drift from the catalogue unnoticed.
-    CHECK(asset_class_for_authority("ir") ==
-          std::optional<std::string_view>{"interest_rates"});
-    CHECK(asset_class_for_authority("security") ==
-          std::optional<std::string_view>{"bond"});
-    CHECK(asset_class_for_authority("power") ==
-          std::optional<std::string_view>{"commodity"});
-    CHECK(asset_class_for_authority("rating") ==
-          std::optional<std::string_view>{"credit"});
+    CHECK(asset_class_for_authority("ir") == std::optional<std::string_view>{"interest_rates"});
+    CHECK(asset_class_for_authority("security") == std::optional<std::string_view>{"bond"});
+    CHECK(asset_class_for_authority("power") == std::optional<std::string_view>{"commodity"});
+    CHECK(asset_class_for_authority("rating") == std::optional<std::string_view>{"credit"});
 
     // An authority the catalogue maps to no class, and a name it does not
     // hold, both answer nothing.

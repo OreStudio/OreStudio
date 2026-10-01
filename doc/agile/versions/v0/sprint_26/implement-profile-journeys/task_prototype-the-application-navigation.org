@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: A54241DF-7B50-4BE8-890C-1A3BB35EC709
+:END:
+#+title: Task: Prototype the application shell
+#+description: Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 21 journeys in 8 groups, for a member and a tenant administrator.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:profile:navigation:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/prototype-the-account-menu
+#+pr: 2439
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A clickable prototype of the application navigation that the design can be judged against, on a throwaway page with mock data. It draws five structural models inside the shell the application actually has, each over the catalogue's real scale, so the choice is made against 21 journeys in 8 groups and the two people who see different parts of them. The question is the one nothing owns: how a person reaches a journey at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-30                               |
+
+* Acceptance
+
+- The prototype is published beside its description and the other prototypes, and it reads no service.
+- Every journey a person may run is reachable from every model, and the journeys they may not run are absent rather than disabled.
+- The catalogue's real scale is what the models are judged against: 21 journeys in 8 groups, of which a member sees 5 and a tenant administrator 19.
+- What has been built and what has not is renderable without reading the code, as the =today= state.
+- The verdict is recorded on the prototype page and the losing models stay as the record.
+
+* Plan
+
+1. Collect what the journey documents say about how a journey is reached, and
+   what the catalogue actually holds: 8 groups and 21 journeys.
+2. Read the shell as it stands, and the session the shell is given, because
+   what the navigation can show depends on what the session carries.
+3. Build the first model, the account menu the journey documents name, as a
+   static page under =doc/prototypes/=.
+4. Take it to the product owner, who rejected it: at the catalogue's scale a
+   menu holds neither the administrator's work nor the groups.
+5. Re-scope the task to the question itself, and rebuild the prototype as five
+   structural models drawn over the catalogue's real scale, in the shell the
+   application actually has, so a reviewer judges the navigation and not a page
+   of its own.
+6. Filter the journeys by actor rather than disabling them, and render what has
+   been built as its own state, because a navigation that offers a screen
+   nothing implements is a promise.
+7. Publish it with the site build, beside the other prototypes; drive the whole
+   matrix without a browser; then look at the models in Chrome, including at a
+   laptop's width, which is where the navbar changes shape.
+8. Record the verdict on the prototype page and distil the decisions into the
+   story.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Model, actor and state combinations rendered head-less | 40 | =node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/navigation_check.js= (output in =evidence/navigation_states.txt=) | =PENDING= |
+| Promises asserted on those states | 17 | same | =PENDING= |
+| Journeys in the catalogue, and in the navigation | 22 in 8 groups, 20 in 7 after Entry is excluded as the door | =ls doc/knowledge/journeys/*/journey_*.org | wc -l= | =PENDING= |
+| Journeys a member may run, and a tenant administrator | 6 / 20 | the harness output | =PENDING= |
+| Screens captured in Chrome | 6 | =google-chrome --headless=new --screenshot=… "file://…#?variant=…&actor=…&state=…"= | =PENDING= |
+| Files in the prototype, no build step | 5, being 3 code and 2 photos | =ls doc/prototypes/navigation/ doc/prototypes/navigation/photos/= | =PENDING= |
+| Journeys that name the account menu | 5 | =grep -rl "account menu" doc/knowledge/journeys= | =PENDING= |
+| Subjects that let the navigation show a name and a photo | 0 | =grep -rn "get-self" projects/ores.iam/modeling/ projects/ores.iam/core/modeling/= | =PENDING= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2439][#2439]] | [web] Prototype the account menu |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The shell is [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]], at
+=doc/prototypes/navigation/= and published on the site. It renders the menu,
+the cards and the avatar for the four sign-ins that decide the mode.
+
+The verdict is recorded on that page, and so is why each of the five rejected
+shapes went: the account menu, one axis of journey groups, a sidebar beside the
+cards, "Administration" as an area, and a mode the person chooses.
+
+The decisions it settles are distilled into the parent story's =* Decisions=.
+What it does not settle is recorded too: how a person learns a journey exists
+but is switched off, and where a party user with no areas of their own lands
+once the party's data is real.

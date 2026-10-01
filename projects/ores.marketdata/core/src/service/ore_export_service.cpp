@@ -74,8 +74,7 @@ bool is_fixing_series(const domain::market_data_identifier& identifier) {
  * quote's key is: the identity is what the row is named by, so the name is read
  * from it rather than from a decomposition column.
  */
-ores::ore::market::fixing to_fixing(const std::string& index_name,
-                                    const domain::market_fixing& f) {
+ores::ore::market::fixing to_fixing(const std::string& index_name, const domain::market_fixing& f) {
     ores::ore::market::fixing r;
     r.date = f.fixing_date;
     r.index_name = index_name;
@@ -105,9 +104,9 @@ ore_export_result ore_export_service::write_all() const {
         try {
             identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
         } catch (const std::exception& e) {
-            throw std::runtime_error("market data export: series " +
-                                     boost::uuids::to_string(s.id) + " carries the identity '" +
-                                     s.oresmd_uri + "', which does not parse: " + e.what());
+            throw std::runtime_error("market data export: series " + boost::uuids::to_string(s.id) +
+                                     " carries the identity '" + s.oresmd_uri +
+                                     "', which does not parse: " + e.what());
         }
         if (is_fixing_series(identifier)) {
             const auto index_name = core::oresmd_projections::to_index_name(identifier);

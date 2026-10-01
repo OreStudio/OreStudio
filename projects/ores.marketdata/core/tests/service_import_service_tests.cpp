@@ -223,18 +223,22 @@ TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) 
 
     // The identity carries the settlement segment the file wrote and nothing when it
     // wrote the 2D default, so the 2D spelling names no series here.
-    CHECK(series_with_uri(series_repo, h.context(),
+    CHECK(series_with_uri(series_repo,
+                          h.context(),
                           "oresmd://ir/usd?tenor=3m&type=quote&metric=rate&quote=ir_swap")
               .empty());
-    CHECK(series_with_uri(series_repo, h.context(),
+    CHECK(series_with_uri(series_repo,
+                          h.context(),
                           "oresmd://ir/gbp?tenor=3m&type=quote&metric=rate&quote=ir_swap")
               .empty());
+    REQUIRE(
+        series_with_uri(series_repo,
+                        h.context(),
+                        "oresmd://ir/usd?tenor=3m&settle=0D&type=quote&metric=rate&quote=ir_swap")
+            .size() == 1);
     REQUIRE(series_with_uri(
-                series_repo, h.context(),
-                "oresmd://ir/usd?tenor=3m&settle=0D&type=quote&metric=rate&quote=ir_swap")
-                .size() == 1);
-    REQUIRE(series_with_uri(
-                series_repo, h.context(),
+                series_repo,
+                h.context(),
                 "oresmd://ir/gbp?tenor=3m&settle=20220922&type=quote&metric=rate&quote=ir_swap")
                 .size() == 1);
 }

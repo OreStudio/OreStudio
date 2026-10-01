@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: AC2BA866-D2C3-4C8B-AF5A-D573D1317A78
+:END:
+#+title: Privileged access needs a recorded break-glass process
+#+description: The mode a session runs in is a property of the account it signed in with, so a super administrator and a tenant administrator are distinguishable only if the account is. Getting there needs roles that request elevation, an approval, and a time-boxed recorded grant with no overlapping windows. The reporting-line proposal needs the same approval primitive, so it should be built once.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:ux:modes:approval:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A way to give a person privileged access for a stated reason and a stated
+period, to record who approved it, and to be able to say afterwards who did what
+while they held it.
+
+The shape proposed on 2026-10-01: roles that let a person *request* super
+administrator or tenant administrator access; other people who approve the
+request; and, on approval, a recorded temporary login with a time window and a
+password. No two windows overlap. There may be more than one such account, so
+that two people can work at once. Once this exists, the mode a session runs in
+can be read from the account it signed in with.
+
+* Why
+
+The shell reads its mode from the sign-in — a super administrator lands in
+system administration, a tenant administrator in tenant administration, a party
+user in the application — and that is only honest if the account a person signs
+in with *is* the privileged one. Today it cannot be: nothing distinguishes the
+person who is a super administrator from the person who happens to hold the
+role, and nothing says when they held it.
+
+Two problems follow, and the second is the one that bites.
+
+- *Attribution.* An action taken with privileged rights is attributable to an
+  account, not to a person who was granted the right for an afternoon. A review
+  asked "who did this, and on whose authority" cannot answer it.
+- *Standing privilege.* An account that is always a super administrator is a
+  target every day of its life. The point of a break-glass process is that the
+  privilege exists only while somebody is using it, and that its use is loud.
+
+This is also the *second* place the platform needs an approval. The reporting
+line is the first: a person proposes a change to who they report to, and a
+hierarchical superior or a tenant administrator approves it — and the work
+recorded that nothing in the platform holds an approval today. The two are the
+same missing primitive: *a request, an approver, a decision, and a record of
+all three*. It should be built once.
+
+* What other systems do
+
+Two families, and they differ in where the traceability lives.
+
+| Family | How it works | Examples |
+|--------+--------------+----------|
+| *Elevation on your own account* | A role is assigned as *eligible* rather than active. The person activates it for a bounded period, with a justification and a second factor; an approver may be required; the identity never changes. | Microsoft Entra Privileged Identity Management; Google Cloud Privileged Access Manager; Okta Identity Governance; Salesforce Elevate |
+| *A separate privileged account, checked out* | The credential lives in a vault or is generated per grant. A person checks it out for a window; the vault checks it back in, rotates it, and records the session. | CyberArk and Delinea checkout; SAP GRC "firefighter" ids; Teleport and HashiCorp Vault short-lived credentials |
+
+What the two share, and what is worth copying:
+
+- *The grant is a record, not a setting.* It has a requester, an approver, a
+  reason, a start, an end and a revocation. It is readable afterwards.
+- *It ends by itself.* A window that has to be closed by hand is a window that
+  stays open.
+- *Activation is authenticated again.* Elevating is a step that asks for the
+  second factor, not a consequence of being signed in.
+- *Use is loud.* The systems that do this well alert on activation; the ones
+  that do it badly are discovered during an incident review.
+- *Break-glass is not the same as just-in-time.* The emergency case is
+  deliberately outside the approval flow, because the emergency may be that the
+  approvers cannot be reached. It is a small, fixed, heavily monitored set of
+  accounts whose *use* is the alarm.
+
+The overlap rule is where the two families differ in practice. A vault that
+holds one credential admits one holder at a time, which is where "no overlapping
+windows" comes from for free. Elevation has no such limit: two people may hold
+the same role at once, and the record of who did what is kept by identity
+instead. The proposal wants both — no overlap, and more than one holder when
+needed — which is a *pool* of accounts, and a pool is a vault with a checkout
+queue. Saying which of the two is wanted is the first decision.
+
+* Open questions
+
+1. *Elevation or a separate account?* Elevation keeps one identity and makes
+   attribution trivial, and it needs no password handling at all. A separate
+   account needs a vault, a rotation policy and a checkout queue, and its
+   attribution rests entirely on the checkout record. The proposal describes the
+   second; the first is what most products now do.
+2. *Who approves, and what if they cannot?* The approver for tenant
+   administration is presumably another tenant administrator; for system
+   administration, another super administrator. A single approver is a single
+   point of failure, and the emergency path has to exist beside it.
+3. *Does the mode follow the account or the session?* If elevation is on the
+   person's own account, the session carries the elevated role and the shell
+   reads its mode from that — which answers the open question about how the
+   browser learns its mode without a second identity. If it is a separate
+   account, the mode is simply what the account is, and the person's own account
+   never changes.
+4. *What happens at the end of the window?* The session must lose the mode
+   without losing the work. A session that silently keeps a privileged token
+   after its window closes is worse than no window at all.
+5. *What is the audit surface?* The platform has a sign-in audit and versioned
+   records. Whether a privileged session is its own recorded thing — a session
+   log with the grant beside it — or whether the existing history tables carry
+   it, is undecided.
+6. *What does the reviewer see?* Whoever reviews privileged access periodically
+   needs a list: who held what, when, on whose approval, and what they did. That
+   list is a report, and no journey asks for it yet.
+
+* Impact on the modes
+
+The shell prototype records the mode as read from the sign-in and never chosen.
+That holds under either family, but what "the account" means differs:
+
+- Under elevation, the mode is a property of the *session's active roles*, and
+  the shell reads it from the same place the server uses to authorise.
+- Under a separate account, the mode is a property of the *account*, and the
+  person is a different identity for the duration.
+
+Either way the four modes, the menu each shows and the cards under them do not
+change. What changes is where the browser reads the mode from, which is the one
+thing the implementation still has to decide.
+
+* References
+
+- [[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]] — the contract the modes are delivered
+  through, which is deliberately blind to how a person comes to hold one.
+- [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]] — the modes, and the menu each mode shows.
+- [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] — the other journey that needs an approval to exist.
+
+* See also
+
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — where a journey's state lives, and why it is a workflow
+  instance rather than an entity.

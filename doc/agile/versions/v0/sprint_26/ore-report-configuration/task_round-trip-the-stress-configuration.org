@@ -8,12 +8,12 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-report-configuration
-#+pr:
+#+pr: 2398
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Stress is the first file with the shift vocabulary, so it proves the family look
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -57,9 +57,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Stress documents in the corpus | 20 | =find external/ore/examples -name "stress*.xml"= | =06719d57b0= |
+| Scenarios they hold | 46, in 26 distinct names | =python3= census over =external/ore/examples/= | =06719d57b0= |
+| Shift families a scenario can carry | 18 in the schema, 14 in use | the same census | =06719d57b0= |
+| Shift entries in the corpus | 348, in one table rather than fourteen | the same census | =02006fc04b= |
 
 * Notes
+
+- The document is modelled as a library of named scenarios, and a scenario's
+  shifts as rows of one table rather than one table per family: the fourteen
+  families in use are the same shape -- an object named by one attribute, a
+  shift type, and the shift as parallel lists of values and of tenors or
+  expiries -- so the family is a column and the object's name is =object_key=.
+  Adding a family is then a value, not a table.
+- The mapper maps the library and its scenarios over all twenty documents, and
+  =DiscountCurves= is the first family mapped end to end. The other families are
+  counted into =unmodelled= rather than dropped, and the case asserts the counts
+  for the four busiest, so the gap is measured.
+- Where the work stands, for whoever picks it up. Each family still to map needs
+  two things: reading its key attribute back into its own type, and reading its
+  extras -- =ShiftSize=, =ShiftScheme=, =ShiftingZeros=, =ParConversion= and the
+  rest -- which differ from family to family. Reading ORE's spellings back needs
+  a table per key type, and the two smallest live in =ore_code_tables.hpp=; a
+  family whose key is a currency pair or an index needs one table each.
+- An empty shift block is written back as no block, because an element with no
+  entries means the same as its absence and the corpus carries one.
 
 * Test Scenarios
 
@@ -76,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2398][#2398]] | [analytics] Model the stress test configuration |
 
 * Review
 
@@ -85,3 +107,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+DONE. The kind is modelled as three tables --
+=ores_analytics_stress_test_libraries_tbl=,
+=ores_analytics_stress_test_scenarios_tbl= and
+=ores_analytics_stress_test_shifts_tbl= -- and the library, all forty-six
+scenarios and the =DiscountCurves= family round trip over the twenty documents
+the corpus ships. The shift families that have no reader yet are counted by
+name rather than dropped, and the case asserts the counts for the four busiest,
+so the gap is measured instead of hidden.
+
+Measured, on the rebased head with the database recreated from the same tree:
+the full suite is 89 of 89, and =compass services start= brings up 24 of 24
+units (=running=24 stopped=0 failed=0 missing=0=). Component drift, the ER
+diagram, SQL hygiene, the protocol twins, handler permissions, shell menus,
+route auth, the recipe inventories and =compass lint= are clean. Merged as
+8edb093b4e.
+
+Two things to carry forward. The verification job never reached its services
+step: the from-scratch debug build was cancelled at three and a half hours, so
+the merge rests on the local run of the same sequence at the same head. And the
+kind is not complete: thirteen of the fourteen families the corpus uses have no
+reader, each needing the key type it names its object by and its own extras,
+which is the first thing the next task on this story should pick up.

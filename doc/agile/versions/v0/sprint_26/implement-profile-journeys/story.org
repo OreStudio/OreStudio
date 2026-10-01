@@ -47,6 +47,9 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 - The screen says which panel the caller may write, and every panel the caller
   may not write says why.
 - The two email fields are labelled so that neither reads as the other.
+- A signed-in person reaches the journeys from the shell's navigation, and the
+  trigger that opens it shows the person's own name and photo once the account
+  has been read.
 - Every gap the three journey documents record is closed or stated on the
   screen, and the statement is recorded.
 
@@ -55,8 +58,25 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:ECC602E3-71D3-4265-942B-063EFEB61495][Prototype the profile screen]] | DONE | 2026-09-30 | 2026-09-30 | Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants. |
+| [[id:A54241DF-7B50-4BE8-890C-1A3BB35EC709][Prototype the application navigation]] | DONE | 2026-09-30 | 2026-10-01 | Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 22 journeys in 8 groups, for a member and a tenant administrator. |
+| [[id:0341CAE9-DD19-4B6C-995B-95B74DB51B45][Record the privileged-access need]] | STARTED | 2026-10-01 | | Write the capture that records why the shell's modes need a recorded break-glass process behind them, what the systems that do this well have in common, and the decisions it leaves open. |
+| [[id:8F698AF3-CA0B-4151-8F67-0915FBAD40CE][Define the session mode and capability contract]] | DONE | 2026-10-01 | 2026-10-01 | Write the target state that fixes how the browser learns its mode and what it may see: the mode is computed by the server and delivered with the session, and the menu is built from the permissions the server already answers. The protocol change that implies, and what does not change. |
 
 * Decisions
+
+- *The shell is a menu, the cards, and the avatar.* The header carries a menu of
+  areas, an area opens its journeys as cards, and the person's own journeys are
+  under their name and photo. Nothing else: there is no sidebar and no second
+  list of what the cards already say. (Prototype verdict, 2026-10-01.)
+- *The mode is read from the sign-in, never chosen.* A super administrator works
+  in the system tenant's context, a tenant administrator in a tenant's, and a
+  party user in a party's — the contexts the server already scopes everything
+  by, so the mode cannot disagree with the data and there is no switch to get
+  wrong.
+- *People is the privileged party user's area.* Managing the people of a party
+  is a party job done by somebody with authority in it, not a tenant
+  administrator's job, and a regular party user is not shown the door to it at
+  all.
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own

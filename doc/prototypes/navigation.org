@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: E6E32AB5-2F25-4230-AB93-E38E75DE23B6
+:END:
+#+title: Application shell prototype
+#+description: The shell the journeys hang from: a menu, the cards it opens, and the person's own journeys under their name, seen through the four sign-ins.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:security:identity:navigation:
+#+created: 2026-09-30
+#+updated: 2026-10-01
+
+* Summary
+
+Every journey in the catalogue reaches its screen by the person "choosing" it,
+and no document owned how. This is the answer, as one design rather than a
+comparison: a *menu* across the header, the *cards* it opens, and the person's
+own journeys under their *name and photo*.
+
+What the shell shows is decided by **who signed in**. A super administrator
+works in the system tenant's context, a tenant administrator in a tenant's, and
+a party user in a party's — the contexts the server already scopes everything
+by. So the mode is read from the sign-in and is never chosen, and there is no
+mode switch to get wrong.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data.
+
+Open the [[file:navigation/][shell]].
+
+* Detail
+
+** The verdict
+
+Accepted on 2026-10-01: the menu, the cards and the avatar, with the mode read
+from the sign-in. This is the shell the Profile journeys hang from, and the
+implementation is scheduled from it.
+
+** What was rejected, and why
+
+The page went through four review rounds. Each rejection is the reason the
+design is what it is, so they belong in the record even though the shapes
+themselves are not drawn any more.
+
+| Shape | Why it went |
+|-------+-------------|
+| An account menu holding every journey | At twenty journeys it holds neither the administrator's work nor the groups, and its trigger tried to answer a question about the account rather than about the product. |
+| One axis of journey groups across the header | A journey group is a topic ("Profile", "Credentials"); an *area* of activity is above it ("Reference Data", "Trading"). A trading system has the areas, and the Qt client's first level already said so. |
+| A sidebar beside the area's cards | It listed the same journeys the cards already list, one beside the other. The cards are the navigation; a second copy of them is a cost with no reader. |
+| "Administration" as an area | A name that means everything we could not place. The scopes are Me, People and Tenant, and they account for all twenty journeys with nothing left over. |
+| A mode the person chooses | The mode is the context the server already scopes everything by — the system tenant, the tenant, the party the session acts for. Reading it from the sign-in is the only version that cannot disagree with the data. |
+
+** The mode comes from the sign-in
+
+| Sign in as | Mode | The context |
+|------------+------+-------------|
+| Super administrator | System administration | The system tenant: the deployment's tenants, the registry they share |
+| Tenant administrator | Tenant administration | A tenant: its parties, its role catalogue, its settings — not its data |
+| Privileged party user | Application | A tenant and a party, including the people who work in it |
+| Regular party user | Application | A tenant and a party |
+
+The four are the platform's own axes, not a new taxonomy. The system tenant has
+a fixed id and holds the deployment's registry and the shared reference data; a
+tenant row is stored under it; and the session already carries the party it acts
+for. A mode is the answer to "which context am I in", and the server answers it
+before the browser draws anything.
+
+** The menu holds areas, and the cards hold journeys
+
+The menu is one row of *areas* — the trading floor's own shape, which the Qt
+menu bar already had right. It changes with the mode:
+
+| Mode | The menu |
+|------+----------|
+| System administration | Tenants, Bootstrap |
+| Tenant administration | Parties, Access, Tenant |
+| Application | Reference Data, Market Data, Trading, Analytics, Compute, Reporting, People |
+
+An area the catalogue has not reached stays in the menu and says so in as many
+words. An area that belongs to somebody else does not: a regular party user is
+not shown the door to the people of their party, and no mode offers an
+administrator journey to the person who may not run it.
+
+The cards are one per catalogue topic, and they are where a journey is chosen.
+One area's cards, or every area's, depending on whether the person picked an
+area from the menu or is on the landing page.
+
+** The person's own journeys are not an area
+
+Every system puts "things about me" under the avatar, and nobody gives them a
+menu. The header carries the person's name and photo, and it opens their own
+journeys, gathered by topic: profile, credentials, and in a party their access
+and where they work. The super administrator keeps their profile and gets no
+party journeys, because there is no party to choose.
+
+** The three states
+
+| State | What it shows |
+|-------+---------------|
+| =home= | The landing page: every area the person has, each with its cards. |
+| =journey= | One journey running under its mode, with the cards it came from. |
+| =fullscreen= | A journey that stands something up. It owns the screen, so no menu and no cards are drawn. |
+
+** What is real and what is not
+
+The areas, the journeys, the modes, the routes and which journeys have been
+built are the catalogue's own. Six of the nine areas are empty because the
+extraction has been run for one component, and the prototype renders that
+rather than inventing screens to fill them.
+
+Everything else is mock. The people, the tenants and the parties are invented,
+the photos are the repository's own stock faces, and nothing reads a service.
+
+** Where the code lives
+
+=doc/prototypes/navigation/=. Three files of code plus the two photos, plain
+HTML, CSS and JavaScript, no framework and no build step. The site build copies
+the directory through =ores-deploy-web-app=, beside the other prototypes.
+
+** What it does not settle
+
+How a person learns that a journey exists but cannot be run. Nothing here states
+what a deployment switches on or off, because no document says a journey has a
+switch.
+
+The mode is read from the sign-in, and the contract that delivers it — the
+server stating the mode with the session, and the menu taking its authority from
+the permission codes the session holds — is
+[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]].
+
+How the account a person signs in with comes to *be* the privileged one. The
+mode is read from the sign-in, which is only honest if a super administrator's
+account is distinguishable from a person who happens to hold the role — and
+today nothing distinguishes them, or says when they held it. That is its own
+problem, with its own process, and it is captured at
+[[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][Privileged access needs a recorded
+break-glass process]].
+
+Where a party user with no areas of their own lands once the party's data is
+real: today six of their seven areas are empty and their avatar is where the
+work is.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]] — the screen the avatar opens.
+- [[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]] — the vocabulary this design rests on.
+- [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]] — the group whose journeys name the account menu first.

@@ -37,12 +37,70 @@ check is the one that already fails and is therefore honest.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR 5 merged.                           |
-| Next         | Enable the shell facet for every entity, then seed the permissions. |
-| Last touched | 2026-09-26                               |
+| Now          | Re-baselined against main =3c522bd219=. The shell aggregator archetype and the permission seeds are in flight. |
+| Waiting on   | Nothing. PR 6 merged as =3c522bd219=. |
+| Next         | Generate the aggregator, decide the 33 facet-less entities, then the audits and the registry entry. |
+| Last touched | 2026-10-01                               |
+
+* Re-baseline (2026-10-01, main 3c522bd219)
+
+Every figure in the Acceptance below was taken on 2026-09-26, before PRs 3
+to 6 landed, and the tree has moved far enough that the numbers no longer
+describe it. Measured today:
+
+| Item | Acceptance said | Today |
+|------+-----------------+-------|
+| Entity models | 57 | 85, with 8 field groups, 1 component and 1 module |
+| Opted into =ores.cpp.shell-command= | 22 | 52 |
+| Entities with no shell facet | 35 | 33 |
+| Generated command units on disk | 22 | 52 units, 52 headers, 53 tests |
+| The component's shell recipes | 22 wanted, none exist | 255 recipe directories under =doc/recipes/shell/=, 71 of them trading's; =regenerate_shell_recipe_inventory.py --check= exits 0 |
+| Permission codes trading checks | 98 | 170 |
+| Codes seeded | 6 | 2 |
+| Codes unseeded | 92 | 168 |
+| =COMPONENTS_UNDER_TEST= | trading absent | trading absent; the list holds 15 components |
+| =check_handler_permissions.py= =REGISTRY= | trading absent | trading absent; the list holds 7 |
+
+The shell aggregator is still hand-written at
+=projects/ores.shell/application/src/app/commands/trading/trading_commands.cpp=
+and registers about 55 units, which is the generator work S01 names. The
+recipe side of S02 is therefore already met for the 52 opted-in entities;
+what S01 and S02 still owe is the aggregator archetype, the 33 decisions,
+and the recipes for any entity newly opted in.
+
+* S01 entity decisions
+
+Two of the 33 entities without the facet are headers a caller must be able
+to create, and they are opted in:
+
+| Entity | Why |
+|--------+-----|
+| =bond_issue= | The shared ISIN row every instrument of the family references. =bond_instrument add= takes an =issue_id=, and nothing over the shell creates one, so a bond cannot be booked from scratch today. |
+| =commodity_instrument= | The commodity family's header. It has no shell surface at all, so the family is unreachable over the shell. |
+
+The other 31 are rows their parent owns, written with it, so a standalone
+verb would let a caller mint an orphan. They get no commands, and this is
+the recorded reason:
+
+- the bond product facts: =ascot=, =bond_forward=, =bond_future=,
+  =bond_option=, =bond_repo=, =bond_trs=;
+- the issue's children: =bond_issue_call_date=,
+  =bond_issue_conversion_target=;
+- the issue's legs: =bond_issue_leg=, =bond_issue_leg_amortization=,
+  =bond_issue_leg_amount=, =bond_issue_leg_rate=,
+  =bond_issue_leg_schedule=, =bond_issue_leg_schedule_date=;
+- the trade's legs: =bond_leg=, =bond_leg_amortization=,
+  =bond_leg_amount=, =bond_leg_rate=;
+- the shared child tables: =instrument_option=,
+  =instrument_option_exercise_fee=, =instrument_option_payment_date=,
+  =instrument_option_premium=, =instrument_schedule=,
+  =instrument_schedule_date=, =instrument_strike=;
+- the per-family children: =callable_swap_call_date=,
+  =equity_position_option_underlying=, =commodity_basket_constituent=;
+- the trade's envelope: =trade_envelope=,
+  =trade_envelope_additional_field=, =trade_envelope_portfolio_id=.
 
 * Acceptance
 

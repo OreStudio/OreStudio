@@ -241,6 +241,12 @@ What is not met, recorded rather than glossed:
   type's own metric. Materialising it needs a per-quote-type metric constant the
   models do not carry for every class -- credit's =BASE_CORRELATION= has no
   =metric= enum member -- so it is left to a unit that can extend the enum.
+- The twelve models still carry a =point_keys= column, the ordered keys the old
+  =point= value corresponded to. Nothing reads it now: the parser is hand-written
+  per family and the codegen gate checks the named keys instead. Removing the
+  column and the loader's validation of it is a mechanical subtraction left for a
+  follow-up, recorded rather than done because it changes nine tables whose
+  separator rows a mechanical strip mangles.
 - The whole-corpus import fails on =market_20160205.txt=. The series identity now
   drops credit's =tenor= -- which the model declares a coordinate -- while the
   observation's =point_id= is still the registry's ORE-form split, which is empty

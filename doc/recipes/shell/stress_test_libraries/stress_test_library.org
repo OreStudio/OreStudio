@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-stress_test_libraries add <name> <use_spreaded_term_structures> <reason> <commentary>
+stress_test_libraries add <name> <configuration_id> <use_spreaded_term_structures> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.stress_test_libraries.put=.
 
 #+name: stress_test_libraries-add
 #+begin_src ores-shell :tangle stress_test_libraries-add.ores :exports none
-stress_test_libraries add __none__ - system.new_record generated_script
+stress_test_libraries add __none__ 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-stress_test_libraries set <id> <name> <use_spreaded_term_structures> <reason> <commentary> [--version <n>]
+stress_test_libraries set <id> <name> <configuration_id> <use_spreaded_term_structures> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =analytics.v1.stress_test_libraries.put=.
 
 #+name: stress_test_libraries-set
 #+begin_src ores-shell :tangle stress_test_libraries-set.ores :exports none
-stress_test_libraries set 00000000-0000-0000-0000-000000000000 __none__ - system.new_record generated_script
+stress_test_libraries set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-stress_test_libraries put-many --count <n> <id> <name> <use_spreaded_term_structures> <reason> <commentary>
+stress_test_libraries put-many --count <n> <id> <name> <configuration_id> <use_spreaded_term_structures> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.stress_test_libraries.put_many=.
 
 #+name: stress_test_libraries-put-many
 #+begin_src ores-shell :tangle stress_test_libraries-put-many.ores :exports none
-stress_test_libraries put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - system.new_record generated_script
+stress_test_libraries put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
 #+end_src
 
 ** =delete=

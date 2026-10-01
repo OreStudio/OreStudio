@@ -26,6 +26,8 @@
 #define ORES_ANALYTICS_API_DOMAIN_STRESS_TEST_LIBRARY_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
 #include <string_view>

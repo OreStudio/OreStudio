@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 4615E18E-96D8-4AFD-8FBA-241A441EA335
+:END:
+#+title: Task: Return to a setup journey in progress
+#+description: A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. Store the journey and offer it from the shell.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:setup:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/return-to-a-journey-in-progress
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A setup journey can be left and come back to. Today a person who starts
+*New tenant* and navigates away cannot find it again: the shell offers no way
+back, and nothing anywhere records where they were.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Diagnosed. The two holes are named and the shape is recorded; no code has changed. |
+| Waiting on   | Nothing.                               |
+| Next         | Decide where the journey's position is stored, then build it. |
+| Last touched | 2026-10-01                               |
+
+* The defect, as found
+
+Every part of the journey lives in React state and dies with the screen. The
+chosen profile, the details, the step position and the run's instance id are
+all =useState=: =useNewTenant= holds the profile, the details and the run,
+and the journey component holds its own step index. Navigate away and the
+component unmounts, so the journey restarts at step one with nothing chosen.
+
+There are two holes, and closing one alone achieves nothing:
+
+1. *Nothing is stored.* The provisioning run is a workflow instance and
+   carries an id, but the journey around it is stored nowhere, so a menu entry
+   back to it would have nothing to show.
+2. *Nothing offers the way back.* =journeyInProgress= in the route table is a
+   local flag that pins the first-run screen. It does not survive a reload and
+   it knows nothing about the new-tenant route.
+
+* Acceptance
+
+- A setup journey's position survives leaving the screen and reloading the
+  browser.
+- The shell offers every journey the person has in progress, names the step
+  they were on, and opens it where they left it.
+- A journey that has finished stops being offered, and one that failed says so
+  rather than disappearing.
+- The provisioning run an unfinished journey started stays visible, so a
+  person can see that work is still happening on the server.
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
+
+* Plan
+
+The design already decided this, and the fix follows it rather than inventing
+a mechanism: [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]]
+says the journey is the workflow class, its progress is a
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
+=ores.workflow=, and the person can leave and come back.
+
+1. *The position is server-side, not browser-side.* The one decision still
+   open is what the journey instance is: a workflow instance of its own kind,
+   or the provisioning run itself carrying the journey's step. The second is
+   fewer moving parts and the run already exists; the first keeps a journey
+   that has not started a run yet. This is the first thing to settle.
+2. *The shell offers it back.* The area the journey belongs to shows a card
+   for a journey in progress, with the step it reached, and opening it resumes
+   there. *New tenant* lives in *Tenants*; *New party* in *Parties*.
+3. *An unfinished run stays visible.* A journey that has started provisioning
+   shows the run and its progress, because today a half-provisioned tenant
+   simply vanishes from the person's view while the server keeps working.
+
+* Result
+
+Diagnosis only, and it is deliberately the whole of this task so far: the
+defect is not a screen that forgot to draw a link, and the fix is where a
+journey's position lives. The two holes are recorded above with the files that
+hold the state today, and the plan follows the composition class the setup
+journeys already document rather than introducing a second mechanism.
+
+No code has changed, and nothing is claimed.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

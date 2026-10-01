@@ -67,6 +67,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:1D532014-FD6C-4EBE-982D-3D17C1B768F1][Make the tenant roster a workspace]] | DONE | 2026-10-01 | 2026-10-01 | Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens. |
 | [[id:0DD8A141-2D77-47A0-A0EC-B4662767CCF6][Paint the tenant status with the badge catalogue]] | DONE | 2026-10-01 | 2026-10-01 | The roster hardcodes the colours and the labels of the tenant statuses. Use the platform's badge catalogue, which already maps tenant_status to badges with their own colours, labels and tooltips. |
 | [[id:5A6EEEEC-2A92-40EC-85C3-625064A884EB][Put the badge on the tenant status row]] | DONE | 2026-10-01 | 2026-10-01 | The badge belongs to the value, not to a mapping table. Give the tenant status its own badge reference, take the label from the status's own name, and read the statuses instead of the junction. |
+| [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]] | STARTED | 2026-10-01 | | A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. Store the journey and offer it from the shell. |
 
 * Decisions
 

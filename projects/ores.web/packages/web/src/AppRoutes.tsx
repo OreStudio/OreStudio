@@ -33,6 +33,7 @@ import { AppShell } from './components/AppShell.js';
 import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
+import { SecurityPage } from './pages/SecurityPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
@@ -195,6 +196,12 @@ export function AppRoutes({
                     ),
                     'workspace',
                 )}
+            />
+            <Route
+                path="/security"
+                element={signedIn(gate.version, session, onSignOut, (view) => (
+                    <SecurityPage session={view} />
+                ))}
             />
             <Route
                 path="/tenants/new"

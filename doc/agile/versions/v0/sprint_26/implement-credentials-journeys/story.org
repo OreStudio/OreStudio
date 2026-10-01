@@ -84,6 +84,7 @@ The build tasks are written when the prototypes are accepted.
 | [[id:16133422-EB26-4695-991B-9F814831C060][Guard the session reads with the permission the catalogue grants]] | STARTED | | | The three session read handlers check no permission while the account and login-record reads check theirs, and the catalogue grants iam::sessions:read for exactly this purpose. Any authenticated caller can list a tenant's sessions today. |
 | [[id:0B624231-2764-4D72-B19A-6038105E0944][Implement the active sessions read]] | DONE | | 2026-10-01 | iam.v1.sessions.active replies success with no rows, so the audit screen's active list is empty by construction. Read the sessions whose end time is empty, guard the operation with the permission the catalogue grants, and test the read. |
 | [[id:0A10EC8B-E062-45FE-8CEE-CB0F69C5FCB2][Give the web client the credentials reads]] | DONE | | 2026-10-01 | The BFF serves accounts, login records and sessions; the browser's own client cannot ask for them. Add the client methods the three screens call, each parsed at the network boundary with the schema the browser and the wire share. |
+| [[id:E172BBAB-7001-4626-8B91-D8F064883F9B][Build the member's Security screen]] | DONE | | 2026-10-01 | Protect my account runs in ores.web on the accepted variant B: the places the account is signed in lead, and the password form and sign-in state share the row under them. |
 
 * Plan
 

@@ -26,11 +26,11 @@ Every shell command iam answers is produced by a generated unit, or is recorded 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Eight verbs retired; six sign-offs recorded. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The profile default task.              |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

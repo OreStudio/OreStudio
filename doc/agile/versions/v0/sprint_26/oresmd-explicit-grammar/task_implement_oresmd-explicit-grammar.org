@@ -8,7 +8,7 @@
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/oresmd-explicit-grammar
-#+pr:
+#+pr: 2464
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -179,7 +179,7 @@ replaces the positional mapping.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2464][#2464]] | [marketdata] Declare the oresmd coordinate dimensions |
 
 * Review
 

@@ -363,7 +363,7 @@ row is updated as each PR lands.
 | B03 | All | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
 | B04 | Protocol | Met: =evidence/b02_b03_b04_survey.md= | PR 1 |
 | B05 | All | Met in PR 1 | PR 1 |
-| B06 | All | Not met; census in PR 6 | PR 6 |
+| B06 | All | Met in PR 6: no header has a test as its only consumer, so nothing is test-only dead code. The artefact tabulates the headers consumed outside the component; the wider 1273-header classification is stated in the record rather than tabulated | PR 6 |
 | M01 | Entity | Met: no legacy JSON model, no =lookup_entity= | - |
 | M02 | Entity | Met: 51 of the 80 entity models bind a profile at 2026-09-28 (32 trading-instrument, 17 simple-lookup, 1 workspace-scoped-lookup, 1 trading-record); the survey measured 31 of the 65 org files on 2026-09-26. The other 29 entity models bind none, and every one is recorded as a no-match with its key shape, its feature values and its reason. The 8 field groups, the module and the component overview are not =domain_entity= models. Survey in the task's §1 | PR 3 |
 | M03 | Entity | Met: no model drift, one known exception elsewhere | - |
@@ -389,21 +389,21 @@ row is updated as each PR lands.
 | G07 | All | To honour: dry run first, never refresh while a defect is open | Policy |
 | G08 | All | Met: core and service namespace headers; no api header, as in iam | - |
 | W01 | Entity | Met in PR 2: 57 handler registrars, 31 history providers and 61 event mappings are composed; the read is =evidence/pr2_w01_composition_read.txt= | PR 2 |
-| W02 | Entity | Not met: 98 codes checked, 6 seeded | PR 6 |
+| W02 | Entity | Met in PR 7: the trading codes are seeded and the component is in the gate's registry, which reports 474 codes across 8 components | PR 7 |
 | W03 | Entity | Met: populate references resolve | - |
-| W04 | Entity | Partly: aggregator reachable; grants need a live run | PR 6 |
-| S01 | Entity | Not met: 22 of 57 entities have shell commands | PR 6 |
-| S02 | Entity | Not met: 0 trading recipes, 22 wanted | PR 6 |
+| W04 | Entity | Met in PR 7: the database recreates from scratch and the fleet serves, and the component's suite passes against it | PR 7 |
+| S01 | Entity | Met in PR 7 for the 55 entity models that enable the shell facet: the component-scoped aggregator archetype is built in codegen, every unit and test is generated and the hand-written units are deleted. Thirty do not enable it and are the fact and child rows a parent security or trade owns, so they are addressed through the parent's menu. The strict reading, a menu per entity, is not met | PR 7 |
+| S02 | Entity | Met in PR 7: 318 recipes in 265 groups, the inventory check passes, and the destructive verbs are declared destructive and recorded rather than run | PR 7 |
 | H01 | All | Met in PR 7: audit record written, all three diagrams re-authored in two passes, all three rasters whole and read — the first render was clipped and reading it is what found out | PR 7 |
-| H02 | All | To review: no Qt code; two generator trees; 24 unmodelled domain types | PR 6 |
+| H02 | All | Met in PR 6: the two generator trees have collapsed to one, and a scan finds no #if 0, no commented-out code, no work marker and no hand-written duplicate of a generated artefact | PR 6 |
 | H03 | All | Met in PR 7: the pass changes nothing — the added comments sit above the code, narrate no edit and comment out no code | PR 7 |
 | H04 | All | Met: only the standard =_WIN32= export macro | - |
-| H05 | All | Structure met; the ER diagram is stale | PR 6 |
-| V01 | All | Met in PR 2: the whole tree builds clean | PR 2 |
-| V02 | All | Met in PR 2: 102 of 102 trading core cases, and the api, service, shell and ore suites pass; =evidence/pr2_acceptance_checks.txt= | PR 2 |
-| V03 | Entity | To run: database recreate and fleet start | PR 6 |
-| V04 | Entity | Met in PR 7: every generated trading recipe replayed against the live fleet, 444 run; it found 34 defects from three root causes — twelve registrars no composition root called, and a decimal sentinel the shell could not parse, both fixed, plus one stale script recorded | PR 7 |
-| V05 | All | Partly in PR 2: the trading source lists are up to date and the drift dry run is empty; the remaining gates stay green only by exclusion until PR 6 | PR 6 |
+| H05 | All | Met in PR 7: all four overviews carry the six sections and a current diagram, and the composite root gained its Diagram section with a rendered puml and png pair. The stale ER diagram is a repository-wide sweep, recorded as its own finding | PR 7 |
+| V01 | All | Met in PR 7: the whole tree builds with the component's tests and every consumer, on the rebased tree | PR 7 |
+| V02 | All | Met in PR 7: ctest -R ores.trading is 3 of 3 and ctest -R ores.shell is 16 of 16 with the fleet up, and the codegen suite is 1064 passed | PR 7 |
+| V03 | Entity | Met in PR 7: compass db recreate -y -k from scratch after stopping the fleet, and the fleet starts and serves | PR 7 |
+| V04 | Entity | Met in PR 7: 554 generated recipes, 444 replayed against the live fleet with 439 answering. It found three defects: twelve registrars no composition root called and a required decimal with no parsable sentinel, both fixed, plus two stale by-instrument-id scripts recorded along with three enum aborts | PR 7 |
+| V05 | All | Met in PR 7: every codegen gate is green with the component listed -- component drift, model drift, pasted block symbols, protocol twin coverage, handler permissions, populate references, recipe inventory, test case reachability, sql hygiene, exported types, enum attributes, route auth, shell menus and validate_docs | PR 7 |
 | V06 | All | Met in PR 7: =trading-cpp= is listed, =--all= exits 0 with no drift, the twin gate is 293 of 293, the registry gate is 16 components and 5 exceptions | PR 7 |
 | V07 | All | Met in PR 7: the census over 1175 cases went from 71 with no strong assertion to 0, with no case deleted and none weakened | PR 7 |
 | V08 | All | Met in PR 7: 456 of 1062 sources reached; of the 606 untouched, 593 are generated and 13 hand-written and each is recorded with its reason | PR 7 |

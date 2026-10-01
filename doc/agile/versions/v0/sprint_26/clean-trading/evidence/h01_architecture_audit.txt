@@ -22,7 +22,7 @@ projects/ores.codegen/validate_docs.sh; ./compass.sh has no validate command)
    so every line below the sentinel is read from the code. A data member of a
    component-local type is ownership (*--); a component-local type named only in
    a signature is a dependency (..>); types from another component are left out.
-   The derivation is reproducible: build/manual_pass_edges.py reads the same
+   The derivation is reproducible: projects/ores.codegen/scripts/derive_component_puml_edges.py reads the same
    headers and prints the full edge list.
    - ores.trading.api: 1922 ownership edges, 0 dependency edges. The part is
      data types; its only member function names no component-local type. Protocol
@@ -83,10 +83,14 @@ projects/ores.codegen/validate_docs.sh; ./compass.sh has no validate command)
   defeats the generator's method pattern, which excludes braces from a parameter
   list. trade_handler loses its constructor to the same default. No type
   declared in the headers is missing from the diagram.
-- The core and api renders are clipped at 65535 px, so the delivered PNG does
-  not show the whole diagram.
+- The first render of the core and api parts was clipped at 65535 px, so that
+  render did not show the whole diagram. The fault was the manual pass rather
+  than the component: the sections then carried every derived edge. Bounding
+  them to the layer skeleton brought both inside the limit, and the three
+  committed rasters in section 4 are whole. The clipping is recorded here
+  because reading a render is what found the bound.
 - No edge is unsupported by the code: all 2094 edges were derived from the
-  headers by build/manual_pass_edges.py, and every endpoint is a rendered box.
+  headers by projects/ores.codegen/scripts/derive_component_puml_edges.py, and every endpoint is a rendered box.
 - A render also emits a .cmapx beside the .puml whenever a signature holds
   something PlantUML reads as a creole link, such as [[nodiscard]]. It is not an
   artefact: the .puml and the .png are. .gitignore now excludes the extension,

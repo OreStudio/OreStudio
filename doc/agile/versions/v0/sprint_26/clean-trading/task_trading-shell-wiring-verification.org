@@ -245,7 +245,7 @@ file, and the reason for each not-applicable.
   =_to_pascal_case= and =_ts_domain_type= are imported locally in the
   entity and junction branches, so the field-group branch had neither.
 - *The gates are green with the component listed.* =--all= exits 0 with no
-  drift at all six addresses; the twin gate is 293 of 293; the registry
+  drift at all eight addresses it checks the component at; the twin gate is 293 of 293; the registry
   exception gate passes; the whole tree builds; =compass db recreate -y -k=
   after stopping the fleet recreates from scratch and the fleet serves; and
   =ctest -j 1= is 89 of 89 on that database. =pytest= is 1063.
@@ -255,7 +255,7 @@ file, and the reason for each not-applicable.
   the recreate real. Worth doing in that order for any later PR.
 - *V06 is one decision away.* With =trading-cpp= added to
   =COMPONENTS_UNDER_TEST=, =check_component_drift.py --all --dry-run= exits
-  0 and checks trading at all six addresses, and
+  0 and checks trading at all eight addresses, and
   =check_registry_exceptions.py= exits 0. The entry was rehearsed and then
   reverted, because listing a component is also a claim that every protocol
   header has its TypeScript twin, and trading has none: it has no web
@@ -292,7 +292,11 @@ file, and the reason for each not-applicable.
   the tree, with =service/include/= (93 headers, about 42 of them consumed
   externally) left for its own pass. No header has a test as its only
   consumer, so no symbol is test-only dead code and nothing is deleted for
-  B06. Four headers have no consumer anywhere: the namespace-documentation
+  B06. The independent review is right that the committed artefact
+  (=evidence/b06_consumer_census.txt=) tabulates the 126 headers consumed
+  outside the component and does not carry the 1273-header classification;
+  that classification is stated here in prose, so the claim rests on the
+  reading rather than on the artefact, and a later pass should tabulate it. Four headers have no consumer anywhere: the namespace-documentation
   umbrella =core/ores.trading.core.hpp=, which the standard expects, and
   three =*_changed_event.hpp= headers under =api/eventing/=. The three are
   stale output: the current archetype writes =*_event.hpp=, and the
@@ -354,24 +358,34 @@ file, and the reason for each not-applicable.
   =config_parser_tests.cpp= and a =main.cpp= and nothing else. Trading
   matches the fleet rather than departing from it, and the coverage work
   item this survey names is the fleet-wide one.
-- *H03: the comment pass finds nothing to change.* The diff of record is
-  the ten commits over =3c522bd219=; every comment it adds sits in the
-  generated shell command units and their generated tests. Read against
+- *H03: the comment pass finds one violation, and it is fixed.* The pass
+  was first read as covering only the generated shell command units and
+  their tests, which are the bulk of the branch's added comments; the
+  independent review pointed out that the later codegen commits add
+  comments too, so the pass was re-run over the whole diff. Read against
   =doc/llm/skills/compass-code-review-comments/SKILL.org= and its
-  =comment-rules.md=, the added comments sit above the code they
-  describe and carry non-obvious reasoning -- why the menu's completion
-  list is the only public view of its children, and why the arity
+  =comment-rules.md=, every added comment but one sits above the code it
+  describes and carries non-obvious reasoning -- why the menu's
+  completion list is the only public view of its children, why the arity
   guard's case pins the received count rather than restating arithmetic
-  the command already computes. No added line narrates an edit
-  (=added=, =removed=, =changed=, =updated=, =previously=), none comments
-  out code, and no work marker appears. The only end-of-line comments
-  are the two the rules preserve: =// IWYU pragma: keep.=, a tooling
-  directive, and =} // namespace=, an enclosing scope marker. The rules
-  say to record compliance rather than force a change onto compliant
-  code, so the pass changes nothing.
-- *One commit on this branch carries a wrong Task-ID trailer.* Commit
-  =a451ac3c72= states the story correctly but names a task id that does
-  not exist; the real id is =F97FF3C0-EB21-4076-B23C-4AAA77F13BC3=.
+  the command already computes, and why a decimal sentinel is one and not
+  zero. The exception was the comment on the decimal entry in
+  =org_loader.py=, which narrated the edit ("until this entry existed the
+  type was unmapped") instead of stating the invariant; it is rewritten
+  to state the invariant. No added line narrates an edit now, none
+  comments out code, and no work marker appears. The only end-of-line
+  comments are the two the rules preserve: =// IWYU pragma: keep.=, a
+  tooling directive, and =} // namespace=, an enclosing scope marker.
+  =check_handler_permissions.py= keeps the pre-existing process-narration
+  style of its neighbours, which the pass leaves alone because it is not
+  this branch's text.
+- *One commit on this branch carries a wrong Task-ID trailer.* It states
+  the story correctly but names a task id that does not exist; the real
+  id is =F97FF3C0-EB21-4076-B23C-4AAA77F13BC3=. The commit is the one
+  that first recorded the V08 survey, =a451ac3c72= before the branch was
+  rebased onto main and =db26b3aec4= after it; the rebase re-wrote every
+  hash, so the id is named by subject rather than by a hash that will not
+  survive the next one.
   The trailer is written by =compass pr= and read by nothing, so no
   record and no gate depends on it. It is not corrected in place,
   because correcting it means rewriting a commit and the operator
@@ -398,7 +412,7 @@ file, and the reason for each not-applicable.
   same shape the assets pass found, and it is the class of defect that
   no drift gate can see, because the composition root is hand-written.
   All twelve are now wired, handler and history provider together, and
-  the change is derived rather than typed: =build/wire_missing_trading_registrars.py=
+  the change is derived rather than typed: =projects/ores.codegen/scripts/wire_trading_registrars.py=
   inserts into the three sorted blocks of =registrar.cpp= and its
   =--check= mode prints the diff, so a reviewer reruns the derivation
   instead of trusting twelve pasted lines.
@@ -506,12 +520,15 @@ file, and the reason for each not-applicable.
 
 The shell, wiring, hygiene and verification items are closed and
 ores.trading is in =COMPONENTS_UNDER_TEST=. The shell facet was enabled
-on 55 entities and its units, the component aggregator, the recipes and
-the recipe inventory are generated rather than hand-written. The
-component drift check exits 0 with the component listed, at all six
-addresses and with no drift at all; the protocol twin gate is 293 of 293
-across 14 components; the registry gate is 16 components and 5
-exceptions; =validate_docs.sh= is OK for all 41 components; and
+on 55 of the component's 85 entity models and its units, the component
+aggregator, the recipes and the recipe inventory are generated rather
+than hand-written. The thirty that do not enable it are the fact and
+child rows a parent security or trade owns, so they are addressed
+through the parent's menu; the strict reading of S01, a menu per entity,
+is therefore not met and the story row says so. The component drift
+check exits 0 with the component listed, at all eight addresses and with
+no drift at all; the protocol twin gate is 293 of 293 across 14
+components; the registry gate is 16 components and 5 exceptions; =validate_docs.sh= is OK for all 41 components; and
 =check_shell_recipes.py= replays 444 of the component's 554 recipes
 against the live fleet with 439 answering.
 

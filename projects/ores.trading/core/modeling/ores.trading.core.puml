@@ -7680,7 +7680,7 @@ namespace ores #F2F2F2 {
 ' and the raster then runs far past the 65535 px PlantUML limit, so the
 ' committed image would be a crop. This part has 170 derived edges, which
 ' render 121856 px wide, against 22125 px for the same boxes without them.
-' build/manual_pass_edges.py --project ores.trading.core prints the full set, so the
+' projects/ores.codegen/scripts/derive_component_puml_edges.py --project ores.trading.core prints the full set, so the
 ' bound is a rendering decision and not a claim about the code.
 ores::trading::repository::activity_category_mapper ..> ores::trading::repository::activity_category_entity
 ores::trading::service::activity_category_service *-- ores::trading::repository::activity_category_repository

@@ -17,18 +17,59 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_EVENTS_HPP
-#define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_EVENTS_HPP
+#ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_VOCABULARY_HPP
+#define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_VOCABULARY_HPP
 
-#include "ores.workflow.api/messaging/step_log_types.hpp"
 #include <cstdint>
 #include <rfl.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <vector>
+
+/**
+ * @file
+ * @brief The words of the workflow conversation that a model cannot state.
+ *
+ * The messages themselves are generated from ores.workflow.workflow_messages.
+ * What stays here is what an operation model has no syntax for: the two
+ * enumerations with their wire spellings and reflectors, and the names of the
+ * NATS headers a step command carries. The enumerations are registered in
+ * projects/modeling/cpp_custom_types.org, so the generated protocol includes
+ * this header and the TypeScript twin carries each one as a string.
+ */
 
 namespace ores::workflow::messaging {
+
+/**
+ * @brief Severity of a step log entry.
+ *
+ * Serialises as a lowercase string ("info", "warn", "error") so that
+ * step_log_json columns in the DB are human-readable and queryable via
+ * JSON containment (@>).
+ */
+enum class step_log_level : std::uint8_t { info = 0, warn = 1, error = 2 };
+
+[[nodiscard]] inline std::string_view to_string(step_log_level v) {
+    switch (v) {
+        case step_log_level::info:
+            return "info";
+        case step_log_level::warn:
+            return "warn";
+        case step_log_level::error:
+            return "error";
+    }
+    throw std::invalid_argument("Out-of-range step_log_level");
+}
+
+[[nodiscard]] inline step_log_level step_log_level_from_string(std::string_view sv) {
+    if (sv == "info")
+        return step_log_level::info;
+    if (sv == "warn")
+        return step_log_level::warn;
+    if (sv == "error")
+        return step_log_level::error;
+    throw std::invalid_argument("Invalid step_log_level: '" + std::string(sv) + "'");
+}
 
 /**
  * @brief Terminal outcome of a workflow step.
@@ -86,122 +127,6 @@ inline constexpr std::string_view instance_id_header = "X-Workflow-Instance-Id";
  * the tenant-scoped database context the step runs under.
  */
 inline constexpr std::string_view tenant_id_header = "X-Tenant-Id";
-
-/**
- * @brief Fire-and-forget event published by domain services on step completion.
- *
- * Published to workflow.v1.events.step-completed by any domain service that
- * participates in a workflow. The workflow engine subscribes to this subject
- * (queue-group) and advances or compensates the workflow accordingly.
- *
- * The step_id must echo the X-Workflow-Step-Id header from the command that
- * triggered this step. It is used as the idempotency key: the engine checks
- * that the referenced workflow_step is still in_progress before acting.
- */
-struct step_completed_event {
-    static constexpr std::string_view nats_subject = "workflow.v1.events.step-completed";
-
-    /**
-     * @brief UUID of the parent workflow instance.
-     */
-    std::string workflow_instance_id;
-
-    /**
-     * @brief UUID of the workflow step being completed.
-     *
-     * Echoed from the X-Workflow-Step-Id header of the originating command.
-     */
-    std::string step_id;
-
-    /**
-     * @brief Terminal outcome of this step.
-     */
-    step_outcome outcome = step_outcome::completed;
-
-    /**
-     * @brief Serialised JSON result payload from the domain service.
-     *
-     * Stored in workflow_step.response_json and passed as input to
-     * subsequent step command builders.
-     */
-    std::string result_json;
-
-    /**
-     * @brief Human-readable error message on fatal failure.
-     *
-     * Stored in workflow_step.error and workflow_instance.error.
-     * Non-empty only when outcome == failed.
-     */
-    std::string error_message;
-
-    /**
-     * @brief Ordered list of log entries emitted by this step.
-     *
-     * Serialised to step_log_json in the workflow step record.  Empty for
-     * steps that produce no user-visible diagnostic output.
-     */
-    std::vector<step_log_entry> log;
-};
-
-/**
- * @brief Fire-and-forget message to start a new workflow instance.
- *
- * Published by client services (e.g. ores.reporting.service) to request
- * that the workflow engine create and drive a new workflow_instance.
- */
-struct start_workflow_message {
-    static constexpr std::string_view nats_subject = "workflow.v1.start";
-
-    /**
-     * @brief Workflow type name to look up in the registry.
-     */
-    std::string type;
-
-    /**
-     * @brief Tenant the workflow runs on behalf of.
-     */
-    std::string tenant_id;
-
-    /**
-     * @brief What the run acts on, named by the caller, or empty.
-     *
-     * The engine stores it on the instance and never interprets it, so a caller
-     * states its own kind without the engine learning the caller's vocabulary.
-     */
-    std::string target_kind;
-
-    /**
-     * @brief Identity of the entity the run acts on, or empty.
-     *
-     * A start that names a target the engine cannot read is refused rather than
-     * run without one, because a run that cannot be found by what it acts on is
-     * a run the caller cannot follow.
-     */
-    std::string target_id;
-
-    /**
-     * @brief Serialised JSON payload for the initial step's command builder.
-     */
-    std::string request_json;
-
-    /**
-     * @brief Optional distributed tracing correlation ID.
-     */
-    std::string correlation_id;
-
-    /**
-     * @brief Optional pre-generated workflow instance UUID.
-     *
-     * When non-empty the engine uses this UUID for the new workflow_instance
-     * record instead of generating one. Callers that need to return the
-     * instance ID before the engine has processed the message (e.g. the
-     * ore_import handler) pre-generate a UUID here so they can include it
-     * in the synchronous response to the client.
-     *
-     * Empty string (default) means the engine generates a fresh UUID.
-     */
-    std::string instance_id;
-};
 
 }
 

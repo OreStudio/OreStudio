@@ -22,4 +22,5 @@
 set(files
     "identity_workflow_tests.cpp"
     "main.cpp"
+    "messaging_workflow_protocol_tests.cpp"
 )

@@ -23,8 +23,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -110,21 +109,21 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     // stays one method. The rows in flight bound the work, and a filter that
     // named a column the repository does not index as a set would cost more
     // there than the scan it saves here.
-    if (req->status_filter && !req->status_filter->empty()) {
-        const std::string& filter = *req->status_filter;
+    if (!req->status_filter.empty()) {
+        const std::string& filter = req->status_filter;
         std::erase_if(instances,
                       [&](const auto& inst) { return state_name(inst.state_id) != filter; });
     }
-    if (req->type_filter && !req->type_filter->empty()) {
-        const std::string& filter = *req->type_filter;
+    if (!req->type_filter.empty()) {
+        const std::string& filter = req->type_filter;
         std::erase_if(instances, [&](const auto& inst) { return inst.type != filter; });
     }
-    if (req->target_kind_filter && !req->target_kind_filter->empty()) {
-        const std::string& filter = *req->target_kind_filter;
+    if (!req->target_kind_filter.empty()) {
+        const std::string& filter = req->target_kind_filter;
         std::erase_if(instances, [&](const auto& inst) { return inst.target_kind != filter; });
     }
-    if (req->target_id_filter && !req->target_id_filter->empty()) {
-        const std::string& filter = *req->target_id_filter;
+    if (!req->target_id_filter.empty()) {
+        const std::string& filter = req->target_id_filter;
         std::erase_if(instances, [&](const auto& inst) {
             // A run with no target does not act on the one that was asked for.
             return inst.target_id == boost::uuids::uuid{} ||

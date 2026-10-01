@@ -27,6 +27,11 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
+# The wire fixtures ores.web writes. __FILE__ is relative to the build tree, so
+# the tests are told where the sources are rather than working it out.
+target_compile_definitions(${tests_target_name}
+    PRIVATE ORES_WORKFLOW_API_TEST_FIXTURES="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
+
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}

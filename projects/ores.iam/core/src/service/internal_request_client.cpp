@@ -20,7 +20,7 @@
 #include "ores.iam.core/service/internal_request_client.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
 #include <map>
 #include <thread>

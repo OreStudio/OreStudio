@@ -18,7 +18,7 @@
  */
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 

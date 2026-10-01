@@ -35,6 +35,7 @@ export interface StressTestLibrary {
     tenant_id: string;
     id: string;
     name: string;
+    configuration_id: string;
     use_spreaded_term_structures: boolean | null;
     modified_by: string;
     performed_by: string;

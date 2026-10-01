@@ -186,6 +186,7 @@ std::optional<domain::stress_test_library> stress_test_library_repository::read_
     return entities.front();
 }
 
+
 stress_test_library_repository::remove_status stress_test_library_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing stress test library. " << "id: " << id;

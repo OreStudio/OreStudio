@@ -35,6 +35,7 @@ export interface StressTestLibraryKey {
 export interface StressTestLibraryWrite {
     id: string;
     name: string;
+    configuration_id: string;
     use_spreaded_term_structures: boolean | null;
 }
 

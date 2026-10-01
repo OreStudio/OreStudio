@@ -42,6 +42,7 @@ struct stress_test_library_key {
 struct stress_test_library_write {
     boost::uuids::uuid id;
     std::string name;
+    boost::uuids::uuid configuration_id;
     std::optional<bool> use_spreaded_term_structures;
 };
 

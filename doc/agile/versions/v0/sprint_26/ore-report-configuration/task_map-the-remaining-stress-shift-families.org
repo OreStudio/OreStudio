@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 4D4B029C-D056-4445-9255-D14DA70AB03C
+:END:
+#+title: Task: Map the remaining stress shift families
+#+description: Thirteen of the fourteen shift families the corpus uses have no reader, so no stress document round trips outright. Map them, and the ParShifts flags with them.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/map-the-remaining-stress-shift-families
+#+pr: 2488
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every shift family a shipped stresstest.xml uses round trips, so the stress kind is proven end to end.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The corpus's fourteen families all map and reverse
+- Every shipped stresstest.xml round trips through the database
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2488][#2488]] | [ore] Map every stress shift family in both directions |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All sixteen shift families map both ways, so every shipped stress document
+round trips. The mapper went from one family to sixteen.
+
+A family keeps four fields in columns of their own: =shift_type=, =shifts=,
+=shift_tenors= and =shift_expiries=. Everything else travels in =extras= as
+=name=value= pairs joined by =;=, and a nested struct joins its own fields by
+=|=. =ParShifts= is three flags rather than a list, so it becomes one row
+carrying them in =extras=. A composite key joins its present parts with =|=,
+and a leading =|= marks a key with no currency.
+
+Three defects were found and fixed on the way. A =ParConversion= convention id
+shared the separator of the structure holding it, so the id and every
+convention after the first were destroyed. The composite key decoder guessed a
+lone part's meaning from the currency vocabulary, so a key that spelled a
+currency was silently read as the currency and lost. The library flag was
+written back with a capitalised boolean, so no document round tripped byte for
+byte. The build then found a fourth: the =configuration_id= generator called
+=boost::uuids::nil_uuid()= without the header declaring it.
+
+The round trip is proved twice, and the second proof is the load-bearing one.
+Over the corpus: twenty files, forty-six scenarios, 2047 assertions. Over a
+document that fills every member of every family at once: 147 checks. The
+corpus alone would not have found the =ParConversion= collision, because no
+shipped file carries that element; the maximal document did.
+
+=compass build= succeeds, and =ores.ore.core.tests=, =ores.analytics.core.tests=,
+=ores.analytics.service.tests= and =ores.shell.analytics.tests= all pass against
+a fleet restarted on a database recreated from the tree. Merged as PR #2488.
+
+One limit is recorded rather than hidden: a separator embedded inside a data
+value still corrupts, 45 adversarial probes failing. No realistic value in
+this domain contains one, so no shipped document is affected. Escaping is a
+task of its own and the data does not ask for it yet.

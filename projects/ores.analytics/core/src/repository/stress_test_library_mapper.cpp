@@ -41,6 +41,9 @@ domain::stress_test_library stress_test_library_mapper::map(const stress_test_li
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
+    r.configuration_id = v.configuration_id.has_value() ?
+                             boost::lexical_cast<boost::uuids::uuid>(*v.configuration_id) :
+                             boost::uuids::uuid{};
     r.use_spreaded_term_structures = v.use_spreaded_term_structures;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -60,6 +63,9 @@ stress_test_library_entity stress_test_library_mapper::map(const domain::stress_
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.name = v.name;
+    r.configuration_id = v.configuration_id == boost::uuids::uuid{} ?
+                             std::nullopt :
+                             std::optional(boost::uuids::to_string(v.configuration_id));
     r.use_spreaded_term_structures = v.use_spreaded_term_structures;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -26,6 +26,8 @@
 #define ORES_ANALYTICS_API_DOMAIN_STRESS_TEST_LIBRARY_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -62,6 +64,13 @@ struct stress_test_library final {
      * @brief Name of the library, which is the name of the document it came from.
      */
     std::string name;
+
+    /**
+     * @brief The named configuration this library is registered as. Nullable because a document can
+     * be imported before it is registered: the mapper reads and writes content and does not invent
+     * a header, the caller supplies one.
+     */
+    boost::uuids::uuid configuration_id;
 
     /**
      * @brief Whether the scenarios spread their shifts across the term structures rather than

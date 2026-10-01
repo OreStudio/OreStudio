@@ -218,8 +218,14 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
     // the config names, with the pillar's point put back as the coordinate key the
     // writer stored. The grammar composes both, so the read and the write agree
     // without either side decomposing the key by hand.
-    const auto series_identifier = ores::marketdata::core::oresmd_parser::parse(
-        ores::marketdata::domain::oresmd_uri{cfg.vintage_series_uri});
+    ores::marketdata::domain::market_data_identifier series_identifier;
+    try {
+        series_identifier = ores::marketdata::core::oresmd_parser::parse(
+            ores::marketdata::domain::oresmd_uri{cfg.vintage_series_uri});
+    } catch (const std::exception& e) {
+        throw vintage_data_missing_error("oresmd cannot read the vintage series URI '" +
+                                         cfg.vintage_series_uri + "': " + e.what());
+    }
     const auto anchor_datum = ores::marketdata::core::oresmd_parser::with_point(
         series_identifier, anchor->point_id);
     if (!anchor_datum)

@@ -414,6 +414,12 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         // series is keyed by its identity, so a tick with none has nothing to be filed
         // under, and a row that predates the identities cannot rescue it because that
         // row has none either.
+        // A tick that names no point is read as the series' own key, and a series
+        // type whose key needs a point -- an IR swap, say -- is therefore dropped
+        // here. That is the behaviour the default_point_for() fallback never
+        // changed: it filled the stored column after this lookup had already
+        // refused the tick, so a producer that names no point loses the tick
+        // whether or not the grammar has an answer for the type.
         std::optional<domain::market_data_identifier> identity;
         if (!point_id.empty())
             identity = core::oresmd_projections::from_ore_key(ore_key + "/" + point_id);

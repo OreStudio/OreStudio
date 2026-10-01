@@ -104,6 +104,19 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
+-- A re-import writes a different URI for the same datum, so on its own it would
+-- insert a second current row rather than supersede the old one: the unique index
+-- keys on the URI, and the soft-update trigger matches on it. The rows the next
+-- import can rewrite are therefore closed here, which leaves the import to insert
+-- their replacements. A row with no producer key is deliberately left alone:
+-- nothing can rewrite it, so closing it would lose it rather than correct it.
+\echo '--- closing the rows the next import rewrites ---'
+update ores_marketdata_market_observations_tbl
+set valid_to = current_timestamp
+where key is not null
+  and oresmd_uri not like 'oresmd://%'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Re-derivation report. Rows that still spell the point are the ones the next
 -- import rewrites; a row with no producer key is the population the import can
 -- never rewrite, and it is named rather than counted so an operator can see it.

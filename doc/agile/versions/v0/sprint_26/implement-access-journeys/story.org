@@ -74,8 +74,8 @@ from the survey rather than from the documents as they stand.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:52698A77-6BB0-4A1D-AB53-41AC443E0073][Re-verify the four access documents against the tree]] | BACKLOG | | | Check every gap the four documents record against the current code, close the ones the IAM clean standard and the hardening already closed, and leave the rest with the subject that would close each. |
-| [[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]] | BACKLOG | | | Make the role reads self-scoped or permission-gated, add the read that pairs a permission with the role that grants it, and add the assignment read that carries who granted a role, when and why. |
+| [[id:52698A77-6BB0-4A1D-AB53-41AC443E0073][Re-verify the four access documents against the tree]] | DONE | | 2026-09-30 | Check every gap the four documents record against the current code, close the ones the IAM clean standard and the hardening already closed, and leave the rest with the subject that would close each. |
+| [[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]] | DONE | 2026-09-30 | 2026-10-01 | Make the role reads self-scoped or permission-gated, add the read that pairs a permission with the role that grants it, and add the assignment read that carries who granted a role, when and why. |
 | [[id:D8305768-6F61-4A67-99DE-DE837E2026A2][Let a role's permission bundle be written]] | BACKLOG | | | Add the write the catalogue journey has never had: a role's permission list can be composed and saved, permission-gated, with the change reason every other write carries. |
 | [[id:B4F02275-33F8-4C7E-828C-5EA1649E7851][Build the access screen in ores.web]] | BACKLOG | | | The three original journeys as screens against the real server: the member's own access, the administrator's grant and revoke with its audit, and the role catalogue with its permission picker. |
 | [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | BACKLOG | | | The five request subjects the journey names, the four-eyes guard, and the member's ask screen and the administrator's queue. |

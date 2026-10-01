@@ -23,9 +23,9 @@ Each component the clean standard has cleared has a shell surface that generatio
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The iam task, the last component.       |
+| Now           | The iam task waits on its PR; scoping the profile default. |
 | Waiting on    | Nothing.                               |
-| Next          | The profile default, once iam is merged. |
+| Next          | The profile default task.               |
 | Last touched  | 2026-10-01                               |
 
 * Acceptance

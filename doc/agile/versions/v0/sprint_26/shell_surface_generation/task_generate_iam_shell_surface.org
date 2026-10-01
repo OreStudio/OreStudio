@@ -8,7 +8,7 @@
 #+filetags: :shell_surface_generation:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-iam-shell-surface
-#+pr:
+#+pr: 2473
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -149,7 +149,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2473](https://github.com/OreStudio/OreStudio/pull/2473) | Generate iam's account, session and tenant reads |
 
 * Review
 

@@ -59,13 +59,15 @@ describe('the system administration landing', () => {
 
         expect(html).toContain('System administration');
         expect(html).toContain('Tenants');
+        expect(html).toContain('See the tenants');
         expect(html).toContain('New tenant');
         expect(html).toContain('Retire or reset a tenant');
     });
 
-    it('opens the journey the tree has built, and only that one', () => {
+    it('opens the journeys the tree has built, and only those', () => {
         const html = landing('system-administration');
 
+        expect(html).toContain('href="/tenants"');
         expect(html).toContain('href="/tenants/new"');
         expect(html).toContain('Not built yet');
     });

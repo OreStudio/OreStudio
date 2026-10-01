@@ -27,6 +27,7 @@ does work that takes time and can fail half way — see
 #+ATTR_HTML: :class hug-leading
 | Journey | Actor | Gist |
 |---------+-------+------|
+| [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] | system administrator | The tenants the deployment holds: their code, name, hostname, type and status |
 | [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] | tenant administrator | Maintain tenant details and the reference lookups |
 | [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] | system administrator | Suspend, terminate or reset a tenant, and clear what it leaves behind |
 

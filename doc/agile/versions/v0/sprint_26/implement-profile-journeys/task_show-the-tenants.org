@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 18E4CA0F-0668-46F2-97D3-A5EF58522928
+:END:
+#+title: Task: Show the tenants a deployment holds
+#+description: Give the system administration area a read-only tenant roster, as its own journey, and the read the screen needs.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:tenants:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/show-the-tenants
+#+pr: 2466
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system administrator can see what tenants the deployment holds. The
+*Tenants* area gains a read-only roster as its own journey, and the read it
+needs, so the only way to find out what exists is no longer to open a
+destructive journey.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The catalogue holds a *See the tenants* journey, in the Tenancy group,
+  described on its own page with a wireframe, and the group document lists it.
+- The journey says why the roster leaves the system tenant out, in the
+  registry's own terms: a row's identity is its =id=, never its =tenant_id=.
+- The server read reaches =iam.v1.tenants.list=, and the page it answers is
+  translated from the wire's names once, in the wire contract.
+- The BFF answers =GET /api/tenants= with the tenants and the count, and the
+  system tenant is not among them.
+- The route refuses a session that is not acting in system administration.
+- The screen names each tenant by code, name, hostname, type and status, and
+  states the four lifecycle statuses in words.
+- A deployment that holds no tenant of its own reads as an empty roster that
+  says so and offers the journey that leaves it, not as a failure.
+- The *Tenants* area offers the roster as its first card, before creating one.
+- Every new behaviour is proved by a test, and the tests run head-less.
+- The screen was read against the running deployment, not only in a test.
+
+* Plan
+
+1. *The design first.* The journey document is written before the screen,
+   because it is the page that says what the roster is for and what it leaves
+   out. It is the extraction story's artefact, written here to the standard the
+   other journeys follow.
+2. *The read, then the route.* The wire contract gains the tenant page and the
+   read over =iam.v1.tenants.list=. The route names what it reads and decides
+   the one thing the registry cannot: the system tenant is the deployment's own
+   bookkeeping, so it is dropped and its count with it.
+3. *The route guards its context.* The list subject checks no permission, so
+   the route refuses a session that is not in system administration mode. That
+   is a boundary and not the design's answer, and both the route and the
+   journey document say so.
+4. *The screen, then the card.* The screen is read-only and the card opens it.
+   Last, because a card that opens nothing is worse than no card.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Tenants the roster answers for this deployment | 1 (acme_corporation), the system tenant excluded | =curl -b cookie http://127.0.0.1:21402/api/tenants= | the branch tip |
+| BFF suite | 19 files, 93 tests | =npm run test= in =projects/ores.web/packages/bff= | the branch tip |
+| Web suite | 17 files, 177 tests | =npm run test= in =projects/ores.web/packages/web= | the branch tip |
+| Wire contract suite | 7 files, 51 tests | =npm run test= in =projects/ores.web/packages/wire-protocol= | the branch tip |
+| Prototype harness | 12 sign-in/state combinations, 27 promises | =node evidence/navigation_check.js= | the branch tip |
+| Live roster harness | 12 promises | =node evidence/tenant_roster_check.js= | the branch tip |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2466][#2466]] | [web] Give the system administration area a tenant roster |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The system administrator can read what tenants the deployment holds, without
+opening a journey that destroys one.
+
+- *The design is a journey of its own.*
+  [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] joins the Tenancy
+  group, with a wireframe, and the group document lists it first. It records why
+  the roster leaves the system tenant out: the registry is system-scoped, so a
+  row's identity is its =id= and never its =tenant_id=, and a reader who filters
+  on the wrong column answers an empty list for a deployment full of tenants.
+
+- *The read.* The wire contract gained the tenant page and the read over
+  =iam.v1.tenants.list=, which translates the wire's names once. The BFF answers
+  =GET /api/tenants= with the tenants and the count, having dropped the system
+  tenant and its count, because that row is the deployment's own bookkeeping and
+  not a tenant somebody set up.
+
+- *The refusal.* The route answers 403 to a session that is not acting in system
+  administration. The list subject checks no permission of its own, so this is
+  what stands between a tenant's administrator and every tenant's registry row
+  today. It is a boundary and not the design's answer, and both the route and
+  the journey document say so.
+
+- *The screen.* The roster names each tenant by code, name, hostname, type and
+  status, states the four lifecycle statuses in words, and is read-only. A
+  deployment that holds no tenant of its own reads as an empty roster that says
+  so and offers [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]], rather
+  than as a failure.
+
+- *The card.* *See the tenants* is the first card in the *Tenants* area, before
+  creating one.
+
+Proved live against the running deployment: the roster answers one tenant for
+this environment, the system tenant is not among them, and the screen draws the
+five columns and the status. Screenshot in =evidence/tenant_roster.png=;
+harness in =evidence/tenant_roster_check.js=.
+
+What this task does not do, and where each goes next:
+
+- *No search and no paging controls.* =list_tenants_request= carries =offset=,
+  =limit= and =order= and no filter, so the screen reads one page and cannot
+  narrow it. The journey document records the search as =partial= and names the
+  candidate: a filter on the list request, which is the same gap
+  [[id:B3FD623C-D87B-491F-9FA2-08B26D67114F][Add server-side search/filter to
+  list windows across entities]] holds for every list window.
+
+- *The exclusion of the system tenant lives in the route, not in the registry.*
+  A caller that reaches the subject directly still sees the system tenant. The
+  candidate is a server-side filter, so the rule lives where the registry lives.
+
+- *No permission on the list read.* The subject proves a session and checks no
+  permission, and the route substitutes a context check for one. The candidate
+  is a permission on the list read.
+
+- *The roster cannot name a tenant's administrator.* No read joins a tenant to
+  the account that runs it, so "who runs this tenant" needs one tenant opened at
+  a time.

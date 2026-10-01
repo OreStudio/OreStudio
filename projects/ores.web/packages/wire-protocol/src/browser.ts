@@ -48,8 +48,18 @@ export {
     accountSchema,
     activePartySchema,
     partySummarySchema,
+    tenantPageSchema,
+    tenantSummarySchema,
 } from './domain.js';
-export type { Account, AccountPage, AccountType, ActiveParty, PartySummary } from './domain.js';
+export type {
+    Account,
+    AccountPage,
+    AccountType,
+    ActiveParty,
+    PartySummary,
+    TenantPage,
+    TenantSummary,
+} from './domain.js';
 
 export {
     apiErrorSchema,

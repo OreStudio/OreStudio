@@ -49,6 +49,7 @@
        can be signed in, so it is a door rather than a place the shell offers. */
     var JOURNEYS = [
         // The deployment.
+        { name: 'See the tenants', path: '/tenants', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4, built: true },
         { name: 'New tenant', path: '/tenants/new', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4, run: true, built: true },
         { name: 'Retire or reset a tenant', path: '/tenants/retire', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4 },
 
@@ -249,6 +250,7 @@
         '/people/:id': ["Change someone's details", 'One colleague\u2019s record, as they see it.'],
         '/reporting-lines': ['Reporting lines', 'Who reports to whom, drawn as a tree.'],
         '/roles': ['Roles', 'The roles this tenant defines and what each bundles.'],
+        '/tenants': ['See the tenants', 'The tenants this deployment holds, and the state each one is in.'],
         '/tenants/new': ['New tenant', 'Stand a tenant up, one step at a time.'],
         '/tenant': ['Tune the tenant', 'The tenant\u2019s own settings.']
     };

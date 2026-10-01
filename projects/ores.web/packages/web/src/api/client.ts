@@ -32,6 +32,7 @@ import {
     seedProfilesResponseSchema,
     sessionViewSchema,
     signupResultSchema,
+    tenantPageSchema,
     workflowProgressSchema,
     type BootstrapStatus,
     type CreateAdministratorRequest,
@@ -49,6 +50,7 @@ import {
     type SessionView,
     type SignupRequest,
     type SignupResult,
+    type TenantPage,
     type WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
@@ -194,6 +196,17 @@ export const api = {
             await request('/api/seed-profiles', { method: 'GET' }),
         );
         return payload.profiles;
+    },
+
+    /**
+     * The tenants this deployment holds.
+     *
+     * The system tenant is not among them: it is the deployment's own
+     * bookkeeping rather than a tenant somebody set up, and the answer has
+     * already dropped it.
+     */
+    async tenants(): Promise<TenantPage> {
+        return tenantPageSchema.parse(await request('/api/tenants', { method: 'GET' }));
     },
 
     /**

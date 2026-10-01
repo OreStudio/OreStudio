@@ -63,6 +63,7 @@ export const SHELL_AREAS: Readonly<Partial<Record<SessionMode, readonly ShellAre
         {
             nameKey: 'shell.area.tenants',
             journeys: [
+                { nameKey: 'shell.journey.seeTenants', to: '/tenants' },
                 { nameKey: 'shell.journey.newTenant', to: '/tenants/new' },
                 { nameKey: 'shell.journey.retireTenant' },
             ],

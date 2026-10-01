@@ -1,0 +1,147 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import type { TenantSummary } from '@ores/wire-protocol/browser';
+import { useTranslation } from '../i18n/Provider.js';
+import { api } from '../api/client.js';
+import { LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+
+/**
+ * The tenants a deployment holds.
+ *
+ * This is the roster the system administration area opens on: a read-only list
+ * of every tenant somebody set up, with the state each one is in. It writes
+ * nothing. The destructive operations are their own journey, so a person who
+ * only wants to know what exists never has to open one.
+ *
+ * The system tenant is not here because it is not a tenant somebody set up: it
+ * is the deployment's own bookkeeping. The read drops it, so this screen cannot
+ * show it by accident.
+ *
+ * A deployment that holds no tenant of its own is the state right after the
+ * system administrator is created, and it is a normal state rather than an
+ * error: the empty roster says so and offers the journey that leaves it.
+ */
+export function TenantsPage(): ReactNode {
+    const { t, plural } = useTranslation();
+    const roster = useQuery({ queryKey: ['tenants'], queryFn: api.tenants });
+
+    if (roster.isPending) {
+        return (
+            <div className="card p-6">
+                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+            </div>
+        );
+    }
+
+    if (roster.isError) {
+        const reason = roster.error instanceof Error ? roster.error.message : String(roster.error);
+        return (
+            <div className="card p-6">
+                <PageHeader title={t('tenants.title')} description={t('tenants.failed')} />
+                <Notice tone="error">{reason}</Notice>
+            </div>
+        );
+    }
+
+    const { tenants, totalCount } = roster.data;
+
+    return (
+        <div className="card p-6">
+            <PageHeader
+                title={t('tenants.title')}
+                description={plural('tenants.count', totalCount)}
+            />
+            {tenants.length === 0 ? <EmptyRoster /> : <Roster tenants={tenants} />}
+        </div>
+    );
+}
+
+function Roster({ tenants }: { readonly tenants: readonly TenantSummary[] }): ReactNode {
+    const { t } = useTranslation();
+
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+                <thead className="text-[11px] uppercase tracking-wide text-ink-faint">
+                    <tr>
+                        <th className="py-2 pr-4 font-medium">{t('tenants.code')}</th>
+                        <th className="py-2 pr-4 font-medium">{t('tenants.name')}</th>
+                        <th className="py-2 pr-4 font-medium">{t('tenants.hostname')}</th>
+                        <th className="py-2 pr-4 font-medium">{t('tenants.type')}</th>
+                        <th className="py-2 font-medium">{t('tenants.status')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tenants.map((tenant) => (
+                        <tr key={tenant.id} className="border-t border-line-subtle">
+                            <td className="py-2 pr-4 font-mono text-xs">{tenant.code}</td>
+                            <td className="py-2 pr-4">{tenant.name}</td>
+                            <td className="py-2 pr-4 font-mono text-xs">{tenant.hostname}</td>
+                            <td className="py-2 pr-4 text-ink-muted">{tenant.type}</td>
+                            <td className="py-2">
+                                <StatusTag status={tenant.status} />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+/**
+ * The state a tenant is in, in words.
+ *
+ * The four statuses are seeded rows rather than free text, so the screen names
+ * them. A status the catalogue does not hold is shown as the server wrote it
+ * rather than hidden, because a tenant in a state nobody expected is exactly
+ * the row somebody needs to see.
+ */
+function StatusTag({ status }: { readonly status: string }): ReactNode {
+    const { t } = useTranslation();
+    const known: Readonly<
+        Record<string, { readonly key: string; readonly tone: 'accent' | 'warn' | 'muted' }>
+    > = {
+        bootstrapping: { key: 'tenants.state.bootstrapping', tone: 'warn' },
+        active: { key: 'tenants.state.active', tone: 'accent' },
+        suspended: { key: 'tenants.state.suspended', tone: 'muted' },
+        terminated: { key: 'tenants.state.terminated', tone: 'muted' },
+    };
+    const entry = known[status];
+    return entry === undefined ? <Tag>{status}</Tag> : <Tag tone={entry.tone}>{t(entry.key)}</Tag>;
+}
+
+function EmptyRoster(): ReactNode {
+    const { t } = useTranslation();
+
+    return (
+        <div>
+            <p className="text-sm font-medium">{t('tenants.empty.title')}</p>
+            <p className="mt-1 text-sm text-ink-muted">{t('tenants.empty.body')}</p>
+            <div className="mt-4">
+                <LinkButton to="/tenants/new">{t('shell.journey.newTenant')}</LinkButton>
+            </div>
+        </div>
+    );
+}

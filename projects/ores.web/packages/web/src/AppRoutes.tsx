@@ -32,6 +32,7 @@ import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { AppShell } from './components/AppShell.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
+import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
 import type { SessionView } from '@ores/wire-protocol/browser';
@@ -175,6 +176,12 @@ export function AppRoutes({
                         partyName={view.party.name}
                         mode={view.mode}
                     />
+                ))}
+            />
+            <Route
+                path="/tenants"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <TenantsPage />
                 ))}
             />
             <Route

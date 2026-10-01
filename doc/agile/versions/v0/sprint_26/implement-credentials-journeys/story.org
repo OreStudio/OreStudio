@@ -45,11 +45,11 @@ The build tasks are written when the prototypes are accepted.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Two of the three screens are merged and the third is in review. The member's Security screen and the administrator's Rescue access screen are on main, the guard on the session reads is closed, and the audit screen is on its branch. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Merge the audit screen, then close the story. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-01                               |
 
 * Acceptance
@@ -85,8 +85,8 @@ The build tasks are written when the prototypes are accepted.
 | [[id:0B624231-2764-4D72-B19A-6038105E0944][Implement the active sessions read]] | DONE | | 2026-10-01 | iam.v1.sessions.active replies success with no rows, so the audit screen's active list is empty by construction. Read the sessions whose end time is empty, guard the operation with the permission the catalogue grants, and test the read. |
 | [[id:0A10EC8B-E062-45FE-8CEE-CB0F69C5FCB2][Give the web client the credentials reads]] | DONE | | 2026-10-01 | The BFF serves accounts, login records and sessions; the browser's own client cannot ask for them. Add the client methods the three screens call, each parsed at the network boundary with the schema the browser and the wire share. |
 | [[id:E172BBAB-7001-4626-8B91-D8F064883F9B][Build the member's Security screen]] | DONE | | 2026-10-01 | Protect my account runs in ores.web on the accepted variant B: the places the account is signed in lead, and the password form and sign-in state share the row under them. |
-| [[id:1BCEF441-AD6C-496D-AD50-D82B485121AB][Build the administrator's Rescue access screen]] | STARTED | 2026-10-01 | | Rescue access runs in ores.web on the accepted variant B: the account's security state leads and names the action it suggests, and the recovery action and the lock control sit under it. Adds the two write routes the journey needs and states the recovery gap. |
-| [[id:BB04E2B0-20F7-4831-B6DF-5BC19057A661][Build the sign-in audit screen]] | STARTED | 2026-10-01 | | Audit sign-ins runs in ores.web on the accepted variant B: three readings behind tabs over one filter bar, over the session and login-record reads the group already landed, with every panel that has no producer saying so. |
+| [[id:1BCEF441-AD6C-496D-AD50-D82B485121AB][Build the administrator's Rescue access screen]] | DONE | 2026-10-01 | 2026-10-01 | Rescue access runs in ores.web on the accepted variant B: the account's security state leads and names the action it suggests, and the recovery action and the lock control sit under it. Adds the two write routes the journey needs and states the recovery gap. |
+| [[id:BB04E2B0-20F7-4831-B6DF-5BC19057A661][Build the sign-in audit screen]] | DONE | 2026-10-01 | 2026-10-01 | Audit sign-ins runs in ores.web on the accepted variant B: three readings behind tabs over one filter bar, over the session and login-record reads the group already landed, with every panel that has no producer saying so. |
 
 * Plan
 
@@ -224,3 +224,46 @@ task.
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes and the transaction boundary. |
 | [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] | knowledge | The section contract every journey document carries. |
 | [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the prototype and the build are held to. |
+
+* Result
+
+Done 2026-10-01.
+
+The three Credentials journeys run in =ores.web= against the real server, each on
+the variant B its prototype was accepted for:
+
+- *Security* (=/security=) — the member reads where the account is signed in,
+  changes their own password and reads the sign-in state.
+- *Rescue access* (=/rescue=) — the administrator finds a colleague, reads the
+  security state, and locks or unlocks the account through two routes this group
+  added. The recovery link is drawn unavailable with its reason.
+- *Audit: sign-ins* (=/audit=) — the administrator reads the active sessions, the
+  session activity and the failed attempts behind one filter bar, with *Refresh*
+  as the only action.
+
+The group added nine BFF routes over subjects that already worked, finished the
+active-sessions read in =ores.iam=, generated the guard on the three session
+reads from the entity model, and closed one defect: the session reads checked no
+permission while the account and login-record reads checked theirs.
+
+Every screen states the operations it cannot reach. The recovery link, the
+self-service recovery path, activate or deactivate, ending another account's
+session, the session samples, the authentication events and the account filter
+are each named on the screen that wants them, and no screen draws an empty panel
+in place of a reading the server cannot serve.
+
+*Decisions taken during the build.* Two are worth carrying forward: the
+administrator-typed password fallback does not ship, recorded above; and the
+recovery link is new platform capability rather than a credentials screen, so it
+is captured rather than built here.
+
+*What remains, and where it is recorded.* The recovery link, its token store and
+a mail path are
+[[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][a capture]]. Nothing ends a session,
+so every session reads as open —
+[[id:C3920569-BE0A-43A4-82B7-DE9739A6DB53][a capture]]. The account filter on the
+session read is a scope gap the audit screen states. No test exercises a guard's
+refusal, because =ores.iam= has no harness for one, and that is recorded on the
+guard task. The three screens carry no rendering test that drives a browser,
+because the web package has no DOM harness; each renders from a fixture instead.
+The screens' copy is not in the three locales yet.

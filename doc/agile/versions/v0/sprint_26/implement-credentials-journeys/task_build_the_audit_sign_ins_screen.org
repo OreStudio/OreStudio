@@ -8,7 +8,7 @@
 #+filetags: :implement-credentials-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/audit-sign-ins-screen
-#+pr: 2494
+#+pr: 2495
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -33,11 +33,11 @@ rather than drawing an empty one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | The screen is landed on the branch, over the reads the group already served. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then merge.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -99,6 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2495][#2495]] | [agile] Close the credentials journeys story |
 | [[https://github.com/OreStudio/OreStudio/pull/2494][#2494]] | [web] Build the sign-in audit screen |
 
 * Review

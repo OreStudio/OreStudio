@@ -8,7 +8,7 @@
 #+filetags: :shell_surface_generation:sprint_26:v0:
 #+owner: marco
 #+branch: feature/default-the-shell-facet-on
-#+pr:
+#+pr: 2474
 #+blocked_on: every component's clean-standard pass; the facet node's default is global
 #+blocked_since: 2026-10-01
 #+created: 2026-10-01
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2474](https://github.com/OreStudio/OreStudio/pull/2474) | Cover the shell opt-in from the profile alone |
 
 * Review
 

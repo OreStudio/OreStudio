@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:shell:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/unblock-the-tenant-journey
-#+pr:
+#+pr: 2470
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2470][#2470]] | [web] Bound the signed-in screen and unblock the tenant details step |
 
 * Review
 

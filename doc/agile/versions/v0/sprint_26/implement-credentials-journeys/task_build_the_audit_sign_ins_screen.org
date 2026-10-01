@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: BB04E2B0-20F7-4831-B6DF-5BC19057A661
+:END:
+#+title: Task: Build the sign-in audit screen
+#+description: Audit sign-ins runs in ores.web on the accepted variant B: three readings behind tabs over one filter bar, over the session and login-record reads the group already landed, with every panel that has no producer saying so.
+#+type: task
+#+level: s1
+#+filetags: :implement-credentials-journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] in
+=ores.web= against the real server, on variant B of the accepted prototype: the
+active sessions, the session activity and the failed attempts take turns in the
+body under one filter bar, with Refresh as the only action.
+
+The screen reads what the group already landed — the sessions, the active
+sessions and the login records — and states every panel that has no producer,
+rather than drawing an empty one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The screen is reachable from the signed-in shell and reads the sessions, the
+  active sessions and the login records through the BFF routes that already
+  serve them.
+- The account filter is drawn and disabled, with the reason: =iam.v1.sessions.list=
+  takes no account filter, so the server cannot apply one.
+- The session activity panel says its data is not available. Nothing serves
+  =iam.v1.sessions.samples= on either transport, so no empty chart and no
+  fabricated sample rows are drawn.
+- The authentication events are a gap line, not an empty log. No subject carries
+  them on any surface.
+- The failure count and the lock state travel together, and Refresh is the only
+  action: no version, diff or revert control appears.
+- The screen says that nothing writes a session's end time, so an old session
+  cannot be told from a live one in the session list.
+
+* Plan
+
+1. Read the accepted variant B on =prototype/audit-sign-ins= and the three reads
+   the group landed.
+2. Build =/audit= behind the signed-in shell, composing =AppShell= with the
+   shared primitives.
+3. State every gap the prototype records: the account filter, the samples, the
+   auth events and the missing end time.
+4. Drive the screen against the running fleet, then land it.
+
+* Notes
+
+*No new server work.* All three reads this screen needs are landed; the two
+handler gaps the inventory records are =sessions.active=, which is implemented,
+and =sessions.samples=, which cannot be implemented because nothing writes
+=ores_iam_session_samples_tbl=. The samples panel therefore states the gap
+instead of waiting on a task.
+
+*The end-time gap is the screen's honesty problem.* Nothing writes a session's
+=end_time=, so every session row looks open and the "ended" state has no
+producer. The screen states this beside the list rather than inventing an ended
+state.
+
+*The account filter is a scope gap, not a route gap.* Widening
+=iam.v1.sessions.list= with an account filter is its own task, and the
+prototype already draws the control as unavailable.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

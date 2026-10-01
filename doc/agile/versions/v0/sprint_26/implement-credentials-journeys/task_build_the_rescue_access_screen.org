@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 1BCEF441-AD6C-496D-AD50-D82B485121AB
+:END:
+#+title: Task: Build the administrator's Rescue access screen
+#+description: Rescue access runs in ores.web on the accepted variant B: the account's security state leads and names the action it suggests, and the recovery action and the lock control sit under it. Adds the two write routes the journey needs and states the recovery gap.
+#+type: task
+#+level: s1
+#+filetags: :implement-credentials-journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] in
+=ores.web= against the real server, on variant B of the accepted prototype: the
+account's security state leads and names the action it suggests, and the
+recovery action and the lock control sit under it.
+
+The administrator finds the colleague, reads the account and its login record,
+and locks or unlocks the account through two BFF routes this task adds. The
+recovery link is drawn as the primary action and is unavailable, with the reason
+on the screen, because nothing in the tree sends mail, no subject requests a
+reset and no table holds a token.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The screen is reachable from the signed-in shell and reads the account list,
+  one account and that account's login record through the BFF routes that
+  already serve them.
+- Lock and unlock are one control that shows the state it produces, and each one
+  writes through its own BFF route and its own subject
+  (=iam.v1.accounts.lock=, =iam.v1.accounts.unlock=), each guarded by the
+  permission the catalogue grants.
+- The screen states what a lock does not do: it leaves open sessions open.
+- *Send the recovery link* is drawn as the primary action and is unavailable,
+  and the screen says why: no mail path, no token store and no subject.
+- Every panel whose data has no read path says the data is not available.
+- The rejected variants and the design decisions stay on the prototype task; the
+  build carries variant B and no other.
+
+* Plan
+
+1. Add the two write routes the journey needs — =POST /api/accounts/:username/lock=
+   and =POST /api/accounts/:username/unlock= — with their wire schemas, their
+   BFF handler tests and their client methods.
+2. Build =/rescue= from the accepted variant B, composing =AppShell= with the
+   shared primitives and the account, login-record and session reads the group
+   already landed.
+3. Answer the fallback question the prototype raised, and record the answer.
+4. Drive the screen against the running fleet, then land it.
+
+* Notes
+
+*The one question this task must answer first.* The accepted prototype keeps an
+administrator-typed password as a collapsed fallback for a mailbox that cannot
+receive, and asks whether it survives the build. *It does not.* The product owner
+settled the direction when they replaced the reset form with the emailed link,
+and a control that has to disclaim its own record — an administrator who types a
+password knows that password — is worse than no control. The
+=iam.v1.accounts.reset-password= subject stays without a browser caller, the
+screen draws no password field, and
+[[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] is corrected in this
+branch to match. The link is the whole mechanism.
+
+*The recovery link is not this task.* It needs a token table, a request subject,
+a completion subject and a mail path, and it is filed as
+[[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][The tree has no way to send an email, and password recovery needs one]].
+This task draws the action and states the gap, which is what the story's rule
+asks of a control the server cannot perform.
+
+*The role the screen assumes.* =iam::accounts:lock=, =iam::accounts:unlock= and
+=iam::accounts:reset_password= are the administrator's; =iam::accounts:read= and
+=iam::login_info:read= are what the reads need. The inventory records where the
+catalogue grants them, and a role that holds the writes without the reads would
+see the screen refuse its own panels.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -47,10 +47,10 @@ The build tasks are written when the prototypes are accepted.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The prototype phase is delivered: three screens with three variants each, variant B accepted on all three, and the administrator's screen revised to send a recovery link. |
+| Now           | The member's Security screen is merged and the guard on the session reads is closed. The administrator's screen and the audit screen are scaffolded and next. |
 | Waiting on    | Nothing. |
-| Next          | The build tasks, written from [[id:B9F389C3-0ADE-4169-9789-0A193CFFAF37][the inventory]]. |
-| Last touched  | 2026-09-30                               |
+| Next          | Build the administrator's Rescue access screen, then the sign-in audit screen. |
+| Last touched  | 2026-10-01                               |
 
 * Acceptance
 
@@ -81,10 +81,12 @@ The build tasks are written when the prototypes are accepted.
 | [[id:C524C15A-3E30-4CED-9E09-726B53ACEDE2][Correct the claims the credentials prototypes disproved]] | DONE | | 2026-09-30 | [wayfinder:task] The three journey documents name the wrong surface, claim a working browser read and name a caller that does not exist. Correct them against the route census and the tree. |
 | [[id:9A07635C-9231-45E4-812D-CB311FDE11EB][Inventory the routes and operations the credentials journeys need]] | DONE | | 2026-09-30 | [wayfinder:research] Per journey, every read and write, its subject, its ores.http route, its BFF route and its permission, so the build tasks can be sized from one page. |
 | [[id:ED03034A-C78A-4478-8C34-9BA8576C07BE][Give the browser the session reads]] | DONE | | 2026-10-01 | The audit screen reads sessions and no BFF route serves them. Add the page route and the active-sessions route over the subjects that already work, with the wire shapes and the route tests. |
-| [[id:16133422-EB26-4695-991B-9F814831C060][Guard the session reads with the permission the catalogue grants]] | STARTED | | | The three session read handlers check no permission while the account and login-record reads check theirs, and the catalogue grants iam::sessions:read for exactly this purpose. Any authenticated caller can list a tenant's sessions today. |
+| [[id:16133422-EB26-4695-991B-9F814831C060][Guard the session reads with the permission the catalogue grants]] | DONE | | 2026-10-01 | The three session read handlers check no permission while the account and login-record reads check theirs, and the catalogue grants iam::sessions:read for exactly this purpose. Any authenticated caller can list a tenant's sessions today. |
 | [[id:0B624231-2764-4D72-B19A-6038105E0944][Implement the active sessions read]] | DONE | | 2026-10-01 | iam.v1.sessions.active replies success with no rows, so the audit screen's active list is empty by construction. Read the sessions whose end time is empty, guard the operation with the permission the catalogue grants, and test the read. |
 | [[id:0A10EC8B-E062-45FE-8CEE-CB0F69C5FCB2][Give the web client the credentials reads]] | DONE | | 2026-10-01 | The BFF serves accounts, login records and sessions; the browser's own client cannot ask for them. Add the client methods the three screens call, each parsed at the network boundary with the schema the browser and the wire share. |
 | [[id:E172BBAB-7001-4626-8B91-D8F064883F9B][Build the member's Security screen]] | DONE | | 2026-10-01 | Protect my account runs in ores.web on the accepted variant B: the places the account is signed in lead, and the password form and sign-in state share the row under them. |
+| [[id:1BCEF441-AD6C-496D-AD50-D82B485121AB][Build the administrator's Rescue access screen]] | BACKLOG | | | Rescue access runs in ores.web on the accepted variant B: the account's security state leads and names the action it suggests, and the recovery action and the lock control sit under it. Adds the two write routes the journey needs and states the recovery gap. |
+| [[id:BB04E2B0-20F7-4831-B6DF-5BC19057A661][Build the sign-in audit screen]] | BACKLOG | | | Audit sign-ins runs in ores.web on the accepted variant B: three readings behind tabs over one filter bar, over the session and login-record reads the group already landed, with every panel that has no producer saying so. |
 
 * Plan
 
@@ -117,6 +119,14 @@ task.
   the build task's first question. And the forced change at the next sign-in
   drops out of this journey, which retires its oldest gap: a service method with
   no caller.
+- *The administrator-typed fallback does not ship.* Decided 2026-10-01, when the
+  builder answered the question the prototype raised. A control that has to
+  disclaim its own record — an administrator who types a colleague's password
+  knows that password — is worse than no control, and the product owner's
+  direction was the link. The =iam.v1.accounts.reset-password= subject therefore
+  keeps no browser caller, the screen draws no password field, and [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]]
+  is corrected to match. Until the link machinery exists, the screen draws the
+  action and states the gap.
 - *The recovery link is new platform capability, not a credentials screen.*
   Nothing in the tree sends mail, no subject requests a reset and no table holds
   a token. Filed as

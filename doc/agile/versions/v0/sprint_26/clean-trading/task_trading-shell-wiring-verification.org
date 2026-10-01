@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trading-shell-wiring-verification
-#+pr:
+#+pr: 2496
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -493,6 +493,7 @@ file, and the reason for each not-applicable.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2496][#2496]] | [trading] Shell, wiring, hygiene and verification |
 |    | Shell, wiring, hygiene and verification for ores.trading |
 
 * Review

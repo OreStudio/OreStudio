@@ -107,7 +107,7 @@ TEST_CASE("create_multiple_random_party_role_types", tags) {
     for (const auto& code : codes) {
         auto sut = make_party_role_type(code);
         BOOST_LOG_SEV(lg, info) << "Party role type: " << sut;
-        CHECK(!sut.code.empty());
+        CHECK(sut.code == code);
     }
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("party_role_type_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    CHECK(table.find("Version") != std::string::npos);
 }
 
 TEST_CASE("party_role_type_table_with_faker_data", tags) {

@@ -60,7 +60,7 @@ trade_export_item make_bond_item(boost::uuids::uuid trade_id, boost::uuids::uuid
     return item;
 }
 
-void check_bond_survives_the_codec(wire_format format) {
+std::string check_bond_survives_the_codec(wire_format format) {
     const auto codec = wire_codec{format};
     const auto trade_id = boost::uuids::random_generator()();
     const auto issue_id = boost::uuids::random_generator()();
@@ -84,6 +84,7 @@ void check_bond_survives_the_codec(wire_format format) {
     CHECK(bond.instrument.identity.trade_id == trade_id);
     CHECK(bond.instrument.issue_id == issue_id);
     CHECK(bond.trs_price_type == "Dirty");
+    return decoded->items[0].trade.identity.external_id;
 }
 
 }
@@ -91,13 +92,13 @@ void check_bond_survives_the_codec(wire_format format) {
 TEST_CASE("export_portfolio_response_survives_the_json_codec", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    check_bond_survives_the_codec(wire_format::json);
+    CHECK(check_bond_survives_the_codec(wire_format::json) == "CodecBond001");
 }
 
 TEST_CASE("export_portfolio_response_survives_the_msgpack_codec", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    check_bond_survives_the_codec(wire_format::msgpack);
+    CHECK(check_bond_survives_the_codec(wire_format::msgpack) == "CodecBond001");
 }
 
 TEST_CASE("export_portfolio_response_carries_an_absent_instrument", tags) {

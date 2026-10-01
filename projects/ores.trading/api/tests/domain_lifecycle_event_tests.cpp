@@ -107,7 +107,7 @@ TEST_CASE("create_multiple_random_lifecycle_events", tags) {
     for (const auto& code : codes) {
         auto sut = make_lifecycle_event(code);
         BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << sut;
-        CHECK(!sut.code.empty());
+        CHECK(sut.code == code);
     }
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("lifecycle_event_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    CHECK(table.find("Version") != std::string::npos);
 }
 
 TEST_CASE("lifecycle_event_table_with_faker_data", tags) {

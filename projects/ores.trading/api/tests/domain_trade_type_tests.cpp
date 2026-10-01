@@ -149,7 +149,7 @@ TEST_CASE("trade_type_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    CHECK(table.find("Has Options") != std::string::npos);
 }
 
 TEST_CASE("trade_type_table_with_faker_data", tags) {

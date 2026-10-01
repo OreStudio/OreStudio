@@ -51,6 +51,11 @@ TEST_CASE("write_single_trade_type", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Trade type: " << tt;
     CHECK_NOTHROW(repo.write(h.context(), tt));
+
+    const auto read = repo.read_latest(h.context(), tt.code);
+    REQUIRE(read.size() == 1);
+    CHECK(read[0].code == tt.code);
+    CHECK(read[0].description == tt.description);
 }
 
 TEST_CASE("write_multiple_trade_types", tags) {
@@ -64,6 +69,15 @@ TEST_CASE("write_multiple_trade_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Trade types: " << trade_types;
 
     CHECK_NOTHROW(repo.write(h.context(), trade_types));
+
+    const auto read = repo.read_latest(h.context());
+    for (const auto& written : trade_types) {
+        bool found = false;
+        for (const auto& r : read)
+            if (r.code == written.code)
+                found = true;
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_trade_types", tags) {
@@ -80,8 +94,13 @@ TEST_CASE("read_latest_trade_types", tags) {
     auto read = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read trade types: " << read;
 
-    CHECK(!read.empty());
-    CHECK(read.size() >= written.size());
+    for (const auto& written : written) {
+        bool found = false;
+        for (const auto& r : read)
+            if (r.code == written.code)
+                found = true;
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_trade_type_by_code", tags) {
@@ -121,6 +140,13 @@ TEST_CASE("read_all_versions_of_trade_type", tags) {
     auto all = repo.read_all(h.context(), tt.code);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
 
+    bool found_update = false;
+    for (const auto& r : all) {
+        CHECK(r.code == tt.code);
+        if (r.description == "updated description")
+            found_update = true;
+    }
+    CHECK(found_update);
     CHECK(all.size() >= 2);
 }
 
@@ -135,21 +161,30 @@ TEST_CASE("remove_trade_type", tags) {
     repo.write(h.context(), tt);
 
     auto before = repo.read_latest(h.context(), tt.code);
-    REQUIRE(!before.empty());
+    REQUIRE(before.size() == 1);
+    CHECK(before[0].code == tt.code);
 
     CHECK_NOTHROW(repo.remove(h.context(), tt.code));
 
     auto after = repo.read_latest(h.context(), tt.code);
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
-    CHECK(after.empty());
+    CHECK(after.size() == before.size() - 1);
 }
 
 TEST_CASE("read_nonexistent_trade_type", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     trade_type_repository repo;
+    auto tt = generate_synthetic_trade_type(ctx);
+    repo.write(h.context(), tt);
+
+    const auto control = repo.read_latest(h.context(), tt.code);
+    REQUIRE(control.size() == 1);
+    CHECK(control[0].code == tt.code);
+
     const std::string nonexistent = "NONEXISTENT_TRADE_TYPE_XYZ_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent;
 

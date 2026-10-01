@@ -210,7 +210,7 @@ TEST_CASE("trade_convert_single_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    CHECK(table.find("Swap") != std::string::npos);
 }
 
 TEST_CASE("trade_convert_multiple_to_table", tags) {
@@ -224,7 +224,9 @@ TEST_CASE("trade_convert_multiple_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    CHECK(table.find("Type0") != std::string::npos);
+    CHECK(table.find("Type1") != std::string::npos);
+    CHECK(table.find("Type2") != std::string::npos);
 }
 
 TEST_CASE("trade_convert_empty_vector_to_table", tags) {
@@ -235,7 +237,7 @@ TEST_CASE("trade_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    CHECK(table.find("Trade Date") != std::string::npos);
 }
 
 TEST_CASE("trade_table_with_faker_data", tags) {
@@ -270,4 +272,6 @@ TEST_CASE("trade_table_with_faker_data", tags) {
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
+    for (const auto& item : items)
+        CHECK(table.find(item.classification.trade_type) != std::string::npos);
 }

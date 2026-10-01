@@ -73,6 +73,10 @@ TEST_CASE("instrument_payload_round_trips_every_alternative", tags) {
     check_alternative_survives<6>();
     check_alternative_survives<7>();
     check_alternative_survives<8>();
+
+    const auto bond =
+        decode_instrument(encode_instrument(trade_instrument{bond_instrument_data{}}));
+    CHECK(std::holds_alternative<bond_instrument_data>(bond));
 }
 
 TEST_CASE("instrument_payload_carries_the_leaf_data", tags) {

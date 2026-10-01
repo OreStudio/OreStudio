@@ -1,149 +1,94 @@
-/* Application navigation prototype. Self-contained: plain JavaScript, mock
- * data, no framework, no build step, and nothing that outlives the page.
+/* Application shell prototype. Self-contained: plain JavaScript, mock data, no
+ * framework, no build step, and nothing that outlives the page.
  *
- * One question, five answers. Every journey in the catalogue reaches its
- * screen by the person "choosing" it, and no document owns how. The catalogue
- * holds 21 journeys in 8 groups and grows, and a person sees only the ones
- * they may run, so the answer has to survive that scale. The variants differ
- * on nothing else. */
+ * One design, not a comparison. A menu across the header, the cards it opens,
+ * and the person's own journeys under their name.
+ *
+ * What you see is decided by who you signed in as. A super administrator works
+ * in the system tenant's context, a tenant administrator in a tenant's, and a
+ * party user in a party's; the server scopes everything by that context
+ * already, so the mode is read from the sign-in and never chosen. */
 
 (function () {
     'use strict';
 
-    var VARIANTS = {
-        H: {
-            name: 'Areas and journeys',
-            note: 'Both axes, holding different things: the areas across the top, the selected area\u2019s journeys down the side. This is the shape the Qt client got half right \u2014 its top level was already an area of activity, and its second level was a table.'
-        },
-        N: {
-            name: 'Navbar',
-            note: 'The groups sit in the header as a horizontal bar; a group opens its index, and the index lists its journeys. Nothing is hidden, and the arithmetic is plain: eight groups across the header.'
-        },
-        S: {
-            name: 'Sidebar',
-            note: 'The same groups down the left, the current one open to its journeys. It holds eight groups without crowding and it can nest, at the cost of a column on every screen.'
-        },
-        I: {
-            name: 'Index',
-            note: 'No global navigation at all: the landing page is the index, every journey on it, grouped by topic. Nothing to hunt for, and nothing in the way while a journey runs.'
-        },
-        D: {
-            name: 'Data only',
-            note: 'No navigation either: a journey is reached from the thing it acts on. Your own record opens your screens, a roster row opens that colleague. The catalogue assumes this, and it needs the owning screens to exist.'
-        },
-        A: {
-            name: 'Account menu',
-            note: 'The header trigger, as prototyped first. Kept because it is the shape the journey documents name, and because the comparison needs it: at this scale it holds neither the administrator\u2019s work nor the groups.'
-        }
+    /* The four people this prototype can sign in as. Each lands in the context
+       its account belongs to, which is the mode. */
+    var WHO = [
+        { id: 'super', name: 'Super administrator', mode: 'system', rank: 4,
+          blurb: 'The deployment: its tenants, the registry they share, and standing an installation up.' },
+        { id: 'tenant', name: 'Tenant administrator', mode: 'tenant', rank: 3,
+          blurb: 'The tenant: its parties, its role catalogue and its own settings. Not its data.' },
+        { id: 'privileged', name: 'Privileged party user', mode: 'party', rank: 2,
+          blurb: 'A party\u2019s work, and the people who do it.' },
+        { id: 'regular', name: 'Regular party user', mode: 'party', rank: 1,
+          blurb: 'A party\u2019s work.' }
+    ];
+
+    /* Where a mode shows its menu. An area the catalogue has not reached is
+       still listed, because the area exists and hiding it would pretend the
+       work is smaller than it is. */
+    var MENU = {
+        system: ['Tenants', 'Bootstrap'],
+        tenant: ['Parties', 'Access', 'Tenant'],
+        party: ['Reference Data', 'Market Data', 'Trading', 'Analytics', 'Compute', 'Reporting', 'People']
     };
 
-    var STATES = [
-        ['home', 'At rest'],
-        ['journey', 'On a journey'],
-        ['fullscreen', 'Full screen'],
-        ['today', 'Today'],
-        ['narrow', 'Narrow']
-    ];
+    var MODES = {
+        system: 'System administration',
+        tenant: 'Tenant administration',
+        party: 'Application'
+    };
 
-    /* The catalogue as it stands: 8 groups, 21 journeys. `who` is the person a
-       journey is for: me for the member's own screens, admin for the tenant's,
-       all for either. `landed` is whether the group has been built, which is
-       what the today state shows. */
-    var GROUPS = [
-        { name: 'Setup', landed: true, fullscreen: true, journeys: [
-            ['First run', '/setup/first-run', 'admin', 'System'],
-            ['New tenant', '/tenants/new', 'admin', 'System'],
-            ['New party', '/parties/new', 'admin', 'Tenant']] },
-        { name: 'Entry', landed: false, nav: false, journeys: [
-            ['Sign in', '/login', 'all'],
-            ['Sign up', '/sign-up', 'all']] },
-        { name: 'Profile', landed: false, journeys: [
-            ['Present myself', '/profile', 'me', 'me'],
-            ['Keep my details current', '/profile/details', 'me', 'me'],
-            ["Change someone's details", '/people/:id', 'admin', 'People']] },
-        { name: 'Credentials', landed: false, journeys: [
-            ['Protect my account', '/profile/security', 'me', 'me'],
-            ['Rescue access', '/people/:id/rescue', 'admin', 'People'],
-            ['Audit sign-ins', '/audit/sign-ins', 'admin', 'People']] },
-        { name: 'Access', landed: false, journeys: [
-            ['Know what I may do', '/profile/access', 'me', 'me'],
-            ['Ask for more access', '/profile/access/request', 'me', 'me'],
-            ["Change someone's access", '/people/:id/access', 'admin', 'People'],
-            ['Shape the role catalogue', '/roles', 'admin', 'Tenant']] },
-        { name: 'Membership', landed: false, journeys: [
-            ['Choose where I work', '/work', 'me', 'me'],
-            ['Draw the reporting line', '/reporting-lines', 'admin', 'People']] },
-        { name: 'Directory', landed: false, journeys: [
-            ['See who has access', '/people', 'admin', 'People'],
-            ['Bring someone in', '/people/new', 'admin', 'People'],
-            ['Register a service account', '/service-accounts/new', 'admin', 'People']] },
-        { name: 'Tenancy', landed: false, journeys: [
-            ['Tune the tenant', '/tenant', 'admin', 'Tenant'],
-            ['Retire or reset a tenant', '/tenant/retire', 'admin', 'Tenant']] }
-    ];
+    /* Every journey the catalogue holds, in the context it is done in. `min` is
+       the least person who may run it: 1 a party user, 2 a privileged one,
+       3 the tenant administrator, 4 the super administrator. `area` is the menu
+       it sits under and `card` the heading it is gathered under. */
+    var JOURNEYS = [
+        // The deployment.
+        { name: 'First run', path: '/setup/first-run', mode: 'system', area: 'Bootstrap', card: 'Bootstrap', min: 4, run: true, built: true },
+        { name: 'New tenant', path: '/tenants/new', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4, run: true },
+        { name: 'Retire or reset a tenant', path: '/tenants/retire', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4 },
 
-    /* The areas of activity: the trading floor's own shape, which the Qt menu
-       bar already had right, and the level above a journey group. Identity,
-       access, tenancy and standing the installation up are one area and not
-       four, because no trading floor has a menu for "you". An area whose
-       journeys have not been extracted yet says so rather than being filled
-       with invented screens. */
-    var AREAS = [
-        { name: 'Reference Data', mode: 'app', waiting: true },
-        { name: 'Market Data', mode: 'app', waiting: true },
-        { name: 'Trading', mode: 'app', waiting: true },
-        { name: 'Analytics', mode: 'app', waiting: true },
-        { name: 'Compute', mode: 'app', waiting: true },
-        { name: 'Reporting', mode: 'app', waiting: true },
-        { name: 'People', mode: 'app' },
-        { name: 'Tenant', mode: 'tenant' },
-        { name: 'System', mode: 'system' }
-    ];
+        // The tenant.
+        { name: 'New party', path: '/parties/new', mode: 'tenant', area: 'Parties', card: 'Parties', min: 3, run: true, built: true },
+        { name: 'Shape the role catalogue', path: '/roles', mode: 'tenant', area: 'Access', card: 'Access', min: 3 },
+        { name: 'Tune the tenant', path: '/tenant', mode: 'tenant', area: 'Tenant', card: 'Tenant', min: 3 },
 
-    /* A mode is the context the session is in, which is the context the server
-       already scopes everything by: the system tenant holds the registry and
-       the shared reference data, a tenant is an organisation, and a party is
-       where the work happens. The areas, and therefore the whole header,
-       answer to the mode. */
-    var MODES = [
-        { id: 'app', name: 'Application',
-          note: 'Working in a tenant and a party: reference data, market data, trading, reporting, and the people in them.' },
-        { id: 'tenant', name: 'Tenant administration',
-          note: 'Running the tenant itself: its parties, its role catalogue and its own settings. Not its data.' },
-        { id: 'system', name: 'System administration',
-          note: 'The deployment: its tenants, the registry the tenants share, and standing an installation up.' }
+        // The people of a party. A regular member sees none of these.
+        { name: 'See who has access', path: '/people', mode: 'party', area: 'People', card: 'Directory', min: 2 },
+        { name: 'Bring someone in', path: '/people/new', mode: 'party', area: 'People', card: 'Directory', min: 2 },
+        { name: 'Register a service account', path: '/service-accounts/new', mode: 'party', area: 'People', card: 'Directory', min: 2 },
+        { name: "Change someone's details", path: '/people/:id', mode: 'party', area: 'People', card: 'Profile', min: 2 },
+        { name: "Change someone's access", path: '/people/:id/access', mode: 'party', area: 'People', card: 'Access', min: 2 },
+        { name: 'Rescue access', path: '/people/:id/rescue', mode: 'party', area: 'People', card: 'Credentials', min: 2 },
+        { name: 'Audit sign-ins', path: '/audit/sign-ins', mode: 'party', area: 'People', card: 'Credentials', min: 2 },
+        { name: 'Draw the reporting line', path: '/reporting-lines', mode: 'party', area: 'People', card: 'Membership', min: 2 },
+
+        // The person themselves. These are never a menu: they are the avatar.
+        { name: 'Present myself', path: '/profile', mode: 'any', area: 'me', card: 'Profile', min: 1 },
+        { name: 'Keep my details current', path: '/profile/details', mode: 'any', area: 'me', card: 'Profile', min: 1 },
+        { name: 'Protect my account', path: '/profile/security', mode: 'any', area: 'me', card: 'Credentials', min: 1 },
+        { name: 'Know what I may do', path: '/profile/access', mode: 'party', area: 'me', card: 'Access', min: 1 },
+        { name: 'Ask for more access', path: '/profile/access/request', mode: 'party', area: 'me', card: 'Access', min: 1 },
+        { name: 'Choose where I work', path: '/work', mode: 'party', area: 'me', card: 'Membership', min: 1 }
     ];
 
     var PERSON = {
-        member: {
-            username: 'jdoe', name: 'Jane Doe', tenant: 'Northwind Capital',
-            party: 'Trading', title: 'Risk Analyst', photo: 'photos/jane_doe.jpeg'
-        },
-        admin: {
-            username: 'rsmith', name: 'R. Smith', tenant: 'Northwind Capital',
-            party: 'Operations', title: 'Tenant Administrator', photo: 'photos/rsmith.jpeg'
-        }
+        super: { username: 'root', name: 'A. Root', tenant: 'ORE Studio', party: '\u2014', title: 'Super Administrator', photo: 'photos/rsmith.jpeg' },
+        tenant: { username: 'rsmith', name: 'R. Smith', tenant: 'Northwind Capital', party: '\u2014', title: 'Tenant Administrator', photo: 'photos/rsmith.jpeg' },
+        privileged: { username: 'tokafor', name: 'Tom Okafor', tenant: 'Northwind Capital', party: 'Trading', title: 'Head of Trading', photo: 'photos/jane_doe.jpeg' },
+        regular: { username: 'jdoe', name: 'Jane Doe', tenant: 'Northwind Capital', party: 'Trading', title: 'Risk Analyst', photo: 'photos/jane_doe.jpeg' }
     };
 
-    var S = {
-        variant: 'H',
-        actor: 'admin',
-        state: 'home',
-        at: '/profile',
-        mode: 'app',
-        open: false
-    };
+    var S = { who: 'tenant', state: 'home', area: null, at: '/profile', open: false };
 
     function readParams() {
         var p = new URLSearchParams(window.location.search);
-        var v = (p.get('variant') || '').toUpperCase();
-        if (VARIANTS[v]) S.variant = v;
-        if (p.get('actor') === 'admin' || p.get('actor') === 'member') S.actor = p.get('actor');
-        var st = p.get('state');
-        for (var i = 0; i < STATES.length; i++) if (STATES[i][0] === st) S.state = st;
-        if (p.get('screen')) S.at = p.get('screen');
+        if (WHO.some(function (w) { return w.id === p.get('as'); })) S.who = p.get('as');
+        if (['home', 'journey', 'fullscreen'].indexOf(p.get('state')) >= 0) S.state = p.get('state');
         if (p.get('area')) S.area = p.get('area');
-        if (p.get('mode')) S.mode = p.get('mode');
+        if (p.get('screen')) S.at = p.get('screen');
         if (p.get('open') === '1') S.open = true;
     }
 
@@ -153,234 +98,144 @@
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    function person() { return PERSON[S.actor]; }
-    function isAdmin() { return S.actor === 'admin'; }
-    function narrow() { return S.state === 'narrow'; }
-    function here(path) { return path === S.at; }
+    function me() { return WHO.filter(function (w) { return w.id === S.who; })[0]; }
+    function person() { return PERSON[S.who]; }
+    function mode() { return me().mode; }
 
-    /* Only the journeys this person may run: a member sees their own screens,
-       an administrator sees those and the tenant's. Entry is the door and is
-       not a place a signed-in person navigates to, so it is not here. */
-    function allowed(entry) {
-        return entry[2] === 'all' || entry[2] === 'me' || isAdmin();
+    /* What this person may run, here. */
+    function allowed(j) {
+        if (j.area === 'me') return j.mode === 'any' || j.mode === mode();
+        return j.mode === mode() && j.min <= me().rank;
     }
 
-    function groups(todayOnly) {
-        return GROUPS.filter(function (g) { return g.nav !== false; })
-          .map(function (g) {
-              return { name: g.name, landed: g.landed, fullscreen: g.fullscreen, journeys: g.journeys.filter(allowed) };
-          })
-          .filter(function (g) { return g.journeys.length > 0; })
-          .filter(function (g) { return !todayOnly || g.landed; });
+    function mine(area) {
+        return JOURNEYS.filter(function (j) { return j.area === area && allowed(j); });
     }
 
-    function journeyCount(list) {
-        return list.reduce(function (n, g) { return n + g.journeys.length; }, 0);
-    }
-
-    function currentGroup(list) {
-        var found = null;
-        (list || GROUPS).forEach(function (g) {
-            if (g.journeys.some(function (j) { return here(j[1]); })) found = g;
-        });
-        return found;
-    }
-
-    // -------------------------------------------------------- the areas
-
-    function areaCards(areaName) {
-        var cards = [];
-        groups(false).forEach(function (g) {
-            var mine = g.journeys.filter(function (j) { return j[3] === areaName; });
-            if (mine.length) {
-                cards.push({ name: g.name, journeys: mine, fullscreen: g.fullscreen, landed: g.landed });
-            }
-        });
-        return cards;
-    }
-
-    function areaSize(area) {
-        return journeyCount(areaCards(area.name));
-    }
-
-    /* The journeys about the person themselves. They are not an area: every
-       system puts them under the avatar, and nobody gives them a menu. */
     function meJourneys() {
-        var mine = [];
-        groups(false).forEach(function (g) {
-            g.journeys.forEach(function (j) {
-                if (j[3] === 'me') mine.push({ journey: j, group: g.name });
+        return JOURNEYS.filter(function (j) { return j.area === 'me' && allowed(j); });
+    }
+
+    function cardsFor(area) {
+        var seen = [];
+        mine(area).forEach(function (j) {
+            if (seen.indexOf(j.card) < 0) seen.push(j.card);
+        });
+        return seen.map(function (name) {
+            return { name: name, journeys: mine(area).filter(function (j) { return j.card === name; }) };
+        });
+    }
+
+    /* The menu holds the areas that are this person's, and the areas that do
+       not exist yet. An area that exists and belongs to somebody else is not
+       in it: a party user is not shown the door to the people of the party. */
+    function menuAreas() {
+        return MENU[mode()].filter(function (a) {
+            var forAnyone = JOURNEYS.filter(function (j) {
+                return j.area === a && (j.mode === mode() || j.mode === 'any');
             });
-        });
-        return mine;
-    }
-
-    /* An area with nothing extracted is offered to a tenant administrator,
-       who is the person who would build it, and not to a member. */
-    function modeAreas() {
-        return AREAS.filter(function (a) { return a.mode === S.mode; });
-    }
-
-    function modeInfo() {
-        return MODES.filter(function (m) { return m.id === S.mode; })[0] || MODES[0];
-    }
-
-    /* A mode with nothing to offer is not offered. The trading areas are shown
-       to the person who would build them and not to a member. */
-    function visibleAreas() {
-        return modeAreas().filter(function (a) {
-            if (a.waiting) return isAdmin();
-            return areaCards(a.name).length > 0;
+            return mine(a).length > 0 || forAnyone.length === 0;
         });
     }
 
-    function areaModeOf(path) {
-        var owner = null;
-        groups(false).forEach(function (g) {
-            g.journeys.forEach(function (j) { if (j[1] === path && j[3] && j[3] !== 'me') owner = j[3]; });
-        });
-        var found = AREAS.filter(function (a) { return a.name === owner; })[0];
-        return found ? found.mode : null;
-    }
-
-    function activeArea() {
-        var areas = visibleAreas();
-        if (S.area) {
-            var named = areas.filter(function (a) { return a.name === S.area; })[0];
-            if (named) return named;
-        }
-        var owner = areaModeOf(S.at);
-        if (owner === S.mode) {
-            var inMode = groups(false);
-            var hit = null;
-            inMode.forEach(function (g) {
-                g.journeys.forEach(function (j) {
-                    if (j[1] === S.at && j[3] === S.mode) hit = j[3];
-                });
-            });
-            if (hit) {
-                var match = areas.filter(function (a) { return a.name === hit; })[0];
-                if (match) return match;
-            }
-        }
-        var withCards = areas.filter(function (a) { return !a.waiting; });
-        return withCards[0] || areas[0];
-    }
-
-    function areaNav() {
-        var active = activeArea();
-        return '<nav class="appnav">' + visibleAreas().map(function (a) {
-            var hereNow = active && active.name === a.name;
-            var count = a.waiting ? '' : '<span class="count">' + areaSize(a) + '</span>';
-            return '<a href="#" data-act="area" data-area="' + esc(a.name) + '"' +
-                (hereNow ? ' class="here"' : '') + (a.waiting ? ' data-waiting="1"' : '') + '>' +
-                esc(a.name) + count + '</a>';
-        }).join('') + '</nav>';
-    }
+    function here(path) { return path === S.at; }
 
     // ------------------------------------------------------------- chrome
 
-    function face(cls) {
-        return '<span class="' + cls + '"><img src="' + person().photo + '" alt=""></span>';
+    function face() {
+        return '<span class="face"><img src="' + person().photo + '" alt=""></span>';
     }
 
-    function accountChip(withMenu) {
-        var p = person();
-        var body = face('face') +
-            '<span class="who"><span class="nm">' + esc(p.name) + '</span>' +
-            '<span class="sub">' + esc(p.username) + '</span></span>';
-        if (!withMenu) {
-            return '<a class="trigger" href="#" data-act="go" data-screen="/profile">' + body + '</a>';
-        }
-        return '<button class="trigger' + (S.open ? ' open' : '') + '" data-act="toggle">' + body +
+    function menu() {
+        return '<nav class="appnav">' + menuAreas().map(function (a) {
+            var n = mine(a).length;
+            return '<a href="#" data-act="area" data-area="' + esc(a) + '"' +
+                (S.area === a ? ' class="here"' : '') + (n ? '' : ' data-empty="1"') + '>' +
+                esc(a) + (n ? '<span class="count">' + n + '</span>' : '') + '</a>';
+        }).join('') + '</nav>';
+    }
+
+    function personChip() {
+        return '<button class="trigger' + (S.open ? ' open' : '') + '" data-act="toggle">' +
+            face() + '<span class="who"><span class="nm">' + esc(person().name) + '</span>' +
+            '<span class="sub">' + esc(person().username) + '</span></span>' +
             '<span class="caret">' + (S.open ? '\u25b2' : '\u25bc') + '</span></button>';
     }
 
-    /* The Me menu. This is the Google shape the review asked for: the avatar
-       carries the things about the person, and no area does. */
-    function meMenu() {
+    function myMenu() {
         if (!S.open) return '';
         var p = person();
-        var mine = S.mode === 'app' ? meJourneys() : [];
-        var byGroup = [];
-        mine.forEach(function (row) {
-            var found = byGroup.filter(function (b) { return b.name === row.group; })[0];
-            if (!found) { found = { name: row.group, rows: [] }; byGroup.push(found); }
-            found.rows.push(row.journey);
+        var seen = [];
+        meJourneys().forEach(function (j) {
+            if (seen.indexOf(j.card) < 0) seen.push(j.card);
         });
+        var groups = seen.map(function (cardName) {
+            return '<div class="group"><div class="groupname">' + esc(cardName) + '</div>' +
+                meJourneys().filter(function (j) { return j.card === cardName; }).map(function (j) {
+                    return '<a href="#" data-act="go" data-screen="' + j.path + '"' + (here(j.path) ? ' class="here"' : '') + '>' +
+                        esc(j.name) + '</a>';
+                }).join('') + '</div>';
+        }).join('');
         return '<div class="menu">' +
-            '<div class="head">' + face('face') +
+            '<div class="head">' + face() +
             '<div><div class="nm">' + esc(p.name) + '</div>' +
-            '<div class="sub">' + esc(p.title) + ' \u00b7 ' + esc(p.party) + '</div></div></div>' +
-            byGroup.map(function (b) {
-                return '<div class="group"><div class="groupname">' + esc(b.name) + '</div>' +
-                    b.rows.map(function (j) {
-                        return '<a href="#" data-act="go" data-screen="' + j[1] + '"' + (here(j[1]) ? ' class="here"' : '') + '>' +
-                            esc(j[0]) + '</a>';
-                    }).join('') + '</div>';
-            }).join('') +
-            modeSwitch() +
+            '<div class="sub">' + esc(p.title) + ' \u00b7 ' + esc(MODES[mode()]) + '</div></div></div>' +
+            (groups || '<div class="group"><div class="none">No journey about you has been built yet.</div></div>') +
             '<div class="group"><button class="item out" data-act="signout">Sign out</button></div></div>';
-    }
-
-    /* The modes this person may enter. A member has one and sees no switch;
-       the person who runs the tenant has two or three, which is how every
-       product with a console above the product behaves. */
-    function modeSwitch() {
-        if (!isAdmin()) return '';
-        var others = MODES.filter(function (m) { return m.id !== S.mode; });
-        if (!others.length) return '';
-        return '<div class="group"><div class="groupname">Switch mode</div>' +
-            others.map(function (m) {
-                return '<a href="#" data-act="mode" data-mode="' + m.id + '">' + esc(m.name) + '</a>';
-            }).join('') + '</div>';
-    }
-
-    function accountMenu() {
-        if (!S.open) return '';
-        var p = person();
-        var list = groups(false);
-        return '<div class="menu">' +
-            '<div class="head">' + face('face') +
-            '<div><div class="nm">' + esc(p.name) + '</div>' +
-            '<div class="sub">' + esc(p.title) + ' \u00b7 ' + esc(p.party) + '</div></div></div>' +
-            list.map(function (g) {
-                return '<div class="group"><div class="groupname">' + esc(g.name) + '</div>' +
-                    g.journeys.map(function (j) {
-                        return '<a href="#" data-act="go" data-screen="' + j[1] + '"' + (here(j[1]) ? ' class="here"' : '') + '>' +
-                            esc(j[0]) + (g.landed ? '' : '<span class="soon">' + esc(g.name) + '</span>') + '</a>';
-                    }).join('') + '</div>';
-            }).join('') +
-            '<div class="group"><button class="item out" data-act="signout">Sign out</button></div></div>';
-    }
-
-    function brand() {
-        return '<a class="brand" href="#" data-act="home"><span class="mark">O</span><span class="name">ORE Studio</span></a>';
-    }
-
-    function navbar() {
-        return '<nav class="appnav">' + groups(S.state === 'today').map(function (g) {
-            var open = g.journeys.some(function (j) { return here(j[1]); });
-            return '<a href="#" data-act="group" data-group="' + esc(g.name) + '"' + (open ? ' class="here"' : '') + '>' +
-                esc(g.name) + '<span class="count">' + g.journeys.length + '</span></a>';
-        }).join('') + '</nav>';
-    }
-
-    function sidebar() {
-        var current = currentGroup(groups(false));
-        return '<nav class="side">' + groups(S.state === 'today').map(function (g) {
-            var open = current && current.name === g.name;
-            return '<div class="sidegroup' + (open ? ' open' : '') + '">' +
-                '<a href="#" data-act="group" data-group="' + esc(g.name) + '">' + esc(g.name) +
-                '<span class="count">' + g.journeys.length + '</span></a>' +
-                (open ? '<div class="sideitems">' + g.journeys.map(function (j) {
-                    return '<a href="#" data-act="go" data-screen="' + j[1] + '"' + (here(j[1]) ? ' class="here"' : '') + '>' +
-                        esc(j[0]) + '</a>';
-                }).join('') + '</div>' : '') + '</div>';
-        }).join('') + '</nav>';
     }
 
     // --------------------------------------------------------------- body
+
+    function card(c) {
+        var navs = c.journeys.filter(function (j) { return !j.run; });
+        var runs = c.journeys.filter(function (j) { return j.run; });
+        var runsHtml = runs.length
+            ? '<li class="runline">' + (navs.length ? 'Starts a run: ' : '') + runs.map(function (j) {
+                  return '<button class="btn small" data-act="run">' + esc(j.name) + '</button>';
+              }).join(' ') + '</li>'
+            : '';
+        return '<section class="groupcard">' +
+            '<h2>' + esc(c.name) +
+            (c.journeys.every(function (j) { return j.built; }) ? ''
+                : '<span class="tag soon">not built yet</span>') + '</h2>' +
+            '<ul>' + navs.map(function (j) {
+                return '<li><a href="#" data-act="go" data-screen="' + j.path + '">' + esc(j.name) + '</a></li>';
+            }).join('') + runsHtml + '</ul></section>';
+    }
+
+    function landing() {
+        var p = person();
+        var areas = menuAreas();
+        var total = areas.reduce(function (n, a) { return n + mine(a).length; }, 0);
+        var head = '<div class="crumb">' + esc(MODES[mode()]) + ' \u00b7 ' + esc(p.tenant) +
+            (p.party === '\u2014' ? '' : ' \u00b7 ' + esc(p.party)) + '</div>' +
+            '<h1>' + esc(MODES[mode()]) + '</h1>' +
+            '<p class="lead">' + esc(me().blurb) + ' ' +
+            (total ? total + ' journey' + (total === 1 ? '' : 's') + ' in this mode.'
+                   : 'No journey has been built for this person in this mode yet.') + '</p>';
+        var body = areas.map(function (a) {
+            var cards = cardsFor(a);
+            var n = mine(a).length;
+            return '<section class="area"><h2 class="areaname">' + esc(a) +
+                (n ? '<span class="tag">' + n + '</span>' : '') + '</h2>' +
+                (cards.length
+                    ? '<div class="groupgrid">' + cards.map(card).join('') + '</div>'
+                    : '<p class="emptyarea">No journeys have been extracted for this area yet. It is named because ' +
+                      'it exists; nothing is invented to fill it.</p>') +
+                '</section>';
+        }).join('');
+        return '<div class="card">' + head + '</div>' + body;
+    }
+
+    function areaPage() {
+        var cards = cardsFor(S.area);
+        var total = mine(S.area).length;
+        return '<div class="card"><div class="crumb">' + esc(MODES[mode()]) + '</div>' +
+            '<h1>' + esc(S.area) + '</h1>' +
+            '<p class="lead">' + total + ' journey' + (total === 1 ? '' : 's') + '.</p></div>' +
+            (cards.length ? '<div class="groupgrid">' + cards.map(card).join('') + '</div>'
+                          : '<p class="emptyarea">No journeys have been extracted for this area yet.</p>');
+    }
 
     var SCREENS = {
         '/profile': ['My profile', 'Your photo, your name, your job title and how colleagues reach you.'],
@@ -388,226 +243,91 @@
         '/profile/security': ['Security', 'Your password, your sign-in state and where you are signed in.'],
         '/profile/access': ['My access', 'The roles you hold and what they let you do.'],
         '/work': ['Where I work', 'The parties you work in, and the one you act for.'],
-        '/people': ['See who has access', 'The account roster for this tenant.'],
+        '/people': ['See who has access', 'The account roster for this party.'],
         '/people/:id': ["Change someone's details", 'One colleague\u2019s record, as they see it.'],
         '/reporting-lines': ['Reporting lines', 'Who reports to whom, drawn as a tree.'],
         '/roles': ['Roles', 'The roles this tenant defines and what each bundles.'],
-        '/tenants/new': ['New tenant', 'Stand up a tenant, one step at a time.'],
+        '/tenants/new': ['New tenant', 'Stand a tenant up, one step at a time.'],
+        '/tenant': ['Tune the tenant', 'The tenant\u2019s own settings.'],
         '/setup/first-run': ['First run', 'An empty installation, from nothing to working.']
     };
 
-    function reachedFrom() {
-        if (S.variant === 'A') return 'the account menu';
-        if (S.variant === 'N') return 'the navbar, through the group';
-        if (S.variant === 'S') return 'the sidebar, through the group';
-        if (S.variant === 'I') return 'the index page';
-        return 'the thing it acts on';
-    }
-
-    function journeyScreen() {
-        var s = SCREENS[S.at] || SCREENS['/profile'];
-        var p = person();
-        var visible = groups(S.state === 'today');
+    function journeyPage() {
+        var j = JOURNEYS.filter(function (x) { return x.path === S.at; })[0];
+        var s = SCREENS[S.at] || [S.at, ''];
         return '<div class="card">' +
-            '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>' +
-            '<h1>' + esc(s[0]) + '</h1>' +
-            '<p class="lead">' + esc(s[1]) + '</p>' +
-            '<div class="panels">' +
+            '<div class="crumb">' + esc(MODES[mode()]) +
+            (j && j.area !== 'me' ? ' \u00b7 ' + esc(j.area) : '') + '</div>' +
+            '<h1>' + esc(s[0]) + '</h1><p class="lead">' + esc(s[1]) + '</p>' +
             '<div class="mini"><h2>The journey</h2><table class="kv">' +
             '<tr><td>Route</td><td>' + esc(S.at) + '</td></tr>' +
-            '<tr><td>Reached from</td><td>' + esc(reachedFrom()) + '</td></tr>' +
-            '</table></div>' +
-            '<div class="mini"><h2>The navigation</h2><table class="kv">' +
-            '<tr><td>Model</td><td>' + esc(VARIANTS[S.variant].name) + '</td></tr>' +
-            '<tr><td>Visible groups</td><td>' + visible.length + '</td></tr>' +
-            '<tr><td>Visible journeys</td><td>' + journeyCount(visible) + '</td></tr>' +
-            '</table></div></div></div>';
+            '<tr><td>Reached from</td><td>' + (j && j.area === 'me' ? 'the avatar menu' : 'the cards') + '</td></tr>' +
+            '<tr><td>Mode</td><td>' + esc(MODES[mode()]) + '</td></tr>' +
+            '<tr><td>Signed in as</td><td>' + esc(me().name) + '</td></tr>' +
+            '</table></div></div>';
     }
 
-    function groupCard(g) {
-        return '<section class="groupcard"><h2>' + esc(g.name) +
-            (g.landed ? '' : '<span class="tag soon">not built yet</span>') + '</h2>' +
-            '<ul>' + g.journeys.map(function (j) {
-                return '<li><a href="#" data-act="go" data-screen="' + j[1] + '">' + esc(j[0]) + '</a></li>';
-            }).join('') + '</ul></section>';
-    }
+    var RUN_STEPS = ['Administrator', 'Tenant', 'Seed profiles', 'Sign in', 'Ready'];
 
-    /* The landing surface under the two-axis model: one area, its groups, its
-       journeys, and an honest word when the area has none yet. */
-    function areaPage(area) {
-        var p = person();
-        var head = '<div class="crumb">' + esc(modeInfo().name) + ' \u00b7 ' + esc(p.tenant) +
-            ' \u00b7 ' + esc(p.party) + '</div>';
-        if (!area) {
-            return '<div class="card">' + head + '<h1>Nothing here yet</h1>' +
-                '<p class="lead">' + esc(modeInfo().note) +
-                ' No journey has been built for this person in this mode yet.</p></div>';
-        }
-        var cards = areaCards(area.name);
-        if (!cards.length) {
-            return '<div class="card">' + head + '<h1>' + esc(area.name) + '</h1>' +
-                '<p class="lead">No journeys have been extracted for this area yet. The area is named because it ' +
-                'exists on the trading floor; it stays empty until a component\u2019s journeys land in it, and ' +
-                'nothing is invented to fill it.</p></div>';
-        }
-        var total = journeyCount(cards);
-        var navs = cards.filter(function (c) { return !c.fullscreen; });
-        var runs = cards.filter(function (c) { return c.fullscreen; });
-        var runsCard = runs.length
-            ? '<div class="card" style="margin-top:14px"><h2>Starts a run</h2>' +
-              '<p class="lead">These journeys stand something up, so they take the whole screen and give it back ' +
-              'when they are done.</p>' +
-              runs.reduce(function (all, c) { return all.concat(c.journeys); }, []).map(function (j) {
-                  return '<button class="btn" data-act="run" style="margin-right:8px">' + esc(j[0]) + '</button>';
-              }).join('') + '</div>'
-            : '';
-        return '<div class="card">' + head +
-            '<h1>' + esc(area.name) + '</h1>' +
-            '<p class="lead">' + total + ' journey' + (total === 1 ? '' : 's') + ' in ' + cards.length +
-            ' group' + (cards.length === 1 ? '' : 's') + '.</p></div>' +
-            (navs.length ? '<div class="groupgrid">' + navs.map(groupCard).join('') + '</div>' : '') +
-            runsCard;
-    }
-
-    function indexPage(oneGroup) {
-        var list = oneGroup
-            ? groups(false).filter(function (g) { return g.name === oneGroup; })
-            : groups(S.state === 'today');
-        var p = person();
-        var empty = list.length === 0;
-        var head = oneGroup
-            ? '<div class="crumb"><a href="#" data-act="home">Home</a> \u00b7 ' + esc(oneGroup) + '</div>' +
-              '<h1>' + esc(oneGroup) + '</h1>' +
-              '<p class="lead">The journeys in this group, for ' +
-              (isAdmin() ? 'a tenant administrator' : 'a member') + '.</p>'
-            : '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>' +
-              '<h1>' + (empty ? 'Nothing here yet' : 'What you can do here') + '</h1>' +
-              (empty
-                  ? '<p class="lead">No journey has been built for this person yet. The shell holds none of them ' +
-                    'hostage: the groups appear here as they land.</p>'
-                  : '<p class="lead">' + journeyCount(list) + ' journey' + (journeyCount(list) === 1 ? '' : 's') +
-                    ' in ' + list.length + ' group' + (list.length === 1 ? '' : 's') +
-                    ', for ' + (isAdmin() ? 'a tenant administrator' : 'a member') + '.' +
-                    (S.state === 'today' ? ' Only the groups that have been built are listed.' : '') + '</p>');
-        var body = list.map(groupCard).join('');
-        return '<div class="card">' + head + '</div>' +
-            (body ? '<div class="groupgrid">' + body + '</div>' : '');
-    }
-
-    /* The data-only model has no navigation, so its landing surface is the
-       person's own record and the roster: the things a journey hangs off. */
-    function dataPage() {
-        var p = person();
-        return '<div class="card"><div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>' +
-            '<h1>' + esc(p.name) + '</h1>' +
-            '<p class="lead">This person\u2019s record, and the rows that lead to other records. There is no navigation: the entry point is the thing the journey acts on.</p>' +
-            '<div class="panels">' +
-            '<div class="mini"><h2>Your record</h2>' +
-            '<a class="rowlink" href="#" data-act="go" data-screen="/profile">Your profile, photo and contact details</a>' +
-            '<a class="rowlink" href="#" data-act="go" data-screen="/profile/security">Your password and sign-in state</a>' +
-            '<a class="rowlink" href="#" data-act="go" data-screen="/profile/access">The roles you hold</a>' +
-            '</div>' +
-            '<div class="mini"><h2>The roster</h2>' +
-            '<a class="rowlink" href="#" data-act="go" data-screen="/people">See who has access</a>' +
-            (isAdmin()
-                ? '<a class="rowlink" href="#" data-act="go" data-screen="/people/:id">A colleague\u2019s record</a>' +
-                  '<a class="rowlink" href="#" data-act="go" data-screen="/reporting-lines">The reporting lines</a>'
-                : '') +
-            '</div></div></div>';
-    }
-
-    /* A journey that takes over the screen: the first-run journeys stand an
-       installation up, so there is nothing to navigate to until they finish,
-       and the shell is not drawn at all. Every model renders this the same,
-       which is the point -- the shell has a boundary. */
-    var SETUP_STEPS = ['Administrator', 'Tenant', 'Seed profiles', 'Sign in', 'Ready'];
-
-    function fullscreenPage() {
+    function runPage() {
         var at = 1;
-        var rail = '<nav class="railnav"><ol>' + SETUP_STEPS.map(function (s, i) {
+        var rail = '<nav class="railnav"><ol>' + RUN_STEPS.map(function (s, i) {
             var cls = i === at ? 'current' : (i < at ? 'done' : 'ahead');
             return '<li class="railentry ' + cls + '"><span class="railmark ' + cls + '">' +
                 (i < at ? '\u2713' : String(i + 1)) + '</span>' + esc(s) + '</li>';
         }).join('') + '</ol></nav>';
-        var card = '<div class="card"><h1>New tenant</h1>' +
-            '<p class="lead">This journey stands up the installation, so it owns the whole screen and offers no way ' +
-            'past it until it is done. The shell is not drawn: there is nothing yet to navigate to.</p>' +
-            '<div class="mini"><h2>Step 2 of 5 \u00b7 Tenant</h2>' +
-            '<table class="kv">' +
-            '<tr><td>Shell drawn</td><td>no</td></tr>' +
-            '<tr><td>Models that differ</td><td>none: this is outside all five</td></tr>' +
+        return '<div class="journey">' + rail + '<div class="card">' +
+            '<h1>New tenant</h1>' +
+            '<p class="lead">This journey stands the installation up. It owns the whole screen and offers no way ' +
+            'past until it is done, so no menu and no cards are drawn while it runs.</p>' +
+            '<div class="mini"><h2>Step 2 of 5 \u00b7 Tenant</h2><table class="kv">' +
+            '<tr><td>Menu drawn</td><td>no</td></tr>' +
+            '<tr><td>Mode</td><td>' + esc(MODES[mode()]) + '</td></tr>' +
             '<tr><td>Way out</td><td>Exit, which abandons the run</td></tr>' +
             '</table></div>' +
-            '<div class="stepfoot"><button class="btn ghost" data-act="go" data-screen="/">Exit setup</button>' +
-            '<button class="btn primary mlauto" data-act="go" data-screen="/">Continue</button></div></div>';
-        return '<div class="journey">' + rail + '<div>' + card + '</div></div>';
+            '<div class="stepfoot"><button class="btn ghost" data-act="home">Exit setup</button>' +
+            '<button class="btn primary mlauto" data-act="home">Continue</button></div></div></div>';
     }
 
     function body() {
-        if (S.state === 'fullscreen') return fullscreenPage();
-        /* At rest is the landing surface, and today is the same surface with
-           only the groups that exist. Under the two-axis model the landing
-           surface is the area. */
-        var atRest = S.state === 'home' || S.state === 'today';
-        if (atRest && S.variant === 'H') return areaPage(activeArea());
-        if (atRest && S.variant === 'D') return dataPage();
-        if (atRest) return indexPage(null);
-        return journeyScreen();
+        if (S.state === 'fullscreen') return runPage();
+        if (S.state === 'journey') return journeyPage();
+        return S.area ? areaPage() : landing();
     }
 
     // --------------------------------------------------------------- page
 
     function render() {
         var full = S.state === 'fullscreen';
-        var head = '';
-        if (!full) {
-            if (S.variant === 'H') {
-                head = '<header class="appheader"><div class="appheader-inner">' + brand() +
-                    '<span class="modechip">' + esc(modeInfo().name) + '</span>' + areaNav() +
-                    '<div class="accounts">' + accountChip(true) + meMenu() + '</div></div></header>';
-            } else if (S.variant === 'N') {
-                head = '<header class="appheader"><div class="appheader-inner">' + brand() + navbar() +
-                    '<div class="accounts">' + accountChip(false) + '</div></div></header>';
-            } else if (S.variant === 'A') {
-                head = '<header class="appheader"><div class="appheader-inner">' + brand() +
-                    '<div class="mlauto"></div><div class="accounts">' + accountChip(true) + accountMenu() + '</div></div></header>';
-            } else {
-                head = '<header class="appheader"><div class="appheader-inner">' + brand() +
-                    '<div class="mlauto"></div><div class="accounts">' + accountChip(false) + '</div></div></header>';
-            }
-        }
+        var head = full ? '' : '<header class="appheader"><div class="appheader-inner">' +
+            '<a class="brand" href="#" data-act="home"><span class="mark">O</span>' +
+            '<span class="name">ORE Studio</span></a>' +
+            '<span class="modechip">' + esc(MODES[mode()]) + '</span>' + menu() +
+            '<div class="accounts">' + personChip() + myMenu() + '</div></div></header>';
+        document.getElementById('app').innerHTML =
+            '<div class="shell">' + head + '<main>' + body() + '</main></div>';
 
-        var shell = '<div class="shell' + (narrow() ? ' narrow' : '') + '">' + head;
-        shell += (S.variant === 'S' && !full)
-            ? '<div class="withside">' + sidebar() + '<main>' + body() + '</main></div>'
-            : '<main>' + body() + '</main>';
-        shell += '</div>';
-        document.getElementById('app').innerHTML = shell;
-
-        var visible = groups(S.state === 'today');
+        var p = person();
         document.getElementById('proto-note').textContent =
-            'PROTOTYPE \u00b7 mock data, no service \u00b7 ' + VARIANTS[S.variant].name +
-            ' \u00b7 ' + (isAdmin() ? 'tenant administrator' : 'member') +
-            ' \u00b7 state ' + S.state + ' \u00b7 mode ' + S.mode +
-            ' \u00b7 ' + visible.length + ' groups, ' + journeyCount(visible) + ' journeys';
+            'PROTOTYPE \u00b7 mock data, no service \u00b7 signed in as ' + me().name +
+            ' \u00b7 ' + MODES[mode()] + ' \u00b7 ' + p.tenant +
+            (p.party === '\u2014' ? '' : ' \u00b7 ' + p.party) + ' \u00b7 state ' + S.state;
 
         renderBar();
     }
 
     function renderBar() {
-        var variants = Object.keys(VARIANTS).map(function (k) {
-            return '<button data-act="variant" data-variant="' + k + '"' + (S.variant === k ? ' class="on"' : '') + '>' +
-                esc(VARIANTS[k].name) + '</button>';
+        var whos = WHO.map(function (w) {
+            return '<button data-act="who" data-who="' + w.id + '"' + (S.who === w.id ? ' class="on"' : '') + '>' +
+                esc(w.name) + '</button>';
         }).join('');
-        var actors = '<span class="label">actor</span>' +
-            '<button data-act="actor" data-actor="member"' + (!isAdmin() ? ' class="on"' : '') + '>member</button>' +
-            '<button data-act="actor" data-actor="admin"' + (isAdmin() ? ' class="on"' : '') + '>admin</button>';
-        var states = STATES.map(function (s) {
-            return '<button data-act="state" data-state="' + s[0] + '"' + (S.state === s[0] ? ' class="on"' : '') + '>' + esc(s[1]) + '</button>';
-        }).join('');
+        var states = [['home', 'At rest'], ['journey', 'On a journey'], ['fullscreen', 'Full screen']]
+            .map(function (s) {
+                return '<button data-act="state" data-state="' + s[0] + '"' + (S.state === s[0] ? ' class="on"' : '') + '>' +
+                    esc(s[1]) + '</button>';
+            }).join('');
         document.getElementById('proto-bar').innerHTML =
-            '<span class="label">model</span>' + variants +
-            '<span class="sep">|</span>' + actors + '<span class="sep">|</span>' + states;
+            '<span class="label">sign in as</span>' + whos + '<span class="sep">|</span>' + states;
     }
 
     document.addEventListener('click', function (ev) {
@@ -615,27 +335,14 @@
         if (!el) return;
         ev.preventDefault();
         var act = el.getAttribute('data-act');
-        if (act === 'variant') { S.variant = el.getAttribute('data-variant'); S.open = false; }
-        else if (act === 'actor') { S.actor = el.getAttribute('data-actor'); S.open = false; }
+        if (act === 'who') { S.who = el.getAttribute('data-who'); S.area = null; S.at = '/profile'; S.state = 'home'; S.open = false; }
         else if (act === 'state') { S.state = el.getAttribute('data-state'); S.open = false; }
+        else if (act === 'area') { S.area = el.getAttribute('data-area'); S.state = 'home'; }
         else if (act === 'toggle') S.open = !S.open;
-        else if (act === 'area') { S.area = el.getAttribute('data-area'); S.at = '/'; }
-        else if (act === 'mode') { S.mode = el.getAttribute('data-mode'); S.area = null; S.at = '/'; S.open = false; }
-        else if (act === 'run') S.state = 'fullscreen';
-        else if (act === 'home') S.at = '/';
-        else if (act === 'group') { S.at = '/'; S.homeGroup = el.getAttribute('data-group'); }
-        else if (act === 'go') S.at = el.getAttribute('data-screen');
-        else if (act === 'signout') S.open = false;
-        render();
-    });
-
-    document.addEventListener('keydown', function (ev) {
-        var order = Object.keys(VARIANTS);
-        var at = order.indexOf(S.variant);
-        if (ev.key === 'ArrowRight') S.variant = order[(at + 1) % order.length];
-        else if (ev.key === 'ArrowLeft') S.variant = order[(at + order.length - 1) % order.length];
-        else return;
-        S.open = false;
+        else if (act === 'home') { S.state = 'home'; S.area = null; }
+        else if (act === 'run') { S.state = 'fullscreen'; S.open = false; }
+        else if (act === 'go') { S.at = el.getAttribute('data-screen'); S.state = 'journey'; S.open = false; }
+        else if (act === 'signout') { S.open = false; S.area = null; S.state = 'home'; }
         render();
     });
 

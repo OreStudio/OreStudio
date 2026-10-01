@@ -237,14 +237,29 @@ main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 28px 20
 .shell.narrow .appnav { display: none; }
 .shell.narrow .trigger .who { display: none; }
 .shell.narrow .menu { position: fixed; left: 12px; right: 12px; top: 96px; min-width: 0; }
-.shell.narrow .withside { grid-template-columns: 1fr; }
-.shell.narrow .side { display: none; }
 
 /* ------------------------------------------------------------------ */
 /* The five models, each rendered inside the one shell.                */
 /* ------------------------------------------------------------------ */
 
 .mlauto { margin-left: auto; }
+
+/* An area, on the landing: its name, then its cards. */
+.area { margin-top: 22px; }
+.areaname {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+.emptyarea { color: var(--ink-faint); font-size: 13px; margin: 0; }
+.runline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--ink-faint); font-size: 12px; padding: 6px 0; }
+.btn.small { padding: 4px 10px; font-size: 12px; }
 
 /* The mode the session is in. The header answers to it, so it is named there. */
 .modechip {
@@ -267,57 +282,6 @@ main { flex: 1; max-width: 1180px; width: 100%; margin: 0 auto; padding: 28px 20
     padding: 0 6px;
 }
 .appnav a.here .count { color: var(--accent-bright); border-color: var(--accent); }
-
-/* Sidebar: the same groups down the left, the current one open. */
-.withside {
-    display: grid;
-    grid-template-columns: 15rem 1fr;
-    max-width: 1180px;
-    margin: 0 auto;
-    width: 100%;
-    flex: 1;
-    align-items: start;
-}
-.withside main { max-width: none; margin: 0; }
-.side { border-right: 1px solid var(--line); padding: 20px 12px 96px; min-height: 100%; }
-.sidegroup > a {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    color: var(--ink-dim);
-    text-decoration: none;
-    font-size: 13px;
-}
-.sidegroup > a:hover { background: var(--panel-2); color: var(--ink); }
-.sidegroup.open > a { background: var(--panel-2); color: var(--ink); }
-.sidegroup .count { margin-left: auto; font-size: 10px; color: var(--ink-faint); }
-.sideitems { padding: 2px 0 6px 10px; }
-.sideitems a {
-    display: block;
-    padding: 6px 10px;
-    border-radius: var(--radius);
-    color: var(--ink-dim);
-    text-decoration: none;
-    font-size: 12px;
-    border-left: 2px solid var(--line);
-}
-.sideitems a:hover { color: var(--ink); background: var(--panel-2); }
-.sideitems a.here { color: var(--ink); border-left-color: var(--accent); background: var(--accent-dim); }
-.sidehead {
-    padding: 8px 10px 2px;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-}
-.sidewait { padding: 12px 10px; font-size: 12px; color: var(--ink-faint); }
-
-/* An area whose journeys have not been extracted yet. Offered to the person
-   who would build it, and plainly empty rather than filled. */
-.appnav a[data-waiting] { color: var(--ink-faint); }
-.appnav a[data-waiting].here { color: var(--ink-dim); }
 
 /* Index: every journey on the landing page, grouped by topic. */
 .groupgrid {

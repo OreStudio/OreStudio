@@ -1,295 +1,114 @@
 :PROPERTIES:
 :ID: E6E32AB5-2F25-4230-AB93-E38E75DE23B6
 :END:
-#+title: Application navigation prototype
-#+description: Five structural models for reaching every journey in the catalogue, for a member and a tenant administrator, with mock data, on a throwaway prototype page.
+#+title: Application shell prototype
+#+description: The shell the journeys hang from: a menu, the cards it opens, and the person's own journeys under their name, seen through the four sign-ins.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:security:identity:navigation:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-10-01
 
 * Summary
 
-Every journey in the catalogue reaches its screen by the person "choosing"
-it, and no document owns how. The shell carries the brand, the session and the
-way out, because "the navigation itself is what the journeys add" — and the
-journeys are about to add the first screen, with nothing to hang it from.
+Every journey in the catalogue reaches its screen by the person "choosing" it,
+and no document owned how. This is the answer, as one design rather than a
+comparison: a *menu* across the header, the *cards* it opens, and the person's
+own journeys under their *name and photo*.
 
-This prototype argues that navigation. It renders six structural models in
-the shell the application actually has, each over the catalogue's real scale,
-so the choice is made against 22 journeys in 8 groups rather than against a
-demonstration subset.
+What the shell shows is decided by **who signed in**. A super administrator
+works in the system tenant's context, a tenant administrator in a tenant's, and
+a party user in a party's — the contexts the server already scopes everything
+by. So the mode is read from the sign-in and is never chosen, and there is no
+mode switch to get wrong.
 
-It is throwaway. It is not production code, it reads no service, and every
-value on it is mock data.
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data.
 
-Open the [[file:navigation/][navigation]].
+Open the [[file:navigation/][shell]].
 
 * Detail
 
-** The scale, which is the whole question
+** The mode comes from the sign-in
 
-The catalogue holds 22 journeys in 8 groups, and a person sees only the ones
-they may run:
+| Sign in as | Mode | The context |
+|------------+------+-------------|
+| Super administrator | System administration | The system tenant: the deployment's tenants, the registry they share |
+| Tenant administrator | Tenant administration | A tenant: its parties, its role catalogue, its settings — not its data |
+| Privileged party user | Application | A tenant and a party, including the people who work in it |
+| Regular party user | Application | A tenant and a party |
 
-| Person | Groups | Journeys |
-|--------+--------+----------|
-| A member | 4 | 6 |
-| A tenant administrator | 7 | 20 |
+The four are the platform's own axes, not a new taxonomy. The system tenant has
+a fixed id and holds the deployment's registry and the shared reference data; a
+tenant row is stored under it; and the session already carries the party it acts
+for. A mode is the answer to "which context am I in", and the server answers it
+before the browser draws anything.
 
-Entry is not among either. It is the door, not a place a signed-in person
-navigates to, so it is outside the navigation — which is why the counts are 7
-and 20 rather than 8 and 22.
+** The menu holds areas, and the cards hold journeys
 
-That asymmetry is what the models have to survive: the member's navigation is
-small enough for anything, and the administrator's is not.
+The menu is one row of *areas* — the trading floor's own shape, which the Qt
+menu bar already had right. It changes with the mode:
 
-** The six models
+| Mode | The menu |
+|------+----------|
+| System administration | Tenants, Bootstrap |
+| Tenant administration | Parties, Access, Tenant |
+| Application | Reference Data, Market Data, Trading, Analytics, Compute, Reporting, People |
 
-Switch with the bottom bar, the left and right arrow keys, or =?variant=.
+An area the catalogue has not reached stays in the menu and says so in as many
+words. An area that belongs to somebody else does not: a regular party user is
+not shown the door to the people of their party, and no mode offers an
+administrator journey to the person who may not run it.
 
-| Model | Name | The structural argument |
-|-------+------+-------------------------|
-| =H= | Areas and journeys | Both axes, holding different things: the areas of activity across the top, the selected area's journeys down the side. The shape the Qt client half had right. |
-| =N= | Navbar | The groups in the header, each with its count, opening its own index of journeys. Nothing is hidden, and the arithmetic is plain: seven groups across the top. |
-| =S= | Sidebar | The same groups down the left, the current one open to its journeys. It holds seven without crowding and it can nest, at the cost of a column on every screen. |
-| =I= | Index | The landing page is the index: every journey, grouped by topic, and no global navigation at all. Nothing to hunt for, and nothing beside a journey while it runs. |
-| =D= | Data only | No navigation either: a journey is reached from the thing it acts on. The person's own record opens their screens; a roster row opens that colleague. |
-| =A= | Account menu | The header trigger, prototyped first and kept because it is the shape five journey documents name — and because the comparison needs it. At this scale it holds neither the administrator's work nor the groups. |
+The cards are one per catalogue topic, and they are where a journey is chosen.
+One area's cards, or every area's, depending on whether the person picked an
+area from the menu or is on the landing page.
 
-** The eight areas, and the level that was missing
+** The person's own journeys are not an area
 
-The catalogue had two levels — group, then journey — and the shell needs
-three, because a journey group is a topic and an area is a place on the
-trading floor. Qt's first level already said the areas, and it was right:
+Every system puts "things about me" under the avatar, and nobody gives them a
+menu. The header carries the person's name and photo, and it opens their own
+journeys, gathered by topic: profile, credentials, and in a party their access
+and where they work. The super administrator keeps their profile and gets no
+party journeys, because there is no party to choose.
 
-#+ATTR_HTML: :class hug-leading
-| Area | The groups the catalogue has reached | Journeys today |
-|------+--------------------------------------+----------------|
-| Reference Data | — | none extracted |
-| Market Data | — | none extracted |
-| Trading | — | none extracted |
-| Analytics | — | none extracted |
-| Compute | — | none extracted |
-| Reporting | — | none extracted |
-| People | Profile, Credentials, Access, Membership, Directory | 8 in 5 groups |
-| Tenant | Access, Tenancy, Setup | 3, and a run, in tenant administration |
-| System | Setup | 2 runs, in system administration |
-
-Six of the eight are empty, and that is the honest state rather than a gap in
-the design: the extraction has been run for one component. An empty area is
-named and says so — it is not filled with invented screens, and it is offered
-to a tenant administrator, who is the person who would build it, rather than to
-a member.
-
-** The three modes, which sit above the areas
-
-The header answers to the *mode* before it answers to the area, and the mode is
-not a new invention: it is the context the session is already in, and the server
-already scopes everything by it.
-
-| Mode | The context | Journeys |
-|------+-------------+----------|
-| Application | A tenant and a party | Reference data, market data, trading, reporting, and the people in them |
-| Tenant administration | A tenant, and no party | Its parties, its role catalogue, its own settings — not its data |
-| System administration | The system tenant | Its tenants, the registry the tenants share, and standing an installation up |
-
-Two things make this a real boundary rather than a label.
-
-*The tenant administrator is not a trader.* Reference data and market data
-belong to a party, so editing them means working in a party's context, which is
-the application mode. Running the tenant — its parties, its roles, its settings
-— is a different context, so it is a different mode. The two never appear in the
-same header.
-
-*The system tenant is already in the model.* It holds the deployment's registry
-and the shared reference data, it has its own fixed id, and a tenant row is
-stored under it. A session acting across tenants is a session in the system
-tenant's context, which is why system administration is a mode and not a menu.
-
-The modes are permission-scoped, not chosen freely, which is what makes them
-safe: a member has one mode and sees no switch at all; the person who runs the
-tenant has two or three. Every product with a console above the product behaves
-this way, and the switch lives where the person already is — under their own
-name and photo, beside the journeys about them.
-
-** The three scopes
-
-"Administration" was a grab bag: a name that means everything we could not
-place. The fix is to name the *scope*, which is what the products that got this
-right do — Google, Microsoft, Atlassian, Salesforce and GitHub all say
-Directory, Users, People or Members for the first scope, and Account, Settings,
-Organization or Workspace for the second.
-
-| Scope | Journeys | Where it lives |
-|-------+----------+----------------|
-| Me | Present myself, Keep my details current, Protect my account, Know what I may do, Ask for more access, Choose where I work | The avatar menu |
-| People | See who has access, Bring someone in, Register a service account, Change someone's details, Change someone's access, Rescue access, Audit sign-ins, Draw the reporting line | An area |
-| Tenant | Shape the role catalogue, Tune the tenant, Retire or reset a tenant, First run, New tenant, New party | An area |
-
-The three account for all twenty journeys with nothing left over, which is the
-test "Administration" failed.
-
-*Nobody gives "things about me" a menu of its own.* Every system above hangs
-them off the avatar, and this follows: the header's name and photo open a menu
-of the six journeys that are about the person. They are not an area.
-
-*The area is a property of the journey, not of the group.* Four of the seven
-catalogue groups straddle the scopes: Access holds a journey for the member
-("Know what I may do"), one for People ("Change someone's access") and one for
-the Tenant ("Shape the role catalogue"). So a journey names its scope, and the
-group stays what it is — the heading of the card it appears under.
-
-*The team head is a scope, not a menu.* The second scope has two audiences, the
-tenant administrator and a desk or department head, and every system above
-handles that with permission inside the same area — administrative units,
-delegated admin, team maintainers. People is one area for both; what is inside
-it differs by permission, not by chrome.
-
-What Qt got wrong was everything below its first level. Its second level was a
-table, and it went three deep where the model did: =Reference Data → Data
-Catalogue → Dimensions → Origin Dimensions=. The replacement's second level is
-a journey, and a journey is an activity, so the depth stops there — the area's
-landing page holds its journeys as cards, one card per catalogue topic, and
-nothing hangs below a journey because there is nothing below one to show.
-
-** The two actors
-
-Switch with the actor buttons, or =?actor=.
-
-| Actor | What changes |
-|-------+--------------|
-| =member= | Their own screens: profile, credentials, access, membership. The tenant's groups are absent, not disabled. |
-| =admin= | Those, plus Setup, Directory and Tenancy. |
-
-** The four states
-
-Switch with the state buttons, or =?state=.
+** The three states
 
 | State | What it shows |
 |-------+---------------|
-| =home= | The landing surface: the index for every model but the data one, which lands on the person's record instead. |
-| =journey= | A journey running, so the navigation is judged beside a journey rather than on its own. |
-| =fullscreen= | A journey that takes over the screen, which every model renders the same: no shell at all. |
-| =today= | Only the groups that have been built — Setup alone, which is what a person sees if this ships now. |
-| =narrow= | A small screen: the top-level navigation goes and the account menu becomes a sheet. |
-
-** The shell, and where it stops
-
-The intention this was built against is settled: the application is designed
-from what a person is trying to do, a journey is one such intent, and a menu
-holds *journey groups* because a group is the topic a journey is looked up
-under. The words are
-[[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]]'s; the short
-version is that a journey, a screen and a step are three different things, and
-the Profile group is the case that separates them — three journeys, one screen.
-
-Two consequences shape the shell and neither is a matter of taste.
-
-*The menu holds groups, not journeys.* The groups are stable and few: a member
-sees four and a tenant administrator seven. That is the whole reason the top
-level can be small while the catalogue grows to 22 journeys and beyond — the
-growth lands inside a group, not in the chrome.
-
-*Some journeys are outside the shell.* The setup journeys stand an installation
-up, so they own the whole screen and offer no way past until they are done.
-Every model renders that identically, which is the =fullscreen= state. The
-shell's boundary is therefore part of its design: a journey may take the screen
-and give it back.
-
-Against that, the recommendation is the *two-axis* model, =H=, and it answers
-the thing the single-axis ones could not: a full trading system has many areas,
-and each area has many journeys, so one axis is either too long or too deep.
-
-- *The areas are the trading floor's own shape* — Reference Data, Market Data,
-  Trading, Analytics, Compute, Reporting — which is what the Qt menu bar already
-  said, plus the two scopes that are not the trading floor: People and Tenant.
-  A person's own journeys are not an area at all; they are the avatar.
-- *The area's landing page is the second axis*, and its cards are the
-  navigation: one card per catalogue topic, each listing its journeys. There is
-  no sidebar, because the cards already list everything a sidebar would, and a
-  second list of the same thing beside the first is a cost with no reader.
-- *The depth stops at a journey.* The Qt menus went deeper because the model was
-  showing through; there is nothing under a journey to show.
-- *The two axes answer different questions:* "where do I work" at the top, "what
-  am I doing there" on the area's own page. A single axis has to answer both at
-  once, which is why the index model needs a trip back and the account menu runs
-  out of room.
-
-The navbar with eight areas still fits a laptop's header, and it scrolls rather
-than squeezing the person's own chip off the edge when it must. Qt carried
-eleven, so the width is a known cost of the shape rather than a new one; the
-alternative — folding the areas into a menu — is the account menu again.
-
-** What the shell holds
-
-| Part | What it is |
-|------+------------|
-| The brand | The way home, and the only thing that is always there. |
-| The mode | The context the session is in, named in the header, because the areas answer to it. |
-| The areas | The horizontal menu: where this person may work, in this mode. |
-| The avatar menu | The journeys about the person, which no area holds. |
-| The area landing | The cards: what they may do there, one card per catalogue topic, and the runs that take the screen. |
-| The person | Their name and photo, opening their own record, and the way out. |
-| The boundary | Nothing, when a journey owns the screen. |
-
-** What the models cost, measured
-
-The navbar is the model that changes shape with the window. At a wide window
-the seven groups sit across the header; at 900px they no longer do, and the
-bar scrolls rather than pushing the account chip off the edge. That is a real
-property of the model and not a defect in the drawing: the administrator's
-seven groups do not fit a laptop header.
-
-The sidebar pays a column on every screen, including the journeys that draw a
-rail of their own — which is why the two-axis model does not use one: its cards
-already say what a sidebar would, so a sidebar beside them would be the same
-list twice.
-
-The index pays nothing on the journey itself and everything on discovery: the
-person has to go back to the index to move, and the index is the only thing
-that says what exists.
-
-The account menu pays for itself in drops, and the arithmetic is the argument
-against it: twenty journeys do not fit in a menu, and the groups the member
-cannot use still have to be kept out of it by hand.
-
-The data model pays nothing at all and is the only one that cannot ship alone:
-with no Directory and no Tenancy, most journeys have nothing to hang from.
+| =home= | The landing page: every area the person has, each with its cards. |
+| =journey= | One journey running under its mode, with the cards it came from. |
+| =fullscreen= | A journey that stands something up. It owns the screen, so no menu and no cards are drawn. |
 
 ** What is real and what is not
 
-The groups and journeys are the catalogue's own, with the routes the journey
-documents use. Which of them has been built is real too: only Setup has, and
-the =today= state renders that rather than pretending otherwise. Every group
-that has not been built says so where it is offered.
+The areas, the journeys, the modes, the routes and which journeys have been
+built are the catalogue's own. Six of the nine areas are empty because the
+extraction has been run for one component, and the prototype renders that
+rather than inventing screens to fill them.
 
-Everything else is mock. The tenant, the people, the photos and the roles are
-hard-coded, and the photos are two of the repository's stock faces under
-=external/facestudio/faces=, copied in so the prototype is self-contained.
+Everything else is mock. The people, the tenants and the parties are invented,
+the photos are the repository's own stock faces, and nothing reads a service.
 
 ** Where the code lives
 
 =doc/prototypes/navigation/=. Three files of code plus the two photos, plain
 HTML, CSS and JavaScript, no framework and no build step. The site build copies
-the directory through =ores-deploy-web-app=, beside the other prototypes. The
-CSS holds only the tokens, the shell and the five models: the journey furniture
-belongs to the screen prototypes beside this one and is not repeated here.
+the directory through =ores-deploy-web-app=, beside the other prototypes.
 
 ** What it does not settle
 
-How a person learns that a journey exists but cannot be run. Nothing here
-states what a deployment's switches are, because no document says a journey
-has one, so every model shows an unbuilt journey as a name and a reason.
+How a person learns that a journey exists but cannot be run. Nothing here states
+what a deployment switches on or off, because no document says a journey has a
+switch.
 
-And the models are not exclusive. A navbar with an index under it, or an index
-that the data links grow into, are combinations of what is drawn here rather
-than a sixth answer.
+Where a party user with no areas of their own lands once the party's data is
+real: today six of their seven areas are empty and their avatar is where the
+work is.
 
 * See also
 
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
-- [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]] — the screen these models are drawn reaching.
+- [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen prototype]] — the screen the avatar opens.
+- [[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]] — the vocabulary this design rests on.
 - [[id:D281ABF0-CA10-44CC-BDE2-F8F9F6E327A4][Profile journeys]] — the group whose journeys name the account menu first.
-- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][Present myself]] — the journey that ends by saying the menu shows the new name and photo.

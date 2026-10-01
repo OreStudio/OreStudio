@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A54241DF-7B50-4BE8-890C-1A3BB35EC709
 :END:
-#+title: Task: Prototype the application navigation
+#+title: Task: Prototype the application shell
 #+description: Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 21 journeys in 8 groups, for a member and a tenant administrator.
 #+type: task
 #+level: s1
@@ -28,9 +28,9 @@ A clickable prototype of the application navigation that the design can be judge
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | The five models are built and published. The first model, the account menu, was rejected on review: at this scale it holds neither the administrator's work nor the groups. |
+| Now          | The shell is designed: the menu, the cards, the avatar, and the four sign-ins. Four review rounds took it from an account menu to a menu of areas over a mode read from the sign-in. |
 | Waiting on   | Nothing.                               |
-| Next         | Take the verdict on the remaining four models, then scope the implementation. |
+| Next         | Confirm the mode names and the area list, then implement the shell. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance

@@ -1,47 +1,29 @@
-Evidence: the navigation prototype's matrix, driven without a browser.
+Evidence: the shell prototype's matrix, driven without a browser.
 
 Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/navigation_check.js
 Run from: the repository root, on branch feature/prototype-the-account-menu.
 Environment: eager_maxwell.
 
 The harness runs doc/prototypes/navigation/prototype.js against a minimal DOM
-shim and asserts what the prototype promises a reviewer: every combination of
-model, actor and state renders; the shell keeps its brand; the render leaks no
-undefined; the catalogue's own scale is what the models carry, being 22
-journeys in 8 groups, of which a tenant administrator navigates 20 in 7 groups
-and a member 6 in 4; the navbar carries the tenant's groups; the sidebar draws
-a sidebar and opens the current group; the index draws the index and states
-what has not been built; the data model lands on the things a journey hangs
-off; the account menu still opens its menu; every model reaches the same
-journey screen; the today state carries only what has been built, and a member
-with nothing today is told so; and the narrow state is the narrow shell.
+shim and asserts what the prototype promises a reviewer: every sign-in and state
+renders; the sign-in decides the mode and the note names it; the shell is drawn
+in every state but the one where a journey owns the screen; the super
+administrator lands in the system mode with its tenants and its bootstrap; the
+tenant administrator lands in the tenant mode with its parties and its role
+catalogue; a privileged party user gets the people of the party; a regular party
+user gets neither the people of the party nor the sign-in audit; the avatar
+carries the journeys about the person in every sign-in, and only the party modes
+offer where they work; an area opens to its cards; and a journey opens under its
+mode.
 
-The modes are asserted as well as drawn: the tenant mode holds the role
-catalogue, the tenancy and standing up a party; the system mode holds creating a
-tenant and standing an installation up; the switch is offered to the person who
-may enter more than one mode and to nobody else.
+Four of the promises are about absence, which is where the mode does its real
+work: the super administrator is not offered a party area or the people of a
+party, the tenant administrator is not offered the bootstrap or a party area,
+the system mode offers no party to choose, and there is no sidebar anywhere.
 
-The two-axis model has its own promises: the areas sit in the header and the
-journeys are cards on the area landing; it has no sidebar, because the cards
-already say what one would; People holds the journeys about other people and
-Tenant the catalogue and the tenancy; the avatar carries the journeys about the
-person, grouped by topic, and a member gets only those; nobody gets an area the
-catalogue has not reached; "Administration" is not an area; an area whose
-journeys have not been extracted is named rather than filled and says so in as
-many words; and a full-screen journey is offered as a run from the area that
-owns it, not as a journey that keeps the shell.
-
-The full-screen journey is asserted against every model at once: it always
-offers the way out, and it never draws a header, a navbar or a sidebar, because
-a journey that owns the screen is outside all five.
-
-Three of the promises are about absence: a member must not reach the tenant's
-groups or an administrator's journey, and the door must not appear as a place a
-signed-in person navigates to.
-
-The screenshots beside this file are the models in Chrome.
+The screenshots beside this file are the four sign-ins and the states in Chrome.
 
 --- output ---
 
-rendered 60 model/actor/state combinations and 66 promises
+rendered 12 sign-in/state combinations and 25 promises
 ALL CHECKS PASSED

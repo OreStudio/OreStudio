@@ -56,6 +56,9 @@ set(files
     "domain/stress_test_shift_json_io.cpp"
     "domain/stress_test_shift_table.cpp"
     "domain/stress_test_shift_table_io.cpp"
+    "domain/todays_market_config_json_io.cpp"
+    "domain/todays_market_config_table.cpp"
+    "domain/todays_market_config_table_io.cpp"
     "generators/credit_simulation_config_generator.cpp"
     "generators/credit_simulation_entity_config_generator.cpp"
     "generators/credit_simulation_matrix_config_generator.cpp"
@@ -68,6 +71,7 @@ set(files
     "generators/stress_test_library_generator.cpp"
     "generators/stress_test_scenario_generator.cpp"
     "generators/stress_test_shift_generator.cpp"
+    "generators/todays_market_config_generator.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -120,6 +124,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/stress_test_shift_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/stress_test_shift_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/stress_test_shift_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/todays_market_config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/todays_market_config_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/todays_market_config_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/domain/todays_market_config_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/credit_simulation_config_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/credit_simulation_entity_config_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/credit_simulation_matrix_config_event.hpp"
@@ -132,6 +140,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/stress_test_library_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/stress_test_scenario_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/stress_test_shift_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/eventing/todays_market_config_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/credit_simulation_config_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/credit_simulation_entity_config_generator.hpp"
@@ -145,6 +154,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/stress_test_library_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/stress_test_scenario_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/stress_test_shift_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/todays_market_config_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/credit_simulation_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/credit_simulation_entity_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/credit_simulation_matrix_config_protocol.hpp"
@@ -157,5 +167,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/stress_test_library_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/stress_test_scenario_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/stress_test_shift_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/todays_market_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/ores.analytics.api.hpp"
 )

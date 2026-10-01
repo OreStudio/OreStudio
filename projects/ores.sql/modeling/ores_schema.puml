@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-02T01:04:40.795700Z
+' Generated: 2026-10-02T02:16:59.160596Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11334,6 +11334,38 @@ package "analytics" #E8F5E9 {
     name and value pairs, because they differ from family to family and none is
     common to all.
     Each row belongs to exactly one scenario, in the order the document wrote it.
+    end note
+
+    entity ores_analytics_todays_market_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+          description : text
+          config_variant : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Config Table
+    One ORE todaysmarket.xml document, held as the thing the collections and the
+    configurations hang off. The document itself carries no market data: it is an
+    ordered set of collections, each entry naming a curve by reference, plus named
+    configurations that select one entry from each collection.
+    The entries live on todays_market_entry, the configurations on
+    todays_market_configuration, and the references a configuration makes on
+    todays_market_configuration_binding. This row is only the identity of the
+    document, so that a tenant may hold more than one and a report may choose
+    between them.
     end note
 
 }

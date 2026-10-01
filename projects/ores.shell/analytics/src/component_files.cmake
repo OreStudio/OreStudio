@@ -32,6 +32,7 @@ set(files
     "app/commands/analytics/stress_test_library_commands.cpp"
     "app/commands/analytics/stress_test_scenario_commands.cpp"
     "app/commands/analytics/stress_test_shift_commands.cpp"
+    "app/commands/analytics/todays_market_config_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -48,4 +49,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/stress_test_library_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/stress_test_scenario_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/stress_test_shift_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/analytics/todays_market_config_commands.hpp"
 )

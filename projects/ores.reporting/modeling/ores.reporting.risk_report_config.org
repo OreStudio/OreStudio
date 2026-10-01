@@ -29,7 +29,7 @@ convention. =npv= and =cashflow= default to enabled; all others default off.
 :schema:        public
 :product:       ores
 :component:     reporting
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns

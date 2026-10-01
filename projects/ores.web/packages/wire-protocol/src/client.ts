@@ -78,7 +78,7 @@ import {
     type RegistrationPolicy,
     type SignupOutcome,
     workflowProgressSchema,
-    workflowStepsRequestSchema,
+    toGetWorkflowStepsRequest,
     type LoginResponse,
     type PasswordPolicy,
     type PartyRow,
@@ -550,7 +550,7 @@ export class OresClient {
     async workflowProgress(instanceId: string): Promise<WorkflowProgress> {
         return this.#authenticatedCall(
             SUBJECTS.workflowInstanceSteps,
-            workflowStepsRequestSchema.parse({ workflow_instance_id: instanceId }),
+            toGetWorkflowStepsRequest(instanceId),
             workflowProgressSchema,
             { timeoutMs: this.#timeouts.fastMs },
         );

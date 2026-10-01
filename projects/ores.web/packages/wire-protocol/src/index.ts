@@ -80,18 +80,13 @@ export {
     PROVISION_TENANT_WORKFLOW_TYPE,
     TENANT_SUBJECTS,
     listTenantsRequestSchema,
-    listWorkflowInstancesRequestSchema,
     TENANT_SETUP_READ_LIMIT,
     readTenantSetups,
     readTenantsPage,
     wireTenantPageSchema,
     wireWorkflowInstancesSchema,
 } from './tenants.js';
-export type {
-    ListTenantsRequest,
-    ListWorkflowInstancesRequest,
-    WireTenantPage,
-} from './tenants.js';
+export type { ListTenantsRequest, WireTenantPage } from './tenants.js';
 
 export {
     ProtocolError,

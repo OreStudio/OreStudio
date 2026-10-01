@@ -42,6 +42,14 @@ import type {
     ProvisionTenantCommand,
 } from './generated/iam/protocol/tenant_provisioning_protocol.js';
 import { subjects as partySubjects } from './generated/refdata/protocol/party_protocol.js';
+import {
+    subjects as workflowSubjects,
+    type GetWorkflowStepsRequest,
+    type GetWorkflowStepsResponse,
+    type RetryWorkflowInstanceRequest as WireRetryWorkflowInstanceRequest,
+    type RetryWorkflowInstanceResponse,
+    type WorkflowStepSummary as WireWorkflowStepSummary,
+} from './generated/workflow/protocol/workflow_protocol.js';
 import type { PartyChange } from './generated/refdata/protocol/party_protocol.js';
 import type { Uuid } from './primitives.js';
 
@@ -77,11 +85,8 @@ export const SUBJECTS = {
     provisionParty: tenantProvisioningSubjects.provision_party_command,
     listParties: partySubjects.list_parties_request,
     putParty: partySubjects.put_party_request,
-    // ores.workflow generates no TypeScript contract yet, so the two subjects
-    // its journey speaks are mirrored here, and the shapes they carry with
-    // them. A rename in C++ must be mirrored here or the boundary test fails.
-    workflowInstanceSteps: 'workflow.v1.instances.steps',
-    retryWorkflowInstance: 'workflow.v1.instances.retry',
+    workflowInstanceSteps: workflowSubjects.get_workflow_steps_request,
+    retryWorkflowInstance: workflowSubjects.retry_workflow_instance_request,
     passwordPolicy: 'iam.v1.auth.password-policy',
     registrationPolicy: registrationPolicySubjects.registration_policy_request,
     signup: signupSubjects.signup_request,
@@ -1213,8 +1218,8 @@ export const workflowStepSummarySchema = z.object({
     status: z.string().default(''),
     step_index: z.number().int().default(0),
     created_at: z.string().default(''),
-    started_at: z.string().nullish(),
-    completed_at: z.string().nullish(),
+    started_at: z.string().nullable().default(null),
+    completed_at: z.string().nullable().default(null),
     error: z.string().default(''),
     log: z
         .array(
@@ -1225,7 +1230,7 @@ export const workflowStepSummarySchema = z.object({
             }),
         )
         .default([]),
-});
+}) satisfies z.ZodType<WireWorkflowStepSummary>;
 
 export type WorkflowStepSummary = z.infer<typeof workflowStepSummarySchema>;
 
@@ -1245,14 +1250,14 @@ export const workflowProgressSchema = z.object({
     step_count: z.number().int().default(0),
     current_step_index: z.number().int().default(0),
     steps: z.array(workflowStepSummarySchema).default([]),
-});
+}) satisfies z.ZodType<GetWorkflowStepsResponse>;
 
 export type WorkflowProgress = z.infer<typeof workflowProgressSchema>;
 
-/** The wire request the progress read takes. */
-export const workflowStepsRequestSchema = z.object({
-    workflow_instance_id: z.string().min(1),
-});
+/** The wire request the progress read takes, as the generated type states it. */
+export function toGetWorkflowStepsRequest(instanceId: string): GetWorkflowStepsRequest {
+    return { workflow_instance_id: instanceId };
+}
 
 /**
  * A retry, as the interface asks for one.
@@ -1285,13 +1290,12 @@ export const retryWorkflowInstanceReplySchema = z.object({
     workflow_instance_id: z.string().default(''),
     step_index: z.number().int().default(-1),
     step_name: z.string().default(''),
-});
+}) satisfies z.ZodType<RetryWorkflowInstanceResponse>;
 
 /** The wire command one retry request becomes. */
-export function toRetryWorkflowInstanceCommand(request: RetryWorkflowInstanceRequest): {
-    workflow_instance_id: string;
-    step_name: string;
-} {
+export function toRetryWorkflowInstanceCommand(
+    request: RetryWorkflowInstanceRequest,
+): WireRetryWorkflowInstanceRequest {
     return {
         workflow_instance_id: request.workflowInstanceId,
         step_name: request.stepName,

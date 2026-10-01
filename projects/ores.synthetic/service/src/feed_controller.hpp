@@ -563,6 +563,9 @@ private:
         }
         const auto oresmd_uri =
             ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value;
+        // An FX spot carries no coordinate of its own, so the row the vintage is
+        // read from is the datum the series URI names.
+        const auto datum_uri = ores::marketdata::core::oresmd_parser::to_uri(*identifier).value;
 
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -596,7 +599,7 @@ private:
                 return false;
             }
             for (const auto& obs : *observations) {
-                if (obs.source == vintage_source && obs.point_id == "SPOT" &&
+                if (obs.source == vintage_source && obs.oresmd_uri == datum_uri &&
                     date_part(obs.observation_datetime) == vintage_date) {
                     if (resolved_price) {
                         try {

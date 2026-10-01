@@ -44,7 +44,7 @@ struct market_observation_write {
     boost::uuids::uuid party_id;
     boost::uuids::uuid series_id;
     std::chrono::system_clock::time_point observation_datetime;
-    std::string point_id;
+    std::string oresmd_uri;
     std::string key;
     std::string value;
     std::string source;

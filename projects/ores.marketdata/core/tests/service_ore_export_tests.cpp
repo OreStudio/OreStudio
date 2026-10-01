@@ -273,7 +273,7 @@ TEST_CASE("export_refuses_an_observation_a_writer_left_without_a_key", tags) {
     o.series_id = s.id;
     o.observation_datetime =
         std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
-    o.point_id = "SPOT";
+    o.oresmd_uri = "oresmd://fx/eurusd?type=quote&quote=spot";
     o.value = "1.132337";
     // The key is deliberately left empty: this is the row the export must refuse.
     obs_repo.write(t.ctx, o);

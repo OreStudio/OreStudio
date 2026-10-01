@@ -58,7 +58,7 @@ create table if not exists "ores_marketdata_observation_lineages_tbl" (
     "party_id" uuid not null,
     "series_id" uuid not null,
     "observation_datetime" timestamp with time zone not null,
-    "point_id" text not null,
+    "oresmd_uri" text not null,
     "derivation_config_id" uuid not null,
     "derivation_config_version" integer not null,
     "source_as_of" timestamp with time zone not null,
@@ -82,7 +82,7 @@ create table if not exists "ores_marketdata_observation_lineages_tbl" (
 
 -- Composite natural key: unique combination for active records
 create unique index if not exists observation_lineages_party_series_obs_point_uniq_idx
-on "ores_marketdata_observation_lineages_tbl" (tenant_id, party_id, series_id, observation_datetime, point_id)
+on "ores_marketdata_observation_lineages_tbl" (tenant_id, party_id, series_id, observation_datetime, oresmd_uri)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

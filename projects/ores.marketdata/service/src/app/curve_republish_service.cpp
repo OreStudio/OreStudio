@@ -40,6 +40,7 @@
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
+#include <boost/algorithm/string.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -99,6 +100,20 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
     return refctx;
 }
 
+// The ORE-form point the analytics layer reads. The output series is a discount
+// curve, whose declared coordinate is the curve's tenor, so the point comes back
+// from the datum URI the row stores rather than from a column of its own. The
+// parser lower-cases a URI's values and refdata's tenor codes are upper-case, so
+// the point is folded back up for the lookup.
+std::string discount_point_of(const domain::market_observation& obs) {
+    const auto identifier = core::oresmd_parser::parse(domain::oresmd_uri{obs.oresmd_uri});
+    const auto* ir = std::get_if<domain::ir_market_data_identifier>(&identifier);
+    if (ir == nullptr || !ir->tenor)
+        throw std::invalid_argument("curve_republish_service: observation '" + obs.oresmd_uri +
+                                    "' carries no discount-curve tenor");
+    return boost::to_upper_copy(*ir->tenor);
+}
+
 std::vector<ores::analytics::quant::service::bootstrapped_point>
 read_discount_curve(ores::database::context ctx,
                     const boost::uuids::uuid& output_series_id,
@@ -108,8 +123,8 @@ read_discount_curve(ores::database::context ctx,
     std::vector<ores::analytics::quant::service::bootstrapped_point> points;
     for (const auto& obs : obs_repo.read_as_of(ctx, output_series_id, as_of)) {
         ores::analytics::quant::service::bootstrapped_point p;
-        p.point_id = obs.point_id;
-        p.date = resolve_tenor_date(refctx, obs.point_id);
+        p.point_id = discount_point_of(obs);
+        p.date = resolve_tenor_date(refctx, p.point_id);
         p.discount_factor = std::stod(obs.value);
         points.push_back(p);
     }
@@ -179,20 +194,19 @@ void stamp_output_series(ores::database::context ctx,
     series_repo.write(ctx, s);
 }
 
-// The key an observation is written under, projected from the output series' identity
-// and the pillar's own point. Every other writer stores the key it holds -- the import
-// keeps the file's, the ingest loop keeps the tick's -- and this writer holds the two
-// facts the grammar needs instead. A series and a point the grammar cannot put back
-// together is a config-integrity error: the row would export without a key.
-std::string datum_key_for(const domain::market_data_identifier& series,
-                          const std::string& point_id) {
+// The datum an observation is written under, projected from the output series'
+// identity and the pillar's own point. Every other writer stores what it holds --
+// the import keeps the file's key, the ingest loop keeps the tick's -- and this
+// writer holds the two facts the grammar needs instead. A series and a point the
+// grammar cannot put back together is a config-integrity error: the row would
+// export without a key.
+domain::market_data_identifier datum_for(const domain::market_data_identifier& series,
+                                         const std::string& point_id) {
     const auto datum = core::oresmd_parser::with_point(series, point_id);
-    if (datum) {
-        if (const auto key = core::oresmd_projections::to_quote_key(*datum))
-            return *key;
-    }
-    throw std::invalid_argument("curve_republish_service: output series and point '" + point_id +
-                                "' name no ORE quote key");
+    if (!datum || !core::oresmd_projections::to_quote_key(*datum))
+        throw std::invalid_argument("curve_republish_service: output series and point '" +
+                                    point_id + "' name no ORE quote key");
+    return *datum;
 }
 
 // One republish's whole input and output: the config, the curve it bootstraps, and
@@ -292,10 +306,10 @@ void curve_republish_service::republish(context ctx,
     // nor an observation without a key. The identity is parsed once, not per pillar.
     const auto output_series_id =
         core::oresmd_parser::parse(domain::oresmd_uri{output_series.oresmd_uri});
-    std::vector<std::string> datum_keys;
-    datum_keys.reserve(bootstrapped.size());
+    std::vector<domain::market_data_identifier> datums;
+    datums.reserve(bootstrapped.size());
     for (const auto& point : bootstrapped)
-        datum_keys.push_back(datum_key_for(output_series_id, point.point_id));
+        datums.push_back(datum_for(output_series_id, point.point_id));
 
     stamp_output_series(ctx, config, output_series);
 
@@ -310,19 +324,24 @@ void curve_republish_service::republish(context ctx,
     repository::observation_lineage_repository lineage_repo;
     for (std::size_t i = 0; i < bootstrapped.size(); ++i) {
         const auto& point = bootstrapped[i];
+        const auto& datum = datums[i];
+        const auto datum_uri = core::oresmd_parser::to_uri(datum).value;
         domain::market_observation obs;
         obs.id = uuid_gen();
         obs.tenant_id = ctx.tenant_id();
         obs.party_id = config.party_id;
         obs.series_id = config.output_series_id;
         obs.observation_datetime = as_of;
-        obs.point_id = point.point_id;
+        // The datum's URI, not the pillar's ORE-form point: the row and the URI
+        // name the coordinate the same way, and the key below is projected from
+        // the same identifier rather than translated out of a point column.
+        obs.oresmd_uri = datum_uri;
         obs.value = std::format("{:.17g}", point.discount_factor);
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
         // The key the row is written under, kept with the row the way the import keeps
         // the file's and the ingest loop keeps the tick's, so the export emits a key
         // rather than rebuilding one from columns that no longer hold a series.
-        obs.key = datum_keys[i];
+        obs.key = core::oresmd_projections::to_quote_key(datum).value();
         observations.push_back(std::move(obs));
 
         // A rerun over the same (series, as_of, point_id) natural key must reuse the prior
@@ -332,7 +351,7 @@ void curve_republish_service::republish(context ctx,
         // prior generation's lineage row and inserts a new one"). Minting a fresh id every
         // republish bypassed that and hit the natural-key unique index instead.
         const auto existing = lineage_repo.read_latest_by_observation(
-            ctx, config.output_series_id, as_of, point.point_id);
+            ctx, config.output_series_id, as_of, datum_uri);
 
         domain::observation_lineage lin;
         lin.tenant_id = ctx.tenant_id();
@@ -340,7 +359,7 @@ void curve_republish_service::republish(context ctx,
         lin.party_id = config.party_id;
         lin.series_id = config.output_series_id;
         lin.observation_datetime = as_of;
-        lin.point_id = point.point_id;
+        lin.oresmd_uri = datum_uri;
         lin.derivation_config_id = config.id;
         lin.derivation_config_version = config.version;
         lin.source_as_of = as_of;

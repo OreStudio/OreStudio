@@ -141,7 +141,7 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> "
+        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <derivation_config_id> "
         "<derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>");
 
     menu->Insert(
@@ -149,16 +149,16 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> "
-        "<derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary> "
-        "[--version <n>]");
+        "set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> "
+        "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <point_id> "
+        "put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> "
         "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
         "<reason> <commentary>");
 
@@ -365,7 +365,7 @@ void observation_lineage_commands::process_add(std::ostream& out,
         read_token(req.change.write.observation_datetime,
                    parsed->positionals[next++],
                    "observation_datetime");
-        read_token(req.change.write.point_id, parsed->positionals[next++], "point_id");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         read_token(req.change.write.derivation_config_id,
                    parsed->positionals[next++],
                    "derivation_config_id");
@@ -428,7 +428,7 @@ void observation_lineage_commands::process_set(std::ostream& out,
         read_token(req.change.write.observation_datetime,
                    parsed->positionals[next++],
                    "observation_datetime");
-        read_token(req.change.write.point_id, parsed->positionals[next++], "point_id");
+        read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         read_token(req.change.write.derivation_config_id,
                    parsed->positionals[next++],
                    "derivation_config_id");
@@ -505,7 +505,7 @@ void observation_lineage_commands::process_put_many(std::ostream& out,
             read_token(change.write.observation_datetime,
                        parsed->positionals[next++],
                        "observation_datetime");
-            read_token(change.write.point_id, parsed->positionals[next++], "point_id");
+            read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             read_token(change.write.derivation_config_id,
                        parsed->positionals[next++],
                        "derivation_config_id");

@@ -29,9 +29,9 @@
  *    DISCOUNT / RATE / 'USD/USD-SOFR-FOMC' -- ORE's own spelling for a
  *    discount curve's points (DISCOUNT/RATE/CCY/CURVE/TENOR, the corpus
  *    writes USD-DUMMY), which is what curve_republish_service publishes
- *    per point (point_id = pillar end tenor code, value = discount
- *    factor). The row's oresmd_uri is the key without its maturity, the
- *    series the pillars' points hang off. The series starts OBSERVED and
+ *    per point (the datum URI carries the pillar's maturity, the value is
+ *    the discount factor). The series row's oresmd_uri is the key without
+ *    its maturity, the series the pillars' points hang off. The series starts OBSERVED and
  *    is claimed -- stamped IR_CURVE_BOOTSTRAP with the config's id and
  *    version -- by the republish service on its first run, which is why
  *    the seed writes the sentinel (nil config id, version 0) rather than

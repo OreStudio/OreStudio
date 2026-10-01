@@ -222,7 +222,7 @@ market_data_client::save_observations(const std::vector<domain::market_observati
         req.change.write.party_id = obs.party_id;
         req.change.write.series_id = obs.series_id;
         req.change.write.observation_datetime = obs.observation_datetime;
-        req.change.write.point_id = obs.point_id;
+        req.change.write.oresmd_uri = obs.oresmd_uri;
         req.change.write.value = obs.value;
         req.change.write.source = obs.source;
         // A save states no expectation about the row it writes, so the change

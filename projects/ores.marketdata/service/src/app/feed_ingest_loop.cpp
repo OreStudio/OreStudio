@@ -471,23 +471,18 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.observation_datetime = datetime;
         obs.value = value;
         obs.source = source;
-        // A producer that names no point takes the series type's own answer.
-        // start() fills the grammar before it subscribes, so a tick always
-        // finds it; without one the point stays empty, which is the same
-        // "no coordinate" answer an unknown type gets.
-        obs.point_id = point_id;
-        if (obs.point_id.empty() && series_key_registry_)
-            obs.point_id = series_key_registry_->default_point_for(series_type);
+        // The datum's coordinate, in the grammar's own syntax: the identity this
+        // tick resolved to, with the coordinate keys a tick that named a point
+        // added. A producer that names none gets the identity's own keys, which
+        // for a type with no coordinate is none at all.
+        obs.oresmd_uri = core::oresmd_parser::to_uri(*identity).value;
         // The key the datum is written under, kept with the row the way the import
-        // keeps the file's. A series type with no point dimension is named by the
-        // series key alone, which is why an FX rate is FX/RATE/EUR/USD and not
-        // .../SPOT; the rest carry the point, whether the producer named it or the
-        // grammar answered for it. That is the same rule the export rebuilds a key
-        // by today, so storing it changes nothing it writes and leaves it a key to
-        // emit rather than one to reconstruct.
-        obs.key = series_key_registry_ && series_key_registry_->has_point_dimension(series_type) ?
-                      ore_key + "/" + obs.point_id :
-                      ore_key;
+        // keeps the file's. A tick has no producer text to preserve, so the row
+        // takes the canonical spelling the grammar projects: the series' key plus
+        // the point the tick named, or the series' key alone for a type whose key
+        // carries no coordinate -- which is why an FX rate is FX/RATE/EUR/USD and
+        // not .../SPOT.
+        obs.key = core::oresmd_projections::to_quote_key(*identity).value_or(ore_key);
 
         repository::market_observations_repository obs_repo;
         obs_repo.write(tenant_ctx, obs);

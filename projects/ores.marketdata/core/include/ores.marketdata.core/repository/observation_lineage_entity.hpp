@@ -52,7 +52,7 @@ struct observation_lineage_entity {
     std::string observation_datetime;
 
 
-    std::string point_id = "";
+    std::string oresmd_uri = "";
 
     std::string derivation_config_id;
     int derivation_config_version = 0;

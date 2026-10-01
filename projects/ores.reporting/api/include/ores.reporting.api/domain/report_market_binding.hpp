@@ -42,9 +42,12 @@ namespace ores::reporting::domain {
  * eqcalibration, infcalibration and bondpricing.
  *
  * The role is a free string in ORE's schema and the value names a configuration
- * set built in todaysmarket.xml, which is market data and belongs to another
- * component. This table holds the binding, not the configuration it names: what
- * the run asks the market for, by role, in the order the document wrote it.
+ * set built in todaysmarket.xml, which ores.refdata owns: the story that
+ * settled the ownership found that todaysmarket.xml names sets of curves the way
+ * curveconfig.xml names curves, so the configuration is reference data and this
+ * run document merely refers to it. This table holds the binding, not the
+ * configuration it names: what the run asks the market for, by role, in the order
+ * the document wrote it.
  *
  * Each row belongs to exactly one report_definition and a definition has many
  * bindings.

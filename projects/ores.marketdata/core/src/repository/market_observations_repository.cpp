@@ -109,18 +109,18 @@ std::vector<domain::market_observation> market_observations_repository::read_as_
     const auto sid = boost::uuids::to_string(series_id);
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
 
-    // DISTINCT ON (point_id) returns exactly one row per point -- the latest at or before
+    // DISTINCT ON (oresmd_uri) returns exactly one row per point -- the latest at or before
     // as_of_datetime -- reconstructing a curve/grid snapshot from independently-ticking rows.
     // Correct whether every point shares one observation_datetime (today's synchronous
     // publish) or points have staggered timestamps (the general case).
     static const std::string sql = R"(
-        SELECT DISTINCT ON (point_id)
-            id, tenant_id, party_id, series_id, observation_datetime, point_id, value,
+        SELECT DISTINCT ON (oresmd_uri)
+            id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
             source, valid_from, valid_to
         FROM ores_marketdata_market_observations_tbl
         WHERE tenant_id = $1 AND series_id = $2 AND observation_datetime <= $3
             AND valid_to = $4
-        ORDER BY point_id, observation_datetime DESC
+        ORDER BY oresmd_uri, observation_datetime DESC
     )";
 
     const auto rows = execute_parameterized_multi_column_query(
@@ -138,7 +138,7 @@ std::vector<domain::market_observation> market_observations_repository::read_as_
         e.party_id = row[2].value_or("");
         e.series_id = row[3].value_or("");
         e.observation_datetime = row[4].value_or("");
-        e.point_id = row[5].value_or("");
+        e.oresmd_uri = row[5].value_or("");
         e.value = row[6].value_or("");
         e.source = row[7];
         e.valid_from = row[8].value_or("");
@@ -168,9 +168,9 @@ market_observations_repository::read_as_of_buckets(
 
     // Bucket boundaries and the per-bucket as-of reduction both happen in the database, in
     // one statement: generate_series() produces the (up to bucket_count) boundaries ending
-    // at latest_boundary, and the LATERAL subquery resolves each point_id to its own latest
-    // observation at or before that boundary -- a per-bucket DISTINCT ON (point_id), driven
-    // by observations_series_point_datetime_idx (tenant_id, series_id, point_id,
+    // at latest_boundary, and the LATERAL subquery resolves each oresmd_uri to its own latest
+    // observation at or before that boundary -- a per-bucket DISTINCT ON (oresmd_uri), driven
+    // by observations_series_coordinate_datetime_idx (tenant_id, series_id, oresmd_uri,
     // observation_datetime desc), so each point is a skip-scan straight to its latest row
     // per bucket rather than a sort over the whole series. bucket_ordinal lets the caller
     // regroup rows by bucket without relying on floating-point/timestamp equality.
@@ -184,17 +184,17 @@ market_observations_repository::read_as_of_buckets(
             ) WITH ORDINALITY AS t(boundary, ordinality)
         )
         SELECT b.bucket_ordinal, o.id, o.tenant_id, o.party_id, o.series_id,
-               o.observation_datetime, o.point_id, o.value, o.source, o.valid_from, o.valid_to
+               o.observation_datetime, o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
         FROM boundaries b
         CROSS JOIN LATERAL (
-            SELECT DISTINCT ON (point_id) *
+            SELECT DISTINCT ON (oresmd_uri) *
             FROM ores_marketdata_market_observations_tbl m
             WHERE m.tenant_id = $1 AND m.series_id = $2
                 AND m.observation_datetime <= b.boundary
                 AND m.valid_to = $6
-            ORDER BY point_id, observation_datetime DESC
+            ORDER BY oresmd_uri, observation_datetime DESC
         ) o
-        ORDER BY b.bucket_ordinal, o.point_id
+        ORDER BY b.bucket_ordinal, o.oresmd_uri
     )";
 
     const auto rows = execute_parameterized_multi_column_query(
@@ -219,7 +219,7 @@ market_observations_repository::read_as_of_buckets(
         e.party_id = row[3].value_or("");
         e.series_id = row[4].value_or("");
         e.observation_datetime = row[5].value_or("");
-        e.point_id = row[6].value_or("");
+        e.oresmd_uri = row[6].value_or("");
         e.value = row[7].value_or("");
         e.source = row[8];
         e.valid_from = row[9].value_or("");

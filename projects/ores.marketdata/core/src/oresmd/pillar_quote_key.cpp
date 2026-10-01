@@ -40,14 +40,28 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
     return key;
 }
 
-std::string pillar_series_uri(const pillar_quote_key& key) {
+namespace {
+
+// The grammar's own reading of the pillar's key. Both projections below start
+// here, so a key the grammar cannot name fails once, in one place.
+domain::market_data_identifier pillar_identifier(const pillar_quote_key& key) {
     const std::string datum_key =
         key.series_type + "/" + key.metric + "/" + key.qualifier + "/" + key.point;
     const auto identifier = oresmd_projections::from_ore_key(datum_key);
     if (!identifier)
-        throw std::invalid_argument("pillar_series_uri: the grammar names no series as '" +
-                                    datum_key + "'");
-    return oresmd_parser::to_series_uri(*identifier).value;
+        throw std::invalid_argument("pillar key: the grammar names no series as '" + datum_key +
+                                    "'");
+    return *identifier;
+}
+
+} // namespace
+
+std::string pillar_series_uri(const pillar_quote_key& key) {
+    return oresmd_parser::to_series_uri(pillar_identifier(key)).value;
+}
+
+std::string pillar_datum_uri(const pillar_quote_key& key) {
+    return oresmd_parser::to_uri(pillar_identifier(key)).value;
 }
 
 }

@@ -18,25 +18,27 @@
  *
  */
 -- Generic across market-data shapes (FX spot today; rates curves, vol
--- surfaces, credit spreads, equity spots, ... later) — oresmd_uri/key/point_id
+-- surfaces, credit spreads, equity spots, ... later) — oresmd_uri/key/datum_uri
 -- mirror market_observation's own identity and key columns, not anything
 -- FX-specific, so a new asset class is new dataset rows here, never a new
 -- artefact table. source_url/retrieved_at are per-row (not on the shared
 -- methodology row) so every future value, whatever its source, carries its own
 -- citation independently.
 --
--- oresmd_uri is the series the row belongs to and key is the observation's own
--- ORE key, and both are carried rather than derived: the projection from a key
--- to an identity is the C++ grammar's, and SQL has no way back to it. A seed
--- therefore states the two facts its own source names, the way the market-data
--- import does when it reads a file.
+-- oresmd_uri is the series the row belongs to, key is the observation's own ORE
+-- key, and datum_uri is the datum's oresmd URI -- the series' URI with the
+-- observation's coordinate keys left in. All three are carried rather than
+-- derived: the projection from a key to an identity is the C++ grammar's, and
+-- SQL has no way back to it. A seed therefore states the facts its own source
+-- names, the way the market-data import does when it reads a file. A datum with
+-- no coordinate of its own -- an FX spot -- names the same URI as the series.
 create table if not exists "ores_dq_market_data_observations_artefact_tbl" (
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "oresmd_uri" text not null,
     "key" text not null,
-    "point_id" text not null,
+    "datum_uri" text not null,
     "observation_date" date not null,
     "value" numeric not null,
     "source" text not null,

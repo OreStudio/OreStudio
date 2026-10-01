@@ -55,7 +55,8 @@ std::string date_part(std::chrono::system_clock::time_point tp) {
 
 // Resolves the initial price from a real market_observation when cfg.price_source is "vintage",
 // mirroring the deleted feed_controller::vintage_data_available() -- the config's own series
-// (from its ore_key), keyed on (source=vintage_source, point_id="SPOT", date=vintage_date).
+// (from its ore_key), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
+// An FX spot carries no coordinate, so its datum URI is its series URI.
 //
 // @throws vintage_data_missing_error if no matching observation is found.
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
@@ -63,7 +64,7 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
                                      const std::string& caller_bearer_token) {
     const auto missing_message = [&] {
         return "No vintage data found for source=" + cfg.vintage_source +
-               ", date=" + cfg.vintage_date + ", point_id=SPOT.";
+               ", date=" + cfg.vintage_date + ", datum=" + cfg.ore_key + ".";
     };
 
     // The series is found by the identity its key projects to: the projection the
@@ -73,6 +74,11 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
     if (!identifier)
         throw vintage_data_missing_error("oresmd names no series for ORE key '" + cfg.ore_key +
                                          "'.");
+
+    // The row the vintage is read from is the datum the series URI names, and for
+    // an FX spot that is the series URI itself: the class's key carries no
+    // coordinate of its own.
+    const auto datum_uri = ores::marketdata::core::oresmd_parser::to_uri(*identifier).value;
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -98,7 +104,7 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
                                              "': " + observations.error());
         }
         for (const auto& obs : *observations) {
-            if (obs.source == cfg.vintage_source && obs.point_id == "SPOT" &&
+            if (obs.source == cfg.vintage_source && obs.oresmd_uri == datum_uri &&
                 date_part(obs.observation_datetime) == cfg.vintage_date) {
                 try {
                     return std::stod(obs.value);

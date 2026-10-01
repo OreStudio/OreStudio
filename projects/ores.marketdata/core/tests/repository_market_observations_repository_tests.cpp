@@ -105,15 +105,26 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
 
 namespace {
 
+// The observation's own URI: one series, one maturity per row. The test only
+// needs the rows to differ, so the tag is the maturity.
+std::string datum_uri(const std::string& maturity) {
+    // The grammar lower-cases a URI's coordinate values, so the helper does too:
+    // a caller may spell the maturity either way and get the canonical string.
+    std::string lower = maturity;
+    for (auto& c : lower)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return "oresmd://ir/usd?type=quote&quote=ir_swap&metric=rate&maturity=" + lower;
+}
+
 ores::marketdata::domain::market_observation
 make_observation(ores::utility::generation::generation_context& ctx,
                  const boost::uuids::uuid& series_id,
-                 const std::string& point_id,
+                 const std::string& maturity,
                  std::chrono::system_clock::time_point observation_datetime,
                  double value) {
     auto o = generate_synthetic_market_observation(ctx);
     o.series_id = series_id;
-    o.point_id = point_id;
+    o.oresmd_uri = datum_uri(maturity);
     o.observation_datetime = observation_datetime;
     o.value = std::to_string(value);
     return o;
@@ -167,41 +178,41 @@ TEST_CASE("read_as_of_staggered_timestamps", tags) {
     // not synchronised (the general case any curve viewer must handle).
     obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
     obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t1, 0.0401));
-    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t2, 0.0402));
-    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0410));
-    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-2Y", t1, 0.0380));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "spot-1m", t2, 0.0402));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "spot-3m", t0, 0.0410));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "spot-2y", t1, 0.0380));
 
-    // As-of t0 + 1s: only SPOT-1M@t0 and SPOT-3M@t0 have ticked; SPOT-2Y hasn't started.
+    // As-of t0 + 1s: only spot-1m@t0 and spot-3m@t0 have ticked; spot-2y hasn't started.
     {
         auto snap = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::seconds(1));
         BOOST_LOG_SEV(lg, debug) << "As-of t0+1s: " << snap;
         CHECK(snap.size() == 2);
         for (const auto& o : snap) {
-            if (o.point_id == "SPOT-1M")
+            if (o.oresmd_uri == datum_uri("spot-1m"))
                 CHECK(o.value == "0.040000");
-            else if (o.point_id == "SPOT-3M")
+            else if (o.oresmd_uri == datum_uri("spot-3m"))
                 CHECK(o.value == "0.041000");
             else
-                FAIL("Unexpected point_id at as-of t0+1s: " << o.point_id);
+                FAIL("Unexpected datum at as-of t0+1s: " << o.oresmd_uri);
         }
     }
 
-    // As-of t1 + 1s: SPOT-1M has advanced to its t1 tick, SPOT-3M is still stale at t0,
-    // SPOT-2Y has now started ticking -- exactly the "one row per point_id, latest
-    // observation_datetime <= as_of" semantics, per point independently.
+    // As-of t1 + 1s: spot-1m has advanced to its t1 tick, spot-3m is still stale at t0,
+    // spot-2y has now started ticking -- exactly the "one row per datum, latest
+    // observation_datetime <= as_of" semantics, per coordinate independently.
     {
         auto snap = obs_repo.read_as_of(h.context(), s.id, t1 + std::chrono::seconds(1));
         BOOST_LOG_SEV(lg, debug) << "As-of t1+1s: " << snap;
         CHECK(snap.size() == 3);
         for (const auto& o : snap) {
-            if (o.point_id == "SPOT-1M")
+            if (o.oresmd_uri == datum_uri("spot-1m"))
                 CHECK(o.value == "0.040100");
-            else if (o.point_id == "SPOT-3M")
+            else if (o.oresmd_uri == datum_uri("spot-3m"))
                 CHECK(o.value == "0.041000");
-            else if (o.point_id == "SPOT-2Y")
+            else if (o.oresmd_uri == datum_uri("spot-2y"))
                 CHECK(o.value == "0.038000");
             else
-                FAIL("Unexpected point_id at as-of t1+1s: " << o.point_id);
+                FAIL("Unexpected datum at as-of t1+1s: " << o.oresmd_uri);
         }
     }
 
@@ -229,7 +240,7 @@ TEST_CASE("read_as_of_buckets_curve_evolution", tags) {
     market_observations_repository obs_repo;
     obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
     obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t1, 0.0401));
-    obs_repo.write(h.context(), make_observation(ctx, s.id, "SPOT-1M", t2, 0.0402));
+    obs_repo.write(h.context(), make_observation(ctx, s.id, "spot-1m", t2, 0.0402));
 
     // Curve-evolution view: one snapshot every 30 minutes, 3 buckets ending just after t2 --
     // bucket generation and the per-bucket as-of reduction both happen in the database.

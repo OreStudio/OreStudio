@@ -129,7 +129,7 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
 
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
-    CHECK(observations.front().point_id == "SPOT");
+    CHECK(observations.front().oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
 }
 
 TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {

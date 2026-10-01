@@ -50,7 +50,7 @@ domain::market_observation market_observation_mapper::map(const market_observati
     r.observation_datetime = timestamp_to_timepoint(std::string_view{v.observation_datetime});
 
 
-    r.point_id = v.point_id;
+    r.oresmd_uri = v.oresmd_uri;
 
     r.key = v.key.value_or("");
     r.value = v.value;
@@ -73,7 +73,7 @@ market_observation_entity market_observation_mapper::map(const domain::market_ob
     r.observation_datetime = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime);
 
 
-    r.point_id = v.point_id;
+    r.oresmd_uri = v.oresmd_uri;
 
     r.key = v.key.empty() ? std::nullopt : std::optional(v.key);
     r.value = v.value;

@@ -35,11 +35,11 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief One observed value for a (series, observation_datetime, point_id) triple; TimescaleDB
+ * @brief One observed value for a (series, observation_datetime, coordinate) triple; TimescaleDB
  * hypertable partitioned by observation_datetime.
  *
  * A single market data observation: the value of a series at a given
- * observation_datetime and point_id (tenor/surface coordinate).
+ * observation_datetime and oresmd_uri (the datum's coordinate).
  * observation_datetime is the financial valid-time (UTC); valid_from/valid_to
  * is the transaction time. Corrections replace the previous value via the
  * soft-update trigger.
@@ -81,15 +81,17 @@ struct market_observation final {
     std::chrono::system_clock::time_point observation_datetime;
 
     /**
-     * @brief Tenor or compound surface identifier (e.g. 1Y, 5Y/2Y/ATM, 0.03/10Y/2Y).
+     * @brief The datum's canonical oresmd URI: the series' URI plus the coordinate keys of this
+     * observation, e.g.
+     * =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y=.
      *
-     * Every observation carries one. A series whose keys have no coordinate of their own has a
-     * single point and names it explicitly -- SPOT for an FX rate, an equity or a commodity price,
-     * the empty string for a series with no coordinate at all, such as a recovery rate. The value
-     * comes from series_key_registry::default_point_for(), so it is a property of the series type
-     * rather than something each producer decides.
+     * It is the same syntax the series' own oresmd_uri uses, so a reader needs no translation
+     * between the row and the URI: the coordinate keys the series does not carry are the ones this
+     * row adds. The ORE-form point the registry derives (1Y, 5y,2y,atm) is a spelling of the key,
+     * not of the URI, and is read from the decomposition where a key is projected rather than
+     * stored here.
      */
-    std::string point_id;
+    std::string oresmd_uri;
 
     /**
      * @brief The instrument key exactly as the producer wrote it, when the producer wrote one.

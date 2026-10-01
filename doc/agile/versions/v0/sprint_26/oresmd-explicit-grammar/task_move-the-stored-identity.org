@@ -99,7 +99,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Whole-corpus import walk | Green: 482 assertions in 1 case | =ores.marketdata.core.tests "[corpus-full]"= | 61f544d091 |
+| Marketdata suites | 4 of 4 green | =ctest -R 'ores.marketdata'= | 61f544d091 |
+| Whole tree | 89 of 89 ctest suites green | =ctest -j 4= | 61f544d091 |
+| Database rebuilt from this tree | Schema 0.0.25, built at the branch head | =compass db recreate -y -k= | 61f544d091 |
+| Observations the walk stored | 1,119,661 rows, 2,977 series | =select count(*)= on the two tables | 61f544d091 |
 
 * Notes
 
@@ -127,3 +131,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The observation's coordinate is the datum's canonical oresmd URI, and the
+whole-corpus import stores every market payload.
+
+Delivered:
+
+- =market_observations= and =observation_lineages= carry =oresmd_uri= instead of
+  =point_id=. The row and the URI name the coordinate in the same syntax: the
+  datum URI is the series URI with the observation's coordinate keys left in, so
+  a reader needs no translation between them.
+- The import writes it from the identifier it already builds. The feed ingress
+  and the curve republish write the same projection, and the curve pillar reader
+  finds a pillar by the datum URI rather than by decomposing the key.
+- The two synthetic feeds and the DQ publish bridge move with it: the DQ artefact
+  carries the datum URI, and the bridge copies it into the observation.
+- The registry's ORE-form =point_id= is untouched and is now derived where a key
+  is projected. The curve republish reads the point back off the datum URI.
+- The migration renames the column and reports the two populations an operator
+  needs: rows still spelling an ORE point, which the next import rewrites, and
+  rows with no producer key, which no import can re-derive. SQL cannot call the
+  grammar, so the re-derivation itself is the import -- which is what the corpus
+  walk below measures.
+- The whole-corpus walk is promoted out of the hidden =[.corpus-full]= tag. It
+  takes about twenty minutes, and it is the acceptance the story was written for,
+  so it runs by default and the scheduled job carries it.
+
+What is verified:
+
+- The whole-corpus import walk: 482 assertions in 1 case, green. It used to fail
+  on its 32nd file with a duplicate observation key; it now imports every market
+  payload and reads the values back.
+- The four marketdata suites, and all 89 ctest suites, green.
+- The database was rebuilt from this tree (=compass db recreate -y -k=) before the
+  walk, so the schema the walk wrote into is the one this branch generates.
+
+What is not done, recorded rather than glossed:
+
+- =metric= is still supplied at projection time for =type=quote=, as the previous
+  unit recorded; credit's =BASE_CORRELATION= has no =metric= enum member.
+- The migration does not rewrite data. A database built before this change keeps
+  the old ORE-form point in the renamed column until the corpus is re-imported,
+  and the migration's report says how many rows that is. The house style for
+  schema changes is recreation, and this follows it.
+

@@ -101,11 +101,11 @@ struct observation_lineage final {
     std::chrono::system_clock::time_point observation_datetime;
 
     /**
-     * @brief Tenor or compound surface identifier, matching the market_observation row's own
-     * point_id. Both are not null; the empty string is this column's default, and the only writer
+     * @brief The datum's canonical oresmd URI, matching the market_observation row's own
+     * oresmd_uri. Both are not null; the empty string is this column's default, and the only writer
      * in the tree sets a real pillar.
      */
-    std::string point_id = "";
+    std::string oresmd_uri = "";
 
     /**
      * @brief The derivation config (soft reference; table depends on the owning

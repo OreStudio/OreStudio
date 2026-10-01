@@ -86,7 +86,7 @@ domain::observation_lineage to_domain(const messaging::observation_lineage_write
     v.party_id = write.party_id;
     v.series_id = write.series_id;
     v.observation_datetime = write.observation_datetime;
-    v.point_id = write.point_id;
+    v.oresmd_uri = write.oresmd_uri;
     v.derivation_config_id = write.derivation_config_id;
     v.derivation_config_version = write.derivation_config_version;
     v.source_as_of = write.source_as_of;

@@ -107,12 +107,12 @@ begin
 
     for r in
         select
-            dq.oresmd_uri, dq.key, dq.point_id,
+            dq.oresmd_uri, dq.key, dq.datum_uri,
             dq.observation_date, dq.value, dq.source
         from ores_dq_market_data_observations_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
-        order by dq.oresmd_uri, dq.point_id
+        order by dq.oresmd_uri, dq.datum_uri
     loop
         -- The asset class and the subclass a series joins are read off the identity's
         -- own authority, which is the one part of an oresmd URI every class shares:
@@ -188,7 +188,7 @@ begin
               and existing.party_id = v_target_party_id
               and existing.series_id = v_series_id
               and existing.observation_datetime = r.observation_date::timestamptz
-              and existing.point_id = r.point_id
+              and existing.oresmd_uri = r.datum_uri
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
         ) into v_exists;
 
@@ -198,11 +198,12 @@ begin
         end if;
 
         insert into ores_marketdata_market_observations_tbl (
-            id, tenant_id, party_id, series_id, observation_datetime, point_id, key, value, source,
+            id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, key, value,
+            source,
             valid_from, valid_to
         ) values (
             gen_random_uuid(), p_target_tenant_id, v_target_party_id, v_series_id,
-            r.observation_date::timestamptz, r.point_id, r.key, r.value::text, r.source,
+            r.observation_date::timestamptz, r.datum_uri, r.key, r.value::text, r.source,
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 

@@ -25,7 +25,7 @@
  * Market Observation Table
  *
  * A single market data observation: the value of a series at a given
- * observation_datetime and point_id (tenor/surface coordinate).
+ * observation_datetime and oresmd_uri (the datum's coordinate).
  * observation_datetime is the financial valid-time (UTC); valid_from/valid_to
  * is the transaction time. Corrections replace the previous value via the
  * soft-update trigger.
@@ -44,7 +44,7 @@ create table if not exists "ores_marketdata_market_observations_tbl" (
     "party_id" uuid not null,
     "series_id" uuid not null,
     "observation_datetime" timestamp with time zone not null,
-    "point_id" text not null,
+    "oresmd_uri" text not null,
     "key" text null,
     "value" text not null,
     "source" text null,
@@ -59,7 +59,7 @@ create table if not exists "ores_marketdata_market_observations_tbl" (
 
 
 create unique index if not exists market_observations_observations_current_uniq_idx
-on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, series_id, observation_datetime, point_id)
+on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, series_id, observation_datetime, oresmd_uri)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists market_observations_observations_series_datetime_idx
@@ -72,8 +72,8 @@ create index if not exists market_observations_observations_source_idx
 on "ores_marketdata_market_observations_tbl" (tenant_id, party_id, source, observation_datetime desc)
 where source is not null;
 
-create index if not exists market_observations_observations_series_point_datetime_idx
-on "ores_marketdata_market_observations_tbl" (tenant_id, series_id, point_id, observation_datetime desc);
+create index if not exists market_observations_observations_series_coordinate_datetime_idx
+on "ores_marketdata_market_observations_tbl" (tenant_id, series_id, oresmd_uri, observation_datetime desc);
 
 create or replace function ores_marketdata_market_observations_insert_fn()
 returns trigger as $$
@@ -85,7 +85,7 @@ begin
     where tenant_id = new.tenant_id
       and series_id = new.series_id
       and observation_datetime = new.observation_datetime
-      and point_id = new.point_id
+      and oresmd_uri = new.oresmd_uri
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < current_timestamp;
 
@@ -107,7 +107,7 @@ begin
     where tenant_id = old.tenant_id
       and series_id = old.series_id
       and observation_datetime = old.observation_datetime
-      and point_id = old.point_id
+      and oresmd_uri = old.oresmd_uri
       and valid_to = ores_utility_infinity_timestamp_fn();
     return null;
 end;

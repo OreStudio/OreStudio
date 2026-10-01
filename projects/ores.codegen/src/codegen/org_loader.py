@@ -5048,6 +5048,15 @@ _SENTINEL_VALUES = {
     "std::uint64_t": "0",
     "std::size_t": "0",
     "double": "0",
+    # A decimal has no absent form, so it needs a digit, and it cannot be 0: a
+    # write constraint is often a strict inequality -- trading's notional is
+    # `> 0` -- and a zero is refused by the service rather than carried to it.
+    # One is the smallest value that satisfies the strict lower bounds the
+    # models state. Until this entry existed the type was unmapped and fell
+    # through to the unknown-type fallback `__none__`, which the decimal parser
+    # rejects, so every generated add, set and put-many for an entity with a
+    # required decimal aborted at its own client and checked nothing.
+    "ores::utility::decimal::decimal": "1",
     "std::chrono::system_clock::time_point": "1970-01-01T00:00:00Z",
     "std::chrono::year_month_day": "1970-01-01",
     "boost::asio::ip::address": "0.0.0.0",

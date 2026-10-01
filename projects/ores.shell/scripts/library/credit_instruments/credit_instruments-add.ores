@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/credit_instruments/credit_instrument.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-credit_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __none__ __none__ __none__ - - __none__ - - system.new_record generated_script
+credit_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __none__ __none__ __none__ - - __none__ - - system.new_record generated_script

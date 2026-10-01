@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :implement-credentials-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rescue-access-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -35,11 +35,11 @@ reset and no table holds a token.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The screen, the two write routes and the wire write are landed on the branch. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then merge.                    |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -118,3 +118,48 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Built 2026-10-01.
+
+=Rescue access= is a route behind the signed-in shell. It reads the tenant's
+accounts, one account and that account's login record through the routes the
+group already landed, and it writes through two routes this task adds:
+=POST /api/accounts/:accountId/lock= and =POST /api/accounts/:accountId/unlock=,
+each forwarding to the subject that already existed. The screen is the accepted
+prototype's variant B.
+
+The prototype's open question is answered and recorded on the parent story: the
+administrator-typed password fallback does not ship. The screen draws no password
+field, =iam.v1.accounts.reset-password= keeps no browser caller, and
+[[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] and its wireframe are
+corrected to match.
+
+The account list has no page yet, so =/rescue= with no username picks a colleague
+out of the tenant's accounts and links to =/rescue?username=<username>=. The
+accepted variant does not keep the roster in view, so a control returns to the
+picker. Every panel the server cannot serve says so: the recovery link is drawn
+unavailable with its reason, and the lock panel states that a lock leaves open
+sessions open.
+
+Verification. =npm run typecheck= passes across the three packages, Prettier is
+clean, and the suites are green: bff 102 tests in 21 files, web 192 in 18,
+wire-protocol 51 in 7. Six of the web tests render the loaded screen from a
+fixture and assert the state it names, the recovery link being unavailable with
+its reason, the absence of any password field, and the gap list.
+
+The write path was driven end to end against the running fleet on port 21803:
+a fresh sign-in, =iam::accounts:lock= through the new route, the login record
+then reading =locked: true=, =unlock= through the new route, the record reading
+=locked: false=, and a fresh sign-in answering 200 again. The lock also refused a
+fresh sign-in with 401 while it was in force, which is what proves the write
+reached the server's own state rather than the route's copy of it.
+
+The per-account refusal is covered by a route test rather than by the fleet:
+nothing in the environment holds a second person account, and locking the only
+one leaves nobody who can unlock it.
+
+*What is still missing.* The screen has no test that drives the browser, because
+the package has no DOM harness; the panels are rendered from a fixture instead.
+And the roles the screen assumes are worth checking before a tenant administrator
+uses it: the reads need =iam::accounts:read= and =iam::login_info:read=, and the
+writes need =iam::accounts:lock= and =iam::accounts:unlock=.

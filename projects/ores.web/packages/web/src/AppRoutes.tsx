@@ -33,6 +33,7 @@ import { AppShell } from './components/AppShell.js';
 import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
+import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
@@ -201,6 +202,18 @@ export function AppRoutes({
                 path="/security"
                 element={signedIn(gate.version, session, onSignOut, (view) => (
                     <SecurityPage session={view} />
+                ))}
+            />
+            {/*
+             * The administrator's half of the credentials topic. It is a
+             * screen of its own rather than a panel beside Security, because
+             * it acts on somebody else's account and Security is the member's
+             * own.
+             */}
+            <Route
+                path="/rescue"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <RescuePage />
                 ))}
             />
             <Route

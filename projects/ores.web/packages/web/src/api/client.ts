@@ -228,6 +228,20 @@ export const api = {
         return answer.sessions;
     },
 
+    /**
+     * Locks or unlocks one account.
+     *
+     * The administrator acts on the account the screen is showing, so the id
+     * travels and the server's answer is a refusal the screen renders rather
+     * than a list of per-account results it would have to collapse itself.
+     */
+    async setAccountLocked(accountId: string, locked: boolean): Promise<void> {
+        await request(
+            `/api/accounts/${encodeURIComponent(accountId)}/${locked ? 'lock' : 'unlock'}`,
+            { method: 'POST', headers: JSON_HEADERS },
+        );
+    },
+
     async passwordPolicy(): Promise<PasswordPolicy> {
         return passwordPolicySchema.parse(await request('/api/password-policy', { method: 'GET' }));
     },

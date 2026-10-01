@@ -112,39 +112,59 @@ function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
+/** Whether a profile creates a tenant whose code the deployment already holds. */
+export function isProfileTaken(
+    profile: SeedProfileChoice,
+    takenCodes: ReadonlySet<string>,
+): boolean {
+    return profile.tenant.code !== '' && takenCodes.has(profile.tenant.code);
+}
+
 /**
  * The starting points, as cards.
  *
  * Each card states what the server said about its profile — its bullets, how
  * many settings it declares and how many steps it orders — so the screen
  * describes the deployment's rows rather than a shape written here.
+ *
+ * A profile that names its own tenant code creates that tenant, and a code is
+ * unique, so a card whose tenant already exists is shown but cannot be chosen.
+ * The server refuses the run either way; the card says why before anybody
+ * fills in the form.
  */
 export function ProfileCards({
     profiles,
     selected,
     onSelect,
+    takenCodes = new Set<string>(),
 }: {
     readonly profiles: readonly SeedProfileChoice[];
     readonly selected: string | undefined;
     readonly onSelect: (profile: SeedProfileChoice) => void;
+    /** The tenant codes the deployment already holds. */
+    readonly takenCodes?: ReadonlySet<string>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
         <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
             {profiles.map((profile) => {
                 const logo = profileLogo(profile.code);
+                const taken = isProfileTaken(profile, takenCodes);
                 return (
                     <button
                         key={profile.code}
                         type="button"
                         role="radio"
                         aria-checked={selected === profile.code}
+                        disabled={taken}
                         onClick={() => onSelect(profile)}
                         className={cx(
                             'card p-4 text-left transition-colors',
-                            selected === profile.code
-                                ? 'border-accent ring-3 ring-accent/20'
-                                : 'hover:border-line-strong',
+                            taken
+                                ? 'cursor-not-allowed opacity-50'
+                                : selected === profile.code
+                                  ? 'border-accent ring-3 ring-accent/20'
+                                  : 'hover:border-line-strong',
                         )}
                     >
                         {logo !== undefined && (
@@ -175,6 +195,13 @@ export function ProfileCards({
                                 steps: profile.steps.length,
                             })}
                         </p>
+                        {taken && (
+                            <p className="mt-2 text-xs text-warn">
+                                {t('journey.profile.exists', {
+                                    name: profile.tenant.name || profile.tenant.code,
+                                })}
+                            </p>
+                        )}
                     </button>
                 );
             })}

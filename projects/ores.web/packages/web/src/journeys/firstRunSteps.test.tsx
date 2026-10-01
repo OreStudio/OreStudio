@@ -69,6 +69,7 @@ function fakeServer(): JourneyServer {
         signOut: vi.fn(async () => undefined),
         passwordPolicy: vi.fn(async () => policy),
         seedProfiles: vi.fn(async () => [profile]),
+        tenantCodes: vi.fn(async () => []),
         provision: vi.fn(async () => ({
             success: true,
             message: '',

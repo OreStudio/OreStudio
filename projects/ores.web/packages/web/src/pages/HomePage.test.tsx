@@ -94,4 +94,15 @@ describe('a mode with no journeys yet', () => {
     it('offers no area of another mode', () => {
         expect(landing('application')).not.toContain('Tenants');
     });
+
+    /*
+     * Only system administration creates a tenant, and this card is what every
+     * other mode lands on, so it must not offer a journey the server refuses.
+     */
+    it('does not offer a new tenant', () => {
+        const html = landing('tenant-administration');
+
+        expect(html).not.toContain('href="/tenants/new"');
+        expect(html).toContain('href="/parties/new"');
+    });
 });

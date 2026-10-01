@@ -34,7 +34,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { Button, Notice } from '../ui/Primitives.js';
-import { RunProgress, ProfileCards, TenantForm, TenantSummary } from './parts.js';
+import { isProfileTaken, RunProgress, ProfileCards, TenantForm, TenantSummary } from './parts.js';
 import type { JourneyStep } from './runtime.js';
 import type { JourneyServer } from './server.js';
 import { provisionRequest, tenantPrincipal, type NewTenant } from './state.js';
@@ -51,6 +51,11 @@ export interface NewTenantStepsInput {
     readonly creatingPassword: string;
     /** Signs the creating administrator out, and into the tenant when asked. */
     readonly onHandOff: (continueAsAdmin: boolean) => Promise<void>;
+    /**
+     * The tenant codes the deployment already holds. A first run holds none,
+     * so it passes nothing.
+     */
+    readonly takenCodes?: ReadonlySet<string>;
 }
 
 /**
@@ -126,6 +131,7 @@ function HandOff({
 
 export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep<ReactNode>[] {
     const { t, server, policy, profiles, state, creatingPassword } = input;
+    const takenCodes = input.takenCodes ?? new Set<string>();
     const profile = state.profile;
     const details = state.details;
 
@@ -146,9 +152,13 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
                     profiles={profiles}
                     selected={profile?.code}
                     onSelect={state.chooseProfile}
+                    takenCodes={takenCodes}
                 />
             ),
-            next: { label: t('common.continue'), enabled: profile !== undefined },
+            next: {
+                label: t('common.continue'),
+                enabled: profile !== undefined && !isProfileTaken(profile, takenCodes),
+            },
         },
         {
             id: 'details',

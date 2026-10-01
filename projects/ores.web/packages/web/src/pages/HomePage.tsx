@@ -158,12 +158,11 @@ function SessionCard({
                 <Detail label={t('home.party')} value={partyName} />
             </dl>
             {/*
-             * The ways into the journeys a signed-in person runs. A tenant is
-             * added from here until the Tenants page is its permanent home, and
-             * a party until the Parties page is.
+             * A party is added from here until the Parties page is its home. A
+             * tenant is not: the Tenants area of system administration is where
+             * one is created, and this card is shown to sessions that cannot.
              */}
             <div className="mt-6 flex flex-wrap gap-3">
-                <LinkButton to="/tenants/new">{t('home.newTenant')}</LinkButton>
                 <LinkButton to="/parties/new" variant="secondary">
                     {t('home.newParty')}
                 </LinkButton>

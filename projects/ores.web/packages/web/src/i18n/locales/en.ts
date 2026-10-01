@@ -353,7 +353,6 @@ export const en: SourceCatalogue = {
         email: 'Email',
         tenant: 'Tenant',
         party: 'Party',
-        newTenant: 'New tenant',
         newParty: 'New party',
     },
 
@@ -564,6 +563,7 @@ export const en: SourceCatalogue = {
             title: 'Choose a starting point',
             lead: 'A starting point is a profile the server holds. It states the settings, the steps and the tenant it creates.',
             counts: '{settings} settings · {steps} steps',
+            exists: '{name} already exists, so this starting point cannot create it again.',
         },
 
         details: {

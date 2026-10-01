@@ -125,6 +125,8 @@ thing the implementation still has to decide.
 
 * References
 
+- [[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]] — the contract the modes are delivered
+  through, which is deliberately blind to how a person comes to hold one.
 - [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]] — the modes, and the menu each mode shows.
 - [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] — the other journey that needs an approval to exist.
 

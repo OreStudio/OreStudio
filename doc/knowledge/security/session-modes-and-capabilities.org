@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 37D5E28C-A83F-4EDC-891B-4F6F23B2BB42
+:END:
+#+title: Session modes and capabilities
+#+description: The target state for how the browser learns which mode a session runs in and what it may see: the mode is computed by the server and delivered with the session, and the menu's authority comes from the permissions the server already answers.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:iam:ux:modes:protocol:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+* Summary
+
+The shell shows one of four modes, and which one is a fact about the session,
+not a choice: a super administrator works in the system tenant's context, a
+tenant administrator in a tenant's, and a party user in a party's. So the server
+computes the mode and delivers it with the session, and the browser never infers
+it.
+
+The menu is then built from two different things, and keeping them apart is what
+stops the shell having to be rewritten when privileged access changes. The
+*server* owns authority: what this person may do, answered as the permission
+codes it already answers. The *client* owns structure: which area and which card
+a journey lives in. Elevation, roles and time windows change the first and
+nothing of the second.
+
+* Detail
+
+** The four modes
+
+| Mode | The context | Who is in it |
+|------+-------------+--------------|
+| System administration | The system tenant | An account of the deployment |
+| Tenant administration | A tenant | An account of the tenant that holds its administrative role |
+| Application | A tenant and a party | Any account working in a party |
+| — | — | The two application modes are not two modes on the server: the difference between a privileged and a regular party user is *permissions*, not context |
+
+That last row matters. The shell prototype distinguishes a privileged party user
+from a regular one because their menus differ, and that difference is
+capability, not mode. So the protocol carries three contexts and the permission
+set does the rest.
+
+** Where the mode comes from
+
+The session is established at sign-in and the whole client reads from it. The
+mode is one more thing the server states about it, because the server is the
+only party that knows which tenant the account belongs to, whether it is the
+system tenant's, and which party the session is acting for.
+
+It is also the only version that stays true under privileged access. Whether a
+person is a tenant administrator because their account is one, because a role
+was assigned to them, or because they hold a time-boxed elevation, the *answer*
+is the same and the client does not care.
+
+** Where the menu's authority comes from
+
+The menu says what a person may do, so it is an authorisation decision and the
+client does not make it. It does not need to: the permissions are already
+modelled and already answered.
+
+| What | Subject | Today |
+|------+---------+-------|
+| The roles an account holds | =iam.v1.roles.by-account= | exists, HTTP-routed |
+| The effective permissions of an account | =iam.v1.roles.permissions-by-account= | exists, HTTP-routed, answers =permission_codes= |
+| The permissions a role grants | =iam.v1.roles.permissions= | exists, HTTP-routed |
+
+Permission codes follow =component::resource:action=, which is what makes them
+usable as the menu's authority: a journey declares the permission it needs, and
+the client shows the journey when the session holds it. No new taxonomy is
+introduced, and a journey added later needs no protocol change.
+
+The split, stated once:
+
+- *The server answers authority.* It does not answer "show the People area"; it
+  answers the permission codes the account holds. A menu the server dictated
+  would have to be changed every time a journey moved.
+- *The client answers structure.* It knows that the journey *See who has access*
+  lives under *People* and needs a named permission. That is presentation, and
+  it is the client's business.
+
+** The protocol change
+
+| Field or subject | Today | The change |
+|------------------+-------+------------|
+| The session view | =session=, =party_id=, =visible_party_ids=, =username= | Gains the mode, and the tenant and party the session is acting in, stated rather than inferred |
+| The login answer | The session view above | Carries the same, so the shell can draw its first frame without a second call |
+| Effective permissions | =iam.v1.roles.permissions-by-account=, keyed by =account_id= | Needs a caller's-own-account form, or a stated rule that the caller may ask for their own |
+| The BFF | =/api/session= | Grows a route that answers the mode and the permission codes, so the browser still names no subject |
+
+Two things to confirm rather than assume, and both are small: what permission
+=iam.v1.roles.permissions-by-account= demands of its caller, and whether a
+member may call it for their own account or whether a self form is needed.
+
+** What does not change
+
+- The four modes, the areas, and the cards. They are design, and they are
+  settled.
+- The permission codes. The menu consumes them; it does not extend them.
+- The party context. =select-party=, =set-default-party= and =switch-party=
+  already exist, so "which party am I acting for" is an established thing.
+- The role model, the account-role junction, and the role-permission table.
+
+Which is the point of writing this down: the shell can be implemented against
+this contract now, and the security journey fills in *how* the server answers
+without the shell moving.
+
+** What this deliberately does not settle
+
+*How a person comes to hold a privileged mode.* Whether that is elevation on
+their own account or a separate checked-out account, the approvals behind it,
+the time window, and what a reviewer sees afterwards — all of that is captured
+at [[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][Privileged access needs a
+recorded break-glass process]], and this contract is deliberately blind to it.
+
+*What a journey does when it is present but not permitted.* The menu can hide it,
+and the prototype draws unbuilt areas rather than unpermitted ones. Whether a
+deployment can switch a journey off for everybody, as against a person not
+holding its permission, is a separate question and no document answers it.
+
+*See also* [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell
+prototype]] for the modes as drawn, and
+[[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] for the journey
+that reads what this contract delivers.
+
+* See also
+
+- [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]] — the four modes, and the menu each shows.
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — the journey that reads the roles and permissions this contract delivers.
+- [[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][Privileged access needs a recorded break-glass process]] — the work this contract is deliberately blind to.
+- [[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]] — the vocabulary the modes and their cards rest on.

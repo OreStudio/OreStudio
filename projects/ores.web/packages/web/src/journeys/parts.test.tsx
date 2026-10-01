@@ -214,7 +214,8 @@ describe('the starting points', () => {
         );
 
         expect(html.match(/disabled=""/g)).toHaveLength(1);
-        expect(html).toContain('Acme Corporation already exists');
+        expect(html).toContain('✓');
+        expect(html).toContain('Installed');
     });
 
     it('leaves every starting point open when no tenant exists', () => {

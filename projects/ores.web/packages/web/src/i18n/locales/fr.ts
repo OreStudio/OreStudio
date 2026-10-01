@@ -565,7 +565,7 @@ const fr: SourceCatalogue = {
             title: 'Choisir un point de départ',
             lead: "Un point de départ est un profil détenu par le serveur. Il indique les paramètres, les étapes et le locataire qu'il crée.",
             counts: '{settings} paramètres · {steps} étapes',
-            exists: '{name} existe déjà, ce point de départ ne peut donc pas le créer à nouveau.',
+            installed: 'Installé',
         },
 
         details: {

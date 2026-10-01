@@ -567,7 +567,7 @@ const pt: SourceCatalogue = {
             title: 'Escolher um ponto de partida',
             lead: 'Um ponto de partida é um perfil que o servidor guarda. Indica as definições, os passos e o inquilino que cria.',
             counts: '{settings} definições · {steps} passos',
-            exists: '{name} já existe, por isso este ponto de partida não o pode criar de novo.',
+            installed: 'Instalado',
         },
 
         details: {

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 126CA54D-0808-55D9-A1E7-81C46EC66983
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the lei_entity_summary commands from the shell?
+#+description: Every command the lei_entity_summary submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:lei_entity_summary:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =lei_entity_summary=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =get-lei-entities-summary=
+:PROPERTIES:
+:ID: 3C7FCA83-B074-5CAD-8060-78335ED8A423
+:END:
+
+Sends =get_lei_entities_summary_request= and prints =get_lei_entities_summary_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+lei_entity_summary get-lei-entities-summary [--country_filter <v>] [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =dq.v1.lei-entities.summary=.
+
+#+name: lei_entity_summary-get-lei-entities-summary
+#+begin_src ores-shell :tangle lei_entity_summary-get-lei-entities-summary.ores :exports none
+lei_entity_summary get-lei-entities-summary
+#+end_src
+
+** =search-lei-entities=
+:PROPERTIES:
+:ID: 01B44187-38AC-5C16-A359-843A16EB68FD
+:END:
+
+Sends =search_lei_entities_request= and prints =search_lei_entities_response=, so the shape is the protocol's and the meaning is the service's. It reads =search=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+lei_entity_summary search-lei-entities <search> [--country_filter <v>] [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =dq.v1.lei-entities.search=.
+
+#+name: lei_entity_summary-search-lei-entities
+#+begin_src ores-shell :tangle lei_entity_summary-search-lei-entities.ores :exports none
+lei_entity_summary search-lei-entities __none__
+#+end_src
+

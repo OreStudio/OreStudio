@@ -1,0 +1,6 @@
+# =list-dq-report-definition-templates=
+#
+# GENERATED from doc/recipes/shell/report_definition_template/report_definition_template.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+report_definition_template list-dq-report-definition-templates

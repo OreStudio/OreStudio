@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: E22DB681-A200-47CA-9746-F3CDADCC2ADF
+:END:
+#+title: Task: Generate the assets shell surface
+#+description: Check every assets command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason.
+#+type: task
+#+level: s1
+#+filetags: :shell_surface_generation:sprint_26:v0:
+#+owner: marco
+#+branch: feature/generate-the-clean-components-shell-surface
+#+pr: 2467
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every shell command assets answers is produced by a generated unit. All three assets models (image, image_tag, tag) already render one, so this task proves the surface is complete, records the model-to-unit mapping, and finds any hand-written asset command that generation has superseded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
+| Now          | Measured; assets needs no code change. |
+| Waiting on   | Nothing.                               |
+| Next         | The dq task.                           |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- All three assets models are covered by a generated unit, and the mapping is recorded on this task.
+- No hand-written unit registers an assets menu or verb, or each one that does is recorded with its reason.
+- The assets shell suite passes.
+
+* Plan
+
+Assets needs no code change, so the task maps and proves rather than edits. Map
+each of the three models to the unit it renders and record the verbs each menu
+carries. Prove the two negatives: no hand-written unit registers an assets menu
+and no hand-written unit extends a generated assets menu. Run the component's
+shell suite as the evidence that the three units compile and pass.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Assets models that can carry a shell unit | 3 (image, tag, the image_tags junction) | =ls projects/ores.assets/modeling/ores.*.org= then read =#+type:= | 1b473e560a |
+| Assets models with a generated unit | 3, the same three | =ls projects/ores.shell/assets/include/ores.shell/app/commands/assets/=.hpp= | 1b473e560a |
+| Generated menus and verbs | =images= 10, =image_tags= 9, =tags= 10 | read the three =register_commands= bodies | 1b473e560a |
+| Hand-written assets command units | 0 | =grep -rn 'cli::Menu("' projects/ores.shell/application/= | 1b473e560a |
+| Extensions into a generated assets menu | 0 | =grep -rln extend_menu projects/ores.shell/application/ --include=*.cpp= | 1b473e560a |
+| ores.shell.assets suite | 138 assertions in 49 test cases, all passed | =cmake --build build/output/linux-clang-debug-make --target test_ores.shell.assets.tests -j 8= | 1b473e560a |
+
+* Notes
+
+Assets is the first of the seven with no gap at all: three models, three units,
+and nothing hand-written beside them. There is nothing to retire and nothing to
+sign off.
+
+=assets_commands.cpp= is hand-written and registers no command of its own. It
+calls the three generated units' =register_commands= in turn.
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]] records the same gap
+for every component: the aggregator needs a component-scoped archetype and a
+render-time list of the component's opted-in entities. That is a generator
+change, and it is recorded here rather than made here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [#2467](https://github.com/OreStudio/OreStudio/pull/2467) | Start the shell-surface story with analytics, assets and dq |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Assets closes with no code change. Its three models each render a unit, the
+three menus carry 29 verbs between them, and no hand-written unit registers or
+extends an assets menu. The suite passes 138 assertions in 49 cases against the
+branch base.
+
+The only hand-written file in the component's shell part is the aggregator, which
+registers no command of its own.

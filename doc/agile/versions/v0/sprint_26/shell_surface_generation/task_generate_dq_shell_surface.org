@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 7385010B-E4AB-4CC8-94F0-4D48F9977C7C
+:END:
+#+title: Task: Generate the dq shell surface
+#+description: Check every dq command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason.
+#+type: task
+#+level: s1
+#+filetags: :shell_surface_generation:sprint_26:v0:
+#+owner: marco
+#+branch: feature/generate-the-clean-components-shell-surface
+#+pr: 2467
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every shell command dq answers is produced by a generated unit, or is a hand-craft with a recorded reason. Three hand-written commands read through dq operation models that render no shell unit: the lei menu's two reads, the reports templates read, and the bundles list read. The task enables the operations, retires every read the generated units supersede, reduces the lei menu to the one view no model declares, and records the two publish operations and the withheld report_definition shim.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
+| Now          | dq's reads are generated; the publishes and the shim are recorded. |
+| Waiting on   | Nothing.                               |
+| Next         | The refdata task.                      |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The dq operations that can render a shell unit do, and every hand-written dq command is either retired as superseded or recorded with its reason.
+- The report_definition shim has no unit, and the collision that withholds it is recorded on this task.
+- Every dq model is covered by a generated unit or recorded with the reason it is not.
+- The dq shell suite passes.
+
+* Plan
+
+Three hand-written reads sat over three dq operation models that rendered no
+shell unit: the lei menu's entities and search, reports templates, and bundles
+list. Each model already declares the request its hand-written command sent, so
+each becomes a generated unit and the hand-written read goes with it.
+
+The lei menu keeps one verb. countries is a grouping of one summary response
+into a view no model declares, so no unit can replace it. The generated search
+would have made the country filter a required positional, which the
+hand-written command did not, so the model gives country_filter a default and
+the filter arrives as an optional flag.
+
+The two publish operations keep no unit. bundles publish builds a request the
+generated unit cannot, from flags the model does not state, and can block on the
+workflow it dispatches. The report_definition shim is withheld by the
+staging-only gate, because reporting owns the plural and the shell resolves a
+duplicate by registration order.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| dq entity, junction and operation models | 31 | read =#+type:= across =projects/ores.dq/modeling/ores.*.org= | 1b473e560a |
+| dq models rendering a shell unit | 27, up from 25 | =ls projects/ores.shell/dq/include/ores.shell/app/commands/dq/=.hpp | branch |
+| dq models with no unit | 4: publish_bundle, publish_datasets, publish_from_dq carry no opt-in; report_definition is withheld by the staging gate | the same mapping script | branch |
+| Hand-written dq command units | 2, down from 3 | =ls projects/ores.shell/application/src/app/commands/{lei,bundles}_commands.cpp= | branch |
+| ores.shell.dq suite | 1085 assertions in 390 test cases, all passed | =--target test_ores.shell.dq.tests= | branch |
+| Root menu names | 267, 0 collisions | =check_shell_menu_collisions.py= | branch |
+| New menus at startup | =lei_entity_summary= and =report_definition_template= answer; =reports= is gone | =printf 'help\nexit\n' \| ./ores.shell= | branch |
+
+* Notes
+
+The generated commands renamed the reads a person types, so
+=doc/manual/user_guide/chapter_shell_provisioning.org= moved with them:
+=bundles list= is now =dataset_bundles list=, =reports templates= is now
+=report_definition_template list-dq-report-definition-templates=, and the LEI
+browse is =lei countries= with
+=lei_entity_summary search-lei-entities <text> [--country_filter <code>]=. No
+recipe or script called any of the retired commands, so only the manual moved.
+
+=country_filter= gained =:default: ""= in both requests. Without it the
+generated search asked for a country as a required positional, which the
+hand-written command it replaces did not, so the retirement would have narrowed
+the search. The default makes it an optional flag and the model states the same
+thing the old command did.
+
+The three publish operations are recorded rather than generated.
+=publish_bundle= and =publish_datasets= are dispatched by the bundle workflow
+and reach the shell through =bundles publish=, which builds the request from
+flags the model does not state and can block on the instance it dispatches.
+=publish_from_dq= has no shell caller at all. Giving any of them a unit would
+add a request sender beside the command that already drives the run.
+
+=report_definition= is the one model whose facet is on and which still renders
+nothing. It is the staging shim for reporting's =report_definitions= plural, and
+the staging-only gate withholds the unit so the shell does not answer one menu
+from two components.
+[[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell facet]] records the rule.
+
+=lei_commands.cpp= and =bundles_commands.cpp= are the two hand-written units the
+component keeps. The first carries the country browser; the second carries the
+workflow-driven publish. Both register no read the generated units answer.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [#2467](https://github.com/OreStudio/OreStudio/pull/2467) | Start the shell-surface story with analytics, assets and dq |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+dq's reads are generated now. The lei_entity_summary operation renders two
+commands where a hand-written menu carried them, and the report_definition_template
+operation renders the read reports templates carried, so both hand-written units
+lost the verbs the generated units answer. Two units became 27, the suite passes
+1085 assertions in 390 cases, and the shell registers its 267 root names with no
+collision.
+
+Three reads stayed hand-written and are recorded rather than removed.
+lei countries groups one response into a view no model declares. bundles publish
+builds a request from flags the model does not state and blocks on the workflow
+it dispatches, and the three publish operations are reached through it rather
+than through a unit of their own. report_definition renders nothing because
+reporting owns its plural, which the staging gate enforces.
+
+One model changed to make the retirement possible: country_filter gained an empty
+default, so the generated search asks for a country as an optional flag rather
+than a required argument.

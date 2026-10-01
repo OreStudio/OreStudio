@@ -18,8 +18,6 @@
  *
  */
 #include "ores.shell/app/commands/bundles_commands.hpp"
-#include "ores.dq.api/domain/dataset_bundle_table_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -51,11 +49,6 @@ constexpr std::chrono::seconds default_wait_timeout(300);
 void bundles_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto bundles_menu = std::make_unique<cli::Menu>("bundles");
 
-    bundles_menu->Insert(
-        "list",
-        [&session](std::ostream& out) { process_list(std::ref(out), std::ref(session)); },
-        "List the dataset bundles available for publication");
-
     bundles_menu->Insert("publish",
                          [&session](std::ostream& out, std::vector<std::string> args) {
                              process_publish(std::ref(out), std::ref(session), args);
@@ -65,19 +58,6 @@ void bundles_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                           "[--timeout <seconds>]"});
 
     ores::shell::app::insert_menu(root_menu, std::move(bundles_menu));
-}
-
-void bundles_commands::process_list(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list dataset bundles request.";
-
-    dq::messaging::list_dataset_bundles_request req;
-    auto result = do_auth_request<dq::messaging::list_dataset_bundles_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->bundles.size() << " bundles.";
-    out << result->bundles << std::endl;
 }
 
 void bundles_commands::process_publish(std::ostream& out,

@@ -50,7 +50,6 @@
 #include "ores.shell/app/commands/reporting/report_instance_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_type_commands.hpp"
-#include "ores.shell/app/commands/reports_commands.hpp"
 #include "ores.shell/app/commands/scheduler_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/storage/storage_commands.hpp"
@@ -147,7 +146,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     marketdata_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
     synthetic_entity_commands::register_commands(*root, session_);
-    reports_commands::register_commands(*root, session_);
     provision_commands::register_commands(*root, session_);
 
     // Every unit has registered, so the verbs each contributes to

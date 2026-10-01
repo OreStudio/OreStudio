@@ -104,6 +104,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:B5A7DE1E-CD0F-4676-A23B-9E9F38BFFA6C][Observe a run while it works]] | BACKLOG | | | A run states what each step is, how far into it the work has come, and what it has done so far: a step's presentation context, a live progress register and an append-only journal, in the workflow component that every workflow needs. |
 | [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] | DONE | 2026-09-28 | 2026-09-28 | Regenerate history, scheduler, storage, marketdata and synthetic against the four generator fixes the refdata clean-standard pass landed, so the tree carries one response shape and one recipe family rather than two of each. |
 | [[id:4A771CA8-1640-4AC4-AB36-B7C64B6C38AA][Keep the ores.iam eventing tests idempotent]] | DONE | 2026-09-30 | 2026-09-30 | Three generated ores.iam eventing tests failed on the second run against the same database: they seed a system-tenant parent seed profile and never remove it, and its synthetic code was unique only within one process. |
+| [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] | BACKLOG | | | Every ores.shell command a component at the clean standard answers is code generated, or is a hand-crafted command signed off with a reason. Closes with the shell facet defaulting on at the profile level. |
 
 ** Hotfixes
 

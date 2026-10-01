@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: EC6939C0-BD31-4C60-9DF9-D1BD39B47DBB
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.dq.report_definition_template
 #+description: Codegen operation model for the report-definition template read, rendered to C++ and TypeScript from one source.

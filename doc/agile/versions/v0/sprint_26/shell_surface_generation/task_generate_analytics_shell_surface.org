@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 93348F63-EB20-4F88-81A5-6AE127556E42
+:END:
+#+title: Task: Generate the analytics shell surface
+#+description: Check every analytics command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason.
+#+type: task
+#+level: s1
+#+filetags: :shell_surface_generation:sprint_26:v0:
+#+owner: marco
+#+branch: feature/generate-the-clean-components-shell-surface
+#+pr: 2467
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every shell command analytics answers is produced by a generated unit. Nine of the twelve analytics models already render one. The three stress-test entities (stress_test_library, stress_test_scenario, stress_test_shift) render nothing: each carries no :profile: and no drawer opt-in, so the facet never fires. The task gives each one a generated unit, or records why the shell is not the surface that should produce it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
+| Now          | Measured; analytics needs no code change. |
+| Waiting on   | Nothing.                               |
+| Next         | The assets task.                       |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- Every analytics entity, junction or operation model is either covered by a generated shell unit or recorded on this task with the reason it is not.
+- The three stress-test entities each have a stated outcome: a generated unit, or a recorded reason.
+- No hand-written unit registers an analytics menu or verb, or each one that does is recorded with its reason.
+- The analytics shell suite passes.
+
+* Plan
+
+Analytics needs no code change, so the task is a measurement and two negative
+claims. First, map every analytics model to the unit it renders: nine of the
+twelve do, and the three that do not are the stress-test entities another story
+is still modelling. Second, prove that no hand-written unit registers an
+analytics menu or verb, and that no hand-written unit extends a generated
+analytics menu. Third, build and run the component's shell suite as the
+evidence that the generated units compile and pass against the current trunk.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Analytics models that can carry a shell unit | 12 | =ls projects/ores.analytics/modeling/ores.*.org= then read =#+type:= | 1b473e560a |
+| Analytics models with a generated unit | 9 | =ls projects/ores.shell/analytics/include/ores.shell/app/commands/analytics/=.hpp= | 1b473e560a |
+| Analytics models with no unit | 3, the stress-test entities | =grep -L "shell-command" projects/ores.analytics/modeling/*stress_test*.org= | 1b473e560a |
+| Hand-written analytics command units | 0 | =grep -rn 'cli::Menu("' projects/ores.shell/application/= | 1b473e560a |
+| Extensions into a generated analytics menu | 0 | =grep -rln extend_menu projects/ores.shell/application/ --include=*.cpp= | 1b473e560a |
+| ores.shell.analytics suite | 462 assertions in 163 test cases, all passed | =cmake --build build/output/linux-clang-debug-make --target test_ores.shell.analytics.tests -j 8= | 1b473e560a |
+
+* Notes
+
+The three stress-test entities are not a gap in this task. =stress_test_library=,
+=stress_test_scenario= and =stress_test_shift= were added on 2026-09-29 by
+[[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]],
+which environment =bright_faraday= still holds. They carry no =:profile:= and no
+facet opt-in at all, so the shell is not the only facet that is off for them.
+Binding them to a profile is that story's decision. Enabling the shell facet on
+its own would not work either: the facet is dropped when =ores.cpp.protocol= is
+off, so a drawer entry with no profile renders nothing.
+
+=analytics_commands.cpp= is hand-written and registers no command of its own. It
+calls the nine generated units' =register_commands= in turn. The facet page
+records the same gap and its fix: the aggregator needs a component-scoped
+archetype and a render-time list of the component's opted-in entities, which is
+a generator change and not a shell-cleanup one. It is recorded here because it is
+the one hand-written file in the component's shell part.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [#2467](https://github.com/OreStudio/OreStudio/pull/2467) | Start the shell-surface story with analytics, assets and dq |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Analytics closes with no code change, which is the finding: nine of its twelve
+models already render a shell unit and nothing hand-written sits beside them.
+
+The three that render nothing are the stress-test entities, and they belong to
+[[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]]
+rather than to this story. Their models carry no profile, so no facet is on for
+them; the shell cannot be switched on in isolation because the facet is dropped
+when the protocol is off. This task records that rather than reaching into
+another environment's in-flight work.
+
+The component's one hand-written file is the aggregator, which registers no
+command. Its generation is a facet change recorded in the notes, not a shell
+clean-up.

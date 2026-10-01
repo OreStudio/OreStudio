@@ -1090,3 +1090,11 @@ tangled into the runnable script library
 * Curve Sections
 
 - [[id:162FF364-E401-5F52-A44E-3398B7F3AA3F][How do I run the curve_sections commands from the shell?]]
+
+* Lei Entity Summary
+
+- [[id:126CA54D-0808-55D9-A1E7-81C46EC66983][How do I run the lei_entity_summary commands from the shell?]]
+
+* Report Definition Template
+
+- [[id:F4400538-681A-5F03-9E68-244A9860E727][How do I run the report_definition_template commands from the shell?]]

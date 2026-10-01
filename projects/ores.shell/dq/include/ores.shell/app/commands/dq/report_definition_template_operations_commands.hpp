@@ -17,11 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SHELL_APP_COMMANDS_REPORTS_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_REPORTS_COMMANDS_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_operation_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_SHELL_APP_COMMANDS_REPORT_DEFINITION_TEMPLATE_OPERATIONS_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_REPORT_DEFINITION_TEMPLATE_OPERATIONS_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -34,14 +40,15 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Commands for report definitions.
+ * @brief The operations report_definition_template declares that no entity's CRUD verbs state.
  *
- * Lists the report definition templates the party provisioning
- * wizard offers on its report setup page.
+ * One command per message the protocol declares with a subject and a response,
+ * so the REPL surface and the protocol stay one declaration.
  */
-class reports_commands {
+class report_definition_template_operations_commands {
 private:
-    inline static std::string_view logger_name = "ores.shell.app.commands.reports_commands";
+    inline static std::string_view logger_name =
+        "ores.shell.app.commands.dq.report_definition_template_operations_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -51,19 +58,17 @@ private:
 
 public:
     /**
-     * @brief Register report-related commands.
-     *
-     * Creates the reports submenu with the templates operation.
+     * @brief Register the report_definition_template operations on the root menu.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief List report definition templates:
-     * reports templates [--bundle <code>] (default risk_management).
+     * @brief list-dq-report-definition-templates [--bundle_code <v>]
      */
-    static void process_templates(std::ostream& out,
-                                  ores::nats::service::nats_client& session,
-                                  const std::vector<std::string>& args);
+    static void
+    process_list_dq_report_definition_templates(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
 };
 
 }

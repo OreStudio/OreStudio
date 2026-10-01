@@ -34,11 +34,13 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Commands for browsing GLEIF LEI entities.
+ * @brief The GLEIF country browser.
  *
- * The command-line replacement for the GUI's root-LEI entity picker:
- * find the countries with entities, then search a country's entities
- * to obtain the LEI passed to bundle publication via --root-lei.
+ * The command-line replacement for the GUI's root-LEI entity picker. It lists
+ * the countries that have entities, and the reads that narrow a country and
+ * that search by name or LEI are generated units under the
+ * lei_entity_summary menu. The LEI it names is the one bundle publication
+ * takes as --root-lei.
  */
 class lei_commands {
 private:
@@ -54,34 +56,17 @@ public:
     /**
      * @brief Register LEI-related commands.
      *
-     * Creates the lei submenu with countries and entities operations.
+     * Creates the lei submenu with the country browser.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief List the countries that have LEI entities.
+     *
+     * The country list is a grouping of one summary response, which is why it
+     * is hand-written: no model declares a distinct-country read.
      */
     static void process_countries(std::ostream& out, ores::nats::service::nats_client& session);
-
-    /**
-     * @brief List a country's LEI entities: lei entities <country>
-     * [--filter <text>], where --filter is a case-insensitive
-     * substring match on the entity legal name.
-     */
-    static void process_entities(std::ostream& out,
-                                 ores::nats::service::nats_client& session,
-                                 const std::vector<std::string>& args);
-
-    /**
-     * @brief Find the entities matching a name or an LEI: lei search <text>.
-     *
-     * The read matches across countries, which is what somebody who knows an
-     * entity's name can use, and each match states how many parties importing
-     * its hierarchy would create.
-     */
-    static void process_search(std::ostream& out,
-                               ores::nats::service::nats_client& session,
-                               const std::vector<std::string>& args);
 };
 
 }

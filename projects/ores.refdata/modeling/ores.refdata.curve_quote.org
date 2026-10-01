@@ -34,7 +34,7 @@ element name is a column.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns

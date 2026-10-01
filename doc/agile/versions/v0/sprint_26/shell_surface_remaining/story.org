@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: A75FE105-5A36-4C60-B511-9908FADB441D
+:END:
+#+title: Story: Generate the shell surface of the remaining components
+#+description: The components outside the first seven that still hold shell-surface gaps: every ores.shell command they answer is code generated, every model that renders no unit states why in its own Physical space, and every hand-crafted command keeps a recorded reason.
+#+type: story
+#+level: s2
+#+filetags: :shell:codegen:cleanup:sprint_26:v0:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Each of diff, compute, telemetry, history, scheduler, ore, variability and workspace either renders the shell units generation produces or states, model by model, the reason it renders none, and every hand-written command that survives is recorded with its reason.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Batch 1: diff.                          |
+| Waiting on    | Nothing.                               |
+| Next          | compute and telemetry, then the five operation-only components. |
+| Last touched  | 2026-10-01                               |
+
+* Acceptance
+
+- Every entity, junction and operation model in these components either renders a generated shell unit or states the reason it renders none in its own Physical space section.
+- Every hand-written command in the component's orbit is compared with the generated units and either retired as superseded or recorded with its reason.
+- Each component's shell suite passes and the codegen gates are green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6FD89D23-BE2A-434A-8E2C-A18566572369][Generate the diff shell surface]] | BACKLOG | | | Check every diff command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:AA5A7533-ECF0-40B6-89F6-E1025A7D51FC][Generate the compute shell surface]] | BACKLOG | | | Check every compute command the shell answers, generate the units its entities should have, and record every hand-craft with its reason. |
+| [[id:5C1AD81D-EBCC-43BC-8D9C-79A3E7A3BED5][Generate the telemetry shell surface]] | BACKLOG | | | Check every telemetry command the shell answers, make each operation state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:EDB2ED57-3BEC-4F74-B5B0-D58640E51E0C][Generate the history shell surface]] | BACKLOG | | | Check every history command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:5D16A0C9-1472-4C91-8C79-7281E59F00A1][Generate the scheduler shell surface]] | BACKLOG | | | Check every scheduler command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:70717187-0883-4CAD-BCB2-CA903C5BFB39][Generate the ore shell surface]] | BACKLOG | | | Check every ore command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:12FCC005-2639-47BF-BFDF-90B28A98E814][Generate the variability shell surface]] | BACKLOG | | | Check every variability command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:5A00D0BB-CE04-4F3F-84AD-416B12474980][Generate the workspace shell surface]] | BACKLOG | | | Check every workspace command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+
+* Notes
+
+- Survey on 2026-10-01 at =30251f222c=. The eight components and what each holds:
+
+| Component | Models with no unit | Shell part |
+|-----------+---------------------+------------|
+| diff | 4 entities, all table-less records | none |
+| compute | 3 entities, 2 operations | 8 units |
+| telemetry | 3 operations | none |
+| history | 1 operation | none |
+| scheduler | 1 entity, 1 operation | none |
+| ore | 1 operation, 1 entity | none |
+| variability | 1 operation | 1 unit |
+| workspace | 1 operation | 1 unit |
+
+- The decisive fact is the shell part. A component with no part under
+  =projects/ores.shell/= cannot host a generated unit at all, and five of the
+  eight have none. =scheduler/job_definition= already states that reason in its own
+  Physical space, which is the shape the rest of these tasks follow.
+- =reporting= is out of scope. Its five unbound entities are the ones
+  bright_faraday's task "Bind the standard profiles to the configuration entities
+  that carry none" is binding now, and the shell facet follows from the profile.
+- =http= is out of scope by decision.
+
+* Decisions
+
+- 2026-10-01. Where a model renders no shell unit and should not, the reason goes
+  in the model's own =* Physical space= section, not on a task page. The repo
+  already does this in =ores.scheduler.job_definition=, and a reason beside the
+  thing it explains survives the reader who never opens the sprint.
+
+* Out of scope
+
+- =reporting=, whose profiles another environment is binding now.
+- =http=, by decision.
+- =trading= and =marketdata=, which are large enough to want their own story.

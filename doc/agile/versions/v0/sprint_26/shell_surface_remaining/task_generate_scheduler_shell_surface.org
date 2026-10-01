@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 5D16A0C9-1472-4C91-8C79-7281E59F00A1
+:END:
+#+title: Task: Generate the scheduler shell surface
+#+description: Check every scheduler command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason.
+#+type: task
+#+level: s1
+#+filetags: :shell_surface_remaining:sprint_26:v0:
+#+owner: marco
+#+branch: feature/generate-the-scheduler-shell-surface
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every shell command scheduler answers is produced by a generated unit, or the model states why it renders none. The component has no shell part, and job_definition already states that reason in its Physical space. The task completes the record for scheduling_operations and audits the hand-written scheduler_commands unit, which registers six verbs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- - Every entity, junction and operation model in the component either renders a generated shell unit or states, in its own Physical space section, the reason it renders none.
+- - Every hand-written command in the component's orbit is compared with the generated units and either retired as superseded or recorded with its reason.
+- - The component's shell suite passes and check_component_drift.py --all reports no drift.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

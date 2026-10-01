@@ -26,8 +26,18 @@ namespace ores #F2F2F2 {
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    -lg() : auto&
+                    +application()
+                    -make_context(const ores::database::database_options& db_opts) : ores::database::context
+                    +run(boost::asio::io_context& io_ctx, const config::options& cfg) : boost::asio::awaitable<void>
+                }
+                class application_exception {
+                    -message_ : string
+                    +what() : [[nodiscard]] const char*
                 }
                 class host {
+                    -lg() : auto&
+                    +execute(const vector<string>& args, ostream& std_output, ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>
                 }
             }
             namespace config #F2F2F2 {
@@ -38,6 +48,11 @@ namespace ores #F2F2F2 {
                     +http_base_url : string
                 }
                 class parser {
+                    +parse(const vector<string>& arguments, ostream& info, ostream& error) : optional<options>
+                }
+                class parser_exception {
+                    -message_ : string
+                    +what() : [[nodiscard]] const char*
                 }
             }
         }
@@ -45,6 +60,15 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code. A data member of a component-local type is
+' ownership (*--); a component-local type named only in a signature is a
+' dependency (..>); types from another component are left out.
+ores::trading::service::app::application ..> ores::trading::service::config::options
+ores::trading::service::config::parser ..> ores::trading::service::config::options
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.trading.service.puml"

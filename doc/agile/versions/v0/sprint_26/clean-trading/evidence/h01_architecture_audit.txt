@@ -1,0 +1,95 @@
+# H01: the Component Architecture Audit for ores.trading
+# Run 2026-10-01 on feature/trading-shell-wiring-verification.
+
+## validate_docs.sh
+OK: all 41 components pass documentation checks. (exit 0, run via
+projects/ores.codegen/validate_docs.sh; ./compass.sh has no validate command)
+
+## The diagram, authored in two passes
+
+1. The automated pass ran once per part, after a dry run that showed all three
+   would change:
+   python3 build/scripts/generate_component_puml.py --project ores.trading.api
+   python3 build/scripts/generate_component_puml.py --project ores.trading.core
+   python3 build/scripts/generate_component_puml.py --project ores.trading.service
+   It changed all three. The api and core sections were badly stale: the api
+   section held 47 boxes and now holds 2351 types (122 domain and 2229
+   messaging); the core section held 40 boxes and now holds 428. The api pass
+   added activity_category and gave activity_type its tenant_id.
+
+2. The manual pass below the sentinel adds what the automated pass cannot see:
+   the edges. The generator emits a box per class with its members and no edges,
+   so every line below the sentinel is read from the code. A data member of a
+   component-local type is ownership (*--); a component-local type named only in
+   a signature is a dependency (..>); types from another component are left out.
+   The derivation is reproducible: build/manual_pass_edges.py reads the same
+   headers and prints the full edge list.
+   - ores.trading.api: 1922 ownership edges, 0 dependency edges. The part is
+     data types; its only member function names no component-local type. Protocol
+     request/response members own the local key, write, removal and lookup
+     structs, and the lookup/response members own the domain entity. An entity's
+     component-local data members (for example bond_leg_data owning
+     bond_schedule_data) are ownership edges too.
+   - ores.trading.core: 85 ownership edges (each service owns its repository)
+     and 85 dependency edges (each mapper names its entity only in a signature).
+   - ores.trading.service: 2 dependency edges (application and parser each name
+     config::options).
+
+   The full set cannot be drawn. Drawing it collapses Graphviz's packing into a
+   single rank, and the raster then runs past the 65535 px PlantUML limit, so
+   the committed image would be a crop. Measured, with -DPLANTUML_LIMIT_SIZE
+   raised well clear of the result and the height unchanged in every case:
+
+     part    boxes   full edges   rendered with them   rendered without
+     api      2350          1922   389545 x 4613        22355 x 16019
+     core      428           170   121856 x 3801        22125 x 10126
+
+   The bound was searched, not assumed: core renders at 97085 px with its 85
+   ownership edges alone, at 57862 px with its 85 dependency edges alone, and at
+   65861 px with its 85 same-namespace mapper-to-entity edges plus one layer
+   edge. No subset large enough to be worth drawing fits.
+
+   So each manual section draws one representative per namespace pair and arrow
+   kind -- the part's layer structure -- and states the derived count, the two
+   widths and the derivation command, so the bound reads as a rendering decision
+   rather than a claim about the code. The layer skeleton is 5 edges for the api
+   (the domain graph composing, the messaging graph composing, and messaging
+   owning domain) and 2 for the core (a mapper naming its entity, a service
+   owning its repository). The service part is small enough to draw in full.
+
+3. The sentinel section survived all three refreshes (checked by grep; the
+   manual text sits between the sentinel and the Local Variables footer).
+
+4. The rendered image was read. The exact command in each file's Local Variables
+   block was run in the file's own directory, then the PNG was read:
+   - service: 2532x610. All six boxes carry their members; both dependency edges
+     (application ..> options and parser ..> options) are drawn; no empty box.
+   - core: 21868x12250. A crop of the repository cluster shows
+     activity_category_mapper -> activity_category_entity as a dashed
+     dependency and the service -> repository ownership lines; every box carries
+     its members except registrar (see below). Complete: 21868 is inside the
+     65535 limit, so nothing is cut off.
+   - api: 22904x15735. A crop of the messaging region shows its boxes carry
+     their members and the ownership edges are drawn. Complete, for the same
+     reason.
+   The first render of the api and core parts was clipped, because the manual
+   sections then carried every derived edge; reading the image is what found it.
+   Both parts are now inside the limit and the delivered rasters are whole.
+
+## What the audit found
+
+- registrar, in ores.trading.core, is an empty box: its header declares
+  register_handlers(...), but the parameter std::string http_base_url = {}
+  defeats the generator's method pattern, which excludes braces from a parameter
+  list. trade_handler loses its constructor to the same default. No type
+  declared in the headers is missing from the diagram.
+- The core and api renders are clipped at 65535 px, so the delivered PNG does
+  not show the whole diagram.
+- No edge is unsupported by the code: all 2094 edges were derived from the
+  headers by build/manual_pass_edges.py, and every endpoint is a rendered box.
+- A render also emits a .cmapx beside the .puml whenever a signature holds
+  something PlantUML reads as a creole link, such as [[nodiscard]]. It is not an
+  artefact: the .puml and the .png are. .gitignore now excludes the extension,
+  and the one tracked instance, the stale ores_schema ER diagram, belongs to the
+  repository-wide ER sweep rather than to this component.
+- No leftover artefact, no naming violation and no placement violation was found.

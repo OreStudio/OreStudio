@@ -20,6 +20,12 @@ These are operations rather than entity verbs. Both replies are computed
 from the stored samples rather than addressed by key, so no caller reaches
 one row by primary key.
 
+* Physical space
+
+The shell commands are switched off. The shell has no telemetry part, so a
+generated unit would have nowhere to land. These reads answer the operations
+dashboard, which is where a person meets NATS server and stream samples.
+
 * Includes
 
 #+begin_src cpp :name includes

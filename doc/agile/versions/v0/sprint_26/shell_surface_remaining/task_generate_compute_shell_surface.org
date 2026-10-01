@@ -8,12 +8,12 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-compute-shell-surface
-#+pr:
+#+pr: 2479
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command compute answers is produced by a generated unit, or the mode
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | The three entities were already recorded; the two operations and the five hand-written verbs are now. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The telemetry task.                    |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,21 @@ Every shell command compute answers is produced by a generated unit, or the mode
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read each of the five models that render no unit, then each hand-written verb.
+
+The three entities turned out to be already recorded, and better than the task
+expected: =grid_sample=, =node_sample= and =workflow_batch_link= each state in
+their own Physical space that the table is internal, and each disables
+=ores.cpp.protocol=, which is the facet that drops the shell unit. Their rows
+named =ores.cpp.shell=, though, which is not a facet at all, so check every
+address a model names against the template catalogue before trusting the table.
+
+The two operations state nothing, so they gain the reason: one is served by a
+hand-written command that does more than send the request, and the other is the
+wrapper's own protocol.
+
+Then the hand-written menu, verb by verb, against the requests the generated
+units send.
 
 * Measurements
 
@@ -57,9 +69,43 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| compute entity and operation models | 13 | read =#+type:= across =projects/ores.compute/modeling/ores.*.org= | e0ad23765b |
+| compute models rendering a unit | 8: app, app_version, app_version_platform, batch, host, platform, result, workunit | =ls projects/ores.shell/compute/include/ores.shell/app/commands/compute/=.hpp | e0ad23765b |
+| compute models with no unit | 5: grid_sample, node_sample, workflow_batch_link, telemetry, work | the mapping script | e0ad23765b |
+| Of those, already recorded before this task | 3, the entities | =grep -c 'Physical space' projects/ores.compute/modeling/ores.*.org= | e0ad23765b |
+| Dead facet addresses found | 3, all =ores.cpp.shell=, corrected to =ores.cpp.shell-command= | the address validator over every model's Physical space | branch |
+| Hand-written compute verbs | 5, all signed off | =projects/ores.shell/application/src/app/commands/compute_commands.cpp= | e0ad23765b |
+| ores.shell.compute suite | 390 assertions in 138 test cases, all passed | =--target test_ores.shell.compute.tests= | branch |
 
 * Notes
+
+The three entities were already recorded and needed nothing: each says the table
+is internal and disables =ores.cpp.protocol=, which is the facet dependency that
+drops the shell unit.
+
+They did carry a defect. Every row in those tables named a real facet except one,
+=| ores.cpp.shell | false |=. There is no =ores.cpp.shell= facet; the address is
+=ores.cpp.shell-command=. The row did nothing, and the shell unit was withheld
+only because the protocol was off. The three rows are corrected, so the table
+states what it means.
+
+The two operations now state their reason. =telemetry= is served by a hand-written
+command that does more than send the request, and =work= is the compute wrapper's
+own protocol, which no person types.
+
+The hand-written menu is signed off verb by verb, and none of the five is a single
+generated request:
+
+| Verb | Why it stays |
+|------+--------------|
+| =compute publish-package= | Composes three writes into one package publish: =put_app=, =put_app_version= and =put_app_version_platform=. |
+| =compute dispatch-batch= | Composes a version read with two writes: =list_app_versions=, =put_batch= and =put_workunit=. |
+| =compute grid-stats= | Sends =get_grid_stats_request=, which the =telemetry= operation declares and no unit renders, and composes it with the host listing and an optional watch. |
+| =compute download-input= | Lists a workunit and moves its input bundle to a directory. |
+| =compute download-output= | Lists a result and moves its output bundle to a directory. |
+
+Two of the five move a file, which is the same reason storage's hand-written menu
+stays, and two compose several requests, which no single generated unit answers.
 
 * Test Scenarios
 
@@ -76,7 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2479](https://github.com/OreStudio/OreStudio/pull/2479) | Record why compute and telemetry render no shell command |
 
 * Review
 
@@ -85,3 +131,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+compute needs no generation change. Eight of its thirteen models render a unit,
+the three that do not were already recorded in their own terms, and the task adds
+the reason to the two operations.
+
+The audit's find is a defect: three models named =ores.cpp.shell= in their
+Physical space, and no such facet exists. The rows did nothing. They now name
+=ores.cpp.shell-command=, and a validator over every model in the tree reports no
+other address that does not exist.
+
+The hand-written =compute= menu keeps all five verbs, each signed off. Two compose
+several requests into one, two move a file, and one reads an operation that
+renders no unit. The suite passes 390 assertions in 138 cases.

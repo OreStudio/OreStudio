@@ -196,3 +196,4 @@ Round 2 (PR #2491, @claude review and CI):
 | 13 | A cold link to a run outside the first roster page shows the generic title. | =TenantRunPage.tsx= | Decline | The rail still loads; the title falls back by design. |
 | 14 | No migration for existing databases. | =workflow_workflow_instances_create.sql= | No change | The project recreates its database from the create scripts. |
 | 15 | No test drives the list filters. | =workflow_query_handler.cpp= | Decline here | Same as finding 2; the capture adds the boundary test. |
+| 16 | CI: the ER diagram check found =ores_schema.puml= stale. | =ores.sql/modeling= | Accept | Regenerated with =plantuml_er_generate.sh=. |

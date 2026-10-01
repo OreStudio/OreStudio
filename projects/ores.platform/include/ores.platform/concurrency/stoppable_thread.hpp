@@ -42,12 +42,18 @@ public:
     stop_source()
         : stopped_(std::make_shared<std::atomic<bool>>(false)) {}
 
+    // A moved-from source holds no state, and the thread it belonged to has
+    // already been handed to whoever took the move. It stays inert rather than
+    // dereferencing a null pointer, because a moved-from object is still
+    // destroyed: the workflow engine assigns a stoppable_thread temporary and
+    // the temporary's destructor asks it to stop.
     void request_stop() const {
-        stopped_->store(true, std::memory_order_relaxed);
+        if (stopped_)
+            stopped_->store(true, std::memory_order_relaxed);
     }
 
     [[nodiscard]] bool stop_requested() const {
-        return stopped_->load(std::memory_order_relaxed);
+        return stopped_ && stopped_->load(std::memory_order_relaxed);
     }
 
 private:

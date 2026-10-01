@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 1D532014-FD6C-4EBE-982D-3D17C1B768F1
+:END:
+#+title: Task: Make the tenant roster a workspace
+#+description: Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:shell:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/make-the-roster-a-workspace
+#+pr: 2475
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tenant roster reads as a page rather than a box in the middle of one. The
+table is no longer wrapped in a card that repeats the title and the count, the
+title, the count and the primary action sit in a page header, and the shell
+gives a list-shaped screen more room than it gives a form.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The roster draws the table as the page, with no card around it.
+- The page header carries the title, the count and a primary action that opens
+  [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]], at any row count.
+- The empty roster states the state once and does not repeat the header's
+  action beneath it.
+- The shell bounds a screen at one of two named widths, and the screen chooses:
+  a rail, form or dialog takes the column, a list or grid takes the workspace.
+- A screen that has not chosen takes the column, so a form across a wide display
+  is not the mistake that happens by omission.
+- A journey's banner is still bounded, and the roster table is not.
+- Every new behaviour is proved by a test, and the layout was read in a browser
+  at a wide display.
+
+* Plan
+
+1. *Two widths, named for their shape.* One bound for every screen was wrong in
+   both directions, which is how the banner and the table came to disagree. The
+   widths live in one module and are named for the shape they suit.
+2. *The screen chooses, and the default is the safer mistake.* The shell owns
+   the bound so a journey cannot forget it, and the default is the column: a
+   form running the width of a wide display is the harder defect to read.
+3. *Then the page.* The card comes off, the header gains the primary action, and
+   the empty state stops repeating it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The roster table's width on a 1920px display | 1600px | =node evidence/tenant_roster_check.js= | the branch tip |
+| A journey's banner on a 1600px display | 794px | =node evidence/tenant_journey_check.js= | the branch tip |
+| BFF suite | 19 files, 93 tests | =npm run test= in =projects/ores.web/packages/bff= | the branch tip |
+| Web suite | 17 files, 182 tests | =npm run test= in =projects/ores.web/packages/web= | the branch tip |
+| Wire contract suite | 7 files, 51 tests | =npm run test= in =projects/ores.web/packages/wire-protocol= | the branch tip |
+| Live roster harness | 15 promises | =node evidence/tenant_roster_check.js= | the branch tip |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2475][#2475]] | [web] Make the tenant roster a workspace |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The roster is a workspace, and the shell has two bounds instead of one.
+
+- *The table is the page.* The card around it carried the title and the count
+  the page header already states, and made the table narrower than the screen.
+  It is gone. The header carries the title, the count and a primary action that
+  opens *New tenant* at any row count, and the empty roster states the state
+  once instead of repeating the header's action beneath it.
+
+- *Two widths, named for their shape.* =column= for a rail, a form or a dialog,
+  and =workspace= for a list or a grid, both in =shell/layout.ts=. The shell
+  owns the bound so a journey cannot forget it, and the default is the column,
+  because a form across a wide display is the harder defect to read.
+
+- *The banner is still bounded and the table is not.* On a 1600px display the
+  journey's banner draws 794px wide, as before; on a 1920px display the roster
+  table draws 1600px, where the card had held it to 1100px with a dead margin
+  on either side.
+
+Proved live: the harness signs in, reads the roster, and checks that the table
+is not inside a card, that the page offers the journey that creates a tenant,
+and that the table takes the width it was given. Screenshot in
+=evidence/tenant_roster.png=.
+
+What this task does not do, and what it hands to the review:
+
+- *The workspace bound is a guess.* 1600px with five columns is airy. The number
+  is one constant, and the review is where it gets settled.
+- *No search, no filters, no row actions.* The subject has no filter, and the
+  journey a row action would open is not built. Both stay out rather than
+  appear as controls that do nothing.
+- *The sidebar.* Deliberately not touched. It is the next decision, and the
+  result of this task is what it should be decided against.
+

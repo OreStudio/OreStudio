@@ -81,15 +81,30 @@ describe('the tenant roster', () => {
     });
 
     /*
-     * A deployment whose administrator exists and whose first tenant does not
-     * is a normal state, not a failure, and the way out of it is the journey
-     * that creates one.
+     * The table is the page. A card around it, carrying the title and the count
+     * the header already states, is a box in a box, and the second box only
+     * makes the table narrower than the screen it was given.
      */
-    it('says so when the deployment holds no tenant, and offers the way out', () => {
+    it('draws the table as the page, not inside a card', () => {
+        expect(render([acme], 1)).not.toContain('class="card');
+    });
+
+    it('offers the journey that creates a tenant from the header, at any row count', () => {
+        for (const html of [render([acme], 1), render([], 0)]) {
+            expect(html).toContain('href="/tenants/new"');
+            expect(html).toContain('New tenant');
+        }
+    });
+
+    /*
+     * A deployment whose administrator exists and whose first tenant does not
+     * is a normal state, not a failure. The state is stated once and the way
+     * out is the header's action, not a second button beneath it.
+     */
+    it('says so when the deployment holds no tenant, without repeating the action', () => {
         const html = render([], 0);
 
         expect(html).toContain('no tenant of its own');
-        expect(html).toContain('href="/tenants/new"');
-        expect(html).toContain('New tenant');
+        expect(html.match(/href="\/tenants\/new"/g)).toHaveLength(1);
     });
 });

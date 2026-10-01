@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { Button } from '../ui/Primitives.js';
 import { areasFor, modeKey } from '../shell/areas.js';
+import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
 
 /**
@@ -51,6 +52,15 @@ export interface AppShellProps {
     readonly partyName: string | undefined;
     /** The context the session runs in, as the server stated it. */
     readonly mode: SessionMode;
+    /**
+     * How wide the screen may be.
+     *
+     * A journey is a column and a list is a workspace. The default is the
+     * column, because a screen that has not said is more often a form than a
+     * table, and a form that runs the width of a wide display is the harder
+     * mistake to read.
+     */
+    readonly width?: ShellWidth;
     readonly onSignOut: () => void;
     /** The build the deployment answers with, or nothing before it answers. */
     readonly serverVersion?: string;
@@ -62,6 +72,7 @@ export function AppShell({
     tenantName,
     partyName,
     mode,
+    width = 'column',
     onSignOut,
     serverVersion,
     children,
@@ -124,11 +135,12 @@ export function AppShell({
              * A journey that stands something up draws the same banner the
              * public shell draws, and that banner fills the width it is given:
              * an unbounded column turns it into a wall on a wide display. The
-             * bound is the public shell's own, so a screen looks the same
-             * whether or not somebody has signed in.
+             * bound belongs to the screen, because a form and a table want
+             * different ones, and both bounds are the public shell's so a
+             * screen looks the same either side of the door.
              */}
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
-                <div className="mx-auto w-full max-w-[1100px]">{children}</div>
+                <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>{children}</div>
             </main>
             <VersionFooter serverVersion={serverVersion} />
         </div>

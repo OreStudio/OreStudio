@@ -47,17 +47,13 @@ export function TenantsPage(): ReactNode {
     const roster = useQuery({ queryKey: ['tenants'], queryFn: api.tenants });
 
     if (roster.isPending) {
-        return (
-            <div className="card p-6">
-                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-            </div>
-        );
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
 
     if (roster.isError) {
         const reason = roster.error instanceof Error ? roster.error.message : String(roster.error);
         return (
-            <div className="card p-6">
+            <div>
                 <PageHeader title={t('tenants.title')} description={t('tenants.failed')} />
                 <Notice tone="error">{reason}</Notice>
             </div>
@@ -66,11 +62,25 @@ export function TenantsPage(): ReactNode {
 
     const { tenants, totalCount } = roster.data;
 
+    /*
+     * The page is the roster. A table inside a card that already carries the
+     * title and the count is a box in a box, and the second box only makes the
+     * table narrower than the screen it was given.
+     *
+     * The primary action sits in the header rather than only on the empty
+     * state, because a person who has tenants and wants another one is the
+     * common case, and the empty state's own button cannot serve them.
+     */
     return (
-        <div className="card p-6">
+        <div>
             <PageHeader
                 title={t('tenants.title')}
                 description={plural('tenants.count', totalCount)}
+                actions={
+                    <LinkButton to="/tenants/new" variant="primary">
+                        {t('shell.journey.newTenant')}
+                    </LinkButton>
+                }
             />
             {tenants.length === 0 ? <EmptyRoster /> : <Roster tenants={tenants} />}
         </div>
@@ -83,7 +93,7 @@ function Roster({ tenants }: { readonly tenants: readonly TenantSummary[] }): Re
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-                <thead className="text-[11px] uppercase tracking-wide text-ink-faint">
+                <thead className="border-b border-line text-[11px] uppercase tracking-wide text-ink-faint">
                     <tr>
                         <th className="py-2 pr-4 font-medium">{t('tenants.code')}</th>
                         <th className="py-2 pr-4 font-medium">{t('tenants.name')}</th>
@@ -94,12 +104,12 @@ function Roster({ tenants }: { readonly tenants: readonly TenantSummary[] }): Re
                 </thead>
                 <tbody>
                     {tenants.map((tenant) => (
-                        <tr key={tenant.id} className="border-t border-line-subtle">
-                            <td className="py-2 pr-4 font-mono text-xs">{tenant.code}</td>
-                            <td className="py-2 pr-4">{tenant.name}</td>
-                            <td className="py-2 pr-4 font-mono text-xs">{tenant.hostname}</td>
-                            <td className="py-2 pr-4 text-ink-muted">{tenant.type}</td>
-                            <td className="py-2">
+                        <tr key={tenant.id} className="border-b border-line-subtle">
+                            <td className="py-2.5 pr-4 font-mono text-xs">{tenant.code}</td>
+                            <td className="py-2.5 pr-4">{tenant.name}</td>
+                            <td className="py-2.5 pr-4 font-mono text-xs">{tenant.hostname}</td>
+                            <td className="py-2.5 pr-4 text-ink-muted">{tenant.type}</td>
+                            <td className="py-2.5">
                                 <StatusTag status={tenant.status} />
                             </td>
                         </tr>
@@ -132,16 +142,20 @@ function StatusTag({ status }: { readonly status: string }): ReactNode {
     return entry === undefined ? <Tag>{status}</Tag> : <Tag tone={entry.tone}>{t(entry.key)}</Tag>;
 }
 
+/**
+ * What a deployment with no tenant of its own reads.
+ *
+ * It states the state and points at the header's action rather than repeating
+ * it: two buttons that do the same thing, one above the other, is a screen
+ * asking a question it has already answered.
+ */
 function EmptyRoster(): ReactNode {
     const { t } = useTranslation();
 
     return (
-        <div>
+        <div className="rounded-md border border-line px-4 py-6">
             <p className="text-sm font-medium">{t('tenants.empty.title')}</p>
             <p className="mt-1 text-sm text-ink-muted">{t('tenants.empty.body')}</p>
-            <div className="mt-4">
-                <LinkButton to="/tenants/new">{t('shell.journey.newTenant')}</LinkButton>
-            </div>
         </div>
     );
 }

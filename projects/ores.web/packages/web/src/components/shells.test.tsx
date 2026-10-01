@@ -84,6 +84,7 @@ describe('the application shell', () => {
     function renderAppShell(
         partyName: string,
         mode: 'system-administration' | 'tenant-administration' | 'application' = 'application',
+        width?: 'column' | 'workspace',
     ): string {
         return renderToStaticMarkup(
             <TranslationProvider>
@@ -93,6 +94,7 @@ describe('the application shell', () => {
                         tenantName="Acme Corporation"
                         partyName={partyName}
                         mode={mode}
+                        {...(width !== undefined && { width })}
                         onSignOut={() => undefined}
                     >
                         <p>the screen</p>
@@ -125,6 +127,20 @@ describe('the application shell', () => {
      */
     it('bounds the screen it wraps, as the public shell bounds its own', () => {
         expect(renderAppShell('Acme Operations')).toContain('max-w-[1100px]');
+    });
+
+    /*
+     * One bound for every screen was wrong in both directions: a rail or a form
+     * wants the column, and a list bounded at that width leaves a dead margin
+     * on either side of nothing. A screen that has not said is a column, so the
+     * harder mistake, a form across a wide display, is the one that needs the
+     * screen to ask for.
+     */
+    it('gives a list-shaped screen the wider bound it asks for', () => {
+        const html = renderAppShell('Acme Operations', 'application', 'workspace');
+
+        expect(html).toContain('max-w-[1600px]');
+        expect(html).not.toContain('max-w-[1100px]');
     });
 
     it('states the mode the session runs in', () => {

@@ -64,6 +64,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:1BCEA32A-47C1-4DE0-8A6A-3DB5B7BE9723][Implement the super administrator sign-in]] | DONE | 2026-10-01 | 2026-10-01 | Deliver the session mode and the system administration landing, so the super administrator signs in and reaches the tenant management journeys. |
 | [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]] | DONE | 2026-10-01 | 2026-10-01 | Give the system administration area a read-only tenant roster, as its own journey, and the read the screen needs. |
 | [[id:618DDCAD-49A8-4161-A2BD-8AAE3C36CC47][Bound the signed-in layout and unblock the tenant details step]] | DONE | 2026-10-01 | 2026-10-01 | The splash is unbounded on a signed-in journey, and a seed profile that inherits the administrator password leaves the second step of New tenant with a disabled Continue. |
+| [[id:1D532014-FD6C-4EBE-982D-3D17C1B768F1][Make the tenant roster a workspace]] | DONE | 2026-10-01 | 2026-10-01 | Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens. |
 
 * Decisions
 
@@ -123,6 +124,23 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   nothing to hand over. The proposal is dropped where the details are built
   rather than drawn and then refused, because a choice that cannot be kept
   leaves a step nobody can leave. (Implementation, 2026-10-01.)
+- *Two bounds, named for the shape they suit.* A rail, a form or a dialog takes
+  the column; a list or a grid takes the workspace. One bound for every screen
+  was wrong in both directions and produced both defects: a banner unbounded on
+  a wide display, and a table held to the width a form wants with a dead margin
+  on either side. The shell owns the bound so a journey cannot forget it, and
+  the default is the column, because a form across a wide display is the harder
+  defect to read. (Implementation, 2026-10-01.)
+- *A table is the page, not a panel on it.* A card that already carries the
+  title and the count, drawn around a table, makes the table narrower than the
+  screen and reads as a box in the middle of nothing. The title, the count and
+  the primary action belong in a page header, and the table belongs under it.
+  (Review, 2026-10-01.)
+- *A control that opens nothing is not drawn.* The roster has no search, no
+  filters and no row actions, because the list subject has no filter and the
+  journey a row action would open is not built. They wait for the things behind
+  them rather than appearing as buttons that do nothing. (Implementation,
+  2026-10-01.)
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own

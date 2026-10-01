@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: 22C2020E-E745-4D7B-B2BF-C17659DFCE6E
 :END:
 #+title: ores.iam.tenant_status

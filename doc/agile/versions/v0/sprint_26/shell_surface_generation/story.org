@@ -23,9 +23,9 @@ Each component the clean standard has cleared has a shell surface that generatio
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The iam task waits on its PR; scoping the profile default. |
-| Waiting on    | Nothing.                               |
-| Next          | The profile default task.               |
+| Now           | The seven components are done; the profile default is blocked on the programme. |
+| Waiting on    | The clean-standard pass of every component outside this story. |
+| Next          | Flip the facet node's default once no component would gain an unintended unit, or land it with explicit opt-outs. |
 | Last touched  | 2026-10-01                               |
 
 * Acceptance
@@ -41,11 +41,11 @@ Each component the clean standard has cleared has a shell surface that generatio
 | [[id:93348F63-EB20-4F88-81A5-6AE127556E42][Generate the analytics shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every analytics command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:E22DB681-A200-47CA-9746-F3CDADCC2ADF][Generate the assets shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every assets command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:7385010B-E4AB-4CC8-94F0-4D48F9977C7C][Generate the dq shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every dq command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
-| [[id:BEC3DCC2-CF43-4B90-9155-11B209715764][Generate the iam shell surface]] | STARTED | 2026-10-01 | | Check every iam command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
+| [[id:BEC3DCC2-CF43-4B90-9155-11B209715764][Generate the iam shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every iam command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:2BBD64F2-E5CE-41EC-8848-CD13897364F6][Generate the refdata shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every refdata command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:DFE84302-EB58-4414-9ACA-D96790A44DE8][Generate the storage shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every storage command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:9AD6EDE6-3242-4976-BA00-AA6BDDA35A37][Generate the synthetic shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every synthetic command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
-| [[id:9B53C333-7C25-45E1-8855-D1BE8794F6F3][Default the shell facet on at the profile level]] | BACKLOG | | | With every clean component's shell surface generated, make ores.cpp.shell-command default on so a model no longer opts in one file at a time. |
+| [[id:9B53C333-7C25-45E1-8855-D1BE8794F6F3][Default the shell facet on at the profile level]] | BLOCKED | 2026-10-01 | | With every clean component's shell surface generated, make ores.cpp.shell-command default on so a model no longer opts in one file at a time. The safe half is done; the flip is blocked because the facet default is global and 76 models in 16 components would gain a unit. |
 
 * Notes
 
@@ -58,6 +58,26 @@ Each component the clean standard has cleared has a shell surface that generatio
   last task removes the repetition rather than the capability.
 
 * Decisions
+
+- 2026-10-01. One rule decided every component, and it is stated here so the next
+  component does not have to rediscover it. A hand-written read is retired when a
+  generated unit sends the same request and the hand-written one adds only a
+  filter over a field the model already carries. It stays, with a reason, when it
+  presents a shape or a request no model states: it changes this client's own
+  session, it dispatches a workflow and waits on it, it composes several
+  responses into a view, or it moves a file. Eighteen hand-written commands were
+  retired across dq, synthetic and iam under this rule, and the rest were signed
+  off verb by verb.
+- 2026-10-01. The generated unit is the surface even where the hand-written
+  command read better. The generated commands print JSON, the retired ones
+  printed aligned rows, and the manual and the provisioning recipes moved with
+  the names rather than the other way round. The presentation gap is the
+  generator's to close, not a reason to keep two commands for one request.
+- 2026-10-01. The profile-level default is the last lever and it stays unpulled.
+  The facet node's default is global, so enabling it renders a unit for every
+  model of every component: 76 models in 16 components at the measurement, 67 of
+  them with no profile at all. The story records the precondition rather than
+  reaching into sixteen components, most of which it does not own.
 
 * Out of scope
 

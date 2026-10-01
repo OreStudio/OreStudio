@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: 93F6A725-496B-4BE8-9AC0-BA5BC1B7CAB0
 :END:
 #+title: ores.analytics.pricing_engine_type

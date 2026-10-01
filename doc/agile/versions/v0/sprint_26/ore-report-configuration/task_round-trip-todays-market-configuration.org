@@ -2,7 +2,7 @@
 :ID: 0D7AA741-C938-4C63-B074-9A134067A658
 :END:
 #+title: Task: Round trip today's market configuration
-#+description: todaysmarket*.xml end to end: the market configuration sets a report's valuation reads, with each set's yield curve, discount curve, fx, equity, commodity, correlation and volatility specifications, the calendar, the sensitivity and report currency settings, and the ibor fallback and pricing engine binds. Neither the entity model nor a mapper exists, and the corpus holds 98 files under the TodaysMarket root, so nothing of this kind round trips. Model the entities in the component that owns the concept, write both mappers, and prove the round trip with the harness over every file in the corpus.
+#+description: todaysmarket*.xml end to end: the market configuration sets a report's valuation reads. A document is an ordered set of 24 optional collections — yield, discounting, index-forwarding, swap index, inflation, fx, equity, commodity, correlation, default and volatility curves and spots — plus Configuration blocks that name one entry in each collection by reference. Neither the entity model nor a mapper exists, and the corpus holds 98 files under the TodaysMarket root, so nothing of this kind round trips. Model the entities in the component that owns the concept, write both mappers, and prove the round trip with the harness over every file in the corpus.
 #+type: task
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
@@ -26,11 +26,11 @@ Every todaysmarket*.xml in the corpus round trips through the entities, both way
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The corpus is censused and the four-table design is written into the Plan. No model, mapper or test exists yet. |
+| Waiting on   | Nothing technical. The branch is one commit ahead of main and is not pushed. |
+| Next         | Write the four entity models, seed the collection lookup, then the mapper and the corpus walk. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,56 @@ Every todaysmarket*.xml in the corpus round trips through the entities, both way
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The corpus census in [[file:evidence/todays_market_corpus.md][evidence/todays_market_corpus.md]]
+settled the shape before any model was written. It counted 98 files, 24 optional
+top-level collections, and 206 =Configuration= blocks across 88 files.
+
+**Four tables, not twenty-four.**
+
+The document has two shapes in it. Twenty-three collections are an ordered list
+of entries, each one identifying attribute plus a reference. =Configuration= is
+not a list of entries at all: it is a bundle of references into those
+collections, keyed by a required =id=. So the two shapes get two tables, and the
+twenty-three share the first because they are the same shape.
+
+| Table | One row per | Holds |
+|-------+-------------+-------|
+| =todays_market_config= | document | name, description |
+| =todays_market_configuration= | =Configuration= element | its =id=, and its position |
+| =todays_market_configuration_binding= | =*Id= child | which collection, and the referenced name |
+| =todays_market_entry= | collection entry | which collection, the key, the target, the position |
+
+**The collection name is a key, not a column.**
+
+Twenty-four collections do not become twenty-four tables, and they do not become
+twenty-four nullable columns either. They become one discriminator column whose
+vocabulary lives in a seeded lookup, the way =pricing_engine_type= does, so the
+set is data rather than schema. The lookup also records the name of the
+attribute each collection identifies its entries by, which is what lets
+=currency= and =name= stay distinct without the mapper carrying a table of its
+own.
+
+**SwapIndexCurves gets a column, not a table.**
+
+It is the only collection whose entry carries a second value, the nested
+=Discounting=, and the census measured that nesting as exactly one level deep
+and never more. One nullable column on =todays_market_entry= covers it. A table
+of its own would trade one nullable column for a table, a join and a second
+mapper path, for one collection.
+
+**Order is stored rather than recovered.**
+
+A collection may name the same key twice, and a reference cannot be sorted back
+into the order the document wrote. =position= carries it, the same column and
+the same reason as =pricing_model_product=.
+
+**What this plan deliberately does not decide.**
+
+Whether =currency= and =name= are one concept under two spellings or two
+concepts. Nothing in the corpus distinguishes them, so the mapper stores the key
+as written and the lookup records which attribute a collection uses. If they
+turn out to be the same thing, that becomes a merge; if they do not, nothing was
+lost.
 
 * Measurements
 
@@ -60,6 +107,24 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+**The description this task was scaffolded with named four things the schema
+does not have.** It claimed the document carries "the calendar, the sensitivity
+and report currency settings, and the ibor fallback and pricing engine binds".
+=todaysmarket.xsd= contains no occurrence of =ibor=, =pricing=, =calendar= or
+=sensitivit= at all:
+
+#+begin_src sh
+grep -c -i "ibor\|pricing\|calendar\|sensitivit" external/ore/xsd/todaysmarket.xsd
+# → 0
+#+end_src
+
+Those four belong to the *run* document — =ore.xml= carries the Setup block with
+the calendar, the currency and the sensitivity settings, and it binds the market
+and pricing engine configurations by name. Today's market is what those bindings
+point at. The description is corrected. This is the second scaffolded
+configuration description to name constructs from a neighbouring document, so it
+is worth reading the schema rather than the description before costing the unit.
 
 * Test Scenarios
 

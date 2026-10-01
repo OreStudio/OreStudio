@@ -9,11 +9,11 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-List effective permissions for an account.
+List the roles an account holds, each with the permissions it grants.
 
 #+name: account-permissions
 #+begin_src ores-shell :exports none
-authorization get-account-permissions 019c2d92-8448-7158-90d0-ccb8b5f7e812
+authorization get-account-roles 019c2d92-8448-7158-90d0-ccb8b5f7e812
 exit
 #+end_src
 
@@ -23,28 +23,3 @@ export ORES_SHELL_LOGIN_PASSWORD
 <<account-permissions>>
 EOF
 #+END_SRC
-
-#+RESULTS:
-#+begin_example
-✓ Connected to :51004
-✓ Logged in as: newuser3
-  Tenant: System (00000000-0000-0000-0000-000000000000)
-ORE Studio Shell REPL v0.0.11
-Type 'help' for available commands, 'exit' to quit.
-
-ores-shell>
-Effective Permissions for Account: 019c2d92-8448-7158-90d0-ccb8b5f7e812
-=======================================================================
-
-  - *
-  - iam::tenants:create
-  - iam::tenants:delete
-  - iam::tenants:impersonate
-  - iam::tenants:read
-  - iam::tenants:suspend
-  - iam::tenants:terminate
-  - iam::tenants:update
-
-Total: 8 item(s)
-ores-shell> Bye!
-#+end_example

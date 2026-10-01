@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 804C7048-DBBF-4B39-8737-BFB4949884C4
+:END:
+#+title: Authorised reads
+#+description: How a read decides whether to answer, where a refusal travels, and why reading your own access and reading somebody else's are different subjects.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:iam:authorisation:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+* Summary
+
+A read is authorised by the service that answers it, per operation and per
+resource, before any of the work is done. Reading your own access and reading
+somebody else's are two different subjects rather than one subject with a
+parameter, because a self read that cannot name another account is safer than a
+self read that must compare one. A refusal is a payload: the response carries a
+`result` whose outcome is `denied`, with a code and a sentence, because an empty
+payload cannot be told apart from an account that holds nothing. This page states
+the rule and applies it to the access reads; the
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol]] carries the
+response contract it leans on, and
+[[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][RBAC]] is the model underneath.
+
+* Detail
+
+** The contract a read obeys
+
+Every operation answers with a `result`, and the `result` is the only place a
+caller looks to learn whether the operation happened. The outcome is a closed
+set — =ok=, =invalid=, =denied=, =missing=, =conflict=, =unavailable=, =failed= —
+and =ok= is the only outcome under which the payload means anything. The type
+exists: =ores::utility::domain::result=, which every generated entity response
+already carries.
+
+Three consequences follow, and each is easy to get wrong:
+
+- A read that has nothing to say and a read that refuses to say it are different
+  answers. An empty list is =ok= with no rows; a refusal is =denied= with no
+  rows. A response without a =result= cannot express the second, so it has to
+  lie.
+- =denied= is not authentication. A missing, malformed or expired credential is
+  refused before the operation is reached, in the envelope, and never reaches a
+  payload.
+- The caller is told, it does not ask. No client asks whether it may do
+  something and then decides; it asks for the thing and reads the answer.
+
+** Where the decision is made
+
+In the service, before the work, and not in the client. A screen that hides a
+control has hidden a hint, not a grant, and the database's row-level security is
+the backstop rather than the guard.
+
+There are two permission checks in the tree and they are not the same check.
+
+| | =authorization_service::has_permission= | =ores::service::messaging::has_permission= |
+|---+------------------------------------------+---------------------------------------------|
+| Reads | the effective permissions from the database | the token's =roles= claim, which holds permission codes |
+| Empty permission list | denies | allows, as backward compatibility |
+| Bare =*= | allows | allows |
+| Component wildcard =iam::*= | not handled | handled |
+| Cost | one query | free |
+
+The access reads use the **database-backed** check, and the reasons are the
+resource rather than the cost. The token's list is a snapshot taken at sign-in,
+so a role revoked during a session still passes; and the empty-list pass-through
+means an account that holds no roles passes every check, which is an ordinary
+state rather than an attack. A read that guards the rows a stale grant would
+expose is the last place to prefer the cheaper check.
+
+** Self reads and privileged reads
+
+An account reading its own access is the ordinary case. An account reading
+somebody else's is privileged. The two are separate operations with separate
+subjects, and the difference is what the request *can say*:
+
+- The self read takes no account id. The account comes from the authenticated
+  actor, exactly as tenant and party do, so there is no field in which to name
+  somebody else. Its safety does not depend on a comparison being right.
+- The privileged read takes an account id, because naming the resource is its
+  purpose, and it requires the read permission before it looks anything up.
+
+This is the same rule the protocol already applies to tenancy — a privileged
+operation is its own address rather than a widened ordinary one — and the same
+reason: *there is nothing to override because there is no field to send*. A
+single subject that allowed the caller's own account by comparison would work,
+and would be one guard weaker: the day a handler forgets the comparison, the
+subject reads anybody's access.
+
+** One answer per screen
+
+A journey that only reads wants the joined rows in one request, not a call per
+panel. The first screen that needed this was the access group's, and the shape
+it settled is worth stating because it recurs:
+
+- one response per screen, carrying everything that screen renders;
+- the permissions each role grants, attributed to the role rather than flattened
+  into one list, so a person can see where a capability comes from;
+- the assignment tail beside each role — who granted it, when, and why — which
+  the junction table already stores and no subject returns.
+
+The alternative — three thin reads that the screen joins — costs three round
+trips and still cannot attribute a permission to a role, because the flat list
+has thrown the attribution away.
+
+** The access reads
+
+| Read | Subject | Who | Needs | Answers |
+|------+---------+-----+-------+---------|
+| The caller's own access | =iam.v1.roles.mine= | any signed-in account | a session | the account's roles, each with the permissions it grants and its assignment tail |
+| Another account's access | =iam.v1.roles.by-account= | a tenant administrator | =iam::roles:read= | the same shape, for the account named |
+| One role's bundle | =iam.v1.roles.permissions= | any signed-in account | a session | the permission codes one role bundles |
+| The old flat list | =iam.v1.roles.permissions-by-account= | retired | — | folded into the composed read, because a flat list is what loses the attribution |
+
+The three that remain each carry a =result=, which the contract above requires of
+every operation. The first two answer =denied= when the caller may not have what
+it asked for, with the permission that was required as the code, so a caller can
+tell a refusal from an empty account without reading a sentence.
+
+One role's bundle needs no permission, and that is deliberate rather than an
+omission: registration gives a person one role, asking for more is the journey
+[[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] runs, and a
+person deciding what to ask for reads what the role grants. The tenant's roles
+are already listable by any member, so gating the bundle would hide the half of
+the answer that makes the ask informed.
+
+** The divergence this page does not settle
+
+The protocol says authorisation answers =denied= in the payload. Most generated
+handlers do something else: they check the permission before decoding and reply
+with an empty body and =X-Error: forbidden=, so the refusal travels in the
+envelope and carries neither a code nor a sentence. The access reads follow the
+protocol rather than the handlers, because they have to distinguish a refusal
+from an empty answer and because a denied authorisation is an answer about the
+resource, not a failure to reach the operation.
+
+That leaves two mechanisms in the tree for one concept. Reconciling them —
+either by moving the generated handlers onto the payload outcome or by stating
+that an operation-level permission failure is an envelope failure — is its own
+piece of work, and it is recorded rather than decided here.
+
+* See also
+
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the identity lifecycle and the vocabulary this page uses.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the role and permission model the check consults.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol]] — the response and outcome contract, and the authorisation rule this page applies.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — why a journey that only reads wants one joined answer.
+- [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] — the group whose reads this page settles.
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] and [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the two journeys these reads carry.

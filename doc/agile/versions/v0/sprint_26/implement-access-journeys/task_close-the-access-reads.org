@@ -8,12 +8,12 @@
 #+filetags: :implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-access-journeys
-#+pr:
+#+pr: 2455
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,36 +26,73 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
 
--
+- A caller who holds neither =iam::roles:read= nor the requested account reads
+  nothing about it, and the refusal is a value the caller can read rather than
+  an empty answer.
+- A caller reading their own account needs no permission, because the member's
+  own journey is the first of the four.
+- A test proves that a caller asking for another account's access is refused,
+  and that the same caller asking for their own is not.
+- A permission read answers which role grants each code, so the member's screen
+  can say where a capability comes from.
+- A read returns the =account_role= assignment tail: who granted a role, when,
+  and the reason.
+- The shell reaches the same subjects for the operations it carries today.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The mechanism is [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]],
+which is the ground truth for the steps below. It was reviewed and agreed before
+any of it was built, and the four choices in it are: one composed answer per
+screen, a self subject that takes no account id, the database-backed permission
+check, and a refusal that travels as a =denied= payload result.
+
+1. Give the two access responses a =result=. =get_account_roles_response= carries
+   only =roles=, and =get_account_permissions_response= only
+   =permission_codes=, so neither can say "denied" — and an empty list reads as
+   an account that holds nothing. This comes first because the gate has nowhere
+   to speak until it is done.
+2. Split the reads by subject. Add =iam.v1.roles.mine=, which takes no account id
+   and answers for =ctx.actor()=: the account's roles, each with the permissions
+   it grants and its assignment tail. Keep =iam.v1.roles.by-account= as the
+   privileged read, now requiring =iam::roles:read=, and retire
+   =iam.v1.roles.permissions-by-account= into the composed answer.
+3. Authorise with =authorization_service::has_permission= rather than the
+   token-backed helper, because it reads the effective permissions and denies on
+   an empty set. The token-backed helper allows when the list is empty, which is
+   an account that holds no roles — the ordinary state, not an attack.
+4. Regenerate the protocols for both languages, run the codegen gates, build, and
+   test: a caller reading its own access is allowed, the same caller reading
+   another account is denied, and an account that holds nothing answers =ok= with
+   no rows rather than denied.
+5. Migrate the consumers in the same wave: the HTTP gateway's authorization
+   routes and the shell's authorization commands, so no client is left speaking
+   a subject that has retired.
+
+Two findings to carry. The reads take an arbitrary account id and prove only a
+session, so any member can read a colleague's access today — that is the defect,
+not a gap. And =role_handler.hpp= asks for a literal ="iam::roles:write"= that
+neither the seed nor =permission_codes.hpp= defines, while the constant file
+declares =roles_update=; the catalogue task owns that correction, and this one
+does not touch it.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reads the authorization model declares | 9 subjects, one new and one retired | =grep -c "^:subject:" projects/ores.iam/modeling/ores.iam.authorization_messages.org= | =70348c2f84= |
+| References to the retired subject outside the agile record | 0 | =grep -rn "permissions-by-account" projects/ --include=*.cpp --include=*.hpp --include=*.ts --include=*.org= | =70348c2f84= |
+| New tests | 4 cases, 23 assertions | =build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests "read_own_access*,read_account_access*"= | =70348c2f84= |
+| Tests that fail | 1 of 89, in a component this change does not touch | =./compass.sh test run= | =70348c2f84= |
 
 * Notes
 
@@ -74,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2455][#2455]] | [iam] Authorise the access reads and compose them |
 
 * Review
 
@@ -83,3 +120,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The access reads are authorised, composed and honest about a refusal, which is
+the mechanism [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]
+settles.
+
+- *A self read that cannot name anybody else.* =iam.v1.roles.mine= takes no
+  account id: the account is the authenticated actor, so the read is scoped by
+  construction rather than by a comparison that has to be right. It needs no
+  permission beyond a session, because reading your own access is the ordinary
+  case the member's journey runs on.
+- *The privileged read is a different subject with a real gate.*
+  =iam.v1.roles.by-account= keeps the account id and now checks
+  =iam::roles:read= before it looks anything up, through the database-backed
+  =authorization_service::has_permission= rather than the token's permission
+  list. The token is a snapshot taken at sign-in, and its check allows an empty
+  list, which is exactly the state an account whose roles were all revoked is
+  in.
+- *One composed answer.* Both reads answer the same shape: each role the
+  account holds, the permission codes that role grants, and the
+  =account_role= junction's own record of who granted it, when and why. The
+  permissions are attributed to the role that grants them, which the flat list
+  could not do, and the assignment tail is returned for the first time.
+- *A refusal is a value.* Both responses carry =result=, and a caller who may
+  not read what it asked for is told =denied= with =iam::roles:read= as the
+  code. An account that holds no roles answers =ok= with no rows. Those are now
+  different answers, which they were not before.
+- *The flat list retired.* =iam.v1.roles.permissions-by-account= is gone, and
+  so is every consumer of it: the HTTP gateway route, the shell command, the
+  generated recipes and the shell library script that called it. Nothing in the
+  tree speaks the retired subject.
+
+* Notes
+
+- *The HTTP gateway keeps the privileged route and gains none for the self
+  read.* =/api/v1/iam/roles/by-account= survives and its retired sibling does
+  not. No document asks for a route to =iam.v1.roles.mine=, and a new public
+  surface is not something to add on the way past; the browser reaches the self
+  read through the BFF when the access screen is built.
+- *A failure that stopped the work is =failed=, not =denied=.* The ground truth
+  fixes =ok= and =denied=; an exception sets =outcome::failed= with the message,
+  because the generated default is =ok= and an exception reported as =ok= would
+  read as an account that holds nothing.
+- *The one failing test is a load-timing test in =ores.workflow.core.tests=.*
+  "workflow_engine recovery re-dispatches the step that was in progress" waits
+  five seconds for a second message on a buffered subscription and timed out
+  under the full suite; it passes when run alone, and this change touches no
+  workflow code. =ores.service.tests=, which failed on =main= earlier in the
+  sprint, passes here.

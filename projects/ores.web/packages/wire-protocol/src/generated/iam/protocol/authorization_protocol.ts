@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 import type { Role } from '../domain/role.js';
+import type { Result } from '../../../utility/protocol.js';
 
 export interface AssignRoleRequest {
     account_id: string;
@@ -68,16 +69,29 @@ export interface GetAccountRolesRequest {
     account_id: string;
 }
 
-export interface GetAccountRolesResponse {
-    roles: Role[];
-}
+export interface GetMyRolesRequest {}
 
-export interface GetAccountPermissionsRequest {
-    account_id: string;
-}
-
-export interface GetAccountPermissionsResponse {
+/**
+ * @brief One role an account holds, with the permissions it grants and the
+ * record of its assignment.
+ *
+ * The element both access reads answer with, so the member's screen and the
+ * administrator's render one type. The permissions are attributed to the
+ * role rather than flattened into one list, and the tail is the junction
+ * row's own record of who granted the role, when and why.
+ */
+export interface AccountRoleAccess {
+    role: Role;
     permission_codes: string[];
+    assigned_by: string;
+    assigned_at: string;
+    change_reason_code: string;
+    change_commentary: string;
+}
+
+export interface GetAccountRolesResponse {
+    result: Result;
+    roles: AccountRoleAccess[];
 }
 
 export interface GetRolePermissionsRequest {
@@ -85,6 +99,7 @@ export interface GetRolePermissionsRequest {
 }
 
 export interface GetRolePermissionsResponse {
+    result: Result;
     permission_codes: string[];
 }
 
@@ -104,7 +119,7 @@ export const subjects = {
     revoke_role_request: 'iam.v1.roles.revoke',
     revoke_role_by_name_request: 'iam.v1.roles.revoke-by-name',
     get_account_roles_request: 'iam.v1.roles.by-account',
-    get_account_permissions_request: 'iam.v1.roles.permissions-by-account',
+    get_my_roles_request: 'iam.v1.roles.mine',
     get_role_permissions_request: 'iam.v1.roles.permissions',
     suggest_role_commands_request: 'iam.v1.roles.suggest-commands',
 } as const;
@@ -119,7 +134,7 @@ export const requiresSession = {
     revoke_role_request: true,
     revoke_role_by_name_request: true,
     get_account_roles_request: true,
-    get_account_permissions_request: true,
+    get_my_roles_request: true,
     get_role_permissions_request: true,
     suggest_role_commands_request: true,
 } as const;

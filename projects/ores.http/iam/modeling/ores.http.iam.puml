@@ -52,7 +52,6 @@ namespace ores #F2F2F2 {
                     +handle_assign_role(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                     +handle_revoke_role(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                     +handle_get_account_roles(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
-                    +handle_get_account_permissions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                     +handle_get_role_permissions(const ores::http::domain::http_request& req, ores::nats::service::nats_client& session) : boost::asio::awaitable<ores::http::domain::http_response>
                 }
                 class bootstrap_routes {

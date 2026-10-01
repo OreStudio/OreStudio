@@ -26,6 +26,8 @@
 #define ORES_IAM_API_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -121,13 +123,9 @@ struct get_account_roles_request {
     std::string account_id;
 };
 
-struct get_account_roles_response {
-    std::vector<ores::iam::domain::role> roles;
-};
-
-struct get_account_permissions_request {
-    using response_type = struct get_account_permissions_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.permissions-by-account";
+struct get_my_roles_request {
+    using response_type = struct get_account_roles_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.mine";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -135,11 +133,29 @@ struct get_account_permissions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::string account_id;
 };
 
-struct get_account_permissions_response {
+/**
+ * @brief One role an account holds, with the permissions it grants and the
+ * record of its assignment.
+ *
+ * The element both access reads answer with, so the member's screen and the
+ * administrator's render one type. The permissions are attributed to the
+ * role rather than flattened into one list, and the tail is the junction
+ * row's own record of who granted the role, when and why.
+ */
+struct account_role_access {
+    ores::iam::domain::role role;
     std::vector<std::string> permission_codes;
+    std::string assigned_by;
+    std::chrono::system_clock::time_point assigned_at;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct get_account_roles_response {
+    ores::utility::domain::result result;
+    std::vector<account_role_access> roles;
 };
 
 struct get_role_permissions_request {
@@ -156,6 +172,7 @@ struct get_role_permissions_request {
 };
 
 struct get_role_permissions_response {
+    ores::utility::domain::result result;
     std::vector<std::string> permission_codes;
 };
 

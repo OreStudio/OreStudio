@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 31644F1D-5A51-4742-BF6B-1E72F4697229
+:END:
+#+title: A token with no permissions passes every permission check
+#+description: ores.service.messaging.has_permission returns true when the request context's permission list is empty, as backward compatibility with tokens issued before RBAC enforcement, and the comment is the code's own. get_effective_permissions returns an empty list for an account that holds no roles, which is an ordinary state: a tenant administrator may revoke every role, and a registration into a tenant that nominates no default role is refused rather than creating one. So an account holding no roles carries a token that satisfies every check the generated handlers make. The other check, authorization_service::has_permission, reads the effective permissions from the database and denies on an empty set, and the two therefore disagree about the same account. Candidate: drop the pass-through, or scope it to a token that declares it predates RBAC rather than to one whose list merely came back empty. The access reads take the database-backed check for this reason; the generated handlers still take the other.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:capture:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

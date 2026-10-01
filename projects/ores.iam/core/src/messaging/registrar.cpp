@@ -311,8 +311,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             rh->by_account(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_account_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
-            rh->account_permissions(std::move(msg));
+        get_my_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->mine(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         get_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {

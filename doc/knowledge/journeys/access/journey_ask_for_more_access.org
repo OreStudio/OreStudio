@@ -169,7 +169,7 @@ holding an administrator's read.
 * What is missing
 
 1. *No request subject exists.* =iam.v1.roles.*= carries =assign=, =revoke=,
-   =by-account=, =permissions=, =permissions-by-account=, =suggest-commands= and
+   =mine=, =by-account=, =permissions=, =suggest-commands= and
    the registrar's CRUD; nothing submits, lists, withdraws or refuses a request.
    The candidates are the five request subjects in the table above. The approval
    itself needs no new write: =iam.v1.roles.assign= already grants the role and

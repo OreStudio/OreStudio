@@ -117,25 +117,25 @@ It is addressed at =iam.v1.roles.by-account=.
 authorization get-account-roles __none__
 #+end_src
 
-** =get-account-permissions=
+** =get-my-roles=
 :PROPERTIES:
-:ID: 8210F786-82E7-5973-B1D0-09288524FE0A
+:ID: EA5B1176-D179-5681-9B76-3029BDE74043
 :END:
 
-Sends =get_account_permissions_request= and prints =get_account_permissions_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, in that order. The caller must have established a session first.
+Sends =get_my_roles_request= and prints =get_account_roles_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-authorization get-account-permissions <account_id>
+authorization get-my-roles
 #+end_example
 
-It is addressed at =iam.v1.roles.permissions-by-account=.
+It is addressed at =iam.v1.roles.mine=.
 
-#+name: authorization-get-account-permissions
-#+begin_src ores-shell :tangle authorization-get-account-permissions.ores :exports none
-authorization get-account-permissions __none__
+#+name: authorization-get-my-roles
+#+begin_src ores-shell :tangle authorization-get-my-roles.ores :exports none
+authorization get-my-roles
 #+end_src
 
 ** =get-role-permissions=

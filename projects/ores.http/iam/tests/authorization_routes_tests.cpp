@@ -72,7 +72,7 @@ TEST_CASE("authorization_routes_registers_every_declared_operation", tags) {
     const auto table = registered_routes(session);
     const auto& routes = table->routes();
 
-    REQUIRE(routes.size() == 5);
+    REQUIRE(routes.size() == 4);
 
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
@@ -80,8 +80,6 @@ TEST_CASE("authorization_routes_registers_every_declared_operation", tags) {
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/assign"}, true},
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/revoke"}, true},
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/by-account"}, true},
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/permissions-by-account"}, true},
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/permissions"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -90,7 +88,7 @@ TEST_CASE("authorization_routes_registers_every_declared_operation", tags) {
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 5 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 4 route(s).";
 }
 
 TEST_CASE("authorization_routes_requires_a_session_where_the_message_does", tags) {
@@ -107,8 +105,6 @@ TEST_CASE("authorization_routes_requires_a_session_where_the_message_does", tags
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/assign"}, true},
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/revoke"}, true},
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/by-account"}, true},
-             expected_route{
-                 http_method::post, std::string{"/api/v1/iam/roles/permissions-by-account"}, true},
              expected_route{http_method::post, std::string{"/api/v1/iam/roles/permissions"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
@@ -121,5 +117,5 @@ TEST_CASE("authorization_routes_requires_a_session_where_the_message_does", tags
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 5 route(s).";
+    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 4 route(s).";
 }

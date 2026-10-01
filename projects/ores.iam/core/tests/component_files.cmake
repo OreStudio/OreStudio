@@ -44,6 +44,7 @@ set(files
     "seed_profile_step_eventing_integration_tests.cpp"
     "service_account_service_tests.cpp"
     "service_account_tests.cpp"
+    "service_authorization_access_tests.cpp"
     "service_authorization_check_permission_tests.cpp"
     "service_internal_impersonation_service_tests.cpp"
     "service_seed_profile_parameter_check_tests.cpp"

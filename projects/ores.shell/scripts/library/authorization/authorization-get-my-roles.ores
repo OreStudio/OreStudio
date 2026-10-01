@@ -1,6 +1,6 @@
-# =get-account-permissions=
+# =get-my-roles=
 #
 # GENERATED from doc/recipes/shell/authorization/authorization.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-authorization get-account-permissions __none__
+authorization get-my-roles

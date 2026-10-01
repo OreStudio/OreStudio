@@ -143,21 +143,6 @@ authorization_routes::handle_get_account_roles(const http_request& req, nats_cli
 }
 
 boost::asio::awaitable<http_response>
-authorization_routes::handle_get_account_permissions(const http_request& req,
-                                                     nats_client& session) {
-    using request_type = messaging::get_account_permissions_request;
-    try {
-        const auto parsed = rfl::json::read<request_type>(req.body);
-        if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-        co_return co_await forward(req, session, *parsed);
-    } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
-    }
-}
-
-boost::asio::awaitable<http_response>
 authorization_routes::handle_get_role_permissions(const http_request& req, nats_client& session) {
     using request_type = messaging::get_role_permissions_request;
     try {
@@ -220,21 +205,6 @@ void authorization_routes::register_routes(
     router->add_route(get_account_roles_built);
     registry->register_route(get_account_roles_built);
 
-    auto get_account_permissions_route =
-        router->post("/api/v1/iam/roles/permissions-by-account")
-            .summary("Get account permissions")
-            .description("Forwards to the iam.v1.roles.permissions-by-account operation.")
-            .tags({"iam"})
-            .auth_required()
-            .body<messaging::get_account_permissions_request>()
-            .response<messaging::get_account_permissions_response>()
-            .handler([&session](const http_request& req) {
-                return handle_get_account_permissions(req, session);
-            });
-    const auto get_account_permissions_built = get_account_permissions_route.build();
-    router->add_route(get_account_permissions_built);
-    registry->register_route(get_account_permissions_built);
-
     auto get_role_permissions_route =
         router->post("/api/v1/iam/roles/permissions")
             .summary("Get role permissions")
@@ -250,7 +220,7 @@ void authorization_routes::register_routes(
     router->add_route(get_role_permissions_built);
     registry->register_route(get_role_permissions_built);
 
-    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 5 << " endpoint(s)";
+    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 4 << " endpoint(s)";
 }
 
 }

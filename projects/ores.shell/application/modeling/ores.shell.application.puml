@@ -149,7 +149,7 @@ namespace ores #F2F2F2 {
                     +process_assign_role(ostream& out, ores::nats::service::nats_client& session, string account_id, string role_id) : void
                     +process_revoke_role(ostream& out, ores::nats::service::nats_client& session, string account_id, string role_id) : void
                     +process_get_account_roles(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
-                    +process_get_account_permissions(ostream& out, ores::nats::service::nats_client& session, string account_id) : void
+                    +process_get_my_roles(ostream& out, ores::nats::service::nats_client& session) : void
                     +process_suggest_role_commands(ostream& out, ores::nats::service::nats_client& session, string username, string identifier) : void
                 }
                 class refdata_commands {

@@ -86,11 +86,11 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
         "get-account-roles <account_id>");
 
     menu->Insert(
-        "get-account-permissions",
+        "get-my-roles",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_account_permissions(std::ref(out), std::ref(session), std::move(args));
+            process_get_my_roles(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-account-permissions <account_id>");
+        "get-my-roles");
 
     menu->Insert(
         "get-role-permissions",
@@ -375,17 +375,18 @@ void authorization_operations_commands::process_get_account_roles(
     out << rfl::json::write(*result) << std::endl;
 }
 
-void authorization_operations_commands::process_get_account_permissions(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-account-permissions request.";
+void authorization_operations_commands::process_get_my_roles(std::ostream& out,
+                                                             nats_client& session,
+                                                             const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-roles request.";
 
-    using request_type = ores::iam::messaging::get_account_permissions_request;
+    using request_type = ores::iam::messaging::get_my_roles_request;
 
     // Whether the command presents a token is the protocol's own statement, so
     // a message that establishes the session is never asked for one.
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run get-account-permissions." << std::endl;
+            fail(out) << "You must be logged in to run get-my-roles." << std::endl;
             return;
         }
     }
@@ -397,7 +398,7 @@ void authorization_operations_commands::process_get_account_permissions(
         return;
     }
 
-    constexpr std::size_t positional_count = 1;
+    constexpr std::size_t positional_count = 0;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -405,20 +406,18 @@ void authorization_operations_commands::process_get_account_permissions(
     }
 
     request_type req;
-    std::size_t next = 0;
     try {
-        req.account_id = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    std::optional<ores::iam::messaging::get_account_permissions_response> result;
+    std::optional<ores::iam::messaging::get_account_roles_response> result;
     if constexpr (request_type::requires_session) {
-        result = do_auth_request<ores::iam::messaging::get_account_permissions_response>(
+        result = do_auth_request<ores::iam::messaging::get_account_roles_response>(
             out, session, std::string(req.nats_subject), req);
     } else {
-        result = do_request<ores::iam::messaging::get_account_permissions_response>(
+        result = do_request<ores::iam::messaging::get_account_roles_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

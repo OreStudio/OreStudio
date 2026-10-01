@@ -247,6 +247,19 @@ std::vector<ores::nats::message> commands_for(ores::nats::service::buffered_subs
  * The engine's publish is asynchronous, so a case that assumed it had already
  * arrived would be asserting the timing rather than the dispatch.
  */
+/// The recovery pass re-dispatches every in-progress instance the database
+/// holds, and the database is shared: the other test binaries ctest runs
+/// beside this one start their own workflows in their own tenants, and the
+/// engine reads them all. A subscription that only wants its own instance's
+/// commands therefore still needs room for the others -- a ten-message buffer
+/// drops the test's own command once the deployment is busy, which is how this
+/// case flapped on a loaded runner while passing on a quiet one.
+constexpr std::size_t step_command_buffer = 512;
+
+/// The same breadth makes a pass slower than a quiet machine's, so the wait is
+/// a ceiling on a loaded runner rather than an expectation.
+constexpr auto recovery_wait = std::chrono::seconds(20);
+
 std::vector<ores::nats::message> wait_for_instance(ores::nats::service::buffered_subscription& sub,
                                                    const std::string& instance_id,
                                                    std::size_t wanted,
@@ -388,10 +401,10 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
     f.register_steps("test_recovery_workflow", {"one", "two"});
     const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
-    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
     f.engine->on_start_workflow(
         as_message(start_for("test_recovery_workflow", f.tenant(), instance_id)));
-    const auto first = wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5));
+    const auto first = wait_for_instance(commands, instance_id, 1, recovery_wait);
     REQUIRE(first.size() == 1);
     const auto step_id =
         first.front().headers.at(std::string(ores::workflow::messaging::step_id_header));
@@ -400,7 +413,7 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
     // behind: the instance is in progress and its first step is in progress.
     f.engine->recover_in_progress();
 
-    const auto after = wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5));
+    const auto after = wait_for_instance(commands, instance_id, 2, recovery_wait);
     REQUIRE(after.size() == 2);
 
     // The re-dispatch carries the same step id, because that is the

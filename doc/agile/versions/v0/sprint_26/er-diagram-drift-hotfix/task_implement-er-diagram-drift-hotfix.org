@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: B51F14EF-5143-4425-885D-2BEBD9BEDAA4
+:END:
+#+title: Task: Implement Hotfix: the ER diagram no longer matches the SQL tree
+#+description: Parse the SQL tree into the model and render the diagram over it, then prove the check passes.
+#+type: task
+#+level: s1
++#+filetags: :hotfix:sql:codegen:diagram:sprint_26:v0:er-diagram-drift-hotfix:
+#+owner: marco
++#+branch: hotfix/regenerate-the-er-diagram
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-10-01
++#+updated: 2026-10-01
++#+environment: clever_dijkstra
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D024F7F9-92A0-442F-9EDE-4BBD23597859][Hotfix: the ER diagram no longer matches the SQL tree]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take the =drift= job green for every pull request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D024F7F9-92A0-442F-9EDE-4BBD23597859][Hotfix: the ER diagram no longer matches the SQL tree]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The two commands the drift job runs pass, including =--check=.
+- The diff is the tables and comments the recent merges added.
+
+* Plan
+
+1. Run the job's parse and render commands from the job itself.
+2. Regenerate the diagram and re-run the check.
+3. Commit, and re-run the other open pull request's checks afterwards.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The check before | exit 1 | =plantuml_er_generate.py ... --check= | main at ee9c6f2a |
+| Tables in the render | 361, across 22 packages | =plantuml_er_parse_sql.py ... --warn= | this branch |
+| The check after | =ores_schema.puml is up to date=, exit 0 | =plantuml_er_generate.py ... --check= | this branch |
+| The diff | 10 insertions, 7 deletions | =git diff --stat= | this branch |
+
+* Notes
+
+- The generator needs =pystache=, which lives in the codegen virtual
+  environment, so the render runs under =projects/ores.codegen/venv/bin/python=
+  rather than the system interpreter the workflow uses (there, the
+  requirements are installed into the runner's Python).
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores_schema.puml= matches a fresh render of the 361 tables across 22
+packages, and the check the drift job runs exits 0.

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 8C2E5D74-3B91-4F0A-9E67-1A5D8C3F2B40
+:END:
+#+title: Task: Implement Hotfix: the recovery test fails when the database is busy
+#+description: Raise the recovery case's step-command buffer to 512 and its wait to 20 seconds, with the reason beside them, and verify the case alone and with other suites beside it.
+#+type: task
+#+level: s1
++#+filetags: :hotfix:workflow:tests:isolation:sprint_26:v0:workflow-recovery-test-isolation-hotfix:
++#+owner: marco
++#+branch: hotfix/recovery-test-isolation
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-10-01
++#+updated: 2026-10-01
++#+environment: clever_dijkstra
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F9A2C81-7E35-4B6D-A0C2-8D1F3E7B5A96][Hotfix: the recovery test fails when the database is busy]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the recovery case pass whatever else is running.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4F9A2C81-7E35-4B6D-A0C2-8D1F3E7B5A96][Hotfix: the recovery test fails when the database is busy]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- =step_command_buffer= and =recovery_wait= are named constants with the reason
+  they differ from the neighbouring cases.
+- The case passes alone and in a parallel group with the suites that start
+  workflows.
+- =clang-format= is clean.
+
+* Plan
+
+1. Read the pass to see why it sees other tenants' work.
+2. Raise the case's buffer and wait, with the reason beside them.
+3. Run the case alone twice and in a parallel group, then format-check.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The failure | =after.size() == 2 for: 1 == 2=, a five second wait timing out | CI log | main at 82ff1e59 |
+| Alone, before and after | 3 of 3 runs pass on a quiet machine | =ores.workflow.core.tests -r compact= | this branch |
+| In the parallel pattern CI uses | pass, with iam core, ore core and shell workflow beside it | =ctest -j 4 -R "workflow\|iam.core\|shell.workflow\|ore.core"= | this branch |
+| Formatting | clean | =clang-format --dry-run --Werror= | this branch |
+
+* Notes
+
+- The pass is not narrowed: it must find every in-progress run after a
+  restart. The read that would bound it is a repository read by state, which
+  the generated repository does not offer today.
+- iam core is red in this worktree on =is_registration_default= and
+  =account_status=, columns main added after the database was made; it is not
+  part of this change and fails the same way without it.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The recovery case's subscription holds 512 commands and waits 20 seconds, and
+the constants carry the reason. It passes alone and with other suites beside
+it.

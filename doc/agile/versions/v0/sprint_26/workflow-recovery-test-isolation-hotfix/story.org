@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 4F9A2C81-7E35-4B6D-A0C2-8D1F3E7B5A96
+:END:
+#+title: Story: Hotfix: the recovery test fails when the database is busy
+#+description: workflow_engine_tests.cpp:404 waits for the second step command after recover_in_progress() and got one. The pass re-dispatches every in-progress instance the database holds, including the ones the other test binaries ctest runs in parallel started in their own tenants, and the case's subscription holds ten messages, so a busy deployment evicts the command it is waiting for. The buffer and the wait are raised so the case holds whatever else runs.
+#+type: story
+#+level: s2
++#+filetags: :hotfix:workflow:tests:isolation:sprint_26:v0:
++#+created: 2026-10-01
++#+updated: 2026-10-01
++#+environment: clever_dijkstra
++#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The recovery case fails on CI and passes on a quiet machine:
+
+#+begin_src text
+workflow_engine_tests.cpp:404: FAILED: after.size() == 2 for: 1 == 2
+#+end_src
+
+=recover_in_progress()= re-dispatches every in-progress instance the database
+holds. The engine reads them with the system tenant because the generated
+repository has no read by state, so the pass sees the workflows the other test
+binaries ctest runs in parallel started in their tenants. The case subscribes
+to the step subject with a ten-message buffer and waits five seconds, so a busy
+deployment evicts the command it is waiting for and the pass grows past its
+budget. The case tested a quiet machine, not the behaviour.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-01                               |
+
+* Acceptance
+
+- The case passes alone and with other suites running beside it.
+- Its buffer and its wait are stated where a reader can see why they are
+  larger than the neighbouring cases'.
+- The bound on the recovery pass itself is recorded as the repository read it
+  needs, rather than papered over in the case.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8C2E5D74-3B91-4F0A-9E67-1A5D8C3F2B40][Implement Hotfix: the recovery test fails when the database is busy]] | DONE | 2026-10-01 | 2026-10-01 | Raise the case's buffer and wait with the reason beside them, and verify alone and under the parallel pattern CI uses. |
+
+* Decisions
+
+- The case is made to hold under load rather than the engine changed. The
+  pass's breadth is deliberate: a restart must find every in-progress run. What
+  it needs is a repository read by state, which is a change to the generated
+  repository and a story of its own; the capture on the runs the tests leave
+  behind already covers the residue that makes the breadth expensive.
+- The buffer is not raised for every case: only the recovery case triggers a
+  pass that re-dispatches other tenants' work.
+
+* Out of scope
+
+- The repository read by state, and the test residue, both filed already.

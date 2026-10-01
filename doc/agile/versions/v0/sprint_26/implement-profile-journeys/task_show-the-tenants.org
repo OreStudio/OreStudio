@@ -29,11 +29,11 @@ destructive journey.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Built. The journey document, the read, the route and the screen are on the branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Verify live, then raise the pull request. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

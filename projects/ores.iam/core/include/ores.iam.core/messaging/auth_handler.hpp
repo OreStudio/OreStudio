@@ -260,8 +260,8 @@ auth_registration_destination_refusal(bool has_tenant, bool has_role) {
  * destination, and the caller refuses rather than placing the registration in
  * the system tenant by omission.
  */
-inline std::optional<domain::tenant>
-auth_registration_tenant(const ores::database::context& ctx, const std::string& hostname) {
+inline std::optional<domain::tenant> auth_registration_tenant(const ores::database::context& ctx,
+                                                              const std::string& hostname) {
     if (!hostname.empty()) {
         if (auto t = auth_lookup_tenant_by_hostname(ctx, hostname))
             return t;
@@ -375,9 +375,8 @@ public:
             });
             reply(nats_,
                   msg,
-                  signup_response{.success = false,
-                                  .message = refusal->second,
-                                  .error_code = refusal->first});
+                  signup_response{
+                      .success = false, .message = refusal->second, .error_code = refusal->first});
             return;
         }
 
@@ -439,9 +438,8 @@ public:
                 });
                 reply(nats_,
                       msg,
-                      signup_response{.success = false,
-                                      .message = result.error_message,
-                                      .error_code = code});
+                      signup_response{
+                          .success = false, .message = result.error_message, .error_code = code});
                 return;
             }
 
@@ -470,9 +468,8 @@ public:
             });
             reply(nats_,
                   msg,
-                  signup_response{.success = false,
-                                  .message = e.what(),
-                                  .error_code = "invalid_request"});
+                  signup_response{
+                      .success = false, .message = e.what(), .error_code = "invalid_request"});
         }
     }
 

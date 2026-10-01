@@ -41,12 +41,12 @@ using setup_t = reporting::domain::report_run_setup;
  */
 struct text_binding {
     std::string_view parameter;
-    std::optional<std::string> setup_t::* member;
+    std::optional<std::string> setup_t::*member;
 };
 
 struct int_binding {
     std::string_view parameter;
-    std::optional<int> setup_t::* member;
+    std::optional<int> setup_t::*member;
 };
 
 const std::array<text_binding, 40> text_bindings = {{
@@ -185,8 +185,7 @@ std::vector<mapped_run_analytic> run_document_mapper::map_analytics(const ore& v
     return r;
 }
 
-analyticsType
-run_document_mapper::reverse_analytics(const std::vector<mapped_run_analytic>& v) {
+analyticsType run_document_mapper::reverse_analytics(const std::vector<mapped_run_analytic>& v) {
     analyticsType r;
 
     for (const auto& mapped : v) {

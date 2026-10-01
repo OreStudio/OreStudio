@@ -60,8 +60,7 @@ ores::ore::domain::ore load(const std::filesystem::path& path) {
     return document;
 }
 
-std::map<std::string, std::string> parameters_of(
-    const ores::ore::domain::parameterListType& list) {
+std::map<std::string, std::string> parameters_of(const ores::ore::domain::parameterListType& list) {
     std::map<std::string, std::string> out;
     for (const auto& parameter : list.Parameter)
         out[std::string(parameter.name)] = static_cast<const std::string&>(parameter);
@@ -152,8 +151,7 @@ TEST_CASE("ore_run_document_analytics_round_trip_over_the_corpus", tags) {
             CHECK(row.analytic.display_order == static_cast<int>(i) + 1);
             if (!in.type)
                 ++without_a_type;
-            CHECK(row.analytic.analytic_type_code ==
-                  std::string(in.type ? *in.type : ""));
+            CHECK(row.analytic.analytic_type_code == std::string(in.type ? *in.type : ""));
 
             // The active flag moves to the column and back to the head of the
             // parameter list, so the two parameter sets are compared without

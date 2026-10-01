@@ -47,8 +47,7 @@ std::filesystem::path corpus_file(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/examples/" + relative);
 }
 
-std::map<std::string, std::string> parameters_of(
-    const ores::ore::domain::parameterListType& list) {
+std::map<std::string, std::string> parameters_of(const ores::ore::domain::parameterListType& list) {
     std::map<std::string, std::string> out;
     for (const auto& parameter : list.Parameter)
         out[std::string(parameter.name)] = static_cast<const std::string&>(parameter);
@@ -80,8 +79,7 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
 
     ores::ore::domain::ore original;
     ores::ore::domain::load_data(
-        file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")),
-        original);
+        file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")), original);
 
     // The mapper reads a document, so the surrogate keys and the definition the
     // rows hang off are the caller's to set.
@@ -185,10 +183,10 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
     parameters_repo.write(h.context(), written_parameters);
 
     const auto stored_setups = setups.read_latest(h.context());
-    const auto found_setup = std::find_if(stored_setups.begin(), stored_setups.end(),
-                                          [&](const auto& row) {
-                                              return row.report_definition_id == definition_id;
-                                          });
+    const auto found_setup =
+        std::find_if(stored_setups.begin(), stored_setups.end(), [&](const auto& row) {
+            return row.report_definition_id == definition_id;
+        });
     REQUIRE(found_setup != stored_setups.end());
 
     const auto stored_analytics = analytics_repo.read_latest(h.context());
@@ -198,10 +196,9 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
             continue;
         read_analytics.push_back({row, {}});
     }
-    std::sort(read_analytics.begin(), read_analytics.end(),
-              [](const auto& lhs, const auto& rhs) {
-                  return lhs.analytic.display_order < rhs.analytic.display_order;
-              });
+    std::sort(read_analytics.begin(), read_analytics.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.analytic.display_order < rhs.analytic.display_order;
+    });
 
     const auto stored_bindings = bindings_repo.read_latest(h.context());
     std::vector<ores::reporting::domain::report_market_binding> read_bindings;
@@ -209,8 +206,9 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
         if (row.report_definition_id == definition_id)
             read_bindings.push_back(row);
     }
-    std::sort(read_bindings.begin(), read_bindings.end(),
-              [](const auto& lhs, const auto& rhs) { return lhs.position < rhs.position; });
+    std::sort(read_bindings.begin(), read_bindings.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.position < rhs.position;
+    });
 
     // Export from what the database returned, not from what was written.
     const auto exported_setup = run_document_mapper::reverse_setup(*found_setup);
@@ -271,8 +269,9 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
         }
         REQUIRE(it != by_analytic.end());
         auto stored = it->second;
-        std::sort(stored.begin(), stored.end(),
-                  [](const auto& lhs, const auto& rhs) { return lhs.position < rhs.position; });
+        std::sort(stored.begin(), stored.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.position < rhs.position;
+        });
         REQUIRE(stored.size() == row.parameters.size());
         for (std::size_t i = 0; i < row.parameters.size(); ++i) {
             ++compared_parameters;

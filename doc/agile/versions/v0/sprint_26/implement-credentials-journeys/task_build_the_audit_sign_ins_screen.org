@@ -135,7 +135,7 @@ the three reads the journey said it did not, and =iam.v1.sessions.active= is no
 longer a stub that answers with no rows.
 
 Verification. =npm run typecheck= passes across the three packages, Prettier is
-clean, and the suites are green: bff 97 tests in 20 files, web 192 in 18,
+clean, and the suites are green: bff 102 tests in 21 files, web 198 in 19,
 wire-protocol 51 in 7. Six of the web tests render each reading from a fixture
 and assert the reading each tab shows, the two filters being unavailable with
 their reasons, the sample series being stated as missing, and the gap list.

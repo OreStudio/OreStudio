@@ -47,9 +47,9 @@ The build tasks are written when the prototypes are accepted.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The member's Security screen is merged and the guard on the session reads is closed. The administrator's screen and the audit screen are scaffolded and next. |
+| Now           | Two of the three screens are merged and the third is in review. The member's Security screen and the administrator's Rescue access screen are on main, the guard on the session reads is closed, and the audit screen is on its branch. |
 | Waiting on    | Nothing. |
-| Next          | Build the administrator's Rescue access screen, then the sign-in audit screen. |
+| Next          | Merge the audit screen, then close the story. |
 | Last touched  | 2026-10-01                               |
 
 * Acceptance

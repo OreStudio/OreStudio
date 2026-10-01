@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: BDECF3A4-4A7C-4F64-94C1-A106E215F88D
 :END:
 #+title: ores.analytics.pricing_model_product

@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97
 :END:
 #+title: ores.iam.account_type

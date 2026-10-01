@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: 892C7799-23B7-4D3D-900D-8A2D08D62A6C
 :END:

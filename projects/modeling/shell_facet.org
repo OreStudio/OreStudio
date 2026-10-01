@@ -2,17 +2,17 @@
 :ID: E38360B6-99FF-4AF0-937F-58F31BD573F5
 :END:
 #+title: Shell facet
-#+description: The shell facet of the MASD entity model: the ores.cpp.shell-command codegen facet, the command unit it emits, and the per-component adapter part that receives it.
+#+description: The shell facet of the MASD model: the ores.cpp.shell-command codegen facet, the command units it emits, the per-component adapter part that receives them, and how a model opts in.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:masd:facet:modeling:shell:entity:
 #+created: 2026-05-21
-#+updated: 2026-09-16
+#+updated: 2026-10-01
 
-An entity's shell commands are codegen output. The =ores.cpp.shell-command=
-facet emits one command unit per entity: a submenu that carries the =get=,
-=add=, =delete= and =history= verbs. The entity opts in from its own model,
-and the unit lands in the adapter part named for the entity's component.
+A model's shell commands are codegen output. The =ores.cpp.shell-command= facet
+emits one command unit per entity, junction or operation model: a submenu named
+for the model's plural, and one command per verb or per declared message. The
+unit lands in the adapter part named for the model's component.
 
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
@@ -21,85 +21,87 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 | Field | Value |
 |---|---|
 | Facet | =ores.cpp.shell-command= |
-| Model type | =domain_entity= |
+| Model type | =domain_entity=, =junction=, =operation= |
 | Level | =cross= |
 | Default | disabled |
-| Archetypes | =command_header=, =command_implementation=, =command_tests= |
+| Archetypes | =command_header=, =command_implementation=, =command_tests=, =operation_header=, =operation_implementation=, =operation_tests= |
 
-The facet is disabled by default, so an entity receives a unit only when its
-model asks for one. The three archetypes are all per-entity, and each entity
-owns its own three files.
+Each model owns its own three files. Nothing is aggregated into one file, so a
+unit can be added or removed without touching its neighbours.
 
-* Opting an entity in
+* How a model opts in
 
-Add one property to the top-level properties drawer of the entity model,
-beside =:ID:=:
+The facet is off unless something turns it on, and three things can:
 
-#+begin_src org
-:PROPERTIES:
-:ID: <uuid>
-:ores.cpp.shell-command.enabled: true
-:END:
-#+end_src
+1. The facet node's own =#+default:=. It is =disabled= today.
+2. A variability profile's =* Physical space= table. A row =| =ores.cpp.shell-command= | true |=
+   turns the facet on for every model bound to that profile. Eight profiles fix
+   it: =fk-scoped-child=, =fully-featured-lookup=, =self-referencing-hierarchy=,
+   =simple-lookup=, =tenant-scoped-junction=, =uuid-identified-lookup=,
+   =uuid-surrogate-lookup= and =workspace-scoped-lookup=.
+3. The model's own properties drawer, =:ores.cpp.shell-command.enabled: true=.
 
-Then generate the unit:
+A model whose profile already fixes the facet states nothing itself. The drawer
+entry exists for the models that bind no profile, which is every operation model
+and the entities that carry no =:profile:= at all. Every entry in the shell
+surface generation story was checked against this rule, and the thirteen entries
+a profile already covered were removed.
 
-#+begin_src sh
-./compass.sh codegen generate --model projects/ores.<component>/modeling/ores.<component>.<entity>.org --address ores.cpp.shell-command
-#+end_src
+* What withholds a unit
 
-* File locations
+Two gates run before the opt-in is read, so neither can be overridden by a
+drawer entry:
 
-The unit belongs to the adapter part named for its component, not to
-=ores.shell.application=.
+- A staging shim whose plural another component also models renders no unit. The
+  shell names its menu after the plural, so two owners of one plural would
+  answer the same menu, and the shell resolves a duplicate by registration
+  order. dq's =report_definition= shim is withheld from reporting's
+  =report_definitions= menu this way.
+- A model that suppresses =ores.cpp.protocol= renders no unit, because the unit
+  includes the derived request types that do not exist without it.
 
-| File | Path |
+* The entity and junction unit
+
+The submenu is named for the model's plural. The verbs are the ones the shape
+derives:
+
+| Verb | Shape |
 |---|---|
-| Header | =projects/ores.shell/{component}/include/ores.shell/app/commands/{component}/{entity}_commands.hpp= |
-| Implementation | =projects/ores.shell/{component}/src/app/commands/{component}/{entity}_commands.cpp= |
-| Tests | =projects/ores.shell/{component}/tests/{entity}_commands_tests.cpp= |
+| =list= | One page, with =--offset=, =--limit=, =--order= and =--desc=. |
+| =get= | One row by key. |
+| =get-many= | Rows by a list of keys. |
+| =add= | A create. |
+| =set= | A replace, with =--version=. |
+| =put-many= | A batch upsert. |
+| =delete= | A delete, with =--version=. |
+| =delete-many= | A batch delete. |
+| =versions= | The version history, paged. |
+| =version= | One version, with =--version=. |
 
-Every consumer includes the header as
-=ores.shell/app/commands/{component}/{entity}_commands.hpp=, which is its path
-under the part's own =include/= directory. The part declares
-=#+component_kind: adapter=, so codegen writes only its two file lists beside
-the hand-authored CMakeLists.
+A junction derives the same set, and a parent-scoped child adds its
+=by-<parent>-id= read. A =current_state= entity has no version rows, so its unit
+carries no =versions= or =version=.
 
-* Command class layout
+The add verb takes free-form tokens rather than one typed parameter per column.
+The cli library expands a typed handler into one template instantiation per
+argument, and the Windows clang toolchain abandons the mangler on the deeper
+chains. A token vector holds the argument list at a fixed shape.
 
-The commands class is all-static. It carries an
-=inline static std::string_view logger_name= with the fully-qualified logger
-path and a static =lg()= accessor.
-=register_commands(cli::Menu& root_menu, nats_client& session, pagination_context& pagination)=
-inserts one submenu named for the entity's plural, registers one lambda per
-verb, and calls =pagination.register_list_callback= for the list verb. Each
-verb is a separate static =process_*= method.
+* The operation unit
 
-* The two shapes
+An operation model states messages, so its unit carries one command per message
+that declares a subject and a response. The command name is the message name
+without its =_request= suffix, kebab-cased, unless the message states a
+=shell_command= of its own.
 
-The template branches on =has_audit_group=, which is true when the entity
-model declares =#+domain_audit_group:=. Both shapes carry the same four verbs
-under the same submenu name, so the two shapes never change the command a
-user types. They differ in the history verb.
+The body sends the request and prints the reply through =rfl::json::write=. An
+operation unit therefore reads as JSON where a hand-written command may have
+printed rows.
 
-| Shape | History verb |
-|---|---|
-| With an audit group | ={entities} history <key>= |
-| Without an audit group | ={entities} history <key> [--diff] [--version <n>]= |
-
-A no-audit entity holds =change_reason_code=, =change_commentary= and
-=recorded_at= as flat members in place of =v.audit=. The add verb fills them
-from the last two positionals and from the clock, so its arity stays the same
-in both shapes.
-
-The =--diff= branch renders a unified diff through =render_history_diff= and
-returns early. A =--version= without =--diff= is rejected.
-
-The add verb takes free-form tokens rather than one typed parameter per
-column. The cli library expands a typed handler into one template
-instantiation per argument, and the Windows clang toolchain abandons the
-mangler on the deeper chains. A token vector holds the argument list at a
-fixed shape.
+A request field with a =:default:= arrives as a =--<name>= flag and the struct's
+own initialiser stands when the caller omits it. A field without one is a
+positional argument, so a request model that means a filter to be optional
+states a default for it.
 
 * Who supplies a column's value
 
@@ -113,12 +115,27 @@ The add verb fills one domain member per positional argument. The
 | =session_party= | The verb reads the acting party from the session, and fails when the account has no default party. |
 | =unset= | The verb leaves the member at its default and asks for nothing. |
 
-The =tenant_id= member takes no annotation. It is not a declared column, so
-the template names it directly and fills it from the session.
+The =tenant_id= member takes no annotation. It is not a declared column, so the
+template names it directly and fills it from the session.
 
-A malformed token names the field it belongs to, and the block that builds
-the entity sits inside one =try=. The handler reports the failure through
-=fail()= and returns.
+* File locations
+
+The unit belongs to the adapter part named for its component, not to
+=ores.shell.application=.
+
+| File | Path |
+|---|---|
+| Header | =projects/ores.shell/{component}/include/ores.shell/app/commands/{component}/{entity}_commands.hpp= |
+| Implementation | =projects/ores.shell/{component}/src/app/commands/{component}/{entity}_commands.cpp= |
+| Tests | =projects/ores.shell/{component}/tests/{entity}_commands_tests.cpp= |
+
+An operation's three files are named ={operation}_operations_commands=.
+
+Every consumer includes the header as
+=ores.shell/app/commands/{component}/{entity}_commands.hpp=, which is its path
+under the part's own =include/= directory. The part declares
+=#+component_kind: adapter=, so codegen writes only its two file lists beside
+the hand-authored CMakeLists.
 
 * Registration
 
@@ -128,15 +145,43 @@ hand-written and lives in the application part at
 It includes each unit's header and calls =register_commands= once per unit.
 =repl::setup_menus= calls the aggregator once at startup.
 
-The facet has no component-scoped archetype for that aggregator today, so
-adding an entity means one include and one call in the aggregator, plus a
-refresh of the part's file lists. A generated aggregator needs a render-time
-list of the component's opted-in entities, the same pattern the generator
-already uses for =_COMPONENT_FILES_TEMPLATES=.
+The facet has no component-scoped archetype for that aggregator, so adding a
+model means one include and one call in the aggregator, plus a refresh of the
+part's file lists. A generated aggregator needs a render-time list of the
+component's opted-in models, the same pattern the generator already uses for
+=_COMPONENT_FILES_TEMPLATES=.
 
-The units replace, they do not join. Delete the hand-written unit for an
-entity in the same change that generates its replacement, so the shell never
-carries two units for one submenu.
+The aggregator registers no command of its own, which is why it is not counted
+as a hand-written command unit.
+
+* The units replace, they do not join
+
+Two units must never register one submenu. The shell resolves a duplicate name
+by registration order, so the first unit answers every verb the two share and
+the second unit's verbs answer without appearing in the help.
+
+Delete the hand-written unit for a capability in the same change that generates
+its replacement. A hand-written verb that a generated one supersedes is a
+defect, not a compatibility layer. Where a hand-written command stays, it is
+because the model cannot state what it does: it changes this client's own
+session, it dispatches a workflow and waits on it, it composes several responses
+into a view no model declares, or it moves a file.
+
+* Enabling the facet by default
+
+The facet's default is the last lever, and it is not yet safe to pull. Flipping
+=#+default:= to enabled would render a unit for every model of every component,
+not only the components that have been cleaned.
+
+Measured on 2026-10-01 at =4eec0e6740=: 76 models across 16 components would
+gain a unit. Nine of them bind one of three profiles that do not fix the facet
+(=readonly-timeseries=, =table-less-record=, =trading-instrument=); the other 67
+carry no =:profile:= at all and are operations or entities whose component has
+not finished its clean-standard pass.
+
+The precondition is therefore that every component reaches the clean standard
+first. Until then, a model opts in from the profile that covers it, or from its
+own drawer when no profile does.
 
 * See also
 

@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: 1D12027D-54EB-4362-865D-91DC3CC980C5
 :END:
 #+title: ores.iam.account_status

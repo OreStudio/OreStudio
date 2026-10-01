@@ -1,5 +1,4 @@
 :PROPERTIES:
-:ores.cpp.shell-command.enabled: true
 :ID: 0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F
 :END:
 #+title: ores.iam.tenant_type

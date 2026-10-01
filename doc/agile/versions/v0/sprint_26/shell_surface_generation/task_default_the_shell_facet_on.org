@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :shell_surface_generation:sprint_26:v0:
 #+owner: marco
-#+branch: feature/generate-the-clean-components-shell-surface
+#+branch: feature/default-the-shell-facet-on
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The ores.cpp.shell-command facet is on by default, so a model no longer opts in 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -35,11 +35,11 @@ reset and no table holds a token.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | The screen, the two write routes and the wire write are landed on the branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then merge.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

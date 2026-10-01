@@ -732,8 +732,49 @@ before insert on "{{domain_entity.sql_name_base}}_tbl"
 for each row execute function {{domain_entity.sql_name_base}}_insert_fn();
 
 {{^domain_entity.current_state}}
+{{#domain_entity.has_delete_cascade}}
+-- The rows this row owns, closed when it is deleted. A function and not a
+-- rule body, because the rule resolves the tables it names when it is
+-- created and a child may be created after its parent; a plpgsql body
+-- resolves them when it runs.
+create or replace function {{domain_entity.sql_name_base}}_cascade_delete_fn(
+    p_row "{{domain_entity.sql_name_base}}_tbl")
+returns void as $$
+begin
+    -- Close every row this row owns, so one delete removes the family and
+    -- not the header alone. The store enforces it, so every caller gets it.
+{{#domain_entity.delete_cascade}}
+    delete from "{{table}}"
+    where tenant_id = p_row.tenant_id
+      and {{column}} = p_row.{{domain_entity.primary_key.column}};
+{{/domain_entity.delete_cascade}}
+{{#domain_entity.foreign_keys}}
+{{#cascade_orphan}}
+    -- A row this one was the last to name goes with it, so a shared parent
+    -- survives and its last child does not leave an orphan. This row is
+    -- still open here, so the count excludes it.
+    if not exists (
+        select 1 from "{{domain_entity.sql_name_base}}_tbl"
+        where tenant_id = p_row.tenant_id
+          and {{column}} = p_row.{{column}}
+          and {{domain_entity.primary_key.column}} <> p_row.{{domain_entity.primary_key.column}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        delete from "{{table}}"
+        where tenant_id = p_row.tenant_id
+          and {{target_column}} = p_row.{{column}};
+    end if;
+{{/cascade_orphan}}
+{{/domain_entity.foreign_keys}}
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+{{/domain_entity.has_delete_cascade}}
 create or replace rule {{domain_entity.sql_name_base}}_delete_rule as
 on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
+{{#domain_entity.has_delete_cascade}}
+    select {{domain_entity.sql_name_base}}_cascade_delete_fn(OLD);
+{{/domain_entity.has_delete_cascade}}
     update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = clock_timestamp(){{#domain_entity.sql.extra_delete_sets}},
         {{{.}}}{{/domain_entity.sql.extra_delete_sets}}

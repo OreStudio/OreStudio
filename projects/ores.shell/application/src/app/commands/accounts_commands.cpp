@@ -59,55 +59,18 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
     return ores::platform::time::datetime::to_local_display_string(tp);
 }
 
-std::string format_bytes(std::uint64_t bytes) {
-    if (bytes >= 1024 * 1024) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(2) << (bytes / (1024.0 * 1024.0)) << " MB";
-        return oss.str();
-    } else if (bytes >= 1024) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(2) << (bytes / 1024.0) << " KB";
-        return oss.str();
-    }
-    return std::to_string(bytes) + " B";
-}
-
-std::string format_duration(std::chrono::seconds dur) {
-    auto hours = std::chrono::duration_cast<std::chrono::hours>(dur);
-    auto mins = std::chrono::duration_cast<std::chrono::minutes>(dur - hours);
-    if (hours.count() > 0) {
-        return std::to_string(hours.count()) + "h " + std::to_string(mins.count()) + "m";
-    }
-    return std::to_string(mins.count()) + "m";
-}
-
 } // anonymous namespace
 
 void accounts_commands::register_commands(cli::Menu& root_menu,
                                           nats_client& session,
                                           pagination_context& pagination) {
     // The generated account unit owns the accounts menu. Every verb below is
-    // one the model cannot express: authentication, session inspection,
-    // lockout, role assignment and the default party.
+    // one the model cannot express: signing this client in and out, the
+    // generic history renderer, a username-addressed info view, and the
+    // default party. The account, login-info, session and account-operation
+    // reads are generated units under their own menus.
     ores::shell::app::extend_menu(
         root_menu, "accounts", [&session, &pagination](cli::Menu& accounts_menu) {
-            accounts_menu.Insert(
-                "create",
-                [&session](std::ostream& out,
-                           std::string principal,
-                           std::string password,
-                           std::string totp_secret,
-                           std::string email) {
-                    process_create_account(std::ref(out),
-                                           std::ref(session),
-                                           std::move(principal),
-                                           std::move(password),
-                                           std::move(totp_secret),
-                                           std::move(email));
-                },
-                "Create a new account (principal password totp_secret email) - principal is "
-                "username@hostname or username");
-
             // Register list callback for navigation
             pagination.register_list_callback("accounts",
                                               [&session, &pagination](std::ostream& out) {
@@ -125,56 +88,9 @@ void accounts_commands::register_commands(cli::Menu& root_menu,
                 "Login with principal (username@hostname or username) and password");
 
             accounts_menu.Insert(
-                "lock",
-                [&session](std::ostream& out, std::string account_id) {
-                    process_lock_account(std::ref(out), std::ref(session), std::move(account_id));
-                },
-                "Lock an account (account_id) - requires accounts:lock permission");
-
-            accounts_menu.Insert(
-                "unlock",
-                [&session](std::ostream& out, std::string account_id) {
-                    process_unlock_account(std::ref(out), std::ref(session), std::move(account_id));
-                },
-                "Unlock a locked account (account_id) - requires accounts:unlock permission");
-
-            accounts_menu.Insert(
-                "list-logins",
-                [&session](std::ostream& out) {
-                    process_list_login_info(std::ref(out), std::ref(session));
-                },
-                "Retrieve all login info records from the server");
-
-            accounts_menu.Insert(
                 "logout",
                 [&session](std::ostream& out) { process_logout(std::ref(out), std::ref(session)); },
                 "Logout the current user");
-
-            // The four account-role verbs this menu used to carry are retired:
-            // the generated authorization menu answers all four as
-            // get-account-roles, assign-role, revoke-role and get-my-roles.
-
-            // Session commands
-            accounts_menu.Insert(
-                "sessions",
-                [&session](std::ostream& out) {
-                    process_list_sessions(std::ref(out), std::ref(session));
-                },
-                "List your session history");
-
-            accounts_menu.Insert(
-                "sessions-for",
-                [&session](std::ostream& out, std::string account_id) {
-                    process_list_sessions(std::ref(out), std::ref(session), std::move(account_id));
-                },
-                "List sessions for an account (account_id) - requires accounts:read permission");
-
-            accounts_menu.Insert(
-                "active-sessions",
-                [&session](std::ostream& out) {
-                    process_active_sessions(std::ref(out), std::ref(session));
-                },
-                "List your currently active sessions");
 
             accounts_menu.Insert(
                 "history",
@@ -287,127 +203,6 @@ void accounts_commands::process_login(std::ostream& out,
         out << "  Party: " << *selected << std::endl;
 }
 
-void accounts_commands::process_lock_account(std::ostream& out,
-                                             nats_client& session,
-                                             std::string account_id) {
-    // Validate UUID format
-    try {
-        boost::lexical_cast<boost::uuids::uuid>(account_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Creating lock account request for ID: " << account_id;
-
-    iam::messaging::lock_account_request req;
-    req.account_ids = {account_id};
-
-    auto result = do_auth_request<iam::messaging::lock_account_response>(
-        out, session, iam::messaging::lock_account_request::nats_subject, req);
-    if (!result)
-        return;
-
-    if (result->results.empty()) {
-        fail(out) << "No results returned from server" << std::endl;
-        return;
-    }
-
-    const auto& account_result = result->results[0];
-    if (account_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully locked account: " << account_id;
-        out << "✓ Account locked successfully!" << std::endl
-            << "  Account ID: " << account_id << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: " << account_result.message;
-        fail(out) << "Failed to lock account: " << account_result.message << std::endl;
-    }
-}
-
-void accounts_commands::process_unlock_account(std::ostream& out,
-                                               nats_client& session,
-                                               std::string account_id) {
-    // Validate UUID format
-    try {
-        boost::lexical_cast<boost::uuids::uuid>(account_id);
-    } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
-        fail(out) << "Invalid account ID format. Expected UUID." << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Creating unlock account request for ID: " << account_id;
-
-    iam::messaging::unlock_account_request req;
-    req.account_ids = {account_id};
-
-    auto result = do_auth_request<iam::messaging::unlock_account_response>(
-        out, session, iam::messaging::unlock_account_request::nats_subject, req);
-    if (!result)
-        return;
-
-    if (result->results.empty()) {
-        fail(out) << "No results returned from server" << std::endl;
-        return;
-    }
-
-    const auto& account_result = result->results[0];
-    if (account_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: " << account_id;
-        out << "✓ Account unlocked successfully!" << std::endl
-            << "  Account ID: " << account_id << std::endl;
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: " << account_result.message;
-        fail(out) << "Failed to unlock account: " << account_result.message << std::endl;
-    }
-}
-
-void accounts_commands::process_create_account(std::ostream& out,
-                                               nats_client& session,
-                                               std::string principal,
-                                               std::string password,
-                                               std::string totp_secret,
-                                               std::string email) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating create account request for principal: " << principal;
-
-    iam::messaging::save_account_request req;
-    req.principal = std::move(principal);
-    req.password = std::move(password);
-    req.totp_secret = std::move(totp_secret);
-    req.email = std::move(email);
-
-    auto result = do_auth_request<iam::messaging::save_account_response>(
-        out, session, iam::messaging::save_account_request::nats_subject, req);
-    if (!result)
-        return;
-
-    if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Account creation failed: " << result->message;
-        fail(out) << "" << result->message << std::endl;
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully created account with ID: " << result->account_id;
-    out << "✓ Account created with ID: " << result->account_id << std::endl;
-}
-
-void accounts_commands::process_list_login_info(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
-
-    // The login-info read is the entity's own now, so the subject is the
-    // request's rather than a spelling this command kept by hand.
-    iam::messaging::list_login_info_request req;
-    auto result = do_auth_request<iam::messaging::list_login_info_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->login_info.size()
-                              << " login info records.";
-    out << result->login_info << std::endl;
-}
-
 void accounts_commands::process_logout(std::ostream& out, nats_client& session) {
     if (!session.is_logged_in()) {
         fail(out) << "Not logged in." << std::endl;
@@ -429,119 +224,6 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
         fail(out) << "Logout failed: " << e.what() << std::endl;
     }
     session.clear_auth();
-}
-
-void accounts_commands::process_list_sessions(std::ostream& out,
-                                              nats_client& session,
-                                              std::string account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list sessions request.";
-
-    // The derivation states no scoped read for sessions, because an account is
-    // not a relation the session resource is addressed by. Saying so is what
-    // the specification asks of an implementation that cannot answer a scope,
-    // rather than quietly returning every session instead.
-    if (!account_id.empty()) {
-        fail(out) << "Listing sessions by account is not served. "
-                     "Use 'sessions' for the page."
-                  << std::endl;
-        return;
-    }
-
-    iam::messaging::list_sessions_request req;
-    req.limit = 50;
-
-    auto result = do_auth_request<iam::messaging::list_sessions_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return;
-    if (result->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << result->result.message << std::endl;
-        return;
-    }
-
-    const auto& sessions = result->sessions;
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
-                              << " sessions (total: " << result->total << ").";
-
-    if (sessions.empty()) {
-        out << "No sessions found." << std::endl;
-        return;
-    }
-
-    out << "Sessions (showing " << sessions.size() << " of " << result->total << "):" << std::endl;
-    out << std::string(80, '-') << std::endl;
-
-    for (const auto& s : sessions) {
-        out << "  Start: " << format_time(s.start_time);
-        if (!s.end_time.empty()) {
-            // end_time is the column's text, which carries no UTC designator: the
-            // service writes it with to_db_string. from_iso8601_utc refuses that
-            // form, and the throw aborted the whole listing.
-            const auto end = ores::platform::time::datetime::from_db_string(s.end_time);
-            out << " - End: " << format_time(end);
-            const auto dur = std::chrono::duration_cast<std::chrono::seconds>(end - s.start_time);
-            out << " (" << format_duration(dur) << ")";
-        } else {
-            out << " [ACTIVE]";
-        }
-        out << std::endl;
-        out << "    IP: " << s.client_ip.to_string();
-        if (!s.country_code.empty()) {
-            out << " (" << s.country_code << ")";
-        }
-        out << std::endl;
-        if (!s.client_identifier.empty()) {
-            out << "    Client: " << s.client_identifier << " v" << s.client_version_major << "."
-                << s.client_version_minor;
-        }
-        if (s.bytes_sent > 0 || s.bytes_received > 0) {
-            out << "    Data: sent=" << format_bytes(s.bytes_sent)
-                << ", recv=" << format_bytes(s.bytes_received);
-        }
-        out << std::endl;
-    }
-}
-
-void accounts_commands::process_active_sessions(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
-
-    auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
-        out,
-        session,
-        iam::messaging::get_active_sessions_request::nats_subject,
-        iam::messaging::get_active_sessions_request{});
-    if (!result)
-        return;
-    if (!result->success) {
-        fail(out) << result->message << std::endl;
-        return;
-    }
-
-    const auto& sessions = result->sessions;
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
-                              << " active sessions.";
-
-    if (sessions.empty()) {
-        out << "No active sessions." << std::endl;
-        return;
-    }
-
-    out << "Active Sessions (" << sessions.size() << "):" << std::endl;
-    out << std::string(80, '-') << std::endl;
-
-    for (const auto& s : sessions) {
-        out << "  Started: " << format_time(s.start_time);
-        out << std::endl;
-        out << "    IP: " << s.client_ip.to_string();
-        if (!s.country_code.empty()) {
-            out << " (" << s.country_code << ")";
-        }
-        out << std::endl;
-        if (!s.client_identifier.empty()) {
-            out << "    Client: " << s.client_identifier << " v" << s.client_version_major << "."
-                << s.client_version_minor << std::endl;
-        }
-    }
 }
 
 void accounts_commands::process_get_account_history(std::ostream& out,

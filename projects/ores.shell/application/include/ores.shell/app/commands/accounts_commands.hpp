@@ -57,26 +57,6 @@ public:
                                   pagination_context& pagination);
 
     /**
-     * @brief Process a create account request.
-     *
-     * Creates a new account with the provided details.
-     * Note: Admin privileges are now managed via RBAC role assignments.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param principal Account principal (username@hostname or just username)
-     * @param password Account password
-     * @param totp_secret TOTP secret for 2FA
-     * @param email Account email
-     */
-    static void process_create_account(std::ostream& out,
-                                       ores::nats::service::nats_client& session,
-                                       std::string principal,
-                                       std::string password,
-                                       std::string totp_secret,
-                                       std::string email);
-
-    /**
      * @brief Process a list accounts request.
      *
      * Retrieves accounts from the server with pagination and displays them.
@@ -106,43 +86,6 @@ public:
                               std::string password);
 
     /**
-     * @brief Process a lock account request.
-     *
-     * Locks an account by account ID. Requires accounts:lock permission.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Account ID UUID as a string.
-     */
-    static void process_lock_account(std::ostream& out,
-                                     ores::nats::service::nats_client& session,
-                                     std::string account_id);
-
-    /**
-     * @brief Process an unlock account request.
-     *
-     * Unlocks a locked account by account ID. Requires accounts:unlock permission.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param account_id Account ID UUID as a string.
-     */
-    static void process_unlock_account(std::ostream& out,
-                                       ores::nats::service::nats_client& session,
-                                       std::string account_id);
-
-    /**
-     * @brief Process a list login info request.
-     *
-     * Retrieves all login info records from the server and displays them.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     */
-    static void process_list_login_info(std::ostream& out,
-                                        ores::nats::service::nats_client& session);
-
-    /**
      * @brief Process a logout request.
      *
      * Logs out the currently logged-in user.
@@ -151,34 +94,6 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_logout(std::ostream& out, ores::nats::service::nats_client& session);
-
-    /**
-     * @brief Process a bootstrap request.
-     *
-     * Creates the initial administrator account when the system is in bootstrap
-     * mode. This command is only available when no admin accounts exist.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     * @param principal User principal in format `username@hostname` or just `username`
-     *                  for system tenant. See create_initial_admin_request::principal.
-     * @param password Admin account password
-     * @param email Admin account email
-     */
-    static void process_list_sessions(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string account_id = "");
-
-    /**
-     * @brief Process an active sessions request.
-     *
-     * Lists currently active sessions for the current user.
-     *
-     * @param out Output stream for results
-     * @param session Client session for connectivity.
-     */
-    static void process_active_sessions(std::ostream& out,
-                                        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a get account history request.

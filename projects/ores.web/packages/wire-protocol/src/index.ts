@@ -49,6 +49,7 @@ export {
     badgePresentationSchema,
     partySummarySchema,
     tenantPageSchema,
+    tenantStatusSchema,
     tenantSummarySchema,
 } from './domain.js';
 export type {
@@ -59,16 +60,18 @@ export type {
     BadgePresentation,
     PartySummary,
     TenantPage,
+    TenantStatus,
     TenantSummary,
 } from './domain.js';
 
-export {
-    BADGE_SUBJECTS,
-    listBadgeDefinitionsRequestSchema,
-    listBadgeMappingsRequestSchema,
-    readBadgesForDomain,
-} from './badges.js';
+export { BADGE_SUBJECTS, listBadgeDefinitionsRequestSchema, readBadgeCatalogue } from './badges.js';
 export type { BadgeCatalogue } from './badges.js';
+
+export {
+    TENANT_STATUS_SUBJECTS,
+    listTenantStatusesRequestSchema,
+    readTenantStatuses,
+} from './tenant-statuses.js';
 
 export {
     TENANT_SUBJECTS,
@@ -266,7 +269,7 @@ export {
 // these definitions, so the network boundary is checked at runtime.
 export {
     apiErrorSchema,
-    badgeCatalogueSchema,
+    tenantStatusesResponseSchema,
     bootstrapStatusSchema,
     createAdministratorRequestSchema,
     initialAdministratorSchema,
@@ -284,7 +287,7 @@ export {
 } from './contracts.js';
 export type {
     ApiError,
-    BadgeCatalogueView,
+    TenantStatusesResponse,
     BootstrapStatus,
     CreateAdministratorRequest,
     InitialAdministrator,

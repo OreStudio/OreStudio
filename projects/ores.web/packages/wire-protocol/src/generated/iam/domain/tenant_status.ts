@@ -37,6 +37,7 @@ export interface TenantStatus {
     name: string;
     description: string;
     display_order: number;
+    badge_code: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -82,6 +82,27 @@ Order for UI display purposes.
 faker::number::integer(1, 100)
 #+end_src
 
+** badge_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The badge this status is painted with.
+
+Soft FK to =ores_dq_badge_definitions_tbl.code=. The badge supplies the
+colours and the severity; the status's own =name= is the label inside the
+pill, so the vocabulary a person reads is this row's and not the badge
+catalogue's.
+
+Nullable on purpose: a status nobody has painted is written plainly rather
+than hidden, and a pill with no colours is worse than the value itself.
+
+#+begin_src cpp :name generator
+std::string{}
+#+end_src
+
 * SQL
 
 ** Flags
@@ -151,6 +172,7 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 | name          | Name        |
 | description   | Description |
 | display_order | Order       |
+| badge_code    | Badge       |
 | modified_by   | Modified By |
 | version       | Version     |
 
@@ -167,6 +189,7 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 | status      | Status      | codeEdit        | line_edit | true   | true        | Enter status code   |
 | name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
 | description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+| badge_code  | Badge       | badgeEdit       | line_edit |        |             | Select a badge      |
 
 *** Columns
 
@@ -176,6 +199,7 @@ drop function if exists ores_iam_validate_tenant_status_fn;
 | Name         | name          | Name        | string    | 200   |
 | Description  | description   | Description | string    | 300   |
 | DisplayOrder | display_order | Order       | int       | 80    |
+| Badge        | badge_code    | Badge       | string    | 120   |
 | Version      | version       | Version     | int       | 80    |
 | ModifiedBy   | modified_by   | Modified By | string    | 120   |
 | RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |

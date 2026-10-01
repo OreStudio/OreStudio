@@ -37,6 +37,7 @@ export interface TenantStatusWrite {
     name: string;
     description: string;
     display_order: number;
+    badge_code: string;
 }
 
 export interface TenantStatusChange {

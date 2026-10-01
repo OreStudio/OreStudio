@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 5A6EEEEC-2A92-40EC-85C3-625064A884EB
+:END:
+#+title: Task: Put the badge on the tenant status row
+#+description: The badge belongs to the value, not to a mapping table. Give the tenant status its own badge reference, take the label from the status's own name, and read the statuses instead of the junction.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:badges:dq:iam:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/badge-the-tenant-status-row
+#+pr: 2483
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The badge stops being mapped to the value and becomes a property of the value.
+A tenant status names the badge that paints it, its own name is the word inside
+the pill, and the junction that mapped one to the other is not what the screen
+reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- A tenant status row names the badge that paints it, and no screen or route
+  reads a mapping to find out which.
+- The word inside the pill is the status row's own name, and the colours, the
+  severity and nothing else come from the badge.
+- A status without a badge, and a status whose badge has left the catalogue,
+  keep their words and lose their colours.
+- The read the roster uses answers the statuses and their badges in one call.
+- The mapping the screen used before is gone from the web read path.
+- Every new behaviour is proved by a test, and the pill was read in a browser
+  against the running deployment, compared to the status rows themselves.
+
+* Plan
+
+1. *The column, on the value.* The badge is a reference the value holds, so the
+   value's own model gains it and the codegen produces the layers. The model is
+   the source: no generated file is edited by hand.
+2. *The words stay the value's.* The badge supplies colours and severity. Its
+   own name is its entry in the catalogue and never the label of somebody
+   else's state, which is what the junction made possible and what made a
+   suspended tenant read Frozen.
+3. *The read follows the model.* The route reads the statuses and the catalogue
+   and joins them on the reference the row carries, so the join is a lookup and
+   not a mapping.
+4. *The junction stays for the domains that have not moved.* Deleting it now
+   would break twenty domains at once. It is read by nothing on this path and
+   goes when the last domain moves.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The word a suspended status shows, against its badge | =Suspended=, painted by the badge named =Frozen= | =node evidence/tenant_roster_check.js= | the branch tip |
+| The badge the active status names | =active=, =#22c55e= | =curl http://127.0.0.1:21402/api/tenant-statuses= | the branch tip |
+| BFF suite | 20 files, 97 tests | =npm run test= in =projects/ores.web/packages/bff= | the branch tip |
+| Web suite | 17 files, 186 tests | =npm run test= in =projects/ores.web/packages/web= | the branch tip |
+| Wire contract suite | 7 files, 51 tests | =npm run test= in =projects/ores.web/packages/wire-protocol= | the branch tip |
+| Live roster harness | 23 promises | =node evidence/tenant_roster_check.js= | the branch tip |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2483][#2483]] | [iam] Put the badge on the tenant status row |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The badge is a property of the value, and the words are the value's own.
+
+- *The row names its badge.* =ores.iam.tenant_status= gained =badge_code=, a
+  soft reference to the badge catalogue, and the four statuses name
+  =tenant_bootstrapping=, =active=, =frozen= and =archived=. The model is the
+  source: the SQL, the C++ and the browser types were regenerated from it, so
+  there is no hand-edited generated file to drift.
+
+- *The words stay the deployment's.* The pill shows the status row's own name:
+  a suspended tenant reads **Suspended**, painted in the badge's colour, with the
+  status row's own description behind it. That is the whole point of moving the
+  reference: the junction let a generic catalogue label replace the word the
+  deployment chose, which is what made a suspended tenant read **Frozen**.
+
+- *The read is a lookup, not a mapping.* =GET /api/tenant-statuses= answers the
+  statuses with the badge each one names. Nothing on that path reads a mapping,
+  and a status that names no badge, or names one the catalogue has lost, keeps
+  its words and loses its colours.
+
+Proved live: the harness reads the statuses, then reads the pill the browser
+drew and compares them. It asserts the split directly — a status reads
+=Suspended= while the badge painting it is named =Frozen=.
+
+What this task deliberately does not do.
+
+- *The junction stays.* =badge_mapping= still holds 154 rows across some twenty
+  code domains, and its admin screens and recipes still work. Deleting it now
+  would take those domains' colours with it. It is read by nothing on this path,
+  and it goes when the last domain carries its own reference.
+
+- *The other domains have not moved.* =party_status=, =book_status=,
+  =calendar_type= and the rest still paint through the junction. The shape is
+  now proved on one domain; the sweep is its own work.
+
+- *Tenant status is not yet a state machine.* It is a lookup that names its
+  badge, which is what this screen needed. Whether the lifecycle should be an
+  FSM with its states carrying the badge, as =trade_status= is, is a modelling
+  question this task leaves where it found it.
+
+- *A status is still English server data.* The label is the status row's name,
+  so a translated interface shows the deployment's English. Same gap as before,
+  in a better place: the words are now data the deployment owns and could
+  translate, rather than a catalogue's label.
+

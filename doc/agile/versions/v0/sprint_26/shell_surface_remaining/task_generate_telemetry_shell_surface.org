@@ -8,7 +8,7 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-compute-shell-surface
-#+pr:
+#+pr: 2479
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2479](https://github.com/OreStudio/OreStudio/pull/2479) | Record why compute and telemetry render no shell command |
 
 * Review
 

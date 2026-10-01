@@ -8,7 +8,7 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-scheduler-shell-surface
-#+pr:
+#+pr: 2480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2480](https://github.com/OreStudio/OreStudio/pull/2480) | Record why the last five components render no shell command |
 
 * Review
 

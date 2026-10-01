@@ -20,7 +20,7 @@
  */
 
 import { createHash, randomBytes } from 'node:crypto';
-import type { ActiveSession, OresClient, PartySummary } from '@ores/wire-protocol';
+import type { ActiveSession, OresClient, PartySummary, SessionMode } from '@ores/wire-protocol';
 
 /**
  * Server-side browser sessions.
@@ -42,6 +42,8 @@ interface SessionRecord {
     accountId: string;
     tenantId: string;
     tenantName: string;
+    /** The context the session runs in, decided when the login was accepted. */
+    mode: SessionMode;
     /** The build the login was answered by. */
     version: string;
     /** Absent until a party has been chosen. */
@@ -63,6 +65,8 @@ export interface LiveSession {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** The context the session runs in, decided when the login was accepted. */
+    readonly mode: SessionMode;
     /** The build the login was answered by. */
     readonly version: string;
     /** Absent only while a login is waiting on party selection. */
@@ -90,6 +94,7 @@ export interface SessionStore {
         readonly accountId: string;
         readonly tenantId: string;
         readonly tenantName: string;
+        readonly mode: SessionMode;
         readonly version: string;
         readonly availableParties: readonly PartySummary[];
         readonly accessLifetimeSeconds: number;
@@ -153,6 +158,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accountId: record.accountId,
             tenantId: record.tenantId,
             tenantName: record.tenantName,
+            mode: record.mode,
             version: record.version,
             party: record.party,
             availableParties: record.availableParties,
@@ -173,6 +179,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accountId: input.accountId,
             tenantId: input.tenantId,
             tenantName: input.tenantName,
+            mode: input.mode,
             version: input.version,
             party: session?.party,
             availableParties: input.availableParties,

@@ -61,6 +61,25 @@ export const en: SourceCatalogue = {
         searchHint: 'Search entities and actions',
         noResults: 'Nothing matches.',
         allEntities: 'All entities',
+        mode: 'Mode',
+        areas: 'Areas',
+    },
+
+    shell: {
+        mode: {
+            'system-administration': 'System administration',
+            'tenant-administration': 'Tenant administration',
+            application: 'Application',
+        },
+        journeyCount: { one: '{count} journey', other: '{count} journeys' },
+        notBuilt: 'Not built yet',
+        area: {
+            tenants: 'Tenants',
+        },
+        journey: {
+            newTenant: 'New tenant',
+            retireTenant: 'Retire or reset a tenant',
+        },
     },
 
     landing: {

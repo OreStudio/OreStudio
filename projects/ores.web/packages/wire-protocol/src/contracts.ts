@@ -34,6 +34,26 @@ import { activePartySchema, partySummarySchema } from './domain.js';
  * cookie instead, and the token stays on the server.
  */
 
+/**
+ * The context a session runs in.
+ *
+ * The server decides it, and the browser reads it. A super administrator works
+ * in the system tenant's context, a tenant administrator in a tenant's, and a
+ * party user in a party's, and the server already scopes every request by that
+ * context: stating it is what stops the shell having to guess it, and what
+ * keeps the menu from disagreeing with the data.
+ *
+ * The difference between a privileged and a regular party user is not a mode.
+ * They share the application context, and what separates them is the
+ * permissions they hold.
+ */
+export const sessionModeSchema = z.enum([
+    'system-administration',
+    'tenant-administration',
+    'application',
+]);
+export type SessionMode = z.infer<typeof sessionModeSchema>;
+
 /** The signed-in session as the browser sees it. */
 export const sessionViewSchema = z.object({
     username: z.string(),
@@ -41,6 +61,8 @@ export const sessionViewSchema = z.object({
     accountId: z.string(),
     tenantId: z.string(),
     tenantName: z.string(),
+    /** The context the session runs in. Stated by the server, never inferred. */
+    mode: sessionModeSchema,
     /** The build the session was opened against, as the server stated it. */
     version: z.string(),
     party: partySummarySchema,

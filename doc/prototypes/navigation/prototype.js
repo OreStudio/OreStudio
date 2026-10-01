@@ -29,7 +29,7 @@
        still listed, because the area exists and hiding it would pretend the
        work is smaller than it is. */
     var MENU = {
-        system: ['Tenants', 'Bootstrap'],
+        system: ['Tenants'],
         tenant: ['Parties', 'Access', 'Tenant'],
         party: ['Reference Data', 'Market Data', 'Trading', 'Analytics', 'Compute', 'Reporting', 'People']
     };
@@ -43,11 +43,13 @@
     /* Every journey the catalogue holds, in the context it is done in. `min` is
        the least person who may run it: 1 a party user, 2 a privileged one,
        3 the tenant administrator, 4 the super administrator. `area` is the menu
-       it sits under and `card` the heading it is gathered under. */
+       it sits under and `card` the heading it is gathered under.
+
+       First run is not here. It belongs to a plain installation, where nobody
+       can be signed in, so it is a door rather than a place the shell offers. */
     var JOURNEYS = [
         // The deployment.
-        { name: 'First run', path: '/setup/first-run', mode: 'system', area: 'Bootstrap', card: 'Bootstrap', min: 4, run: true, built: true },
-        { name: 'New tenant', path: '/tenants/new', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4, run: true },
+        { name: 'New tenant', path: '/tenants/new', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4, run: true, built: true },
         { name: 'Retire or reset a tenant', path: '/tenants/retire', mode: 'system', area: 'Tenants', card: 'Tenants', min: 4 },
 
         // The tenant.
@@ -248,8 +250,7 @@
         '/reporting-lines': ['Reporting lines', 'Who reports to whom, drawn as a tree.'],
         '/roles': ['Roles', 'The roles this tenant defines and what each bundles.'],
         '/tenants/new': ['New tenant', 'Stand a tenant up, one step at a time.'],
-        '/tenant': ['Tune the tenant', 'The tenant\u2019s own settings.'],
-        '/setup/first-run': ['First run', 'An empty installation, from nothing to working.']
+        '/tenant': ['Tune the tenant', 'The tenant\u2019s own settings.']
     };
 
     function journeyPage() {

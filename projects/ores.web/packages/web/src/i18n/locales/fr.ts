@@ -55,6 +55,25 @@ const fr: SourceCatalogue = {
         searchHint: 'Rechercher entités et actions',
         noResults: 'Aucun résultat.',
         allEntities: 'Toutes les entités',
+        mode: 'Mode',
+        areas: 'Domaines',
+    },
+
+    shell: {
+        mode: {
+            'system-administration': 'Administration système',
+            'tenant-administration': 'Administration du locataire',
+            application: 'Application',
+        },
+        journeyCount: { one: '{count} parcours', other: '{count} parcours' },
+        notBuilt: 'Pas encore construit',
+        area: {
+            tenants: 'Locataires',
+        },
+        journey: {
+            newTenant: 'Nouveau locataire',
+            retireTenant: 'Retirer ou réinitialiser un locataire',
+        },
     },
 
     landing: {

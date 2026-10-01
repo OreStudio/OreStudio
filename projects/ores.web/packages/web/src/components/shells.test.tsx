@@ -81,7 +81,10 @@ describe('the public shell', () => {
 });
 
 describe('the application shell', () => {
-    function renderAppShell(partyName: string): string {
+    function renderAppShell(
+        partyName: string,
+        mode: 'system-administration' | 'tenant-administration' | 'application' = 'application',
+    ): string {
         return renderToStaticMarkup(
             <TranslationProvider>
                 <MemoryRouter>
@@ -89,6 +92,7 @@ describe('the application shell', () => {
                         username="admin"
                         tenantName="Acme Corporation"
                         partyName={partyName}
+                        mode={mode}
                         onSignOut={() => undefined}
                     >
                         <p>the screen</p>
@@ -111,5 +115,24 @@ describe('the application shell', () => {
 
     it('names the party it is working in', () => {
         expect(renderAppShell('Northwind Trading')).toContain('Northwind Trading');
+    });
+
+    it('states the mode the session runs in', () => {
+        expect(renderAppShell('Acme Operations', 'system-administration')).toContain(
+            'System administration',
+        );
+    });
+
+    /*
+     * The menu is the areas of the mode, and a mode whose journeys no group has
+     * implemented has no areas. It is asserted as an absence because an empty
+     * menu is not the same defect as a menu that names an area nobody can open.
+     */
+    it('offers the areas of its mode, and no area of another', () => {
+        const system = renderAppShell('Acme Operations', 'system-administration');
+        expect(system).toContain('Tenants');
+
+        const application = renderAppShell('Acme Operations', 'application');
+        expect(application).not.toContain('Tenants');
     });
 });

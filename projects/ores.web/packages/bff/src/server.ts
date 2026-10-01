@@ -69,6 +69,7 @@ import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
+import { sessionModeFor } from './session-mode.js';
 import {
     bootstrapComplete,
     bootstrapRequired,
@@ -198,6 +199,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             accountId: session.accountId,
             tenantId: session.tenantId,
             tenantName: session.tenantName,
+            mode: session.mode,
             version: session.version,
             party: session.party,
             availableParties: session.availableParties,
@@ -229,6 +231,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                     accountId: outcome.accountId,
                     tenantId: outcome.tenantId,
                     tenantName: outcome.tenantName,
+                    mode: sessionModeFor(outcome.tenantId),
                     version: outcome.version,
                     party: outcome.party,
                     availableParties: outcome.availableParties,
@@ -523,6 +526,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                  */
                 tenantId: outcome.tenantId,
                 tenantName: outcome.tenantName,
+                mode: sessionModeFor(outcome.tenantId),
                 version: outcome.version,
                 availableParties: outcome.availableParties,
                 accessLifetimeSeconds: outcome.accessLifetimeSeconds,

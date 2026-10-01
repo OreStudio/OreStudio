@@ -21,9 +21,11 @@
 
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
+import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { Button } from '../ui/Primitives.js';
+import { areasFor, modeKey } from '../shell/areas.js';
 import { VersionFooter } from './VersionFooter.js';
 
 /**
@@ -32,15 +34,23 @@ import { VersionFooter } from './VersionFooter.js';
  * The session is passed in rather than read here, so the shell renders from its
  * props and a test can render it without a server or a session.
  *
- * On the web the navigation is a place a person can see and a screen is a route
- * they can link to; the navigation itself is what the journeys add, so this
- * carries the session and the way out of it. Signing out is the one action that
- * belongs on every screen.
+ * The header states the mode the session runs in and offers the areas that mode
+ * shows. Both come from the server's answer, so the menu cannot disagree with
+ * what the session may do: the areas are the client's structure, and whether a
+ * person is in this mode at all is not the client's to decide.
+ *
+ * The mode is stated rather than chosen. A person does not switch between
+ * contexts, because the context is a fact about the account they signed in
+ * with; a control that offered a switch would be a control that could lie.
+ *
+ * Signing out is the one action that belongs on every screen.
  */
 export interface AppShellProps {
     readonly username: string;
     readonly tenantName: string;
     readonly partyName: string | undefined;
+    /** The context the session runs in, as the server stated it. */
+    readonly mode: SessionMode;
     readonly onSignOut: () => void;
     /** The build the deployment answers with, or nothing before it answers. */
     readonly serverVersion?: string;
@@ -51,6 +61,7 @@ export function AppShell({
     username,
     tenantName,
     partyName,
+    mode,
     onSignOut,
     serverVersion,
     children,
@@ -64,6 +75,7 @@ export function AppShell({
     const session = [username, tenantName, partyName]
         .filter((part) => part !== undefined && part !== '')
         .join(' · ');
+    const areas = areasFor(mode);
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">
@@ -75,6 +87,30 @@ export function AppShell({
                             {t('app.name')}
                         </span>
                     </Link>
+                    <span
+                        className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-muted"
+                        title={t('nav.mode')}
+                    >
+                        {t(modeKey(mode))}
+                    </span>
+                    {/*
+                     * The menu holds the areas this mode shows. An area that
+                     * belongs to another mode is absent rather than disabled,
+                     * because it is not a door this person may open later.
+                     */}
+                    {areas.length > 0 && (
+                        <nav aria-label={t('nav.areas')} className="flex items-center gap-1">
+                            {areas.map((area) => (
+                                <a
+                                    key={area.nameKey}
+                                    href={`#${area.nameKey}`}
+                                    className="rounded-md px-2 py-1 text-xs text-ink-muted hover:text-ink"
+                                >
+                                    {t(area.nameKey)}
+                                </a>
+                            ))}
+                        </nav>
+                    )}
                     <div className="ml-auto flex items-center gap-3 text-xs text-ink-muted">
                         <span>{session}</span>
                         <Button variant="ghost" size="sm" onClick={onSignOut}>

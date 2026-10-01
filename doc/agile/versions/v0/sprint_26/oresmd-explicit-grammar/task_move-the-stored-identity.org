@@ -7,26 +7,30 @@
 #+level: s1
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
-#+branch: feature/oresmd-explicit-grammar
+#+branch: feature/move-the-stored-identity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+An observation's coordinate is the canonical oresmd form of the datum, not the
+registry's ORE-form point. The row and the URI name the same coordinate in the
+same syntax, the registry's `point_id` is derived where a key must be projected,
+and a migration rebuilds both the series identity and the coordinate from the
+producer's own key.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +46,46 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The coordinate the row stores
+
+The observation stores the datum's oresmd URI, and the series stores the same
+URI with its declared coordinates removed. Both are oresmd URIs, so the row and
+the URI agree by construction and a reader needs no translation table: the datum
+URI is the series URI plus the coordinate keys.
+
+The alternative -- storing only the coordinate keys, such as =tenor=5y= -- was
+rejected because the consumers that must rebuild an ORE key need the whole
+identifier, and rebuilding it from a series id plus a key-value string is a
+translation of exactly the kind this column exists to remove.
+
+The column is named =oresmd_uri=, the same name the series table gives its own,
+because it holds the same kind of value. The registry's ORE-form =point_id=
+stays in =ores.ore=, where the key grammar belongs, and is read from the
+decomposition where a key is projected.
+
+** The order of the work
+
+1. Rename the column in the two models (=market_observation=,
+   =observation_lineage=) and regenerate the SQL and the repository entities.
+   The compiler then names every C++ site.
+2. Teach the import to write the datum URI, which is =to_uri()= of the
+   identifier it already builds, and to leave the series on =to_series_uri()=.
+3. Move the consumers that want an ORE-form point to derive it: the curve
+   pillar reader and the republish service both hold, or can hold, the datum URI.
+   A rewrite of the key from the row is =from_ore_key(key)= for an imported row
+   and =with_point(series, ...)= for a bootstrapped one.
+4. Write the migration. =market_observations.key= holds the producer's key, so
+   the datum URI and the series URI are re-derived from it. A row whose key is
+   null cannot be re-derived and is reported, not guessed.
+5. Rebuild the database, and make the corpus walk green -- it is the unit's
+   acceptance, and the two surfaces of a lognormal and normal vol pair are the
+   case that used to collide.
+
+** What stays
+
+=series_key_registry::point_id=, =market_datum::point_id= and the registry's
+shape table are untouched: they are ORE's grammar, not ours, and this unit
+removes only the copy of it that was being written into the observation.
 
 * Measurements
 

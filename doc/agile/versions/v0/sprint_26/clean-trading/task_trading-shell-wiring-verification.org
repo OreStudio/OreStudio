@@ -369,6 +369,119 @@ file, and the reason for each not-applicable.
   directive, and =} // namespace=, an enclosing scope marker. The rules
   say to record compliance rather than force a change onto compliant
   code, so the pass changes nothing.
+- *One commit on this branch carries a wrong Task-ID trailer.* Commit
+  =a451ac3c72= states the story correctly but names a task id that does
+  not exist; the real id is =F97FF3C0-EB21-4076-B23C-4AAA77F13BC3=.
+  The trailer is written by =compass pr= and read by nothing, so no
+  record and no gate depends on it. It is not corrected in place,
+  because correcting it means rewriting a commit and the operator
+  directed that the correction be carried forward instead. Every later
+  commit on the branch carries the right id.
+- *V04 found twelve dead shell commands, and the cause is in the
+  composition root.* The replay's first pilot, =moment_types=, aborted
+  with =no service is handling subject
+  'ores.dev.merry_newton.trading.v1.moment_types.list'=. The subject is
+  the generated one and the generated handler exists, so the fault is
+  that nothing calls it: =core/src/messaging/registrar.cpp=, the
+  composition root for the entity-shaped types, calls
+  =register_activity_type_handlers= but not
+  =register_activity_category_handlers=, and the same omission covers
+  eleven more -- =amortization_type=, =average_type=, =barrier_type=,
+  =exercise_type=, =long_short_type=, =moment_type=, =option_type=,
+  =payoff_type=, =price_type=, =return_type= and =settlement_type=.
+  Each has a generated handler registrar and a generated history
+  provider registrar, both compiled and both referenced by nothing: a
+  repository-wide search for =register_<entity>_handlers= finds no call
+  site outside the entity's own files. The shell facet was enabled on
+  all twelve without the service ever binding the subject, so the
+  commands were published to a subject no service owned. This is the
+  same shape the assets pass found, and it is the class of defect that
+  no drift gate can see, because the composition root is hand-written.
+  All twelve are now wired, handler and history provider together, and
+  the change is derived rather than typed: =build/wire_missing_trading_registrars.py=
+  inserts into the three sorted blocks of =registrar.cpp= and its
+  =--check= mode prints the diff, so a reviewer reruns the derivation
+  instead of trusting twelve pasted lines.
+- *V07 is closed: the census went from 71 to 0.* The 71 cases were five
+  families, each with a lever rather than 71 separate edits. The two
+  table families replaced a bare =!table.empty()= with a literal header
+  token or a value the test itself put in, the refdata precedent. The
+  four repository writes read the row back and assert the code they
+  wrote. The eighteen =read_nonexistent= cases gained a positive
+  control, writing a real row and asserting its literal code before
+  reading the missing key, so emptiness no longer proves nothing. The
+  remove cases pin the surviving count and a literal from the row they
+  removed. The rest assert the generated code, the concrete alternative,
+  the round-tripped id, and the usage and version markers. The case
+  count is unchanged at 1175, so nothing was deleted to reach zero, and
+  no assertion was weakened. The suite is 236 of 236 across the three
+  =ores.trading= targets and 939 of 939 in =ores.shell.trading.tests=.
+  One finding is recorded rather than papered over: the subject does not
+  honour a caller-set version, because =write()= applies a precondition
+  claim and the store assigns the version, so =read_all_versions= can
+  return two rows carrying the same version. The case now pins the
+  literal description it wrote.
+- *H01 is closed, and reading the image is what found the defect.*
+  The automated pass had gone stale -- the api section held 47 boxes
+  against 2351 types and the core section 40 against 428 -- and both
+  are now filled, with the sentinel and everything below it surviving.
+  The first manual pass drew every derived edge, and the render came
+  back clipped at the 65535 px limit. The bound was then searched
+  rather than assumed: the api renders 389545 px wide with its 1922
+  edges and 22355 px without them; the core renders 121856 px with its
+  170, 97085 px with its ownership edges alone, 57862 px with its
+  dependencies alone, and 65861 px with its same-namespace edges plus
+  one layer edge. No subset worth drawing fits, so each manual section
+  draws one representative per namespace pair and arrow kind -- the
+  part's layer structure -- and states the derived count, both widths
+  and the derivation command, so the bound reads as a rendering
+  decision and not as a claim about the code. All three rasters are now
+  whole, 22904x15735, 21868x12250 and 2532x610, and were read. The pass
+  also found =registrar= drawn as an empty box, because its
+  =std::string http_base_url = {}= default defeats the generator's
+  method pattern, and that a render emits a =.cmapx= beside the =.puml=
+  whenever a signature holds something PlantUML reads as a creole link
+  such as =[[nodiscard]]=. The extension is now ignored; the one
+  tracked instance is the stale ER diagram the repository-wide sweep
+  already owns. =validate_docs.sh= is OK for all 41 components. The
+  record is =evidence/h01_architecture_audit.txt=.
+- *V04 replayed every generated recipe and found three defects, two of
+  them systemic.* The sweep is 554 recipes: 444 replayed and 110
+  recorded rather than run because they are the generated =delete= and
+  =delete-many= verbs. The group list is derived from the recipes, not
+  typed -- a group counts when its recipe source carries the codegen's
+  =AUTO-GENERATED= marker and names a =trading.v1= subject -- so a group
+  added later is replayed without anyone remembering to add it. The
+  evidence is =evidence/v04_recipe_replay.tsv=, the harness is
+  =projects/ores.codegen/scripts/check_shell_recipes.py=, and the
+  checkout's =.env= must be sourced first or every recipe aborts at its
+  sign-in line and the summary blames the credential.
+  Two things had to be fixed before the sweep could measure anything.
+  The first replay, =moment_types=, aborted with =no service is handling
+  subject ...trading.v1.moment_types.list=: twelve of the component's
+  shell-facet opt-ins had a generated handler registrar and a generated
+  history provider registrar that no composition root called, so the
+  shell published to subjects no service owned. All twelve are wired
+  now. The second was the decimal sentinel: a required
+  =ores::utility::decimal::decimal= field fell through the sentinel table
+  to =__none__=, which the shell's decimal parser rejects, so 33 write
+  recipes aborted at their own client and checked nothing. Both are
+  fixed and the sweep was re-run: 439 of 444 replay clean.
+  Two findings are recorded rather than fixed. =composite_legs
+  by-instrument-id= and =swap_legs by-instrument-id= are stale scripts:
+  both recipe orgs and both shell units declare =by-trade-id=, so a
+  rename left the tangled output behind and tangling does not sweep. They
+  are the same class as the =curve_sections= residue, and deleting them
+  is a one-line change the operator has not authorised. And =trade_types=
+  =add=, =set= and =put-many= still abort on =Invalid value for
+  product_type: __none__=, because the sentinel table knows the C++
+  primitives and not a component's own enumeration types; the model
+  already states the enumerator the parser wants, in
+  =:default_value: ores::trading::domain::product_type::swap=, but that
+  metadata does not reach the shell projection. Filed as capture
+  =A06D2B03-4275-4624-8574-2ACB32C580D6= with the root cause and the
+  two-line plumbing it needs. Nothing is left unexplained: every
+  non-answer in the evidence file is one of those five.
 
 * Test Scenarios
 
@@ -389,3 +502,36 @@ file, and the reason for each not-applicable.
 |   |                 |      |          |       |
 
 * Result
+
+The shell, wiring, hygiene and verification items are closed and
+ores.trading is in =COMPONENTS_UNDER_TEST=. The shell facet was enabled
+on 55 entities and its units, the component aggregator, the recipes and
+the recipe inventory are generated rather than hand-written. The
+component drift check exits 0 with the component listed, at all six
+addresses and with no drift at all; the protocol twin gate is 293 of 293
+across 14 components; the registry gate is 16 components and 5
+exceptions; =validate_docs.sh= is OK for all 41 components; and
+=check_shell_recipes.py= replays 444 of the component's 554 recipes
+against the live fleet with 439 answering.
+
+Three items were not clerical and each found something the gates could
+not see. V04 found that twelve of the 55 opt-ins published to subjects no
+service owned, because the composition root is hand-written while
+everything it composes is generated, and that a required decimal had no
+sentinel the shell could parse, which aborted 33 write recipes at their
+own client. Both are fixed at the root. H01 found that the two large part
+diagrams cannot be drawn with their member-level edges at any size the
+repository's render limit allows, that no subset worth drawing fits
+either, and that the first render was a crop -- which only reading the
+image shows. V07 found that 71 of 1175 test cases could not tell a
+working subject from one that did nothing, and the census is now 0 with
+no case deleted and none weakened.
+
+Two V04 findings are recorded rather than fixed: two stale
+=by-instrument-id= scripts a rename left behind, and a required enum
+whose sentinel the table does not know, filed as capture =A06D2B03-4275-4624-8574-2ACB32C580D6=.
+V08's survey is recorded with a reason per untouched file, 593 of the 606
+being generated and 13 being the fleet's own wiring. One commit on the
+branch carries a task id that does not exist; the correction is carried
+forward rather than rewritten, and the id is stated in the notes above.
+

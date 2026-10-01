@@ -394,7 +394,7 @@ row is updated as each PR lands.
 | W04 | Entity | Partly: aggregator reachable; grants need a live run | PR 6 |
 | S01 | Entity | Not met: 22 of 57 entities have shell commands | PR 6 |
 | S02 | Entity | Not met: 0 trading recipes, 22 wanted | PR 6 |
-| H01 | All | Not met: no audit record; three diagrams carry a sentinel | PR 6 |
+| H01 | All | Met in PR 7: audit record written, all three diagrams re-authored in two passes, all three rasters whole and read — the first render was clipped and reading it is what found out | PR 7 |
 | H02 | All | To review: no Qt code; two generator trees; 24 unmodelled domain types | PR 6 |
 | H03 | All | Met in PR 7: the pass changes nothing — the added comments sit above the code, narrate no edit and comment out no code | PR 7 |
 | H04 | All | Met: only the standard =_WIN32= export macro | - |
@@ -402,10 +402,10 @@ row is updated as each PR lands.
 | V01 | All | Met in PR 2: the whole tree builds clean | PR 2 |
 | V02 | All | Met in PR 2: 102 of 102 trading core cases, and the api, service, shell and ore suites pass; =evidence/pr2_acceptance_checks.txt= | PR 2 |
 | V03 | Entity | To run: database recreate and fleet start | PR 6 |
-| V04 | Entity | Depends on S01 and S02 | PR 6 |
+| V04 | Entity | Met in PR 7: every generated trading recipe replayed against the live fleet, 444 run; it found 34 defects from three root causes — twelve registrars no composition root called, and a decimal sentinel the shell could not parse, both fixed, plus one stale script recorded | PR 7 |
 | V05 | All | Partly in PR 2: the trading source lists are up to date and the drift dry run is empty; the remaining gates stay green only by exclusion until PR 6 | PR 6 |
 | V06 | All | Met in PR 7: =trading-cpp= is listed, =--all= exits 0 with no drift, the twin gate is 293 of 293, the registry gate is 16 components and 5 exceptions | PR 7 |
-| V07 | All | To run: vacuous-test review | PR 6 |
+| V07 | All | Met in PR 7: the census over 1175 cases went from 71 with no strong assertion to 0, with no case deleted and none weakened | PR 7 |
 | V08 | All | Met in PR 7: 456 of 1062 sources reached; of the 606 untouched, 593 are generated and 13 hand-written and each is recorded with its reason | PR 7 |
 
 * Decisions

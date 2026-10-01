@@ -64,6 +64,14 @@ market_data_identifier resolve_{{asset_class}}(const {{asset_class}}_market_data
 {{/default}}
 {{/resolver_skip}}
 {{/fields}}
+{{#coordinate_fields}}
+    id.{{name}} = pick_optional(req.{{name}}, d ? d->{{name}} : std::nullopt);
+{{/coordinate_fields}}
+{{#has_vol}}
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
+{{/has_vol}}
 {{#ccy_optional_for_fixing}}
     // Requiredness follows the entity kind here as well as in the parser. A
     // requirement resolved without a currency would otherwise produce an

@@ -97,7 +97,6 @@ struct fx_market_data_identifier final {
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
     std::optional<domain::fx_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -109,9 +108,9 @@ struct fx_market_data_identifier final {
  *
  * Only `ccy` and `type` are unconditionally mandatory; every other field is optional
  * because which fields are meaningful depends on `type` (a fixing/curve needs
- * `index`/`tenor`/`role` but no `point`; a quote needs `point` and, for `type=quote`
- * specifically, `metric`) -- see "Tenor vs. point, and the par-rate/discount-factor
- * ambiguity" in the design doc.
+ * `index`/`tenor`/`role` but no coordinate; a quote carries the coordinates its
+ * quote type declares, and `metric` for `type=quote`) -- see "Tenor vs. the
+ * coordinate keys, and the par-rate/discount-factor ambiguity" in the design doc.
  */
 struct ir_market_data_identifier final {
     std::string ccy;
@@ -131,7 +130,6 @@ struct ir_market_data_identifier final {
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -159,7 +157,6 @@ struct equity_market_data_identifier final {
     std::optional<std::string> ccy;
     instrument_type type = instrument_type::quote;
     std::optional<domain::equity_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -169,15 +166,15 @@ struct equity_market_data_identifier final {
 /**
  * @brief A fully-resolved oresmd identifier for a credit instrument (asset_class=credit).
  *
- * `point` carries both the seniority and tenor dimensions (e.g. "sr,5y"), since credit's
- * quote-key shape has one more dimension than IR's.
+ * A cds key carries the seniority, the restructuring clause and the tenor as three
+ * declared coordinates (`seniority=sr`, `restructuring=xr14`, `tenor=5y`), since
+ * credit's quote-key shape has more dimensions than IR's.
  */
 struct credit_market_data_identifier final {
     std::string reference_entity;
     std::string ccy;
     instrument_type type = instrument_type::quote;
     std::optional<domain::credit_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> seniority;
     std::optional<std::string> restructuring;
     std::optional<std::string> tenor;
@@ -196,11 +193,12 @@ struct credit_market_data_identifier final {
  * code that itself contains a dash and a full delivery date; neither is in the
  * corpus, so neither is admitted here rather than guessed at.
  *
- * A quote carries its own period in point instead, because a quote's observations
- * each name the period they are for and a fixing's do not. This class's validation
- * is the shared one that the three delegating classes use, and it gates no query key
- * by type, so a delivery on a quote is accepted and projects no index name, the way
- * a point on a fixing is. Closing that gate for equity, credit and commodity is the
+ * A quote carries its own period in the maturity coordinate instead, because a
+ * quote's observations each name the period they are for and a fixing's do not.
+ * This class's validation is the shared one that the three delegating classes use,
+ * and it gates no query key by type, so a delivery on a quote is accepted and
+ * projects no index name, the way a coordinate on a fixing is. Closing that gate for
+ * equity, credit and commodity is the
  * codegen gap recorded in the fixing-identity task.
  */
 struct commodity_market_data_identifier final {
@@ -209,7 +207,6 @@ struct commodity_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<std::string> delivery;
     std::optional<domain::commodity_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -229,7 +226,6 @@ struct inflation_market_data_identifier final {
     std::string index_code;
     instrument_type type = instrument_type::quote;
     std::optional<domain::inflation_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<std::string> month;
     std::optional<volatility_surface_point> vol;
@@ -245,7 +241,8 @@ struct correlation_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<std::string> second_factor;
     std::optional<domain::correlation_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> expiry;
+    std::optional<std::string> delta;
 
     bool operator==(const correlation_market_data_identifier&) const = default;
 };
@@ -279,7 +276,6 @@ struct shape_profile_market_data_identifier final {
     std::string profile_id;
     instrument_type type = instrument_type::quote;
     std::optional<domain::shape_profile_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> date;
     std::optional<std::string> second;
     std::optional<std::string> period;
@@ -295,7 +291,6 @@ struct rating_market_data_identifier final {
     std::string provider_id;
     instrument_type type = instrument_type::quote;
     std::optional<domain::rating_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> from;
     std::optional<std::string> to;
 

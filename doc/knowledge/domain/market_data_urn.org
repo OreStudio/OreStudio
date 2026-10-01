@@ -80,7 +80,7 @@ is being asked for, so it resolves to any of:
 |--------------------+---------------------------+---------------------------------------|
 | =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing= | The index/fixing itself — projects to index name =USD-LIBOR-3M=. | Implicit in an =ir_curve_generation_config= row's =index_name= field, not a standalone config today. |
 | =oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=curve= | The whole curve — projects to curve key =Yield/USD/USD3M=. | The =ir_curve_generation_config= row itself (=currency_code=USD=, =index_name=USD-LIBOR-3M=) — the =role= this row lacks a field for today. |
-| =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y= | A 5Y par swap rate quote on that curve — projects to quote key =IR_SWAP/RATE/USD/2D/3M/5Y=. | A =market_series= row (=series_type=IR_SWAP=, =metric=RATE=, =qualifier=USD/2D/3M=, =point_id=5Y=) — not a generation config, a published market observation. |
+| =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y= | A 5Y par swap rate quote on that curve — projects to quote key =IR_SWAP/RATE/USD/2D/3M/5Y=. | A =market_series= row (=series_type=IR_SWAP=, =metric=RATE=, =qualifier=USD/2D/3M=, =point_id=5Y=) — not a generation config, a published market observation. |
 | =oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate= | A directly-quoted discount factor sampled off that curve at 6M — projects to quote key =DISCOUNT/RATE/USD/USD3M/6M=. | A =market_series= row (=series_type=DISCOUNT=, =metric=RATE=, =qualifier=USD3M=, =point_id=6M=). |
 
 *** Requirement: =oresmd://ir/eur?role=discount=
@@ -92,7 +92,7 @@ of thing, so it resolves to any of:
 |--------------------+---------------------------+---------------------------------------|
 | =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=fixing= | The =EUR-ESTR= fixing itself. | Implicit in an =ir_curve_generation_config= row's =index_name= field. |
 | =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=curve= | The whole discount curve — curve key =Yield/EUR/EUR1D=. | The =ir_curve_generation_config= row (=currency_code=EUR=, =index_name=EUR-ESTR=) — again, =role= is a field this row has no equivalent of yet. |
-| =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2y= | A discount factor at the 2Y point — quote key =DISCOUNT/RATE/EUR/EUR1D/2Y=. | A =market_series= row (=series_type=DISCOUNT=, =metric=RATE=, =qualifier=EUR1D=, =point_id=2Y=). |
+| =oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate= | A discount factor at the 1D point — quote key =DISCOUNT/RATE/EUR/EUR/1D=. | A =market_series= row (=series_type=DISCOUNT=, =metric=RATE=, =qualifier=EUR=, =point_id=1D=). |
 
 Each resolved instance keeps every field the requirement already
 specified unchanged (=usd=/=eur=, =index=, =tenor=, =role=) and adds
@@ -142,8 +142,12 @@ oresmd://<asset_class>/<entity>/<ccy>/<index_family>/<tenor>/<curve_role>/<instr
 *** Approach adopted: asset-class authority, entity path, everything else as query parameters
 
 #+begin_src text
-oresmd://<asset_class>/<entity>?ccy=<CCY>&index=<FAMILY>&tenor=<TENOR>&role=<ROLE>&type=<TYPE>&point=<POINT>
+oresmd://<asset_class>/<entity>?ccy=<CCY>&index=<FAMILY>&tenor=<TENOR>&role=<ROLE>&type=<TYPE>&<coordinate>=<VALUE>
 #+end_src
+
+The =<coordinate>= placeholder stands for the keys of the "Coordinate keys
+and grammar rules" subsection below, one key per dimension. The older
+=point== key is gone from the grammar.
 
 | | |
 |-----+----|
@@ -192,50 +196,124 @@ oresmd://<asset_class>/<entity>[?<query>]
   - =type=: instrument type, one of =fixing= (a rate fixing/index),
     =curve= (a whole curve), =quote= (one raw quote/point), or =vol=
     (a volatility surface point) — used by every asset class.
-  - =quote=: *only meaningful when =type=quote=* — the ORE quote TYPE
-    (e.g. =ir_swap=, =mm=, =cds=, =fwd=), the first segment of ORE's
+  - =quote=: the ORE quote TYPE (e.g. =ir_swap=, =mm=, =cds=,
+    =fwd=, =swaption=, =option=), the first segment of ORE's
     =TYPE/METRIC/...= quote key. A per-asset-class enum, independent of
     the =metric= column: for an IR =ir_swap= the metric is =RATE=, for a
-    =basis_swap= it is =BASIS_SPREAD=. Absent, it defaults to the asset
-    class's canonical quote type (=spot= for FX/equity/commodity,
-    =cds= for credit), and the projection yields no quote key where no
-    default exists (IR and inflation, whose =quote= is required for a
-    =type=quote= projection); correlation never uses it, since its only
-    quote type is hardcoded =CORRELATION/RATE=.
+    =basis_swap= it is =BASIS_SPREAD=. The key is always present for
+    =type=quote= and =type=vol=. A quote that omits it takes the asset
+    class's own default: =spot= for FX, equity and commodity, =cds= for
+    credit. A surface that omits it takes =swaption= for IR and =option=
+    for FX, equity and commodity. IR and inflation have no default for
+    =type=quote=, so their =quote= is required there. Correlation never
+    uses the key, because its only quote type is =pairwise=.
   - =metric=: *only meaningful when =type=quote=* — disambiguates *what
-    kind* of quote =point= refers to, since a coordinate on an IR curve
-    is ambiguous between a par rate observed in the market
-    (=par_rate=) and a directly-quoted discount factor sampled off the
-    curve (=discount_factor=) — see [[*Tenor vs. point, and the
-    par-rate/discount-factor ambiguity][below]] for why this is a
-    separate field from =tenor=/=point= rather than folded into either.
-    A per-asset-class enum (e.g. =basis_spread=, =ratio=, =price=,
-    =yield_spread=); absent, it defaults from the =quote= type's own
-    metric (an =ir_swap= defaults to =rate=, a =basis_swap= to
-    =basis_spread=).
+    kind* of quote the coordinate keys refer to, since a coordinate on an
+    IR curve is ambiguous between a par rate observed in the market
+    (=rate=) and a directly-quoted discount factor sampled off the curve
+    (=discount= quote type) — see [[*Tenor vs. the coordinate keys, and
+    the par-rate/discount-factor ambiguity][below]] for why this is a
+    separate field from =tenor= and the coordinate keys rather than
+    folded into either. A per-asset-class enum (e.g. =basis_spread=,
+    =ratio=, =price=, =yield_spread=); the =quote= type's own metric
+    supplies it when the URI omits it (an =ir_swap= is =rate=, a
+    =basis_swap= is =basis_spread=).
   - =model=: *only meaningful when =type=vol=* — the volatility model
     subtype, one of =rate_lnvol=, =rate_nvol=, =rate_slnvol=, =shift=,
-    =price=. Defaults to =rate_lnvol=.
-  - =point=: the term-structure or surface coordinate for a =quote=/=vol=
-    URI (a swap tenor, a curve point, or a comma-separated surface
-    coordinate like =5y,2y,atm= — expiry, tenor, strike for =type=vol=)
-    — absent for scalar quotes (FX spot, equity spot, correlation,
-    recovery rate).
+    =price=. The key is always present for =type=vol=, and it holds
+    =rate_lnvol= when the URI omits it.
+  - The coordinate keys: one query key per coordinate dimension. A
+    =type=quote= or =type=vol= URI carries the keys the resolved quote
+    type declares. The next subsection lists the keys and their
+    dimensions.
 
-** Tenor vs. point, and the par-rate/discount-factor ambiguity
+** Coordinate keys and grammar rules
 
-=tenor= and =point= are easy to conflate but answer different
-questions: =tenor= identifies *which curve* (=USD-LIBOR-3M= and
-=USD-LIBOR-6M= are structurally different curves, each built from its
-own instruments), while =point= is a coordinate *along* whichever curve
+A surface's coordinate used to arrive as one comma-joined =point=
+string. The grammar now names each dimension with its own key. A reader
+no longer needs the per-family convention to read a coordinate.
+
+| Dimension | Coordinate key | Value kind |
+|-----------+----------------+------------|
+| the quoted instrument's own term | =maturity= | string |
+| a surface point's option expiry | =expiry= | string |
+| the underlying's or the contract's term | =tenor= | string |
+| a surface point's fixed strike | =strike= | string |
+| a moneyness or delta convention | =delta= | enum |
+| the smile convention marker | =smile= | enum |
+| the option's call or put flag | =call_put= | enum |
+| where the premium is read | =premium= | enum |
+| the debt seniority a spread is quoted for | =seniority= | enum |
+| the restructuring clause | =restructuring= | enum |
+| the month a seasonality factor is quoted for | =month= | enum |
+| the grade a rating migration runs from | =from= | string |
+| the grade a rating migration runs to | =to= | string |
+| the date a shape factor is quoted for | =date= | string |
+| the second of the day within a period | =second= | string |
+| the period a shape-factor second is counted in | =period= | enum |
+| the daylight-saving flag | =dst= | enum |
+| a future's delivery month | =contract_month= | string |
+| a future's exchange-qualified contract code | =contract_code= | string |
+
+The rules that now hold:
+
+1. =type= is always present.
+2. =quote= is always present for =type=quote= and =type=vol=. The
+   parser materialises the asset class default when the URI omits it
+   (=spot= for FX, equity and commodity, =cds= for credit; =swaption=
+   for an IR surface and =option= for an FX, equity or commodity
+   surface). Inflation and correlation carry no default.
+3. =model= is always present for =type=vol=. The writer emits it even
+   when it holds the default =rate_lnvol=.
+4. The projection draws =metric= from the quote type when a
+   =type=quote= URI omits it (an =ir_swap= is =rate=, a =basis_swap= is
+   =basis_spread=).
+5. The parser refuses =point=. The message names the replacement keys.
+6. Each coordinate dimension is its own query key, named after the
+   dimension. The resolved quote type's =coordinates= list decides which
+   keys a URI may carry, and the parser refuses a coordinate the type
+   does not carry. =tenor= and the future contract fields are identity
+   keys for a class rather than coordinates, and the type declares where
+   they apply.
+7. A surface's value slot holds either a fixed strike (=strike=) or a
+   moneyness or delta convention (=delta=, such as =atm=, =atmf=, =25rr=
+   or =del=). =smile= is its own dimension, not a delta.
+
+The writer normalises the case of a key. Identity keys such as
+=maturity=, =tenor=, =seniority= and the dates arrive lower-cased. The
+surface keys =expiry=, =strike=, =delta=, =call_put= and =premium= keep
+ORE's own upper-case spelling. =smile= and the =*_spelling= keys keep
+the case they arrived with. (A correlation surface is the one exception:
+its =expiry= and =delta= are stored lower-cased, because its identifier
+has no surface struct for them to live in.)
+
+The parser accepts the keys in any order. The writer emits them in a
+fixed order, so one datum has a single canonical string. The series
+identity is the datum identity with its declared coordinate keys
+removed. =model= is identity, so a lognormal and a normal surface of one
+underlying are two series rather than one.
+
+** Tenor vs. the coordinate keys, and the par-rate/discount-factor ambiguity
+
+=tenor= and the coordinate keys are easy to conflate but answer
+different questions. =tenor= identifies *which curve* (=USD-LIBOR-3M=
+and =USD-LIBOR-6M= are structurally different curves, each built from
+its own instruments). =maturity= is a coordinate *along* whichever curve
 =tenor= identified. Asking for "the 6M point on the USD 3M-LIBOR
 projection curve" is therefore
-=oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=discount_factor&point=6m=
-— =tenor=3m= (which curve) and =point=6m= (where on it) are independent
-query keys, not a collision.
+=oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate=
+— =tenor=6m= (where on the curve) sits beside =curve_id= (which curve),
+and the two keys are independent, not a collision.
 
-That still leaves one genuine ambiguity a =point= on an IR curve does
-not resolve by itself: per the
+A surface splits the same fact across three keys: =expiry= says when the
+option expires, =tenor= says how long the underlying runs, and =strike=
+or =delta= says where on the surface the point sits. A credit quote
+keeps its term in =tenor= and its seniority in =seniority=. Credit's
+series identity drops =tenor= as well, because its key names a curve
+rather than one point on it.
+
+That still leaves one genuine ambiguity the coordinate keys do not
+resolve by themselves: per the
 [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]],
 a term-structure coordinate can be *either* a par rate actually observed
 in the market at that point (=IR_SWAP/RATE=, a par swap rate) *or* a
@@ -244,8 +322,8 @@ directly-quoted discount factor sampled off an already-built curve
 bootstrapping") — two different ORE quote types for two genuinely
 different kinds of market observation, both of which are legitimately
 "a point on a curve". =metric= is the field that disambiguates them;
-neither =tenor= nor =point= alone can, since both quote types can share
-the same =tenor=/=point= pair while meaning different things.
+neither =tenor= nor =maturity= alone can, since both quote types can
+share the same =tenor=/=maturity= pair while meaning different things.
 
 * Field justification
 
@@ -261,10 +339,10 @@ speculative fields:
 | =tenor= | Closes the tenor-index gap directly: "two configs sharing =currency_code=... can only be told apart if their free-text =index_name= strings happen to differ" — =tenor= is now a distinct, structured query key, so =usd/libor/3m= and =usd/libor/6m= are structurally distinct URIs, not string-lookalikes. |
 | =role= | Closes the discount-vs-projection gap directly: "nothing records that a =USD-LIBOR-3M= curve is a *projection* curve, not the *discount* curve" — =role= is an explicit query key with no default that could be silently wrong. |
 | =type= | Closes: =curve_feed_controller='s qualifier "has no concept of curve family... or of curve role, so it cannot express 'these two curves legitimately coexist'" — by separating *what kind of thing* (fixing/curve/quote/vol) from the coordinates, two records can now share every other field while differing only in =type= without being mistaken for a collision. |
-| =quote= | A gap surfaced while applying this design: a =type=quote= URI with only =type=/=metric=/=point= does not name *which* ORE quote TYPE it is — the same =point= on the same =metric= can be quoted as different =TYPE/METRIC= pairs (=IR_SWAP/RATE= vs =MM/RATE= vs =ZERO/RATE=). =quote= names that TYPE (the first segment of ORE's quote key) as a per-asset-class enum, so a market observation is pinned to exactly one catalogue quote type; without it, projection would have to guess. |
-| =point= | Closes: =market_series='s "=qualifier= is a single free-text column, not a per-type fixed-dimension tuple" — =point= is the structured slot for exactly the tenor/coordinate =market_series= currently has no dedicated field for. |
-| =metric= | Closes a gap surfaced while applying this design, not the original gap analysis directly: without it, =tenor=+=point= alone cannot distinguish a par-rate quote (=IR_SWAP/RATE=) from a curve-sampled discount factor (=DISCOUNT/RATE=) at the same coordinate — two different ORE quote types the catalogue documents as alternatives to each other, not variants of the same thing. |
-| =model= | A gap surfaced while applying the volatility-surface sub-schema: a =type=vol= URI's =point= coordinate (expiry, tenor, strike) does not name the model whose surface it samples — =RATE_LNVOL=, =RATE_NVOL=, =RATE_SLNVOL=, =SHIFT=, or =PRICE= — and the parser must not silently default it. =model= names that subtype as an enum, defaulting to =rate_lnvol=. |
+| =quote= | A gap surfaced while applying this design: a =type=quote= URI with only =type=/=metric= and a coordinate does not name *which* ORE quote TYPE it is — the same =maturity= on the same =metric= can be quoted as different =TYPE/METRIC= pairs (=IR_SWAP/RATE= vs =MM/RATE= vs =ZERO/RATE=). =quote= names that TYPE (the first segment of ORE's quote key) as a per-asset-class enum, so a market observation is pinned to exactly one catalogue quote type; without it, projection would have to guess. |
+| The coordinate keys | Close: =market_series='s "=qualifier= is a single free-text column, not a per-type fixed-dimension tuple" — each dimension now has a query key of its own, and the model declares which keys the resolved quote type carries. The keys are =maturity=, =expiry=, =tenor=, =strike=, =delta=, =smile=, =call_put=, =premium=, =seniority=, =restructuring=, =month=, =from=, =to=, =date=, =second=, =period=, =dst=, =contract_month= and =contract_code=. |
+| =metric= | Closes a gap surfaced while applying this design, not the original gap analysis directly: without it, =tenor= and =maturity= alone cannot distinguish a par-rate quote (=IR_SWAP/RATE=) from a curve-sampled discount factor (=DISCOUNT/RATE=) at the same coordinate — two different ORE quote types the catalogue documents as alternatives to each other, not variants of the same thing. |
+| =model= | A gap surfaced while applying the volatility-surface sub-schema: a =type=vol= URI's coordinates (=expiry=, =tenor=, =strike=, =delta=) do not name the model whose surface they sample — =RATE_LNVOL=, =RATE_NVOL=, =RATE_SLNVOL=, =SHIFT=, or =PRICE=. =model= names that subtype as an enum, and the writer always emits it, so a reader never has to know that an absent =model= means lognormal. |
 
 * Projection rules
 
@@ -305,20 +383,22 @@ Deterministic, worked for each field combination:
 
 * Worked examples
 
-One per asset class, matching
+One per asset class. The URIs use the spellings of the twelve
+=*_quote_type.org= models' own test tables, so each row is a case the
+generated parser and projections already carry. The instruments follow
 [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
-identifiers]]'s own worked instruments exactly, so every row in that
-comparison table has a direct =oresmd= counterpart here.
+identifiers]]'s worked instruments where the two sets agree.
 
 ** FX
 
 | oresmd URI | Quote key |
 |------------+-----------|
 | =oresmd://fx/eurusd?type=quote= | =FX/RATE/EUR/USD= |
-| =oresmd://fx/eurusd?type=quote&quote=fwd&point=6m= | =FXFWD/RATE/EUR/USD/6M= |
+| =oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m= | =FXFWD/RATE/EUR/USD/6M= |
+| =oresmd://fx/eurusd?type=vol&expiry=10y&delta=atm= | =FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM= |
 
-=quote= defaults to =spot=; =fwd= (forward points) is tenor-shaped and
-needs =point=.
+=quote= defaults to =spot=; =fwd= (forward points) is term-shaped, and its
+term is the =maturity= coordinate.
 
 ** Interest rates
 
@@ -329,17 +409,17 @@ needs =point=.
 | =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=fixing= | =USD-SOFR= | =Yield/USD/USD1D= | — |
 | =oresmd://ir/eur?index=euribor&tenor=6m&role=projection&type=fixing= | =EUR-EURIBOR-6M= | =Yield/EUR/EUR6M= | — |
 | =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=fixing= | =EUR-ESTR= | =Yield/EUR/EUR1D= | — |
-| =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y= | — | — | =IR_SWAP/RATE/USD/2D/3M/5Y= |
+| =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y= | — | — | =IR_SWAP/RATE/USD/2D/3M/5Y= |
 | =oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate= | — | — | =DISCOUNT/RATE/USD/USD3M/6M= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m= | — | — | =MM/RATE/EUR/EURIBOR/3M/1M= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m= | — | — | =FRA/RATE/EUR/EURIBOR/3M/6M= |
-| =oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y= | — | — | =IMM_FRA/RATE/USD/LIBOR/3M/5Y= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y= | — | — | =BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y= |
-| =oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y= | — | — | =CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y= |
-| =oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y= | — | — | =CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y= |
-| =oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y= | — | — | =BMA_SWAP/RATIO/USD/3M/5Y= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y= | — | — | =ZERO/RATE/EUR/EURIBOR/3M/5Y= |
-| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y= | — | — | =ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y= |
+| =oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&maturity=1m= | — | — | =MM/RATE/EUR/EURIBOR/3M/1M= |
+| =oresmd://ir/eur?tenor=3m&type=quote&quote=fra&metric=rate&maturity=6m= | — | — | =FRA/RATE/EUR/3M/6M= |
+| =oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&maturity=5y= | — | — | =IMM_FRA/RATE/USD/3M/5Y= |
+| =oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&maturity=10y= | — | — | =BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y= |
+| =oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&maturity=10y= | — | — | =CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y= |
+| =oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&maturity=1y= | — | — | =CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y= |
+| =oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&maturity=5y= | — | — | =BMA_SWAP/RATIO/USD/3M/5Y= |
+| =oresmd://ir/eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&maturity=2y= | — | — | =ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y= |
+| =oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&maturity=1d= | — | — | =ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D= |
 | =oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price= | — | — | =MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M= |
 | =oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price= | — | — | =OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M= |
 
@@ -351,7 +431,11 @@ indistinguishable today (=USD-LIBOR-3M= vs a hypothetical
 =USD-LIBOR-6M=, both only distinguished by string content of a free-text
 =index_name=). Under =oresmd=, =tenor= is a distinct query key: the two
 URIs differ structurally at that key, not just in string content, and
-project to distinct curve keys (=USD3M= vs =USD6M=) automatically.
+project to distinct curve keys (=USD3M= vs =USD6M=) automatically. The
+projected ORE index name spells the family token itself
+(=USD-LIBOR-3M=, and =EUR-EURIBOR-6M= for the =euribor= family), so the
+URI's =index= value and the ORE spelling of the name are not always the
+same string.
 
 *** Discount-vs-projection gap, resolved
 
@@ -368,85 +452,101 @@ similar-looking =index_name= strings happen to mean.
 
 | oresmd URI | Quote key |
 |------------+-----------|
-| =oresmd://ir/eur?type=vol&point=5y,2y,atm= | =SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= |
-| =oresmd://ir/eur?type=vol&model=rate_nvol&point=5y,2y,atm= | =SWAPTION/RATE_NVOL/EUR/5Y/2Y/ATM= |
+| =oresmd://ir/eur?type=vol&expiry=5y&tenor=2y&delta=atm= | =SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= |
+| =oresmd://ir/eur?type=vol&model=rate_nvol&expiry=5y&tenor=2y&delta=atm= | =SWAPTION/RATE_NVOL/EUR/5Y/2Y/ATM= |
+| =oresmd://ir/eur?type=vol&model=rate_nvol&expiry=6m&tenor=2y&smile=Smile&strike=-0.02= | =SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02= |
 
-(=index=/=tenor=/=role= are absent here — a swaption vol surface point
-is about the underlying swap's expiry/tenor/strike coordinate, carried
-entirely in =point=, not about a benchmark index the way a fixing or
-curve is; this is exactly the per-asset-class conditionality the
-query-parameter grammar exists to express. =model= names the volatility
-model subtype — =rate_lnvol= by default, or =rate_nvol=/=rate_slnvol=/
-=shift=/=price= — since the same coordinate can be quoted under
-different models. The shared =volatility_surface_point= struct carries
-the three =point= dimensions (expiry, tenor, strike) plus =model_subtype=
-as typed fields.)
+(=index=/=role= are absent here — a swaption vol surface point is about
+the underlying swap's =expiry=/=tenor=/=delta= or =strike= coordinate,
+each key its own dimension, not about a benchmark index the way a fixing
+or curve is; this is exactly the per-asset-class conditionality the
+query-parameter grammar exists to express. =quote= takes the IR
+=swaption= default. =model= names the volatility model subtype —
+=rate_lnvol=, or =rate_nvol=/=rate_slnvol=/=shift=/=price= — since the
+same coordinate can be quoted under different models, and the writer
+always emits it. The shared =volatility_surface_point= struct carries
+the surface keys plus =model_subtype= as typed fields. =smile= is its
+own dimension, so the seven-segment form keeps the marker beside the
+strike rather than inside it.)
 
 ** Equities and indices
 
 | oresmd URI | Quote key |
 |------------+-----------|
 | =oresmd://equity/aapl?ccy=usd&type=quote= | =EQUITY/PRICE/AAPL/USD= |
-| =oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y= | =EQUITY_DIVIDEND/RATE/AAPL/USD/1Y= |
-| =oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m= | =EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M= |
+| =oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&maturity=1y= | =EQUITY_DIVIDEND/RATE/AAPL/USD/1Y= |
+| =oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&maturity=6m= | =EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M= |
+| =oresmd://equity/sp5?ccy=usd&type=vol&expiry=6m&delta=atmf= | =EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF= |
 
 (=ccy= is required here since, unlike IR where =entity= already is the
 currency, an equity's =entity= is a ticker — the quote currency is
 independent information. =quote= defaults to =spot=; =dividend= and
-=fwd= are tenor-shaped and need =point=.)
+=fwd= are term-shaped, and their term is the =maturity= coordinate. An
+equity option surface adds =premium= and =call_put= on top of
+=expiry=/=delta=/=strike=.)
 
 ** Credit
 
 | oresmd URI | Quote key |
 |------------+-----------|
-| =oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y= | =CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y= |
-| =oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y= | =HAZARD_RATE/RATE/VOD/SR/EUR/5Y= |
-| =oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr= | =RECOVERY_RATE/RATE/VOD/SR/EUR= |
-| =oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1= | =CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1= |
-| =oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07= | =INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07= |
+| =oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=5y= | =CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y= |
+| =oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&seniority=sr&tenor=5y= | =HAZARD_RATE/RATE/VOD/SR/EUR/5Y= |
+| =oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&seniority=sr= | =RECOVERY_RATE/RATE/VOD/SR/EUR= |
+| =oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&seniority=snrfor&restructuring=xr14&tenor=10y= | =CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y= |
+| =oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&tenor=5y&strike=0.1= | =CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1= |
+| =oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&tenor=5y&strike=0.07= | =INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07= |
+| =oresmd://credit/2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&tenor=5y&expiry=2025-02-19&strike=107.5= | =INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5= |
 
-(=point= carries both the seniority and tenor dimensions here, since
-credit's quote-key shape has one more dimension than IR's — again, the
-query-parameter grammar absorbs this without needing a dedicated
-=seniority= key for every asset class that happens not to need one.
-=quote= defaults to =cds=; the base-correlation types (=cds_index=,
-=index_cds_tranche=) drop the =ccy= segment from their quote key,
-carrying only the index/tranche + point.)
+(=seniority=, =restructuring= and =tenor= are three separate keys here,
+since credit's quote-key shape carries one more dimension than IR's.
+=quote= defaults to =cds=. The base-correlation types (=cds_index=,
+=index_cds_tranche=) drop the =ccy= segment from their quote key, and
+their base-correlation strike is an ordinary =strike=. The
+=index_cds_option= surface adds =expiry= and carries the index term in
+=tenor=.)
 
 ** Commodities
 
 | oresmd URI | Quote key |
 |------------+-----------|
 | =oresmd://commodity/gold?ccy=usd&type=quote= | =COMMODITY/PRICE/GOLD/USD= |
-| =oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m= | =COMMODITY_FWD/PRICE/WTI/USD/6M= |
+| =oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&maturity=6m= | =COMMODITY_FWD/PRICE/WTI/USD/6M= |
+| =oresmd://commodity/wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&expiry=1y&strike=30.0= | =COMMODITY_OPTION/RATE_LNVOL/WTI_USD_VOLS/USD/1Y/30.0= |
 
-=quote= defaults to =spot=; =fwd= and =cpr= are tenor-shaped and need
-=point=.
+=quote= defaults to =spot=; =fwd= is term-shaped, and its term is the
+=maturity= coordinate.
 
 ** Inflation
 
 | oresmd URI | Quote key |
 |------------+-----------|
-| =oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y= | =ZC_INFLATIONSWAP/RATE/UKRPI/5Y= |
-| =oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y= | =YY_INFLATIONSWAP/RATE/UKRPI/5Y= |
-| =oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan= | =SEASONALITY/RATE/MULT/UKRPI/JAN= |
+| =oresmd://inflation/ukrpi?type=quote&quote=zc_swap&maturity=5y= | =ZC_INFLATIONSWAP/RATE/UKRPI/5Y= |
+| =oresmd://inflation/ukrpi?type=quote&quote=yy_swap&maturity=5y= | =YY_INFLATIONSWAP/RATE/UKRPI/5Y= |
+| =oresmd://inflation/ukrpi?type=quote&quote=seasonality&month=jan= | =SEASONALITY/RATE/MULT/UKRPI/JAN= |
+| =oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&expiry=10y&call_put=c&strike=0.00= | =ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00= |
 
 The =entity= is the inflation index code (e.g. =ukrpi=); there is no
 =ccy= — the index code already identifies the index. =quote= is
-required (no default). The seasonality shape is the one 5-segment
-exception in the family, with a literal =MULT= segment.
+required (no default). The swap term is =maturity=; seasonality's month
+is the =month= coordinate, the enum that names the month. The
+cap/floor surface carries =expiry=, =call_put= and =strike=. The
+seasonality shape is the one 5-segment exception in the family, with a
+literal =MULT= segment.
 
 ** Correlation
 
 | oresmd URI | Quote key |
 |------------+-----------|
 | =oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise= | =CORRELATION/RATE/CCY-EUR-USD= |
+| =oresmd://correlation/fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-generic-eur-usd&expiry=1y&delta=atm= | =CORRELATION/RATE/FX-GENERIC-GBP-USD/FX-GENERIC-EUR-USD/1Y/ATM= |
 
 The =entity= is a hyphen-separated factor pair (=ccy-eur-usd= = EUR vs
 USD), with the factor-class prefix (=ccy=) as its first segment; the
 quote key is the entity itself, uppercase, after =CORRELATION/RATE=.
-=quote= is never used (pairwise is the only quote type); =point= is
-rejected.
+=pairwise= is the class's only quote type, so =quote=pairwise= is the
+only value the key takes. A surface form names the second operand in
+=second_factor= and its coordinates in =expiry= and =delta=. =model= is
+refused, since a correlation has no volatility model.
 
 * Data model
 
@@ -499,9 +599,9 @@ fails if fields remain unresolved.
   field-for-field. Note that "resolved" does *not* mean
   "every field on the identifier class is non-null" — the swaption
   worked example above is a fully-resolved =ir_market_data_identifier=
-  with =index=/=tenor=/=role= all absent, because those fields simply
-  do not apply to a =type=vol= instrument. =index=/=tenor=/=role=/
-  =metric=/=point= are therefore =std::optional= on *both* the
+  with =index=/=role= absent, because those fields simply do not apply
+  to a =type=vol= instrument. =index=/=role=/=metric= and the
+  coordinate keys are therefore =std::optional= on *both* the
   identifier and the requirement — the fields that differ are which of
   them =resolve(...)= is obliged to have settled (one way or the
   other, including "confirmed not applicable") before it will produce
@@ -514,15 +614,21 @@ fails if fields remain unresolved.
   =index_name= has today — =index_family=) are enums, not strings, so
   an invalid value is a compile error or a construction-time validation
   failure, not a silently-accepted typo.
-- =tenor=, =currency=, and =point= are not reinvented here — a real
-  implementation would bind these to whatever this codebase's own
-  domain types for tenor and currency already are, rather than
-  introduce competing ones; credit and commodity reuse the same generic
-  =point= type IR's swap-tenor/curve-point case uses (carrying
-  seniority+tenor for credit, or a forward tenor for commodity),
-  exactly mirroring how their URI-level =point= query key already
-  absorbs those dimensions rather than getting dedicated fields of
-  their own.
+- =tenor= and =currency= are not reinvented here — a real
+  implementation binds these to whatever this codebase's own domain
+  types for tenor and currency already are, rather than introduce
+  competing ones. Each coordinate key is a typed member of its own
+  (credit's =seniority= and =restructuring=, a commodity forward's
+  =maturity=, a surface's =expiry=/=strike=/=delta=), so no key has to
+  absorb more than one dimension.
+
+An observation's coordinate is the declared coordinate keys, each one
+its own query key. A migration of the stored rows to that form is a
+separate unit and has not landed: until it does, the database's
+=point_id= column still holds the registry's slash-joined ORE form
+(=6M/10Y/ATM=), and the import bridges the two spellings. The
+registry's ORE-form =point_id= (=ores_series_key_shapes=) is derived
+for key projection; it is not the grammar's coordinate.
 
 #+caption: Proposed oresmd type system: seven independent, non-inheriting structs per side (identifier/requirement), tied together only as a std::variant per side; free functions (parse_oresmd, to_uri, resolve) dispatch on the URI's asset_class rather than using virtual calls.
 [[proj:doc/knowledge/domain/market_data_urn_types.png]]

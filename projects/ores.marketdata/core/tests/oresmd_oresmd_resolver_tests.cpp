@@ -35,7 +35,7 @@ TEST_CASE("resolve_ir_requirement_fills_unset_fields_from_defaults", tags) {
     ir_market_data_requirement req;
     req.ccy = "USD";
     req.tenor = "3m";
-    // index/role/type/metric/point left unset -- must come from defaults.
+    // index/role/type/metric/maturity left unset -- must come from defaults.
 
     ir_market_data_identifier defaults;
     defaults.ccy = "EUR"; // requirement's ccy must win over this.
@@ -51,7 +51,7 @@ TEST_CASE("resolve_ir_requirement_fills_unset_fields_from_defaults", tags) {
     REQUIRE(ir.index == index_family::libor);    // from defaults.
     REQUIRE(ir.role == curve_role::projection);  // from defaults.
     REQUIRE_FALSE(ir.metric.has_value());
-    REQUIRE_FALSE(ir.point.has_value());
+    REQUIRE_FALSE(ir.maturity.has_value());
 }
 
 TEST_CASE("resolve_fully_specified_requirement_ignores_defaults", tags) {
@@ -95,13 +95,15 @@ TEST_CASE("resolve_credit_requirement_with_all_fields_from_defaults", tags) {
     defaults.reference_entity = "ITRAXX-EUROPE";
     defaults.ccy = "EUR";
     defaults.type = instrument_type::quote;
-    defaults.point = "sr,5y";
+    defaults.seniority = "sr";
+    defaults.tenor = "5y";
 
     const auto resolved = oresmd_resolver::resolve(req, defaults);
     const auto& cr = std::get<credit_market_data_identifier>(resolved);
     REQUIRE(cr.reference_entity == "ITRAXX-EUROPE");
     REQUIRE(cr.ccy == "EUR");
-    REQUIRE(cr.point == "sr,5y");
+    REQUIRE(cr.seniority == "sr");
+    REQUIRE(cr.tenor == "5y");
 }
 
 TEST_CASE("resolve_commodity_requirement_missing_commodity_code_throws", tags) {

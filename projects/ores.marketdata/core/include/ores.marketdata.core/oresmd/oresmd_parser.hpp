@@ -33,8 +33,8 @@ namespace ores::marketdata::core {
  * @brief Canonical spellings of the free-text identifier components, supplied by the
  * caller from refdata.
  *
- * The URI builder matches the identifier's tenor and point values against these sets
- * and rejects unknown spellings; oresmd keeps no dependency on the refdata
+ * The URI builder matches the identifier's tenor and coordinate values against these
+ * sets and rejects unknown spellings; oresmd keeps no dependency on the refdata
  * repositories. Values use the parser's spelling (lowercase, as parse() stores them);
  * a typed "6m" and a program-built "6M" are two strings unless the caller's refdata
  * container says which is canonical.
@@ -43,8 +43,8 @@ struct canonical_values final {
     /** @brief Canonical tenor spellings (e.g. "3m", "1d"). */
     std::set<std::string> tenor;
 
-    /** @brief Canonical point spellings (e.g. "5y", "sr,5y", "5y,2y,atm"). */
-    std::set<std::string> point;
+    /** @brief Canonical coordinate spellings (e.g. "5y", "sr", "xr14", "atm"). */
+    std::set<std::string> coordinate;
 };
 
 /**

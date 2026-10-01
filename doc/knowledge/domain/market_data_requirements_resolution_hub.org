@@ -99,10 +99,10 @@ requirements in total. Resolution ($\rho$) maps each to one physical
 identifier in [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]
 notation:
 
-- =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2m=
-- =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=3m=
-- =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2m=
-- =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=3m=
+- =oresmd://ir/eur?curve_id=EUR&tenor=2m&type=quote&quote=discount&metric=rate=
+- =oresmd://ir/eur?curve_id=EUR&tenor=3m&type=quote&quote=discount&metric=rate=
+- =oresmd://ir/usd?curve_id=USD&tenor=2m&type=quote&quote=discount&metric=rate=
+- =oresmd://ir/usd?curve_id=USD&tenor=3m&type=quote&quote=discount&metric=rate=
 
 Dependency closure then expands each of the four identifiers to include
 whatever instrument quotes were used to bootstrap those pillar points in

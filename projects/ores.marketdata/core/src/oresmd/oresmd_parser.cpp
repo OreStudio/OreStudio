@@ -87,11 +87,29 @@ struct query_params final {
     std::optional<std::string> metric;
     std::optional<std::string> quote;
     std::optional<std::string> model;
-    std::optional<std::string> point;
     std::optional<std::string> delivery;
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
     std::optional<std::string> name_spelling;
+    // The coordinate dimensions, one query key each. A surface's coordinate used
+    // to arrive as one comma-joined `point`; the model now names each dimension,
+    // so a reader needs no per-family convention to read a URI.
+    std::optional<std::string> maturity;
+    std::optional<std::string> expiry;
+    std::optional<std::string> strike;
+    std::optional<std::string> delta;
+    std::optional<std::string> smile;
+    std::optional<std::string> call_put;
+    std::optional<std::string> premium;
+    std::optional<std::string> seniority;
+    std::optional<std::string> restructuring;
+    std::optional<std::string> from_grade;
+    std::optional<std::string> to;
+    std::optional<std::string> date;
+    std::optional<std::string> second;
+    std::optional<std::string> period;
+    std::optional<std::string> dst;
+    std::optional<std::string> month;
 
     static query_params from(const boost::urls::url_view& u) {
         query_params qp;
@@ -135,7 +153,10 @@ struct query_params final {
             else if (p.key == "model")
                 qp.model = p.value;
             else if (p.key == "point")
-                qp.point = p.value;
+                BOOST_THROW_EXCEPTION(oresmd_exception(
+                    "The 'point' query key is no longer part of the oresmd grammar: name each "
+                    "coordinate with its own key -- maturity, expiry, tenor, strike, delta, "
+                    "seniority, restructuring, date and the rest."));
             else if (p.key == "delivery")
                 qp.delivery = p.value;
             else if (p.key == "source")
@@ -144,6 +165,38 @@ struct query_params final {
                 qp.source_spelling = p.value;
             else if (p.key == "name_spelling")
                 qp.name_spelling = p.value;
+            else if (p.key == "maturity")
+                qp.maturity = p.value;
+            else if (p.key == "expiry")
+                qp.expiry = p.value;
+            else if (p.key == "strike")
+                qp.strike = p.value;
+            else if (p.key == "delta")
+                qp.delta = p.value;
+            else if (p.key == "smile")
+                qp.smile = p.value;
+            else if (p.key == "call_put")
+                qp.call_put = p.value;
+            else if (p.key == "premium")
+                qp.premium = p.value;
+            else if (p.key == "seniority")
+                qp.seniority = p.value;
+            else if (p.key == "restructuring")
+                qp.restructuring = p.value;
+            else if (p.key == "from")
+                qp.from_grade = p.value;
+            else if (p.key == "to")
+                qp.to = p.value;
+            else if (p.key == "date")
+                qp.date = p.value;
+            else if (p.key == "second")
+                qp.second = p.value;
+            else if (p.key == "period")
+                qp.period = p.value;
+            else if (p.key == "dst")
+                qp.dst = p.value;
+            else if (p.key == "month")
+                qp.month = p.value;
             else
                 BOOST_THROW_EXCEPTION(
                     oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
@@ -159,6 +212,554 @@ Enum parse_enum(std::string_view field, std::string_view value) {
         BOOST_THROW_EXCEPTION(
             oresmd_exception(std::format("Unrecognised {} value: {}", field, value)));
     return *e;
+}
+
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool fx_carries_coordinate(fx_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case fx_quote_type::spot:
+            return false;
+        case fx_quote_type::fwd:
+            return key == "maturity";
+        case fx_quote_type::option:
+            return key == "expiry" || key == "delta" || key == "strike";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_fx_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'delta' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'strike' query key.")));
+}
+
+void validate_fx_coordinates(fx_quote_type qt, const query_params& qp) {
+    if (qp.maturity && !fx_carries_coordinate(qt, "maturity"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'maturity' query key.")));
+    if (qp.expiry && !fx_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'expiry' query key.")));
+    if (qp.delta && !fx_carries_coordinate(qt, "delta"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'delta' query key.")));
+    if (qp.strike && !fx_carries_coordinate(qt, "strike"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'strike' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool ir_carries_coordinate(ir_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case ir_quote_type::ir_swap:
+            return key == "maturity";
+        case ir_quote_type::discount:
+            return key == "tenor";
+        case ir_quote_type::mm:
+            return key == "maturity";
+        case ir_quote_type::fra:
+            return key == "maturity";
+        case ir_quote_type::imm_fra:
+            return key == "maturity";
+        case ir_quote_type::basis_swap:
+            return key == "maturity";
+        case ir_quote_type::bma_swap:
+            return key == "maturity";
+        case ir_quote_type::cc_basis_swap:
+            return key == "maturity";
+        case ir_quote_type::cc_fix_float_swap:
+            return key == "maturity";
+        case ir_quote_type::zero:
+            return key == "maturity";
+        case ir_quote_type::mm_future:
+            return key == "contract_code" || key == "tenor";
+        case ir_quote_type::oi_future:
+            return key == "contract_month" || key == "contract_code" || key == "tenor";
+        case ir_quote_type::capfloor:
+            return key == "expiry" || key == "strike";
+        case ir_quote_type::bond_option:
+            return key == "expiry" || key == "smile" || key == "delta" || key == "strike";
+        case ir_quote_type::swaption:
+            return key == "expiry" || key == "smile" || key == "delta" || key == "strike";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_ir_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'expiry' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'strike' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'delta' query key.")));
+    if (qp.smile)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'smile' query key.")));
+}
+
+void validate_ir_coordinates(ir_quote_type qt, const query_params& qp) {
+    if (qp.maturity && !ir_carries_coordinate(qt, "maturity"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'maturity' query key.")));
+    if (qp.expiry && !ir_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'expiry' query key.")));
+    if (qp.strike && !ir_carries_coordinate(qt, "strike"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'strike' query key.")));
+    if (qp.delta && !ir_carries_coordinate(qt, "delta"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'delta' query key.")));
+    if (qp.smile && !ir_carries_coordinate(qt, "smile"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'smile' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool equity_carries_coordinate(equity_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case equity_quote_type::spot:
+            return false;
+        case equity_quote_type::dividend:
+            return key == "maturity";
+        case equity_quote_type::fwd:
+            return key == "maturity";
+        case equity_quote_type::option:
+            return key == "expiry" || key == "delta" || key == "premium" || key == "call_put" ||
+                   key == "strike";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_equity_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'delta' query key.")));
+    if (qp.premium)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'premium' query key.")));
+    if (qp.call_put)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'call_put' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'strike' query key.")));
+}
+
+void validate_equity_coordinates(equity_quote_type qt, const query_params& qp) {
+    if (qp.maturity && !equity_carries_coordinate(qt, "maturity"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'maturity' query key.")));
+    if (qp.expiry && !equity_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'expiry' query key.")));
+    if (qp.delta && !equity_carries_coordinate(qt, "delta"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'delta' query key.")));
+    if (qp.premium && !equity_carries_coordinate(qt, "premium"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'premium' query key.")));
+    if (qp.call_put && !equity_carries_coordinate(qt, "call_put"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'call_put' query key.")));
+    if (qp.strike && !equity_carries_coordinate(qt, "strike"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'strike' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool credit_carries_coordinate(credit_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case credit_quote_type::cds:
+            return key == "seniority" || key == "restructuring" || key == "tenor";
+        case credit_quote_type::hazard_rate:
+            return key == "seniority" || key == "restructuring" || key == "tenor";
+        case credit_quote_type::recovery_rate:
+            return key == "seniority" || key == "restructuring";
+        case credit_quote_type::cds_index:
+            return key == "tenor" || key == "strike";
+        case credit_quote_type::index_cds_tranche:
+            return key == "tenor" || key == "strike";
+        case credit_quote_type::index_cds_option:
+            return key == "tenor" || key == "expiry" || key == "delta" || key == "strike";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_credit_no_coordinates(const query_params& qp) {
+    if (qp.seniority)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'seniority' query key.")));
+    if (qp.restructuring)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'restructuring' query key.")));
+    if (qp.tenor)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'tenor' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'expiry' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'strike' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'delta' query key.")));
+}
+
+void validate_credit_coordinates(credit_quote_type qt, const query_params& qp) {
+    if (qp.seniority && !credit_carries_coordinate(qt, "seniority"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'seniority' query key.")));
+    if (qp.restructuring && !credit_carries_coordinate(qt, "restructuring"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'restructuring' query key.")));
+    if (qp.tenor && !credit_carries_coordinate(qt, "tenor"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'tenor' query key.")));
+    if (qp.expiry && !credit_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'expiry' query key.")));
+    if (qp.strike && !credit_carries_coordinate(qt, "strike"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'strike' query key.")));
+    if (qp.delta && !credit_carries_coordinate(qt, "delta"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'delta' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool commodity_carries_coordinate(commodity_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case commodity_quote_type::spot:
+            return false;
+        case commodity_quote_type::fwd:
+            return key == "maturity";
+        case commodity_quote_type::option:
+            return key == "expiry" || key == "delta" || key == "premium" || key == "call_put" ||
+                   key == "strike";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_commodity_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'delta' query key.")));
+    if (qp.premium)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'premium' query key.")));
+    if (qp.call_put)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'call_put' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'strike' query key.")));
+}
+
+void validate_commodity_coordinates(commodity_quote_type qt, const query_params& qp) {
+    if (qp.maturity && !commodity_carries_coordinate(qt, "maturity"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'maturity' query key.")));
+    if (qp.expiry && !commodity_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'expiry' query key.")));
+    if (qp.delta && !commodity_carries_coordinate(qt, "delta"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'delta' query key.")));
+    if (qp.premium && !commodity_carries_coordinate(qt, "premium"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'premium' query key.")));
+    if (qp.call_put && !commodity_carries_coordinate(qt, "call_put"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'call_put' query key.")));
+    if (qp.strike && !commodity_carries_coordinate(qt, "strike"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'strike' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool inflation_carries_coordinate(inflation_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case inflation_quote_type::zc_swap:
+            return key == "maturity";
+        case inflation_quote_type::yy_swap:
+            return key == "maturity";
+        case inflation_quote_type::seasonality:
+            return key == "month";
+        case inflation_quote_type::zc_capfloor:
+            return key == "expiry" || key == "call_put" || key == "strike";
+        case inflation_quote_type::yy_capfloor:
+            return key == "expiry" || key == "call_put" || key == "strike";
+        case inflation_quote_type::cf_price:
+            return key == "expiry" || key == "call_put" || key == "strike";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_inflation_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'maturity' query key.")));
+    if (qp.month)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'month' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'expiry' query key.")));
+    if (qp.call_put)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'call_put' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'strike' query key.")));
+}
+
+void validate_inflation_coordinates(inflation_quote_type qt, const query_params& qp) {
+    if (qp.maturity && !inflation_carries_coordinate(qt, "maturity"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'maturity' query key.")));
+    if (qp.month && !inflation_carries_coordinate(qt, "month"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'month' query key.")));
+    if (qp.expiry && !inflation_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'expiry' query key.")));
+    if (qp.call_put && !inflation_carries_coordinate(qt, "call_put"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'call_put' query key.")));
+    if (qp.strike && !inflation_carries_coordinate(qt, "strike"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'strike' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool correlation_carries_coordinate(correlation_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case correlation_quote_type::pairwise:
+            return key == "expiry" || key == "delta";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_correlation_no_coordinates(const query_params& qp) {
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://correlation/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://correlation/... does not support the 'delta' query key.")));
+}
+
+void validate_correlation_coordinates(correlation_quote_type qt, const query_params& qp) {
+    if (qp.expiry && !correlation_carries_coordinate(qt, "expiry"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://correlation/... does not support the 'expiry' query key.")));
+    if (qp.delta && !correlation_carries_coordinate(qt, "delta"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://correlation/... does not support the 'delta' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool shape_profile_carries_coordinate(shape_profile_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case shape_profile_quote_type::shape_factor:
+            return key == "date" || key == "second" || key == "period" || key == "dst";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_shape_profile_no_coordinates(const query_params& qp) {
+    if (qp.date)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'date' query key.")));
+    if (qp.second)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'second' query key.")));
+    if (qp.period)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'period' query key.")));
+    if (qp.dst)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'dst' query key.")));
+}
+
+void validate_shape_profile_coordinates(shape_profile_quote_type qt, const query_params& qp) {
+    if (qp.date && !shape_profile_carries_coordinate(qt, "date"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'date' query key.")));
+    if (qp.second && !shape_profile_carries_coordinate(qt, "second"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'second' query key.")));
+    if (qp.period && !shape_profile_carries_coordinate(qt, "period"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'period' query key.")));
+    if (qp.dst && !shape_profile_carries_coordinate(qt, "dst"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'dst' query key.")));
+}
+/**
+ * @brief Whether a quote type carries a coordinate, as the model declares it.
+ *
+ * The grammar is the models' declaration: every quote type lists the coordinate
+ * keys it has, and a key it does not list is a misplaced one rather than a value
+ * to store and forget.
+ */
+bool rating_carries_coordinate(rating_quote_type qt, std::string_view key) {
+    switch (qt) {
+        case rating_quote_type::transition_probability:
+            return key == "from" || key == "to";
+    }
+    return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_rating_no_coordinates(const query_params& qp) {
+    if (qp.from_grade)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://rating/... does not support the 'from' query key.")));
+    if (qp.to)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://rating/... does not support the 'to' query key.")));
+}
+
+void validate_rating_coordinates(rating_quote_type qt, const query_params& qp) {
+    if (qp.from_grade && !rating_carries_coordinate(qt, "from"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://rating/... does not support the 'from' query key.")));
+    if (qp.to && !rating_carries_coordinate(qt, "to"))
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://rating/... does not support the 'to' query key.")));
 }
 
 instrument_type parse_type(const query_params& qp) {
@@ -302,8 +903,36 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
                 oresmd_exception("oresmd://fx/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<fx_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
+    // The silence the old grammar read as a default: a quote URI that names no
+    // quote type takes the asset class's own. Only a quote has one -- a fixing's
+    // key is an index name and names no quote type at all.
+    if (!id.quote_type && id.type == instrument_type::quote)
+        id.quote_type = fx_quote_type::spot;
+    if (!id.quote_type && id.type == instrument_type::vol)
+        id.quote_type = fx_quote_type::option;
+    if (qp.maturity)
+        id.maturity = to_lower(*qp.maturity);
+    if (qp.expiry) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->expiry = to_upper(*qp.expiry);
+    }
+    if (qp.delta) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->delta_type = to_upper(*qp.delta);
+    }
+    if (qp.strike) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->strike = to_upper(*qp.strike);
+    }
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_fx_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_fx_no_coordinates(qp);
     // A fixing carries the source that published it, lower-cased the way the
     // index families are, with the token as ORE wrote it kept beside it when the
     // two differ. A quote carries neither; validate_fx() refuses them.
@@ -311,22 +940,6 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
         id.source = to_lower(*qp.source);
     if (qp.source_spelling)
         id.source_spelling = *qp.source_spelling;
-    // A vol surface point carries the FX option's expiry and strike, and the
-    // pair already carries the two currencies: type=vol&point=10y,atm.
-    if (qp.point && id.type == instrument_type::vol) {
-        std::vector<std::string> parts;
-        std::stringstream ss(*id.point);
-        std::string part;
-        while (std::getline(ss, part, ','))
-            parts.push_back(to_upper(part));
-        if (parts.size() != 2)
-            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
-                "oresmd://fx/... a vol surface point is expiry,strike, got: '{}'.", *id.point)));
-        volatility_surface_point v;
-        v.expiry = parts[0];
-        v.strike = parts[1];
-        id.vol = std::move(v);
-    }
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
@@ -358,6 +971,12 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.day_count = *qp.day_count;
     if (qp.settle)
         id.settle = *qp.settle;
+    // A cap/floor surface's displacement and strip flags used to arrive inside
+    // the point; they are identity keys and are written in their own right.
+    if (qp.shift)
+        id.shift = to_lower(*qp.shift);
+    if (qp.strip)
+        id.strip = to_lower(*qp.strip);
     if (qp.role)
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)
@@ -372,6 +991,11 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
                 oresmd_exception("oresmd://ir/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<ir_quote_type>("quote", *qp.quote);
     }
+    // The silence the old grammar read as a default: a volatility surface that
+    // names no quote type is the swaption, and the writer emits the key like any
+    // other so a reader never has to know it.
+    if (!id.quote_type && id.type == instrument_type::vol)
+        id.quote_type = ir_quote_type::swaption;
     // The entity path segment is the currency for every IR identifier except a
     // bond option, whose third key segment is the underlying bond curve's own
     // name -- EUR_GENERIC in the corpus -- rather than a currency.
@@ -380,61 +1004,36 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
     if (!entity_is_underlying && !is_currency_code(id.ccy))
         BOOST_THROW_EXCEPTION(oresmd_exception(
             std::format("oresmd://ir/... entity must be a currency, got: '{}'.", id.ccy)));
-    if (qp.point) {
-        id.point = to_lower(*qp.point);
-        if (id.type == instrument_type::vol) {
-            // Split the point as it was written, not as it is stored: a swaption
-            // surface may carry the smile convention's marker, and that marker is
-            // a name whose case the key has to read back.
-            std::vector<std::string> parts;
-            std::stringstream ss(*qp.point);
-            std::string part;
-            while (std::getline(ss, part, ','))
-                parts.push_back(part);
-            if (id.quote_type == ir_quote_type::capfloor) {
-                // The cap/floor surface carries five coordinates, not three:
-                // maturity, float tenor, and the shift and strip flags the
-                // market data catalogue names, then the strike.
-                if (parts.size() != 5)
-                    BOOST_THROW_EXCEPTION(oresmd_exception(
-                        std::format("oresmd://ir/... a capfloor vol point is "
-                                    "maturity,float_tenor,shift,strip,strike, got: '{}'.",
-                                    *id.point)));
-                volatility_surface_point v;
-                v.expiry = to_upper(parts[0]);
-                id.tenor = to_lower(parts[1]);
-                id.shift = to_lower(parts[2]);
-                id.strip = to_lower(parts[3]);
-                v.strike = to_upper(parts[4]);
-                id.vol = std::move(v);
-            } else if (parts.size() == 3 || parts.size() == 4) {
-                volatility_surface_point v;
-                v.expiry = to_upper(parts[0]);
-                if (!id.tenor)
-                    id.tenor = to_lower(parts[1]);
-                if (parts.size() == 3) {
-                    v.strike = to_upper(parts[2]);
-                } else {
-                    // expiry,tenor,marker,value -- the smile convention. The
-                    // marker is carried and re-serialised as it arrived.
-                    v.delta_type = parts[2];
-                    v.strike = to_upper(parts[3]);
-                    id.point = to_lower(parts[0]) + "," + to_lower(parts[1]) + "," + *v.delta_type +
-                               "," + to_lower(parts[3]);
-                }
-                id.vol = std::move(v);
-            }
-        }
-    }
+    if (id.quote_type)
+        validate_ir_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_ir_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol) {
         // A shift quote names its surface with no coordinate of its own:
         // CAPFLOOR/SHIFT/CCY/TENOR arrives as
         // type=vol&quote=capfloor&model=shift&tenor=6m. The surface is built
-        // from the model alone, so it is created here when the point block
-        // above did not.
+        // from the model alone, so it is created here when no coordinate did.
         if (!id.vol)
             id.vol.emplace();
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
+    }
+    // The declared coordinates, one query key each. The surface's own live in
+    // the vol block; the rest are the identifier's own members.
+    if (qp.maturity)
+        id.maturity = to_lower(*qp.maturity);
+    if (qp.expiry || qp.strike || qp.delta || qp.smile) {
+        if (!id.vol)
+            id.vol.emplace();
+        if (qp.expiry)
+            id.vol->expiry = to_upper(*qp.expiry);
+        if (qp.strike)
+            id.vol->strike = to_upper(*qp.strike);
+        if (qp.delta)
+            id.vol->delta_type = to_upper(*qp.delta);
+        // The smile convention's marker is a name whose case the key has to read
+        // back, so it is carried as it arrived.
+        if (qp.smile)
+            id.vol->smile = *qp.smile;
     }
     if (id.type == instrument_type::fixing && id.index && requires_tenor(*id.index) && !id.tenor)
         BOOST_THROW_EXCEPTION(oresmd_exception(
@@ -466,44 +1065,67 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
                 "oresmd://equity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<equity_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
-    // An equity option's surface point carries up to five coordinates, and the
-    // count says which of the three shapes it is: expiry,strike;
-    // expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
-    if (qp.point && id.type == instrument_type::vol) {
-        std::vector<std::string> parts;
-        std::stringstream ss(*id.point);
-        std::string part;
-        while (std::getline(ss, part, ','))
-            parts.push_back(to_upper(part));
-        if (parts.size() != 2 && parts.size() != 3 && parts.size() != 5)
-            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
-                "oresmd://equity/... a vol surface point is expiry,strike; "
-                "expiry,strike,call_put; or expiry,delta,premium,call_put,strike; got: '{}'.",
-                *id.point)));
-        volatility_surface_point v;
-        if (parts.size() == 5) {
-            v.expiry = parts[0];
-            v.delta_type = parts[1];
-            v.premium_type = parts[2];
-            v.call_put = parts[3];
-            v.strike = parts[4];
-        } else {
-            v.expiry = parts[0];
-            v.strike = parts[1];
-            if (parts.size() == 3)
-                v.call_put = parts[2];
-        }
-        id.vol = std::move(v);
+    // The silence the old grammar read as a default: a quote URI that names no
+    // quote type takes the asset class's own. Only a quote has one -- a fixing's
+    // key is an index name and names no quote type at all.
+    if (!id.quote_type && id.type == instrument_type::quote)
+        id.quote_type = equity_quote_type::spot;
+    if (!id.quote_type && id.type == instrument_type::vol)
+        id.quote_type = equity_quote_type::option;
+    if (qp.maturity)
+        id.maturity = to_lower(*qp.maturity);
+    if (qp.expiry) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->expiry = to_upper(*qp.expiry);
     }
+    if (qp.delta) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->delta_type = to_upper(*qp.delta);
+    }
+    if (qp.premium) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->premium_type = to_upper(*qp.premium);
+    }
+    if (qp.call_put) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->call_put = to_upper(*qp.call_put);
+    }
+    if (qp.strike) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->strike = to_upper(*qp.strike);
+    }
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_equity_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_equity_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
 }
 
 market_data_identifier parse_credit(const boost::urls::url_view& u, const query_params& qp) {
-    validate_no_foreign_keys("credit", qp);
+    reject_if_present("credit", "index", qp.index);
+    reject_if_present("credit", "second_tenor", qp.second_tenor);
+    reject_if_present("credit", "second_ccy", qp.second_ccy);
+    reject_if_present("credit", "second_factor", qp.second_factor);
+    reject_if_present("credit", "curve_id", qp.curve_id);
+    reject_if_present("credit", "settle", qp.settle);
+    reject_if_present("credit", "day_count", qp.day_count);
+    reject_if_present("credit", "shift", qp.shift);
+    reject_if_present("credit", "strip", qp.strip);
+    reject_if_present("credit", "role", qp.role);
+    reject_if_present("credit", "metric", qp.metric);
+    reject_if_present("credit", "source", qp.source);
+    reject_if_present("credit", "source_spelling", qp.source_spelling);
+    reject_if_present("credit", "delivery", qp.delivery);
+    reject_if_present("credit", "name_spelling", qp.name_spelling);
     credit_market_data_identifier id;
     id.reference_entity = to_upper(first_segment(u));
     if (!qp.ccy)
@@ -520,33 +1142,38 @@ market_data_identifier parse_credit(const boost::urls::url_view& u, const query_
                 "oresmd://credit/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<credit_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
-    // An index CDS option's surface point carries the index tenor ahead of the
-    // expiry and the strike: type=vol&point=5y,2025-02-19,107.5. The corpus also
-    // writes a term vol with the tenor alone and neither of the other two, so the
-    // count decides which form this is.
-    if (qp.point && id.type == instrument_type::vol) {
-        std::vector<std::string> parts;
-        std::stringstream ss(*id.point);
-        std::string part;
-        while (std::getline(ss, part, ','))
-            parts.push_back(part);
-        if (parts.size() != 1 && parts.size() != 3)
-            BOOST_THROW_EXCEPTION(
-                oresmd_exception(std::format("oresmd://credit/... a vol surface point is tenor or "
-                                             "tenor,expiry,strike, got: '{}'.",
-                                             *id.point)));
-        volatility_surface_point v;
-        if (parts.size() == 3) {
-            v.expiry = to_upper(parts[1]);
-            v.strike = to_upper(parts[2]);
-            id.point = to_lower(parts[0]) + "," + to_lower(parts[1]) + "," + to_lower(parts[2]);
-        } else {
-            id.point = to_lower(parts[0]);
-        }
-        id.vol = std::move(v);
+    // The silence the old grammar read as a default: a quote URI that names no
+    // quote type takes the asset class's own. Only a quote has one -- a fixing's
+    // key is an index name and names no quote type at all.
+    if (!id.quote_type && id.type == instrument_type::quote)
+        id.quote_type = credit_quote_type::cds;
+    if (qp.seniority)
+        id.seniority = to_lower(*qp.seniority);
+    if (qp.restructuring)
+        id.restructuring = to_lower(*qp.restructuring);
+    if (qp.tenor)
+        id.tenor = to_lower(*qp.tenor);
+    if (qp.expiry) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->expiry = to_upper(*qp.expiry);
     }
+    if (qp.strike) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->strike = to_upper(*qp.strike);
+    }
+    if (qp.delta) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->delta_type = to_upper(*qp.delta);
+    }
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_credit_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_credit_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
@@ -582,8 +1209,16 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
                 "oresmd://correlation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<correlation_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
+    if (qp.expiry)
+        id.expiry = to_lower(*qp.expiry);
+    if (qp.delta)
+        id.delta = to_lower(*qp.delta);
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_correlation_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_correlation_no_coordinates(qp);
     // A pairwise correlation names a second operand as well as the entity, and
     // the entity carries the first: the two take fixed positions in the key.
     if (qp.second_factor)
@@ -592,7 +1227,7 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
 }
 
 market_data_identifier parse_inflation(const boost::urls::url_view& u, const query_params& qp) {
-    // Validation: only quote, type, and point are meaningful for inflation.
+    // Validation: only quote and type are meaningful for inflation.
     reject_if_present("inflation", "ccy", qp.ccy);
     reject_if_present("inflation", "index", qp.index);
     reject_if_present("inflation", "tenor", qp.tenor);
@@ -623,33 +1258,36 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
                 "oresmd://inflation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<inflation_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
+    if (qp.maturity)
+        id.maturity = to_lower(*qp.maturity);
+    if (qp.month)
+        id.month = to_lower(*qp.month);
+    if (qp.expiry) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->expiry = to_upper(*qp.expiry);
+    }
+    if (qp.call_put) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->call_put = to_upper(*qp.call_put);
+    }
+    if (qp.strike) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->strike = to_upper(*qp.strike);
+    }
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_inflation_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_inflation_no_coordinates(qp);
     if (id.type == instrument_type::fixing && !inflation_index_code_is_known(id.index_code))
         BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
             "oresmd://inflation/... '{}' is not an index code the model carries, so it has no "
             "index name to write back.",
             id.index_code)));
-    // An inflation cap/floor's surface point is the maturity, the cap-or-floor
-    // flag and the strike. Which surface it is -- a price or a normal vol --
-    // arrives as the model, matching the metric segment the projection emits.
-    if (qp.point && id.type == instrument_type::vol) {
-        std::vector<std::string> parts;
-        std::stringstream ss(*id.point);
-        std::string part;
-        while (std::getline(ss, part, ','))
-            parts.push_back(to_upper(part));
-        if (parts.size() != 3)
-            BOOST_THROW_EXCEPTION(
-                oresmd_exception(std::format("oresmd://inflation/... a capfloor vol point is "
-                                             "maturity,cap_or_floor,strike, got: '{}'.",
-                                             *id.point)));
-        volatility_surface_point v;
-        v.expiry = parts[0];
-        v.call_put = parts[1];
-        v.strike = parts[2];
-        id.vol = std::move(v);
-    }
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
@@ -692,8 +1330,46 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
                 "oresmd://commodity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<commodity_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
+    // The silence the old grammar read as a default: a quote URI that names no
+    // quote type takes the asset class's own. Only a quote has one -- a fixing's
+    // key is an index name and names no quote type at all.
+    if (!id.quote_type && id.type == instrument_type::quote)
+        id.quote_type = commodity_quote_type::spot;
+    if (!id.quote_type && id.type == instrument_type::vol)
+        id.quote_type = commodity_quote_type::option;
+    if (qp.maturity)
+        id.maturity = to_lower(*qp.maturity);
+    if (qp.expiry) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->expiry = to_upper(*qp.expiry);
+    }
+    if (qp.delta) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->delta_type = to_upper(*qp.delta);
+    }
+    if (qp.premium) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->premium_type = to_upper(*qp.premium);
+    }
+    if (qp.call_put) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->call_put = to_upper(*qp.call_put);
+    }
+    if (qp.strike) {
+        if (!id.vol)
+            id.vol.emplace();
+        id.vol->strike = to_upper(*qp.strike);
+    }
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_commodity_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_commodity_no_coordinates(qp);
     if (qp.delivery) {
         // A delivery coordinate is a fixing's: a commodity future's or a bond
         // future's contract month, or an intraday power index's window. A quote
@@ -703,35 +1379,6 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
             BOOST_THROW_EXCEPTION(oresmd_exception(
                 "oresmd://commodity/... 'delivery' is only meaningful when type=fixing."));
         id.delivery = to_lower(*qp.delivery);
-    }
-    // A commodity option's surface point carries the same coordinates the equity
-    // option's does, and the count says which of the three shapes it is:
-    // expiry,strike; expiry,strike,call_put; or expiry,delta,premium,call_put,strike.
-    if (qp.point && id.type == instrument_type::vol) {
-        std::vector<std::string> parts;
-        std::stringstream ss(*id.point);
-        std::string part;
-        while (std::getline(ss, part, ','))
-            parts.push_back(to_upper(part));
-        if (parts.size() != 2 && parts.size() != 3 && parts.size() != 5)
-            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
-                "oresmd://commodity/... a vol surface point is expiry,strike; "
-                "expiry,strike,call_put; or expiry,delta,premium,call_put,strike; got: '{}'.",
-                *id.point)));
-        volatility_surface_point v;
-        if (parts.size() == 5) {
-            v.expiry = parts[0];
-            v.delta_type = parts[1];
-            v.premium_type = parts[2];
-            v.call_put = parts[3];
-            v.strike = parts[4];
-        } else {
-            v.expiry = parts[0];
-            v.strike = parts[1];
-            if (parts.size() == 3)
-                v.call_put = parts[2];
-        }
-        id.vol = std::move(v);
     }
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
@@ -812,8 +1459,20 @@ market_data_identifier parse_shape_profile(const boost::urls::url_view& u, const
                 "oresmd://shape_profile/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<shape_profile_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
+    if (qp.date)
+        id.date = to_lower(*qp.date);
+    if (qp.second)
+        id.second = to_lower(*qp.second);
+    if (qp.period)
+        id.period = to_lower(*qp.period);
+    if (qp.dst)
+        id.dst = to_lower(*qp.dst);
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_shape_profile_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_shape_profile_no_coordinates(qp);
     return id;
 }
 
@@ -848,8 +1507,16 @@ market_data_identifier parse_rating(const boost::urls::url_view& u, const query_
                 "oresmd://rating/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<rating_quote_type>("quote", *qp.quote);
     }
-    if (qp.point)
-        id.point = to_lower(*qp.point);
+    if (qp.from_grade)
+        id.from = to_lower(*qp.from_grade);
+    if (qp.to)
+        id.to = to_lower(*qp.to);
+    // The resolved quote type decides which coordinates exist: a key the model
+    // does not give that type is misplaced, not a value to store and forget.
+    if (id.quote_type)
+        validate_rating_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_rating_no_coordinates(qp);
     return id;
 }
 
@@ -871,7 +1538,6 @@ market_data_identifier parse_power(const boost::urls::url_view& u, const query_p
     reject_if_present("power", "role", qp.role);
     reject_if_present("power", "metric", qp.metric);
     reject_if_present("power", "quote", qp.quote);
-    reject_if_present("power", "point", qp.point);
     reject_if_present("power", "source", qp.source);
     reject_if_present("power", "source_spelling", qp.source_spelling);
     reject_if_present("power", "name_spelling", qp.name_spelling);
@@ -910,7 +1576,6 @@ market_data_identifier parse_generic(const boost::urls::url_view& u, const query
     reject_if_present("generic", "role", qp.role);
     reject_if_present("generic", "metric", qp.metric);
     reject_if_present("generic", "quote", qp.quote);
-    reject_if_present("generic", "point", qp.point);
     reject_if_present("generic", "source", qp.source);
     reject_if_present("generic", "source_spelling", qp.source_spelling);
     reject_if_present("generic", "delivery", qp.delivery);
@@ -936,8 +1601,16 @@ market_data_identifier parse_generic(const boost::urls::url_view& u, const query
 }
 
 void append_if(boost::urls::url& u, std::string_view key, const std::optional<std::string>& v) {
-    if (v)
+    if (v && !v->empty())
         u.params().append({key, *v});
+}
+
+// A surface's own coordinates are plain strings rather than optionals, and an
+// unset one is the empty string: the writer emits the keys the grammar defines
+// for the type, not an empty key for every coordinate the model declares.
+void append_if(boost::urls::url& u, std::string_view key, const std::string& v) {
+    if (!v.empty())
+        u.params().append({key, v});
 }
 
 template <typename Enum>
@@ -952,9 +1625,10 @@ namespace ores::marketdata::core {
 
 namespace {
 
-// Which identifier fields the canonical container governs, per asset class: the
-// ir identifier carries tenor and point; fx, equity, credit, commodity, and
-// inflation carry point; correlation carries neither.
+// Which identifier fields the canonical container governs: the surface and
+// coordinate spellings oresmd keeps no repository of. A coordinate whose value
+// is not in the supplied set is refused, so a caller can pin the spellings its
+// own reference data knows.
 void validate_canonical(const domain::market_data_identifier& identifier,
                         const canonical_values& canonical) {
     const auto check_tenor = [&canonical](const std::optional<std::string>& v) {
@@ -962,10 +1636,15 @@ void validate_canonical(const domain::market_data_identifier& identifier,
             BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
                 "Unknown tenor spelling '{}': not in the supplied canonical values.", *v)));
     };
-    const auto check_point = [&canonical](const std::optional<std::string>& v) {
-        if (v && !canonical.point.contains(*v))
+    const auto check_coordinate = [&canonical](std::string_view key, const std::string& v) {
+        if (!v.empty() && !canonical.coordinate.contains(v))
             BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
-                "Unknown point spelling '{}': not in the supplied canonical values.", *v)));
+                "Unknown {} spelling '{}': not in the supplied canonical values.", key, v)));
+    };
+    const auto check_optional = [&check_coordinate](std::string_view key,
+                                                    const std::optional<std::string>& v) {
+        if (v)
+            check_coordinate(key, *v);
     };
 
     std::visit(
@@ -973,13 +1652,42 @@ void validate_canonical(const domain::market_data_identifier& identifier,
             using T = std::decay_t<decltype(id)>;
             if constexpr (std::is_same_v<T, ir_market_data_identifier>) {
                 check_tenor(id.tenor);
-                check_point(id.point);
-            } else if constexpr (std::is_same_v<T, fx_market_data_identifier> ||
-                                 std::is_same_v<T, equity_market_data_identifier> ||
-                                 std::is_same_v<T, credit_market_data_identifier> ||
-                                 std::is_same_v<T, commodity_market_data_identifier> ||
-                                 std::is_same_v<T, inflation_market_data_identifier>) {
-                check_point(id.point);
+            }
+            if constexpr (requires { id.maturity; })
+                check_optional("maturity", id.maturity);
+            if constexpr (requires { id.seniority; })
+                check_optional("seniority", id.seniority);
+            if constexpr (requires { id.restructuring; })
+                check_optional("restructuring", id.restructuring);
+            if constexpr (requires { id.month; })
+                check_optional("month", id.month);
+            if constexpr (std::is_same_v<T, credit_market_data_identifier>)
+                check_optional("tenor", id.tenor);
+            if constexpr (requires { id.from; })
+                check_optional("from", id.from);
+            if constexpr (requires { id.to; })
+                check_optional("to", id.to);
+            if constexpr (requires { id.date; })
+                check_optional("date", id.date);
+            if constexpr (requires { id.second; })
+                check_optional("second", id.second);
+            if constexpr (requires { id.period; })
+                check_optional("period", id.period);
+            if constexpr (requires { id.dst; })
+                check_optional("dst", id.dst);
+            if constexpr (requires { id.expiry; })
+                check_optional("expiry", id.expiry);
+            if constexpr (requires { id.delta; })
+                check_optional("delta", id.delta);
+            if constexpr (requires { id.vol; }) {
+                if (id.vol) {
+                    check_coordinate("expiry", id.vol->expiry);
+                    check_coordinate("strike", id.vol->strike);
+                    check_optional("delta", id.vol->delta_type);
+                    check_optional("call_put", id.vol->call_put);
+                    check_optional("premium", id.vol->premium_type);
+                    // The smile marker is a name, not a canonical spelling.
+                }
             }
         },
         identifier);
@@ -1042,16 +1750,23 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.pair));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
                 append_if(u, "source", id.source);
                 append_if(u, "source_spelling", id.source_spelling);
-                // The surface's model is the ORE metric of the projected key, and no
-                // field carries it, so the uri_order loop above cannot emit it. A
-                // non-default model is emitted here or the round trip loses which
-                // surface this was -- the price one rather than a log-normal vol.
-                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
-                    u.params().append(
-                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
+                append_if(u, "maturity", id.maturity);
+                if (id.vol)
+                    append_if(u, "expiry", id.vol->expiry);
+                if (id.vol)
+                    append_if(u, "delta", id.vol->delta_type);
+                if (id.vol)
+                    append_if(u, "strike", id.vol->strike);
+                // The model is written whether or not it holds the default, and
+                // only where it means something: a reader must not have to know
+                // that an absent model on a surface means lognormal.
+                if (id.type == instrument_type::vol)
+                    u.params().append({"model",
+                                       std::string(magic_enum::enum_name(
+                                           id.vol ? id.vol->model_subtype :
+                                                    volatility_model_subtype::rate_lnvol))});
             } else if constexpr (std::is_same_v<T, ir_market_data_identifier>) {
                 u.set_host("ir");
                 u.segments().push_back(to_lower(id.ccy));
@@ -1071,14 +1786,23 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "metric", id.metric);
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
-                // The surface's model is the ORE metric of the projected key, and no
-                // field carries it, so the uri_order loop above cannot emit it. A
-                // non-default model is emitted here or the round trip loses which
-                // surface this was -- the price one rather than a log-normal vol.
-                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
-                    u.params().append(
-                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
+                append_if(u, "maturity", id.maturity);
+                if (id.vol)
+                    append_if(u, "expiry", id.vol->expiry);
+                if (id.vol)
+                    append_if(u, "strike", id.vol->strike);
+                if (id.vol)
+                    append_if(u, "delta", id.vol->delta_type);
+                if (id.vol)
+                    append_if(u, "smile", id.vol->smile);
+                // The model is written whether or not it holds the default, and
+                // only where it means something: a reader must not have to know
+                // that an absent model on a surface means lognormal.
+                if (id.type == instrument_type::vol)
+                    u.params().append({"model",
+                                       std::string(magic_enum::enum_name(
+                                           id.vol ? id.vol->model_subtype :
+                                                    volatility_model_subtype::rate_lnvol))});
             } else if constexpr (std::is_same_v<T, equity_market_data_identifier>) {
                 u.set_host("equity");
                 u.segments().push_back(to_lower(id.ticker));
@@ -1086,28 +1810,51 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                     u.params().append({"ccy", to_lower(*id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
-                // The surface's model is the ORE metric of the projected key, and no
-                // field carries it, so the uri_order loop above cannot emit it. A
-                // non-default model is emitted here or the round trip loses which
-                // surface this was -- the price one rather than a log-normal vol.
-                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
-                    u.params().append(
-                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
+                append_if(u, "maturity", id.maturity);
+                if (id.vol)
+                    append_if(u, "expiry", id.vol->expiry);
+                if (id.vol)
+                    append_if(u, "delta", id.vol->delta_type);
+                if (id.vol)
+                    append_if(u, "premium", id.vol->premium_type);
+                if (id.vol)
+                    append_if(u, "call_put", id.vol->call_put);
+                if (id.vol)
+                    append_if(u, "strike", id.vol->strike);
+                // The model is written whether or not it holds the default, and
+                // only where it means something: a reader must not have to know
+                // that an absent model on a surface means lognormal.
+                if (id.type == instrument_type::vol)
+                    u.params().append({"model",
+                                       std::string(magic_enum::enum_name(
+                                           id.vol ? id.vol->model_subtype :
+                                                    volatility_model_subtype::rate_lnvol))});
             } else if constexpr (std::is_same_v<T, credit_market_data_identifier>) {
                 u.set_host("credit");
                 u.segments().push_back(to_lower(id.reference_entity));
-                u.params().append({"ccy", to_lower(id.ccy)});
+                // Mandatory for the class, but a quote type the model marks
+                // no_ccy carries none, and an empty value is not a value.
+                if (!id.ccy.empty())
+                    u.params().append({"ccy", to_lower(id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
-                // The surface's model is the ORE metric of the projected key, and no
-                // field carries it, so the uri_order loop above cannot emit it. A
-                // non-default model is emitted here or the round trip loses which
-                // surface this was -- the price one rather than a log-normal vol.
-                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
-                    u.params().append(
-                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
+                append_if(u, "seniority", id.seniority);
+                append_if(u, "restructuring", id.restructuring);
+                append_if(u, "tenor", id.tenor);
+                if (id.vol)
+                    append_if(u, "expiry", id.vol->expiry);
+                if (id.vol)
+                    append_if(u, "strike", id.vol->strike);
+                if (id.vol)
+                    append_if(u, "delta", id.vol->delta_type);
+                // The model is written whether or not it holds the default, and
+                // only where it means something: a reader must not have to know
+                // that an absent model on a surface means lognormal.
+                if (id.type == instrument_type::vol)
+                    u.params().append({"model",
+                                       std::string(magic_enum::enum_name(
+                                           id.vol ? id.vol->model_subtype :
+                                                    volatility_model_subtype::rate_lnvol))});
             } else if constexpr (std::is_same_v<T, commodity_market_data_identifier>) {
                 u.set_host("commodity");
                 u.segments().push_back(to_lower(id.commodity_code));
@@ -1115,35 +1862,55 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                     u.params().append({"ccy", to_lower(*id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
                 append_if(u, "delivery", id.delivery);
-                // The surface's model is the ORE metric of the projected key, and no
-                // field carries it, so the uri_order loop above cannot emit it. A
-                // non-default model is emitted here or the round trip loses which
-                // surface this was -- the price one rather than a log-normal vol.
-                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
-                    u.params().append(
-                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
+                append_if(u, "maturity", id.maturity);
+                if (id.vol)
+                    append_if(u, "expiry", id.vol->expiry);
+                if (id.vol)
+                    append_if(u, "delta", id.vol->delta_type);
+                if (id.vol)
+                    append_if(u, "premium", id.vol->premium_type);
+                if (id.vol)
+                    append_if(u, "call_put", id.vol->call_put);
+                if (id.vol)
+                    append_if(u, "strike", id.vol->strike);
+                // The model is written whether or not it holds the default, and
+                // only where it means something: a reader must not have to know
+                // that an absent model on a surface means lognormal.
+                if (id.type == instrument_type::vol)
+                    u.params().append({"model",
+                                       std::string(magic_enum::enum_name(
+                                           id.vol ? id.vol->model_subtype :
+                                                    volatility_model_subtype::rate_lnvol))});
             } else if constexpr (std::is_same_v<T, inflation_market_data_identifier>) {
                 u.set_host("inflation");
                 u.segments().push_back(to_lower(id.index_code));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
-                // The surface's model is the ORE metric of the projected key, and no
-                // field carries it, so the uri_order loop above cannot emit it. A
-                // non-default model is emitted here or the round trip loses which
-                // surface this was -- the price one rather than a log-normal vol.
-                if (id.vol && id.vol->model_subtype != volatility_model_subtype::rate_lnvol)
-                    u.params().append(
-                        {"model", std::string(magic_enum::enum_name(id.vol->model_subtype))});
+                append_if(u, "maturity", id.maturity);
+                append_if(u, "month", id.month);
+                if (id.vol)
+                    append_if(u, "expiry", id.vol->expiry);
+                if (id.vol)
+                    append_if(u, "call_put", id.vol->call_put);
+                if (id.vol)
+                    append_if(u, "strike", id.vol->strike);
+                // The model is written whether or not it holds the default, and
+                // only where it means something: a reader must not have to know
+                // that an absent model on a surface means lognormal.
+                if (id.type == instrument_type::vol)
+                    u.params().append({"model",
+                                       std::string(magic_enum::enum_name(
+                                           id.vol ? id.vol->model_subtype :
+                                                    volatility_model_subtype::rate_lnvol))});
             } else if constexpr (std::is_same_v<T, correlation_market_data_identifier>) {
                 u.set_host("correlation");
                 u.segments().push_back(to_lower(id.factor_pair));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "second_factor", id.second_factor);
-                append_if(u, "point", id.point);
+                append_if(u, "expiry", id.expiry);
+                append_if(u, "delta", id.delta);
             } else if constexpr (std::is_same_v<T, security_market_data_identifier>) {
                 u.set_host("security");
                 u.segments().push_back(to_lower(id.security_id));
@@ -1155,13 +1922,17 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.profile_id));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
+                append_if(u, "date", id.date);
+                append_if(u, "second", id.second);
+                append_if(u, "period", id.period);
+                append_if(u, "dst", id.dst);
             } else if constexpr (std::is_same_v<T, rating_market_data_identifier>) {
                 u.set_host("rating");
                 u.segments().push_back(to_lower(id.provider_id));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
-                append_if(u, "point", id.point);
+                append_if(u, "from", id.from);
+                append_if(u, "to", id.to);
             } else if constexpr (std::is_same_v<T, power_market_data_identifier>) {
                 u.set_host("power");
                 u.segments().push_back(to_lower(id.commodity_code));
@@ -1193,17 +1964,56 @@ domain::oresmd_uri oresmd_parser::to_series_uri(const domain::market_data_identi
     auto series = identifier;
     std::visit(
         [](auto& id) {
-            if constexpr (requires { id.point; })
-                id.point.reset();
-            if constexpr (requires { id.vol; })
-                id.vol.reset();
-            // Three IR families keep their coordinate in fields the surface drop above
-            // does not reach, and the decomposition's own split says which fields: a
-            // discount curve's series is the currency and the curve, so its maturity
-            // is the tenor; a money-market future's series is the currency and the
-            // contract month, so its coordinate is the contract code and the
-            // underlying tenor; and an overnight-index future's series is the currency
-            // alone, so the contract month is part of its coordinate too.
+            // The declared coordinates go, one member each. The surface stays,
+            // because its model is identity: a lognormal and a normal surface of
+            // one underlying are two series rather than one, which is what the
+            // grammar's own declaration says and no hand-written special case
+            // can be trusted to remember.
+            if constexpr (requires { id.maturity; })
+                id.maturity.reset();
+            if constexpr (requires { id.seniority; })
+                id.seniority.reset();
+            if constexpr (requires { id.restructuring; })
+                id.restructuring.reset();
+            if constexpr (requires { id.month; })
+                id.month.reset();
+            if constexpr (requires { id.from; })
+                id.from.reset();
+            if constexpr (requires { id.to; })
+                id.to.reset();
+            if constexpr (requires { id.date; })
+                id.date.reset();
+            if constexpr (requires { id.second; })
+                id.second.reset();
+            if constexpr (requires { id.period; })
+                id.period.reset();
+            if constexpr (requires { id.dst; })
+                id.dst.reset();
+            // Correlation keeps its surface coordinates at the top level, because
+            // its identifier has no vol member for them to live in.
+            if constexpr (requires { id.expiry; })
+                id.expiry.reset();
+            if constexpr (requires { id.delta; })
+                id.delta.reset();
+            if constexpr (requires { id.vol; }) {
+                if (id.vol) {
+                    id.vol->expiry.clear();
+                    id.vol->strike.clear();
+                    id.vol->delta_type.reset();
+                    id.vol->call_put.reset();
+                    id.vol->premium_type.reset();
+                    id.vol->smile.reset();
+                }
+            }
+            // Three IR families keep their coordinate in fields the surface drop
+            // above does not reach, and the decomposition's own split says which
+            // fields: a discount curve's series is the currency and the curve, so
+            // its maturity is the tenor; a money-market future's series is the
+            // currency and the contract month, so its coordinate is the contract
+            // code and the underlying tenor; and an overnight-index future's
+            // series is the currency alone, so the contract month is part of its
+            // coordinate too. A key that is a coordinate for one family and
+            // identity for another is decided by the family, not by the name.
             if constexpr (std::is_same_v<std::decay_t<decltype(id)>, ir_market_data_identifier>) {
                 if (id.quote_type == ir_quote_type::discount) {
                     id.tenor.reset();
@@ -1216,6 +2026,8 @@ domain::oresmd_uri oresmd_parser::to_series_uri(const domain::market_data_identi
                     id.tenor.reset();
                 }
             }
+            if constexpr (std::is_same_v<std::decay_t<decltype(id)>, credit_market_data_identifier>)
+                id.tenor.reset();
         },
         series);
     return to_uri(series);
@@ -1238,6 +2050,22 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
             // name, a curve's is the curve itself, and a vol's is its surface point.
             if (id.type != instrument_type::quote)
                 return false;
+            // A spot quote's key is its series key, so a point the decomposition
+            // hands it is accepted and dropped: the reader writes no coordinate
+            // for a family that has none.
+            if constexpr (std::is_same_v<T, fx_market_data_identifier>) {
+                if (id.quote_type.value_or(fx_quote_type::spot) == fx_quote_type::spot)
+                    return true;
+            }
+            if constexpr (std::is_same_v<T, equity_market_data_identifier>) {
+                if (id.quote_type.value_or(equity_quote_type::spot) == equity_quote_type::spot)
+                    return true;
+            }
+            if constexpr (std::is_same_v<T, commodity_market_data_identifier>) {
+                if (id.quote_type.value_or(commodity_quote_type::spot) ==
+                    commodity_quote_type::spot)
+                    return true;
+            }
             if constexpr (std::is_same_v<T, ir_market_data_identifier>) {
                 // The coordinate-bearing families, named one by one: a quote type
                 // this does not know keeps its coordinate somewhere else, and a
@@ -1275,14 +2103,117 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                     case ir_quote_type::cc_basis_swap:
                     case ir_quote_type::cc_fix_float_swap:
                     case ir_quote_type::zero:
-                        id.point = point;
+                        id.maturity = point;
                         return true;
                     default:
+                        // A capfloor, a swaption and a bond option keep their
+                        // coordinate on a surface, which is not a point on a
+                        // series; a silently wrong key is worse than no key.
                         return false;
                 }
             }
-            if constexpr (requires { id.point; }) {
-                id.point = point;
+            if constexpr (std::is_same_v<T, fx_market_data_identifier>) {
+                if (id.quote_type.value_or(fx_quote_type::spot) == fx_quote_type::fwd) {
+                    id.maturity = point;
+                    return true;
+                }
+                return false;
+            }
+            if constexpr (std::is_same_v<T, equity_market_data_identifier>) {
+                const auto qt = id.quote_type.value_or(equity_quote_type::spot);
+                if (qt == equity_quote_type::dividend || qt == equity_quote_type::fwd) {
+                    id.maturity = point;
+                    return true;
+                }
+                return false;
+            }
+            if constexpr (std::is_same_v<T, commodity_market_data_identifier>) {
+                if (id.quote_type.value_or(commodity_quote_type::spot) ==
+                    commodity_quote_type::fwd) {
+                    id.maturity = point;
+                    return true;
+                }
+                return false;
+            }
+            if constexpr (std::is_same_v<T, inflation_market_data_identifier>) {
+                const auto qt = id.quote_type.value_or(inflation_quote_type::zc_swap);
+                if (qt == inflation_quote_type::seasonality) {
+                    id.month = point;
+                    return true;
+                }
+                if (qt == inflation_quote_type::zc_swap || qt == inflation_quote_type::yy_swap) {
+                    id.maturity = point;
+                    return true;
+                }
+                return false;
+            }
+            if constexpr (std::is_same_v<T, credit_market_data_identifier>) {
+                const auto parts = split_on_slash(point);
+                switch (id.quote_type.value_or(credit_quote_type::cds)) {
+                    case credit_quote_type::cds_index:
+                    case credit_quote_type::index_cds_tranche:
+                        if (parts.size() != 2)
+                            return false;
+                        id.tenor = parts[0];
+                        if (!id.vol)
+                            id.vol.emplace();
+                        id.vol->strike = parts[1];
+                        return true;
+                    case credit_quote_type::cds:
+                    case credit_quote_type::hazard_rate:
+                        // seniority/tenor, or seniority/restructuring/tenor.
+                        if (parts.size() == 2) {
+                            id.seniority = parts[0];
+                            id.tenor = parts[1];
+                            return true;
+                        }
+                        if (parts.size() == 3) {
+                            id.seniority = parts[0];
+                            id.restructuring = parts[1];
+                            id.tenor = parts[2];
+                            return true;
+                        }
+                        return false;
+                    case credit_quote_type::recovery_rate:
+                        if (parts.empty())
+                            return false;
+                        id.seniority = parts[0];
+                        if (parts.size() == 2)
+                            id.restructuring = parts[1];
+                        return parts.size() <= 2;
+                    case credit_quote_type::index_cds_option:
+                        return false;
+                }
+            }
+            if constexpr (std::is_same_v<T, correlation_market_data_identifier>) {
+                const auto parts = split_on_slash(point);
+                if (parts.size() != 2)
+                    return false;
+                id.expiry = parts[0];
+                id.delta = parts[1];
+                return true;
+            }
+            if constexpr (std::is_same_v<T, shape_profile_market_data_identifier>) {
+                const auto parts = split_on_slash(point);
+                if (parts.size() != 3 && parts.size() != 4)
+                    return false;
+                id.date = parts[0];
+                id.second = parts[1];
+                id.period = parts[2];
+                if (parts.size() == 4)
+                    id.dst = parts[3];
+                return true;
+            }
+            if constexpr (std::is_same_v<T, rating_market_data_identifier>) {
+                // The degenerate form names the provider and no grades; the
+                // series it belongs to is the one with no grades at all.
+                if (point.empty())
+                    return true;
+                const auto parts = split_on_slash(point);
+                if (parts.size() != 2)
+                    return false;
+                id.from = parts[0];
+                id.to = parts[1];
                 return true;
             }
             return false;

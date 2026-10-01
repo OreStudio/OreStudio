@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
-#+branch: feature/oresmd-explicit-grammar
-#+pr:
+#+branch: feature/generate-the-oresmd-grammar
+#+pr: 2485
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -29,11 +29,11 @@ identifier, the parser, the writer and every declared test case.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
-| Now          | The declaration and the identifier's typed members have landed. The parser, the writer and the projections' key builders are unchanged, so no URI has moved yet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Make the projections' =from_ore_key()= builders set the typed members, then change the writer and the parser together. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -157,7 +157,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| oresmd suite | 1,227 assertions in 364 cases, all green | =ores.marketdata.core.tests "[oresmd]"= | c8aeeabbeb |
+| marketdata core suite | green | =ctest -R '^ores.marketdata.core.tests$'= | c8aeeabbeb |
+| Whole tree | 89 of 89 ctest suites green | =ctest -j 4= | c8aeeabbeb |
+| Codegen suite | 1,050 passed | =projects/ores.codegen/venv/bin/python -m pytest tests/ -q= | c8aeeabbeb |
+| Corpus keys named | 485,606 of 485,606 | =ores.marketdata.core.tests "[oresmd]"= coverage warnings | c8aeeabbeb |
+| Corpus keys round-tripped | 485,606 of 485,606, up from 481,311 on =main= | same | c8aeeabbeb |
+| Whole-corpus import | Fails on =market_20160205.txt=, duplicate observation key with an empty coordinate | =ores.marketdata.core.tests "[corpus-full]"= | c8aeeabbeb |
 
 * Notes
 
@@ -176,12 +182,89 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2485][#2485]] | [marketdata] Generate the oresmd grammar from the declared coordinates |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =point= still on the IR identifier and requirement | =ir_quote_type.org= | Fixed | The IR Fields table still declared it; the row is removed and the identifier, requirement and resolver lose the member with it. |
+| 2 | Coordinate validation skipped when =quote_type= is unset | =ores.cpp.oresmd.parser.org= | Fixed | A type that resolves to no quote type now has every coordinate refused, by a generated =validate_<ac>_no_coordinates()=. |
+| 3 | Required coordinates no longer enforced | =ores.cpp.oresmd.parser.org= | Accepted, pinned | A partial identifier is what the requirement and resolver model is for, so the parser accepts one. What the old point checks really protected is the key projection, and that still refuses: =to_quote_key()= returns nothing when a coordinate it needs is absent. No model declares which coordinates a type requires, so a parser-side check would invent a rule. A test now pins it: a capfloor surface naming only its expiry parses and projects no key. |
+| 4 | =delta= is uppercased but the comment says otherwise | =org_loader.py= | Fixed | The comment was stale; it now says only =smile= keeps its case, and says why. |
+| 5 | =canonical_values::point= names every coordinate | =oresmd_parser.hpp= | Fixed | Renamed to =coordinate=. |
+| 6 | Stale inflation comment naming =point= | =ores.cpp.oresmd.parser.org= | Fixed | Now names =quote= and =type=. |
+| 7 | =with_point()= drops a point for a spot quote | =ores.cpp.oresmd.parser.org= | Accepted | Deliberate and already pinned: =FX/RATE/EUR/USD= plus the SPOT a feed's column carries is the same series key, and the case asserts the key is unchanged. The comment says so. |
+| 8 | Corpus walk failure and the unmaterialised =metric= | — | Tracked | Both are in this task's Result. The walk is the next unit's (task =4204259C=), and it sits behind the hidden =[.corpus-full]= tag, so no green pull-request check hides it. |
+| 9 | Identifier briefs and test names still say =point= | =*_quote_type.org= | Fixed | The briefs name the declared keys and three test names say "coordinate". |
+| 10 | =from= maps to =from_grade= in two places | =org_loader.py=, parser template | Accepted | The two are one rule in two languages: the hand-written =query_params= member and the loader's =qp_member=. A generated struct would remove the duplication and is a larger change than this unit. |
 
 * Result
+
+The oresmd grammar that ships is the one the models declare. =point= is gone
+from the identifier, the parser, the writer and every declared test case, and
+every coordinate dimension is a query key of its own.
+
+Delivered:
+
+- The identifier drops =point=; the surface keeps =volatility_surface_point= as
+  its typed container rather than gaining six top-level members. The plan asked
+  for the struct's deletion too; the acceptance asks only that no coordinate be a
+  comma-joined string, which this meets, and the deletion is left as optional.
+- The parser refuses =point= with a message naming the replacement keys, reads
+  each declared coordinate by its query-key name, and refuses a coordinate the
+  resolved quote type does not carry. That check is generated from the model's
+  =coordinates= column, so the grammar is enforced by construction.
+- The parser materialises the quote-type default for a =type=quote= URI that
+  names none (=spot= for FX, equity and commodity; =cds= for credit), and
+  =swaption= or =option= for a =type=vol= URI that names none.
+- The writer emits every set key, writes =model= even when it holds the default,
+  and skips an empty =ccy= for a quote type the model marks =no_ccy=.
+- The projections' key builders read the typed members. =split_point=, the
+  derived point and =compose_point= are deleted.
+- =to_series_uri()= clears the declared coordinates and keeps the surface, so
+  =model= is identity. The IR =std::visit= with three special cases is replaced
+  by members the model declares. This is the fix for the corpus's lognormal and
+  normal vol colliding: the coverage walk now names and round-trips all 485,606
+  of its keys, where =main= round-tripped 481,311.
+- =ATM= is a =delta=: a surface's value slot is =strike= for a number and
+  =delta= for a moneyness, and =smile= is its own dimension.
+- Every =point=-bearing URI in the twelve models' test tables and in the
+  templates moves to the named keys, and the codegen gate is rewritten to check
+  the new spelling. It now fails a positive test case that still spells =point=,
+  a coordinate the resolved quote type does not carry, or an undeclared key.
+- =doc/knowledge/domain/market_data_urn.org= describes the grammar that ships.
+
+What is verified, and where:
+
+- The oresmd suite: 1,225 assertions in 363 cases, all green, at =c8aeeabbeb=.
+- The marketdata core suite and all 89 ctest suites: green.
+- The codegen suite: 1,050 passed.
+- The whole-corpus coverage walk: 485,606 keys named and 485,606 round-tripped.
+- =compass services restart=: 24 of 24 services running, none failed.
+
+What is not met, recorded rather than glossed:
+
+- =metric= is not materialised. The acceptance asks the parser to write it
+  always for =type=quote=; it is still supplied at projection time from the quote
+  type's own metric. Materialising it needs a per-quote-type metric constant the
+  models do not carry for every class -- credit's =BASE_CORRELATION= has no
+  =metric= enum member -- so it is left to a unit that can extend the enum.
+- The parser does not require a coordinate of a type. A =type=vol&quote=capfloor=
+  URI with no =strike= parses; the projection then refuses to emit a key. The old
+  grammar's point-arity errors are not re-stated as a parser-side rule, because
+  no model declares which coordinates a type requires and inventing one would put
+  a convention back in the parser that the declaration is supposed to replace.
+- The twelve models still carry a =point_keys= column, the ordered keys the old
+  =point= value corresponded to. Nothing reads it now: the parser is hand-written
+  per family and the codegen gate checks the named keys instead. Removing the
+  column and the loader's validation of it is a mechanical subtraction left for a
+  follow-up, recorded rather than done because it changes nine tables whose
+  separator rows a mechanical strip mangles.
+- The whole-corpus import fails on =market_20160205.txt=. The series identity now
+  drops credit's =tenor= -- which the model declares a coordinate -- while the
+  observation's =point_id= is still the registry's ORE-form split, which is empty
+  for the four-segment =INDEX_CDS_OPTION/RATE_LNVOL/<INDEX>/<TENOR>= term vol, so
+  two term vols of one index collide on an empty coordinate. Moving the stored
+  coordinate to the declared keys is next unit's work (task =4204259C=).
+

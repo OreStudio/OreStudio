@@ -91,9 +91,6 @@ struct {{asset_class}}_market_data_identifier final {
 {{#has_quote_type}}
     std::optional<domain::{{asset_class}}_quote_type> quote_type;
 {{/has_quote_type}}
-{{#has_point}}
-    std::optional<std::string> point;
-{{/has_point}}
 {{#coordinate_fields}}
     {{{cpp_type}}} {{name}};
 {{/coordinate_fields}}

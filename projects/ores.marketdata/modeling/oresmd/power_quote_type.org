@@ -105,7 +105,6 @@ A logical, possibly-partial oresmd requirement for an intraday power index.
 | role |
 | metric |
 | quote |
-| point |
 | source |
 | source_spelling |
 | name_spelling |

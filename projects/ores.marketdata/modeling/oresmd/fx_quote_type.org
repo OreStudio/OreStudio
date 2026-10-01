@@ -19,7 +19,7 @@
 |-----------+-----------+--------------+------------+-----------------+-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+--------------+--------------|
 | spot      | FX        | fx           | RATE       | scalar          | pair_substr     | 4-segment: FX/RATE/CCY1/CCY2                                                                                                                                              | FX/RATE (spot rate, the default).  |              |              |
 | fwd       | FXFWD     | fxfwd        | RATE       | tenor           | pair_substr     | 5-segment: FXFWD/RATE/CCY1/CCY2/TENOR                                                                                                                                     | FXFWD/RATE (forward points).       | maturity     | maturity     |
-| option    | FX_OPTION | fx_option    | RATE       | surface         | pair_substr     | 6-segment: FX_OPTION/RATE_LNVOL/CCY1/CCY2/EXPIRY/DELTA, and the same shape under RATE_NVOL; the metric segment comes from the vol model, not from this table's ore_metric | FX_OPTION (FX option implied vol). | expiry,delta | expiry,delta |
+| option    | FX_OPTION | fx_option    | RATE       | surface         | pair_substr     | 6-segment: FX_OPTION/RATE_LNVOL/CCY1/CCY2/EXPIRY/DELTA, and the same shape under RATE_NVOL; the metric segment comes from the vol model, not from this table's ore_metric | FX_OPTION (FX option implied vol). | expiry,delta,strike | expiry,delta,strike |
 
 * Enum brief
 
@@ -64,7 +64,6 @@ per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC
 | pair  | std::string     | yes       |           |                        |
 | type  | instrument_type | yes       | type      | instrument_type::quote |
 | quote_type | std::optional<fx_quote_type> | no | quote |                    |
-| point | std::optional<std::string> | no | point     |                        |
 | vol   | std::optional<volatility_surface_point> | no |           |                        |
 | source | std::optional<std::string> | no | source    |                        |
 | source_spelling | std::optional<std::string> | no | source_spelling |              |
@@ -81,6 +80,7 @@ declared here or a field above, and absence means identity.
 | maturity | std::optional<std::string> | string | The forward's maturity. |
 | expiry | std::optional<std::string> | string | The option's expiry. |
 | delta | std::optional<std::string> | enum | The moneyness or delta convention the strike slot holds when it is not a number: atm, 25rr, ... |
+| strike | std::optional<std::string> | string | A surface point's fixed strike. |
 
 * Type-gated keys
 
@@ -118,10 +118,10 @@ no source, so a source on a quote names nothing.
 | uri | expected | description |
 |-----+----------+-------------|
 | oresmd://fx/eurusd?type=quote | FX/RATE/EUR/USD | fx_quote_key_defaults_to_spot |
-| oresmd://fx/eurusd?type=quote&quote=fwd&point=6m | FXFWD/RATE/EUR/USD/6M | fx_fwd_quote_key |
-| oresmd://fx/eurusd?type=quote&quote=fwd | nullopt | fx_fwd_requires_point |
-| oresmd://fx/eurusd?type=vol&point=10y,atm | FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM | fx_option_vol_quote_key_matches_the_corpus |
-| oresmd://fx/eurusd?type=vol&point=1d,25rr | FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR | fx_option_vol_quote_key_risk_reversal |
+| oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m | FXFWD/RATE/EUR/USD/6M | fx_fwd_quote_key |
+| oresmd://fx/eurusd?type=quote&quote=fwd | nullopt | fx_fwd_requires_its_coordinate |
+| oresmd://fx/eurusd?type=vol&expiry=10y&delta=atm | FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM | fx_option_vol_quote_key_matches_the_corpus |
+| oresmd://fx/eurusd?type=vol&expiry=1d&delta=25rr | FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR | fx_option_vol_quote_key_risk_reversal |
 | oresmd://fx/eurusd?type=fixing&source=ecb | nullopt | fx_fixing_has_no_quote_key |
 
 ** Round-trip
@@ -129,8 +129,8 @@ no source, so a source on a quote names nothing.
 | uri | description |
 |-----+-------------|
 | oresmd://fx/eurusd?type=quote&quote=spot | round_trip_fx |
-| oresmd://fx/eurusd?type=quote&quote=fwd&point=6m | round_trip_fx_fwd |
-| oresmd://fx/eurusd?type=vol&quote=option&point=10y,atm | round_trip_fx_option_vol_named |
+| oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m | round_trip_fx_fwd |
+| oresmd://fx/eurusd?type=vol&quote=option&expiry=10y&delta=atm | round_trip_fx_option_vol_named |
 | oresmd://fx/eurusd?type=fixing&source=ecb | round_trip_fx_fixing_source |
 | oresmd://fx/usdeur?type=fixing&source=reuters&source_spelling=Reuters | round_trip_fx_fixing_source_spelling |
 | oresmd://fx/gbpeur?type=fixing&source=tr20h | round_trip_fx_fixing_reversed_pair |

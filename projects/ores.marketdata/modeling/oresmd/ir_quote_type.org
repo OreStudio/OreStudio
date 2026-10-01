@@ -30,8 +30,8 @@
 | mm_future         | MM_FUTURE         | mm_future         | PRICE        | tenor           | futures            | 6-segment: MM_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR, where the contract code is the exchange-qualified token ORE writes (XICE:FEI, XCME:SRA)                                                                                       | MM_FUTURE (money market future price).                  | contract_code,tenor                |                                 |
 | oi_future         | OI_FUTURE         | oi_future         | PRICE        | tenor           | futures            | 6-segment: OI_FUTURE/PRICE/CCY/CONTRACT_MONTH/CONTRACT_CODE/TENOR                                                                                                                                                                                | OI_FUTURE (overnight index future price).               | contract_month,contract_code,tenor |                                 |
 | capfloor          | CAPFLOOR          | capfloor          | RATE         | surface         | capfloor_vol       | 8-segment: CAPFLOOR/RATE_NVOL/CCY/MATURITY/FLOAT_TENOR/SHIFT/STRIP/STRIKE, and the same shape under RATE_LNVOL; the metric segment comes from the vol model, not from this table's ore_metric                                                    | CAPFLOOR (cap/floor volatility on a strike grid).       | expiry,strike                      | expiry,tenor,shift,strip,strike |
-| bond_option       | BOND_OPTION       | bond_option       | RATE         | surface         | swaption_vol       | 6-segment: BOND_OPTION/RATE_LNVOL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption shape over a bond, so the underlying is a generic name rather than a currency                                                                              | BOND_OPTION (bond option implied vol).                  | expiry,smile,strike                | expiry,tenor,smile,strike       |
-| swaption          | SWAPTION          | swaption          | RATE         | surface         | swaption_vol       | 6- or 7-segment: SWAPTION/RATE_LNVOL/CCY/EXPIRY/SWAP_TENOR/STRIKE, and the smile form with a marker ahead of the strike; the metric segment comes from the vol model, not from this table's ore_metric                                           | SWAPTION (swaption implied vol).                        | expiry,smile,strike                | expiry,tenor,smile,delta,strike |
+| bond_option       | BOND_OPTION       | bond_option       | RATE         | surface         | swaption_vol       | 6-segment: BOND_OPTION/RATE_LNVOL/UNDERLYING/EXPIRY/BOND_TENOR/STRIKE -- the swaption shape over a bond, so the underlying is a generic name rather than a currency                                                                              | BOND_OPTION (bond option implied vol).                  | expiry,smile,delta,strike          | expiry,tenor,smile,strike       |
+| swaption          | SWAPTION          | swaption          | RATE         | surface         | swaption_vol       | 6- or 7-segment: SWAPTION/RATE_LNVOL/CCY/EXPIRY/SWAP_TENOR/STRIKE, and the smile form with a marker ahead of the strike; the metric segment comes from the vol model, not from this table's ore_metric                                           | SWAPTION (swaption implied vol).                        | expiry,smile,delta,strike          | expiry,tenor,smile,delta,strike |
 
 * Enum brief
 
@@ -46,9 +46,9 @@ A fully-resolved oresmd identifier for an interest-rate instrument (asset_class=
 
 Only `ccy` and `type` are unconditionally mandatory; every other field is optional
 because which fields are meaningful depends on `type` (a fixing/curve needs
-`index`/`tenor`/`role` but no `point`; a quote needs `point` and, for `type=quote`
-specifically, `metric`) -- see "Tenor vs. point, and the par-rate/discount-factor
-ambiguity" in the design doc.
+`index`/`tenor`/`role` but no coordinate; a quote carries the coordinates its
+quote type declares, and `metric` for `type=quote`) -- see "Tenor vs. the
+coordinate keys, and the par-rate/discount-factor ambiguity" in the design doc.
 
 * Requirement brief
 
@@ -142,7 +142,6 @@ arrived is carried beside it, so a name reads back as it came.
 | role       | std::optional<curve_role>       | no        | role      |                        |
 | metric     | std::optional<domain::metric>   | no        | metric    |                        |
 | quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
-| point      | std::optional<std::string>      | no        | point     |                        |
 | vol        | std::optional<volatility_surface_point> | no  |           |                        |
 
 * Coordinates
@@ -212,7 +211,6 @@ branch), which no field-table ordering can express.
 | type |
 | metric |
 | quote |
-| point |
 
 * Notes
 
@@ -250,81 +248,81 @@ IR has the most complex qualifier shape variants:
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key_matches_worked_example |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key_matches_worked_example |
 | oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate | DISCOUNT/RATE/USD/USD3M/6M | discount_quote_key_matches_worked_example |
 | oresmd://ir/usd?curve_id=USD-SOFR-3M&tenor=10y&type=quote&quote=discount&metric=rate | DISCOUNT/RATE/USD/USD-SOFR-3M/10Y | discount_quote_key_matches_the_corpus |
 | oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate | DISCOUNT/RATE/EUR/EUR/1D | discount_quote_key_matches_the_corpus_currency_named_curve |
-| oresmd://ir/eur?type=vol&point=5y,2y,atm | SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM | swaption_vol_quote_key_matches_worked_example |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_quote_key |
-| oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m | MM/RATE/USD/2D/3M | ir_mm_rate_quote_key_without_index_matches_the_corpus |
-| oresmd://ir/eur?tenor=3m&type=quote&quote=fra&metric=rate&point=6m | FRA/RATE/EUR/3M/6M | ir_fra_rate_quote_key |
-| oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m | FRA/RATE/USD/1M/3M | ir_fra_rate_quote_key_matches_the_corpus |
-| oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2 | IMM_FRA/RATE/NOK/1/2 | ir_imm_fra_rate_quote_key_matches_the_corpus |
-| oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y | IMM_FRA/RATE/USD/3M/5Y | ir_imm_fra_rate_quote_key |
-| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_spread_quote_key_matches_the_corpus |
-| oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&point=10y | CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y | ir_cc_basis_swap_spread_quote_key_matches_the_corpus |
-| oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&point=1y | CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y | ir_cc_fix_float_swap_rate_quote_key_matches_the_corpus |
-| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
-| oresmd://ir/eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y | ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y | ir_zero_rate_quote_key_matches_the_corpus |
-| oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&point=1d | ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D | ir_zero_yield_spread_quote_key_matches_the_corpus |
+| oresmd://ir/eur?type=vol&expiry=5y&tenor=2y&delta=atm | SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM | swaption_vol_quote_key_matches_worked_example |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&maturity=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_quote_key |
+| oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&maturity=3m | MM/RATE/USD/2D/3M | ir_mm_rate_quote_key_without_index_matches_the_corpus |
+| oresmd://ir/eur?tenor=3m&type=quote&quote=fra&metric=rate&maturity=6m | FRA/RATE/EUR/3M/6M | ir_fra_rate_quote_key |
+| oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&maturity=3m | FRA/RATE/USD/1M/3M | ir_fra_rate_quote_key_matches_the_corpus |
+| oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&maturity=2 | IMM_FRA/RATE/NOK/1/2 | ir_imm_fra_rate_quote_key_matches_the_corpus |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&maturity=5y | IMM_FRA/RATE/USD/3M/5Y | ir_imm_fra_rate_quote_key |
+| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&maturity=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_spread_quote_key_matches_the_corpus |
+| oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&maturity=10y | CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y | ir_cc_basis_swap_spread_quote_key_matches_the_corpus |
+| oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&maturity=1y | CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y | ir_cc_fix_float_swap_rate_quote_key_matches_the_corpus |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&maturity=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
+| oresmd://ir/eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&maturity=2y | ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y | ir_zero_rate_quote_key_matches_the_corpus |
+| oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&maturity=1d | ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D | ir_zero_yield_spread_quote_key_matches_the_corpus |
 | oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price | MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M | ir_mm_future_price_quote_key_matches_the_corpus |
 | oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price | OI_FUTURE/PRICE/USD/2024-01/XCME:SRA/3M | ir_oi_future_price_quote_key_matches_the_corpus |
-| oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y | IR_SWAP/RATE/USD/SOFR/0D/1D/2Y | ir_swap_indexed_quote_key_matches_the_corpus |
-| oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d | MM/RATE/EUR/ESTER/0D/1D | ir_mm_index_spelling_matches_the_corpus |
-| oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM | SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM | swaption_indexed_vol_quote_key_matches_the_corpus |
-| oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02 | SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02 | swaption_smile_vol_quote_key_matches_the_corpus |
-| oresmd://ir/usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote&quote=basis_swap&metric=basis_spread&point=10y | BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y | ir_basis_swap_named_form_matches_the_corpus |
-| oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
-| oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
+| oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&maturity=2y | IR_SWAP/RATE/USD/SOFR/0D/1D/2Y | ir_swap_indexed_quote_key_matches_the_corpus |
+| oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&maturity=1d | MM/RATE/EUR/ESTER/0D/1D | ir_mm_index_spelling_matches_the_corpus |
+| oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&expiry=10y&tenor=10y&delta=ATM | SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM | swaption_indexed_vol_quote_key_matches_the_corpus |
+| oresmd://ir/eur?type=vol&model=rate_nvol&expiry=6m&tenor=2y&smile=Smile&strike=-0.02 | SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02 | swaption_smile_vol_quote_key_matches_the_corpus |
+| oresmd://ir/usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote&quote=basis_swap&metric=basis_spread&maturity=10y | BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y | ir_basis_swap_named_form_matches_the_corpus |
+| oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&expiry=5y&tenor=6m&shift=0&strip=0&strike=0.03 | CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_normal_vol_quote_key_matches_the_corpus |
+| oresmd://ir/chf?type=vol&quote=capfloor&expiry=5y&tenor=6m&shift=0&strip=0&strike=0.03 | CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03 | ir_capfloor_log_normal_vol_quote_key_matches_the_corpus |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | CAPFLOOR/SHIFT/EUR/6M | ir_capfloor_shift_quote_key_matches_the_corpus |
-| oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm | BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM | ir_bond_option_vol_quote_key_matches_the_corpus |
+| oresmd://ir/eur_generic?type=vol&quote=bond_option&expiry=1y&tenor=10y&delta=atm | BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM | ir_bond_option_vol_quote_key_matches_the_corpus |
 
 ** Projections (defaulted metric)
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_metric_defaulted_from_quote_type |
-| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&point=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_metric_defaulted_to_basis_spread |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&maturity=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_metric_defaulted_from_quote_type |
+| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&maturity=10y | BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y | ir_basis_swap_metric_defaulted_to_basis_spread |
 | oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future | MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M | ir_mm_future_metric_defaulted_to_price |
 
 ** Projections (quote_type required)
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&point=5y | nullopt | ir_quote_key_requires_quote_type |
+| oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&maturity=5y | nullopt | ir_quote_key_requires_quote_type |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
-| oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
-| oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03 | round_trip_ir_capfloor_normal_vol |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y | round_trip_ir_quote |
+| oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&expiry=5y&tenor=6m&shift=0&strip=0&strike=0.03 | round_trip_ir_capfloor_normal_vol |
 | oresmd://ir/eur?type=vol&quote=capfloor&model=shift&tenor=6m | round_trip_ir_capfloor_shift |
-| oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm | round_trip_ir_bond_option_vol |
-| oresmd://ir/eur?type=vol&quote=swaption&point=5y,2y,atm | round_trip_ir_swaption_named |
+| oresmd://ir/eur_generic?type=vol&quote=bond_option&expiry=1y&tenor=10y&delta=atm | round_trip_ir_bond_option_vol |
+| oresmd://ir/eur?type=vol&quote=swaption&expiry=5y&tenor=2y&delta=atm | round_trip_ir_swaption_named |
 
 ** Round-trip (extended)
 
 | uri | description |
 |-----+-------------|
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m | round_trip_ir_mm_rate |
-| oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m | round_trip_ir_mm_rate_without_index |
-| oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m | round_trip_ir_fra_rate |
-| oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2 | round_trip_ir_imm_fra_rate |
-| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y | round_trip_ir_basis_swap_spread |
-| oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&point=10y | round_trip_ir_cc_basis_swap |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&maturity=1m | round_trip_ir_mm_rate |
+| oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&maturity=3m | round_trip_ir_mm_rate_without_index |
+| oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&maturity=3m | round_trip_ir_fra_rate |
+| oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&maturity=2 | round_trip_ir_imm_fra_rate |
+| oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&maturity=10y | round_trip_ir_basis_swap_spread |
+| oresmd://ir/usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&metric=basis_spread&maturity=10y | round_trip_ir_cc_basis_swap |
 | oresmd://ir/eur?tenor=3m&contract_month=2024-04&contract_code=XICE:FEI&type=quote&quote=mm_future&metric=price | round_trip_ir_mm_future_price |
-| oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&point=1d | round_trip_ir_zero_yield_spread |
+| oresmd://ir/eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_SPREAD&day_count=A365&maturity=1d | round_trip_ir_zero_yield_spread |
 | oresmd://ir/usd?tenor=3m&contract_month=2024-01&contract_code=XCME:SRA&type=quote&quote=oi_future&metric=price | round_trip_ir_oi_future_price |
 | oresmd://ir/usd?curve_id=USD3M&tenor=6m&type=quote&quote=discount&metric=rate | round_trip_ir_discount |
 | oresmd://ir/eur?curve_id=EUR&tenor=1d&type=quote&quote=discount&metric=rate | round_trip_ir_discount_currency_named_curve |
-| oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y | round_trip_ir_swap_indexed |
-| oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d | round_trip_ir_mm_index_spelling |
-| oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM | round_trip_ir_swaption_indexed |
-| oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02 | round_trip_ir_swaption_smile |
-| oresmd://ir/usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote&quote=basis_swap&metric=basis_spread&point=10y | round_trip_ir_basis_swap_named_form |
-| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | round_trip_ir_bma_swap_ratio |
-| oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&point=1y | round_trip_ir_cc_fix_float_swap |
+| oresmd://ir/usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&maturity=2y | round_trip_ir_swap_indexed |
+| oresmd://ir/eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&maturity=1d | round_trip_ir_mm_index_spelling |
+| oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&expiry=10y&tenor=10y&delta=ATM | round_trip_ir_swaption_indexed |
+| oresmd://ir/eur?type=vol&model=rate_nvol&expiry=6m&tenor=2y&smile=Smile&strike=-0.02 | round_trip_ir_swaption_smile |
+| oresmd://ir/usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote&quote=basis_swap&metric=basis_spread&maturity=10y | round_trip_ir_basis_swap_named_form |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&maturity=5y | round_trip_ir_bma_swap_ratio |
+| oresmd://ir/usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&metric=rate&maturity=1y | round_trip_ir_cc_fix_float_swap |
 
 ** Rejection
 
@@ -334,4 +332,4 @@ IR has the most complex qualifier shape variants:
 | oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate | reject_ir_metric_present_when_type_is_not_quote |
 | oresmd://ir/usd?type=quote&model=rate_lnvol | reject_ir_model_when_type_not_vol |
 | oresmd://ir/notaccy?type=quote | reject_ir_entity_that_is_not_a_currency |
-| oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm&ccy=eur | reject_ir_bond_option_ccy_query_key |
+| oresmd://ir/eur_generic?type=vol&quote=bond_option&ccy=eur&expiry=1y&tenor=10y&delta=atm | reject_ir_bond_option_ccy_query_key |

@@ -5817,7 +5817,7 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
 
 # Fields whose lines are emitted by the header templates' guard slots
 # (has_quote_type/has_point/has_vol) rather than the verbatim field loop.
-_ORESMD_GENERATED_FIELDS = ("quote_type", "point", "vol")
+_ORESMD_GENERATED_FIELDS = ("quote_type", "vol")
 
 # Fields the parser assigns from a guard slot of their own, the way the header
 # templates emit the generated fields above from theirs. They carry a query key
@@ -5981,6 +5981,12 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 key.strip() for key in row.get("point_keys", "").split(",")
                 if key.strip()
             ]
+            # A C++ predicate over `key` naming what this type carries, so the
+            # generated parser refuses a coordinate the resolved quote type does
+            # not have instead of silently storing it.
+            row["coordinates_predicate"] = " || ".join(
+                f'key == "{key}"' for key in row["coordinates"]
+            ) or "false"
             qts.append(row)
     result["quote_types"] = qts
 
@@ -6091,11 +6097,21 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 "cpp_type": row.get("cpp_type", "std::string"),
                 "value_kind": row.get("value_kind", "string"),
                 "notes": row.get("notes", ""),
+                # `from` is the query key and cannot be the query_params member:
+                # that struct has a static `from` that reads the URL.
+                "qp_member": "from_grade" if key == "from" else key,
             })
     result["coordinate_keys"] = coordinate_keys
+    result["has_coordinates"] = bool(coordinate_keys)
 
     declared = {c["query_key"]: c for c in coordinate_keys}
     field_types = {f["name"]: f["cpp_type"] for f in fields}
+    # A key the Fields table also declares is an identity key for the class --
+    # an IR swap's index tenor, a future's contract month -- and is present
+    # whether or not the resolved quote type lists it as a coordinate. Only a
+    # coordinate with no identity role is checked against the quote type.
+    for c in coordinate_keys:
+        c["is_field"] = c["query_key"] in field_types
     for field in fields:
         if field["name"] in declared:
             declared_type = declared[field["name"]]["cpp_type"]
@@ -6130,10 +6146,19 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         "premium": "premium_type",
         "smile": "smile",
     }
+    # An asset class whose identifier carries a vol block keeps its surface
+    # coordinates there. One without -- correlation -- has no such member, so its
+    # surface keys become top-level coordinates like any other.
+    has_surface = "vol" in field_types
+    surface_of = surface_member if has_surface else {}
     result["coordinate_fields"] = [
-        {"name": c["query_key"], "cpp_type": c["cpp_type"]}
+        {
+            "name": c["query_key"],
+            "cpp_type": c["cpp_type"],
+            "cpp_type_inner": re.sub(r"^std::optional<", "", c["cpp_type"]).removesuffix(">"),
+        }
         for c in coordinate_keys
-        if c["query_key"] not in field_types and c["query_key"] not in surface_member
+        if c["query_key"] not in field_types and c["query_key"] not in surface_of
     ]
     # The coordinates the URI writer emits by hand, because the uri_order loop
     # above only walks the Fields table: a coordinate already emitted there as a
@@ -6145,10 +6170,13 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         key = c["query_key"]
         if key in uri_covered:
             continue
-        if key in surface_member:
+        if key in surface_of:
             coordinate_uri.append(
-                {"key": key, "member": surface_member[key], "in_surface": True,
-                 "qp_member": key})
+                {"key": key, "member": surface_of[key], "in_surface": True,
+                 "qp_member": key,
+                 # ORE writes these uppercased in the key; smile keeps the
+                 # case it arrives with because the corpus's marker is mixed.
+                 "upper": key in ("expiry", "strike", "call_put", "premium", "delta")})
         else:
             # `from` is the query key and cannot be the query_params member: that
             # struct has a static `from` that reads the URL.
@@ -6156,6 +6184,35 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 {"key": key, "member": key, "in_surface": False,
                  "qp_member": "from_grade" if key == "from" else key})
     result["coordinate_uri"] = coordinate_uri
+
+    # The quote type a URI may leave out. The old grammar read it as a silence
+    # and the projection guessed it; the parser now materialises it, so a key the
+    # grammar defines is present and a reader needs no default in its head.
+    _DEFAULT_QUOTE = {"fx": "spot", "equity": "spot", "commodity": "spot",
+                      "credit": "cds"}
+    _DEFAULT_VOL_QUOTE = {"ir": "swaption", "fx": "option", "equity": "option",
+                          "commodity": "option"}
+    result["default_quote"] = _DEFAULT_QUOTE.get(asset_class, "")
+    result["default_vol_quote"] = _DEFAULT_VOL_QUOTE.get(asset_class, "")
+
+    # The identifier keeps a point derived from the typed members, so the key
+    # projections read one spelling whichever direction built the identifier.
+    # This is the expression each of a type's point keys reads, in order.
+    def value_of(key: str) -> str:
+        if key in surface_of:
+            return f"id.vol ? id.vol->{surface_of[key]} : std::optional<std::string>{{}}"
+        return f"id.{key}"
+
+    point_composition: list[dict[str, Any]] = []
+    for qt in qts:
+        keys = qt.get("point_keys") or []
+        if not keys:
+            continue
+        point_composition.append({
+            "enum_name": qt.get("enum_name", ""),
+            "expressions": [{"expr": value_of(k)} for k in keys],
+        })
+    result["point_composition"] = point_composition
 
     # --- Per-struct doc comments: identifier/requirement briefs, in the
     # same " * " continuation scheme as the enum brief (the header
@@ -6250,7 +6307,8 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     uri_section = _section(doc.root, "URI order")
     if uri_section:
         uri_keys = [
-            r.get("key", "") for r in _parse_org_table_rows(uri_section) if r.get("key")
+            r.get("key", "") for r in _parse_org_table_rows(uri_section)
+            if r.get("key") and r.get("key") != "point"
         ]
     else:
         uri_keys = []
@@ -6260,9 +6318,12 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         if result.get("requires_ccy") or result.get("ccy_optional_for_fixing"):
             uri_keys.append("ccy")
         uri_keys.append("type")
+        # `point` is the old comma-joined coordinate and is no longer written:
+        # the coordinate keys above are. It stays a field for the projections,
+        # which read the derived value.
         uri_keys.extend(
             f["query_key"] for f in fields
-            if f.get("query_key") and f["query_key"] not in ("ccy", "type")
+            if f.get("query_key") and f["query_key"] not in ("ccy", "type", "point")
         )
     uri_order: list[dict[str, Any]] = []
     for k in uri_keys:

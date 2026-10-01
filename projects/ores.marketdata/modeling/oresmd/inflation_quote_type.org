@@ -69,7 +69,6 @@ refused rather than reshaped on the way back. A code ORE adds is a row here.
 | index_code | std::string | yes | | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<inflation_quote_type> | no | quote | |
-| point | std::optional<std::string> | no | point | |
 | vol | std::optional<volatility_surface_point> | no | | |
 
 * Coordinates
@@ -115,28 +114,28 @@ declared here or a field above, and absence means identity.
 | uri | expected | description |
 |-----+----------+-------------|
 | oresmd://inflation/ukrpi?type=fixing | nullopt | inflation_fixing_has_no_quote_key |
-| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | ZC_INFLATIONSWAP/RATE/UKRPI/5Y | zc_inflation_swap_quote_key |
-| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | YY_INFLATIONSWAP/RATE/UKRPI/5Y | yy_inflation_swap_quote_key |
-| oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | SEASONALITY/RATE/MULT/UKRPI/JAN | seasonality_quote_key |
-| oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00 | ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00 | zc_inflation_capfloor_price_quote_key_matches_the_corpus |
-| oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00 | CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00 | cf_price_quote_key_matches_the_corpus |
-| oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02 | YY_INFLATIONCAPFLOOR/RATE_NVOL/EUHICPXT/5Y/F/0.02 | yy_inflation_capfloor_normal_vol_quote_key_matches_the_corpus |
+| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&maturity=5y | ZC_INFLATIONSWAP/RATE/UKRPI/5Y | zc_inflation_swap_quote_key |
+| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&maturity=5y | YY_INFLATIONSWAP/RATE/UKRPI/5Y | yy_inflation_swap_quote_key |
+| oresmd://inflation/ukrpi?type=quote&quote=seasonality&month=jan | SEASONALITY/RATE/MULT/UKRPI/JAN | seasonality_quote_key |
+| oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&expiry=10y&call_put=c&strike=0.00 | ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00 | zc_inflation_capfloor_price_quote_key_matches_the_corpus |
+| oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&expiry=10y&call_put=c&strike=0.00 | CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00 | cf_price_quote_key_matches_the_corpus |
+| oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&expiry=5y&call_put=f&strike=0.02 | YY_INFLATIONCAPFLOOR/RATE_NVOL/EUHICPXT/5Y/F/0.02 | yy_inflation_capfloor_normal_vol_quote_key_matches_the_corpus |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
 | oresmd://inflation/ukrpi?type=fixing | round_trip_inflation_fixing |
-| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | round_trip_inflation |
-| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | round_trip_inflation_yy_swap |
-| oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | round_trip_inflation_seasonality |
-| oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00 | round_trip_inflation_zc_capfloor_price |
-| oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00 | round_trip_inflation_cf_price |
-| oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02 | round_trip_inflation_yy_capfloor_normal_vol |
+| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&maturity=5y | round_trip_inflation |
+| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&maturity=5y | round_trip_inflation_yy_swap |
+| oresmd://inflation/ukrpi?type=quote&quote=seasonality&month=jan | round_trip_inflation_seasonality |
+| oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&expiry=10y&call_put=c&strike=0.00 | round_trip_inflation_zc_capfloor_price |
+| oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&expiry=10y&call_put=c&strike=0.00 | round_trip_inflation_cf_price |
+| oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&expiry=5y&call_put=f&strike=0.02 | round_trip_inflation_yy_capfloor_normal_vol |
 
 ** Rejection
 
 | uri | description |
 |-----+-------------|
-| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y&model=rate_lnvol | reject_inflation_model_when_type_not_vol |
+| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&model=rate_lnvol&maturity=5y | reject_inflation_model_when_type_not_vol |
 | oresmd://inflation/notacode?type=fixing | reject_inflation_fixing_code_the_model_does_not_carry |

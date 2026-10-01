@@ -61,22 +61,22 @@ TEST_CASE("fx_quote_key_defaults_to_spot", tags) {
 }
 
 TEST_CASE("fx_fwd_quote_key", tags) {
-    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m");
+    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FXFWD/RATE/EUR/USD/6M");
 }
 
-TEST_CASE("fx_fwd_requires_point", tags) {
+TEST_CASE("fx_fwd_requires_its_coordinate", tags) {
     const auto id = parse("oresmd://fx/eurusd?type=quote&quote=fwd");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
 TEST_CASE("fx_option_vol_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://fx/eurusd?type=vol&point=10y,atm");
+    const auto id = parse("oresmd://fx/eurusd?type=vol&expiry=10y&delta=atm");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM");
 }
 
 TEST_CASE("fx_option_vol_quote_key_risk_reversal", tags) {
-    const auto id = parse("oresmd://fx/eurusd?type=vol&point=1d,25rr");
+    const auto id = parse("oresmd://fx/eurusd?type=vol&expiry=1d&delta=25rr");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR");
 }
 
@@ -153,7 +153,8 @@ TEST_CASE("index_name_keeps_a_fixings_tenor_and_drops_a_curves", tags) {
 }
 
 TEST_CASE("ir_swap_quote_key_matches_worked_example", tags) {
-    const auto id = parse("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y");
+    const auto id =
+        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IR_SWAP/RATE/USD/2D/3M/5Y");
 }
 
@@ -181,79 +182,81 @@ TEST_CASE("discount_quote_key_matches_the_corpus_currency_named_curve", tags) {
 }
 
 TEST_CASE("swaption_vol_quote_key_matches_worked_example", tags) {
-    const auto id = parse("oresmd://ir/eur?type=vol&point=5y,2y,atm");
+    const auto id = parse("oresmd://ir/eur?type=vol&expiry=5y&tenor=2y&delta=atm");
     REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
 }
 
 TEST_CASE("ir_mm_rate_quote_key", tags) {
     const auto id =
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m");
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&maturity=1m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/EUR/EURIBOR/3M/1M");
 }
 
 TEST_CASE("ir_mm_rate_quote_key_without_index_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m");
+    const auto id = parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&maturity=3m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/USD/2D/3M");
 }
 
 TEST_CASE("ir_fra_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?tenor=3m&type=quote&quote=fra&metric=rate&point=6m");
+    const auto id = parse("oresmd://ir/eur?tenor=3m&type=quote&quote=fra&metric=rate&maturity=6m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FRA/RATE/EUR/3M/6M");
 }
 
 TEST_CASE("ir_fra_rate_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m");
+    const auto id = parse("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&maturity=3m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FRA/RATE/USD/1M/3M");
 }
 
 TEST_CASE("ir_imm_fra_rate_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2");
+    const auto id =
+        parse("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&maturity=2");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/NOK/1/2");
 }
 
 TEST_CASE("ir_imm_fra_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y");
+    const auto id =
+        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=imm_fra&metric=rate&maturity=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/USD/3M/5Y");
 }
 
 TEST_CASE("ir_basis_swap_spread_quote_key_matches_the_corpus", tags) {
-    const auto id = parse(
-        "oresmd://ir/"
-        "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&point=10y");
+    const auto id = parse("oresmd://ir/"
+                          "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_"
+                          "spread&maturity=10y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y");
 }
 
 TEST_CASE("ir_cc_basis_swap_spread_quote_key_matches_the_corpus", tags) {
     const auto id = parse("oresmd://ir/"
                           "usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_"
-                          "swap&metric=basis_spread&point=10y");
+                          "swap&metric=basis_spread&maturity=10y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y");
 }
 
 TEST_CASE("ir_cc_fix_float_swap_rate_quote_key_matches_the_corpus", tags) {
     const auto id = parse("oresmd://ir/"
                           "usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_"
-                          "float_swap&metric=rate&point=1y");
+                          "float_swap&metric=rate&maturity=1y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y");
 }
 
 TEST_CASE("ir_bma_swap_ratio_quote_key", tags) {
     const auto id =
-        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y");
+        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&maturity=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "BMA_SWAP/RATIO/USD/3M/5Y");
 }
 
 TEST_CASE("ir_zero_rate_quote_key_matches_the_corpus", tags) {
-    const auto id = parse(
-        "oresmd://ir/"
-        "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&point=2y");
+    const auto id = parse("oresmd://ir/"
+                          "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_"
+                          "count=A365&maturity=2y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y");
 }
 
 TEST_CASE("ir_zero_yield_spread_quote_key_matches_the_corpus", tags) {
     const auto id = parse("oresmd://ir/"
                           "eur?type=quote&quote=zero&metric=yield_spread&curve_id=EONIA_ESTER_"
-                          "SPREAD&day_count=A365&point=1d");
+                          "SPREAD&day_count=A365&maturity=1d");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "ZERO/YIELD_SPREAD/EUR/EONIA_ESTER_SPREAD/A365/1D");
 }
@@ -275,43 +278,47 @@ TEST_CASE("ir_oi_future_price_quote_key_matches_the_corpus", tags) {
 TEST_CASE("ir_swap_indexed_quote_key_matches_the_corpus", tags) {
     const auto id =
         parse("oresmd://ir/"
-              "usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=2y");
+              "usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate&maturity=2y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IR_SWAP/RATE/USD/SOFR/0D/1D/2Y");
 }
 
 TEST_CASE("ir_mm_index_spelling_matches_the_corpus", tags) {
     const auto id = parse(
         "oresmd://ir/"
-        "eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&point=1d");
+        "eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate&maturity=1d");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/EUR/ESTER/0D/1D");
 }
 
 TEST_CASE("swaption_indexed_vol_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM");
+    const auto id =
+        parse("oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&expiry=10y&tenor=10y&delta=ATM");
     REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM");
 }
 
 TEST_CASE("swaption_smile_vol_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02");
+    const auto id = parse(
+        "oresmd://ir/eur?type=vol&model=rate_nvol&expiry=6m&tenor=2y&smile=Smile&strike=-0.02");
     REQUIRE(oresmd_projections::to_quote_key(id) == "SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02");
 }
 
 TEST_CASE("ir_basis_swap_named_form_matches_the_corpus", tags) {
     const auto id = parse("oresmd://ir/"
                           "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote&"
-                          "quote=basis_swap&metric=basis_spread&point=10y");
+                          "quote=basis_swap&metric=basis_spread&maturity=10y");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y");
 }
 
 TEST_CASE("ir_capfloor_normal_vol_quote_key_matches_the_corpus", tags) {
-    const auto id =
-        parse("oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03");
+    const auto id = parse("oresmd://ir/"
+                          "chf?type=vol&quote=capfloor&model=rate_nvol&expiry=5y&tenor=6m&shift=0&"
+                          "strip=0&strike=0.03");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03");
 }
 
 TEST_CASE("ir_capfloor_log_normal_vol_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03");
+    const auto id = parse(
+        "oresmd://ir/chf?type=vol&quote=capfloor&expiry=5y&tenor=6m&shift=0&strip=0&strike=0.03");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03");
 }
 
@@ -321,7 +328,8 @@ TEST_CASE("ir_capfloor_shift_quote_key_matches_the_corpus", tags) {
 }
 
 TEST_CASE("ir_bond_option_vol_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm");
+    const auto id =
+        parse("oresmd://ir/eur_generic?type=vol&quote=bond_option&expiry=1y&tenor=10y&delta=atm");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "BOND_OPTION/RATE_LNVOL/EUR_GENERIC/1Y/10Y/ATM");
 }
@@ -331,13 +339,13 @@ TEST_CASE("ir_bond_option_vol_quote_key_matches_the_corpus", tags) {
  */
 
 TEST_CASE("ir_mm_rate_metric_defaulted_from_quote_type", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m");
+    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&maturity=1m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/EUR/EURIBOR/3M/1M");
 }
 
 TEST_CASE("ir_basis_swap_metric_defaulted_to_basis_spread", tags) {
     const auto id =
-        parse("oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&point=10y");
+        parse("oresmd://ir/eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&maturity=10y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y");
 }
 
@@ -353,7 +361,8 @@ TEST_CASE("ir_mm_future_metric_defaulted_to_price", tags) {
  */
 
 TEST_CASE("ir_quote_key_requires_quote_type", tags) {
-    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&point=5y");
+    const auto id =
+        parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&maturity=5y");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
@@ -391,94 +400,102 @@ TEST_CASE("equity_quote_key_defaults_to_spot", tags) {
 }
 
 TEST_CASE("equity_dividend_quote_key", tags) {
-    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y");
+    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&maturity=1y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_DIVIDEND/RATE/AAPL/USD/1Y");
 }
 
 TEST_CASE("equity_fwd_quote_key", tags) {
-    const auto id = parse("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m");
+    const auto id = parse("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&maturity=6m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M");
 }
 
-TEST_CASE("equity_dividend_requires_point", tags) {
+TEST_CASE("equity_dividend_requires_its_coordinate", tags) {
     const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
 TEST_CASE("equity_option_vol_quote_key_matches_the_corpus", tags) {
-    const auto id = parse("oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf");
+    const auto id = parse("oresmd://equity/sp5?ccy=usd&type=vol&expiry=6m&delta=atmf");
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF");
 }
 
 TEST_CASE("equity_option_price_quote_key_matches_the_corpus", tags) {
-    const auto id =
-        parse("oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price");
+    const auto id = parse(
+        "oresmd://equity/"
+        "ric:.stoxx50e?ccy=eur&type=vol&model=price&expiry=2021-07-16&strike=1200&call_put=c");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C");
 }
 
 TEST_CASE("equity_option_delta_quote_key_matches_the_corpus", tags) {
-    const auto id =
-        parse("oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1");
+    const auto id = parse(
+        "oresmd://equity/"
+        "ric:.spx?ccy=usd&type=vol&expiry=1080d&delta=del&premium=spot&call_put=call&strike=0.1");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/1080D/DEL/SPOT/CALL/0.1");
 }
 
 TEST_CASE("cds_quote_key_matches_worked_example", tags) {
-    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y");
+    const auto id =
+        parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
 }
 
 TEST_CASE("cds_quote_key_defaults_when_quote_absent", tags) {
-    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y");
+    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&seniority=sr&tenor=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
 }
 
 TEST_CASE("hazard_rate_quote_key_matches_ore_format_6_segments", tags) {
-    const auto id = parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y");
+    const auto id =
+        parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&seniority=sr&tenor=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "HAZARD_RATE/RATE/VOD/SR/EUR/5Y");
 }
 
 TEST_CASE("recovery_rate_quote_key", tags) {
-    const auto id = parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr");
+    const auto id =
+        parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&seniority=sr");
     REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/VOD/SR/EUR");
 }
 
 TEST_CASE("cds_quote_key_carries_the_restructuring_clause", tags) {
     const auto id =
-        parse("oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y");
+        parse("oresmd://credit/"
+              "025adx?ccy=usd&type=quote&quote=cds&seniority=snrfor&restructuring=xr14&tenor=10y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y");
 }
 
 TEST_CASE("recovery_rate_quote_key_carries_the_restructuring_clause", tags) {
     const auto id =
-        parse("oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14");
+        parse("oresmd://credit/"
+              "025adx?ccy=usd&type=quote&quote=recovery_rate&seniority=snrfor&restructuring=mr14");
     REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14");
 }
 
 TEST_CASE("index_cds_option_vol_quote_key_matches_the_corpus", tags) {
     const auto id = parse("oresmd://credit/"
                           "2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&"
-                          "point=5y,2025-02-19,107.5");
+                          "tenor=5y&expiry=2025-02-19&strike=107.5");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5");
 }
 
 TEST_CASE("index_cds_option_term_vol_quote_key_matches_the_corpus", tags) {
     const auto id = parse(
-        "oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&point=1m");
+        "oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&tenor=1m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/1M");
 }
 
 TEST_CASE("cds_index_base_correlation_quote_key_no_ccy", tags) {
     const auto id =
-        parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1");
+        parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&tenor=5y&strike=0.1");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1");
 }
 
 TEST_CASE("index_cds_tranche_base_correlation_quote_key_no_ccy", tags) {
     const auto id =
-        parse("oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07");
+        parse("oresmd://credit/"
+              "2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&tenor=5y&strike=0.07");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07");
 }
@@ -494,14 +511,14 @@ TEST_CASE("commodity_quote_key_defaults_to_spot", tags) {
 }
 
 TEST_CASE("commodity_fwd_quote_key", tags) {
-    const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m");
+    const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&maturity=6m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "COMMODITY_FWD/PRICE/WTI/USD/6M");
 }
 
 TEST_CASE("commodity_option_vol_quote_key_matches_the_corpus", tags) {
     const auto id =
         parse("oresmd://commodity/"
-              "wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=1y,30.0");
+              "wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&expiry=1y&strike=30.0");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "COMMODITY_OPTION/RATE_LNVOL/WTI_USD_VOLS/USD/1Y/30.0");
 }
@@ -516,36 +533,39 @@ TEST_CASE("inflation_fixing_has_no_quote_key", tags) {
 }
 
 TEST_CASE("zc_inflation_swap_quote_key", tags) {
-    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y");
+    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&maturity=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "ZC_INFLATIONSWAP/RATE/UKRPI/5Y");
 }
 
 TEST_CASE("yy_inflation_swap_quote_key", tags) {
-    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y");
+    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&maturity=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "YY_INFLATIONSWAP/RATE/UKRPI/5Y");
 }
 
 TEST_CASE("seasonality_quote_key", tags) {
-    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan");
+    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=seasonality&month=jan");
     REQUIRE(oresmd_projections::to_quote_key(id) == "SEASONALITY/RATE/MULT/UKRPI/JAN");
 }
 
 TEST_CASE("zc_inflation_capfloor_price_quote_key_matches_the_corpus", tags) {
-    const auto id = parse(
-        "oresmd://inflation/euhicpxt?type=vol&quote=zc_capfloor&model=price&point=10y,c,0.00");
+    const auto id =
+        parse("oresmd://inflation/"
+              "euhicpxt?type=vol&quote=zc_capfloor&model=price&expiry=10y&call_put=c&strike=0.00");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "ZC_INFLATIONCAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00");
 }
 
 TEST_CASE("cf_price_quote_key_matches_the_corpus", tags) {
     const auto id =
-        parse("oresmd://inflation/euhicpxt?type=vol&quote=cf_price&model=price&point=10y,c,0.00");
+        parse("oresmd://inflation/"
+              "euhicpxt?type=vol&quote=cf_price&model=price&expiry=10y&call_put=c&strike=0.00");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CAPFLOOR/PRICE/EUHICPXT/10Y/C/0.00");
 }
 
 TEST_CASE("yy_inflation_capfloor_normal_vol_quote_key_matches_the_corpus", tags) {
     const auto id = parse(
-        "oresmd://inflation/euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&point=5y,f,0.02");
+        "oresmd://inflation/"
+        "euhicpxt?type=vol&quote=yy_capfloor&model=rate_nvol&expiry=5y&call_put=f&strike=0.02");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "YY_INFLATIONCAPFLOOR/RATE_NVOL/EUHICPXT/5Y/F/0.02");
 }
@@ -562,7 +582,7 @@ TEST_CASE("correlation_pairwise_quote_key", tags) {
 TEST_CASE("correlation_pairwise_surface_quote_key_matches_the_corpus", tags) {
     const auto id = parse("oresmd://correlation/"
                           "fx-generic-gbp-usd?type=quote&quote=pairwise&second_factor=fx-generic-"
-                          "eur-usd&point=1y,atm");
+                          "eur-usd&expiry=1y&delta=atm");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "CORRELATION/RATE/FX-GENERIC-GBP-USD/FX-GENERIC-EUR-USD/1Y/ATM");
 }
@@ -600,43 +620,37 @@ TEST_CASE("security_cpr_quote_key_matches_the_corpus", tags) {
 }
 
 TEST_CASE("shape_profile_factor_quote_key_matches_the_corpus", tags) {
-    const auto id = parse(
-        "oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec");
+    const auto id =
+        parse("oresmd://shape_profile/"
+              "pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-03-01&second=0&period=sec");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-03-01/0/SEC");
 }
 
 TEST_CASE("shape_profile_factor_dst_quote_key_matches_the_corpus", tags) {
-    const auto id =
-        parse("oresmd://shape_profile/"
-              "pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-01-01,7200,sec,dst");
+    const auto id = parse("oresmd://shape_profile/"
+                          "pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-01-01&second=7200&"
+                          "period=sec&dst=dst");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-01-01/7200/SEC/DST");
 }
 
-TEST_CASE("shape_profile_factor_rejects_a_point_that_is_not_a_coordinate", tags) {
-    const auto id = parse(
-        "oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0");
+TEST_CASE("shape_profile_factor_rejects_an_incomplete_coordinate", tags) {
+    const auto id = parse("oresmd://shape_profile/"
+                          "pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-03-01&second=0");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
 TEST_CASE("rating_transition_probability_quote_key_matches_the_corpus", tags) {
     const auto id =
-        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa");
+        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&from=aaa&to=aa");
     REQUIRE(oresmd_projections::to_quote_key(id) ==
             "RATING/TRANSITION_PROBABILITY/PROVIDER_1/AAA/AA");
 }
 
 TEST_CASE("rating_transition_probability_quote_key_without_grades_matches_the_corpus", tags) {
-    const auto id =
-        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&point=");
+    const auto id = parse("oresmd://rating/provider_1?type=quote&quote=transition_probability");
     REQUIRE(oresmd_projections::to_quote_key(id) == "RATING/TRANSITION_PROBABILITY/PROVIDER_1/");
-}
-
-TEST_CASE("rating_transition_probability_rejects_the_catalogue_six_segment_shape", tags) {
-    const auto id =
-        parse("oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y");
-    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
 /*
@@ -697,7 +711,7 @@ TEST_CASE("split_market_series_key_absorbs_every_remaining_segment_into_qualifie
 }
 
 TEST_CASE("split_market_series_key_round_trips_a_real_projected_quote_key", tags) {
-    const auto id = parse("oresmd://fx/eurusd?type=quote");
+    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=spot");
     const auto projected = oresmd_projections::to_quote_key(id);
     REQUIRE(projected.has_value());
     const auto key = oresmd_projections::split_market_series_key(*projected);
@@ -729,7 +743,7 @@ TEST_CASE("from_ore_key_fx_spot", tags) {
 
 TEST_CASE("from_ore_key_fx_fwd", tags) {
     REQUIRE(oresmd_projections::from_ore_key("FXFWD/RATE/EUR/USD/6M") ==
-            parse("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"));
+            parse("oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m"));
 }
 
 TEST_CASE("from_ore_key_ir_swap_drops_the_settlement_segment", tags) {
@@ -737,10 +751,10 @@ TEST_CASE("from_ore_key_ir_swap_drops_the_settlement_segment", tags) {
     // and records it unless it is the 2D the forward emits by default, so the
     // ordinary key keeps one URI and the unusual one reads back as it arrived.
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/2D/3M/5Y") ==
-            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
+            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y"));
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/1D/3M/5Y") ==
             parse("oresmd://ir/"
-                  "usd?settle=1D&tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y"));
+                  "usd?settle=1D&tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y"));
 }
 
 TEST_CASE("from_ore_key_ir_swap_names_the_index_and_its_spelling", tags) {
@@ -750,22 +764,22 @@ TEST_CASE("from_ore_key_ir_swap_names_the_index_and_its_spelling", tags) {
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/SOFR/0D/1D/2Y") ==
             parse("oresmd://ir/"
                   "usd?index=sofr&settle=0D&tenor=1d&type=quote&quote=ir_swap&metric=rate"
-                  "&point=2y"));
+                  "&maturity=2y"));
     // The corpus writes ESTER where index_family says estr, so the spelling is
     // carried: a spelling that matches the family records nothing, and one that
     // does not is emitted back verbatim.
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/EUR/ESTER/2D/1D/10M") ==
             parse("oresmd://ir/"
                   "eur?index=estr&index_spelling=ESTER&tenor=1d&type=quote&quote=ir_swap"
-                  "&metric=rate&point=10m"));
+                  "&metric=rate&maturity=10m"));
     REQUIRE(oresmd_projections::from_ore_key("IR_SWAP/RATE/EUR/ESTR/2D/1D/10M") ==
             parse("oresmd://ir/"
-                  "eur?index=estr&tenor=1d&type=quote&quote=ir_swap&metric=rate&point=10m"));
+                  "eur?index=estr&tenor=1d&type=quote&quote=ir_swap&metric=rate&maturity=10m"));
     // MM reaches the same slot through its own indexed form.
     REQUIRE(oresmd_projections::from_ore_key("MM/RATE/EUR/ESTER/0D/1D") ==
             parse("oresmd://ir/"
                   "eur?index=estr&index_spelling=ESTER&tenor=0d&type=quote&quote=mm&metric=rate"
-                  "&point=1d"));
+                  "&maturity=1d"));
 }
 
 TEST_CASE("from_ore_key_ir_discount_keeps_the_curve_name_whole", tags) {
@@ -793,10 +807,10 @@ TEST_CASE("from_ore_key_ir_basis_swap_names_the_basis", tags) {
         oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y") ==
         parse("oresmd://ir/"
               "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote"
-              "&quote=basis_swap&metric=basis_spread&point=10y"));
+              "&quote=basis_swap&metric=basis_spread&maturity=10y"));
     const auto named = parse("oresmd://ir/"
                              "usd?index_spelling=SOFR_FedFunds&tenor=1d&second_tenor=1d&type=quote"
-                             "&quote=basis_swap&metric=basis_spread&point=10y");
+                             "&quote=basis_swap&metric=basis_spread&maturity=10y");
     REQUIRE(oresmd_projections::to_quote_key(named) ==
             "BASIS_SWAP/BASIS_SPREAD/1D/1D/USD/SOFR_FedFunds/10Y");
 }
@@ -804,20 +818,21 @@ TEST_CASE("from_ore_key_ir_basis_swap_names_the_basis", tags) {
 TEST_CASE("from_ore_key_ir_indexed_families", tags) {
     REQUIRE(
         oresmd_projections::from_ore_key("MM/RATE/EUR/EURIBOR/3M/1M") ==
-        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
+        parse(
+            "oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&maturity=1m"));
     // MM is written both ways in the corpus, so the segment count decides the
     // shape. This is the form the producers use when they name no index.
     REQUIRE(oresmd_projections::from_ore_key("MM/RATE/USD/2D/3M") ==
-            parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&point=3m"));
+            parse("oresmd://ir/usd?tenor=2d&type=quote&quote=mm&metric=rate&maturity=3m"));
     // A basis swap quotes two index tenors against one currency.
     REQUIRE(oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/3M/6M/EUR/10Y") ==
             parse("oresmd://ir/"
                   "eur?tenor=3m&second_tenor=6m&type=quote&quote=basis_swap&metric=basis_spread&"
-                  "point=10y"));
+                  "maturity=10y"));
     REQUIRE(oresmd_projections::from_ore_key("ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y") ==
             parse("oresmd://ir/"
                   "eur?type=quote&quote=zero&metric=rate&curve_id=BANK_EUR_BORROW&day_count=A365&"
-                  "point=2y"));
+                  "maturity=2y"));
     // A future names its delivery month and the exchange-qualified contract code
     // its producer quotes, then the underlying index tenor. The corpus writes
     // MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M, so the contract code is a token ORE
@@ -837,24 +852,24 @@ TEST_CASE("from_ore_key_ir_no_index_families", tags) {
     REQUIRE(oresmd_projections::from_ore_key("CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/EUR/3M/10Y") ==
             parse("oresmd://ir/"
                   "usd?tenor=3m&second_tenor=3m&second_ccy=eur&type=quote&quote=cc_basis_swap&"
-                  "metric=basis_spread&point=10y"));
+                  "metric=basis_spread&maturity=10y"));
     REQUIRE(oresmd_projections::from_ore_key("CC_FIX_FLOAT_SWAP/RATE/USD/3M/TRY/1Y/1Y") ==
             parse("oresmd://ir/"
                   "usd?tenor=3m&second_tenor=1y&second_ccy=try&type=quote&quote=cc_fix_float_swap&"
-                  "metric=rate&point=1y"));
+                  "metric=rate&maturity=1y"));
     REQUIRE(oresmd_projections::from_ore_key("BMA_SWAP/RATIO/USD/3M/5Y") ==
-            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));
+            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&maturity=5y"));
     // FRA and IMM_FRA carry no index: ORE writes ccy/start/length, and the
     // registry's shape table states the same. Both corpus shapes are pinned.
     REQUIRE(oresmd_projections::from_ore_key("FRA/RATE/USD/1M/3M") ==
-            parse("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&point=3m"));
+            parse("oresmd://ir/usd?tenor=1m&type=quote&quote=fra&metric=rate&maturity=3m"));
     REQUIRE(oresmd_projections::from_ore_key("IMM_FRA/RATE/NOK/1/2") ==
-            parse("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&point=2"));
+            parse("oresmd://ir/nok?tenor=1&type=quote&quote=imm_fra&metric=rate&maturity=2"));
 }
 
 TEST_CASE("from_ore_key_ir_swaption_builds_the_vol_struct", tags) {
     REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM") ==
-            parse("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
+            parse("oresmd://ir/eur?type=vol&expiry=5y&tenor=2y&delta=atm&quote=swaption"));
 }
 
 TEST_CASE("from_ore_key_ir_swaption_carries_the_index_and_the_smile", tags) {
@@ -863,21 +878,26 @@ TEST_CASE("from_ore_key_ir_swaption_carries_the_index_and_the_smile", tags) {
     // eight segments. A seven-segment key is read by asking whether its fourth
     // segment names an index, which is also what keeps the two forms apart.
     REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/ATM") ==
-            parse("oresmd://ir/usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,ATM"));
+            parse("oresmd://ir/"
+                  "usd?index=sofr&type=vol&model=rate_nvol&expiry=10y&tenor=10y&delta=ATM&quote="
+                  "swaption"));
     REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/EUR/6M/2Y/Smile/-0.02") ==
-            parse("oresmd://ir/eur?type=vol&model=rate_nvol&point=6m,2y,Smile,-0.02"));
+            parse("oresmd://ir/"
+                  "eur?type=vol&model=rate_nvol&expiry=6m&tenor=2y&smile=Smile&strike=-0.02&quote="
+                  "swaption"));
     REQUIRE(oresmd_projections::from_ore_key("SWAPTION/RATE_NVOL/USD/SOFR/10Y/10Y/Smile/-0.0025") ==
             parse("oresmd://ir/"
-                  "usd?index=sofr&type=vol&model=rate_nvol&point=10y,10y,Smile,-0.0025"));
+                  "usd?index=sofr&type=vol&model=rate_nvol&expiry=10y&tenor=10y&smile=Smile&strike="
+                  "-0.0025&quote=swaption"));
 }
 
 TEST_CASE("from_ore_key_equity", tags) {
     REQUIRE(oresmd_projections::from_ore_key("EQUITY/PRICE/AAPL/USD") ==
             parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));
     REQUIRE(oresmd_projections::from_ore_key("EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M") ==
-            parse("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m"));
+            parse("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&maturity=6m"));
     REQUIRE(oresmd_projections::from_ore_key("EQUITY_DIVIDEND/RATE/AAPL/USD/1Y") ==
-            parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"));
+            parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&maturity=1y"));
 }
 
 TEST_CASE("from_ore_key_commodity_option_matches_the_equity_option_shapes", tags) {
@@ -889,7 +909,6 @@ TEST_CASE("from_ore_key_commodity_option_matches_the_equity_option_shapes", tags
     delta_id.ccy = "USD";
     delta_id.type = instrument_type::vol;
     delta_id.quote_type = commodity_quote_type::option;
-    delta_id.point = "10m,del,fwd,call,0.10";
     volatility_surface_point v;
     v.expiry = "10M";
     v.delta_type = "DEL";
@@ -909,7 +928,7 @@ TEST_CASE("from_ore_key_commodity", tags) {
     REQUIRE(oresmd_projections::from_ore_key("COMMODITY/PRICE/GOLD/USD") ==
             parse("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
     REQUIRE(oresmd_projections::from_ore_key("COMMODITY_FWD/PRICE/WTI/USD/6M") ==
-            parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
+            parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&maturity=6m"));
 }
 
 TEST_CASE("from_ore_key_credit_index_option_is_a_surface", tags) {
@@ -921,7 +940,7 @@ TEST_CASE("from_ore_key_credit_index_option_is_a_surface", tags) {
     option_id.reference_entity = "2I65BYEG6";
     option_id.type = instrument_type::vol;
     option_id.quote_type = credit_quote_type::index_cds_option;
-    option_id.point = "5y,2025-02-19,107.5";
+    option_id.tenor = "5y";
     volatility_surface_point surface;
     surface.expiry = "2025-02-19";
     surface.strike = "107.5";
@@ -936,7 +955,7 @@ TEST_CASE("from_ore_key_credit_index_option_is_a_surface", tags) {
     term_id.reference_entity = "CDXIG";
     term_id.type = instrument_type::vol;
     term_id.quote_type = credit_quote_type::index_cds_option;
-    term_id.point = "1m";
+    term_id.tenor = "1m";
     volatility_surface_point term;
     term.model_subtype = volatility_model_subtype::rate_lnvol;
     term_id.vol = term;
@@ -945,35 +964,43 @@ TEST_CASE("from_ore_key_credit_index_option_is_a_surface", tags) {
 }
 
 TEST_CASE("from_ore_key_credit", tags) {
-    REQUIRE(oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y") ==
-            parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y"));
-    REQUIRE(oresmd_projections::from_ore_key("HAZARD_RATE/RATE/VOD/SR/EUR/5Y") ==
-            parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y") ==
+        parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=5y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("HAZARD_RATE/RATE/VOD/SR/EUR/5Y") ==
+        parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&seniority=sr&tenor=5y"));
     REQUIRE(oresmd_projections::from_ore_key("RECOVERY_RATE/RATE/VOD/SR/EUR") ==
-            parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr"));
+            parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&seniority=sr"));
     // A restructuring clause sits between the currency and the tenor, and the
     // corpus writes it on almost every CDS key. Both readings are pinned: the
     // point carries the clause when it is there and stays two parts when not.
-    REQUIRE(oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y") ==
-            parse("oresmd://credit/"
-                  "025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y"));
-    REQUIRE(oresmd_projections::from_ore_key("RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14") ==
-            parse("oresmd://credit/"
-                  "025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y") ==
+        parse("oresmd://credit/"
+              "025adx?ccy=usd&type=quote&quote=cds&seniority=snrfor&restructuring=xr14&tenor=10y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14") ==
+        parse("oresmd://credit/"
+              "025adx?ccy=usd&type=quote&quote=recovery_rate&seniority=snrfor&restructuring=mr14"));
     // CDS_INDEX/INDEX_CDS_TRANCHE keys carry no ccy segment (the forward drops it), so
     // the inverse cannot recover one -- the comparison target is a ccy-less identifier.
     credit_market_data_identifier index_id;
     index_id.reference_entity = "CDX-NA-IG";
     index_id.type = instrument_type::quote;
     index_id.quote_type = credit_quote_type::cds_index;
-    index_id.point = "5y,0.1";
+    index_id.tenor = "5y";
+    index_id.vol.emplace();
+    index_id.vol->strike = "0.1";
     REQUIRE(oresmd_projections::from_ore_key("CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1") ==
             market_data_identifier(index_id));
     credit_market_data_identifier tranche_id;
     tranche_id.reference_entity = "2I65BYEG6";
     tranche_id.type = instrument_type::quote;
     tranche_id.quote_type = credit_quote_type::index_cds_tranche;
-    tranche_id.point = "5y,0.07";
+    tranche_id.tenor = "5y";
+    tranche_id.vol.emplace();
+    tranche_id.vol->strike = "0.07";
     REQUIRE(
         oresmd_projections::from_ore_key("INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07") ==
         market_data_identifier(tranche_id));
@@ -981,13 +1008,13 @@ TEST_CASE("from_ore_key_credit", tags) {
 
 TEST_CASE("from_ore_key_inflation", tags) {
     REQUIRE(oresmd_projections::from_ore_key("ZC_INFLATIONSWAP/RATE/UKRPI/5Y") ==
-            parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
+            parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&maturity=5y"));
     REQUIRE(oresmd_projections::from_ore_key("YY_INFLATIONSWAP/RATE/UKRPI/5Y") ==
-            parse("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y"));
+            parse("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&maturity=5y"));
     // The forward emits the literal MULT in the third segment; the inverse accepts it
     // and drops it.
     REQUIRE(oresmd_projections::from_ore_key("SEASONALITY/RATE/MULT/UKRPI/JAN") ==
-            parse("oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan"));
+            parse("oresmd://inflation/ukrpi?type=quote&quote=seasonality&month=jan"));
 }
 
 TEST_CASE("from_ore_key_correlation", tags) {
@@ -1010,7 +1037,8 @@ TEST_CASE("from_ore_key_pins_the_canonical_uri_of_the_import_boundary", tags) {
     REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("FX/RATE/EUR/USD")).value ==
             "oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/2D/3M/5Y"))
-                .value == "oresmd://ir/usd?tenor=3m&type=quote&metric=rate&quote=ir_swap&point=5y");
+                .value ==
+            "oresmd://ir/usd?tenor=3m&type=quote&metric=rate&quote=ir_swap&maturity=5y");
     REQUIRE(oresmd_parser::to_uri(
                 *oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/2024-04/XICE:FEI/3M"))
                 .value == "oresmd://ir/"
@@ -1021,7 +1049,7 @@ TEST_CASE("from_ore_key_pins_the_canonical_uri_of_the_import_boundary", tags) {
             "oresmd://ir/usd?tenor=6m&curve_id=USD3M&type=quote&metric=rate&quote=discount");
     REQUIRE(
         oresmd_parser::to_uri(*oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/VOD/SR/EUR/5Y"))
-            .value == "oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,5y");
+            .value == "oresmd://credit/vod?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=5y");
 }
 
 TEST_CASE("from_ore_key_fx_spot_convention_correction_swaps_the_pair", tags) {
@@ -1103,21 +1131,26 @@ TEST_CASE("from_ore_key_rejects_registry_types_without_an_oresmd_mapping", tags)
 
 TEST_CASE("from_ore_key_option_families", tags) {
     REQUIRE(oresmd_projections::from_ore_key("CAPFLOOR/RATE_NVOL/CHF/5Y/6M/0/0/0.03") ==
-            parse("oresmd://ir/chf?type=vol&quote=capfloor&model=rate_nvol&point=5y,6m,0,0,0.03"));
+            parse("oresmd://ir/"
+                  "chf?type=vol&quote=capfloor&model=rate_nvol&expiry=5y&tenor=6m&shift=0&strip=0&"
+                  "strike=0.03"));
     REQUIRE(oresmd_projections::from_ore_key("CAPFLOOR/RATE_LNVOL/CHF/5Y/6M/0/0/0.03") ==
-            parse("oresmd://ir/chf?type=vol&quote=capfloor&point=5y,6m,0,0,0.03"));
+            parse("oresmd://ir/"
+                  "chf?type=vol&quote=capfloor&expiry=5y&tenor=6m&shift=0&strip=0&strike=0.03"));
     REQUIRE(oresmd_projections::from_ore_key("FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM") ==
-            parse("oresmd://fx/eurusd?type=vol&point=10y,atm"));
+            parse("oresmd://fx/eurusd?type=vol&expiry=10y&delta=atm&quote=option"));
     REQUIRE(oresmd_projections::from_ore_key("EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF") ==
-            parse("oresmd://equity/sp5?ccy=usd&type=vol&point=6m,atmf"));
-    REQUIRE(
-        oresmd_projections::from_ore_key(
-            "EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C") ==
-        parse(
-            "oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&point=2021-07-16,1200,c&model=price"));
+            parse("oresmd://equity/sp5?ccy=usd&type=vol&expiry=6m&delta=atmf&quote=option"));
+    REQUIRE(oresmd_projections::from_ore_key(
+                "EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C") ==
+            parse("oresmd://equity/"
+                  "ric:.stoxx50e?ccy=eur&type=vol&model=price&expiry=2021-07-16&strike=1200&call_"
+                  "put=c&quote=option"));
     REQUIRE(oresmd_projections::from_ore_key(
                 "EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/1080D/DEL/SPOT/CALL/0.1") ==
-            parse("oresmd://equity/ric:.spx?ccy=usd&type=vol&point=1080d,del,spot,call,0.1"));
+            parse("oresmd://equity/"
+                  "ric:.spx?ccy=usd&type=vol&expiry=1080d&delta=del&premium=spot&call_put=call&"
+                  "strike=0.1&quote=option"));
 }
 
 TEST_CASE("from_ore_key_rejects_unknown_series_types", tags) {
@@ -1317,7 +1350,7 @@ TEST_CASE("from_index_name_rejects_fx_names_that_are_not_the_shape", tags) {
     REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-EUR-USDX").has_value());
     REQUIRE_FALSE(oresmd_projections::from_index_name("FX-ECB-12-USD").has_value());
     // A quote has no index name to project, sourced or not.
-    const auto quote = parse("oresmd://fx/eurusd?type=quote");
+    const auto quote = parse("oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE_FALSE(oresmd_projections::to_index_name(quote).has_value());
 }
 
@@ -1426,9 +1459,10 @@ TEST_CASE("from_index_name_rejects_commodity_names_that_are_not_the_shape", tags
     REQUIRE_FALSE(oresmd_projections::from_index_name("COMM-ICE:B-20-12").has_value());
     // The projection emits an index name for a fixing alone, so a quote carrying
     // the period it is quoted for projects none.
-    REQUIRE_FALSE(oresmd_projections::to_index_name(
-                      parse("oresmd://commodity/ice:b?ccy=usd&type=quote&quote=fwd&point=2024-12"))
-                      .has_value());
+    REQUIRE_FALSE(
+        oresmd_projections::to_index_name(
+            parse("oresmd://commodity/ice:b?ccy=usd&type=quote&quote=fwd&maturity=2024-12"))
+            .has_value());
 }
 
 TEST_CASE("from_index_name_reads_the_generic_names_the_corpus_carries", tags) {
@@ -1530,7 +1564,7 @@ TEST_CASE("from_index_name_refuses_a_dash_less_token_that_is_not_an_inflation_co
     REQUIRE_FALSE(oresmd_projections::to_index_name(unknown).has_value());
     // The projection emits an index name for a fixing alone.
     REQUIRE_FALSE(oresmd_projections::to_index_name(
-                      parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"))
+                      parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&maturity=5y"))
                       .has_value());
 }
 
@@ -1629,9 +1663,10 @@ TEST_CASE("is_scalar_separates_the_one_point_series_from_the_coordinate_ones", t
         CHECK(oresmd_projections::is_scalar(id));
     }
     // A curve, a surface, and a quote that names its own point.
-    for (const auto& uri : {"oresmd://fx/eurusd?type=quote&quote=fwd&point=6m",
-                            "oresmd://ir/eur_generic?type=vol&quote=bond_option&point=1y,10y,atm",
-                            "oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"}) {
+    for (const auto& uri :
+         {"oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m",
+          "oresmd://ir/eur_generic?type=vol&quote=bond_option&expiry=1y&tenor=10y&strike=atm",
+          "oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&maturity=1y"}) {
         const auto id = oresmd_parser::parse(oresmd_uri{uri});
         CHECK_FALSE(oresmd_projections::is_scalar(id));
     }

@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/stress_test_scenarios/stress_test_scenario.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+stress_test_scenarios versions 00000000-0000-0000-0000-000000000000 --limit 1

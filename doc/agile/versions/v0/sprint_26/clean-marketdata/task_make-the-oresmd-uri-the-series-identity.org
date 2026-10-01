@@ -698,6 +698,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/2461][#2461]] | [doc] Encode the local verification rule for pull requests |
+| [[https://github.com/OreStudio/OreStudio/pull/2460][#2460]] | [ci] Remove the pull-request build gate |
 | [[https://github.com/OreStudio/OreStudio/pull/2430][#2430]] | [agile] Close the series identity task |
 | [[https://github.com/OreStudio/OreStudio/pull/2425][#2425]] | [marketdata,codegen] Join the component to the components under test |
 | [[https://github.com/OreStudio/OreStudio/pull/2414][#2414]] | [marketdata,sql] Let the identity be the only name a series carries |

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 9302B80C-A7E3-4D70-ACD0-4F122B06B30A
+:END:
+#+title: Task: Bind the standard profiles to the configuration entities that carry none
+#+description: Solid Dirac's shell-surface census found that analytics' three stress-test entities render no shell unit because their models carry no :profile: at all. A repo-wide census found eight entity models authored from this environment with no profile binding, across analytics, refdata and reporting. Each one hand-authors a feature combination instead of naming it, so codegen cannot guarantee a known-good shape and no profile-enabled facet fires. Bind each entity to the catalogued profile its shape matches, drop the redundant per-feature declarations the profile now supplies, and regenerate. Do not touch the profile-less models owned by other environments; report them instead.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/bind-the-standard-profiles
+#+pr: 2481
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every entity model authored from this environment names a catalogued profile instead of hand-authoring its variability features, and the generated surface follows from that binding.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- check_model_drift.py reports no new contradictions and the eight entities bind a profile
+- codegen regenerates the affected components with no drift beyond the intended profile-driven surface
+- the build succeeds and the affected component tests pass
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2481][#2481]] | [codegen] Bind the standard profiles to the entities that carried none |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

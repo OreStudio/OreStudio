@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: F6B891AC-DDCE-5328-9825-A8FC8033A4D6
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_segments commands from the shell?
+#+description: Every command the curve_segments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_segments:
+
+This file documents the curve_segments resource at the shell, one section per command. Every command is a subcommand of =curve_segments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 815C2F5C-562A-5E58-B457-1D71A66CB076
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.list=.
+
+#+name: curve_segments-list
+#+begin_src ores-shell :tangle curve_segments-list.ores :exports none
+curve_segments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8DEE788A-6E54-5546-886F-8706F157238F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.get=.
+
+#+name: curve_segments-get
+#+begin_src ores-shell :tangle curve_segments-get.ores :exports none
+curve_segments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3ECE1879-3AF4-5ADA-83C1-21C5D6E46DC9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.get_many=.
+
+#+name: curve_segments-get-many
+#+begin_src ores-shell :tangle curve_segments-get-many.ores :exports none
+curve_segments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FD7337DE-23B5-5575-AB7A-02E374D0238F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments add <curve_definition_id> <kind> <segment_type> <conventions> <extras> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.put=.
+
+#+name: curve_segments-add
+#+begin_src ores-shell :tangle curve_segments-add.ores :exports none
+curve_segments add 00000000-0000-0000-0000-000000000000 __none__ - - - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 4F7C6FD7-2BA1-5998-9177-B92593525276
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments set <id> <curve_definition_id> <kind> <segment_type> <conventions> <extras> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.put=.
+
+#+name: curve_segments-set
+#+begin_src ores-shell :tangle curve_segments-set.ores :exports none
+curve_segments set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3327BE45-C3B5-5CEC-BCBF-B41FCD3F4010
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments put-many --count <n> <id> <curve_definition_id> <kind> <segment_type> <conventions> <extras> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.put_many=.
+
+#+name: curve_segments-put-many
+#+begin_src ores-shell :tangle curve_segments-put-many.ores :exports none
+curve_segments put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 04DA701F-9EA1-5174-881F-BAA99ADDAC45
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.delete=.
+
+#+name: curve_segments-delete
+#+begin_src ores-shell :tangle curve_segments-delete.ores :exports none
+curve_segments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EACE41F2-CEC9-5205-847B-1FC1F6EE345F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments.delete_many=.
+
+#+name: curve_segments-delete-many
+#+begin_src ores-shell :tangle curve_segments-delete-many.ores :exports none
+curve_segments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: BFFE478B-572F-59B0-80E0-FDDDC89ED896
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments_versions.list=.
+
+#+name: curve_segments-versions
+#+begin_src ores-shell :tangle curve_segments-versions.ores :exports none
+curve_segments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6A2BF54F-C823-53DC-B8DB-88DEE9E3EEA3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_segments version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_segments_versions.get=.
+
+#+name: curve_segments-version
+#+begin_src ores-shell :tangle curve_segments-version.ores :exports none
+curve_segments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

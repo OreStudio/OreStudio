@@ -39,7 +39,7 @@ Each row belongs to exactly one scenario, in the order the document wrote it.
 :schema:        public
 :product:       ores
 :component:     analytics
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns

@@ -34,4 +34,7 @@ set(files
     "repository_pricing_model_config_repository_tests.cpp"
     "repository_pricing_model_product_parameter_repository_tests.cpp"
     "repository_pricing_model_product_repository_tests.cpp"
+    "stress_test_library_eventing_integration_tests.cpp"
+    "stress_test_scenario_eventing_integration_tests.cpp"
+    "stress_test_shift_eventing_integration_tests.cpp"
 )

@@ -35,7 +35,7 @@ the document wrote them.
 :schema:        public
 :product:       ores
 :component:     reporting
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns

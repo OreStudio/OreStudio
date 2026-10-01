@@ -32,7 +32,10 @@
 #include "ores.shell/app/commands/refdata/currency_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_pair_convention_calendar_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_pair_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_definition_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_quote_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_role_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_commands.hpp"
 #include "ores.shell/app/commands/refdata/day_count_fraction_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/deposit_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/derivation_kind_commands.hpp"
@@ -111,7 +114,10 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     currency_pair_commands::register_commands(root_menu, session);
     currency_pair_convention_calendar_commands::register_commands(root_menu, session);
     currency_pair_convention_commands::register_commands(root_menu, session);
+    curve_definition_commands::register_commands(root_menu, session);
+    curve_quote_commands::register_commands(root_menu, session);
     curve_role_commands::register_commands(root_menu, session);
+    curve_segment_commands::register_commands(root_menu, session);
     day_count_fraction_type_commands::register_commands(root_menu, session);
     deposit_convention_commands::register_commands(root_menu, session);
     derivation_kind_commands::register_commands(root_menu, session);

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 10380972-C572-57A1-8DE6-C5DED3E79C5D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the stress_test_libraries commands from the shell?
+#+description: Every command the stress_test_libraries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:stress_test_libraries:
+
+This file documents the stress_test_libraries resource at the shell, one section per command. Every command is a subcommand of =stress_test_libraries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F980F2A9-DFF1-5913-BDB9-65C7D9AD118C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.list=.
+
+#+name: stress_test_libraries-list
+#+begin_src ores-shell :tangle stress_test_libraries-list.ores :exports none
+stress_test_libraries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 50A5870D-68EE-50B8-93C8-A4187AAF9901
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries get <id>
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.get=.
+
+#+name: stress_test_libraries-get
+#+begin_src ores-shell :tangle stress_test_libraries-get.ores :exports none
+stress_test_libraries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3D12DAE2-CDC6-5E5F-A317-7075F63D74D5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries get-many <id>
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.get_many=.
+
+#+name: stress_test_libraries-get-many
+#+begin_src ores-shell :tangle stress_test_libraries-get-many.ores :exports none
+stress_test_libraries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 486E4F1F-54E6-5C49-BB5E-87FE3DADA5F0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries add <name> <use_spreaded_term_structures> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.put=.
+
+#+name: stress_test_libraries-add
+#+begin_src ores-shell :tangle stress_test_libraries-add.ores :exports none
+stress_test_libraries add __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 2C4CB3C9-354F-5229-BBFF-948381BCCA1C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries set <id> <name> <use_spreaded_term_structures> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.put=.
+
+#+name: stress_test_libraries-set
+#+begin_src ores-shell :tangle stress_test_libraries-set.ores :exports none
+stress_test_libraries set 00000000-0000-0000-0000-000000000000 __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2FD7D0EC-D38F-5250-9359-90030C0D6476
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries put-many --count <n> <id> <name> <use_spreaded_term_structures> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.put_many=.
+
+#+name: stress_test_libraries-put-many
+#+begin_src ores-shell :tangle stress_test_libraries-put-many.ores :exports none
+stress_test_libraries put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CE2C6E73-ED7A-5E52-83BB-6967B7896C0A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.delete=.
+
+#+name: stress_test_libraries-delete
+#+begin_src ores-shell :tangle stress_test_libraries-delete.ores :exports none
+stress_test_libraries delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 67476C41-E5BB-5279-B96C-42B6B10BD5CB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries.delete_many=.
+
+#+name: stress_test_libraries-delete-many
+#+begin_src ores-shell :tangle stress_test_libraries-delete-many.ores :exports none
+stress_test_libraries delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6E2288D3-AF26-5960-86D7-FC879F8B3D2C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries_versions.list=.
+
+#+name: stress_test_libraries-versions
+#+begin_src ores-shell :tangle stress_test_libraries-versions.ores :exports none
+stress_test_libraries versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D17F7268-79AB-524B-BC3E-48D39956EADC
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_test_libraries version <id> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.stress_test_libraries_versions.get=.
+
+#+name: stress_test_libraries-version
+#+begin_src ores-shell :tangle stress_test_libraries-version.ores :exports none
+stress_test_libraries version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

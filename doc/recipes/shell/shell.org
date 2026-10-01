@@ -1095,3 +1095,35 @@ tangled into the runnable script library
 * Report Definition Template
 
 - [[id:F4400538-681A-5F03-9E68-244A9860E727][How do I run the report_definition_template commands from the shell?]]
+
+* Curve Definitions
+
+- [[id:73A94A20-42CC-5719-A600-8BD624BA0D12][How do I run the curve_definitions commands from the shell?]]
+
+* Curve Quotes
+
+- [[id:B0C1049C-88AD-5490-A951-11316828DF4A][How do I run the curve_quotes commands from the shell?]]
+
+* Curve Segments
+
+- [[id:F6B891AC-DDCE-5328-9825-A8FC8033A4D6][How do I run the curve_segments commands from the shell?]]
+
+* Report Analytic Parameters
+
+- [[id:2B4A520B-F99C-53AF-956D-96588F275C71][How do I run the report_analytic_parameters commands from the shell?]]
+
+* Report Market Bindings
+
+- [[id:5303CFC9-F28E-5554-90DC-6961327581D2][How do I run the report_market_bindings commands from the shell?]]
+
+* Stress Test Libraries
+
+- [[id:10380972-C572-57A1-8DE6-C5DED3E79C5D][How do I run the stress_test_libraries commands from the shell?]]
+
+* Stress Test Scenarios
+
+- [[id:E1D13FFB-89BA-5D11-9D0A-599B9E0E84E7][How do I run the stress_test_scenarios commands from the shell?]]
+
+* Stress Test Shifts
+
+- [[id:60EE9B0A-074D-5455-8A8B-578FCE2F5CC0][How do I run the stress_test_shifts commands from the shell?]]

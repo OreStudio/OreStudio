@@ -67,7 +67,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:1D532014-FD6C-4EBE-982D-3D17C1B768F1][Make the tenant roster a workspace]] | DONE | 2026-10-01 | 2026-10-01 | Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens. |
 | [[id:0DD8A141-2D77-47A0-A0EC-B4662767CCF6][Paint the tenant status with the badge catalogue]] | DONE | 2026-10-01 | 2026-10-01 | The roster hardcodes the colours and the labels of the tenant statuses. Use the platform's badge catalogue, which already maps tenant_status to badges with their own colours, labels and tooltips. |
 | [[id:5A6EEEEC-2A92-40EC-85C3-625064A884EB][Put the badge on the tenant status row]] | DONE | 2026-10-01 | 2026-10-01 | The badge belongs to the value, not to a mapping table. Give the tenant status its own badge reference, take the label from the status's own name, and read the statuses instead of the junction. |
-| [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]] | STARTED | 2026-10-01 | | A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. Store the journey and offer it from the shell. |
+| [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]] | STARTED | 2026-10-01 | | A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. The way back is the tenant list, which needs the provisioning run to name the tenant it acts on. |
 
 * Decisions
 
@@ -161,6 +161,38 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   still serves the domains that have not moved and is read by nothing on the
   path that has; it goes when the last domain carries its own reference, not
   before, because deleting it early takes those domains' colours with it.
+  (Implementation, 2026-10-01.)
+- *A run belongs to the tenant that asked for it, and acts on the one it names.*
+  The two roles are different and the engine already keeps the first: a
+  provisioning run's rows are scoped to the super administrator's own tenant, so
+  the person who asked for the run can read it, while the tenant the run builds
+  is the one every step acts on. A run owned by the tenant it creates could not
+  be followed by the session that started it, because that session is in another
+  tenant. (Implementation, 2026-10-01.)
+- *The run names what it acts on, as a field and not only as payload.* A
+  workflow instance states a target: a caller-supplied kind and id, opaque to
+  the engine, naming the entity the run acts on. It does not stay in
+  =request_json= alone, where nothing can index it, filter by it or report it,
+  and where only the run's own handler can find it. The engine gains one generic
+  field rather than =ores.iam= gaining a table that would leave the run itself
+  unable to say what it is for, and leave the next component to build the same
+  table again. (Product owner, 2026-10-01.)
+- *A journey abandoned before it provisions is restarted, not resumed.* Nothing
+  is written before the run starts, so there is no draft tenant and no draft
+  status to invent: a person who leaves the form before submitting starts again,
+  and what a screen has to offer back is the work that has a run behind it.
+  (Product owner, 2026-10-01.)
+- *A tenant can have any number of runs in flight.* No index limits runs per
+  target, because a second attempt does not have to wait for the first one to
+  stop. The roster shows the run that changed last. (Product owner, 2026-10-01.)
+- *The target is a kind and an id, not an oresmd URI.* oresmd is the URI grammar
+  for market data. It is not a general way to name entities, so the workflow
+  target does not use it. (Product owner, 2026-10-01.)
+- *A run is resumed from its own page, and the form is not restored.* The roster
+  links an unfinished run to =/tenants/runs/:id=. That page shows the
+  provisioning step alone: the same rail and the same retry. The hand-off step
+  is not offered there, because the browser never stored the administrator
+  password it needs. A tenant detail screen is a later piece of work.
   (Implementation, 2026-10-01.)
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the

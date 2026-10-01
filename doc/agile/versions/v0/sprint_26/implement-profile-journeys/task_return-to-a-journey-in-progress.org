@@ -2,7 +2,7 @@
 :ID: 4615E18E-96D8-4AFD-8FBA-241A441EA335
 :END:
 #+title: Task: Return to a setup journey in progress
-#+description: A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. Store the journey and offer it from the shell.
+#+description: A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. The way back is the tenant list, and it needs the run to name the tenant it acts on.
 #+type: task
 #+level: s1
 #+filetags: :web:ux:journeys:setup:v0:sprint_26:implement-profile-journeys:
@@ -20,9 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A setup journey can be left and come back to. Today a person who starts
-*New tenant* and navigates away cannot find it again: the shell offers no way
-back, and nothing anywhere records where they were.
+A person who has started provisioning a tenant can find that tenant again from
+the shell and see how far the work has got. Before this task the shell offered
+no way back to a journey in progress, and the tenant roster could not say which
+run belonged to which tenant.
 
 * Status
 
@@ -30,9 +31,9 @@ back, and nothing anywhere records where they were.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Diagnosed. The two holes are named and the shape is recorded; no code has changed. |
+| Now          | Target on the run, roster column and run page built; unit tests pass. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide where the journey's position is stored, then build it. |
+| Next         | Read the roster and the run page against the running deployment. |
 | Last touched | 2026-10-01                               |
 
 * The defect, as found
@@ -52,48 +53,73 @@ There are two holes, and closing one alone achieves nothing:
    local flag that pins the first-run screen. It does not survive a reload and
    it knows nothing about the new-tenant route.
 
-* Acceptance
+* The design, settled
 
-- A setup journey's position survives leaving the screen and reloading the
-  browser.
-- The shell offers every journey the person has in progress, names the step
-  they were on, and opens it where they left it.
-- A journey that has finished stops being offered, and one that failed says so
-  rather than disappearing.
-- The provisioning run an unfinished journey started stays visible, so a
-  person can see that work is still happening on the server.
-- Every new behaviour is proved by a test, and the screen was read against the
-  running deployment.
+The journey does not need a store of its own. The provisioning run already
+exists as a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]], the
+tenant row already exists from the moment the run starts, and the run's steps
+already carry their words and their state. Three things are missing, and the
+story records the decisions behind them:
+
+1. *The run names what it acts on.* An instance carries a caller-supplied
+   =target=, a kind and an id, opaque to the engine. A provisioning run's target
+   is the tenant it creates, which today exists only inside =request_json=,
+   where nothing can index it, filter by it or report it. This is the missing
+   link, and it is one field on the run rather than a table in =ores.iam=.
+2. *The read exists but cannot be aimed.* =workflow.v1.instances.list= already
+   returns a run's type, state, current step index and step count, and
+   =workflow.v1.instances.steps= already reaches the browser. Neither can be
+   asked for a given tenant.
+3. *Nothing asks.* The BFF composes the roster from =ores.iam= alone, and the
+   screen holds no column for a run.
+
+A person who leaves the form before submitting starts again. Nothing is written
+before the run starts, so there is no draft tenant to invent a status for, and
+what the shell has to offer back is the work that has a run behind it.
 
 * Plan
 
-The design already decided this, and the fix follows it rather than inventing
-a mechanism: [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]]
-says the journey is the workflow class, its progress is a
-[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
-=ores.workflow=, and the person can leave and come back.
+1. *The run names its target.* Add =target_kind= and =target_id= to
+   =ores.workflow.workflow_instance=, carry them on the start message, and
+   return them on the instances list with a filter by target and by type.
+2. *The provisioning run sets it.* =ores.iam='s provisioning handler states
+   =tenant= and the tenant it created.
+3. *The delivery is the tenant list.* The roster shows, for each tenant, the
+   step its run has reached and whether that run failed, because that is both
+   the way back into work in progress and the answer to where a tenant has got
+   to.
 
-1. *The position is server-side, not browser-side.* The one decision still
-   open is what the journey instance is: a workflow instance of its own kind,
-   or the provisioning run itself carrying the journey's step. The second is
-   fewer moving parts and the run already exists; the first keeps a journey
-   that has not started a run yet. This is the first thing to settle.
-2. *The shell offers it back.* The area the journey belongs to shows a card
-   for a journey in progress, with the step it reached, and opening it resumes
-   there. *New tenant* lives in *Tenants*; *New party* in *Parties*.
-3. *An unfinished run stays visible.* A journey that has started provisioning
-   shows the run and its progress, because today a half-provisioned tenant
-   simply vanishes from the person's view while the server keeps working.
+* Acceptance
+
+- A workflow instance names the entity its run acts on, and a run that acts on a
+  tenant states that tenant.
+- The instances list can be asked for the runs that act on one target, and its
+  summary carries the target.
+- The tenant roster shows, for a tenant whose run is unfinished, the step the
+  run has reached, and shows a failed run as failed rather than as absent.
+- A person who left the shell while a tenant was provisioning can find that
+  tenant again and see the run's progress.
+- A journey abandoned before it submits writes nothing and starts again.
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
 
 * Result
 
-Diagnosis only, and it is deliberately the whole of this task so far: the
-defect is not a screen that forgot to draw a link, and the fix is where a
-journey's position lives. The two holes are recorded above with the files that
-hold the state today, and the plan follows the composition class the setup
-journeys already document rather than introducing a second mechanism.
-
-No code has changed, and nothing is claimed.
+- *The run names its target.* =workflow_instance= has =target_kind= and
+  =target_id=. The start message carries them, and the engine refuses a start
+  that gives only one half or an id that is not a UUID. The instances list
+  filters by type, target kind and target id, and its summary returns the
+  target. The regenerated entity is byte-identical to the edited files.
+- *Provisioning sets it.* =ores.iam= names =tenant= and the new tenant on a
+  tenant run, and =party= and the party on a party run.
+- *The roster is the way back.* =/api/tenants= joins each tenant with the
+  provisioning run that changed last. A failed run read does not fail the
+  roster: the page shows a warning. The *Setup* column shows "Step N of M",
+  "Failed at step N", "Rolling back" or "Rolled back", and links to
+  =/tenants/runs/:id=. That page shows the run's rail with retry. A completed
+  run shows nothing, because the tenant status already says the tenant is there.
+- *Not in scope.* The form of an abandoned journey is not restored, and the
+  hand-off step is not offered again. The tenant detail screen is a later PR.
 
 * Measurements
 
@@ -133,5 +159,3 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result

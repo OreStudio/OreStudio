@@ -39,7 +39,7 @@ namespace ores::trading::domain {
  *
  * One row per bond future trade, keyed by the trade. The row carries the
  * whole of bondFutureData, the only type the ORE schema states for the
- * product ([[file:../../../external/ore/xsd/instruments.xsd::428][instruments.xsd:428]]):
+ * product (instruments.xsd:428):
  * ContractName, ContractNotional and LongShort are required and
  * ApplyConversionFactor and UseFuturePrice are optional booleans.
  *
@@ -47,12 +47,12 @@ namespace ores::trading::domain {
  * ContractMonth, DeliverableGrade, LastTradingDate,
  * LastDeliveryDate, Settlement, DirtyQuotation, RootDate,
  * ExpiryBasis, SettlementBasis, ExpiryLag and SettlementLag are
- * elements of bondFutureReferenceDatum
- * ([[file:../../../external/ore/xsd/referencedata.xsd::132][referencedata.xsd:132]]),
+ * elements of bondFutureReferenceDatum (referencedata.xsd:132),
  * and DeliveryBasket is that datum's element too. FairPrice is not in
- * the schema at all. This table held all thirteen, at the trade, because the
- * era it was written in did; they are recorded as dropped rather than kept
- * in a place ORE does not state them (decision D25).
+ * the schema at all. The table carries none of the thirteen, because ORE
+ * states them on the datum and not on the trade; they are recorded as
+ * dropped rather than kept in a place ORE does not state them (decision
+ * D25).
  *
  * The datum reaches only the ReferenceData document root, and the
  * generated ORE bindings cover the Portfolio root, so no trade document

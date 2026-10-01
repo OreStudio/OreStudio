@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: fix/guard-the-session-reads
-#+pr:
+#+pr: 2465
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -95,7 +95,7 @@ these reads.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2465][#2465]] | [iam] Guard the session reads with the permission the catalogue grants |
 
 * Review
 

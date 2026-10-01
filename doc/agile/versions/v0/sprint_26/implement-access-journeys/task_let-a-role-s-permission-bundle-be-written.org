@@ -92,20 +92,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| New IAM test cases | 7 | =ctest -R ores.iam.core.tests -V= | 85d82d7a55 |
-| IAM suites | 5 of 5 pass | =ctest -R "ores.iam.*\|ores.http.iam.*\|ores.shell.iam.*"= | 7c869f09f6 |
-| Permission codes seeded for iam | 3 added, 12 still unseeded | =check_handler_permissions.required_codes('iam')= | 85d82d7a55 |
+| New IAM test cases | 7 | =ctest -R ores.iam.core.tests -V= | 72c1c94c7a |
+| IAM suites | 5 of 5 pass | =ctest -R "ores.iam.*\|ores.http.iam.*\|ores.shell.iam.*"= | 19bca23a43 |
+| Permission codes seeded for iam | 3 added, 12 still unseeded | =check_handler_permissions.required_codes('iam')= | 72c1c94c7a |
 | Permissions in a freshly created database | 555 | =compass db recreate -y -k= | 85d82d7a55 |
 | Role-permission assignments in a freshly created database | 133 | =compass db recreate -y -k= | 85d82d7a55 |
-| Local gates | 21 pass, 1 pre-existing failure | =build/audit/run_local_gates.sh= | 7c869f09f6 |
-| Codegen test suite | 1046 pass | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | 7c869f09f6 |
-| Web workspace | typecheck, format and 51 tests pass | =npm run typecheck && npm run format:check && npm test= | 7c869f09f6 |
-| The one failing gate on pristine origin/main | the same single failure | =regenerate_cmake_component_files.py --all --check= in a worktree at origin/main | 23d8d610c1 |
+| Permission upserts the seed defines | 555 | =grep -c ores_iam_permissions_upsert_fn iam_permissions_populate.sql= | 19bca23a43 |
+| Local gates | 22 pass, 0 fail | =build/audit/run_local_gates.sh= | 19bca23a43 |
+| Codegen test suite | 1052 pass | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | 19bca23a43 |
+| Web workspace | typecheck, format and 51 tests pass | =npm run typecheck && npm run format:check && npm test= | 19bca23a43 |
+| ER diagram | up to date | =plantuml_er_generate.py ... --check= | 19bca23a43 |
 
 * Notes
 
-- The pre-existing failure the gate battery reports is =projects/ores.ore/core/src/component_files.cmake=, which is stale on =origin/main= and belongs to another component. A worktree at =origin/main= (=23d8d610c1=) fails the same check on the same file.
-- The commits were rebased onto =origin/main= after the measurements were taken, so the hashes here are the rebased ones; the tree is the same tree.
+- The database rows were measured before the rebase, at =85d82d7a55=, which the rebase rewrote and which no longer exists. The iam seed files are byte-identical between that base and the current one (=git diff 23d8d610c1 ade150bbf6 -- projects/ores.sql/populate/iam projects/ores.sql/create/iam= is empty), and the seed defines 555 permission upserts, so the figures reproduce; the row above records that count at the commit a reader can reach. Everything else was re-measured after the rebase.
+- All 22 local gates pass on the rebased base. The one failure the battery reported before the rebase, =projects/ores.ore/core/src/component_files.cmake=, was stale on the older =origin/main= and has since been fixed there by its owner, so this branch no longer inherits it.
+- The commits were rebased twice onto =origin/main= after the measurements were taken, so the hashes are the rebased ones; the tree is the same tree.
 - Tangling the shell and HTTP recipes also materialised =projects/ores.shell/scripts/library/curve_sections/= and =projects/ores.http/scripts/library/currencies/=, whose recipe sources are committed but whose generated artefacts are not. Neither belongs to this task, so both are left untracked and are worth a capture of their own.
 - The migration was not replayed against a database that predates the columns. A fresh database proves the create script, which is what the environment runs; the migration exists for the rollout, and its own docstring says so.
 
@@ -130,18 +132,18 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | The generated list helper tests =__NONE__= while the loader and every recipe write =__none__=, so an empty bundle is sent as the literal code | =ores.cpp.shell-command.operation_implementation.org= | accepted | Fixed at the template, which is where the token is read; the three generated copies are regenerated (=f3a0170058=). |
-| 2 | The "actor names no account" sentence is copied at seven sites | =authorization_handler.hpp= | accepted | One =no_account_answer= constant (=fd4853f24a=). |
+| 1 | The generated list helper tests =__NONE__= while the loader and every recipe write =__none__=, so an empty bundle is sent as the literal code | =ores.cpp.shell-command.operation_implementation.org= | accepted | Fixed at the template, which is where the token is read; the three generated copies are regenerated (=347bc448db=). |
+| 2 | The "actor names no account" sentence is copied at seven sites | =authorization_handler.hpp= | accepted | One =no_account_answer= constant (=7aced1132f=). |
 | 3 | The list helper is copied into a third generated command file | three =*_operations_commands.cpp= | accepted in part | One template emits all three, so the copy is generated, not hand-written. Lifting it into the shell API is a template change shared with the entity command facet, and belongs with the generator work rather than here. |
 | 4 | =change_reason_code= and =change_commentary= travel together through five layers | request, domain, entity, SQL, service | declined | The tree spells the pair out everywhere, including =account_role=, and a type for it would diverge from the audited-entity shape the generator emits. |
 | 5 | =service::role_permissions= mirrors the wire response field for field | =authorization_service.hpp= | declined | The service and the wire carry separate shapes in this component by design (see =account_access= against =account_role_access=); the mapping is the seam that keeps the wire from reaching the store. |
 | 6 | =bundles= and =stays= re-implement one membership test under vague names | =authorization_service.cpp= | accepted | Renamed to =bundles_permission= and =wanted=, which is as far as the two shapes (links against permissions) allow without a second type. |
 | 7 | No test crosses the handler or the registration seam, which is where the caller bug hid | =authorization_handler.hpp= | accepted with a reason | A handler test needs the live NATS harness the scheduler's handler test uses, which no IAM test has today. The defect class it would catch is now covered by the =caller_account= cases at the service. Recorded, not built. |
-| 8 | The Plan claims constants for the new codes and none were added | =permission_codes.hpp= | accepted | =roles_write=, =permissions_write= and =permissions_delete= added and asserted in the constants test (=fd4853f24a=). |
-| 9 | A removal records neither actor nor reason, so "both an addition and a removal are recorded" is not true | =authorization_service.cpp=, journey | accepted | The delete rule closes the row and keeps the grant's tail. The acceptance and the journey now say exactly that, and why restamping the tail is worse (=cdfe275b21=). |
+| 8 | The Plan claims constants for the new codes and none were added | =permission_codes.hpp= | accepted | =roles_write=, =permissions_write= and =permissions_delete= added and asserted in the constants test (=7aced1132f=). |
+| 9 | A removal records neither actor nor reason, so "both an addition and a removal are recorded" is not true | =authorization_service.cpp=, journey | accepted | The delete rule closes the row and keeps the grant's tail. The acceptance and the journey now say exactly that, and why restamping the tail is worse (=29f0b878ad=). |
 | 10 | =create_role=, the seed's assign function and the tenant provisioner changed although the task does not name them | four files | declined | The new columns are =not null=, so every writer must state the tail or the seed and the provisioning copy fail. Forced by the schema, not creep. |
 | 11 | An empty reason silently becomes =system.new_record=, so the write does not always state its reason | =authorization_service.cpp= | accepted | Kept, because =stamp()= gives every generated write the same default, and the store still validates whatever it is given. The acceptance now states the default instead of claiming the caller always speaks. |
-| 12 | The write answers sorted codes and the read does not, so the two can disagree about a bundle they agree on | =authorization_service.cpp= | accepted | The sort moved into =get_role_permissions=, which is the list both answers use (=fd4853f24a=). |
+| 12 | The write answers sorted codes and the read does not, so the two can disagree about a bundle they agree on | =authorization_service.cpp= | accepted | The sort moved into =get_role_permissions=, which is the list both answers use (=7aced1132f=). |
 
 * Result
 
@@ -167,8 +169,8 @@ seeded.
 
 Evidence: the database was recreated from the changed create scripts (555
 permissions, 133 role-permission assignments); the five IAM suites pass, with
-seven new cases over the caller resolution and the bundle write; the local
-gate battery passes 21 of 22, the failure being a stale =ores.ore= file that
-fails identically on =origin/main=. Two review rounds ran before the PR, and
-every accepted finding is in the commits above.
+seven new cases over the caller resolution and the bundle write; all 22 local
+gates pass on the rebased base, as does the ER diagram check, and CI reports
+18 of 18 checks green on the pull request. Two review rounds ran before the
+PR, and every accepted finding is in the commits above.
 

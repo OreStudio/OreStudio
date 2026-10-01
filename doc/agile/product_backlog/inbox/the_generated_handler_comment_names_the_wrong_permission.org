@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: EC7C2C75-5408-4350-AF9F-638A82EEC585
+:END:
+#+title: Every generated NATS handler says its reads check the permission a write needs
+#+description: cpp_nats_handler.hpp.mustache carries one comment above every handler it emits: 'The adapter decides nothing: it proves the request, checks the permission a write needs, decodes the canonical request, calls the service and replies with the response the service filled.' The sentence is written once and emitted for every verb, so a read verb's comment claims a write permission and a delete verb's claims a write too. The generated handlers for ores.iam.sessions are the concrete example: list, get and get_many are now guarded with iam::sessions:read, and all seven verbs carry the same comment. The fix belongs in the template, not in one generated file, and the template is itself tangled from its org source, so the change has to be made there. Raised during the review of PR #2465, where the same rewording had been applied by hand to one generated file and was reverted by regeneration.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

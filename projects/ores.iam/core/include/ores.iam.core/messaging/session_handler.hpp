@@ -67,7 +67,7 @@ public:
      * @brief Serves iam.v1.sessions.list.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -112,7 +112,7 @@ public:
      * @brief Serves iam.v1.sessions.get.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -157,7 +157,7 @@ public:
      * @brief Serves iam.v1.sessions.get_many.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -202,7 +202,7 @@ public:
      * @brief Serves iam.v1.sessions.put.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -247,7 +247,7 @@ public:
      * @brief Serves iam.v1.sessions.put_many.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -292,7 +292,7 @@ public:
      * @brief Serves iam.v1.sessions.delete.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
@@ -337,7 +337,7 @@ public:
      * @brief Serves iam.v1.sessions.delete_many.
      *
      * The adapter decides nothing: it proves the request, checks the
-     * permission the operation needs, decodes the canonical request, calls the
+     * permission a write needs, decodes the canonical request, calls the
      * service and replies with the response the service filled. The outcome
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.

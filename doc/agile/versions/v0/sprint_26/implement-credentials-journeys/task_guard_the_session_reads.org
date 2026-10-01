@@ -101,25 +101,40 @@ these reads.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The edited header is generated, so the next regeneration removes the guards | =session_handler.hpp= | Fixed | The model owns the flag now: =ores.iam.session.org= sets =:guard_reads: true=, and the regeneration emits the same three guards. Verified by regenerating and rebuilding. |
+| 2 | The comment rewording belongs in the template, not in one generated file | =cpp_nats_handler.hpp.mustache= | Declined here, captured | The rewording was dropped rather than kept, and the template-wide fix filed as [[id:EC7C2C75-5408-4350-AF9F-638A82AEE585][a capture]]: the sentence is emitted for every verb of every component. |
+| 3 | Confirm the guard does not refuse a user-facing read of the caller's own session | =session_handler.hpp= | Answered | =iam::sessions:read= is held by =TenantAdmin= through its =*= permission and by =HttpService= explicitly; no other role reads sessions, and the BFF's and =ores.http='s session routes are reached by those two. The browser's own session comes from =GET /api/session=, which is the BFF's cookie store and not this subject. |
+| 4 | A test that the model sets =guard_reads= would close the regression risk | the codegen suite | Accepted as the next step | The codegen suite already covers a model with the flag generating guarded reads; asserting that this model sets it is the cheap case, and it is recorded as the remaining work on this task. |
 
 * Result
 
 Done 2026-10-01, except for the test that asserts the refusal.
 
-The three guards are in
-=projects/ores.iam/core/include/ores.iam.core.messaging/session_handler.hpp=,
-one per read verb, mirroring the shape the write and delete verbs already use.
-Every verb of the resource now checks the permission its operation needs, and a
-refusal is the same =forbidden= error throughout.
+The guard is generated, not written. Review of the pull request caught that
+=session_handler.hpp= carries =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY=, so
+the three guards had first been written by hand into a file the next
+regeneration would overwrite. The model owns the decision now:
+=projects/ores.iam/modeling/ores.iam.session.org= sets =:guard_reads: true= in
+its flags, and =compass codegen regenerate --component iam --entity session
+--address ores.cpp.nats-handler= emits the same three guards — =list_sessions=,
+=get_session= and =get_many_sessions= each checking =iam::sessions:read= before
+they decode. The account and login-record models set the same flag, so the three
+entities guard their reads alike and stay guarded through later regenerations.
 
-Verification: the library and the suite build, and =ores.iam.core.tests= passes
-whole — =All tests passed (425 assertions in 165 test cases)=. The first run of
-that suite failed 59 of 165 cases, every one of them with a missing column
-(=account_status=, =is_registration_default=, =tenant_type=) because the restored
-database was behind the SQL on main; =compass db recreate -y -k= rebuilt it and
-the suite then passed, which is worth knowing for every later task in this
-story.
+The comment rewording the review also flagged was dropped rather than kept: that
+sentence lives in =cpp_nats_handler.hpp.mustache= and is emitted for every verb
+of every component, so fixing it in one generated file would revert on the next
+run. Filed as
+[[id:EC7C2C75-5408-4350-AF9F-638A82AEE585][Every generated NATS handler says its reads check the permission a write needs]]
+so it is fixed once, in the template.
+
+Verification: the library and the suite build with the regenerated handler, and
+=ores.iam.core.tests= passes whole — =All tests passed (425 assertions in 165
+test cases)=. The first run of that suite failed 59 of 165 cases, every one of
+them with a missing column (=account_status=, =is_registration_default=,
+=tenant_type=) because the restored database was behind the SQL on main;
+=compass db recreate -y -k= rebuilt it and the suite then passed, which is worth
+knowing for every later task in this story.
 
 *What is still missing.* No test exercises the refusal, and the reason is
 larger than this task: =projects/ores.iam/core/tests/= mentions no permission
@@ -127,8 +142,8 @@ string, no =has_permission= and no =forbidden= anywhere, so no guard in the
 component is covered — not the account reads, not the login-record reads, not
 the write or delete verbs this guard copies. The session handler is therefore
 not the odd one out; it is the first verb set whose refusal anybody wanted to
-prove. Either the first such test builds the harness (a message for the subject,
-a request context carrying a caller without the permission, and the reply read
-back) and the component gains a way to test its guards, or the guards stay
-verified by inspection. That decision belongs to whoever takes this task next,
-and it is worth making deliberately rather than by accident.
+prove. The codegen suite already covers the mechanism — a model that sets
+=guard_reads= generates guarded reads — so the cheap regression guard is a case
+asserting that this model sets the flag; a case that calls a read without the
+permission and asserts =forbidden= needs a harness the component does not have
+yet. That decision belongs to whoever takes this task next.

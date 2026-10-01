@@ -116,6 +116,15 @@ public:
      */
     std::vector<domain::session> read_latest_by_id(context ctx, const std::string& id);
 
+    /**
+     * @brief Reads the sessions that have not ended.
+     *
+     * A session is open while its =end_time= is empty, which the store states
+     * as an empty string rather than a null: the column is =text not null
+     * default ''=. One row per open session, in key order.
+     */
+    std::vector<domain::session> read_active(context ctx);
+
 
     /**
      * @brief Reads the session rows for the given primary key.

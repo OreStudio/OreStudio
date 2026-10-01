@@ -331,6 +331,11 @@ std::vector<domain::session> session_service::list_sessions(std::uint32_t offset
     return repo_.read_latest(ctx_, offset, limit);
 }
 
+std::vector<domain::session> session_service::active_sessions() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing active sessions";
+    return repo_.read_active(ctx_);
+}
+
 std::uint32_t session_service::count_sessions() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total sessions count";
     return repo_.get_total_session_count(ctx_);

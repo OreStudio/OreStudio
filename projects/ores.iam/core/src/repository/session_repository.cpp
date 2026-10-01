@@ -134,6 +134,21 @@ std::vector<domain::session> session_repository::read_latest(context ctx) {
         "Reading latest sessions");
 }
 
+std::vector<domain::session> session_repository::read_active(context ctx) {
+    const auto tid = ctx.tenant_id().to_string();
+    const auto no_end = std::string("");
+    const auto query = sqlgen::read<std::vector<session_entity>> |
+                       where("tenant_id"_c == tid && "end_time"_c == no_end) |
+                       order_by("id"_c, "start_time"_c);
+
+    return execute_read_query<session_entity, domain::session>(
+        ctx,
+        query,
+        [](const auto& entities) { return session_mapper::map(entities); },
+        lg(),
+        "Reading active sessions");
+}
+
 std::vector<domain::session>
 session_repository::read_latest(context ctx, const std::string& id, const std::string& start_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest session. " << "id: " << id

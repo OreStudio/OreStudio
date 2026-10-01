@@ -226,6 +226,29 @@ file, and the reason for each not-applicable.
 
 * Notes
 
+- *B06 is clean, and it found three stale headers.* The census ran over the
+  1273 public headers of =api= and =core= against every tracked consumer in
+  the tree, with =service/include/= (93 headers, about 42 of them consumed
+  externally) left for its own pass. No header has a test as its only
+  consumer, so no symbol is test-only dead code and nothing is deleted for
+  B06. Four headers have no consumer anywhere: the namespace-documentation
+  umbrella =core/ores.trading.core.hpp=, which the standard expects, and
+  three =*_changed_event.hpp= headers under =api/eventing/=. The three are
+  stale output: the current archetype writes =*_event.hpp=, and the
+  =changed_event= name predates it, so they survived a rename the way the
+  retired delivery basket survived its deletion. They are deleted; a
+  tree-wide sweep of the same residue (80 files, 65 of them refdata's)
+  belongs to the components that own them and is a named finding.
+- *H05: the composite root had three sections and no diagram.* The three
+  parts carried the six sections and a =puml=/=png= pair; the root carried
+  Summary, Sub-components and Entity modules. It now carries the Diagram
+  section with a rendered =ores.trading.png= beside its source, the six
+  sections, and keeps the two tables. The diagram was authored from the
+  component's measured dependencies and its image was read back, per H01's
+  two passes.
+- *The full suite is 89 of 89 on a recreated database*, provisioned with
+  the acme_demo profile, with the shell units and the permission seeds in
+  place. That is V02, V03 and W04's evidence together.
 - The eleven untracked shell library directories from the scheduler pass
   are that task's open item 10. They are not trading's, but they make an
   in-place drift check fail. Sweep them or record them as still open

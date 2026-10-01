@@ -106,11 +106,30 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     // read_latest uses ctx.tenant_id() for RLS filtering.
     auto instances = instance_repo_.read_latest(req_ctx);
 
-    // Apply optional status filter client-side (avoids a custom repo method).
+    // Every filter is applied here rather than in the repository, so the read
+    // stays one method. The rows in flight bound the work, and a filter that
+    // named a column the repository does not index as a set would cost more
+    // there than the scan it saves here.
     if (req->status_filter && !req->status_filter->empty()) {
         const std::string& filter = *req->status_filter;
         std::erase_if(instances,
                       [&](const auto& inst) { return state_name(inst.state_id) != filter; });
+    }
+    if (req->type_filter && !req->type_filter->empty()) {
+        const std::string& filter = *req->type_filter;
+        std::erase_if(instances, [&](const auto& inst) { return inst.type != filter; });
+    }
+    if (req->target_kind_filter && !req->target_kind_filter->empty()) {
+        const std::string& filter = *req->target_kind_filter;
+        std::erase_if(instances, [&](const auto& inst) { return inst.target_kind != filter; });
+    }
+    if (req->target_id_filter && !req->target_id_filter->empty()) {
+        const std::string& filter = *req->target_id_filter;
+        std::erase_if(instances, [&](const auto& inst) {
+            // A run with no target does not act on the one that was asked for.
+            return inst.target_id == boost::uuids::uuid{} ||
+                   boost::uuids::to_string(inst.target_id) != filter;
+        });
     }
 
     // Sort by the audit timestamp descending (most recent first).
@@ -138,6 +157,10 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         s.created_at = fmt_tp(inst.recorded_at);
         s.completed_at = fmt_opt_tp(inst.completed_at);
         s.error = inst.error;
+        s.target_kind = inst.target_kind;
+        s.target_id = inst.target_id == boost::uuids::uuid{} ?
+                          std::string{} :
+                          boost::uuids::to_string(inst.target_id);
         resp.instances.push_back(std::move(s));
     }
 

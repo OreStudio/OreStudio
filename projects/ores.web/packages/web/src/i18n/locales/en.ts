@@ -92,6 +92,21 @@ export const en: SourceCatalogue = {
         type: 'Type',
         status: 'Status',
         failed: 'The tenants could not be read.',
+        setup: 'Setup',
+        setupUnavailable: 'The provisioning runs could not be read, so the setup column is empty.',
+        setupState: {
+            in_progress: 'Step {step} of {count}',
+            compensating: 'Rolling back',
+            failed: 'Failed at step {step}',
+            compensated: 'Rolled back',
+        },
+        run: {
+            title: 'Setting up {name}',
+            unknownTenant: 'Setting up a tenant',
+            lead: 'The provisioning run for this tenant. It continues on the server while nobody watches.',
+            back: 'Back to tenants',
+            done: 'The run completed. The tenant is ready.',
+        },
         empty: {
             title: 'This deployment holds no tenant of its own yet.',
             body: 'The system administrator exists, so the deployment is set up. A tenant is the next step, and the first one is created the same way as any other.',
@@ -338,7 +353,6 @@ export const en: SourceCatalogue = {
         email: 'Email',
         tenant: 'Tenant',
         party: 'Party',
-        newTenant: 'New tenant',
         newParty: 'New party',
     },
 
@@ -549,6 +563,7 @@ export const en: SourceCatalogue = {
             title: 'Choose a starting point',
             lead: 'A starting point is a profile the server holds. It states the settings, the steps and the tenant it creates.',
             counts: '{settings} settings · {steps} steps',
+            installed: 'Installed',
         },
 
         details: {

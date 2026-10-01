@@ -214,11 +214,15 @@ describe('the route table once the flag is clear', () => {
         expect(html).not.toContain('New party journey');
     });
 
-    it('offers the way into the journey from the home screen', () => {
+    /*
+     * The home screen of a session outside system administration offers the
+     * party journey. A tenant is created from the Tenants area, which only
+     * system administration has, so this screen does not offer one.
+     */
+    it('offers the party journey from the home screen, and not the tenant one', () => {
         const html = render('/', ready, authenticated);
 
-        expect(html).toContain('New tenant');
-        expect(html).toContain('/tenants/new');
+        expect(html).not.toContain('/tenants/new');
         expect(html).toContain('New party');
         expect(html).toContain('/parties/new');
     });

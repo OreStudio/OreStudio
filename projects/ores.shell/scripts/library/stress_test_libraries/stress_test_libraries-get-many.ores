@@ -1,0 +1,6 @@
+# =get-many=
+#
+# GENERATED from doc/recipes/shell/stress_test_libraries/stress_test_library.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+stress_test_libraries get-many 00000000-0000-0000-0000-000000000000

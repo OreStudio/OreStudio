@@ -68,6 +68,11 @@ export interface JourneyServer {
     /** Registers an account, and answers with the state it was created in. */
     readonly signup: (request: SignupRequest) => Promise<SignupResult>;
     readonly seedProfiles: () => Promise<readonly SeedProfileChoice[]>;
+    /**
+     * The tenant codes the deployment already holds. Only system
+     * administration may read them, so only its journeys ask.
+     */
+    readonly tenantCodes: () => Promise<readonly string[]>;
     /** The entities matching what a person typed, which the read matches. */
     readonly leiEntities: (search: string) => Promise<readonly LeiEntityChoice[]>;
     readonly provision: (request: ProvisionTenantRequest) => Promise<ProvisionTenantResult>;
@@ -96,6 +101,7 @@ export function useJourneyServer(): JourneyServer {
             registrationPolicy: api.registrationPolicy,
             signup: api.signup,
             seedProfiles: api.seedProfiles,
+            tenantCodes: async () => (await api.tenants()).tenants.map((tenant) => tenant.code),
             leiEntities: api.leiEntities,
             provision: api.provisionTenant,
             provisionParty: api.provisionParty,

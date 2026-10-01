@@ -21,7 +21,7 @@
 
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
-import { uuidSchema, wireTimestampSchema, type TenantSummary } from './domain.js';
+import { uuidSchema, wireTimestampSchema, type TenantSetup, type TenantSummary } from './domain.js';
 import { subjects as tenantSubjects } from './generated/iam/protocol/tenant_protocol.js';
 import { orderSchema } from './operations.js';
 
@@ -76,6 +76,7 @@ function summaryOf(row: z.infer<typeof wireTenantSchema>): TenantSummary {
         hostname: row.hostname,
         status: row.status,
         registrationDefault: row.is_registration_default,
+        setup: null,
     };
 }
 
@@ -109,4 +110,101 @@ export async function readTenantsPage(
         listTenantsRequestSchema.parse(input),
         wireTenantPageSchema,
     );
+}
+
+/**
+ * The run type and the target kind ores.iam names on a tenant's provisioning
+ * run. They mirror `provision_tenant_workflow_type` and
+ * `provision_tenant_target_kind` in C++, and a rename there must be mirrored
+ * here or the roster stops finding any run.
+ */
+export const PROVISION_TENANT_WORKFLOW_TYPE = 'provision_tenant_workflow';
+export const PROVISION_TENANT_TARGET_KIND = 'tenant';
+
+/** `list_workflow_instance_summaries_request`, sent on `workflow.v1.instances.list`. */
+export const listWorkflowInstancesRequestSchema = z.object({
+    limit: z.int().positive().max(1000).default(200),
+    /*
+     * The server's decoder needs every field present, even the optional ones:
+     * a missing key fails the whole request. An empty string is what the
+     * handler reads as "no filter", so an unused filter is sent as one.
+     */
+    status_filter: z.string().default(''),
+    type_filter: z.string().default(''),
+    target_kind_filter: z.string().default(''),
+    target_id_filter: z.string().default(''),
+});
+export type ListWorkflowInstancesRequest = z.input<typeof listWorkflowInstancesRequestSchema>;
+
+/** One run, as the instances list answers it. */
+const wireWorkflowInstanceSummarySchema = z.object({
+    id: z.string(),
+    type: z.string().default(''),
+    status: z.string().default(''),
+    current_step_index: z.int().nonnegative().default(0),
+    step_count: z.int().nonnegative().default(0),
+    created_at: z.string().default(''),
+    error: z.string().default(''),
+    target_kind: z.string().default(''),
+    target_id: z.string().default(''),
+});
+
+/** The list's answer. `success` defaults to false, so a bare answer reads as a failure. */
+export const wireWorkflowInstancesSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    instances: z.array(wireWorkflowInstanceSummarySchema).default([]),
+});
+
+/** The most provisioning runs one roster read asks for. */
+export const TENANT_SETUP_READ_LIMIT = 1000;
+
+/**
+ * The runs a roster read found, and whether it saw all of them.
+ *
+ * `complete` is false when the answer reached the limit. The engine answers
+ * the run that changed last first, so the runs cut off are the oldest, and a
+ * tenant whose only run is among them shows no setup.
+ */
+export interface TenantSetups {
+    readonly setups: ReadonlyMap<string, TenantSetup>;
+    readonly complete: boolean;
+}
+
+/**
+ * The latest provisioning run for each tenant it acts on, keyed by tenant id.
+ *
+ * A tenant may have more than one run, because nothing stops a second attempt.
+ * The engine answers the run that changed last first, so the first run seen for
+ * a tenant is the one that moved most recently, and that is the one reported.
+ */
+export async function readTenantSetups(caller: AuthenticatedCaller): Promise<TenantSetups> {
+    const answer = await caller.callAuthenticated(
+        'workflow.v1.instances.list',
+        listWorkflowInstancesRequestSchema.parse({
+            limit: TENANT_SETUP_READ_LIMIT,
+            type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
+            target_kind_filter: PROVISION_TENANT_TARGET_KIND,
+        }),
+        wireWorkflowInstancesSchema,
+    );
+    if (!answer.success) {
+        throw new Error(
+            answer.message === '' ? 'The provisioning runs were not read.' : answer.message,
+        );
+    }
+    const setups = new Map<string, TenantSetup>();
+    for (const run of answer.instances) {
+        if (run.target_id === '' || setups.has(run.target_id)) {
+            continue;
+        }
+        setups.set(run.target_id, {
+            instanceId: run.id,
+            status: run.status,
+            currentStepIndex: run.current_step_index,
+            stepCount: run.step_count,
+            error: run.error,
+        });
+    }
+    return { setups, complete: answer.instances.length < TENANT_SETUP_READ_LIMIT };
 }

@@ -21,6 +21,26 @@ other long-running distributed operations. Tracks workflow instances and their
 individual steps, supports compensation (rollback), and integrates with the
 NATS messaging layer for inter-service coordination.
 
+* Owner and target
+
+Every workflow instance has two roles, and they can name different tenants.
+
+- The *owner* is =tenant_id=: the tenant whose work the run is. It scopes the
+  run's rows, so it decides who can read the run.
+- The *target* is =target_kind= and =target_id=: the entity the run acts on.
+  The caller names both, and the engine stores them without reading them.
+  A run that acts on no entity leaves both empty.
+
+Tenant provisioning shows the difference. The super administrator's tenant owns
+the run, so the session that started it can follow it. The target is the new
+tenant, because every step acts on it. The new tenant cannot read the run,
+because no session exists in it yet.
+
+The instances list filters by target and by type. A component finds the runs
+that act on one of its own entities with that filter, and does not parse
+=request_json= to find them. A target can have any number of runs, of the same
+type or of different types, and the engine puts no limit on them.
+
 
 * Sub-components
 

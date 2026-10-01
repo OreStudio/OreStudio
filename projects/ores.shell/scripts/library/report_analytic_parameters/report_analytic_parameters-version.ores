@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/report_analytic_parameters/report_analytic_parameter.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+report_analytic_parameters version 00000000-0000-0000-0000-000000000000 --version 1

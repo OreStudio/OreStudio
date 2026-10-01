@@ -109,6 +109,7 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
     const { t } = useTranslation();
     const [policy, setPolicy] = useState<PasswordPolicy>();
     const [profiles, setProfiles] = useState<readonly SeedProfileChoice[]>([]);
+    const [takenCodes, setTakenCodes] = useState<ReadonlySet<string>>(new Set());
     const [loadFailure, setLoadFailure] = useState<string>();
     const [attempt, setAttempt] = useState(0);
     /*
@@ -136,6 +137,16 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
                     setPolicy(answer);
                     setProfiles(choices);
                     setLoadFailure(undefined);
+                }
+                /*
+                 * The codes only grey out the starting points whose tenant
+                 * exists. The server refuses a duplicate code whatever this
+                 * read says, so a failure here leaves every card open rather
+                 * than blocking the journey.
+                 */
+                const codes = await server.tenantCodes().catch(() => []);
+                if (!cancelled) {
+                    setTakenCodes(new Set(codes));
                 }
             } catch (error) {
                 if (!cancelled) {
@@ -197,6 +208,7 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
         state: tenant,
         creatingPassword,
         onHandOff: handOff,
+        takenCodes,
     });
 
     return (

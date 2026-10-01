@@ -112,69 +112,106 @@ function reasonOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
+/** Whether a profile creates a tenant whose code the deployment already holds. */
+export function isProfileTaken(
+    profile: SeedProfileChoice,
+    takenCodes: ReadonlySet<string>,
+): boolean {
+    return profile.tenant.code !== '' && takenCodes.has(profile.tenant.code);
+}
+
 /**
  * The starting points, as cards.
  *
  * Each card states what the server said about its profile — its bullets, how
  * many settings it declares and how many steps it orders — so the screen
  * describes the deployment's rows rather than a shape written here.
+ *
+ * A profile that names its own tenant code creates that tenant, and a code is
+ * unique, so a card whose tenant already exists is shown but cannot be chosen.
+ * It carries a green tick instead of a sentence: the person only needs to see
+ * that this one is already installed.
  */
 export function ProfileCards({
     profiles,
     selected,
     onSelect,
+    takenCodes = new Set<string>(),
 }: {
     readonly profiles: readonly SeedProfileChoice[];
     readonly selected: string | undefined;
     readonly onSelect: (profile: SeedProfileChoice) => void;
+    /** The tenant codes the deployment already holds. */
+    readonly takenCodes?: ReadonlySet<string>;
 }): ReactNode {
     const { t } = useTranslation();
     return (
         <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
             {profiles.map((profile) => {
                 const logo = profileLogo(profile.code);
+                const taken = isProfileTaken(profile, takenCodes);
                 return (
                     <button
                         key={profile.code}
                         type="button"
                         role="radio"
                         aria-checked={selected === profile.code}
+                        disabled={taken}
                         onClick={() => onSelect(profile)}
                         className={cx(
-                            'card p-4 text-left transition-colors',
-                            selected === profile.code
-                                ? 'border-accent ring-3 ring-accent/20'
-                                : 'hover:border-line-strong',
+                            'card relative p-4 text-left transition-colors',
+                            taken
+                                ? 'cursor-not-allowed'
+                                : selected === profile.code
+                                  ? 'border-accent ring-3 ring-accent/20'
+                                  : 'hover:border-line-strong',
                         )}
                     >
-                        {logo !== undefined && (
-                            <img
-                                src={logo}
-                                alt=""
-                                className="mb-3 h-10 w-auto rounded-md bg-white p-1"
-                            />
+                        {/*
+                         * The mark sits outside the dimmed content, so the
+                         * green reads at full strength on a card that is
+                         * otherwise faded.
+                         */}
+                        {taken && (
+                            <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-up/40 bg-up/10 px-2 py-0.5 text-[11px] text-up">
+                                <span aria-hidden>✓</span>
+                                {t('journey.profile.installed')}
+                            </span>
                         )}
-                        <div className="flex items-baseline justify-between gap-2">
-                            <span className="font-semibold">{profile.name}</span>
-                            <span className="text-xs text-ink-faint">{profile.audience}</span>
-                        </div>
-                        <p className="mt-1 text-sm text-ink-muted">{profile.summary}</p>
-                        <ul className="mt-3 space-y-1 text-sm">
-                            {profile.bullets.map((bullet) => (
-                                <li key={bullet} className="flex gap-2">
-                                    <span aria-hidden className="text-ink-faint">
-                                        •
+                        <div className={cx(taken && 'opacity-50')}>
+                            {logo !== undefined && (
+                                <img
+                                    src={logo}
+                                    alt=""
+                                    className="mb-3 h-10 w-auto rounded-md bg-white p-1"
+                                />
+                            )}
+                            <div className="flex items-baseline justify-between gap-2">
+                                <span className="font-semibold">{profile.name}</span>
+                                {!taken && (
+                                    <span className="text-xs text-ink-faint">
+                                        {profile.audience}
                                     </span>
-                                    {bullet}
-                                </li>
-                            ))}
-                        </ul>
-                        <p className="mt-3 text-xs text-ink-faint">
-                            {t('journey.profile.counts', {
-                                settings: profile.parameters.length,
-                                steps: profile.steps.length,
-                            })}
-                        </p>
+                                )}
+                            </div>
+                            <p className="mt-1 text-sm text-ink-muted">{profile.summary}</p>
+                            <ul className="mt-3 space-y-1 text-sm">
+                                {profile.bullets.map((bullet) => (
+                                    <li key={bullet} className="flex gap-2">
+                                        <span aria-hidden className="text-ink-faint">
+                                            •
+                                        </span>
+                                        {bullet}
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="mt-3 text-xs text-ink-faint">
+                                {t('journey.profile.counts', {
+                                    settings: profile.parameters.length,
+                                    steps: profile.steps.length,
+                                })}
+                            </p>
+                        </div>
                     </button>
                 );
             })}

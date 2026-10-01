@@ -13,9 +13,10 @@
 #+created: 2026-06-01
 #+updated: 2026-06-01
 
-Tracks the lifecycle of a workflow execution, including its type, status,
-the serialised request that triggered it, and any result or error produced.
-Instances are append-mostly; status transitions are the primary mutation.
+Tracks the lifecycle of a workflow execution, including its type, the entity it
+acts on, its status, the serialised request that triggered it, and any result or
+error produced. Instances are append-mostly; status transitions are the primary
+mutation.
 
 * Flags
 :PROPERTIES:
@@ -46,6 +47,37 @@ UUID primary key for the workflow instance.
 :END:
 
 Workflow type name, e.g. 'provision_parties_workflow'.
+
+** target_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the run acts on, named by the caller: 'tenant' for a run that provisions a
+tenant. The engine stores it and never interprets it, so a component states its
+own kind without the engine learning that component's vocabulary.
+
+A run that acts on no entity leaves it empty.
+
+** target_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+Identity of the entity the run acts on, in the kind =target_kind= states. It is
+not a foreign key: the engine cannot hold one to every component's tables, so it
+is a soft reference, the way a status row names its badge.
+
+The target is not the owner. =tenant_id= states the tenant whose work the run is,
+which scopes the run and governs who reads it. The target states what the run
+works on, which may be a different tenant entirely. Provisioning is the case that
+makes the difference plain: the run belongs to the tenant that asked for it, so
+that tenant can follow its own work, and it acts on the tenant it creates, which
+cannot read the run because its session does not exist yet.
 
 ** state_id
 :PROPERTIES:
@@ -163,7 +195,10 @@ instance, so the tenant index and the tenant-scoped unique index are the hot
 paths. The engine's own list read is not: it spans every tenant, so it cannot
 use a leading =tenant_id=, and it reads the open rows in one pass at startup.
 That pass is bounded by the runs in flight rather than by the table, so a scan
-is the honest cost of recovering all of them.
+is the honest cost of recovering all of them. The target has no index yet: the
+list read filters by target in memory, after the tenant's rows are read, so an
+index would cost every write and help no read. It comes with a repository read
+that filters by target.
 
 ** tenant_id
 :PROPERTIES:

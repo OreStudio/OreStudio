@@ -24,9 +24,10 @@
  *
  * Workflow Instance Table
  *
- * Tracks the lifecycle of a workflow execution, including its type, status,
- * the serialised request that triggered it, and any result or error produced.
- * Instances are append-mostly; status transitions are the primary mutation.
+ * Tracks the lifecycle of a workflow execution, including its type, the entity it
+ * acts on, its status, the serialised request that triggered it, and any result or
+ * error produced. Instances are append-mostly; status transitions are the primary
+ * mutation.
  */
 
 create table if not exists "ores_workflow_workflow_instances_tbl" (
@@ -34,6 +35,8 @@ create table if not exists "ores_workflow_workflow_instances_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "type" text not null,
+    "target_kind" text null,
+    "target_id" uuid null,
     "state_id" uuid not null,
     "request_json" jsonb not null,
     "result_json" jsonb null,

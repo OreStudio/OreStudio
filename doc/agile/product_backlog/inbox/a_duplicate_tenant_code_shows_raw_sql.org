@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 93C7A98B-B639-4D1B-B713-9B0F0C83C629
+:END:
+#+title: A duplicate tenant code shows the raw SQL error
+#+description: Provisioning a tenant whose code already exists fails with the PostgreSQL text: duplicate key value violates unique constraint tenants_code_uniq_idx, plus the PL/pgSQL context of ores_iam_provision_tenant_fn. The person reads the database's words instead of a sentence such as 'A tenant with the code acme_corporation already exists'. ores.iam should check the code before the insert, or map the unique violation to a named refusal, and the journey should show that refusal on the form.
+#+type: capture
+#+level: cross
+#+filetags: :web:iam:provisioning:errors:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Provisioning a tenant whose code already exists fails, and the page shows the
+database's own text:
+
+#+begin_example
+Query execution failed: ERROR: duplicate key value violates unique constraint
+"tenants_code_uniq_idx" DETAIL: Key (code)=(acme_corporation) already exists.
+CONTEXT: ... PL/pgSQL function ores_iam_provision_tenant_fn(...) line 40
+#+end_example
+
+The refusal must be a sentence that names the code, for example "A tenant with
+the code acme_corporation already exists". =ores.iam= checks the code before the
+insert, or maps the unique violation to a named refusal. The journey shows the
+refusal on the form, beside the code field.
+
+* Why
+
+Found on 2026-10-01 during a manual check of the new tenant journey: the Acme
+starting point was chosen a second time. The same branch now greys out a
+starting point whose fixed tenant code exists. A code typed by hand in the form
+can still collide, so the server refusal must be readable. The text also
+exposes table, index and function names to the browser.
+
+* References
+
+- [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]]
+- [[id:835CE154-2A0D-44C8-89BF-5059F156105A][System wizard single-tenant default hostname collides with seeded Root Tenant]]
+
+* See also
+
+-

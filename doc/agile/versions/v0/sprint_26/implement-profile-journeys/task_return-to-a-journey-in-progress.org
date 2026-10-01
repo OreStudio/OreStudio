@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: 4615E18E-96D8-4AFD-8FBA-241A441EA335
+:END:
+#+title: Task: Return to a setup journey in progress
+#+description: A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. The way back is the tenant list, and it needs the run to name the tenant it acts on.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:setup:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/return-to-a-journey-in-progress
+#+pr: 2491
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who has started provisioning a tenant can find that tenant again from
+the shell and see how far the work has got. Before this task the shell offered
+no way back to a journey in progress, and the tenant roster could not say which
+run belonged to which tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* The defect, as found
+
+Every part of the journey lives in React state and dies with the screen. The
+chosen profile, the details, the step position and the run's instance id are
+all =useState=: =useNewTenant= holds the profile, the details and the run,
+and the journey component holds its own step index. Navigate away and the
+component unmounts, so the journey restarts at step one with nothing chosen.
+
+There are two holes, and closing one alone achieves nothing:
+
+1. *Nothing is stored.* The provisioning run is a workflow instance and
+   carries an id, but the journey around it is stored nowhere, so a menu entry
+   back to it would have nothing to show.
+2. *Nothing offers the way back.* =journeyInProgress= in the route table is a
+   local flag that pins the first-run screen. It does not survive a reload and
+   it knows nothing about the new-tenant route.
+
+* The design, settled
+
+The journey does not need a store of its own. The provisioning run already
+exists as a [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]], the
+tenant row already exists from the moment the run starts, and the run's steps
+already carry their words and their state. Three things are missing, and the
+story records the decisions behind them:
+
+1. *The run names what it acts on.* An instance carries a caller-supplied
+   =target=, a kind and an id, opaque to the engine. A provisioning run's target
+   is the tenant it creates, which today exists only inside =request_json=,
+   where nothing can index it, filter by it or report it. This is the missing
+   link, and it is one field on the run rather than a table in =ores.iam=.
+2. *The read exists but cannot be aimed.* =workflow.v1.instances.list= already
+   returns a run's type, state, current step index and step count, and
+   =workflow.v1.instances.steps= already reaches the browser. Neither can be
+   asked for a given tenant.
+3. *Nothing asks.* The BFF composes the roster from =ores.iam= alone, and the
+   screen holds no column for a run.
+
+A person who leaves the form before submitting starts again. Nothing is written
+before the run starts, so there is no draft tenant to invent a status for, and
+what the shell has to offer back is the work that has a run behind it.
+
+* Plan
+
+1. *The run names its target.* Add =target_kind= and =target_id= to
+   =ores.workflow.workflow_instance=, carry them on the start message, and
+   return them on the instances list with a filter by target and by type.
+2. *The provisioning run sets it.* =ores.iam='s provisioning handler states
+   =tenant= and the tenant it created.
+3. *The delivery is the tenant list.* The roster shows, for each tenant, the
+   step its run has reached and whether that run failed, because that is both
+   the way back into work in progress and the answer to where a tenant has got
+   to.
+
+* Acceptance
+
+- A workflow instance names the entity its run acts on, and a run that acts on a
+  tenant states that tenant.
+- The instances list can be asked for the runs that act on one target, and its
+  summary carries the target.
+- The tenant roster shows, for a tenant whose run is unfinished, the step the
+  run has reached, and shows a failed run as failed rather than as absent.
+- A person who left the shell while a tenant was provisioning can find that
+  tenant again and see the run's progress.
+- A journey abandoned before it submits writes nothing and starts again.
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
+
+* Result
+
+- *The run names its target.* =workflow_instance= has =target_kind= and
+  =target_id=. The start message carries them, and the engine refuses a start
+  that gives only one half or an id that is not a UUID. The instances list
+  filters by type, target kind and target id, and its summary returns the
+  target. The regenerated entity is byte-identical to the edited files.
+- *Provisioning sets it.* =ores.iam= names =tenant= and the new tenant on a
+  tenant run, and =party= and the party on a party run.
+- *The roster is the way back.* =/api/tenants= joins each tenant with the
+  provisioning run that changed last. A failed run read does not fail the
+  roster: the page shows a warning. The *Setup* column shows "Step N of M",
+  "Failed at step N", "Rolling back" or "Rolled back", and links to
+  =/tenants/runs/:id=. That page shows the run's rail with retry. A completed
+  run shows nothing, because the tenant status already says the tenant is there.
+- *Only creatable tenants are offered.* The fallback home card no longer
+  offers *New tenant*, because only system administration can create one. In
+  the new tenant journey, a starting point whose fixed tenant code exists is
+  greyed out and carries a green "✓ Installed" badge.
+- *Found in the manual check.* The roster's run read was written by hand and
+  left out the unused optional filters. The C++ decoder requires every field,
+  so the Setup column stayed empty. The client now sends every filter. The
+  correct fix is to generate the protocol, and it is captured for the
+  =ores.workflow= clean-up:
+  [[id:5C04D943-1792-43C5-883E-A0938DE2B00F][Model the workflow query protocol as an operation]].
+- *Component audit.* =validate_docs= passes for all 41 components. The task
+  changed no folder layout, template or sub-component and cleared no drift, so
+  no audit trigger applies. =ores.workflow= gets its full audit in its
+  clean-standard story.
+- *Not in scope.* The form of an abandoned journey is not restored, and the
+  hand-off step is not offered again. The tenant detail screen is a later PR.
+  Tenant administration's own landing and the raw SQL refusal on a duplicate
+  code are captured.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2491][#2491]] | [web] Return to a tenant's setup run from the roster |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Important: the workflow list request and summary are written by hand in TypeScript, against the generated-protocol ADR. | =wire-protocol/src/tenants.ts= | Decline here | Captured as /Model the workflow query protocol as an operation/, for the =ores.workflow= clean-up. Product owner decision: ship this PR first. |
+| 2 | Important: no test drives =list_instances= with the new filters, because the handler needs a signed request. | =workflow_query_handler.cpp= | Decline here | The capture adds a boundary test. The engine tests cover the target that the filters read. |
+| 3 | Minor: the journey reads one page of tenants (100), so with more tenants a starting point may stay open. | =journeys/server.ts= | Decline | The server refuses a duplicate code in any case. |
+| 4 | Minor: the roster reads at most 1000 provisioning runs. | =wire-protocol/src/tenants.ts= | Decline | The list is in-flight work and is far below that bound. |
+| 5 | Minor: the history field mapper shows a nil UUID for a run with no target. | =workflow_instance_history_field_mapper.cpp= | Decline | Generated code; a template change belongs to the codegen work. |
+| 6 | Minor: misspell-fixer reports EXPLICT in sprint 25 and 26 task pages. | not in this diff | No action | None of the hits is in a file this branch changed. |
+
+Verdict: ready to merge. Nothing critical; the two important findings are recorded follow-ups.
+
+Round 2 (PR #2491, @claude review and CI):
+
+| #  | Comment summary | File | Decision | Notes |
+|----+-----------------+------+----------+-------|
+| 7  | CI: the shell-script drift check failed on the workflow instance scripts. | =ores.shell/scripts/library/workflow_instances= | Accept | Retangled from the regenerated recipe. |
+| 8  | A half target is dropped silently; confirm the iam call sites always pass a UUID. | =workflow_engine.cpp= | No change | Both call sites take the id from a uuid column (=id::text=, or the id the create function returns). The refusal matches the function's other refusals. |
+| 9  | The target index is unused, because the list filters in memory. | =ores.workflow.workflow_instance.org= | Accept | Index dropped from the model and the SQL; it returns with a repository read that filters by target. |
+| 10 | The 1000-run cut can hide the oldest tenants' runs with no warning; pin the order. | =wire-protocol/src/tenants.ts= | Accept | The read reports when it reached the limit and the BFF logs a warning. Tests pin the first-run-wins order. The real fix, a latest-run-per-target read, belongs to the workflow protocol capture. |
+| 11 | The hand-written protocol mirror. | =wire-protocol/src/tenants.ts= | Decline here | Already captured for the =ores.workflow= clean-up. |
+| 12 | A compensated run has no link to retry from. | =TenantsPage.tsx= | No change | Every unfinished state links to the run page, compensated included; only completed shows nothing. |
+| 13 | A cold link to a run outside the first roster page shows the generic title. | =TenantRunPage.tsx= | Decline | The rail still loads; the title falls back by design. |
+| 14 | No migration for existing databases. | =workflow_workflow_instances_create.sql= | No change | The project recreates its database from the create scripts. |
+| 15 | No test drives the list filters. | =workflow_query_handler.cpp= | Decline here | Same as finding 2; the capture adds the boundary test. |
+| 16 | CI: the ER diagram check found =ores_schema.puml= stale. | =ores.sql/modeling= | Accept | Regenerated with =plantuml_er_generate.sh=. |

@@ -353,6 +353,67 @@ TEST_CASE("workflow_engine starts nothing for a definition with no steps", tags)
     BOOST_LOG_SEV(lg, debug) << "Empty definition created nothing.";
 }
 
+TEST_CASE("workflow_engine stores the target a start names", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_targeted_workflow", {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto target = boost::uuids::random_generator()();
+
+    auto req = start_for("test_targeted_workflow", f.tenant(), instance_id);
+    req.target_kind = "tenant";
+    req.target_id = boost::uuids::to_string(target);
+    f.engine->on_start_workflow(as_message(req));
+
+    // The target is what the run acts on, so a reader finds the run by it
+    // without parsing the payload.
+    workflow_instance_repository instances;
+    const auto rows = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().target_kind == "tenant");
+    CHECK(rows.front().target_id == target);
+
+    // A start that names no target stores none.
+    const auto untargeted_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    f.engine->on_start_workflow(
+        as_message(start_for("test_targeted_workflow", f.tenant(), untargeted_id)));
+    const auto untargeted = instances.read_latest(f.h.context(), untargeted_id);
+    REQUIRE(untargeted.size() == 1);
+    CHECK(untargeted.front().target_kind.empty());
+    CHECK(untargeted.front().target_id == boost::uuids::uuid{});
+    BOOST_LOG_SEV(lg, debug) << "Target stored as named.";
+}
+
+TEST_CASE("workflow_engine refuses a start that names half a target", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_half_target_workflow", {"one"});
+    workflow_instance_repository instances;
+
+    // A run stored without the target it was given cannot be found by what it
+    // acts on, so each half on its own, and an id that is not one, is refused.
+    auto kind_only = start_for("test_half_target_workflow", f.tenant(),
+                               boost::uuids::to_string(boost::uuids::random_generator()()));
+    kind_only.target_kind = "tenant";
+
+    auto id_only = start_for("test_half_target_workflow", f.tenant(),
+                             boost::uuids::to_string(boost::uuids::random_generator()()));
+    id_only.target_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto bad_id = start_for("test_half_target_workflow", f.tenant(),
+                            boost::uuids::to_string(boost::uuids::random_generator()()));
+    bad_id.target_kind = "tenant";
+    bad_id.target_id = "not-a-uuid";
+
+    for (const auto& req : {kind_only, id_only, bad_id}) {
+        f.engine->on_start_workflow(as_message(req));
+        CHECK(instances.read_latest(f.h.context(), req.instance_id).empty());
+    }
+    BOOST_LOG_SEV(lg, debug) << "Half targets refused.";
+}
+
 TEST_CASE("workflow_engine advances once when a step completes twice", tags) {
     auto lg(make_logger(test_suite));
 

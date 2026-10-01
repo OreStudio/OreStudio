@@ -41,6 +41,9 @@ domain::workflow_instance workflow_instance_mapper::map(const workflow_instance_
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.type = v.type;
+    r.target_kind = v.target_kind.value_or("");
+    r.target_id = v.target_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.target_id) :
+                                            boost::uuids::uuid{};
     r.state_id = boost::lexical_cast<boost::uuids::uuid>(v.state_id);
     r.request_json = v.request_json;
     r.result_json = v.result_json.value_or("");
@@ -74,6 +77,10 @@ workflow_instance_entity workflow_instance_mapper::map(const domain::workflow_in
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.type = v.type;
+    r.target_kind = v.target_kind.empty() ? std::nullopt : std::optional(v.target_kind);
+    r.target_id = v.target_id == boost::uuids::uuid{} ?
+                      std::nullopt :
+                      std::optional(boost::uuids::to_string(v.target_id));
     r.state_id = boost::uuids::to_string(v.state_id);
     r.request_json = v.request_json;
     r.result_json = v.result_json.empty() ? std::nullopt : std::optional(v.result_json);

@@ -191,3 +191,63 @@ distinct entries into one on any document that used both.
 corpus file relies on it — but a document may write it, so the mapper has to
 carry it or lose it.
 
+* How the binding represents this, which is what the mapper encodes
+
+The generated binding is regular enough that the mapper can be written against
+one pattern rather than twenty-four.
+
+=todaysmarket= holds one vector per collection:
+
+#+begin_src cpp
+struct todaysmarket {
+    xsd::vector<domain::configurationType> Configuration;
+    xsd::vector<domain::discountCurvesType> DiscountingCurves;
+    xsd::vector<domain::indexForwardingCurvesType> IndexForwardingCurves;
+    // ... one member per collection, twenty-four of them
+};
+#+end_src
+
+A collection is a wrapper holding the entries. It also declares its own optional
+=id=, which the corpus does not write and the mapper must still carry:
+
+#+begin_src cpp
+struct discountCurvesType {
+    xsd::optional<xsd::string> id;
+    xsd::vector<domain::discountCurvesType_DiscountingCurve_t> DiscountingCurve;
+};
+#+end_src
+
+An entry is named =<collectionType>_<EntryElement>_t=, derives from =xsd::string=
+— which is where the reference text lives — and declares one member per key
+attribute:
+
+#+begin_src cpp
+struct discountCurvesType_DiscountingCurve_t : xsd::string {
+    xsd::string currency{};
+};
+#+end_src
+
+That is the whole shape. =DiscountingCurve= takes its key from =currency= and its
+reference from the base; =Index= does the same from =name=; =SwaptionVolatility=
+declares both =key= and =currency=, which is the two-key case; and
+=swapIndexCurvesType_SwapIndex_t= is the only one whose entry has a child.
+
+So the mapper is twenty-four small cases over one pattern, not twenty-four
+shapes. That part is mechanical.
+
+**But reading the binding found a gap the model does not yet cover.** Every
+collection *wrapper* declares its own optional =id= — =discountCurvesType::id=,
+=indexForwardingCurvesType::id= and so on — separate from the =id= that each
+*entry* declares. The entry's id has a column, =todays_market_entry.entry_id=.
+The collection's does not, because a collection is a discriminator on the entry
+table rather than a table of its own, so there is nowhere to put it.
+
+No corpus file writes it, so nothing fails today. A document that did would lose
+it, and the loss would be invisible because the corpus cannot show it — the same
+trap =ParConversion= set for the stress mapper. Either the entry table carries
+=collection_id= as a denormalised copy, or the collection earns a table of its
+own holding =collection=, its =id= and its position. That decision belongs in
+the task's Plan and has not been made.
+
+
+

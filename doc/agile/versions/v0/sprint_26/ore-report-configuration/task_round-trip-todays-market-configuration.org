@@ -97,6 +97,34 @@ document which does write it is not silently changed.
 
 The full table is in [[file:evidence/todays_market_corpus.md][the census]].
 
+**The collections need a table after all, for one attribute.**
+
+Reading the generated binding turned up something the corpus could not show.
+Every collection *wrapper* declares its own optional =id=, separate from the
+=id= each entry declares:
+
+#+begin_src cpp
+struct discountCurvesType {
+    xsd::optional<xsd::string> id;
+    xsd::vector<domain::discountCurvesType_DiscountingCurve_t> DiscountingCurve;
+};
+#+end_src
+
+The entry's id has a column. The collection's does not, because the plan treats
+a collection as a discriminator on the entry table rather than as a thing. No
+corpus file writes it, so nothing fails today; a document that did would lose it
+invisibly, which is the =ParConversion= trap again.
+
+So the four-table plan becomes five: =todays_market_collection= holds the
+configuration, the collection name, its optional =id= and its position, and
+=todays_market_entry= points at it instead of repeating the collection name.
+That is what the collection already is — a thing with an identity and an order
+that contains entries — and it is the only shape that can hold the id.
+
+This was found by reading the binding, after the model was written and built.
+Worth recording as a pattern: the corpus proves what is written, and only the
+schema and the binding prove what may be.
+
 **Order is stored rather than recovered.**
 
 A collection may name the same key twice, and a reference cannot be sorted back

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every shell command iam answers is produced by a generated unit, or is recorded as a hand-craft with a reason. iam carries the largest hand-written surface in the clean set: accounts_commands, rbac_commands, tenants_commands and provision_commands register menus and verbs beside 23 generated units.
+Every shell command iam answers is produced by a generated unit, or is recorded as a hand-craft with a reason. iam carries the largest hand-written surface in the clean set: accounts_commands, rbac_commands, tenants_commands and provision_commands register verbs beside 23 generated units. Seven of those verbs send a request the generated units already send, and one refuses every call.
 
 * Status
 
@@ -28,9 +28,9 @@ Every shell command iam answers is produced by a generated unit, or is recorded 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Not yet started.                       |
+| Now          | Eight verbs retired; six sign-offs recorded. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The profile default task.              |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,19 @@ Every shell command iam answers is produced by a generated unit, or is recorded 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read every hand-written iam verb's request and compare it with the request each
+generated unit sends. Retire the verb when a generated unit sends the same
+request, which covers seven of them, and retire the one that refuses every call.
+Keep the rest with a reason.
+
+Two readings made the outcome larger than the count suggests. The generated
+=account_operations= unit already carries eleven verbs, so four of the
+hand-written account verbs send exactly what it sends. And =accounts
+sessions-for= is dead: it answers every call with a refusal.
+
+The retirements take their recipes and scripts with them, and the provisioning
+smoke recipe is migrated to the generated names because it calls two of the
+retired verbs.
 
 * Measurements
 
@@ -57,9 +67,72 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| iam entity, junction and operation models | 26 | read =#+type:= across =projects/ores.iam/modeling/ores.*.org= | 4eec0e6740 |
+| iam models rendering a shell unit | 23 | =ls projects/ores.shell/iam/include/ores.shell/app/commands/iam/=.hpp | branch |
+| Hand-written iam verbs before | 18 across four units | the registration bodies | branch |
+| Verbs retired | 8: create, lock, unlock, list-logins, sessions, sessions-for, active-sessions, tenants history | the same bodies | branch |
+| Verbs signed off | 6: login, logout, history, info, set-default-party, permissions suggest, plus the provision and bootstrap workflow verbs | the same bodies | branch |
+| Hand-written iam command units after | 2, accounts_commands and rbac_commands; tenants_commands is gone | =ls projects/ores.shell/application/src/app/commands/= | branch |
+| Lines removed | 772 deletions against 24 insertions over 15 files | =git diff --cached --stat= | branch |
+| Generated units available as replacements | account_operations 11 verbs, login_info 3, sessions 8, session_operations 1, tenants 12 | =ls projects/ores.shell/scripts/library/{account_operations,login_info,sessions,session_operations,tenants}= | branch |
+| ores.shell.iam suite | 821 assertions in 312 test cases, all passed | =--target test_ores.shell.iam.tests= | branch |
+| ores.shell.application suite | 53 assertions in 22 test cases, all passed | =--target test_ores.shell.application.tests= | branch |
+| accounts menu at runtime | list, get, get-many, versions, version, login, logout, history, info, set-default-party | =printf 'accounts\nhelp\nexit\n' \| ./ores.shell= | branch |
 
 * Notes
+
+Eight verbs are retired, and each sent a request a generated unit already sends.
+
+| Retired | Request | Generated replacement |
+|---------+---------+-----------------------|
+| =accounts create= | =save_account_request= | =account_operations save-account= |
+| =accounts lock= | =lock_account_request= | =account_operations lock-account= |
+| =accounts unlock= | =unlock_account_request= | =account_operations unlock-account= |
+| =accounts list-logins= | =list_login_info_request= | =login_info list= |
+| =accounts sessions= | =list_sessions_request= | =sessions list= |
+| =accounts sessions-for= | none: it refuses every call | =sessions list= |
+| =accounts active-sessions= | =get_active_sessions_request= | =session_operations get-active-sessions= |
+| =tenants history= | =list_tenant_versions_request= | =tenants versions= |
+
+=sessions-for= was the surprise. It answered every call with "Listing sessions by
+account is not served", so it was a verb that could only fail, and the page it
+pointed at is the generated =sessions list=.
+
+The verbs that stay:
+
+- =accounts login= and =accounts logout=, with their root aliases, change this
+  client's own session. The =login= operation renders no unit because a unit
+  that sends a request and prints the reply cannot express that. The
+  =provision= porcelain calls =process_login=, so the handler stays too.
+- =accounts history <username>= uses the generic history protocol and the diff
+  renderer, keyed by username where the generated =accounts versions= is keyed
+  by id.
+- =accounts info <username>= resolves a username and composes two generated
+  reads, the account and its roles.
+- =accounts set-default-party= accepts a party id or a full name, so it resolves
+  the name first. The generated =set-my-default-party= takes the id.
+- =permissions suggest= accepts a hostname or a tenant id in one argument where
+  the generated =suggest-role-commands= takes three separate ones, and the
+  provisioning recipes call it in that form.
+- =provision tenant=, =provision party= and =bootstrap setup= dispatch a
+  workflow and can block on it. The =tenant_provisioning= and =bootstrap=
+  operations state the requests; the wait is what the hand-written verbs add.
+
+Three iam operations render no unit: =login=, =password_policy= and
+=tenant_provisioning=. The first and third are the sign-offs above.
+=password_policy= has no shell surface at all, and the shell was never given one.
+
+The retirements took their hand-written recipes and scripts with them:
+=accounts/lock=, =accounts/unlock= and =accounts/list_login_info= are deleted, and
+the generated =account_operations=, =login_info=, =sessions=,
+=session_operations= and =tenants= recipes and scripts already cover the
+replacements.
+
+The provisioning smoke recipe called two of the retired verbs, and it carried two
+more lines that no longer matched any command: =bootstrap <principal> <password>
+<email>= where the generated command is =bootstrap create-initial-admin=, and a
+=tenants add= line missing its =is_registration_default= argument. It is migrated
+to the current shapes, so the recipe matches the surface it documents.
 
 * Test Scenarios
 
@@ -85,3 +158,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+iam's hand-written surface is eight verbs smaller and six reasons longer. The
+generated =account_operations= unit turned out to carry four of the verbs
+=accounts_commands= still registered, =login_info=, =sessions= and
+=session_operations= carried three more, and =tenants versions= carried the
+eighth. =accounts sessions-for= was the ninth finding: a verb that refused every
+call.
+
+The four units that registered those verbs are two now. =tenants_commands= is
+gone entirely, because the history verb was all it carried. The two that remain
+are signed off verb by verb: session-changing sign-in and sign-out, a generic
+history renderer, a username-addressed info view, a name-resolving default-party
+setter, a role-suggestion read with a different argument shape, and the three
+verbs that dispatch a workflow and wait on it.
+
+The suite passes 821 assertions in 312 cases and the application suite 53 in 22.
+The accounts menu answers ten verbs at the runtime, down from seventeen, and the
+shell registers its 227 menus with no collision.
+
+Migrating the recipes turned up two more stale command lines in the provisioning
+smoke recipe, which are fixed with the retirements.

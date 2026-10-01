@@ -82,10 +82,7 @@ tangled into the runnable script library
 - [[id:1FBC2C1E-1BB2-44EA-AC40-26A9F9750636][Help Menu]]
 - [[id:5CE9A9DA-423C-55CD-A7CD-8CC84F89813E][How do I run the accounts commands from the shell?]]
 - [[id:E706EF2D-00BA-44A1-BC3F-E206EF6ECA30][List]]
-- [[id:784CD3C0-1267-4B0A-AC31-4E3AE8794E6F][List Login Info]]
-- [[id:2D8ECBDF-6896-4DC1-B38E-CC7CFC479FE2][Lock]]
 - [[id:AD073CBD-91A1-47D7-B0FB-26492327DED1][Revoke Role]]
-- [[id:6906C683-5D50-464E-9520-FE5199136AB1][Unlock]]
 
 * Tenants
 

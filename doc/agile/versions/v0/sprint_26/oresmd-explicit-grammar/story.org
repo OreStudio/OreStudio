@@ -21,7 +21,7 @@ Every oresmd URI states what it means without the reader knowing a default or a 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | The defects and the target grammar are agreed and recorded in the investigation. No implementation unit has started. |
 | Waiting on    | Nothing.                               |
@@ -46,7 +46,7 @@ Every oresmd URI states what it means without the reader knowing a default or a 
 | [[id:55EDA7FC-5AD9-4D90-93D0-9D5C48590389][Declare the oresmd coordinates in the models]] | DONE | 2026-10-01 | 2026-10-01 | Add the Coordinates table and the identity/coordinate role to the twelve quote-type models, and remove point. No generated code changes. |
 | [[id:9EC8025D-D661-4BD7-92B0-26EB8AAAB4E2][Generate the oresmd grammar from the models]] | DONE | 2026-10-01 | 2026-10-01 | Generate the identifier structs, the parser, the writer and the key projections from the declared coordinates, and rewrite the design record for the new URI spelling. |
 | [[id:4204259C-DBEB-4C63-889F-6552033809D2][Move the stored oresmd identity and coordinate]] | DONE | 2026-10-01 | 2026-10-01 | Unify the stored coordinate on one canonical, self-describing form, derive the registry's point_id rather than storing it, and migrate existing rows from the producer's own key. |
-| [[id:43D53663-9D49-4B70-A989-359B390E308E][Close out the grammar change]] | BACKLOG | | | Promote the corpus walk out of the hidden tag, correct the record, and settle the todaysmarket.xml ownership question beside the other ORE configuration documents. |
+| [[id:43D53663-9D49-4B70-A989-359B390E308E][Close out the grammar change]] | DONE | 2026-10-01 | 2026-10-01 | Promote the corpus walk out of the hidden tag, correct the record, and settle the todaysmarket.xml ownership question beside the other ORE configuration documents. |
 
 * Decisions
 

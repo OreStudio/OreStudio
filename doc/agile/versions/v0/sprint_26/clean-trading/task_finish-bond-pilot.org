@@ -34,9 +34,9 @@ identity keys and the security split, because those touch every family.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Nothing. The PR carries the gates. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-01                               |

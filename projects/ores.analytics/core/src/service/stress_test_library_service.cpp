@@ -84,6 +84,7 @@ domain::stress_test_library to_domain(const messaging::stress_test_library_write
     domain::stress_test_library v;
     v.id = write.id;
     v.name = write.name;
+    v.configuration_id = write.configuration_id;
     v.use_spreaded_term_structures = write.use_spreaded_term_structures;
     return v;
 }

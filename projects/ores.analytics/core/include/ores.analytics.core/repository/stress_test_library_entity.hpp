@@ -46,6 +46,7 @@ struct stress_test_library_entity {
     std::string tenant_id;
     int version = 0;
     std::string name;
+    std::optional<std::string> configuration_id;
     std::optional<bool> use_spreaded_term_structures;
     std::string modified_by;
     std::string performed_by;

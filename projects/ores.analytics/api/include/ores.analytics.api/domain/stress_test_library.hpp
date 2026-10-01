@@ -64,6 +64,13 @@ struct stress_test_library final {
     std::string name;
 
     /**
+     * @brief The named configuration this library is registered as. Nullable because a document can
+     * be imported before it is registered: the mapper reads and writes content and does not invent
+     * a header, the caller supplies one.
+     */
+    boost::uuids::uuid configuration_id;
+
+    /**
      * @brief Whether the scenarios spread their shifts across the term structures rather than
      * shifting them as a block.
      */

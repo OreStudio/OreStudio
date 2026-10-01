@@ -58,6 +58,21 @@ Name of the library, which is the name of the document it came from.
 std::string("stresstest")
 #+end_src
 
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The named configuration this library is registered as. Nullable because a
+document can be imported before it is registered: the mapper reads and writes
+content and does not invent a header, the caller supplies one.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
 ** use_spreaded_term_structures
 :PROPERTIES:
 :type:          boolean
@@ -77,6 +92,17 @@ std::nullopt
 :PROPERTIES:
 :tablename: ores_analytics_stress_test_libraries_tbl
 :rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      true
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
 :END:
 
 * C++

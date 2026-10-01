@@ -46,6 +46,7 @@ generate_synthetic_stress_test_library(utility::generation::generation_context& 
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.name = std::string("stresstest");
+    r.configuration_id = boost::uuids::nil_uuid();
     r.use_spreaded_term_structures = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

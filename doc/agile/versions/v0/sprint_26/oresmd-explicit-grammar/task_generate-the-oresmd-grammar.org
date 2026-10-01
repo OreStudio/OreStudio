@@ -194,8 +194,10 @@ via its "Verifies task" field.
 | 4 | =delta= is uppercased but the comment says otherwise | =org_loader.py= | Fixed | The comment was stale; it now says only =smile= keeps its case, and says why. |
 | 5 | =canonical_values::point= names every coordinate | =oresmd_parser.hpp= | Fixed | Renamed to =coordinate=. |
 | 6 | Stale inflation comment naming =point= | =ores.cpp.oresmd.parser.org= | Fixed | Now names =quote= and =type=. |
-| 9 | Identifier briefs and test names still say =point= | =*_quote_type.org= | Fixed | Deliberate and already pinned: =FX/RATE/EUR/USD= plus the SPOT a feed's column carries is the same series key, and the case asserts the key is unchanged. The comment says so. |
+| 7 | =with_point()= drops a point for a spot quote | =ores.cpp.oresmd.parser.org= | Accepted | Deliberate and already pinned: =FX/RATE/EUR/USD= plus the SPOT a feed's column carries is the same series key, and the case asserts the key is unchanged. The comment says so. |
 | 8 | Corpus walk failure and the unmaterialised =metric= | — | Tracked | Both are in this task's Result. The walk is the next unit's (task =4204259C=), and it sits behind the hidden =[.corpus-full]= tag, so no green pull-request check hides it. |
+| 9 | Identifier briefs and test names still say =point= | =*_quote_type.org= | Fixed | The briefs name the declared keys and three test names say "coordinate". |
+| 10 | =from= maps to =from_grade= in two places | =org_loader.py=, parser template | Accepted | The two are one rule in two languages: the hand-written =query_params= member and the loader's =qp_member=. A generated struct would remove the duplication and is a larger change than this unit. |
 
 * Result
 

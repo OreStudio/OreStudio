@@ -20,6 +20,7 @@
  */
 
 import {
+    badgeCatalogueSchema,
     bootstrapStatusSchema,
     initialAdministratorSchema,
     loginResultSchema,
@@ -35,6 +36,7 @@ import {
     tenantPageSchema,
     workflowProgressSchema,
     type BootstrapStatus,
+    type BadgeCatalogueView,
     type CreateAdministratorRequest,
     type InitialAdministrator,
     type LeiEntityChoice,
@@ -196,6 +198,19 @@ export const api = {
             await request('/api/seed-profiles', { method: 'GET' }),
         );
         return payload.profiles;
+    },
+
+    /**
+     * How one code domain paints its values.
+     *
+     * The colours, the label and the words behind a badge are reference data,
+     * so a screen asks for the domain it is drawing rather than holding a table
+     * of its own. A value the answer does not hold has no badge.
+     */
+    async badges(domain: string): Promise<BadgeCatalogueView> {
+        return badgeCatalogueSchema.parse(
+            await request(`/api/badges/${encodeURIComponent(domain)}`, { method: 'GET' }),
+        );
     },
 
     /**

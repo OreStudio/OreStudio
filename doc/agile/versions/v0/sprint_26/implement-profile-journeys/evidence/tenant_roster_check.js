@@ -175,6 +175,58 @@ function connect(url) {
         check(text.includes('New tenant'), 'the page offers the journey that creates a tenant');
 
         /*
+         * The status is painted by the platform's badge catalogue, not by a
+         * table on the screen. The check reads the catalogue itself and compares
+         * the painted colour against it, so a hardcoded colour that happens to
+         * look right still fails.
+         */
+        const catalogueRead = await client.send('Runtime.evaluate', {
+            expression: `(async () => {
+                const answer = await fetch('/api/badges/tenant_status');
+                return answer.status === 200 ? await answer.json() : null;
+            })()`,
+            awaitPromise: true,
+            returnByValue: true,
+        });
+        const catalogue = catalogueRead.result.value;
+        check(catalogue !== null, 'the badge catalogue answers for tenant_status');
+
+        const paintedRead = await client.send('Runtime.evaluate', {
+            expression: `(() => {
+                const cell = document.querySelector('table tbody tr td:last-child span');
+                if (cell === null) return null;
+                return {
+                    text: cell.textContent.trim(),
+                    colour: window.getComputedStyle(cell).backgroundColor,
+                    title: cell.getAttribute('title'),
+                };
+            })()`,
+            returnByValue: true,
+        });
+        const painted = paintedRead.result.value;
+        const expected = catalogue?.badges?.[tenants[0]?.status];
+        const toRgb = (hex) => {
+            const value = hex.replace('#', '');
+            return `rgb(${parseInt(value.slice(0, 2), 16)}, ${parseInt(value.slice(2, 4), 16)}, ${parseInt(value.slice(4, 6), 16)})`;
+        };
+        check(
+            expected !== undefined && painted !== null,
+            'the first row carries a status the catalogue maps',
+        );
+        check(
+            painted?.colour === toRgb(expected?.backgroundColour ?? '#000000'),
+            `the pill is painted with the catalogue's colour (${painted?.colour} for ${expected?.backgroundColour})`,
+        );
+        check(
+            painted?.text === expected?.label,
+            `the pill carries the catalogue label (${painted?.text})`,
+        );
+        check(
+            painted?.title === expected?.description,
+            'the pill carries the catalogue description behind it',
+        );
+
+        /*
          * The table is the page. A card around it makes it narrower than the
          * screen the shell gave it, which is the whole of what a list-shaped
          * screen asks for.

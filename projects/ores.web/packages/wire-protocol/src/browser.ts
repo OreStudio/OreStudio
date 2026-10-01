@@ -47,6 +47,7 @@ export {
     accountPageSchema,
     accountSchema,
     activePartySchema,
+    badgePresentationSchema,
     partySummarySchema,
     tenantPageSchema,
     tenantSummarySchema,
@@ -56,6 +57,7 @@ export type {
     AccountPage,
     AccountType,
     ActiveParty,
+    BadgePresentation,
     PartySummary,
     TenantPage,
     TenantSummary,
@@ -63,6 +65,7 @@ export type {
 
 export {
     apiErrorSchema,
+    badgeCatalogueSchema,
     bootstrapStatusSchema,
     createAdministratorRequestSchema,
     initialAdministratorSchema,
@@ -78,6 +81,7 @@ export {
 } from './contracts.js';
 export type {
     ApiError,
+    BadgeCatalogueView,
     BootstrapStatus,
     CreateAdministratorRequest,
     InitialAdministrator,

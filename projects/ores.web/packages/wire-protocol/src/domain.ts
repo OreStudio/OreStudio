@@ -141,6 +141,27 @@ export const tenantPageSchema = z.object({
 
 export type TenantPage = z.infer<typeof tenantPageSchema>;
 
+/**
+ * How one value of a code domain is painted.
+ *
+ * It is a badge's visual metadata and nothing else: the label inside the pill,
+ * the words behind it, and the two colours. The severity is carried because the
+ * catalogue states it and a screen may one day sort or filter on it; the
+ * Bootstrap class the catalogue also holds is a hint for a browser that reads
+ * Bootstrap, which this one does not.
+ */
+export const badgePresentationSchema = z.object({
+    /** The badge's own code, which a screen may key a translation on. */
+    code: z.string(),
+    label: z.string(),
+    description: z.string(),
+    backgroundColour: z.string(),
+    textColour: z.string(),
+    severity: z.string(),
+});
+
+export type BadgePresentation = z.infer<typeof badgePresentationSchema>;
+
 /** A page of accounts. `totalCount` counts every account the caller can see. */
 export const accountPageSchema = z.object({
     accounts: z.array(accountSchema),

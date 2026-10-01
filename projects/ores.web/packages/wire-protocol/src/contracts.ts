@@ -20,7 +20,7 @@
  */
 
 import { z } from 'zod';
-import { activePartySchema, partySummarySchema } from './domain.js';
+import { activePartySchema, badgePresentationSchema, partySummarySchema } from './domain.js';
 
 /**
  * The HTTP contract between the BFF and the browser.
@@ -53,6 +53,20 @@ export const sessionModeSchema = z.enum([
     'application',
 ]);
 export type SessionMode = z.infer<typeof sessionModeSchema>;
+
+/**
+ * How the values of one code domain are painted.
+ *
+ * Keyed by the domain's own value, so a screen looks up the value it is holding
+ * rather than translating it into a badge code first. A value that is absent
+ * has no badge, which is a different answer from a badge that paints it the
+ * same as everything else.
+ */
+export const badgeCatalogueSchema = z.object({
+    domain: z.string(),
+    badges: z.record(z.string(), badgePresentationSchema),
+});
+export type BadgeCatalogueView = z.infer<typeof badgeCatalogueSchema>;
 
 /** The signed-in session as the browser sees it. */
 export const sessionViewSchema = z.object({

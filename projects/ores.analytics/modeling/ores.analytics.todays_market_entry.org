@@ -61,19 +61,17 @@ The document this entry belongs to.
 ctx.generate_uuid()
 #+end_src
 
-** collection
+** todays_market_collection_id
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:     uuid
+:cpp_type: boost::uuids::uuid
 :nullable: false
 :END:
 
-Which collection the entry was written under.
-
-One of the twenty-four, for example 'DiscountingCurves' or 'FxSpots'.
+The collection this entry belongs to.
 
 #+begin_src cpp :name generator
-std::string("DiscountingCurves")
+ctx.generate_uuid()
 #+end_src
 
 ** key_attribute
@@ -205,6 +203,16 @@ sorting.
 :list_by:       true
 :END:
 
+** todays_market_collection_id
+:PROPERTIES:
+:table:         ores_analytics_todays_market_collections_tbl
+:target_column: id
+:parent_entity: todays_market_collection
+:nullable:      false
+:error_message: Invalid todays_market_collection_id: %. No active today's market collection found with this id.
+:list_by:       true
+:END:
+
 * C++
 
 ** Flags
@@ -245,14 +253,14 @@ sorting.
 
 ** Table display
 
-| column      | header      |
-|-------------+-------------|
-| collection  | Collection  |
-| key_value   | Key         |
-| key_value_2 | Key 2       |
-| target      | Reference   |
-| modified_by | Modified By |
-| version     | Version     |
+| column        | header      |
+|---------------+-------------|
+| key_attribute | Attribute   |
+| key_value     | Key         |
+| key_value_2   | Key 2       |
+| target        | Reference   |
+| modified_by   | Modified By |
+| version       | Version     |
 
 ** Presentation
 :PROPERTIES:
@@ -264,8 +272,7 @@ sorting.
 
 | field         | label       | widget               | type      | is_key | is_required | placeholder                 |
 |---------------+-------------+----------------------+-----------+--------+-------------+-----------------------------|
-| collection    | Collection  | collectionEdit       | line_edit | true   | true        | Enter the collection        |
-| key_attribute | Attribute   | keyAttributeEdit     | line_edit |        | true        | Enter the key attribute     |
+| key_attribute | Attribute   | keyAttributeEdit     | line_edit | true   | true        | Enter the key attribute     |
 | key_value     | Key         | keyValueEdit         | line_edit | true   | true        | Enter the key value         |
 | key_value_2   | Key 2       | keyValue2Edit        | line_edit |        |             | Enter the second key value  |
 | target        | Reference   | entryTargetEdit      | line_edit |        | true        | Enter the reference         |
@@ -276,7 +283,6 @@ sorting.
 
 | enum_name  | field       | header      | type   | width |
 |------------+-------------+-------------+--------+-------|
-| Collection | collection  | Collection  | string | 160   |
 | KeyValue   | key_value   | Key         | string | 160   |
 | Target     | target      | Reference   | string | 220   |
 | Position   | position    | Position    | int    | 70    |

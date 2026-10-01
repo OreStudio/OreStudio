@@ -94,6 +94,10 @@ public:
     messaging::list_by_todays_market_config_id_todays_market_entries_response
     list_by_todays_market_config_id_todays_market_entries(
         const messaging::list_by_todays_market_config_id_todays_market_entries_request& request);
+    messaging::list_by_todays_market_collection_id_todays_market_entries_response
+    list_by_todays_market_collection_id_todays_market_entries(
+        const messaging::list_by_todays_market_collection_id_todays_market_entries_request&
+            request);
     messaging::list_todays_market_entry_versions_response list_todays_market_entry_versions(
         const messaging::list_todays_market_entry_versions_request& request);
     messaging::get_todays_market_entry_version_response get_todays_market_entry_version(
@@ -138,6 +142,28 @@ public:
      */
     std::uint32_t
     count_entries_by_todays_market_config_id(const std::string& todays_market_config_id);
+
+
+    /**
+     * @brief Lists today's market entries filtered by todays_market_collection_id, with pagination.
+     *
+     * @param todays_market_collection_id The todays_market_collection_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching today's market entries for the requested page.
+     */
+    std::vector<domain::todays_market_entry> list_entries_by_todays_market_collection_id(
+        const std::string& todays_market_collection_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active today's market entries filtered by
+     * todays_market_collection_id.
+     *
+     * @param todays_market_collection_id The todays_market_collection_id to filter by.
+     * @return Total number of matching today's market entries.
+     */
+    std::uint32_t
+    count_entries_by_todays_market_collection_id(const std::string& todays_market_collection_id);
 
 
     /**

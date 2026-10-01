@@ -85,7 +85,7 @@ domain::todays_market_entry to_domain(const messaging::todays_market_entry_write
     domain::todays_market_entry v;
     v.id = write.id;
     v.todays_market_config_id = write.todays_market_config_id;
-    v.collection = write.collection;
+    v.todays_market_collection_id = write.todays_market_collection_id;
     v.key_attribute = write.key_attribute;
     v.key_value = write.key_value;
     v.key_value_2 = write.key_value_2;
@@ -147,6 +147,36 @@ todays_market_entry_service::list_by_todays_market_config_id_todays_market_entri
     response.entries =
         repo_.read_latest_by_todays_market_config_id(ctx_, relation, request.offset, request.limit);
     response.total = repo_.get_total_entry_count_by_todays_market_config_id(ctx_, relation);
+    return response;
+}
+
+messaging::list_by_todays_market_collection_id_todays_market_entries_response
+todays_market_entry_service::list_by_todays_market_collection_id_todays_market_entries(
+    const messaging::list_by_todays_market_collection_id_todays_market_entries_request& request) {
+    messaging::list_by_todays_market_collection_id_todays_market_entries_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.todays_market_collection_id);
+    response.entries = repo_.read_latest_by_todays_market_collection_id(
+        ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_entry_count_by_todays_market_collection_id(ctx_, relation);
     return response;
 }
 
@@ -457,6 +487,25 @@ std::uint32_t todays_market_entry_service::count_entries_by_todays_market_config
         << "Getting total today's market entries count by todays_market_config_id: "
         << todays_market_config_id;
     return repo_.get_total_entry_count_by_todays_market_config_id(ctx_, todays_market_config_id);
+}
+
+
+std::vector<domain::todays_market_entry>
+todays_market_entry_service::list_entries_by_todays_market_collection_id(
+    const std::string& todays_market_collection_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing today's market entries by todays_market_collection_id: "
+                               << todays_market_collection_id;
+    return repo_.read_latest_by_todays_market_collection_id(
+        ctx_, todays_market_collection_id, offset, limit);
+}
+
+std::uint32_t todays_market_entry_service::count_entries_by_todays_market_collection_id(
+    const std::string& todays_market_collection_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting total today's market entries count by todays_market_collection_id: "
+        << todays_market_collection_id;
+    return repo_.get_total_entry_count_by_todays_market_collection_id(ctx_,
+                                                                      todays_market_collection_id);
 }
 
 

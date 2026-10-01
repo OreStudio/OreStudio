@@ -42,7 +42,7 @@ struct todays_market_entry_key {
 struct todays_market_entry_write {
     boost::uuids::uuid id;
     boost::uuids::uuid todays_market_config_id;
-    std::string collection;
+    boost::uuids::uuid todays_market_collection_id;
     std::string key_attribute;
     std::string key_value;
     std::string key_value_2;
@@ -69,6 +69,7 @@ struct todays_market_entry_lookup {
 
 struct todays_market_entries_filter {
     std::optional<boost::uuids::uuid> todays_market_config_id;
+    std::optional<boost::uuids::uuid> todays_market_collection_id;
 };
 
 struct todays_market_entry_event {
@@ -244,6 +245,31 @@ struct list_by_todays_market_config_id_todays_market_entries_request {
 };
 
 struct list_by_todays_market_config_id_todays_market_entries_response {
+    ores::utility::domain::result result;
+    std::vector<ores::analytics::domain::todays_market_entry> entries;
+    std::uint64_t total;
+};
+
+struct list_by_todays_market_collection_id_todays_market_entries_request {
+    using response_type = struct list_by_todays_market_collection_id_todays_market_entries_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.todays_market_entries.list_by_todays_market_collection_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid todays_market_collection_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<todays_market_entries_filter> filter;
+};
+
+struct list_by_todays_market_collection_id_todays_market_entries_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_entry> entries;
     std::uint64_t total;

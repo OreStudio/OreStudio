@@ -165,6 +165,28 @@ public:
 
 
     /**
+     * @brief Reads latest today's market entries filtered by todays_market_collection_id, with
+     * pagination.
+     * @param ctx Repository context with database connection
+     * @param todays_market_collection_id The todays_market_collection_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::todays_market_entry>
+    read_latest_by_todays_market_collection_id(context ctx,
+                                               const std::string& todays_market_collection_id,
+                                               std::uint32_t offset,
+                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active today's market entries filtered by
+     * todays_market_collection_id.
+     */
+    std::uint32_t get_total_entry_count_by_todays_market_collection_id(
+        context ctx, const std::string& todays_market_collection_id);
+
+
+    /**
      * @brief Reads latest today's market entries with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

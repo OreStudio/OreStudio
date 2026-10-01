@@ -46,7 +46,7 @@ generate_synthetic_todays_market_entry(utility::generation::generation_context& 
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.todays_market_config_id = ctx.generate_uuid();
-    r.collection = std::string("DiscountingCurves");
+    r.todays_market_collection_id = ctx.generate_uuid();
     r.key_attribute = std::string("currency");
     r.key_value = std::string("EUR");
     r.key_value_2 = std::string("");

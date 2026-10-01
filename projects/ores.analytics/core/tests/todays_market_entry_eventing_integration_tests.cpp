@@ -43,6 +43,15 @@
 // component, so its own component names the headers.
 #include "ores.analytics.api/generators/todays_market_config_generator.hpp"
 #include "ores.analytics.core/repository/todays_market_config_repository.hpp"
+// Soft-FK parent seeding (ores_analytics_todays_market_collections_tbl): the parent may live in
+// another component, so its own component names the headers.
+#include "ores.analytics.api/generators/todays_market_collection_generator.hpp"
+#include "ores.analytics.core/repository/todays_market_collection_repository.hpp"
+// Grand-parent seeding (ores_analytics_todays_market_configs_tbl): the parent's own mandatory soft
+// FKs reference rows the test seeds before the parent, so their generator and repository headers
+// are needed too.
+#include "ores.analytics.api/generators/todays_market_config_generator.hpp"
+#include "ores.analytics.core/repository/todays_market_config_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -126,6 +135,29 @@ TEST_CASE("write_todays_market_entry_publishes_an_event", tags) {
     ores::analytics::repository::todays_market_config_repository todays_market_config_id_repo;
     todays_market_config_id_repo.write(party_ctx, todays_market_config_id_parent);
     v.todays_market_config_id = todays_market_config_id_parent.id;
+    // Seed the active todays_market_collection row ores_analytics_todays_market_collections_tbl
+    // references: the insert trigger's existence check rejects a synthetic key that matches no
+    // active row, so the parent must be written first.
+    auto todays_market_collection_id_parent =
+        ores::analytics::generators::generate_synthetic_todays_market_collection(ctx);
+    todays_market_collection_id_parent.change_reason_code = "system.test";
+    auto todays_market_collection_id_parent_todays_market_config_parent =
+        ores::analytics::generators::generate_synthetic_todays_market_config(ctx);
+    todays_market_collection_id_parent_todays_market_config_parent.change_reason_code =
+        "system.test";
+    // Seed the active todays_market_config row ores_analytics_todays_market_configs_tbl references:
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
+    ores::analytics::repository::todays_market_config_repository
+        todays_market_collection_id_parent_todays_market_config_parent_repo;
+    todays_market_collection_id_parent_todays_market_config_parent_repo.write(
+        party_ctx, todays_market_collection_id_parent_todays_market_config_parent);
+    todays_market_collection_id_parent.todays_market_config_id =
+        todays_market_collection_id_parent_todays_market_config_parent.id;
+    ores::analytics::repository::todays_market_collection_repository
+        todays_market_collection_id_repo;
+    todays_market_collection_id_repo.write(party_ctx, todays_market_collection_id_parent);
+    v.todays_market_collection_id = todays_market_collection_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Todays Market Entry: " << v;
 

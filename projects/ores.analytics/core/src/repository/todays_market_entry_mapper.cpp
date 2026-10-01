@@ -41,7 +41,8 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
-    r.collection = v.collection;
+    r.todays_market_collection_id =
+        boost::lexical_cast<boost::uuids::uuid>(v.todays_market_collection_id);
     r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2.value_or("");
@@ -67,7 +68,7 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.todays_market_config_id = boost::uuids::to_string(v.todays_market_config_id);
-    r.collection = v.collection;
+    r.todays_market_collection_id = boost::uuids::to_string(v.todays_market_collection_id);
     r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2.empty() ? std::nullopt : std::optional(v.key_value_2);

@@ -36,7 +36,7 @@ export interface TodaysMarketEntryKey {
 export interface TodaysMarketEntryWrite {
     id: string;
     todays_market_config_id: string;
-    collection: string;
+    todays_market_collection_id: string;
     key_attribute: string;
     key_value: string;
     key_value_2: string;
@@ -63,6 +63,7 @@ export interface TodaysMarketEntryLookup {
 
 export interface TodaysMarketEntriesFilter {
     todays_market_config_id: string | null;
+    todays_market_collection_id: string | null;
 }
 
 export interface TodaysMarketEntryEvent {
@@ -169,6 +170,21 @@ export interface ListByTodaysMarketConfigIdTodaysMarketEntriesResponse {
     total: number;
 }
 
+export interface ListByTodaysMarketCollectionIdTodaysMarketEntriesRequest {
+    todays_market_collection_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TodaysMarketEntriesFilter | null;
+}
+
+export interface ListByTodaysMarketCollectionIdTodaysMarketEntriesResponse {
+    result: Result;
+    entries: TodaysMarketEntry[];
+    total: number;
+}
+
 export interface ListTodaysMarketEntryVersionsRequest {
     key: TodaysMarketEntryKey;
     offset: number;
@@ -202,6 +218,8 @@ export const subjects = {
     delete_many_todays_market_entries_request: 'analytics.v1.todays_market_entries.delete_many',
     list_by_todays_market_config_id_todays_market_entries_request:
         'analytics.v1.todays_market_entries.list_by_todays_market_config_id',
+    list_by_todays_market_collection_id_todays_market_entries_request:
+        'analytics.v1.todays_market_entries.list_by_todays_market_collection_id',
     list_todays_market_entry_versions_request: 'analytics.v1.todays_market_entries_versions.list',
     get_todays_market_entry_version_request: 'analytics.v1.todays_market_entries_versions.get',
 } as const;
@@ -219,6 +237,7 @@ export const requiresSession = {
     delete_todays_market_entry_request: true,
     delete_many_todays_market_entries_request: true,
     list_by_todays_market_config_id_todays_market_entries_request: true,
+    list_by_todays_market_collection_id_todays_market_entries_request: true,
     list_todays_market_entry_versions_request: true,
     get_todays_market_entry_version_request: true,
 } as const;

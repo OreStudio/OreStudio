@@ -87,25 +87,26 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <todays_market_config_id> <collection> <key_attribute> <key_value> <key_value_2>
-     * <entry_id> <target> <discounting> <position> <reason> <commentary>
+     * @brief add <todays_market_config_id> <todays_market_collection_id> <key_attribute>
+     * <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <todays_market_config_id> <collection> <key_attribute> <key_value>
-     * <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary> [--version
-     * <n>]
+     * @brief set <id> <todays_market_config_id> <todays_market_collection_id> <key_attribute>
+     * <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <todays_market_config_id> <collection> <key_attribute>
-     * <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
+     * @brief put-many --count <n> <id> <todays_market_config_id> <todays_market_collection_id>
+     * <key_attribute> <key_value> <key_value_2> <entry_id> <target> <discounting> <position>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -132,6 +133,14 @@ public:
     static void process_by_todays_market_config_id(std::ostream& out,
                                                    ores::nats::service::nats_client& session,
                                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief by-todays-market-collection-id <todays_market_collection_id> [--offset <n>] [--limit
+     * <n>] [--order <field>] [--desc]
+     */
+    static void process_by_todays_market_collection_id(std::ostream& out,
+                                                       ores::nats::service::nats_client& session,
+                                                       const std::vector<std::string>& args);
 
     /**
      * @brief versions <key_value> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

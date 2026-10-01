@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-02T02:18:05.277170Z
+' Generated: 2026-10-02T02:18:38.845016Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11336,6 +11336,40 @@ package "analytics" #E8F5E9 {
     Each row belongs to exactly one scenario, in the order the document wrote it.
     end note
 
+    entity ores_analytics_todays_market_collections_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * todays_market_config_id : uuid <<FK>>
+        * collection : text
+          collection_id : text <<FK>>
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_collections_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Collection Table
+    One collection — DiscountingCurves, FxSpots, SwaptionVolatilities and the
+    rest. A document writes up to twenty-four of them, each optional, each holding
+    its own ordered list of entries.
+    This table exists for one attribute. Every collection *wrapper* in the generated
+    binding declares its own optional id, separate from the id each entry
+    declares, and the entry table has no place to put it because a collection is not
+    one entry. No corpus file writes it, so dropping it would round trip the whole
+    corpus and lose data on a document that wrote one.
+    It is also where the collection's identity belongs. An entry names its
+    collection; with this table it points at one.
+    end note
+
     entity ores_analytics_todays_market_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -11436,7 +11470,7 @@ package "analytics" #E8F5E9 {
         --
         * version : integer
         * todays_market_config_id : uuid <<FK>>
-        * collection : text
+        * todays_market_collection_id : uuid <<FK>>
         * key_attribute : text
         * key_value : text
           key_value_2 : text

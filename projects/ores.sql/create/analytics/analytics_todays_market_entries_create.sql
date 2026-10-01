@@ -44,7 +44,7 @@ create table if not exists "ores_analytics_todays_market_entries_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "todays_market_config_id" uuid not null,
-    "collection" text not null,
+    "todays_market_collection_id" uuid not null,
     "key_attribute" text not null,
     "key_value" text not null,
     "key_value_2" text null,
@@ -97,6 +97,17 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid todays_market_config_id: %. No active today's market configuration found with this id.', NEW.todays_market_config_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate todays_market_collection_id (soft FK to ores_analytics_todays_market_collections_tbl)
+    if not exists (
+        select 1 from ores_analytics_todays_market_collections_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.todays_market_collection_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid todays_market_collection_id: %. No active today's market collection found with this id.', NEW.todays_market_collection_id
             using errcode = '23503';
     end if;
 

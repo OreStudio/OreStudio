@@ -37,7 +37,8 @@ render_todays_market_entry_fields(const domain::todays_market_entry& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Todays Market Config ID",
                       .value = boost::uuids::to_string(v.todays_market_config_id)});
-    fields.push_back({.name = "Collection", .value = v.collection});
+    fields.push_back({.name = "Todays Market Collection ID",
+                      .value = boost::uuids::to_string(v.todays_market_collection_id)});
     fields.push_back({.name = "Key Attribute", .value = v.key_attribute});
     fields.push_back({.name = "Key Value", .value = v.key_value});
     fields.push_back({.name = "Key Value 2", .value = v.key_value_2});

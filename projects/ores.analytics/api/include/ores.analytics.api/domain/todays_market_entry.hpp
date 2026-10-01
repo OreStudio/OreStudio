@@ -75,11 +75,9 @@ struct todays_market_entry final {
     boost::uuids::uuid todays_market_config_id;
 
     /**
-     * @brief Which collection the entry was written under.
-     *
-     * One of the twenty-four, for example 'DiscountingCurves' or 'FxSpots'.
+     * @brief The collection this entry belongs to.
      */
-    std::string collection;
+    boost::uuids::uuid todays_market_collection_id;
 
     /**
      * @brief The attribute the entry identified itself by.

@@ -75,6 +75,12 @@ std::vector<ores::nats::service::subscription> register_todays_market_entry_hand
             h->list_by_todays_market_config_id_todays_market_entries(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_by_todays_market_collection_id_todays_market_entries_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->list_by_todays_market_collection_id_todays_market_entries(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         list_todays_market_entry_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_todays_market_entry_versions(std::move(msg)); }));

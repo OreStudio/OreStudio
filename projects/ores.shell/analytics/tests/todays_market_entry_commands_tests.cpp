@@ -83,12 +83,13 @@ TEST_CASE("todays_market_entry_commands_registers_every_derived_verb", tags) {
              std::string{"todays_market_entries delete"},
              std::string{"todays_market_entries delete-many"},
              std::string{"todays_market_entries by-todays-market-config-id"},
+             std::string{"todays_market_entries by-todays-market-collection-id"},
              std::string{"todays_market_entries versions"},
              std::string{"todays_market_entries version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 12 command(s).";
 }
 
 TEST_CASE("todays_market_entry_commands_process_list_requires_a_session", tags) {
@@ -309,6 +310,43 @@ TEST_CASE(
 
     command_feedback::reset();
     todays_market_entry_commands::process_by_todays_market_config_id(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("todays_market_entry_commands_process_by_todays_market_collection_id_requires_a_session",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    todays_market_entry_commands::process_by_todays_market_collection_id(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("todays_market_entry_commands_process_by_todays_market_collection_id_reports_the_"
+          "expected_count",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    todays_market_entry_commands::process_by_todays_market_collection_id(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it

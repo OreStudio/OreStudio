@@ -53,3 +53,22 @@ that reports the most -- or a merge queue.
 - =.github/workflows/header-hygiene.yml= -- a pull-request workflow added
   on 2026-09-29 for the one defect class that can be caught by reading
   sources.
+
+* Outcome
+
+The gate this asks for was built on 2026-09-29 (commit 17ad5c5335, environment
+prime_origin, task 4050BF6C) as =pull-request-verify.yml= plus the reusable
+=cpp-verify.yml=: a classifier over the changed paths, then a configure, a
+build of every target, ctest, and a service start, on every pull request that
+could break a build.
+
+It was removed on 2026-09-30 by decision, and this capture is discarded with
+it. The cost was the problem: the job takes longer than everything else on a
+pull request put together, and the break it catches is one the author is about
+to find anyway. Building and starting the services belong on the developer's
+machine, where =compass build=, =compass test run= and =compass services start=
+already do exactly those steps.
+
+Do not re-add it. The scheduled Continuous Linux job still configures, builds
+and tests the tree, so the estate is not unverified; it is verified off the
+pull-request path.

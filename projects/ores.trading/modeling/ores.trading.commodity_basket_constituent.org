@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 302465BC-152E-4334-907C-E0A83B05CA05
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.commodity_basket_constituent
 #+description: Codegen entity model for the trading =commodity_basket_constituent= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

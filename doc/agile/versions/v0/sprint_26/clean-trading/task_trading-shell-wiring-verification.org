@@ -379,6 +379,26 @@ file, and the reason for each not-applicable.
   =check_handler_permissions.py= keeps the pre-existing process-narration
   style of its neighbours, which the pass leaves alone because it is not
   this branch's text.
+- *The shell lost the basket constituent editor, and the review found it.*
+  The hand-written =commodity_instrument_commands.cpp= that the generated
+  unit replaced carried a =parse_basket= helper: its =add= accepted a
+  =[basket]= positional of =CODE:weight,CODE:weight= tokens, built
+  =commodity_basket_constituent= rows from it and published
+  =put_commodity_basket_constituent_request=. The generated unit has no
+  =basket= reference, because the constituent became a child row in its
+  own model and is not a field of the instrument, and
+  =commodity_basket_constituent= did not enable the shell facet -- so
+  after the swap no shell path could create or edit a constituent at
+  all. Deleting the hand-written unit was right only if the capability
+  survived the deletion, and it did not. The fix is model-driven and one
+  line: the constituent now enables
+  =:ores.cpp.shell-command.enabled: true=, so it owns a menu of its own.
+  Ten recipes and their tests are generated, and all ten answer, =add=
+  and =set= included. This is the second finding on this task that no
+  gate could see, and the same lesson as the twelve registrars: a
+  hand-written unit can carry behaviour the model does not state, so
+  deleting it needs the behaviour named and the replacement proved rather
+  than assumed.
 - *One commit on this branch carries a wrong Task-ID trailer.* It states
   the story correctly but names a task id that does not exist; the real
   id is =F97FF3C0-EB21-4076-B23C-4AAA77F13BC3=. The commit is the one
@@ -460,9 +480,9 @@ file, and the reason for each not-applicable.
   already owns. =validate_docs.sh= is OK for all 41 components. The
   record is =evidence/h01_architecture_audit.txt=.
 - *V04 replayed every generated recipe and found three defects, two of
-  them systemic.* The sweep is 554 recipes: 444 replayed and 110
+  them systemic.* The sweep is 564 recipes: 454 replayed and 110
   recorded rather than run because they are the generated =delete= and
-  =delete-many= verbs. The group list is derived from the recipes, not
+  =delete-many= verbs; 449 answer. The group list is derived from the recipes, not
   typed -- a group counts when its recipe source carries the codegen's
   =AUTO-GENERATED= marker and names a =trading.v1= subject -- so a group
   added later is replayed without anyone remembering to add it. The
@@ -481,6 +501,7 @@ file, and the reason for each not-applicable.
   to =__none__=, which the shell's decimal parser rejects, so 33 write
   recipes aborted at their own client and checked nothing. Both are
   fixed and the sweep was re-run: 439 of 444 replay clean.
+  The ten recipes the basket fix below added bring it to 449 of 454.
   Two findings are recorded rather than fixed. =composite_legs
   by-instrument-id= and =swap_legs by-instrument-id= are stale scripts:
   both recipe orgs and both shell units declare =by-trade-id=, so a
@@ -529,8 +550,8 @@ is therefore not met and the story row says so. The component drift
 check exits 0 with the component listed, at all eight addresses and with
 no drift at all; the protocol twin gate is 293 of 293 across 14
 components; the registry gate is 16 components and 5 exceptions; =validate_docs.sh= is OK for all 41 components; and
-=check_shell_recipes.py= replays 444 of the component's 554 recipes
-against the live fleet with 439 answering.
+=check_shell_recipes.py= replays 454 of the component's 564 recipes
+against the live fleet with 449 answering.
 
 Three items were not clerical and each found something the gates could
 not see. V04 found that twelve of the 55 opt-ins published to subjects no

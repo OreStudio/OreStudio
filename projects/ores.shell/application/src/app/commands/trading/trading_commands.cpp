@@ -33,6 +33,7 @@
 #include "ores.shell/app/commands/trading/bond_issue_commands.hpp"
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/cap_floor_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/commodity_basket_constituent_commands.hpp"
 #include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_leg_commands.hpp"
@@ -97,6 +98,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     bond_issue_commands::register_commands(root_menu, session);
     callable_swap_instrument_commands::register_commands(root_menu, session);
     cap_floor_instrument_commands::register_commands(root_menu, session);
+    commodity_basket_constituent_commands::register_commands(root_menu, session);
     commodity_instrument_commands::register_commands(root_menu, session);
     composite_instrument_commands::register_commands(root_menu, session);
     composite_leg_commands::register_commands(root_menu, session);

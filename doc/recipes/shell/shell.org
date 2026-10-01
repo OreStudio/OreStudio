@@ -1160,3 +1160,7 @@ tangled into the runnable script library
 * Equity Position Option Underlyings
 
 - [[id:D5F5870B-5A38-59F9-920C-39F33F4F6F4A][How do I run the equity_position_option_underlyings commands from the shell?]]
+
+* Commodity Basket Constituents
+
+- [[id:DF3915CF-6ABF-55C2-B57E-33605E444C29][How do I run the commodity_basket_constituents commands from the shell?]]

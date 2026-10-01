@@ -30,6 +30,7 @@ set(files
     "bond_issue_commands_tests.cpp"
     "callable_swap_instrument_commands_tests.cpp"
     "cap_floor_instrument_commands_tests.cpp"
+    "commodity_basket_constituent_commands_tests.cpp"
     "commodity_instrument_commands_tests.cpp"
     "composite_instrument_commands_tests.cpp"
     "composite_leg_commands_tests.cpp"

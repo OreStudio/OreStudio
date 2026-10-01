@@ -62,9 +62,9 @@ fetch_entities(std::ostream& out, nats_client& session, const std::string& count
 void lei_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto lei_menu = std::make_unique<cli::Menu>("lei");
 
-    // The single country browser. The two reads it used to carry are generated
-    // units of their own now, under the lei_entity_summary menu; the country
-    // list is a grouping of one response that no model declares.
+    // The country list groups one summary response into a view no model
+    // declares, which is why it is hand-written. The reads that narrow it are
+    // generated units under the lei_entity_summary menu.
     lei_menu->Insert(
         "countries",
         [&session](std::ostream& out) { process_countries(std::ref(out), std::ref(session)); },

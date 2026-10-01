@@ -264,6 +264,12 @@ command printed.
 | =accounts set-default-party <party-uuid-or-full-name>= | Set the logged-in account's default party. |
 | =report_definition_template list-dq-report-definition-templates [--bundle_code <code>]= | The standard report definitions seeded in a bundle. |
 
+The reads that come from generated units print their response as JSON, where the
+hand-written commands they replace printed aligned rows. =search-lei-entities
+<text>= matches a legal name anywhere in it, or an LEI from its start, and states
+for each match how many parties importing its hierarchy would create. It
+replaces both the old cross-country search and the per-country name filter.
+
 ** Scripts
 
 The shell runs scripts with the =load= command: one command per line,

@@ -45,7 +45,10 @@ const acme: TenantSummary = {
     hostname: 'acme_corporation',
     status: 'active',
     registrationDefault: false,
+    setup: null,
 };
+
+const RUN = '55555555-5555-5555-5555-555555555555';
 
 /** The active status as the BFF answers it: its own words, the badge's colours. */
 const activeStatus = {
@@ -66,9 +69,10 @@ function render(
     tenants: readonly TenantSummary[],
     totalCount: number,
     statuses: readonly unknown[] = [activeStatus],
+    setupUnavailable = false,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['tenants'], { tenants, totalCount });
+    client.setQueryData(['tenants'], { tenants, totalCount, setupUnavailable });
     client.setQueryData(['tenant-statuses'], statuses);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
@@ -95,7 +99,7 @@ describe('the tenant roster', () => {
     it('names the columns the journey document states', () => {
         const html = render([acme], 1);
 
-        for (const column of ['Code', 'Name', 'Hostname', 'Type', 'Status']) {
+        for (const column of ['Code', 'Name', 'Hostname', 'Type', 'Status', 'Setup']) {
             expect(html).toContain(column);
         }
     });
@@ -174,6 +178,85 @@ describe('the tenant roster', () => {
             expect(html).toContain('href="/tenants/new"');
             expect(html).toContain('New tenant');
         }
+    });
+
+    /*
+     * The way back into a journey somebody left is the tenant it acts on. A
+     * run still working says how far it has got, counting steps from one as a
+     * person does, and links to its rail.
+     */
+    it('links a tenant whose run is still working to that run', () => {
+        const html = render(
+            [
+                {
+                    ...acme,
+                    status: 'provisioning',
+                    setup: {
+                        instanceId: RUN,
+                        status: 'in_progress',
+                        currentStepIndex: 2,
+                        stepCount: 7,
+                        error: '',
+                    },
+                },
+            ],
+            1,
+        );
+
+        expect(html).toContain(`href="/tenants/runs/${RUN}"`);
+        expect(html).toContain('Step 3 of 7');
+    });
+
+    /*
+     * A failed run is the case that most needs a way back, so it is shown as
+     * failed and carries its error, rather than disappearing from the roster.
+     */
+    it('shows a failed run as failed, with its error', () => {
+        const html = render(
+            [
+                {
+                    ...acme,
+                    setup: {
+                        instanceId: RUN,
+                        status: 'failed',
+                        currentStepIndex: 3,
+                        stepCount: 7,
+                        error: 'Seeding failed.',
+                    },
+                },
+            ],
+            1,
+        );
+
+        expect(html).toContain('Failed at step 4');
+        expect(html).toContain('title="Seeding failed."');
+        expect(html).toContain(`href="/tenants/runs/${RUN}"`);
+    });
+
+    it('says nothing about a run that completed', () => {
+        const html = render(
+            [
+                {
+                    ...acme,
+                    setup: {
+                        instanceId: RUN,
+                        status: 'completed',
+                        currentStepIndex: 6,
+                        stepCount: 7,
+                        error: '',
+                    },
+                },
+            ],
+            1,
+        );
+
+        expect(html).not.toContain('/tenants/runs/');
+    });
+
+    it('says the runs are missing rather than that there are none', () => {
+        const html = render([acme], 1, [activeStatus], true);
+
+        expect(html).toContain('provisioning runs could not be read');
     });
 
     /*

@@ -60,6 +60,8 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 
 const SYSTEM_TENANT = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 const ACME_TENANT = '44444444-4444-4444-4444-444444444444';
+const RUN_FAILED = '55555555-5555-5555-5555-555555555555';
+const RUN_OLDER = '66666666-6666-6666-6666-666666666666';
 
 const party = {
     id: '22222222-2222-2222-2222-222222222222',
@@ -89,9 +91,36 @@ function wireTenant(id: string, code: string, name: string, status: string): unk
     };
 }
 
+/** The run list's answer when no tenant has a run on record. */
+const NO_RUNS = { success: true, message: '', instances: [] };
+
+/** One provisioning run as the instances list answers it. */
+function wireRun(
+    id: string,
+    target: string,
+    status: string,
+    currentStep: number,
+    error = '',
+): unknown {
+    return {
+        id,
+        type: 'provision_tenant_workflow',
+        status,
+        current_step_index: currentStep,
+        step_count: 7,
+        correlation_id: '',
+        created_by: 'super_admin',
+        created_at: '2026-10-01T09:00:00Z',
+        error,
+        target_kind: 'tenant',
+        target_id: target,
+    };
+}
+
 function buildTestServer(
     reply: unknown,
     mode: 'system-administration' | 'application' = 'system-administration',
+    runs: unknown = NO_RUNS,
 ): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
@@ -106,6 +135,12 @@ function buildTestServer(
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
             calls.push({ subject, body });
+            if (subject === 'workflow.v1.instances.list') {
+                if (runs instanceof Error) {
+                    throw runs;
+                }
+                return schema.parse(runs);
+            }
             return schema.parse(reply);
         },
         async close(): Promise<void> {
@@ -167,11 +202,13 @@ describe('GET /api/tenants', () => {
                     hostname: 'acme_corporation',
                     status: 'active',
                     registrationDefault: false,
+                    setup: null,
                 },
             ],
             totalCount: 1,
+            setupUnavailable: false,
         });
-        expect(calls).toHaveLength(1);
+        expect(calls).toHaveLength(2);
         expect(calls[0]?.subject).toBe('iam.v1.tenants.list');
         expect(calls[0]?.body).toMatchObject({ offset: 0, limit: 100 });
 
@@ -191,7 +228,81 @@ describe('GET /api/tenants', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ tenants: [], totalCount: 0 });
+        expect(response.json()).toEqual({ tenants: [], totalCount: 0, setupUnavailable: false });
+
+        await server.close();
+    });
+
+    /*
+     * The way back into a journey in progress is the tenant it acts on, so each
+     * row carries the run that provisioned it. The engine answers the run that
+     * moved last first, and that is the one a row reports.
+     */
+    it('joins each tenant with the latest run that provisions it', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            {
+                tenants: [
+                    wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
+                ],
+                total: 1,
+            },
+            'system-administration',
+            {
+                success: true,
+                message: '',
+                instances: [
+                    wireRun(RUN_FAILED, ACME_TENANT, 'failed', 3, 'Seeding failed.'),
+                    wireRun(RUN_OLDER, ACME_TENANT, 'compensated', 1),
+                ],
+            },
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().tenants[0].setup).toEqual({
+            instanceId: RUN_FAILED,
+            status: 'failed',
+            currentStepIndex: 3,
+            stepCount: 7,
+            error: 'Seeding failed.',
+        });
+        expect(calls[1]?.subject).toBe('workflow.v1.instances.list');
+        expect(calls[1]?.body).toMatchObject({
+            type_filter: 'provision_tenant_workflow',
+            target_kind_filter: 'tenant',
+        });
+
+        await server.close();
+    });
+
+    it('answers the roster and says so when the runs cannot be read', async () => {
+        const { server, sessionId } = buildTestServer(
+            {
+                tenants: [
+                    wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
+                ],
+                total: 1,
+            },
+            'system-administration',
+            new Error('workflow service unavailable'),
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            tenants: [{ id: ACME_TENANT, setup: null }],
+            setupUnavailable: true,
+        });
 
         await server.close();
     });

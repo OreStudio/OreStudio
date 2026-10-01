@@ -91,6 +91,22 @@ const pt: SourceCatalogue = {
         type: 'Tipo',
         status: 'Estado',
         failed: 'Não foi possível ler os inquilinos.',
+        setup: 'Configuração',
+        setupUnavailable:
+            'Não foi possível ler as execuções de aprovisionamento, por isso a coluna de configuração está vazia.',
+        setupState: {
+            in_progress: 'Passo {step} de {count}',
+            compensating: 'A reverter',
+            failed: 'Falhou no passo {step}',
+            compensated: 'Revertido',
+        },
+        run: {
+            title: 'A configurar {name}',
+            unknownTenant: 'A configurar um inquilino',
+            lead: 'A execução de aprovisionamento deste inquilino. Continua no servidor mesmo sem ninguém a acompanhar.',
+            back: 'Voltar aos inquilinos',
+            done: 'A execução terminou. O inquilino está pronto.',
+        },
         empty: {
             title: 'Esta instalação ainda não tem um inquilino próprio.',
             body: 'O administrador do sistema existe, portanto a instalação está configurada. Um inquilino é o passo seguinte, e o primeiro cria-se como qualquer outro.',

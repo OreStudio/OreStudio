@@ -34,6 +34,7 @@ import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
+import { TenantRunPage } from './pages/TenantRunPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
@@ -206,6 +207,12 @@ export function AppRoutes({
             <Route
                 path="/tenants/new"
                 element={signedIn(gate.version, session, onSignOut, () => newTenantJourney)}
+            />
+            <Route
+                path="/tenants/runs/:instanceId"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <TenantRunPage />
+                ))}
             />
             <Route
                 path="/parties/new"

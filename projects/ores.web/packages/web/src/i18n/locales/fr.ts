@@ -86,6 +86,22 @@ const fr: SourceCatalogue = {
         type: 'Type',
         status: 'Statut',
         failed: 'Les locataires n’ont pas pu être lus.',
+        setup: 'Mise en place',
+        setupUnavailable:
+            'Les exécutions de provisionnement n’ont pas pu être lues, la colonne de mise en place est donc vide.',
+        setupState: {
+            in_progress: 'Étape {step} sur {count}',
+            compensating: 'Annulation en cours',
+            failed: 'Échec à l’étape {step}',
+            compensated: 'Annulé',
+        },
+        run: {
+            title: 'Mise en place de {name}',
+            unknownTenant: 'Mise en place d’un locataire',
+            lead: 'L’exécution de provisionnement de ce locataire. Elle continue sur le serveur même si personne ne la suit.',
+            back: 'Retour aux locataires',
+            done: 'L’exécution est terminée. Le locataire est prêt.',
+        },
         empty: {
             title: 'Ce déploiement ne détient encore aucun locataire propre.',
             body: 'L’administrateur système existe, donc le déploiement est configuré. Un locataire est l’étape suivante, et le premier se crée comme tous les autres.',

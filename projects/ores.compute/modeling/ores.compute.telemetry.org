@@ -25,6 +25,14 @@ is a row a caller addresses by key.
 The handler that serves them stays hand-written beside this model, because
 it reads the newest stored samples and calls the grid-stats function.
 
+* Physical space
+
+The shell commands are switched off. The grid summary reaches a person through
+the hand-written =compute grid-stats= command, which sends
+=get_grid_stats_request=, composes it with the host listing, and can watch the
+grid while a batch runs. A generated unit would send the same request and print
+the reply, so it would be a second command for one read.
+
 * Includes
 
 #+begin_src cpp :name includes

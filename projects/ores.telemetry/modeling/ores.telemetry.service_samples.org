@@ -21,6 +21,12 @@ outside the service and is stored as it arrives, and the list is read from
 the newest sample of every instance rather than addressed by key, so neither
 is a row a caller reaches by primary key.
 
+* Physical space
+
+The shell commands are switched off. The shell has no telemetry part, so a
+generated unit would have nowhere to land. Every service writes the heartbeat,
+and the operations dashboard reads the samples.
+
 * Includes
 
 #+begin_src cpp :name includes

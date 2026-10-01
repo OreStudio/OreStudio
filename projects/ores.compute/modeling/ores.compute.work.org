@@ -32,6 +32,12 @@ exception: its handler makes a request context and checks
 The handlers stay hand-written beside this model. An operation model
 generates no service handler.
 
+* Physical space
+
+The shell commands are switched off. These messages are the compute wrapper's own
+protocol: a node pulls its next assignment, reports a heartbeat, and submits a
+result. No person types them, and nothing in the shell sends them.
+
 * Includes
 
 #+begin_src cpp :name includes

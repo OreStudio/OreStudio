@@ -23,9 +23,9 @@ Each of diff, compute, telemetry, history, scheduler, ore, variability and works
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Batch 1: diff.                          |
+| Now           | Batch 2: compute and telemetry.          |
 | Waiting on    | Nothing.                               |
-| Next          | compute and telemetry, then the five operation-only components. |
+| Next          | The five operation-only components.      |
 | Last touched  | 2026-10-01                               |
 
 * Acceptance
@@ -38,9 +38,9 @@ Each of diff, compute, telemetry, history, scheduler, ore, variability and works
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6FD89D23-BE2A-434A-8E2C-A18566572369][Generate the diff shell surface]] | BACKLOG | | | Check every diff command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
-| [[id:AA5A7533-ECF0-40B6-89F6-E1025A7D51FC][Generate the compute shell surface]] | BACKLOG | | | Check every compute command the shell answers, generate the units its entities should have, and record every hand-craft with its reason. |
-| [[id:5C1AD81D-EBCC-43BC-8D9C-79A3E7A3BED5][Generate the telemetry shell surface]] | BACKLOG | | | Check every telemetry command the shell answers, make each operation state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:6FD89D23-BE2A-434A-8E2C-A18566572369][Generate the diff shell surface]] | DONE | | 2026-10-01 | Check every diff command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:AA5A7533-ECF0-40B6-89F6-E1025A7D51FC][Generate the compute shell surface]] | STARTED | 2026-10-01 | | Check every compute command the shell answers, generate the units its entities should have, and record every hand-craft with its reason. |
+| [[id:5C1AD81D-EBCC-43BC-8D9C-79A3E7A3BED5][Generate the telemetry shell surface]] | STARTED | 2026-10-01 | | Check every telemetry command the shell answers, make each operation state why it renders no unit, and record every hand-craft with its reason. |
 | [[id:EDB2ED57-3BEC-4F74-B5B0-D58640E51E0C][Generate the history shell surface]] | BACKLOG | | | Check every history command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
 | [[id:5D16A0C9-1472-4C91-8C79-7281E59F00A1][Generate the scheduler shell surface]] | BACKLOG | | | Check every scheduler command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
 | [[id:70717187-0883-4CAD-BCB2-CA903C5BFB39][Generate the ore shell surface]] | BACKLOG | | | Check every ore command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |

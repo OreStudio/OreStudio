@@ -20,6 +20,12 @@ These are operations rather than entity verbs. The list is a filtered read
 over the log store, and the publish arrives from outside the service and is
 stored as it arrives, so neither is a row a caller reaches by primary key.
 
+* Physical space
+
+The shell commands are switched off. The shell has no telemetry part, so a
+generated unit would have nowhere to land. The log reads and the ingest publish
+serve the UI and the log pipeline rather than a REPL session.
+
 * Includes
 
 #+begin_src cpp :name includes

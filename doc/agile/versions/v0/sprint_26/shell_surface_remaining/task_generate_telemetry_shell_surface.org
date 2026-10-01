@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command telemetry answers is produced by a generated unit, or the mo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | The three operations state the reason; no code changed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The history task.                      |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,13 @@ Every shell command telemetry answers is produced by a generated unit, or the mo
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three checks, then three sentences. The tree: the component has no part under
+=projects/ores.shell=, so a generated unit has nowhere to land. The models: three
+operations, none opted in. The shell: no hand-written unit registers a telemetry
+menu.
+
+Each operation then states why it renders nothing, and the reason differs by
+operation rather than being one paragraph pasted three times.
 
 * Measurements
 
@@ -57,9 +61,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| telemetry models | 3, all operations: logs, nats_samples, service_samples | read =#+type:= across =projects/ores.telemetry/modeling/ores.*.org= | e0ad23765b |
+| telemetry shell part under projects/ores.shell | none | =ls -d projects/ores.shell/telemetry= | e0ad23765b |
+| telemetry models rendering a shell unit | 0 | the mapping script | e0ad23765b |
+| Hand-written telemetry command units | 0 | the shell tree scan for files without the AUTO-GENERATED marker | e0ad23765b |
+| Operations that now state the reason | 3 | =grep -c 'Physical space' projects/ores.telemetry/modeling/ores.*.org= | branch |
+| Regeneration diff | 0 | =check_component_drift.py --all= | branch |
+| Shell suite | none exists: the component has no shell part | =ls projects/ores.shell/telemetry= | e0ad23765b |
 
 * Notes
+
+The component has no shell part, so the reason a unit cannot render is structural
+rather than a decision about each operation. What each operation adds is who reads
+it:
+
+- =logs= serves the UI and the log pipeline. It carries both a query and an ingest
+  publish, and neither is a REPL session's business.
+- =nats_samples= answers the operations dashboard, which is where a person meets
+  NATS server and stream samples.
+- =service_samples= carries the heartbeat every service writes, and the samples the
+  dashboard reads.
+
+None of the three has a hand-written command anywhere in the shell, so there was
+nothing to retire and nothing to compare.
 
 * Test Scenarios
 
@@ -85,3 +109,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+telemetry needs no code change. Its three models are operations, the component has
+no part under =projects/ores.shell= for a unit to land in, and nothing hand-written
+registers a telemetry menu.
+
+Each of the three operations now states who reads it and why the shell is not the
+surface that serves it. A full regeneration produces no diff.

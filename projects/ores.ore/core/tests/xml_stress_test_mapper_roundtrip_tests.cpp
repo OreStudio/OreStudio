@@ -99,9 +99,8 @@ TEST_CASE("stress_test_library_and_scenarios_round_trip_over_the_corpus", tags) 
 
             // The DiscountCurves shifts the scenario applies, which are the
             // first family to be mapped.
-            const std::size_t expected = in.DiscountCurves
-                                             ? in.DiscountCurves->DiscountCurve.size()
-                                             : 0;
+            const std::size_t expected =
+                in.DiscountCurves ? in.DiscountCurves->DiscountCurve.size() : 0;
             REQUIRE(row.shifts.size() == expected);
             // An empty block means the same as no block, so one that carries
             // no entries is written back as none. The corpus has such a block.

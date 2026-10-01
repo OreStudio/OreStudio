@@ -200,8 +200,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 ores::nats::default_wire_codec()
                     .decode<telemetry::messaging::service_heartbeat_message>(msg.data);
             if (!decoded) {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to decode a service heartbeat: "
-                                          << decoded.error().what();
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to decode a service heartbeat: " << decoded.error().what();
                 return;
             }
             engine->note_service_seen(decoded->service_name, std::chrono::system_clock::now());

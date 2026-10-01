@@ -53,9 +53,8 @@ logging_configuration::make_options_description(const std::string& log_file) {
         "log-level,l",
         value<std::string>()->default_value("info"),
         "What level to use for logging. Valid values: trace, debug, info, "
-        "warn, error.")(
-        "log-to-console",
-        "Accepted for compatibility: logging always goes to the console.")(
+        "warn, error.")("log-to-console",
+                        "Accepted for compatibility: logging always goes to the console.")(
         "log-directory",
         value<std::string>()->default_value(""),
         "Where to place the log files. Only used with --log-filename.")(

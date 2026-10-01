@@ -953,7 +953,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_option_payment_date_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_option_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_schedule_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_strike_protocol.hpp"

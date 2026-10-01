@@ -81,7 +81,6 @@
 #include "ores.trading.api/messaging/instrument_option_payment_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_option_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"

@@ -1283,7 +1283,6 @@ instrument variant to their own messages.
 #include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include <optional>
 #+end_src
 

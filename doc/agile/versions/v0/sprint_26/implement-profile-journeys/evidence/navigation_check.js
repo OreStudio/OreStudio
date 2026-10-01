@@ -70,6 +70,7 @@ for (const who of whos) {
 /* What each sign-in is, and what it is not. */
 const checks = [
     ['?as=super&state=home', 'System administration', 'the super administrator lands in the system mode'],
+    ['?as=super&state=home', 'See the tenants', 'the system mode holds the roster'],
     ['?as=super&state=home', 'New tenant', 'the system mode holds creating a tenant'],
     ['?as=super&state=home', 'Retire or reset a tenant', 'the system mode holds retiring a tenant'],
     ['?as=tenant&state=home', 'Tenant administration', 'the tenant administrator lands in the tenant mode'],

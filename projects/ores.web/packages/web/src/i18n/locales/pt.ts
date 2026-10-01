@@ -76,8 +76,30 @@ const pt: SourceCatalogue = {
             tenants: 'Inquilinos',
         },
         journey: {
+            seeTenants: 'Ver os inquilinos',
             newTenant: 'Novo inquilino',
             retireTenant: 'Retirar ou reiniciar um inquilino',
+        },
+    },
+
+    tenants: {
+        title: 'Inquilinos',
+        count: { one: '{count} inquilino', other: '{count} inquilinos' },
+        code: 'Código',
+        name: 'Nome',
+        hostname: 'Nome do anfitrião',
+        type: 'Tipo',
+        status: 'Estado',
+        failed: 'Não foi possível ler os inquilinos.',
+        empty: {
+            title: 'Esta instalação ainda não tem um inquilino próprio.',
+            body: 'O administrador do sistema existe, portanto a instalação está configurada. Um inquilino é o passo seguinte, e o primeiro cria-se como qualquer outro.',
+        },
+        state: {
+            bootstrapping: 'Aprovisionamento',
+            active: 'Ativo',
+            suspended: 'Suspenso',
+            terminated: 'Terminado',
         },
     },
 

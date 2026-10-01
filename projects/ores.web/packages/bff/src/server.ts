@@ -32,6 +32,7 @@ import {
     NatsTransport,
     OresClient,
     SUBJECTS,
+    SYSTEM_TENANT_ID,
     bootstrapStatusSchema,
     changeOwnPassword,
     changeOwnPasswordRequestSchema,
@@ -50,6 +51,7 @@ import {
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
     listSessionsRequestSchema,
+    listTenantsRequestSchema,
     passwordPolicySchema,
     provisionPartyRequestSchema,
     provisionPartyResultSchema,
@@ -62,12 +64,14 @@ import {
     readLoginInfo,
     readLoginInfoPage,
     readSessionsPage,
+    readTenantsPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
     signupRequestSchema,
     signupResultSchema,
+    tenantPageSchema,
     workflowProgressSchema,
     NotAuthenticatedError,
     type LoginOutcome,
@@ -86,6 +90,7 @@ import {
     invalidCredentials,
     invalidRequest,
     notAuthenticated,
+    notPermitted,
     signupRefused,
     toHttpFailure,
     tooManyRequests,
@@ -794,6 +799,49 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/sessions/active', async (request) => {
         const session = requireSession(request);
         return readActiveSessions(session.client);
+    });
+
+    /**
+     * The tenants this deployment holds.
+     *
+     * The roster the system administration area reads, and the list a screen
+     * picks a tenant from before it retires or resets one. The registry is
+     * system-scoped, so a row's identity is its `id` and never its `tenant_id`:
+     * the system tenant is a row like any other, and it is the deployment's own
+     * bookkeeping rather than a tenant somebody set up. It is therefore dropped
+     * here, together with its count, because a screen that lists the tenants a
+     * deployment holds does not mean the deployment itself.
+     *
+     * The read is unfiltered, so the total contains the system tenant and one
+     * is subtracted. A server-side filter would move this rule to the side that
+     * owns the registry, and that is recorded as the way out.
+     */
+    server.get('/api/tenants', async (request) => {
+        const session = requireSession(request);
+        /*
+         * The roster is the deployment's, so it belongs to the context that
+         * acts on the deployment. The mode is what the server stated about this
+         * session, so refusing here is not a second opinion about the caller:
+         * it is the same fact, used as a boundary. The list subject checks no
+         * permission of its own, and until it does this is what keeps a
+         * tenant's administrator from reading every tenant's registry row.
+         */
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('The tenants of a deployment are read in system administration.');
+        }
+        const query = request.query as Record<string, string | undefined>;
+        const page = listTenantsRequestSchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 100),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        const read = await readTenantsPage(session.client, page.data);
+        return tenantPageSchema.parse({
+            tenants: read.tenants.filter((tenant) => tenant.id !== SYSTEM_TENANT_ID),
+            totalCount: Math.max(0, read.totalCount - 1),
+        });
     });
 
     /**

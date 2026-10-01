@@ -1,0 +1,112 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import { z } from 'zod';
+import type { AuthenticatedCaller } from './account-operations.js';
+import { uuidSchema, wireTimestampSchema, type TenantSummary } from './domain.js';
+import { subjects as tenantSubjects } from './generated/iam/protocol/tenant_protocol.js';
+import { orderSchema } from './operations.js';
+
+/**
+ * The tenants a deployment holds, as the registry answers them.
+ *
+ * A tenant row is system-scoped: the registry's own check requires every row to
+ * carry the system tenant in `tenant_id`, so that column names the owner of the
+ * registry and never the tenant the row describes. A row's identity is its
+ * `id`, and the deployment's own bookkeeping is the row whose id is the system
+ * id. A reader that filters on the wrong column answers "no tenants" for a
+ * deployment full of them.
+ */
+
+/** Subjects for the tenant reads, kept beside the operations that use them. */
+export const TENANT_SUBJECTS = {
+    list: tenantSubjects.list_tenants_request,
+} as const;
+
+/** The row as the registry writes it. */
+const wireTenantSchema = z.object({
+    version: z.int().nonnegative().default(0),
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+    type: z.string(),
+    description: z.string().default(''),
+    hostname: z.string().default(''),
+    status: z.string(),
+    is_registration_default: z.boolean().default(false),
+    modified_by: z.string().default(''),
+    performed_by: z.string().default(''),
+    change_reason_code: z.string().default(''),
+    change_commentary: z.string().default(''),
+    recorded_at: wireTimestampSchema,
+});
+
+/**
+ * One tenant, as a screen reads it.
+ *
+ * The registry's audit columns are dropped rather than forwarded: a roster
+ * names each tenant and says what state it is in, and nothing on it is about
+ * who last edited the row.
+ */
+function summaryOf(row: z.infer<typeof wireTenantSchema>): TenantSummary {
+    return {
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        type: row.type,
+        description: row.description,
+        hostname: row.hostname,
+        status: row.status,
+        registrationDefault: row.is_registration_default,
+    };
+}
+
+/** `list_tenants_request`, sent on `iam.v1.tenants.list`. */
+export const listTenantsRequestSchema = z.object({
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(1000).default(100),
+    order: orderSchema.default({ field: '', descending: false }),
+});
+export type ListTenantsRequest = z.infer<typeof listTenantsRequestSchema>;
+
+/** The page of tenants, translated from the wire's names. */
+export const wireTenantPageSchema = z
+    .object({
+        tenants: z.array(wireTenantSchema).default([]),
+        total: z.int().nonnegative().default(0),
+    })
+    .transform((row) => ({
+        tenants: row.tenants.map(summaryOf),
+        totalCount: row.total,
+    }));
+export type WireTenantPage = z.infer<typeof wireTenantPageSchema>;
+
+/** The page of tenants the caller may see. */
+export async function readTenantsPage(
+    caller: AuthenticatedCaller,
+    input: { readonly offset?: number; readonly limit?: number } = {},
+): Promise<WireTenantPage> {
+    return caller.callAuthenticated(
+        TENANT_SUBJECTS.list,
+        listTenantsRequestSchema.parse(input),
+        wireTenantPageSchema,
+    );
+}

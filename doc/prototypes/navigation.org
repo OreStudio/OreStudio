@@ -92,9 +92,22 @@ be entered from, and that makes it a door rather than a destination.
 The system administrator's work is what the first run leaves behind: a
 deployment with an account, and no tenant until one is made. So the *Tenants*
 area is the whole of the system administration menu, and it holds the tenant
-management journeys the catalogue has: creating one, and retiring or resetting
-one. *Tune the tenant* is not among them — the tenant administrator maintains
-their own tenant's details, from inside it.
+journeys the catalogue has: reading the roster, creating a tenant, and retiring
+or resetting one. *Tune the tenant* is not among them — the tenant
+administrator maintains their own tenant's details, from inside it.
+
+*** The roster is its own journey
+
+*See the tenants* was not in the catalogue when this menu was first drawn, and
+that was a gap rather than a decision. The list existed only as step 1 of
+*Retire or reset a tenant*, which meant the only way to find out what tenants a
+deployment holds was to open a destructive journey. The regime that has the
+roster has it as a read-only screen of its own, and the catalogue's own idiom
+agrees: *See who has access* is the same shape for the people of a party.
+
+So the roster is the first card in *Tenants*, and *Retire or reset a tenant*
+picks its tenant from it. It is a change to the catalogue and not only to the
+menu, and the journey document records why.
 
 This is the one place the extraction's grouping was not the menu's grouping, and
 the correction is recorded here rather than in the catalogue: the catalogue's

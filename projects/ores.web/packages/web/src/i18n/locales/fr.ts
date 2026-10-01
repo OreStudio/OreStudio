@@ -71,8 +71,30 @@ const fr: SourceCatalogue = {
             tenants: 'Locataires',
         },
         journey: {
+            seeTenants: 'Voir les locataires',
             newTenant: 'Nouveau locataire',
             retireTenant: 'Retirer ou réinitialiser un locataire',
+        },
+    },
+
+    tenants: {
+        title: 'Locataires',
+        count: { one: '{count} locataire', other: '{count} locataires' },
+        code: 'Code',
+        name: 'Nom',
+        hostname: 'Nom d’hôte',
+        type: 'Type',
+        status: 'Statut',
+        failed: 'Les locataires n’ont pas pu être lus.',
+        empty: {
+            title: 'Ce déploiement ne détient encore aucun locataire propre.',
+            body: 'L’administrateur système existe, donc le déploiement est configuré. Un locataire est l’étape suivante, et le premier se crée comme tous les autres.',
+        },
+        state: {
+            bootstrapping: 'Provisionnement',
+            active: 'Actif',
+            suspended: 'Suspendu',
+            terminated: 'Résilié',
         },
     },
 

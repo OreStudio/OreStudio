@@ -70,6 +70,18 @@ export function invalidRequest(message: string): HttpFailure {
 }
 
 /**
+ * The session is real, and what it is acting in may not do this.
+ *
+ * Not a 401: signing in again changes nothing, because the caller is already
+ * who they say they are. The distinction matters to a screen, which should say
+ * what is refused rather than send somebody back to a door that will let them
+ * through to the same refusal.
+ */
+export function notPermitted(message: string): HttpFailure {
+    return new HttpFailure(403, { code: 'forbidden', message });
+}
+
+/**
  * The deployment has not been provisioned yet.
  *
  * Its own code rather than a 401, because it is not a credential problem: there

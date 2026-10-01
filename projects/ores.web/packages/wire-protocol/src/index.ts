@@ -47,8 +47,26 @@ export {
     accountSchema,
     activePartySchema,
     partySummarySchema,
+    tenantPageSchema,
+    tenantSummarySchema,
 } from './domain.js';
-export type { Account, AccountPage, AccountType, ActiveParty, PartySummary } from './domain.js';
+export type {
+    Account,
+    AccountPage,
+    AccountType,
+    ActiveParty,
+    PartySummary,
+    TenantPage,
+    TenantSummary,
+} from './domain.js';
+
+export {
+    TENANT_SUBJECTS,
+    listTenantsRequestSchema,
+    readTenantsPage,
+    wireTenantPageSchema,
+} from './tenants.js';
+export type { ListTenantsRequest, WireTenantPage } from './tenants.js';
 
 export {
     ProtocolError,

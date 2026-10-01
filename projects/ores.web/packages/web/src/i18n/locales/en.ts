@@ -77,8 +77,30 @@ export const en: SourceCatalogue = {
             tenants: 'Tenants',
         },
         journey: {
+            seeTenants: 'See the tenants',
             newTenant: 'New tenant',
             retireTenant: 'Retire or reset a tenant',
+        },
+    },
+
+    tenants: {
+        title: 'Tenants',
+        count: { one: '{count} tenant', other: '{count} tenants' },
+        code: 'Code',
+        name: 'Name',
+        hostname: 'Hostname',
+        type: 'Type',
+        status: 'Status',
+        failed: 'The tenants could not be read.',
+        empty: {
+            title: 'This deployment holds no tenant of its own yet.',
+            body: 'The system administrator exists, so the deployment is set up. A tenant is the next step, and the first one is created the same way as any other.',
+        },
+        state: {
+            bootstrapping: 'Provisioning',
+            active: 'Active',
+            suspended: 'Suspended',
+            terminated: 'Terminated',
         },
     },
 

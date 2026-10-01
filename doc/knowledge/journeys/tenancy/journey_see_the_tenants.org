@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: F14135EC-F136-4D93-B8A6-D4386FF20684
+:END:
+#+title: User Journey: See the tenants
+#+description: A system administrator reads the tenants a deployment holds: their code, name, hostname, type and status.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the tenants a deployment holds: their code, name, hostname, type and status.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know what tenants this deployment holds." The system administrator
+reads one screen and gets one row per tenant. The journey is done when every
+row answers five questions: what code names the tenant, what name it shows, what
+hostname serves it, what type it is, and whether it is in service.
+
+* Actor and trigger
+
+The system administrator: an account that holds the =SuperAdmin= role and acts
+from the system tenant. The shell calls this context *system administration
+mode*: the session's tenant is the system tenant, so every request it sends is
+scoped to the deployment and not to a customer. A tenant administrator is
+signed in inside their own tenant, and the shell offers them no *Tenants* area,
+so they cannot reach this screen.
+
+The trigger is a question about the deployment: which tenants exist, or which
+one to act on next. The administrator opens the *Tenants* area in the system
+administration context, and the journey ends when they have read what they came
+for.
+
+This journey writes nothing. The roster is now its own journey, and
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] picks
+its tenant from it, so the destructive journey no longer has to be opened to
+find out what exists.
+
+* Steps
+
+1. *Open the roster.* The administrator opens the *Tenants* area in the system
+   administration context. The system shows one screen: a read-only table with
+   one row per tenant. The administrator expects to find every tenant the
+   deployment holds.
+2. *Read the tenants.* The system lists the tenants and gives each row five
+   columns. The code is the tenant's stable name in a request. The name is what
+   a person reads. The hostname is the address that routes to the tenant. The
+   type is the kind of tenant it is. The status is its place in the lifecycle.
+3. *An installation with none.* The deployment is provisioned but holds no
+   tenant of its own yet. This is the state right after the system
+   administrator is created. The roster answers an empty table and says that no
+   tenant exists, rather than showing a failure. The way out is
+   [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]].
+4. *A tenant that is not active.* The status column reads one of four codes.
+   =bootstrapping= means the provisioning has not finished. =active= means the
+   tenant is in service. =suspended= means sign-in is refused. =terminated=
+   means the data is still there and the tenant is unusable. The roster states
+   the status; it does not act on it.
+5. *Find one among many.* The administrator pages through the roster with the
+   offset and the page size, and reads the total. A search field narrows the
+   roster over the code, the name and the hostname, so a large deployment does
+   not need many pages of reading.
+6. *Leave, or go on.* The administrator leaves the roster, or picks a tenant
+   and goes on to another operation on it: retiring or resetting it, or adding
+   a party to it. The roster carries the chosen row into that operation.
+
+The roster does not show the system tenant. The tenant registry is
+system-scoped: the table's own check requires every row to carry the system
+tenant in =tenant_id=, so that column names the owner of the registry and never
+the tenant a row describes. A row's identity is its =id=, and the deployment's
+own bookkeeping is the row whose =id= is
+=ffffffff-ffff-ffff-ffff-ffffffffffff=. That row is not a tenant somebody set
+up, so the roster leaves it out. A reader who filters on =tenant_id= instead of
+=id= asks the wrong question and gets an empty list for a deployment full of
+tenants. The rule is the one
+=projects/ores.iam/core/include/ores.iam.core/service/tenant_presence.hpp=
+states in =has_tenant_of_its_own()=.
+
+* Screens and wireframes
+
+One screen. The roster table, the search field, the paging controls and the
+empty state are panels of that screen, because the administrator reads them as
+one answer. The screen is read-only: it creates nothing, changes nothing and
+destroys nothing.
+
+#+caption: See the tenants: the roster, the search and paging controls, and the empty state.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/tenancy/wireframe_see_the_tenants.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenant= | Code, name, hostname, type and status, read-only here; the row's identity is its =id= | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| =tenant_type= | The codes that classify tenants | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
+| =tenant_status= | The four lifecycle codes the status column reads | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
+
+The row the server returns carries more than the five columns. It also carries
+=version=, =id=, =description=, =is_registration_default=, =modified_by=,
+=performed_by=, =change_reason_code=, =change_commentary= and =recorded_at=.
+The roster shows five of them and drops the audit columns, because a roster
+names each tenant and says what state it is in, and nothing on it is about who
+last edited the row.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the roster | List the tenants the deployment holds | =iam.v1.tenants.list= | exists |
+| Read the tenants | Read the row's code, name, hostname, type and status | carried by =iam.v1.tenants.list= | exists |
+| An installation with none | Answer an empty page | carried by =iam.v1.tenants.list= | exists |
+| A tenant that is not active | Read the lifecycle status | carried by =iam.v1.tenants.list= | exists |
+| Find one among many | Page and search the roster | =iam.v1.tenants.list= | partial |
+| Leave, or go on | Read the chosen tenant for the next operation | =iam.v1.tenants.get= | exists |
+
+=iam.v1.tenants.list= exists, is HTTP-routed, and requires a session. Its
+request =list_tenants_request= carries =offset=, =limit= and =order= and
+nothing else, and its response carries =tenants= and =total=. It is declared
+with the other canonical verbs in
+[[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]].
+
+The browser reads this subject through the BFF route =GET /api/tenants=, which
+drops the system tenant and its count. That route and the browser read are part
+of this journey's design. =iam.v1.tenants.get= is the read the next operation
+uses to take up the tenant the roster chose.
+
+=partial= on the search is exact: paging and ordering exist, and a search over
+the code, the name and the hostname does not. The request holds no filter
+field, so the screen can only page and sort. See below.
+
+* What is missing
+
+1. *No search on the list subject.* =list_tenants_request= carries =offset=,
+   =limit= and =order= only, so the roster cannot ask for a tenant by code, by
+   name or by hostname. The screen must page until it finds the row, or filter
+   the page it already holds. The candidate is a filter on the list request, or
+   a search read of its own. The same gap is recorded for every list window in
+   [[id:B3FD623C-D87B-491F-9FA2-08B26D67114F][Add server-side search/filter to list windows across entities]].
+2. *The exclusion of the system tenant lives in the screen, not in the
+   registry.* =iam.v1.tenants.list= answers every row, the system tenant
+   included. The BFF route drops the system tenant and subtracts one from the
+   total. A caller that reaches the subject directly still sees it. The
+   candidate is a server-side filter, so the rule lives where the registry
+   lives.
+3. *The read checks no permission.* The list handler proves that the request
+   carries a session and checks no permission, so every signed-in account may
+   reach the subject. The BFF route refuses a session that is not in system
+   administration mode, and that refusal is about the context rather than the
+   capability: it tells a super administrator's account from a tenant's by the
+   tenant each acts in, not by what each may do. It is the strongest thing
+   available today and not the thing the design wants. The candidate is a
+   permission on the list read, after which the mode check stays as a boundary
+   rather than standing in for one.
+4. *The roster cannot show the tenant's administrator.* The tenant row carries
+   no administrator, and no read joins a tenant to the account that runs it.
+   So "who runs this tenant" is not answerable from the roster, and a review
+   has to open each tenant in turn. The candidate is an administrator column on
+   the row, or a joined read.
+5. *Nothing reaches the system tenant row.* The roster excludes the system
+   tenant by design, and no other screen offers it, so the deployment's own row
+   cannot be read from the web at all. That is intended for a roster of the
+   tenants somebody set up. The open question is whether the system tenant
+   should be readable anywhere, for example to confirm its status, given that
+   the generic delete path can still terminate it. See
+   [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]].
+
+* Related journeys
+
+- [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the empty roster's way out: create the tenant this screen would list
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] — picks its tenant from this roster, then suspends, terminates or resets it
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — maintains the tenant details this roster reads
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — adds a party to the tenant just chosen here
+- [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] — the state the empty roster describes, where the first tenant is created
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — the same read-only roster pattern, inside one tenant
+
+* Related knowledge
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+- [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]]
+- [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]]
+- [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]]
+- [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Task: Show the tenants a deployment holds]]

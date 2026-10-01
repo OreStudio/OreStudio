@@ -111,6 +111,36 @@ export const partySummarySchema = z.object({
 
 export type PartySummary = z.infer<typeof partySummarySchema>;
 
+/**
+ * One tenant, as a roster reads it.
+ *
+ * The registry's audit columns are absent, because a roster names each tenant
+ * and says what state it is in; nothing on it is about who last edited the row.
+ * The system tenant is a row like any other here, so a reader that means "the
+ * tenants somebody set up" excludes the row whose id is the system id rather
+ * than trusting this shape to have done it.
+ */
+export const tenantSummarySchema = z.object({
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+    type: z.string(),
+    description: z.string(),
+    hostname: z.string(),
+    status: z.string(),
+    registrationDefault: z.boolean(),
+});
+
+export type TenantSummary = z.infer<typeof tenantSummarySchema>;
+
+/** A page of tenants. `totalCount` counts every tenant the caller can see. */
+export const tenantPageSchema = z.object({
+    tenants: z.array(tenantSummarySchema),
+    totalCount: z.int().nonnegative(),
+});
+
+export type TenantPage = z.infer<typeof tenantPageSchema>;
+
 /** A page of accounts. `totalCount` counts every account the caller can see. */
 export const accountPageSchema = z.object({
     accounts: z.array(accountSchema),

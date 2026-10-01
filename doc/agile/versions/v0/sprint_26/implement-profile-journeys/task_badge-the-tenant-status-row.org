@@ -8,7 +8,7 @@
 #+filetags: :web:ux:badges:dq:iam:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/badge-the-tenant-status-row
-#+pr:
+#+pr: 2483
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2483][#2483]] | [iam] Put the badge on the tenant status row |
 
 * Review
 

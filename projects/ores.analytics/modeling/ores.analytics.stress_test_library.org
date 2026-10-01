@@ -25,7 +25,7 @@ meaningful inside the library that names it.
 :schema:        public
 :product:       ores
 :component:     analytics
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns

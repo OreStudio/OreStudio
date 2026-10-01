@@ -23,15 +23,13 @@
 
 =ores.shell.analytics= is the adapter part that projects the analytics domain
 onto the shell's REPL menu. It holds the generated command units for the
-analytics models that opt in, and each unit owns one submenu. Four units land
-here: =pricing_engine_type_commands=, =pricing_model_config_commands=,
-=pricing_model_product_commands= and =pricing_model_product_parameter_commands=.
+analytics models that opt in, and each unit owns one submenu.
 
-Analytics' models opt in through the profiles they bind, because both profiles
-these four models carry enable the facet: =pricing_engine_type= binds
-=simple-lookup=, and the three =pricing_model_*= models bind
-=uuid-identified-lookup=. Each opted-in model also takes the literate recipe
-the =ores.doc.shell-recipe= facet writes beside its unit.
+Analytics' models opt in through the profiles they bind: a unit lands for every
+model whose bound profile carries the =ores.cpp.shell-command= facet, and each
+opted-in model also takes the literate recipe the =ores.doc.shell-recipe= facet
+writes beside it. A model that needs neither can bind a profile that does not
+carry them.
 
 The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
 hand-authored, because the link libraries belong to the shell surface rather

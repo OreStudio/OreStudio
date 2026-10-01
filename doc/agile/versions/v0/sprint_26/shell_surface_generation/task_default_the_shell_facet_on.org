@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/default-the-shell-facet-on
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: every component's clean-standard pass; the facet node's default is global
+#+blocked_since: 2026-10-01
 #+created: 2026-10-01
 #+updated: 2026-10-01
 #+environment: solid_dirac
@@ -20,31 +20,42 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The ores.cpp.shell-command facet is on by default, so a model no longer opts in one file at a time. The facet node carries #+default: disabled, eight variability profiles fix it true, and many models repeat the opt-in in their properties drawer. This task flips the default, removes the now-redundant profile rows and drawer entries, and proves the generated surface is unchanged.
+The ores.cpp.shell-command facet is on by default, so a model no longer opts in one file at a time. The facet node carries #+default: disabled, eight variability profiles fix it true, and many models repeat the opt-in in their properties drawer.
+
+The safe half is done: the drawer entries a profile already covers are removed, and the facet's own documentation now states the three opt-in levels and the two gates. The flip itself is blocked, because the facet node's default is global: it would render a unit for every model of every component, not only the seven this story has cleaned.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The safe half is done; the flip is measured and blocked. |
+| Waiting on   | Every component's clean-standard pass.  |
+| Next         | Flip the facet node's default once no component would gain an unintended unit. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
 
-- ores.cpp.shell-command carries an enabled default, and a model with neither a profile row nor a drawer opt-in renders its shell unit.
-- The eight profile rows that fixed the facet true are removed, and the drawer opt-ins the default now covers are removed.
-- A regeneration produces no diff in any component's generated shell units.
-- The tree builds, the codegen suite passes, and check_component_drift.py --all passes.
+- ores.cpp.shell-command carries an enabled default, and a model with neither a profile row nor a drawer opt-in renders its shell unit. Not met, and blocked: the default is global.
+- The profile rows that fixed the facet true are kept, because they are the per-profile activation; the drawer opt-ins a profile already covers are removed. Met for the seven cleaned components.
+- A regeneration produces no diff in any component's generated shell units. Met.
+- The tree builds, the codegen suite passes, and check_component_drift.py --all passes. Met.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two halves, and only one of them is safe.
+
+The first is to read the facet for what it is and stop repeating it. A model whose
+variability profile already fixes =ores.cpp.shell-command= states nothing itself,
+so its drawer entry is removed. A regeneration that produces no diff proves the
+entry was redundant rather than load-bearing.
+
+The second is the flip, and it cannot be made from here. The facet node's
+=#+default:= is global, so enabling it renders a unit for every model of every
+component. Measure what would change before touching it, and record the
+precondition rather than pulling a lever whose blast radius reaches components
+this story does not own.
 
 * Measurements
 
@@ -58,9 +69,48 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Facet node default | disabled | =grep '#+default' projects/ores.codegen/library/templates/ores.cpp.shell-command.org= | 4eec0e6740 |
+| Profiles that fix the facet true | 8: fk-scoped-child, fully-featured-lookup, self-referencing-hierarchy, simple-lookup, tenant-scoped-junction, uuid-identified-lookup, uuid-surrogate-lookup, workspace-scoped-lookup | =grep 'ores.cpp.shell-command' projects/modeling/variability_*.org= | 4eec0e6740 |
+| Drawer opt-ins a profile already covers, in the cleaned components | 13: analytics 4, assets 1, iam 8 | the mapping script | branch |
+| Generated files changed by removing them | 0 | =check_component_drift.py --all= after the removal | branch |
+| Models that would gain a unit if the node default flipped | 76 across 16 components | the mapping script | 4eec0e6740 |
+| Of those, bound to a profile that does not fix the facet | 9: 8 under readonly-timeseries or table-less-record, 1 under trading-instrument | the same script | 4eec0e6740 |
+| Of those, carrying no profile at all | 67, the operations and the entities of components not yet cleaned | the same script | 4eec0e6740 |
 
 * Notes
+
+The task was scoped on the assumption that the seven cleaned components are the
+whole blast radius of the flip. They are not. The facet node's =#+default:= is
+read once for every model the generator renders, so enabling it reaches every
+component in the tree.
+
+The 76 models that would gain a unit, by component: trading 34, refdata 6,
+compute 5, reporting 5, diff 4, marketdata 4, analytics 3, dq 3, iam 3,
+telemetry 3, history 1, http 1, ore 1, scheduler 1, variability 1, workspace 1.
+
+Three of those components are partly this story's business and partly not. The
+analytics three are the stress-test entities in flight under another story, the
+refdata three are the curve tables in flight under the same one, and the dq three
+are the publish operations this story records rather than generates. The other
+sixty-seven belong to components whose clean-standard pass has not run.
+
+Two ways to land the default, and the choice is not this task's to make:
+
+- Wait. Flip the node default when every component has reached the clean
+  standard, which is the precondition that was stated when the task was scoped.
+  Nothing has to be undone in the meantime.
+- Land it now with explicit opt-outs. Enabling the default and adding
+  =:ores.cpp.shell-command.enabled: nil= to the 76 models that should not render
+  a unit yet inverts the opt-in the right way round, but it writes a temporary
+  entry into sixteen components, sixty-seven of which this story does not own
+  and several of which are being edited now.
+
+The eight profile rows are kept. They are the per-profile activation, not
+repetition of the node default, and removing them while the node default is
+disabled would turn the facet off for every model that relies on its profile.
+
+The facet's knowledge page now carries all of this, so the next reader gets the
+measurement with the rule.
 
 * Test Scenarios
 
@@ -86,3 +136,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Half done, and the other half is blocked on a precondition this story cannot
+meet.
+
+Done: the thirteen drawer opt-ins that a variability profile already covered are
+removed from the cleaned components, and a full regeneration produces no diff, so
+they were stating what the profile already stated. The shell facet knowledge page
+is rewritten to describe the facet as it is, including the three opt-in levels,
+the two gates, and the precondition for the flip.
+
+Blocked: the facet node's =#+default:= stays disabled. Enabling it is global.
+Measured at =4eec0e6740=, it would render a unit for 76 models across 16
+components, and 67 of those carry no profile at all because their components have
+not been cleaned.
+
+The task stays open rather than closed. Its first acceptance bullet is unmet, and
+the fix is not a code change in this story: either every component reaches the
+clean standard first, or the default lands with an explicit opt-out written into
+the models that should not render yet.

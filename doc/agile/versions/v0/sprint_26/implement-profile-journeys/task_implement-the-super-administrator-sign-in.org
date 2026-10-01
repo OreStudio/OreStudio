@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:modes:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/implement-the-super-administrator-sign-in
-#+pr:
+#+pr: 2463
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2463][#2463]] | [web] Deliver the session mode and the admin landing |
 
 * Review
 

@@ -36,9 +36,9 @@ identity keys and the security split, because those touch every family.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | The corpus sweep reads lost 0 and unexplained 0 in scope over the whole corpus; the KnockOutSwap round trips; the bond future matches v17; the eight residue elements are resolved; the underlyings table is recorded as out of scope |
+| Now          | The corpus sweep reads lost 0 and unexplained 0 in scope over the whole corpus; the KnockOutSwap round trips; the bond future matches v17; the eight residue elements are resolved; the underlyings table is recorded as out of scope; the delete cascade is generated; the delivery basket is retired |
 | Waiting on   | Nothing. PR 4 and PR 5 are merged, so the security keys are stable. |
-| Next         | The delete and add paths: one transaction in a custom repository method, per the note below |
+| Next         | Defects 14 and 16, then the PR |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -130,6 +130,25 @@ rows the work touches.
 
 * Notes
 
+- *=bond_future_delivery_basket= is retired.* The table held one
+  deliverable identifier per row, keyed by the trade, and ORE states
+  =DeliveryBasket= as an element of =bondFutureReferenceDatum=, which the
+  generated bindings reach only from the =ReferenceData= document root.
+  No trade document states one: the import's =save_delivery_basket= looped
+  over an always-empty list and the exporter never wrote the member back,
+  so the row had no producer and no consumer. That is the shape D26
+  refused to build for the underlyings table, and it is why this one is
+  removed rather than filled. The model, the generated domain class, table,
+  JSON IO, generator, protocol, event, handler, registrar, repository,
+  mapper, service, the two SQL scripts and the cascade entry in
+  =bond_instrument= are gone. Regeneration does not prune, so the
+  byproducts were removed by hand: the two cmake source lists
+  (=regenerate_cmake_component_files.py=), the registrar and composition
+  roots, the SQL include and row-level-security lists, and the ER diagram
+  (=plantuml_er_generate.sh=). The import handler, the reader, the
+  parent-scoped queries, the hand-carried bond container and their tests
+  no longer name the entity. The database is recreated, because the table
+  leaves the schema.
 - *The delete closes the family now, from the model (D27).* The generated
   delete rule calls a generated function that closes the rows the entity
   owns, so one delete removes the family and not the header alone. The

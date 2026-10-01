@@ -129,7 +129,6 @@ struct ir_market_data_identifier final {
     std::optional<std::string> day_count;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
-    std::optional<std::string> point;
     std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;

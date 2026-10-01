@@ -44,7 +44,7 @@ struct canonical_values final {
     std::set<std::string> tenor;
 
     /** @brief Canonical coordinate spellings (e.g. "5y", "sr", "xr14", "atm"). */
-    std::set<std::string> point;
+    std::set<std::string> coordinate;
 };
 
 /**

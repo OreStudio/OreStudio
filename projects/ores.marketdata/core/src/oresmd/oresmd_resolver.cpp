@@ -103,7 +103,6 @@ market_data_identifier resolve_ir(const ir_market_data_requirement& req,
     id.role = pick_optional(req.role, d ? d->role : std::nullopt);
     id.metric = pick_optional(req.metric, d ? d->metric : std::nullopt);
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
     id.maturity = pick_optional(req.maturity, d ? d->maturity : std::nullopt);
     // The surface's own coordinates resolve as one value: a requirement names
     // the surface, and the identifier keeps its model and coordinates together.

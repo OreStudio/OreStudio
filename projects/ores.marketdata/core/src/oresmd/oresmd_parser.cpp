@@ -233,6 +233,28 @@ bool fx_carries_coordinate(fx_quote_type qt, std::string_view key) {
     return false;
 }
 
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_fx_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'delta' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://fx/... does not support the 'strike' query key.")));
+}
+
 void validate_fx_coordinates(fx_quote_type qt, const query_params& qp) {
     if (qp.maturity && !fx_carries_coordinate(qt, "maturity"))
         BOOST_THROW_EXCEPTION(oresmd_exception(
@@ -290,6 +312,31 @@ bool ir_carries_coordinate(ir_quote_type qt, std::string_view key) {
     return false;
 }
 
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_ir_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'expiry' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'strike' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'delta' query key.")));
+    if (qp.smile)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... does not support the 'smile' query key.")));
+}
+
 void validate_ir_coordinates(ir_quote_type qt, const query_params& qp) {
     if (qp.maturity && !ir_carries_coordinate(qt, "maturity"))
         BOOST_THROW_EXCEPTION(oresmd_exception(
@@ -327,6 +374,34 @@ bool equity_carries_coordinate(equity_quote_type qt, std::string_view key) {
                    key == "strike";
     }
     return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_equity_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'delta' query key.")));
+    if (qp.premium)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'premium' query key.")));
+    if (qp.call_put)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'call_put' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://equity/... does not support the 'strike' query key.")));
 }
 
 void validate_equity_coordinates(equity_quote_type qt, const query_params& qp) {
@@ -374,6 +449,34 @@ bool credit_carries_coordinate(credit_quote_type qt, std::string_view key) {
     return false;
 }
 
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_credit_no_coordinates(const query_params& qp) {
+    if (qp.seniority)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'seniority' query key.")));
+    if (qp.restructuring)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'restructuring' query key.")));
+    if (qp.tenor)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'tenor' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'expiry' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'strike' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://credit/... does not support the 'delta' query key.")));
+}
+
 void validate_credit_coordinates(credit_quote_type qt, const query_params& qp) {
     if (qp.seniority && !credit_carries_coordinate(qt, "seniority"))
         BOOST_THROW_EXCEPTION(oresmd_exception(
@@ -412,6 +515,34 @@ bool commodity_carries_coordinate(commodity_quote_type qt, std::string_view key)
                    key == "strike";
     }
     return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_commodity_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'maturity' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'delta' query key.")));
+    if (qp.premium)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'premium' query key.")));
+    if (qp.call_put)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'call_put' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://commodity/... does not support the 'strike' query key.")));
 }
 
 void validate_commodity_coordinates(commodity_quote_type qt, const query_params& qp) {
@@ -459,6 +590,31 @@ bool inflation_carries_coordinate(inflation_quote_type qt, std::string_view key)
     return false;
 }
 
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_inflation_no_coordinates(const query_params& qp) {
+    if (qp.maturity)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'maturity' query key.")));
+    if (qp.month)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'month' query key.")));
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'expiry' query key.")));
+    if (qp.call_put)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'call_put' query key.")));
+    if (qp.strike)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://inflation/... does not support the 'strike' query key.")));
+}
+
 void validate_inflation_coordinates(inflation_quote_type qt, const query_params& qp) {
     if (qp.maturity && !inflation_carries_coordinate(qt, "maturity"))
         BOOST_THROW_EXCEPTION(oresmd_exception(
@@ -491,6 +647,22 @@ bool correlation_carries_coordinate(correlation_quote_type qt, std::string_view 
     return false;
 }
 
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_correlation_no_coordinates(const query_params& qp) {
+    if (qp.expiry)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://correlation/... does not support the 'expiry' query key.")));
+    if (qp.delta)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://correlation/... does not support the 'delta' query key.")));
+}
+
 void validate_correlation_coordinates(correlation_quote_type qt, const query_params& qp) {
     if (qp.expiry && !correlation_carries_coordinate(qt, "expiry"))
         BOOST_THROW_EXCEPTION(oresmd_exception(
@@ -512,6 +684,28 @@ bool shape_profile_carries_coordinate(shape_profile_quote_type qt, std::string_v
             return key == "date" || key == "second" || key == "period" || key == "dst";
     }
     return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_shape_profile_no_coordinates(const query_params& qp) {
+    if (qp.date)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'date' query key.")));
+    if (qp.second)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'second' query key.")));
+    if (qp.period)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'period' query key.")));
+    if (qp.dst)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://shape_profile/... does not support the 'dst' query key.")));
 }
 
 void validate_shape_profile_coordinates(shape_profile_quote_type qt, const query_params& qp) {
@@ -541,6 +735,22 @@ bool rating_carries_coordinate(rating_quote_type qt, std::string_view key) {
             return key == "from" || key == "to";
     }
     return false;
+}
+
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_rating_no_coordinates(const query_params& qp) {
+    if (qp.from_grade)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://rating/... does not support the 'from' query key.")));
+    if (qp.to)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://rating/... does not support the 'to' query key.")));
 }
 
 void validate_rating_coordinates(rating_quote_type qt, const query_params& qp) {
@@ -721,6 +931,8 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_fx_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_fx_no_coordinates(qp);
     // A fixing carries the source that published it, lower-cased the way the
     // index families are, with the token as ORE wrote it kept beside it when the
     // two differ. A quote carries neither; validate_fx() refuses them.
@@ -794,6 +1006,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
             std::format("oresmd://ir/... entity must be a currency, got: '{}'.", id.ccy)));
     if (id.quote_type)
         validate_ir_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_ir_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol) {
         // A shift quote names its surface with no coordinate of its own:
         // CAPFLOOR/SHIFT/CCY/TENOR arrives as
@@ -889,6 +1103,8 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_equity_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_equity_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
@@ -956,6 +1172,8 @@ market_data_identifier parse_credit(const boost::urls::url_view& u, const query_
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_credit_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_credit_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol && id.vol)
         id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     return id;
@@ -999,6 +1217,8 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_correlation_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_correlation_no_coordinates(qp);
     // A pairwise correlation names a second operand as well as the entity, and
     // the entity carries the first: the two take fixed positions in the key.
     if (qp.second_factor)
@@ -1007,7 +1227,7 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
 }
 
 market_data_identifier parse_inflation(const boost::urls::url_view& u, const query_params& qp) {
-    // Validation: only quote, type, and point are meaningful for inflation.
+    // Validation: only quote and type are meaningful for inflation.
     reject_if_present("inflation", "ccy", qp.ccy);
     reject_if_present("inflation", "index", qp.index);
     reject_if_present("inflation", "tenor", qp.tenor);
@@ -1061,6 +1281,8 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_inflation_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_inflation_no_coordinates(qp);
     if (id.type == instrument_type::fixing && !inflation_index_code_is_known(id.index_code))
         BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
             "oresmd://inflation/... '{}' is not an index code the model carries, so it has no "
@@ -1146,6 +1368,8 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_commodity_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_commodity_no_coordinates(qp);
     if (qp.delivery) {
         // A delivery coordinate is a fixing's: a commodity future's or a bond
         // future's contract month, or an intraday power index's window. A quote
@@ -1247,6 +1471,8 @@ market_data_identifier parse_shape_profile(const boost::urls::url_view& u, const
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_shape_profile_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_shape_profile_no_coordinates(qp);
     return id;
 }
 
@@ -1289,6 +1515,8 @@ market_data_identifier parse_rating(const boost::urls::url_view& u, const query_
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_rating_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_rating_no_coordinates(qp);
     return id;
 }
 
@@ -1409,7 +1637,7 @@ void validate_canonical(const domain::market_data_identifier& identifier,
                 "Unknown tenor spelling '{}': not in the supplied canonical values.", *v)));
     };
     const auto check_coordinate = [&canonical](std::string_view key, const std::string& v) {
-        if (!v.empty() && !canonical.point.contains(v))
+        if (!v.empty() && !canonical.coordinate.contains(v))
             BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
                 "Unknown {} spelling '{}': not in the supplied canonical values.", key, v)));
     };

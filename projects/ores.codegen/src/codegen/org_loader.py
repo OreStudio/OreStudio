@@ -6156,8 +6156,8 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
             coordinate_uri.append(
                 {"key": key, "member": surface_of[key], "in_surface": True,
                  "qp_member": key,
-                 # ORE writes these uppercased in the key; delta and smile keep
-                 # the case they arrive with because the corpus is mixed.
+                 # ORE writes these uppercased in the key; smile keeps the
+                 # case it arrives with because the corpus's marker is mixed.
                  "upper": key in ("expiry", "strike", "call_put", "premium", "delta")})
         else:
             # `from` is the query key and cannot be the query_params member: that

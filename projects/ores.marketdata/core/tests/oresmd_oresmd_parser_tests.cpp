@@ -2174,7 +2174,7 @@ TEST_CASE("stored_form_is_the_canonical_encoding_independent_of_input_spelling",
 TEST_CASE("to_uri_with_canonical_values_accepts_known_spellings", tags) {
     canonical_values cv;
     cv.tenor = {"3m", "1d"};
-    cv.point = {"5y"};
+    cv.coordinate = {"5y"};
     const auto id = oresmd_parser::parse(uri("oresmd://ir/"
                                              "usd?index=libor&tenor=3m&role=projection&type=quote&"
                                              "metric=rate&quote=ir_swap&maturity=5y"));
@@ -2186,7 +2186,7 @@ TEST_CASE("to_uri_with_canonical_values_accepts_known_spellings", tags) {
 TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_tenor_spelling", tags) {
     canonical_values cv;
     cv.tenor = {"6m"}; // the identifier's "3m" is not canonical
-    cv.point = {"5y"};
+    cv.coordinate = {"5y"};
     const auto id = oresmd_parser::parse(
         uri("oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=ir_swap&maturity=5y"));
     REQUIRE_THROWS_AS(oresmd_parser::to_uri(id, cv), oresmd_exception);
@@ -2195,7 +2195,7 @@ TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_tenor_spelling", tags
 TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_coordinate_spelling", tags) {
     canonical_values cv;
     cv.tenor = {"3m"};
-    cv.point = {"6m"}; // the identifier's maturity "5y" is not canonical
+    cv.coordinate = {"6m"}; // the identifier's maturity "5y" is not canonical
     const auto id = oresmd_parser::parse(
         uri("oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=ir_swap&maturity=5y"));
     REQUIRE_THROWS_AS(oresmd_parser::to_uri(id, cv), oresmd_exception);
@@ -2203,7 +2203,7 @@ TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_coordinate_spelling",
 
 TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_credit_coordinate_spelling", tags) {
     canonical_values cv;
-    cv.point = {"sr"}; // the identifier's tenor "10y" is not canonical
+    cv.coordinate = {"sr"}; // the identifier's tenor "10y" is not canonical
     const auto id = oresmd_parser::parse(
         uri("oresmd://credit/vod?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=10y"));
     REQUIRE_THROWS_AS(oresmd_parser::to_uri(id, cv), oresmd_exception);
@@ -2214,7 +2214,7 @@ TEST_CASE("to_uri_with_canonical_values_accepts_a_vol_surface", tags) {
     // dimension, so the container holds "5y" and "atm" rather than a composite.
     canonical_values cv;
     cv.tenor = {"2y"};
-    cv.point = {"5Y", "ATM"};
+    cv.coordinate = {"5Y", "ATM"};
     const auto id = oresmd_parser::parse(uri(
         "oresmd://ir/eur?type=vol&tenor=2y&quote=swaption&expiry=5y&delta=atm&model=rate_lnvol"));
     REQUIRE(
@@ -2225,7 +2225,7 @@ TEST_CASE("to_uri_with_canonical_values_accepts_a_vol_surface", tags) {
 TEST_CASE("to_uri_with_canonical_values_rejects_a_vol_coordinate_that_is_not_canonical", tags) {
     canonical_values cv;
     cv.tenor = {"2y"};
-    cv.point = {"5Y"}; // the identifier's delta "ATM" is not canonical
+    cv.coordinate = {"5Y"}; // the identifier's delta "ATM" is not canonical
     const auto id = oresmd_parser::parse(uri(
         "oresmd://ir/eur?type=vol&tenor=2y&quote=swaption&expiry=5y&delta=atm&model=rate_lnvol"));
     REQUIRE_THROWS_AS(oresmd_parser::to_uri(id, cv), oresmd_exception);

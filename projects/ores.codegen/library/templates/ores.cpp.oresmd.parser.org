@@ -236,6 +236,23 @@ bool {{asset_class}}_carries_coordinate({{asset_class}}_quote_type qt, std::stri
     return false;
 }
 
+/**
+ * @brief Refuses any coordinate when the resolved type has no quote type.
+ *
+ * A fixing's key is an index name and a curve's is the curve: neither carries a
+ * coordinate, so a coordinate key on one names nothing. The identity keys the
+ * Fields table declares are not coordinates and are not refused here.
+ */
+void validate_{{asset_class}}_no_coordinates(const query_params& qp) {
+{{#coordinate_keys}}
+{{^is_field}}
+    if (qp.{{qp_member}})
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://{{asset_class}}/... does not support the '{{query_key}}' query key.")));
+{{/is_field}}
+{{/coordinate_keys}}
+}
+
 void validate_{{asset_class}}_coordinates({{asset_class}}_quote_type qt, const query_params& qp) {
 {{#coordinate_keys}}
 {{^is_field}}
@@ -414,6 +431,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
             "oresmd://ir/... entity must be a currency, got: '{}'.", id.ccy)));
     if (id.quote_type)
         validate_ir_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_ir_no_coordinates(qp);
     if (qp.model && id.type == instrument_type::vol) {
         // A shift quote names its surface with no coordinate of its own:
         // CAPFLOOR/SHIFT/CCY/TENOR arrives as
@@ -459,7 +478,7 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
 {{/validate_inline_delegate}}
 {{#validate_inline}}
 {{#inflation}}
-    // Validation: only quote, type, and point are meaningful for inflation.
+    // Validation: only quote and type are meaningful for inflation.
 {{/inflation}}
 {{#reject_keys}}
     reject_if_present("{{asset_class}}", "{{.}}", qp.{{.}});
@@ -545,6 +564,8 @@ market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, con
     // does not give that type is misplaced, not a value to store and forget.
     if (id.quote_type)
         validate_{{asset_class}}_coordinates(*id.quote_type, qp);
+    else if (id.type != instrument_type::quote && id.type != instrument_type::vol)
+        validate_{{asset_class}}_no_coordinates(qp);
 {{/has_coordinates}}
 {{/has_quote_type}}
 {{#has_delivery}}
@@ -657,7 +678,7 @@ void validate_canonical(const domain::market_data_identifier& identifier,
                 "Unknown tenor spelling '{}': not in the supplied canonical values.", *v)));
     };
     const auto check_coordinate = [&canonical](std::string_view key, const std::string& v) {
-        if (!v.empty() && !canonical.point.contains(v))
+        if (!v.empty() && !canonical.coordinate.contains(v))
             BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
                 "Unknown {} spelling '{}': not in the supplied canonical values.", key, v)));
     };

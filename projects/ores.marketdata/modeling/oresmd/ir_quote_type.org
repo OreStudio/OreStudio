@@ -142,7 +142,6 @@ arrived is carried beside it, so a name reads back as it came.
 | role       | std::optional<curve_role>       | no        | role      |                        |
 | metric     | std::optional<domain::metric>   | no        | metric    |                        |
 | quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
-| point      | std::optional<std::string>      | no        | point     |                        |
 | vol        | std::optional<volatility_surface_point> | no  |           |                        |
 
 * Coordinates

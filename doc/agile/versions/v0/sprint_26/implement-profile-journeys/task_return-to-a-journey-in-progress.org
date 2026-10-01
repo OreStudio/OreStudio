@@ -174,4 +174,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: the workflow list request and summary are written by hand in TypeScript, against the generated-protocol ADR. | =wire-protocol/src/tenants.ts= | Decline here | Captured as /Model the workflow query protocol as an operation/, for the =ores.workflow= clean-up. Product owner decision: ship this PR first. |
+| 2 | Important: no test drives =list_instances= with the new filters, because the handler needs a signed request. | =workflow_query_handler.cpp= | Decline here | The capture adds a boundary test. The engine tests cover the target that the filters read. |
+| 3 | Minor: the journey reads one page of tenants (100), so with more tenants a starting point may stay open. | =journeys/server.ts= | Decline | The server refuses a duplicate code in any case. |
+| 4 | Minor: the roster reads at most 1000 provisioning runs. | =wire-protocol/src/tenants.ts= | Decline | The list is in-flight work and is far below that bound. |
+| 5 | Minor: the history field mapper shows a nil UUID for a run with no target. | =workflow_instance_history_field_mapper.cpp= | Decline | Generated code; a template change belongs to the codegen work. |
+| 6 | Minor: misspell-fixer reports EXPLICT in sprint 25 and 26 task pages. | not in this diff | No action | None of the hits is in a file this branch changed. |
+
+Verdict: ready to merge. Nothing critical; the two important findings are recorded follow-ups.

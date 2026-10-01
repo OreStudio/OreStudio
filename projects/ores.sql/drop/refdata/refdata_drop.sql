@@ -58,6 +58,17 @@
 \ir ./refdata_crm_topology_configs_notify_trigger_drop.sql
 \ir ./refdata_crm_topology_configs_drop.sql
 
+-- ORE curve configuration (children first, then the curve, then the
+-- sections it references)
+\ir ./refdata_curve_quotes_notify_trigger_drop.sql
+\ir ./refdata_curve_quotes_drop.sql
+\ir ./refdata_curve_segments_notify_trigger_drop.sql
+\ir ./refdata_curve_segments_drop.sql
+\ir ./refdata_curve_definitions_notify_trigger_drop.sql
+\ir ./refdata_curve_definitions_drop.sql
+\ir ./refdata_curve_sections_notify_trigger_drop.sql
+\ir ./refdata_curve_sections_drop.sql
+
 -- ORE conventions (no dependants, drop first)
 \ir ./refdata_cds_conventions_notify_trigger_drop.sql
 \ir ./refdata_cds_conventions_drop.sql

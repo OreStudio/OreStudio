@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: 09555e86-1d84-4707-ad68-9b141b3cbce8
+:END:
+#+title: ores.refdata.curve_definition
+#+description: Codegen entity model for the refdata =curve_definition= table. One curve recipe in an ORE curveconfig.xml, with the settings every section shares.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One curve recipe in an ORE curveconfig.xml, with the settings common to every section.
+#+entity_singular: curve_definition
+#+entity_plural: curve_definitions
+#+entity_title: Curve Definition
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+One curve entry of one section of a =curveconfig.xml=. Seventy-six of those
+documents ship and hold two thousand eight hundred and fifty-three entries
+across nineteen sections.
+
+Every entry, whatever its section, opens the same way -- a =CurveId= and a
+=CurveDescription= occur once per entry in the corpus, and the settings that
+follow are drawn from a much smaller vocabulary than the sections suggest:
+=Currency= in two thousand one hundred and ninety-two entries, =DiscountCurve=
+in one thousand two hundred and eighty-nine, =DayCounter= in one thousand two
+hundred and seventy-five, =InterpolationMethod= in seven hundred and
+thirty-four. Those are columns. What is left over differs by section --
+=ImplyDefaultFromMarket= and =RecoveryRate= belong to default curves,
+=ExerciseStyle= to equity curves, =BootstrapConfig= to most of them -- and is
+written into =extras= as a stated list of name and value pairs, so a section
+the mapper has not read yet is carried rather than dropped.
+
+The lists an entry may hold -- =Segments=, =Quotes=, =Pillars=,
+=Configurations= -- are ordered and heterogeneous and belong in child tables
+that follow this one. This table is the entry's own settings.
+
+The natural key is the section and the curve id together: =EUR-ESTR= names a
+curve inside one section, and nothing stops another section naming its own.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the curve entry.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** section_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The section the entry belongs to, as =curve_section.code= names it. Half of the
+natural key: two sections may hold a curve of the same id.
+
+References =ores_refdata_curve_sections_tbl.code= (soft FK).
+
+#+begin_src cpp :name generator
+std::string("YieldCurves")
+#+end_src
+
+** curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ORE's =CurveId=, the name the document gives the curve and the name every other
+part of the configuration refers to it by. The other half of the natural key.
+
+#+begin_src cpp :name generator
+std::string("EUR-ESTR")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+ORE's =CurveDescription=, a free line about the curve. It occurs once per entry
+in the corpus but is not required by the schema.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve's currency, as the document spells it. Held as text so the export
+writes back exactly what the document held.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter the curve is built on. The sections name the same idea three
+ways -- =DayCounter=, =YieldCurveDayCounter=, =DayCountConvention= -- and this
+column holds whichever spelling the entry's section uses, because the reader
+and the writer both know the section.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolation_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the curve is interpolated between its pillars.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolation_variable
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the interpolation is a function of -- the tenor, the date, or the
+discount factor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether and how the curve is extrapolated beyond its last pillar.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** tolerance
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The bootstrap tolerance, kept as the document's own spelling of the number:
+carrying it as text means the export cannot turn 0.0001 into 9.999999999999999e-05.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extras
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The entry's remaining settings, one per semicolon, each a pipe-separated name
+and value. They differ by section and none is common to all, so a section whose
+reader has not been written yet still round trips.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the entry in. The store does not order by it, and
+the export restores the document's order from it.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_definitions_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "section_code" <> ''  |
+| "curve_id" <> ''      |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: curve
+:entity_plural_short:   curves
+:entity_singular_words: curve definition
+:entity_plural_words:   curve definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/curve_definition.hpp
+:domain_class:           refdata::domain::curve_definition
+:protocol_include:       ores.refdata.api/messaging/curve_definition_protocol.hpp
+:collection_name:        curves
+:key_field:              curve_id
+:END:
+
+*** Detail fields
+
+| field                  | label                  | widget          | type      | is_key | is_required | placeholder          |
+|------------------------+------------------------+-----------------+-----------+--------+-------------+----------------------|
+| section_code           | Section                | codeEdit        | line_edit | true   | true        | e.g. YieldCurves     |
+| curve_id               | Curve id               | codeEdit        | line_edit | true   | true        | e.g. EUR-ESTR        |
+| description            | Description            | descriptionEdit | text_edit |        |             | Enter a description  |
+| currency               | Currency               | codeEdit        | line_edit |        |             | e.g. EUR             |
+| day_counter            | Day counter            | codeEdit        | line_edit |        |             | e.g. ACT/365         |
+| interpolation_method   | Interpolation method   | codeEdit        | line_edit |        |             | e.g. LogLinear       |
+| interpolation_variable | Interpolation variable | codeEdit        | line_edit |        |             | e.g. Zero            |
+| extrapolation          | Extrapolation          | codeEdit        | line_edit |        |             | e.g. Flat            |
+| tolerance              | Tolerance              | codeEdit        | line_edit |        |             | e.g. 0.0001          |
+
+*** Columns
+
+| enum_name            | field                  | header                | type   | width |
+|----------------------+------------------------+-----------------------+--------+-------|
+| SectionCode          | section_code           | Section               | string | 140   |
+| CurveId              | curve_id               | Curve Id              | string | 200   |
+| Description          | description            | Description           | string | 300   |
+| Currency             | currency               | Currency              | string | 90    |
+| InterpolationMethod  | interpolation_method   | Interpolation Method  | string | 170   |
+| Version              | version                | Version               | int    | 80    |
+| ModifiedBy           | modified_by            | Modified By           | string | 120   |
+| RecordedAt           | recorded_at            | Recorded At           | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:3c99ae31-4e6d-4331-910b-6734431f5e5c][ores.refdata.curve_section]] — the sections this table's entries belong to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

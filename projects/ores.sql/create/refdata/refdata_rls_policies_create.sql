@@ -1771,3 +1771,71 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Curve Sections
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_sections_tbl enable row level security;
+
+drop policy if exists curve_sections_tbl_tenant_isolation_policy
+    on ores_refdata_curve_sections_tbl;
+
+create policy curve_sections_tbl_tenant_isolation_policy
+on ores_refdata_curve_sections_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Definitions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_definitions_tbl enable row level security;
+
+drop policy if exists curve_definitions_tbl_tenant_isolation_policy
+    on ores_refdata_curve_definitions_tbl;
+
+create policy curve_definitions_tbl_tenant_isolation_policy
+on ores_refdata_curve_definitions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Segments
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_segments_tbl enable row level security;
+
+drop policy if exists curve_segments_tbl_tenant_isolation_policy
+    on ores_refdata_curve_segments_tbl;
+
+create policy curve_segments_tbl_tenant_isolation_policy
+on ores_refdata_curve_segments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Quotes
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_quotes_tbl enable row level security;
+
+drop policy if exists curve_quotes_tbl_tenant_isolation_policy
+    on ores_refdata_curve_quotes_tbl;
+
+create policy curve_quotes_tbl_tenant_isolation_policy
+on ores_refdata_curve_quotes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

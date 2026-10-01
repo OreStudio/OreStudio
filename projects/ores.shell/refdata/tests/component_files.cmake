@@ -62,6 +62,7 @@ set(files
     "currency_pair_convention_calendar_commands_tests.cpp"
     "currency_pair_convention_commands_tests.cpp"
     "curve_role_commands_tests.cpp"
+    "curve_section_commands_tests.cpp"
     "day_count_fraction_type_commands_tests.cpp"
     "deposit_convention_commands_tests.cpp"
     "derivation_kind_commands_tests.cpp"

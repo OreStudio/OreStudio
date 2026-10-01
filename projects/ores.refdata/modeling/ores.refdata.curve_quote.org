@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 3efde3f1-fdac-48b2-b6ee-a1ab22b1bf3e
+:END:
+#+title: ores.refdata.curve_quote
+#+description: Codegen entity model for the refdata =curve_quote= table. One market quote a curve or a segment is built from.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One market quote a curve entry or one of its segments is built from.
+#+entity_singular: curve_quote
+#+entity_plural: curve_quotes
+#+entity_title: Curve Quote
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+The market quotes a curve is built from. The corpus holds four thousand one
+hundred and fifty-six of them directly on a curve entry -- a default curve
+names its credit spreads this way -- and twenty-nine thousand more inside the
+segments of the yield curves, which is where most of them live.
+
+A quote is one string naming a market point, =FRA/RATE/USD/1M/1M= or
+=CDS/CREDIT_SPREAD/BANK/SR/USD/1Y=, and the order they are listed in is the
+order the curve is built in, so it is kept.
+
+Two places hold the same element and this one table holds both. A quote whose
+=curve_segment_id= is set belongs to that segment's own list; a quote whose
+=curve_segment_id= is nil belongs to the curve entry itself, and the export
+writes it at the level it came from. The element is not always spelled =Quote=:
+an average OIS segment names its quotes =CompositeQuote=, so the item's own
+element name is a column.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the quote.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve recipe the quote belongs to, whether it sits on the entry or inside
+one of the entry's segments. Carried on both so the quotes of a curve can be
+read without walking the segments.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_segment_id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:nullable:      true
+:default_value: boost::uuids::nil_uuid()
+:END:
+
+The segment whose own list holds the quote, or the nil uuid when the quote sits
+directly on the curve entry.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
+** item_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The element the quote is written as: Quote in almost every list, CompositeQuote
+in an average OIS segment's.
+
+#+begin_src cpp :name generator
+std::string("Quote")
+#+end_src
+
+** quote_text
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The market point the quote names, exactly as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("FRA/RATE/USD/1M/1M")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document listed the quote in, which is the order the curve is
+built in and what the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_quotes_tbl
+:END:
+
+** Checks
+
+| expression          |
+|---------------------|
+| "item_kind" <> ''   |
+| "quote_text" <> ''  |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: quote
+:entity_plural_short:   quotes
+:entity_singular_words: curve quote
+:entity_plural_words:   curve quotes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: q
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve a quote belongs to.
+- [[id:24bda9d8-1cac-45f8-8d53-af43767ee229][ores.refdata.curve_segment]] — the segment whose list may hold it.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

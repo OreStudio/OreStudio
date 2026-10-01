@@ -156,6 +156,21 @@ export const wireWorkflowInstancesSchema = z.object({
     instances: z.array(wireWorkflowInstanceSummarySchema).default([]),
 });
 
+/** The most provisioning runs one roster read asks for. */
+export const TENANT_SETUP_READ_LIMIT = 1000;
+
+/**
+ * The runs a roster read found, and whether it saw all of them.
+ *
+ * `complete` is false when the answer reached the limit. The engine answers
+ * the run that changed last first, so the runs cut off are the oldest, and a
+ * tenant whose only run is among them shows no setup.
+ */
+export interface TenantSetups {
+    readonly setups: ReadonlyMap<string, TenantSetup>;
+    readonly complete: boolean;
+}
+
 /**
  * The latest provisioning run for each tenant it acts on, keyed by tenant id.
  *
@@ -163,13 +178,11 @@ export const wireWorkflowInstancesSchema = z.object({
  * The engine answers the run that changed last first, so the first run seen for
  * a tenant is the one that moved most recently, and that is the one reported.
  */
-export async function readTenantSetups(
-    caller: AuthenticatedCaller,
-): Promise<ReadonlyMap<string, TenantSetup>> {
+export async function readTenantSetups(caller: AuthenticatedCaller): Promise<TenantSetups> {
     const answer = await caller.callAuthenticated(
         'workflow.v1.instances.list',
         listWorkflowInstancesRequestSchema.parse({
-            limit: 1000,
+            limit: TENANT_SETUP_READ_LIMIT,
             type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
             target_kind_filter: PROVISION_TENANT_TARGET_KIND,
         }),
@@ -193,5 +206,5 @@ export async function readTenantSetups(
             error: run.error,
         });
     }
-    return setups;
+    return { setups, complete: answer.instances.length < TENANT_SETUP_READ_LIMIT };
 }

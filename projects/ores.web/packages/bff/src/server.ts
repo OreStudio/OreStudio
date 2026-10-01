@@ -853,7 +853,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         let setups: ReadonlyMap<string, TenantSetup> = new Map();
         let setupUnavailable = false;
         try {
-            setups = await readTenantSetups(session.client);
+            const runs = await readTenantSetups(session.client);
+            setups = runs.setups;
+            if (!runs.complete) {
+                request.log.warn(
+                    'The provisioning run read reached its limit; the oldest runs are not shown.',
+                );
+            }
         } catch (error) {
             request.log.warn({ err: error }, 'The provisioning runs were not read.');
             setupUnavailable = true;

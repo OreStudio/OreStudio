@@ -81,6 +81,7 @@ export {
     TENANT_SUBJECTS,
     listTenantsRequestSchema,
     listWorkflowInstancesRequestSchema,
+    TENANT_SETUP_READ_LIMIT,
     readTenantSetups,
     readTenantsPage,
     wireTenantPageSchema,

@@ -271,9 +271,9 @@ belong to this story:
 | 11 | Staged reference data is never published | Out of scope, dq work |
 | 12 | The publish guard collapses every office onto one party | Out of scope, dq work |
 | 13 | Two names for an instrument's identity | Closed in PR 4: =instrument_id= is gone from the field group, from all 58 models that carried it, from the generated C++ and SQL and from every hand-written caller |
-| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
-| 15 | An underlying is an unqualified name | Decided in PR 5 as D21, built in PR 6, the bond pilot, by the owner's ruling of 2026-09-29: the reshape takes underlying_name out of nine equity tables and basket_json out of two products, which is the pilot's shape |
-| 16 | No observation schedule | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | Decided in PR 6 as D28: every instrument table but one carries a =trade_type_code= constraint and their union covers every code, but ten general tables share one 121-code list, and the one table without a constraint has no producer. Giving each table its own list is the exclusive-or split (defect 9) of the families that own them |
+| 15 | An underlying is an unqualified name | Decided in PR 5 as D21 and re-scoped in PR 6 as D26: no bond product states an underlying, so a table built here would have no producer. The fix belongs to the nine families that state one |
+| 16 | No observation schedule | Decided in PR 6 as D29: the shared =instrument_schedules= table is the home and the bond family writes there; the twelve products that need one are equity, fx and commodity, and moving their scalar frequency columns into it is those families' reshape work |
 | 17 | The trade's declared key is nullable, and its fixture left it empty | PR 3 |
 | 18 | The import writes an instrument but not its legs for the nine rates families | Recorded, not the bond pilot's: the rates families own it. Found by the PR 6 corpus sweep, which reads one KnockOutSwap with no `LegData` in the export |
 
@@ -642,6 +642,36 @@ row is updated as each PR lands.
   delete side: the relationship is enforced where the schema can hold it,
   so the shell verb, the import rollback and every later caller get it
   without repeating it.
+
+- *D28, what defect 14's coverage declaration now says.* Every instrument
+  table but one carries a =trade_type_code= constraint, and the union of
+  the lists covers every code in =ores_trading_trade_types_tbl=, so a
+  generator can ask each table what it holds. The bond table is the
+  tightest: =bond_instruments= names exactly the ten bond codes. But ten
+  tables -- the rates, credit and commodity general tables -- share one
+  identical list of all 121 codes, so their lists do not separate the
+  products they hold from the ones they do not, and =rpa_instruments=
+  carries no constraint at all because nothing writes it: the mapper sends
+  =RiskParticipationAgreement= to =credit_instruments=. The defect's
+  prescription, "declare coverage everywhere first", is met; what remains
+  is giving each table its own list and deciding the unproduced table,
+  which is the exclusive-or split defect 9 asks for and belongs to the
+  families that own those tables, not to the bond pilot.
+- *D29, where defect 16's observation schedule lives.* =instrument_schedules=
+  holds one row per schedule an instrument's owner states, keyed by the
+  trade, the owner, the schedule's role and the entry's ordinal, with
+  =schedule_kind= choosing the rule arm or the date arm and =schedule_role=
+  naming =schedule=, =payment_schedule=, =fixing_schedule= or
+  =reset_schedule=. It is keyed by the instrument rather than by a bond row,
+  so any family whose product states a schedule writes there without a new
+  table; the bond family's trade-owned schedules already do, and its
+  security-owned leg schedules live in =bond_issue_leg_schedule=. The
+  scalars the defect names are still spread over four tables
+  (=commodity_instruments=, =equity_asian_option_instruments=,
+  =equity_accumulator_instruments= and =equity_option_instruments=), and
+  the twelve products that need an observation schedule are equity, fx and
+  commodity. Moving those scalars into the shared table is those families'
+  reshape work, not the bond pilot's.
 
 * Delivery plan
 

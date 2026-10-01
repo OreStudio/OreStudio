@@ -149,6 +149,23 @@ rows the work touches.
   parent-scoped queries, the hand-carried bond container and their tests
   no longer name the entity. The database is recreated, because the table
   leaves the schema.
+- *Defects 14 and 16 are decided, and neither is the bond family's*
+  (D28, D29). Defect 14 asked for the coverage declaration first: every
+  instrument table now carries a =trade_type_code= constraint and their
+  union covers every code, so the measurement it wanted exists. What it
+  shows is that ten tables -- the rates, credit and commodity general
+  tables -- share one identical list of all 121 codes, so a list does not
+  say which products a table holds; the one table with no constraint,
+  =rpa_instrument=, has no producer, because the mapper sends
+  =RiskParticipationAgreement= to =credit_instrument=. Giving each table
+  its own list is the exclusive-or split defect 9 asks for. Defect 16's
+  observation schedule has a home: =instrument_schedules= is keyed by the
+  instrument and already carries =fixing_schedule= among its roles, and
+  the bond family writes there. The scalars it names are still in four
+  equity and commodity tables, and the twelve products that need an
+  observation schedule are theirs; moving the scalars into the shared
+  table is their reshape work. Both defects are fixed for the bond family
+  and recorded for the families that own the remainder.
 - *The delete closes the family now, from the model (D27).* The generated
   delete rule calls a generated function that closes the rows the entity
   owns, so one delete removes the family and not the header alone. The

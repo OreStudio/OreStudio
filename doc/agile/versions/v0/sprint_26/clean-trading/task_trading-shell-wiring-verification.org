@@ -79,8 +79,9 @@ to create, and they are opted in:
 |--------+-----|
 | =bond_issue= | The shared ISIN row every instrument of the family references. =bond_instrument add= takes an =issue_id=, and nothing over the shell creates one, so a bond cannot be booked from scratch today. |
 | =commodity_instrument= | The commodity family's header. It has no shell surface at all, so the family is unreachable over the shell. |
+| =equity_position_option_underlying= | A hand-written application-local unit exposes it today. The standard prefers the generated unit, so opting the entity in replaces it rather than keeping a hand-written duplicate. |
 
-The other 31 are rows their parent owns, written with it, so a standalone
+The other 30 are rows their parent owns, written with it, so a standalone
 verb would let a caller mint an orphan. They get no commands, and this is
 the recorded reason:
 
@@ -98,9 +99,13 @@ the recorded reason:
   =instrument_option_premium=, =instrument_schedule=,
   =instrument_schedule_date=, =instrument_strike=;
 - the per-family children: =callable_swap_call_date=,
-  =equity_position_option_underlying=, =commodity_basket_constituent=;
+  =commodity_basket_constituent=;
 - the trade's envelope: =trade_envelope=,
   =trade_envelope_additional_field=, =trade_envelope_portfolio_id=.
+
+One command surface is not an entity at all: the application-local
+=ore_commands= unit carries the ORE import and export verbs, so the
+aggregator lists it as a local unit rather than deriving it from a model.
 
 * Acceptance
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6c67bf4c-ad4e-446e-a55e-d7aa43735903
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.bond_issue
 #+description: Codegen entity model for the trading =bond_issue= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

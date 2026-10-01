@@ -17,12 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_aggregator_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SHELL_APP_COMMANDS_TRADING_TRADING_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_TRADING_TRADING_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
 
@@ -33,13 +37,14 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Registers every trading entity command unit.
+ * @brief Registers every trading command unit.
  *
- * Hand-written aggregator standing in for the generated
- * register_trading_shell_commands a codegen facet will emit (see the
- * shell command codegen commissioning story): repl.cpp calls this one
- * function, and the entity list below is the data the facet will
- * generate.
+ * The units are generated, one per trading model that opts in to the
+ * shell-command facet through its properties drawer, plus the local units the
+ * component's shell overview declares. Each owns a submenu. This aggregator is
+ * the one entry the host calls, and its list is rendered from the component's
+ * declaration, so a unit that joins or leaves the surface changes the
+ * registration without an edit here.
  */
 class trading_commands {
 private:
@@ -52,9 +57,7 @@ private:
     }
 
 public:
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session,
-                                  pagination_context& pagination);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 };
 
 }

@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: F38B88BD-ACCF-474E-AC91-506DFC5302D8
+:END:
+#+title: ores.cpp.shell-command.command_aggregator_implementation
+#+description: Shell component registrar implementation: one call per generated and local unit, in unit-name order.
+#+type: archetype
+#+output: projects/ores.shell/application/src/app/commands/{component}/{component}_commands.cpp
+#+facet: ores.cpp.shell-command
+#+model_types: domain_entity junction
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+The bodies behind the declarations of the sibling
+=ores.cpp.shell-command.command_aggregator_header= archetype: the unit
+includes and one =register_commands= call per unit.
+
+The list arrives as =shell_aggregator.units=, injected by the generator
+at render time from the component's opted-in entity models and the local
+units its shell overview declares. Each entry names one unit -- its header
+stem and its class name. Every unit reads the root menu and the session,
+because the generated =list= verb spells paging as flags. The generator
+sorts the entries by unit name, so
+the calls are stable from one render to the next and a new unit lands in
+its alphabetical place rather than at the end.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_shell_command_aggregator_impl.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_shell_command_aggregator_impl.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_aggregator_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#shell_aggregator}}
+#include "ores.shell/app/commands/{{component}}/{{component}}_commands.hpp"
+{{#units}}
+#include "ores.shell/app/commands/{{component}}/{{unit}}.hpp"
+{{/units}}
+
+namespace ores::shell::app::commands {
+
+using namespace logging;
+
+void {{component}}_commands::register_commands(cli::Menu& root_menu,
+                                               ores::nats::service::nats_client& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering {{component}} command surface.";
+{{#units}}
+    {{unit}}::register_commands(root_menu, session);
+{{/units}}
+}
+
+}
+{{/shell_aggregator}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]].
+- Sibling archetype: [[id:1E52858C-C02D-4D06-90EF-6F1422C7A5AE][ores.cpp.shell-command.command_aggregator_header]].
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — the variables this template reads.

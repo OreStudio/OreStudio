@@ -22,6 +22,16 @@ _COMPONENT_FILES_TEMPLATES = {
     "cmake_component_files_tests.mustache",
 }
 
+# Templates whose context needs the component's shell-command units injected
+# at render time -- the opted-in models scanned from the modeling directory of
+# the entity being rendered, plus the local units the component's shell
+# overview declares. The templates render only where the component opts into
+# the registrar; see :func:`shell_command_surface` and :func:`_shell_command_units`.
+_SHELL_AGGREGATOR_TEMPLATES = {
+    "cpp_shell_command_aggregator_header.hpp.mustache",
+    "cpp_shell_command_aggregator_impl.cpp.mustache",
+}
+
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.entity":            "domain_entity",
@@ -1950,6 +1960,104 @@ def _protocol_owned_by_operation(model_path, entity) -> bool:
          or entity.get('name_singular')))
     return bool(owner)
 
+
+
+@functools.lru_cache(maxsize=None)
+def _shell_command_units(modeling_dir):
+    """The shell-command unit names of a modeling directory's opted-in models.
+
+    The shell aggregator archetypes hold no entity list: the generator
+    injects the list at render time from the component's own models, the same
+    way ``_COMPONENT_FILES_TEMPLATES`` injects a directory scan. An entity or
+    junction contributes its unit when the ``ores.cpp.shell-command`` facet is
+    enabled for it, resolved from the model's file-level properties drawer
+    merged with its physical-space overrides, most-specific first. The unit is
+    named for the model's singular, which is the stem and class the
+    command-unit archetypes emit.
+
+    Returns the names sorted, so the rendered calls are stable and a new
+    opt-in lands in its alphabetical place. Cached per directory: a component
+    run renders one aggregator per opted-in model, and the scan would
+    otherwise repeat for every one of them.
+    """
+    # Deferred imports: org_loader and physical_space both import this module.
+    from .org_loader import parse_org, read_physical_space_overrides
+    from .physical_space import _enabled_overrides, is_enabled
+
+    directory = Path(modeling_dir)
+    # discover_models() reads these two levels; keep them in step.
+    candidates = sorted(set(directory.glob("*.org"))
+                        | set(directory.glob("*/*.org")))
+    names = set()
+    for path in candidates:
+        if not path.is_file():
+            continue
+        try:
+            model_type = get_model_type(path.name, path)
+        except (ValueError, OSError):
+            continue
+        if model_type not in ("domain_entity", "junction"):
+            continue
+        doc = parse_org(path.read_text(encoding="utf-8"))
+        properties = dict(doc.file_properties)
+        properties.update(read_physical_space_overrides(doc))
+        overrides = _enabled_overrides(properties)
+        if not is_enabled("ores.cpp.shell-command", "ores.cpp.shell-command",
+                          "ores.cpp", overrides, False):
+            continue
+        body = load_model(path).get(model_type) or {}
+        if model_type == "domain_entity":
+            name = body.get("entity_singular")
+        else:
+            name = body.get("name_singular")
+        if name:
+            names.add(name)
+    return tuple(sorted(names))
+
+
+# The shell adapter part of a component declares that component's shell
+# surface in its modeling/component_overview.org: whether the component
+# carries a generated registrar, and which model-less units that registrar
+# also lists. See :func:`shell_command_surface`.
+_SHELL_PART_PREFIX = "ores.shell"
+
+
+@functools.lru_cache(maxsize=None)
+def shell_command_surface(projects_dir, component):
+    """A component's shell-surface declaration: registrar opt-in and local units.
+
+    The per-entity ``:ores.cpp.shell-command.enabled:`` opt-in decides which
+    command units a component emits; it does not decide whether the component
+    carries a registrar. That is a component-level decision, because the
+    registrar is one component-scoped file rather than one per entity, and a
+    component that has not adopted it must keep its hand-authored registrar.
+
+    The declaration lives in the shell adapter part's
+    ``modeling/component_overview.org`` -- the page that declares the
+    component's shell surface -- as two frontmatter keywords.
+    ``#+shell_command_aggregator: true`` opts the component in, and
+    ``#+shell_command_local_units:`` names the units that no model describes,
+    space-separated like ``#+parts:``.
+
+    Returns ``(aggregator, local_units)``. A component with no shell part, or
+    no declaration, opts out and has no local units. Cached per path: one
+    component run renders the registrar once per opted-in model.
+    """
+    # Deferred import: org_loader imports this module.
+    from .org_loader import parse_org
+
+    if not component:
+        return False, ()
+    overview = (Path(projects_dir) / _SHELL_PART_PREFIX / component
+                / "modeling" / "component_overview.org")
+    if not overview.is_file():
+        return False, ()
+    frontmatter = parse_org(overview.read_text(encoding="utf-8")).frontmatter
+    enabled = str(frontmatter.get("shell_command_aggregator", "")
+                  ).strip().lower() in ("true", "t", "yes", "1")
+    local_units = tuple(
+        (frontmatter.get("shell_command_local_units") or "").split())
+    return enabled, local_units
 
 
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
@@ -5241,6 +5349,30 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'name' in enum:
             enum['name_upper'] = enum['name'].upper()
         data['enum'] = enum
+
+    # The shell aggregator templates carry no unit list of their own: the list
+    # is the component's opted-in models, scanned from the directory that holds
+    # the model being rendered, merged with the local units its shell overview
+    # declares. Each entry names the unit's header stem and class, and states
+    # whether it is local so the template can pass the pagination context to a
+    # local unit and only the root menu and session to a generated one.
+    if target_template in _SHELL_AGGREGATOR_TEMPLATES and model_type in (
+            'domain_entity', 'junction'):
+        body = model.get(model_type) or {}
+        component = body.get('component', '')
+        projects_dir = Path(templates_dir).resolve().parents[2]
+        aggregator, local_units = shell_command_surface(projects_dir, component)
+        if aggregator:
+            units = {f'{name}_commands': False
+                     for name in _shell_command_units(str(model_dir))}
+            for name in local_units:
+                units[name] = True
+            data['shell_aggregator'] = {
+                'component': component,
+                'component_upper': component.replace('.', '_').upper(),
+                'units': [{'unit': name, 'local': is_local}
+                          for name, is_local in sorted(units.items())],
+            }
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()

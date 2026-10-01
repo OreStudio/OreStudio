@@ -5,10 +5,12 @@
 #+description: The shell's trading adapter part. Holds the generated command units that project the trading domain onto the REPL menu.
 #+type: ores.codegen.component
 #+component_kind: adapter
+#+shell_command_aggregator: true
+#+shell_command_local_units: ore_commands
 #+level: cross
 #+filetags: :shell:repl:trading:component:
 #+created: 2026-09-16
-#+updated: 2026-09-16
+#+updated: 2026-10-01
 #+name: shell.trading
 #+full_name: ores.shell.trading
 #+brief: Shell trading command units
@@ -37,10 +39,14 @@ entity model's properties drawer. The facet writes here because the part is
 named after the domain the units project, which is the fractal naming rule in
 [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
 
-The part lands in two steps. The first unit proves the facet writes here and
-builds. The remaining units, the =register_trading_shell_commands= entry the
-host calls, and the deletion of the hand-written units in =application= all
-follow in the second step.
+This page also declares the component's shell surface, because it is the
+page a component's shell is read from. Two frontmatter keywords carry the
+part of the surface no entity model holds. =#+shell_command_aggregator:
+true= opts trading into the generated component registrar, which the
+=application= part holds. =#+shell_command_local_units: ore_commands= names
+the units that no model describes, so the registrar lists them beside the
+generated ones. A component that omits the first keyword keeps its
+hand-authored registrar.
 
 * Inputs
 
@@ -54,6 +60,9 @@ follow in the second step.
 - One command unit per opted-in trading entity, at
   =src/app/commands/trading/<entity>_commands.cpp= and
   =include/ores.shell/app/commands/trading/<entity>_commands.hpp=.
+- The =trading_commands= registrar in the =application= part, which calls
+  each generated unit with the root menu and the session and each local
+  unit with the pagination state as well.
 - NATS request messages to the trading service, one per CRUD verb.
 - Formatted text output of query results to stdout.
 
@@ -61,8 +70,9 @@ follow in the second step.
 
 - =include/ores.shell/app/commands/trading/= — the generated unit headers.
 - =src/app/commands/trading/= — the generated unit implementations.
-- =register_trading_shell_commands= — the component-level entry the host calls
-  once to install every unit below the trading root menu. Not landed yet.
+- =trading_commands::register_commands= — the component-level entry the host
+  calls once to install every unit below the trading root menu, generated
+  into =application/src/app/commands/trading/=.
 
 * Dependencies
 

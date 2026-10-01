@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 1E52858C-C02D-4D06-90EF-6F1422C7A5AE
+:END:
+#+title: ores.cpp.shell-command.command_aggregator_header
+#+description: Shell component registrar header: the class the host calls once to install every generated and local unit of one component.
+#+type: archetype
+#+output: projects/ores.shell/application/include/ores.shell/app/commands/{component}/{component}_commands.hpp
+#+facet: ores.cpp.shell-command
+#+model_types: domain_entity junction
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+The class the shell host calls once to install a component's command
+surface. One unit owns one submenu, so the registrar is the list the host
+does not have to know: it declares one =register_commands= and nothing
+else.
+
+The file lands in the shell's =application= part, because the registrar is
+the host's wiring rather than the component's own units. Those units stay
+in the component's adapter part, =projects/ores.shell/{component}/=, and
+the aggregate header includes them across the two parts, under the shared
+=ores.shell/= include prefix the parts already use.
+
+The registrar takes the root menu and the session, which is the whole
+context a unit reads: the generated =list= verb spells paging as
+=--offset= and =--limit= flags rather than through the shell's pagination
+state, so no unit asks for more and the registrar carries nothing it does
+not pass on.
+
+The list itself is not in the model. The generator injects it at render
+time from the component's opted-in entity models plus the component's
+declared local units, the same way =ores.cmake.component.files_*= receives
+a directory scan. The archetype therefore holds the shape of the list and
+its call, and the component's declaration supplies the entries.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_shell_command_aggregator_header.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_shell_command_aggregator_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_aggregator_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#shell_aggregator}}
+#ifndef ORES_SHELL_APP_COMMANDS_{{component_upper}}_{{component_upper}}_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_{{component_upper}}_{{component_upper}}_COMMANDS_HPP
+
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+
+namespace cli {
+
+class Menu;
+
+}
+
+namespace ores::shell::app::commands {
+
+/**
+ * @brief Registers every {{component}} command unit.
+ *
+ * The units are generated, one per {{component}} model that opts in to the
+ * shell-command facet through its properties drawer, plus the local units the
+ * component's shell overview declares. Each owns a submenu. This aggregator is
+ * the one entry the host calls, and its list is rendered from the component's
+ * declaration, so a unit that joins or leaves the surface changes the
+ * registration without an edit here.
+ */
+class {{component}}_commands {
+private:
+    inline static std::string_view logger_name =
+        "ores.shell.app.commands.{{component}}.{{component}}_commands";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    static void register_commands(cli::Menu& root_menu,
+                                  ores::nats::service::nats_client& session);
+};
+
+}
+
+#endif
+{{/shell_aggregator}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]].
+- Sibling archetype: [[id:F38B88BD-ACCF-474E-AC91-506DFC5302D8][ores.cpp.shell-command.command_aggregator_implementation]].
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] — the variables this template reads.

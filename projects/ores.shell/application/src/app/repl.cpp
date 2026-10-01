@@ -109,7 +109,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     using namespace commands;
     dq_commands::register_commands(*root, session_);
     connection_commands::register_commands(*root, session_, connection_template_);
-    trading_commands::register_commands(*root, session_, pagination_);
+    trading_commands::register_commands(*root, session_);
     iam_commands::register_commands(*root, session_, pagination_);
     assets_commands::register_commands(*root, session_);
     refdata_commands::register_commands(*root, session_);

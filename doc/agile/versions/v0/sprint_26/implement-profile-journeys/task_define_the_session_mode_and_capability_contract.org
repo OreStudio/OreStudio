@@ -26,11 +26,11 @@ The target state a later sprint builds from, so the shell can be implemented aga
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing: the contract is written and the shell can be built against it. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

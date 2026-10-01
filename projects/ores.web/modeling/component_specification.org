@@ -140,6 +140,10 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =POST /api/bootstrap/administrator= | Create the first administrator, which closes bootstrap mode. Refused unless the deployment says it is still in bootstrap mode. |
 | =GET /api/password-policy= | The rules a password must satisfy, read from the server's validator. Served with no session, because the screen that shows the rules is the one a person signs in on. |
 | =POST /api/account/password= | Change the signed-in account's own password. The account is the session's own, so the route takes no account id. |
+| =GET /api/accounts= | The accounts the caller may see, one page at a time. The administrator's screen opens on this list and finds the colleague the support call is about. |
+| =GET /api/accounts/:username= | One account by username. A username that is not there answers with nothing, because the caller names a row it has just read: the row having gone since is an expected state and not a failed call. |
+| =GET /api/login-info= | The tenant's login records, one page at a time. The audit screen reads the failed attempts and the lock state from here. |
+| =GET /api/login-info/:accountId= | One account's login record. An account that has never signed in has none, which is an answer rather than an error. The record carries no credential column. |
 | =GET /api/seed-profiles= | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
 | =POST /api/provision-tenant= | Provision a tenant from one starting point. The tenant and its administrator exist when it answers, and the answer carries the id of the run that provisions the rest. |
 | =POST /api/provision-party= | Add one party to the tenant the caller works in, and start the run that brings it to life. The party row is written under the tenant's own party, and the run publishes the party's data, activates it, records the legal entity it was built from and joins the caller to it. |

@@ -98,11 +98,17 @@ export {
     accountIdsRequestSchema,
     accountOperationResultSchema,
     accountPageSchema as wireAccountPageSchema,
+    accountReplySchema,
+    accountUsernameRequestSchema,
     changePasswordRequestSchema,
     changePasswordResultSchema,
     emptyRequestSchema,
     httpInfoResponseSchema,
     listAccountsRequestSchema,
+    listLoginInfoRequestSchema,
+    loginInfoKeyRequestSchema,
+    loginInfoPageSchema as wireLoginInfoPageSchema,
+    loginInfoReplySchema,
     lockResultSchema,
     loginRequestSchema,
     loginResponseSchema,
@@ -214,6 +220,14 @@ export {
     setAccountsLocked,
 } from './account-operations.js';
 export type { AuthenticatedCaller, ChangeOwnPasswordRequest } from './account-operations.js';
+
+export {
+    CREDENTIAL_SUBJECTS,
+    readAccount,
+    readAccountsPage,
+    readLoginInfo,
+    readLoginInfoPage,
+} from './credentials.js';
 
 // The HTTP contract shared by the BFF and the browser. Both sides parse with
 // these definitions, so the network boundary is checked at runtime.

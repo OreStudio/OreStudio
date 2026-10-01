@@ -117,3 +117,8 @@ export type {
 // the sign-in screen is where they are shown.
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
+
+// The login record a credentials screen reads. It carries no credential
+// column, so nothing secret travels with it.
+export { loginInfoPageSchema, loginInfoSchema } from './domain.js';
+export type { LoginInfo, LoginInfoPage } from './domain.js';

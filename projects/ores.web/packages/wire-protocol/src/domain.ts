@@ -122,6 +122,35 @@ export const accountPageSchema = z.object({
 export type AccountPage = z.infer<typeof accountPageSchema>;
 
 /**
+ * A login record as a screen reads it.
+ *
+ * `failedLogins`, `locked`, `lastLogin` and `passwordResetRequired` are what
+ * Rescue access and Audit sign-ins read. The record carries no credential
+ * column, so nothing secret can be forwarded by accident.
+ */
+export const loginInfoSchema = z.object({
+    tenantId: uuidSchema,
+    accountId: uuidSchema,
+    lastIp: z.string(),
+    lastAttemptIp: z.string(),
+    failedLogins: z.int().nonnegative(),
+    locked: z.boolean(),
+    lastLogin: z.string(),
+    online: z.boolean(),
+    passwordResetRequired: z.boolean(),
+});
+
+export type LoginInfo = z.infer<typeof loginInfoSchema>;
+
+/** One page of login records. `totalCount` counts every record the caller can see. */
+export const loginInfoPageSchema = z.object({
+    loginInfo: z.array(loginInfoSchema),
+    totalCount: z.int().nonnegative(),
+});
+
+export type LoginInfoPage = z.infer<typeof loginInfoPageSchema>;
+
+/**
  * The live session's selected party, as the handover carries it.
  *
  * The account and tenant identifiers travel alongside the party because the

@@ -46,12 +46,19 @@ import {
     imageBytesToBuffer,
     toWireTimestamp,
     loginResultSchema,
+    loginInfoKeyRequestSchema,
+    listAccountsRequestSchema,
+    listLoginInfoRequestSchema,
     passwordPolicySchema,
     provisionPartyRequestSchema,
     provisionPartyResultSchema,
     provisionTenantRequestSchema,
     provisionTenantResultSchema,
     registrationPolicyViewSchema,
+    readAccount,
+    readAccountsPage,
+    readLoginInfo,
+    readLoginInfoPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
@@ -670,6 +677,84 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         } finally {
             await client.close().catch(() => undefined);
         }
+    });
+
+    /**
+     * The accounts the tenant's administrator may see.
+     *
+     * The administrator's screen opens on this list and finds the colleague the
+     * support call is about, so the read is the screen's first step. It answers
+     * a page rather than everything, because the number of accounts a tenant
+     * holds is not a number a screen has any use for.
+     */
+    server.get('/api/accounts', async (request) => {
+        const session = requireSession(request);
+        const query = request.query as Record<string, string | undefined>;
+        const page = listAccountsRequestSchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 100),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        return readAccountsPage(session.client, page.data);
+    });
+
+    /**
+     * One account by username.
+     *
+     * A username that is not there answers with nothing rather than with a 404.
+     * The caller names a row it has just read out of the list, so the row having
+     * gone since is an expected state and not a failed call, and it is the same
+     * state as an account that has never signed in: the screen shows it and the
+     * person asks again.
+     */
+    server.get('/api/accounts/:username', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { username?: string };
+        const username = params.username ?? '';
+        if (username.length === 0) {
+            throw invalidRequest('A username is required.');
+        }
+        return { account: await readAccount(session.client, username) };
+    });
+
+    /**
+     * The tenant's login records, one page at a time.
+     *
+     * The audit screen reads the failed attempts from this list, and a locked
+     * account explains the support call the administrator is on.
+     */
+    server.get('/api/login-info', async (request) => {
+        const session = requireSession(request);
+        const query = request.query as Record<string, string | undefined>;
+        const page = listLoginInfoRequestSchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 100),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        return readLoginInfoPage(session.client, page.data);
+    });
+
+    /**
+     * One account's login record.
+     *
+     * A record is written by signing in, so an account that has never signed in
+     * has none, and that is an answer rather than an error. The record carries
+     * no credential column, so nothing secret travels with it.
+     */
+    server.get('/api/login-info/:accountId', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { accountId?: string };
+        const key = loginInfoKeyRequestSchema.safeParse({
+            key: { account_id: params.accountId ?? '' },
+        });
+        if (!key.success) {
+            throw invalidRequest('An account id is required.');
+        }
+        return { loginInfo: await readLoginInfo(session.client, key.data.key.account_id) };
     });
 
     /**

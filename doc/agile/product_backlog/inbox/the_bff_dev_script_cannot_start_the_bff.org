@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: E5CBCBA4-312D-4C88-B20A-6B281EABB7F5
+:END:
+#+title: The @ores/bff dev script cannot start the BFF from its own package
+#+description: packages/bff/package.json runs its dev script as tsx watch --env-file=../../../.env src/main.ts, and npm runs a workspace script with the working directory set to the package. Both relative paths are then wrong: the env file resolves to projects/.env, which does not exist, and site-config's default <cwd>/config/environments.json resolves to packages/bff/config/environments.json, which does not exist either. The server therefore fails to start with 'node: ../../../.env: not found' or 'Cannot read the site configuration', and it starts only when launched from the workspace root with an explicit path: ORES_WEB_PORT=21803 npx tsx watch --env-file=../../.env packages/bff/src/main.ts. Found while verifying the credentials read routes live, which needs the BFF running from source rather than from the fleet's built dist. Either the script or the site-config default should resolve from the module rather than from the caller's working directory, and the start-up note in the README should match whatever is chosen.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-30
+#+updated: 2026-09-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

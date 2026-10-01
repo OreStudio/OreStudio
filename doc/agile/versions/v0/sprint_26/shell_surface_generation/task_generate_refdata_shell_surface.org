@@ -7,43 +7,47 @@
 #+level: s1
 #+filetags: :shell_surface_generation:sprint_26:v0:
 #+owner: marco
-#+branch: feature/generate-the-clean-components-shell-surface
+#+branch: feature/generate-the-refdata-shell-surface
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Every shell command refdata answers is produced by a generated unit. All 90 refdata models render one and no hand-written unit registers a refdata menu, so this task proves the surface is complete, records the count, and finds any hand-written command that overlaps it.
+Every shell command refdata answers is produced by a generated unit, or is recorded with the reason it is not. Ninety-one of the component's ninety-seven models render a unit and no hand-written unit registers a refdata menu, so this task proves the surface is complete, records the six gaps, and finds any hand-written command that overlaps it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Not yet started.                       |
+| Now          | Measured; refdata needs no code change. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The storage task.                      |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
 
-- All 90 refdata entity and junction models are covered by a generated unit, and the count is recorded on this task.
-- No hand-written unit registers a refdata menu or verb, or each one that does is recorded with its reason.
+- Every refdata entity, junction and operation model is covered by a generated unit or recorded with the reason it is not.
+- No hand-written unit registers or extends a refdata menu, or each one that does is recorded with its reason.
 - The refdata shell suite passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Refdata needs no code change, so the task maps and proves. Map every entity,
+junction and operation model to the unit it renders, and name the models that
+render none with the reason each has. Prove the two negatives: no hand-written
+unit registers a refdata menu and no hand-written unit extends one. Follow the
+one cross-component reader, accounts set-default-party, to the refdata request it
+sends, so a read reached from another component is not mistaken for a duplicate.
+Run the component's shell suite.
 
 * Measurements
 
@@ -57,9 +61,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| refdata entity, junction and operation models | 97 | read =#+type:= across =projects/ores.refdata/modeling/ores.*.org= | 1062a7d820 |
+| refdata models rendering a shell unit | 91 | =ls projects/ores.shell/refdata/include/ores.shell/app/commands/refdata/=.hpp | branch |
+| refdata models with no unit | 6: asset_class, calendar_adjustment and calendar_materialisation carry no opt-in; curve_definition, curve_quote and curve_segment have no profile | the mapping script | branch |
+| Hand-written refdata command units | 0 | =grep -rn 'cli::Menu("' projects/ores.shell/application/= | branch |
+| Extensions into a generated refdata menu | 0 | =grep -rln extend_menu projects/ores.shell/application/ --include=*.cpp= | branch |
+| Cross-component readers of a refdata subject | 1: accounts set-default-party sends list_parties_request | =grep -rn "refdata::messaging" projects/ores.shell/application/= | branch |
+| ores.shell.refdata suite | 4332 assertions in 1535 test cases, all passed | =--target test_ores.shell.refdata.tests= | branch |
 
 * Notes
+
+The six models that render no unit divide in two. The three operations are
+operations the shell was never given: =asset_class= declares a catalogue read,
+=calendar_adjustment= an export read and =calendar_materialisation= a
+regeneration command, and all three carry the facet off with no opt-in and no
+hand-written command that sends their subjects or their requests. Nothing is
+superseded by leaving them off, and giving them a command would add shell surface
+rather than move it, so the finding recorded here is that three declared
+operations have no shell reach.
+
+The three curve models are
+[[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]],
+bright_faraday's work in flight, committed under =[refdata] Put the curve tables'
+policies in the RLS phase=. They carry no =:profile:=, so no facet is on for
+them, and the shell is not theirs to decide.
+
+The one hand-written unit that reads refdata data is an iam command, not a
+refdata one: =accounts set-default-party= resolves a party name by sending
+=list_parties_request=. That is the generated =parties= read used inside another
+verb, not a second command answering the same name.
 
 * Test Scenarios
 
@@ -85,3 +115,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Refdata closes with no code change. Ninety-one of its ninety-seven models render
+a shell unit, no hand-written unit registers or extends a refdata menu, and the
+suite passes 4332 assertions in 1535 cases.
+
+The six models without a unit are recorded rather than changed. Three operations
+were never given a shell command, so nothing is superseded by leaving them off.
+Three curve entities belong to bright_faraday's in-flight story and carry no
+profile yet.
+
+The one refdata read reached from a hand-written unit is the generated parties
+read, called inside the iam verb accounts set-default-party.

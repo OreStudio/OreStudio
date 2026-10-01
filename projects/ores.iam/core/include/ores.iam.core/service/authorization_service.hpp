@@ -206,6 +206,18 @@ public:
     // ========================================================================
 
     /**
+     * @brief Resolves the request's authenticated actor to their account.
+     *
+     * The request context carries the actor's username, and every permission
+     * check and self read is keyed by account id. This is the one place the
+     * two are joined, so no caller parses a username as a uuid.
+     *
+     * @return The account the context's actor names, or nothing when the
+     * context's tenant holds no account with that username
+     */
+    std::optional<boost::uuids::uuid> caller_account() const;
+
+    /**
      * @brief Reads an account's own access.
      *
      * The caller names no other account, so a session is the whole of the

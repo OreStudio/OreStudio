@@ -116,9 +116,18 @@ public:
             }
             const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service svc(ctx);
-            if (!svc.has_permission(caller_id, domain::permissions::roles_assign)) {
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      assign_role_response{
+                          .success = false,
+                          .error_message =
+                              "The authenticated actor names no account in this tenant"});
+                return;
+            }
+            if (!svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:assign permission";
                 reply(nats_,
@@ -155,9 +164,18 @@ public:
             }
             const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service svc(ctx);
-            if (!svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      revoke_role_response{
+                          .success = false,
+                          .error_message =
+                              "The authenticated actor names no account in this tenant"});
+                return;
+            }
+            if (!svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:revoke permission";
                 reply(nats_,
@@ -195,7 +213,16 @@ public:
             const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
             service::authorization_service svc(ctx);
-            auto answer = svc.read_account_access(sg(ctx.actor()), sg(req->account_id));
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      get_account_roles_response{
+                          .result = failed_result(
+                              "The authenticated actor names no account in this tenant")});
+                return;
+            }
+            auto answer = svc.read_account_access(*caller_id, sg(req->account_id));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
@@ -216,9 +243,17 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
             service::authorization_service svc(ctx);
-            auto answer = svc.read_own_access(sg(ctx.actor()));
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      get_account_roles_response{
+                          .result = failed_result(
+                              "The authenticated actor names no account in this tenant")});
+                return;
+            }
+            auto answer = svc.read_own_access(*caller_id);
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
@@ -272,10 +307,18 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service caller_svc(ctx);
-            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_assign)) {
+            const auto caller_id = caller_svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false,
+                          .error_message =
+                              "The authenticated actor names no account in this tenant"});
+                return;
+            }
+            if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:assign permission";
                 reply(nats_,
@@ -365,10 +408,18 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service caller_svc(ctx);
-            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
+            const auto caller_id = caller_svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false,
+                          .error_message =
+                              "The authenticated actor names no account in this tenant"});
+                return;
+            }
+            if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:revoke permission";
                 reply(nats_,

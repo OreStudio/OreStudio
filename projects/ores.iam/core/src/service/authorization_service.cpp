@@ -24,6 +24,7 @@
 #include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -259,6 +260,18 @@ authorization_service::get_account_roles(const boost::uuids::uuid& account_id) {
 // ============================================================================
 // Composed Access Reads
 // ============================================================================
+
+std::optional<boost::uuids::uuid> authorization_service::caller_account() const {
+    repository::account_repository accounts;
+
+    const auto found = accounts.read_latest_by_username(ctx_, ctx_.actor());
+    if (found.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "The actor '" << ctx_.actor()
+                                  << "' names no account in tenant " << ctx_.tenant_id().to_string();
+        return std::nullopt;
+    }
+    return found.front().id;
+}
 
 account_access authorization_service::read_own_access(const boost::uuids::uuid& account_id) {
     account_access answer;

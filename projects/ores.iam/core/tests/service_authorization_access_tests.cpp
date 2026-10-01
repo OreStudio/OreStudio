@@ -206,3 +206,38 @@ TEST_CASE("read_own_access_for_an_account_holding_nothing_is_ok_and_empty", tags
     CHECK(access.result.outcome == outcome::ok);
     CHECK(access.roles.empty());
 }
+
+/*
+ * The request context carries the actor's username, and the permission check
+ * is keyed by account id. A read that took the username for an account id
+ * failed every live request, so the resolution is tested on its own rather
+ * than through a read whose answer would look the same.
+ */
+TEST_CASE("caller_account_resolves_the_context_actor_to_their_account", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+
+    authorization_service svc(h.context().with_tenant(h.tenant_id(), caller.username));
+    const auto resolved = svc.caller_account();
+
+    BOOST_LOG_SEV(lg, debug) << "Actor '" << caller.username << "' resolved: " << resolved.has_value();
+
+    REQUIRE(resolved.has_value());
+    CHECK(*resolved == caller.id);
+}
+
+TEST_CASE("caller_account_is_empty_when_no_account_carries_the_actor", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+
+    authorization_service svc(
+        h.context().with_tenant(h.tenant_id(), "no-such-actor@ores.invalid"));
+    const auto resolved = svc.caller_account();
+
+    CHECK_FALSE(resolved.has_value());
+}

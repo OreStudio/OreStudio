@@ -95,6 +95,6 @@ The one it settles is the one that mattered here: this is the second place the
 platform needs an approval, and the reporting line is the first, so the
 primitive is built once.
 
-The shell prototype's page points at it from what it does not settle, and the
-target state it is blind to is
-[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]].
+The shell prototype's page points at it from what it does not settle. The
+target state it is deliberately blind to — how the mode reaches the client,
+which is settled separately — is its own document.

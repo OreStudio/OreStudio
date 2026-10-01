@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command storage answers is produced by a generated unit, or is recor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Not yet started.                       |
+| Now          | Measured; storage keeps its file-transfer menu with a reason. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The synthetic task.                    |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ Every shell command storage answers is produced by a generated unit, or is recor
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The two surfaces answer different requests, so the task establishes that before
+deciding anything. Read what each verb of the hand-written storage menu sends:
+if it moves a file over HTTP while the generated objects unit carries inline
+content over NATS, no generated unit supersedes it and the menu is signed off
+per verb. Check the recipes and the script library for callers, and run the
+component's suite.
 
 * Measurements
 
@@ -57,9 +60,38 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| storage models | 1, the objects operation | =ls projects/ores.storage/modeling/ores.*.org= | 1062a7d820 |
+| storage models rendering a unit | 1 | =ls projects/ores.shell/storage/include/ores.shell/app/commands/storage/=.hpp | branch |
+| Generated objects verbs | put-objects, get-objects, delete-objects, list-objects | read the unit's =register_commands= | branch |
+| Generated put signature | =put-objects <bucket> <key> <content> <content_encoding>= | the unit's command help | branch |
+| Hand-written storage verbs | put, get, delete, list, each over HTTP with a file path | =projects/ores.shell/storage/src/app/commands/storage/raw_storage_commands.cpp= | branch |
+| Recipes and scripts for the storage menu | 0 | =grep -rn '^storage ' doc/recipes/ projects/ores.shell/scripts/library/= | branch |
+| Other consumers of storage_transfer | 5 units in ore, trading and marketdata | =grep -rln storage_transfer projects/ --include=*.cpp= | branch |
+| ores.shell.storage suite | 28 assertions in 13 test cases, all passed; it covers the generated objects unit only | =--target test_ores.shell.storage.tests= | branch |
 
 * Notes
+
+The two surfaces are not substitutes, which is why nothing is retired.
+
+| Verb | Generated | Hand-written |
+|------+-----------+--------------|
+| put | =put-objects <bucket> <key> <content> <content_encoding>= over NATS | =storage put <bucket> <key> <file>= over HTTP |
+| get | =get-objects <bucket> <key> [--include_content]= over NATS | =storage get <bucket> <key> <destination>= over HTTP |
+| delete | =delete-objects <bucket> <key>= over NATS | =storage delete <bucket> <key>= over HTTP |
+| list | =list-objects <bucket> <prefix> [--offset] [--limit]= over NATS | =storage list <bucket> [prefix]= over HTTP |
+
+The generated unit carries the object in the request, so it cannot move a file,
+and the hand-written one moves a file, so it cannot carry content inline. Each is
+the only path to what it does.
+
+=storage_transfer= is not a shell convenience: ore's import and report-package
+handlers, trading and marketdata use it too, so the file path is live
+infrastructure and the menu is its interactive surface.
+
+The hand-written menu has no recipe and no script, and the component's suite does
+not cover it. The suite's 13 cases all belong to the generated objects unit.
+That is recorded rather than fixed: writing tests for a command this task keeps
+is work the clean standard's V-items would ask for, not this story's.
 
 * Test Scenarios
 
@@ -85,3 +117,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Storage closes with no code change. Its one model, the objects operation, renders
+its unit with four verbs, and the hand-written storage menu stays with a recorded
+reason.
+
+The menu is signed off per verb rather than retired. It moves files over HTTP
+through storage_transfer, where the generated unit carries content inline over
+NATS, so neither command answers the other's request. The file path is used by
+ore, trading and marketdata as well, which is why it is not a shell-only
+convenience.
+
+The suite passes 28 assertions in 13 cases. Those cases cover the generated unit;
+the hand-written menu has none, and no recipe or script calls it.

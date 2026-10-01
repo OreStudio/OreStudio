@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:tenants:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/show-the-tenants
-#+pr:
+#+pr: 2466
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2466][#2466]] | [web] Give the system administration area a tenant roster |
 
 * Review
 

@@ -45,7 +45,6 @@ A logical, possibly-partial oresmd requirement for a shape profile.
 | profile_id | std::string | yes | | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<shape_profile_quote_type> | no | quote | |
-| point | std::optional<std::string> | no | point | |
 
 * Coordinates
 
@@ -89,28 +88,27 @@ declared here or a field above, and absence means identity.
 |-----|
 | type |
 | quote |
-| point |
 
 * Test cases
 ** Projections
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec | SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-03-01/0/SEC | shape_profile_factor_quote_key_matches_the_corpus |
-| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-01-01,7200,sec,dst | SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-01-01/7200/SEC/DST | shape_profile_factor_dst_quote_key_matches_the_corpus |
-| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0 | nullopt | shape_profile_factor_rejects_a_point_that_is_not_a_coordinate |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-03-01&second=0&period=sec | SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-03-01/0/SEC | shape_profile_factor_quote_key_matches_the_corpus |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-01-01&second=7200&period=sec&dst=dst | SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-01-01/7200/SEC/DST | shape_profile_factor_dst_quote_key_matches_the_corpus |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-03-01&second=0 | nullopt | shape_profile_factor_rejects_a_point_that_is_not_a_coordinate |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
-| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec | round_trip_shape_profile_factor |
-| oresmd://shape_profile/pjm_wh_rt_pk_15min?type=quote&quote=shape_factor&point=2021-03-01,10800,sec,dst | round_trip_shape_profile_factor_dst |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-03-01&second=0&period=sec | round_trip_shape_profile_factor |
+| oresmd://shape_profile/pjm_wh_rt_pk_15min?type=quote&quote=shape_factor&date=2021-03-01&second=10800&period=sec&dst=dst | round_trip_shape_profile_factor_dst |
 
 ** Rejection
 
 | uri | description |
 |-----+-------------|
-| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&ccy=usd | reject_shape_profile_uri_with_ccy |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&ccy=usd&date=2021-03-01&second=0&period=sec | reject_shape_profile_uri_with_ccy |
 | oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&metric=rate | reject_shape_profile_uri_with_ir_only_metric |
-| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&point=2021-03-01,0,sec&model=rate_lnvol | reject_shape_profile_model_query_key |
+| oresmd://shape_profile/pjm_wh_rt_pk?type=quote&quote=shape_factor&model=rate_lnvol&date=2021-03-01&second=0&period=sec | reject_shape_profile_model_query_key |

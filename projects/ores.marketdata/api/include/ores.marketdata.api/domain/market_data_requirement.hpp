@@ -45,7 +45,8 @@ struct fx_market_data_requirement final {
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
     std::optional<fx_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> maturity;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const fx_market_data_requirement&) const = default;
 };
@@ -68,8 +69,10 @@ struct ir_market_data_requirement final {
     std::optional<std::string> day_count;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
-    std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<domain::ir_quote_type> quote_type;
+    std::optional<std::string> maturity;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const ir_market_data_requirement&) const = default;
 };
@@ -80,7 +83,8 @@ struct equity_market_data_requirement final {
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
     std::optional<equity_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> maturity;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const equity_market_data_requirement&) const = default;
 };
@@ -91,7 +95,10 @@ struct credit_market_data_requirement final {
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
     std::optional<credit_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> seniority;
+    std::optional<std::string> restructuring;
+    std::optional<std::string> tenor;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const credit_market_data_requirement&) const = default;
 };
@@ -103,7 +110,8 @@ struct commodity_market_data_requirement final {
     std::optional<instrument_type> type;
     std::optional<std::string> delivery;
     std::optional<commodity_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> maturity;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const commodity_market_data_requirement&) const = default;
 };
@@ -113,7 +121,9 @@ struct inflation_market_data_requirement final {
     std::optional<std::string> index_code;
     std::optional<instrument_type> type;
     std::optional<inflation_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> maturity;
+    std::optional<std::string> month;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const inflation_market_data_requirement&) const = default;
 };
@@ -124,7 +134,8 @@ struct correlation_market_data_requirement final {
     std::optional<instrument_type> type;
     std::optional<std::string> second_factor;
     std::optional<correlation_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> expiry;
+    std::optional<std::string> delta;
 
     bool operator==(const correlation_market_data_requirement&) const = default;
 };
@@ -144,7 +155,10 @@ struct shape_profile_market_data_requirement final {
     std::optional<std::string> profile_id;
     std::optional<instrument_type> type;
     std::optional<shape_profile_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> date;
+    std::optional<std::string> second;
+    std::optional<std::string> period;
+    std::optional<std::string> dst;
 
     bool operator==(const shape_profile_market_data_requirement&) const = default;
 };
@@ -154,7 +168,8 @@ struct rating_market_data_requirement final {
     std::optional<std::string> provider_id;
     std::optional<instrument_type> type;
     std::optional<rating_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> from;
+    std::optional<std::string> to;
 
     bool operator==(const rating_market_data_requirement&) const = default;
 };

@@ -45,7 +45,6 @@ A logical, possibly-partial oresmd requirement for a rating provider.
 | provider_id | std::string | yes | | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<rating_quote_type> | no | quote | |
-| point | std::optional<std::string> | no | point | |
 
 * Coordinates
 
@@ -87,28 +86,27 @@ declared here or a field above, and absence means identity.
 |-----|
 | type |
 | quote |
-| point |
 
 * Test cases
 ** Projections
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa | RATING/TRANSITION_PROBABILITY/PROVIDER_1/AAA/AA | rating_transition_probability_quote_key_matches_the_corpus |
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point= | RATING/TRANSITION_PROBABILITY/PROVIDER_1/ | rating_transition_probability_quote_key_without_grades_matches_the_corpus |
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y | nullopt | rating_transition_probability_rejects_the_catalogue_six_segment_shape |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&from=aaa&to=aa | RATING/TRANSITION_PROBABILITY/PROVIDER_1/AAA/AA | rating_transition_probability_quote_key_matches_the_corpus |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability | RATING/TRANSITION_PROBABILITY/PROVIDER_1/ | rating_transition_probability_quote_key_without_grades_matches_the_corpus |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa | round_trip_rating_transition_probability |
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point= | round_trip_rating_transition_probability_without_grades |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&from=aaa&to=aa | round_trip_rating_transition_probability |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability | round_trip_rating_transition_probability_without_grades |
 
 ** Rejection
 
 | uri | description |
 |-----+-------------|
-| oresmd://rating/provider_1?ccy=usd&type=quote&quote=transition_probability&point=aaa,aa | reject_rating_uri_with_ccy |
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa&metric=rate | reject_rating_uri_with_ir_only_metric |
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa&model=rate_lnvol | reject_rating_model_query_key |
+| oresmd://rating/provider_1?ccy=usd&type=quote&quote=transition_probability&from=aaa&to=aa | reject_rating_uri_with_ccy |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&metric=rate&from=aaa&to=aa | reject_rating_uri_with_ir_only_metric |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&model=rate_lnvol&from=aaa&to=aa | reject_rating_model_query_key |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y | reject_the_old_point_bag_on_a_rating_uri |

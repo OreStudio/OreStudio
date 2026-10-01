@@ -88,15 +88,6 @@ constexpr std::string_view shift{"SHIFT"};
 constexpr std::string_view price{"PRICE"};
 }  // namespace ore_vol_spec
 
-std::vector<std::string> split_point(const std::string& point) {
-    std::vector<std::string> parts;
-    std::stringstream ss(point);
-    std::string part;
-    while (std::getline(ss, part, ','))
-        parts.push_back(to_upper(part));
-    return parts;
-}
-
 std::string curve_id(std::string_view ccy, std::string_view tenor) {
     return std::format("{}{}", ccy, to_upper(tenor));
 }
@@ -294,6 +285,16 @@ std::string_view ore_vol_model(volatility_model_subtype m) {
     return ore_vol_spec::rate_lnvol;
 }
 
+/**
+ * @brief The value slot of a surface point.
+ *
+ * ORE writes a fixed strike there, or a moneyness when the point is quoted at
+ * the money. The smile marker is a separate dimension and is never this.
+ */
+std::string surface_value(const volatility_surface_point& v) {
+    return v.delta_type ? *v.delta_type : to_upper(v.strike);
+}
+
 std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     if (id.type == instrument_type::vol) {
         // A cap/floor surface is its own family: the metric segment is the vol
@@ -334,13 +335,15 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             const auto model = ore_vol_model(v.model_subtype);
             const auto expiry = to_upper(v.expiry);
             const auto tenor = to_upper(*id.tenor);
-            const auto strike = to_upper(v.strike);
-            // Two qualifiers are optional and both sit ahead of the value: the
-            // index the surface is quoted against, and the convention marker the
-            // corpus writes as Smile, whose shift then takes the value's place.
-            // So the family is six, seven or eight segments long, and the marker
-            // is emitted as written rather than uppercased.
-            if (id.index && v.delta_type)
+            // The value slot holds a strike or a moneyness: an at-the-money point
+            // is a delta, and the key writes it where a strike would go. The smile
+            // marker is a separate dimension and sits ahead of the value.
+            const auto value = surface_value(v);
+            // The index the surface is quoted against and the smile marker are
+            // each optional and both sit ahead of the value, so the family is six,
+            // seven or eight segments long, and the marker is emitted as written
+            // rather than uppercased.
+            if (id.index && v.smile)
                 return std::format("{}/{}/{}/{}/{}/{}/{}/{}",
                                    family,
                                    model,
@@ -348,8 +351,8 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                                    index_token(id),
                                    expiry,
                                    tenor,
-                                   *v.delta_type,
-                                   strike);
+                                   *v.smile,
+                                   value);
             if (id.index)
                 return std::format("{}/{}/{}/{}/{}/{}/{}",
                                    family,
@@ -358,26 +361,23 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                                    index_token(id),
                                    expiry,
                                    tenor,
-                                   strike);
-            if (v.delta_type)
+                                   value);
+            if (v.smile)
                 return std::format("{}/{}/{}/{}/{}/{}/{}",
                                    family,
                                    model,
                                    id.ccy,
                                    expiry,
                                    tenor,
-                                   *v.delta_type,
-                                   strike);
+                                   *v.smile,
+                                   value);
             return std::format(
-                "{}/{}/{}/{}/{}/{}", family, model, id.ccy, expiry, tenor, strike);
+                "{}/{}/{}/{}/{}/{}", family, model, id.ccy, expiry, tenor, value);
         }
-        if (!id.point)
-            return std::nullopt;
-        const auto parts = split_point(*id.point);
-        if (parts.size() != 3)
-            return std::nullopt;
-        const auto t = id.tenor ? to_upper(*id.tenor) : parts[1];
-        return std::format("SWAPTION/RATE_LNVOL/{}/{}/{}/{}", id.ccy, parts[0], t, parts[2]);
+        // A surface key needs its expiry and its underlying tenor: the two
+        // segments ORE writes after the currency. One arriving without them has
+        // no key to emit.
+        return std::nullopt;
     }
     // ZERO is keyed by a free-text curve id and a day count, and its coordinate
     // is the point rather than the tenor field, so it does not pass the guard
@@ -385,7 +385,7 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     // carries both EONIA_ESTER_SPREAD and Ester_Eonia_Spread, so the spelling is
     // data and normalising it would stop the key reading back.
     if (id.type == instrument_type::quote && id.quote_type == ir_quote_type::zero) {
-        if (!id.point || !id.curve_id || !id.day_count)
+        if (!id.maturity || !id.curve_id || !id.day_count)
             return std::nullopt;
         const auto m = id.metric ? *id.metric : default_metric(ir_quote_type::zero);
         return std::format("{}/{}/{}/{}/{}/{}",
@@ -394,7 +394,7 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                            id.ccy,
                            *id.curve_id,
                            *id.day_count,
-                           to_upper(*id.point));
+                           to_upper(*id.maturity));
     }
     // A future is keyed by its delivery month and the exchange-qualified contract
     // code the producer quotes, then the underlying index tenor:
@@ -434,12 +434,12 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                            *id.curve_id,
                            to_upper(*id.tenor));
     }
-    if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
+    if (id.type != instrument_type::quote || !id.quote_type || !id.maturity || !id.tenor)
         return std::nullopt;
 
     const auto qt = *id.quote_type;
     const auto m = id.metric ? *id.metric : default_metric(qt);
-    const auto point = to_upper(*id.point);
+    const auto maturity = to_upper(*id.maturity);
     const auto t = to_upper(*id.tenor);
 
     // A single-currency basis swap quotes two index tenors against one
@@ -460,14 +460,14 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                                to_upper(*id.second_tenor),
                                id.ccy,
                                index,
-                               point);
+                               maturity);
         return std::format("{}/{}/{}/{}/{}/{}",
                            ore_type(qt),
                            ore_metric(m),
                            t,
                            to_upper(*id.second_tenor),
                            id.ccy,
-                           point);
+                           maturity);
     }
 
     // A cross-currency swap quotes two currencies against two index tenors:
@@ -483,7 +483,7 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                            t,
                            *id.second_ccy,
                            to_upper(*id.second_tenor),
-                           point);
+                           maturity);
     }
 
     if (qualifier_includes_index(qt)) {
@@ -505,9 +505,14 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                                    index,
                                    settle,
                                    t,
-                                   point);
-            return std::format(
-                "{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, settle, t, point);
+                                   maturity);
+            return std::format("{}/{}/{}/{}/{}/{}",
+                               ore_type(qt),
+                               ore_metric(m),
+                               id.ccy,
+                               settle,
+                               t,
+                               maturity);
         }
         if (!id.index) {
             // MM is the one indexed family ORE writes both ways: ccy/settle/tenor
@@ -523,12 +528,12 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
                                id.ccy,
                                index_token(id),
                                t,
-                               point);
+                               maturity);
         }
     }
     // No-index types: CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP, FRA, IMM_FRA,
     // and MM when its producer names no index.
-    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
+    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, maturity);
 }
 
 {{#fx_ore}}
@@ -571,7 +576,7 @@ std::optional<std::string> quote_key_fx(const {{asset_class}}_market_data_identi
                            ccy1,
                            ccy2,
                            to_upper(id.vol->expiry),
-                           to_upper(id.vol->strike));
+                           surface_value(*id.vol));
     }
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -579,11 +584,11 @@ std::optional<std::string> quote_key_fx(const {{asset_class}}_market_data_identi
     // spot: TYPE/METRIC/CCY1/CCY2 (scalar).
     if (qt == fx_quote_type::spot)
         return std::format("{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt), ccy1, ccy2);
-    // fwd: TYPE/METRIC/CCY1/CCY2/TENOR — forward curve, needs point for tenor.
-    if (!id.point)
+    // fwd: TYPE/METRIC/CCY1/CCY2/TENOR — forward curve, needs maturity for the tenor.
+    if (!id.maturity)
         return std::nullopt;
     return std::format(
-        "{}/{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt), ccy1, ccy2, to_upper(*id.point));
+        "{}/{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt), ccy1, ccy2, to_upper(*id.maturity));
 }
 
 {{/fx_ore}}
@@ -640,8 +645,8 @@ std::optional<std::string> quote_key_equity(const {{asset_class}}_market_data_id
                                v.strike);
         if (v.call_put)
             return std::format(
-                "{}/{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike, *v.call_put);
-        return std::format("{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike);
+                "{}/{}/{}/{}/{}", head, *id.ccy, v.expiry, surface_value(v), *v.call_put);
+        return std::format("{}/{}/{}/{}", head, *id.ccy, v.expiry, surface_value(v));
     }
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -649,15 +654,15 @@ std::optional<std::string> quote_key_equity(const {{asset_class}}_market_data_id
     // spot: EQUITY/PRICE/TICKER/CCY (scalar, no tenor).
     if (qt == equity_quote_type::spot)
         return std::format("{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt), id.ticker, *id.ccy);
-    // dividend/fwd: TYPE/METRIC/TICKER/CCY/TENOR — curves, need point for the tenor dimension.
-    if (!id.point)
+    // dividend/fwd: TYPE/METRIC/TICKER/CCY/TENOR — curves, need maturity for the tenor.
+    if (!id.maturity)
         return std::nullopt;
     return std::format("{}/{}/{}/{}/{}",
                        ore_type(qt),
                        ore_equity_metric(qt),
                        id.ticker,
                        *id.ccy,
-                       to_upper(*id.point));
+                       to_upper(*id.maturity));
 }
 
 {{/equity_ore}}
@@ -690,79 +695,88 @@ std::optional<std::string> quote_key_credit(const {{asset_class}}_market_data_id
 
     // An index option is a volatility surface, and its metric segment is the vol
     // model rather than the type's own metric. Two forms: the term vol, which is
-    //  a single number at an index tenor, and the full surface with an expiry and
+    // a single number at an index tenor, and the full surface with an expiry and
     // a strike. Both carry the index in the entity.
     if (id.type == instrument_type::vol) {
-        if (!id.point || !id.vol)
+        if (!id.tenor)
             return std::nullopt;
-        const auto parts = split_point(*id.point);
-        const auto model = ore_vol_model(id.vol->model_subtype);
-        if (parts.size() == 1)
+        const auto model = ore_vol_model(id.vol ? id.vol->model_subtype
+                                                : volatility_model_subtype::rate_lnvol);
+        if (!id.vol || id.vol->expiry.empty())
             return std::format(
-                "{}/{}/{}/{}", ore_type(qt), model, id.reference_entity, parts[0]);
-        if (parts.size() == 3)
-            return std::format("{}/{}/{}/{}/{}/{}",
-                               ore_type(qt),
-                               model,
-                               id.reference_entity,
-                               parts[0],
-                               parts[1],
-                               parts[2]);
-        return std::nullopt;
+                "{}/{}/{}/{}", ore_type(qt), model, id.reference_entity, to_upper(*id.tenor));
+        return std::format("{}/{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           model,
+                           id.reference_entity,
+                           to_upper(*id.tenor),
+                           to_upper(id.vol->expiry),
+                           to_upper(id.vol->strike));
     }
 
     if (id.type != instrument_type::quote)
         return std::nullopt;
 
-    if (!id.point)
-        return std::nullopt;
-
-    const auto parts = split_point(*id.point);
-
-    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — point is just the seniority, and
-    // the restructuring clause when the producer writes one.
+    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — the seniority, and the
+    // restructuring clause when the producer writes one.
     if (qt == credit_quote_type::recovery_rate) {
-        if (parts.size() == 2)
+        if (!id.seniority)
+            return std::nullopt;
+        if (id.restructuring)
             return std::format("{}/{}/{}/{}/{}/{}",
                                ore_type(qt),
                                qm,
                                id.reference_entity,
-                               parts[0],
+                               to_upper(*id.seniority),
                                id.ccy,
-                               parts[1]);
-        if (parts.size() != 1)
-            return std::nullopt;
-        return std::format(
-            "{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], id.ccy);
+                               to_upper(*id.restructuring));
+        return std::format("{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           qm,
+                           id.reference_entity,
+                           to_upper(*id.seniority),
+                           id.ccy);
     }
 
     // CDS_INDEX/BASE_CORRELATION/INDEX/TENOR/DETACHMENT — no ccy dimension.
     // INDEX_CDS_TRANCHE/BASE_CORRELATION/INDEX/SERIES_TENOR/DETACHMENT — no ccy dimension.
     if (qt == credit_quote_type::cds_index || qt == credit_quote_type::index_cds_tranche) {
-        if (parts.size() != 2)
+        if (!id.tenor || !id.vol || id.vol->strike.empty())
             return std::nullopt;
-        return std::format(
-            "{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], parts[1]);
+        // The key is TYPE/METRIC/ENTITY/TENOR/STRIKE with no currency and no
+        // seniority, so neither guard the other families share applies here.
+        return std::format("{}/{}/{}/{}/{}",
+                           ore_type(qt),
+                           qm,
+                           id.reference_entity,
+                           to_upper(*id.tenor),
+                           to_upper(id.vol->strike));
     }
 
-    // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR — point=seniority,tenor (2 parts).
+    // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR — the seniority and the
+    // instrument's own term.
     // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — same 6-segment shape.
-    // A third part is the credit derivatives' restructuring clause, which ORE
-    // writes between the currency and the tenor:
+    // A restructuring clause is the credit derivatives' third dimension, which
+    // ORE writes between the currency and the tenor:
     // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/XR14/10Y.
-    if (parts.size() == 3)
+    if (!id.seniority || !id.tenor)
+        return std::nullopt;
+    if (id.restructuring)
         return std::format("{}/{}/{}/{}/{}/{}/{}",
                            ore_type(qt),
                            qm,
                            id.reference_entity,
-                           parts[0],
+                           to_upper(*id.seniority),
                            id.ccy,
-                           parts[1],
-                           parts[2]);
-    if (parts.size() != 2)
-        return std::nullopt;
-    return std::format(
-        "{}/{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], id.ccy, parts[1]);
+                           to_upper(*id.restructuring),
+                           to_upper(*id.tenor));
+    return std::format("{}/{}/{}/{}/{}/{}",
+                       ore_type(qt),
+                       qm,
+                       id.reference_entity,
+                       to_upper(*id.seniority),
+                       id.ccy,
+                       to_upper(*id.tenor));
 }
 
 {{/credit_ore}}
@@ -833,18 +847,23 @@ std::optional<std::string> quote_key_inflation(const {{asset_class}}_market_data
                            to_upper(*id.vol->call_put),
                            to_upper(id.vol->strike));
     }
-    if (id.type != instrument_type::quote || !id.quote_type || !id.point)
+    if (id.type != instrument_type::quote || !id.quote_type)
         return std::nullopt;
     const auto qt = *id.quote_type;
-    // SEASONALITY/RATE/MULT/<INDEX>/<POINT> — 5-segment key with literal MULT.
-    if (qt == inflation_quote_type::seasonality)
+    // SEASONALITY/RATE/MULT/<INDEX>/<MONTH> — 5-segment key with literal MULT.
+    if (qt == inflation_quote_type::seasonality) {
+        if (!id.month)
+            return std::nullopt;
         return std::format("{}/{}/MULT/{}/{}",
                            ore_type(qt),
                            ore_inflation_metric(qt),
                            id.index_code,
-                           to_upper(*id.point));
+                           to_upper(*id.month));
+    }
+    if (!id.maturity)
+        return std::nullopt;
     return std::format(
-        "{}/{}/{}/{}", ore_type(qt), ore_inflation_metric(qt), id.index_code, to_upper(*id.point));
+        "{}/{}/{}/{}", ore_type(qt), ore_inflation_metric(qt), id.index_code, to_upper(*id.maturity));
 }
 
 {{/inflation_ore}}
@@ -856,15 +875,13 @@ std::optional<std::string> quote_key_correlation(const {{asset_class}}_market_da
     // and then the expiry and strike, which is where the corpus puts them.
     if (!id.second_factor)
         return std::format("CORRELATION/RATE/{}", id.factor_pair);
-    if (!id.point)
+    if (!id.expiry || !id.delta)
         return std::nullopt;
-    // The point is stored comma-separated, as every compound point here is; the
-    // correlation key spells it with a slash.
-    const auto parts = split_point(*id.point);
-    if (parts.size() != 2)
-        return std::nullopt;
-    return std::format(
-        "CORRELATION/RATE/{}/{}/{}/{}", id.factor_pair, *id.second_factor, parts[0], parts[1]);
+    return std::format("CORRELATION/RATE/{}/{}/{}/{}",
+                       id.factor_pair,
+                       *id.second_factor,
+                       to_upper(*id.expiry),
+                       to_upper(*id.delta));
 }
 
 {{/correlation_ore}}
@@ -929,18 +946,20 @@ std::string_view ore_{{asset_class}}_metric({{asset_class}}_quote_type qt) {
 std::optional<std::string> quote_key_shape_profile(const {{asset_class}}_market_data_identifier& id) {
     // SHAPE_PROFILE/SHAPE_FACTOR/PROFILE/DATE/SECOND/PERIOD, with the DST flag the
     // corpus writes as a seventh segment. No currency, no tenor and no metric: the
-    // point carries the whole coordinate.
-    if (id.type != instrument_type::quote || !id.point)
+    // declared coordinates carry the whole point.
+    if (id.type != instrument_type::quote || !id.date || !id.second || !id.period)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(shape_profile_quote_type::shape_factor);
-    const auto parts = split_point(*id.point);
-    if (parts.size() != 3 && parts.size() != 4)
-        return std::nullopt;
     const auto head =
         std::format("{}/{}/{}", ore_type(qt), ore_{{asset_class}}_metric(qt), id.profile_id);
-    if (parts.size() == 4)
-        return std::format("{}/{}/{}/{}/{}", head, parts[0], parts[1], parts[2], parts[3]);
-    return std::format("{}/{}/{}/{}", head, parts[0], parts[1], parts[2]);
+    if (id.dst)
+        return std::format("{}/{}/{}/{}/{}",
+                           head,
+                           *id.date,
+                           *id.second,
+                           to_upper(*id.period),
+                           to_upper(*id.dst));
+    return std::format("{}/{}/{}/{}", head, *id.date, *id.second, to_upper(*id.period));
 }
 
 {{/shape_profile_ore}}
@@ -970,22 +989,19 @@ std::string_view ore_{{asset_class}}_metric({{asset_class}}_quote_type qt) {
 std::optional<std::string> quote_key_rating(const {{asset_class}}_market_data_identifier& id) {
     // RATING/TRANSITION_PROBABILITY/PROVIDER/FROM/TO, and the four-segment form
     // the corpus also writes, which names the provider and no grades. No currency,
-    // no tenor and no metric: the point carries the grades.
-    if (id.type != instrument_type::quote || !id.point)
+    // no tenor and no metric: the declared grades carry the point.
+    if (id.type != instrument_type::quote)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(rating_quote_type::transition_probability);
-    const auto parts = split_point(*id.point);
     const auto head =
         std::format("{}/{}/{}", ore_type(qt), ore_{{asset_class}}_metric(qt), id.provider_id);
-    // The degenerate form's point is present but empty, and an empty point splits
-    // to no parts at all; the trailing segment is what says so.
-    if (parts.empty())
+    // The degenerate form names the provider and no grades; its key keeps a
+    // trailing segment to say so.
+    if (!id.from)
         return head + "/";
-    if (parts.size() == 1)
-        return head + "/" + parts[0];
-    if (parts.size() != 2)
-        return std::nullopt;
-    return std::format("{}/{}/{}", head, parts[0], parts[1]);
+    if (!id.to)
+        return head + "/" + to_upper(*id.from);
+    return std::format("{}/{}/{}", head, to_upper(*id.from), to_upper(*id.to));
 }
 
 {{/rating_ore}}
@@ -1022,8 +1038,8 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
                                v.strike);
         if (v.call_put)
             return std::format(
-                "{}/{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike, *v.call_put);
-        return std::format("{}/{}/{}/{}", head, *id.ccy, v.expiry, v.strike);
+                "{}/{}/{}/{}/{}", head, *id.ccy, v.expiry, surface_value(v), *v.call_put);
+        return std::format("{}/{}/{}/{}", head, *id.ccy, v.expiry, surface_value(v));
     }
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -1032,15 +1048,15 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
     if (qt == commodity_quote_type::spot)
         return std::format(
             "{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt), id.commodity_code, *id.ccy);
-    // fwd: TYPE/METRIC/CODE/CCY/TENOR — a curve, needs point for the tenor.
-    if (!id.point)
+    // fwd: TYPE/METRIC/CODE/CCY/TENOR — a curve, needs maturity for the tenor.
+    if (!id.maturity)
         return std::nullopt;
     return std::format("{}/{}/{}/{}/{}",
                        ore_type(qt),
                        ore_commodity_metric(qt),
                        id.commodity_code,
                        *id.ccy,
-                       to_upper(*id.point));
+                       to_upper(*id.maturity));
 }
 
 {{/commodity_ore}}
@@ -1408,6 +1424,22 @@ from_fx_spot(const std::vector<std::string>& parts,
     return id;
 }
 
+/**
+ * @brief Whether a surface's last token names a moneyness rather than a strike.
+ *
+ * ORE writes both in the same slot: an at-the-money point is ATM and a fixed
+ * strike is a number. They are different dimensions, and the identifier keeps
+ * them apart, so the inverse has to tell them by what the token looks like.
+ * The smile marker is not one of these -- it is its own dimension -- so it is
+ * named explicitly.
+ */
+bool is_moneyness(std::string_view token) {
+    const auto t = to_upper(token);
+    if (t.find_first_not_of("0123456789.,+-") == std::string::npos)
+        return false;
+    return to_lower(token) != "smile";
+}
+
 std::optional<market_data_identifier> from_fx_option(const std::vector<std::string>& parts) {
     // FX_OPTION/MODEL/CCY1/CCY2/EXPIRY/STRIKE -- the pair names the currencies,
     // so the surface coordinate is the expiry and the strike after them.
@@ -1421,13 +1453,14 @@ std::optional<market_data_identifier> from_fx_option(const std::vector<std::stri
     fx_market_data_identifier id;
     id.pair = to_upper(parts[2]) + to_upper(parts[3]);
     id.type = instrument_type::vol;
-    // The parser keeps the point composite lowercased and the surface's own
-    // coordinates uppercased, so the inverse builds both the same way.
-    id.point = to_lower(parts[4]) + "," + to_lower(parts[5]);
+    id.quote_type = fx_quote_type::option;
     volatility_surface_point v;
     v.model_subtype = *model;
     v.expiry = to_upper(parts[4]);
-    v.strike = to_upper(parts[5]);
+    if (is_moneyness(parts[5]))
+        v.delta_type = parts[5];
+    else
+        v.strike = to_upper(parts[5]);
     id.vol = std::move(v);
     return id;
 }
@@ -1442,7 +1475,7 @@ std::optional<market_data_identifier> from_fx_fwd(const std::vector<std::string>
     id.pair = to_upper(parts[2]) + to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = fx_quote_type::fwd;
-    id.point = to_lower(parts[4]);
+    id.maturity = to_lower(parts[4]);
     return id;
 }
 
@@ -1480,7 +1513,7 @@ std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string
     if (settle != "2D")
         id.settle = settle;
     id.tenor = to_lower(parts[named_index ? 5 : 4]);
-    id.point = to_lower(parts[named_index ? 6 : 5]);
+    id.maturity = to_lower(parts[named_index ? 6 : 5]);
     return id;
 }
 
@@ -1519,7 +1552,7 @@ std::optional<market_data_identifier> from_ir_zero(const std::vector<std::string
     id.metric = *m;
     id.curve_id = parts[3];
     id.day_count = parts[4];
-    id.point = to_lower(parts[5]);
+    id.maturity = to_lower(parts[5]);
     return id;
 }
 
@@ -1541,7 +1574,7 @@ from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
     id.index = *idx;
     record_index_spelling(id, parts[3]);
     id.tenor = to_lower(parts[4]);
-    id.point = to_lower(parts[5]);
+    id.maturity = to_lower(parts[5]);
     return id;
 }
 
@@ -1589,9 +1622,9 @@ from_ir_basis_swap(const std::vector<std::string>& parts) {
         // whole -- the same field that carries a producer's spelling when there
         // is a family to spell.
         id.index_spelling = parts[5];
-        id.point = to_lower(parts[6]);
+        id.maturity = to_lower(parts[6]);
     } else {
-        id.point = to_lower(parts[5]);
+        id.maturity = to_lower(parts[5]);
     }
     return id;
 }
@@ -1613,7 +1646,7 @@ from_ir_cross_currency(ir_quote_type qt, const std::vector<std::string>& parts) 
     id.tenor = to_lower(parts[3]);
     id.second_ccy = to_upper(parts[4]);
     id.second_tenor = to_lower(parts[5]);
-    id.point = to_lower(parts[6]);
+    id.maturity = to_lower(parts[6]);
     return id;
 }
 
@@ -1632,7 +1665,7 @@ from_ir_no_index(ir_quote_type qt, const std::vector<std::string>& parts) {
     id.quote_type = qt;
     id.metric = *m;
     id.tenor = to_lower(parts[3]);
-    id.point = to_lower(parts[4]);
+    id.maturity = to_lower(parts[4]);
     return id;
 }
 
@@ -1669,8 +1702,6 @@ std::optional<market_data_identifier> from_ir_capfloor(const std::vector<std::st
     id.tenor = to_lower(parts[4]);
     id.shift = to_lower(parts[5]);
     id.strip = to_lower(parts[6]);
-    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]) + "," +
-               to_lower(parts[6]) + "," + to_lower(parts[7]);
     volatility_surface_point v;
     v.model_subtype = *model;
     v.expiry = to_upper(parts[3]);
@@ -1693,11 +1724,13 @@ std::optional<market_data_identifier> from_ir_bond_option(const std::vector<std:
     id.type = instrument_type::vol;
     id.quote_type = ir_quote_type::bond_option;
     id.tenor = to_lower(parts[4]);
-    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
     volatility_surface_point v;
     v.model_subtype = *model;
     v.expiry = to_upper(parts[3]);
-    v.strike = to_upper(parts[5]);
+    if (is_moneyness(parts[5]))
+        v.delta_type = parts[5];
+    else
+        v.strike = to_upper(parts[5]);
     id.vol = std::move(v);
     return id;
 }
@@ -1720,6 +1753,7 @@ std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::st
     ir_market_data_identifier id;
     id.ccy = to_upper(parts[2]);
     id.type = instrument_type::vol;
+    id.quote_type = ir_quote_type::swaption;
     auto at = std::size_t{3};
     if (parts.size() >= 7) {
         if (const auto idx = parse_index(parts[3])) {
@@ -1734,17 +1768,18 @@ std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::st
     volatility_surface_point v;
     v.expiry = to_upper(parts[at]);
     id.tenor = to_lower(parts[at + 1]);
-    const auto expiry = to_lower(parts[at]);
-    const auto tenor = to_lower(parts[at + 1]);
     if (remaining == 4) {
-        // The marker keeps the case it arrives with: the corpus writes Smile,
-        // and the key has to read back as it came.
-        v.delta_type = parts[at + 2];
+        // The smile marker keeps the case it arrives with: the corpus writes
+        // Smile, and the key has to read back as it came. It is its own
+        // dimension, not a delta and not a strike.
+        v.smile = parts[at + 2];
         v.strike = to_upper(parts[at + 3]);
-        id.point = expiry + "," + tenor + "," + *v.delta_type + "," + to_lower(parts[at + 3]);
     } else {
-        v.strike = to_upper(parts[at + 2]);
-        id.point = expiry + "," + tenor + "," + to_lower(parts[at + 2]);
+        // An at-the-money point is a delta, not a strike whose value is "ATM".
+        if (is_moneyness(parts[at + 2]))
+            v.delta_type = parts[at + 2];
+        else
+            v.strike = to_upper(parts[at + 2]);
     }
     v.model_subtype = *model;
     id.vol = std::move(v);
@@ -1765,24 +1800,22 @@ std::optional<market_data_identifier> from_equity_option(const std::vector<std::
     id.ticker = parts[2];
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::vol;
-    // The parser keeps the point composite lowercased and the surface's own
-    // coordinates uppercased, so the inverse builds both the same way.
-    std::string point;
-    for (auto i = std::size_t{4}; i < parts.size(); ++i) {
-        if (i > 4)
-            point += ",";
-        point += to_lower(parts[i]);
-    }
-    id.point = std::move(point);
+    id.quote_type = equity_quote_type::option;
     volatility_surface_point v;
     v.model_subtype = *model;
-    // Verbatim, not uppercased: the corpus writes these in mixed case
-    // (AtmDeltaNeutral, Spot, Call) and the spelling is data.
     v.expiry = parts[4];
     if (parts.size() == 6) {
-        v.strike = parts[5];
+        // The value slot holds a strike or a moneyness, and the grammar keeps
+        // them apart, so the inverse tells them by what the token looks like.
+        if (is_moneyness(parts[5]))
+            v.delta_type = parts[5];
+        else
+            v.strike = parts[5];
     } else if (parts.size() == 7) {
-        v.strike = parts[5];
+        if (is_moneyness(parts[5]))
+            v.delta_type = parts[5];
+        else
+            v.strike = parts[5];
         v.call_put = parts[6];
     } else {
         v.delta_type = parts[5];
@@ -1818,7 +1851,7 @@ from_equity_curve(equity_quote_type qt, const std::vector<std::string>& parts) {
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    id.point = to_lower(parts[4]);
+    id.maturity = to_lower(parts[4]);
     return id;
 }
 
@@ -1835,13 +1868,12 @@ from_rating(rating_quote_type qt, const std::vector<std::string>& parts) {
     id.provider_id = parts[2];
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    std::string point;
-    for (auto i = std::size_t{3}; i < parts.size(); ++i) {
-        if (i > 3)
-            point += ",";
-        point += to_lower(parts[i]);
+    if (parts.size() == 5) {
+        id.from = to_lower(parts[3]);
+        id.to = to_lower(parts[4]);
+    } else {
+        id.from = to_lower(parts[3]);
     }
-    id.point = std::move(point);
     return id;
 }
 
@@ -1858,13 +1890,11 @@ from_shape_profile(shape_profile_quote_type qt, const std::vector<std::string>& 
     id.profile_id = parts[2];
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    std::string point;
-    for (auto i = std::size_t{3}; i < parts.size(); ++i) {
-        if (i > 3)
-            point += ",";
-        point += to_lower(parts[i]);
-    }
-    id.point = std::move(point);
+    id.date = to_lower(parts[3]);
+    id.second = to_lower(parts[4]);
+    id.period = to_lower(parts[5]);
+    if (parts.size() == 7)
+        id.dst = to_lower(parts[6]);
     return id;
 }
 
@@ -1897,22 +1927,21 @@ std::optional<market_data_identifier> from_commodity_option(const std::vector<st
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::vol;
     id.quote_type = commodity_quote_type::option;
-    std::string point;
-    for (auto i = std::size_t{4}; i < parts.size(); ++i) {
-        if (i > 4)
-            point += ",";
-        point += to_lower(parts[i]);
-    }
-    id.point = std::move(point);
     volatility_surface_point v;
     v.model_subtype = *model;
-    // Verbatim, not uppercased: the corpus writes these in mixed case
-    // (AtmDeltaNeutral, Spot, Fwd) and the spelling is data.
     v.expiry = parts[4];
     if (parts.size() == 6) {
-        v.strike = parts[5];
+        // The value slot holds a strike or a moneyness, and the grammar keeps
+        // them apart, so the inverse tells them by what the token looks like.
+        if (is_moneyness(parts[5]))
+            v.delta_type = parts[5];
+        else
+            v.strike = parts[5];
     } else if (parts.size() == 7) {
-        v.strike = parts[5];
+        if (is_moneyness(parts[5]))
+            v.delta_type = parts[5];
+        else
+            v.strike = parts[5];
         v.call_put = parts[6];
     } else {
         v.delta_type = parts[5];
@@ -1946,7 +1975,7 @@ from_commodity_curve(commodity_quote_type qt, const std::vector<std::string>& pa
     id.ccy = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    id.point = to_lower(parts[4]);
+    id.maturity = to_lower(parts[4]);
     return id;
 }
 
@@ -1967,10 +1996,13 @@ from_credit_curve(credit_quote_type qt, const std::vector<std::string>& parts) {
     id.ccy = to_upper(parts[4]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    if (parts.size() == 7)
-        id.point = to_lower(parts[3]) + "," + to_lower(parts[5]) + "," + to_lower(parts[6]);
-    else
-        id.point = to_lower(parts[3]) + "," + to_lower(parts[5]);
+    id.seniority = to_lower(parts[3]);
+    if (parts.size() == 7) {
+        id.restructuring = to_lower(parts[5]);
+        id.tenor = to_lower(parts[6]);
+    } else {
+        id.tenor = to_lower(parts[5]);
+    }
     return id;
 }
 
@@ -1984,8 +2016,9 @@ std::optional<market_data_identifier> from_credit_recovery(const std::vector<std
     id.ccy = to_upper(parts[4]);
     id.type = instrument_type::quote;
     id.quote_type = credit_quote_type::recovery_rate;
-    id.point = parts.size() == 6 ? to_lower(parts[3]) + "," + to_lower(parts[5])
-                                 : to_lower(parts[3]);
+    id.seniority = to_lower(parts[3]);
+    if (parts.size() == 6)
+        id.restructuring = to_lower(parts[5]);
     return id;
 }
 
@@ -2000,7 +2033,12 @@ from_credit_index(credit_quote_type qt, const std::vector<std::string>& parts) {
     id.reference_entity = parts[2];
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]);
+    id.tenor = to_lower(parts[3]);
+    // A credit base-correlation strike is a surface coordinate, so it lives in
+    // the vol block like every other surface value.
+    if (!id.vol)
+        id.vol.emplace();
+    id.vol->strike = to_lower(parts[4]);
     return id;
 }
 
@@ -2021,12 +2059,14 @@ from_credit_index_option(credit_quote_type qt, const std::vector<std::string>& p
     id.quote_type = qt;
     volatility_surface_point v;
     v.model_subtype = *model;
+    id.tenor = to_lower(parts[3]);
     if (parts.size() == 6) {
         v.expiry = to_upper(parts[4]);
-        v.strike = to_upper(parts[5]);
-        id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+        if (is_moneyness(parts[5]))
+            v.delta_type = parts[5];
+        else
+            v.strike = to_upper(parts[5]);
     } else {
-        id.point = to_lower(parts[3]);
     }
     id.vol = std::move(v);
     return id;
@@ -2046,7 +2086,7 @@ from_inflation_capfloor(inflation_quote_type qt, const std::vector<std::string>&
     id.index_code = to_upper(parts[2]);
     id.type = instrument_type::vol;
     id.quote_type = qt;
-    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+    id.maturity = to_lower(parts[3]);
     volatility_surface_point v;
     v.model_subtype = *model;
     v.expiry = to_upper(parts[3]);
@@ -2065,7 +2105,7 @@ from_inflation_swap(inflation_quote_type qt, const std::vector<std::string>& par
     id.index_code = to_upper(parts[2]);
     id.type = instrument_type::quote;
     id.quote_type = qt;
-    id.point = to_lower(parts[3]);
+    id.maturity = to_lower(parts[3]);
     return id;
 }
 
@@ -2078,7 +2118,7 @@ std::optional<market_data_identifier> from_inflation_seasonality(const std::vect
     id.index_code = to_upper(parts[3]);
     id.type = instrument_type::quote;
     id.quote_type = inflation_quote_type::seasonality;
-    id.point = to_lower(parts[4]);
+    id.month = to_lower(parts[4]);
     return id;
 }
 
@@ -2101,7 +2141,8 @@ std::optional<market_data_identifier> from_correlation(const std::vector<std::st
     // identifier, whatever separator the key spells it with. The forward joins
     // this one with a slash; storing it slash-joined here would make the two
     // disagree and the key would not read back.
-    id.point = to_lower(parts[4]) + "," + to_lower(parts[5]);
+    id.expiry = to_lower(parts[4]);
+    id.delta = to_lower(parts[5]);
     return id;
 }
 
@@ -2475,8 +2516,61 @@ bool oresmd_projections::is_scalar(const domain::market_data_identifier& identif
         [](const auto& id) {
             if (id.type != instrument_type::quote && id.type != instrument_type::fixing)
                 return false;
-            if constexpr (requires { id.point; }) {
-                if (id.point)
+            // A datum with no coordinate of its own has one point per date,
+            // whoever supplies the name for it. Every declared coordinate is a
+            // point, and so is a volatility surface.
+            if constexpr (requires { id.maturity; }) {
+                if (id.maturity)
+                    return false;
+            }
+            if constexpr (requires { id.seniority; }) {
+                if (id.seniority)
+                    return false;
+            }
+            if constexpr (requires { id.restructuring; }) {
+                if (id.restructuring)
+                    return false;
+            }
+            if constexpr (requires { id.month; }) {
+                if (id.month)
+                    return false;
+            }
+            if constexpr (requires { id.from; }) {
+                if (id.from)
+                    return false;
+            }
+            if constexpr (requires { id.to; }) {
+                if (id.to)
+                    return false;
+            }
+            if constexpr (requires { id.date; }) {
+                if (id.date)
+                    return false;
+            }
+            if constexpr (requires { id.second; }) {
+                if (id.second)
+                    return false;
+            }
+            if constexpr (requires { id.period; }) {
+                if (id.period)
+                    return false;
+            }
+            if constexpr (requires { id.dst; }) {
+                if (id.dst)
+                    return false;
+            }
+            if constexpr (requires { id.expiry; }) {
+                if (id.expiry)
+                    return false;
+            }
+            if constexpr (requires { id.delta; }) {
+                if (id.delta)
+                    return false;
+            }
+            // Credit's own tenor is a coordinate; IR's is the index's identity.
+            if constexpr (std::is_same_v<std::decay_t<decltype(id)>,
+                                         credit_market_data_identifier>) {
+                if (id.tenor)
                     return false;
             }
             if constexpr (requires { id.vol; }) {

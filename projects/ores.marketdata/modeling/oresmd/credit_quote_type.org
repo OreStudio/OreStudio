@@ -5,7 +5,7 @@
 #+description: Quote types for credit: CDS, hazard rate, recovery rate, index/tranche base correlation.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: credit
-#+validate: inline_delegate
+#+validate: inline
 #+authority: credit
 #+component: ores.marketdata
 #+level: s2
@@ -22,7 +22,7 @@
 | recovery_rate     | RECOVERY_RATE     | recovery_rate     | RATE             | composite       | with_ccy        | RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY, plus the restructuring clause on the keys that name one                                                                                           | RECOVERY_RATE/RATE (recovery rate assumption).                 | seniority,restructuring       | seniority,restructuring       |
 | cds_index         | CDS_INDEX         | cds_index         | BASE_CORRELATION | composite       | no_ccy          |                                                                                                                                                                                            | CDS_INDEX/BASE_CORRELATION (index base correlation).           | tenor,strike                  | tenor,strike                  |
 | index_cds_tranche | INDEX_CDS_TRANCHE | index_cds_tranche | BASE_CORRELATION | composite       | no_ccy          |                                                                                                                                                                                            | INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation). | tenor,strike                  | tenor,strike                  |
-| index_cds_option  | INDEX_CDS_OPTION  | index_cds_option  | RATE             | surface         | no_ccy          | INDEX_CDS_OPTION/MODEL/INDEX/TENOR/EXPIRY/STRIKE, plus the four-segment term-vol form INDEX_CDS_OPTION/MODEL/INDEX/TENOR; the metric segment is the vol model, not this table's ore_metric | INDEX_CDS_OPTION (index CDS option implied vol).               | tenor,expiry,strike           | tenor,expiry,strike           |
+| index_cds_option  | INDEX_CDS_OPTION  | index_cds_option  | RATE             | surface         | no_ccy          | INDEX_CDS_OPTION/MODEL/INDEX/TENOR/EXPIRY/STRIKE, plus the four-segment term-vol form INDEX_CDS_OPTION/MODEL/INDEX/TENOR; the metric segment is the vol model, not this table's ore_metric | INDEX_CDS_OPTION (index CDS option implied vol).               | tenor,expiry,delta,strike     | tenor,expiry,strike           |
 
 * Enum brief
 
@@ -54,7 +54,6 @@ A logical, possibly-partial oresmd requirement for a credit instrument.
 | ccy | std::string | yes | ccy | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<credit_quote_type> | no | quote | |
-| point | std::optional<std::string> | no | point | |
 | vol | std::optional<volatility_surface_point> | no | | |
 
 * Coordinates
@@ -71,13 +70,13 @@ declared here or a field above, and absence means identity.
 | tenor | std::optional<std::string> | string | The quoted instrument's own term. |
 | expiry | std::optional<std::string> | string | A surface point's option expiry. |
 | strike | std::optional<std::string> | string | A surface point's fixed strike, or a base correlation. |
+| delta | std::optional<std::string> | enum | The moneyness or delta convention the strike slot holds when it is not a number. |
 
 * Reject keys
 
 | key |
 |-----|
 | index |
-| tenor |
 | second_tenor |
 | second_ccy |
 | second_factor |
@@ -98,36 +97,36 @@ declared here or a field above, and absence means identity.
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_matches_worked_example |
-| oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_defaults_when_quote_absent |
-| oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y | HAZARD_RATE/RATE/VOD/SR/EUR/5Y | hazard_rate_quote_key_matches_ore_format_6_segments |
-| oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | RECOVERY_RATE/RATE/VOD/SR/EUR | recovery_rate_quote_key |
-| oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y | CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y | cds_quote_key_carries_the_restructuring_clause |
-| oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14 | RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14 | recovery_rate_quote_key_carries_the_restructuring_clause |
-| oresmd://credit/2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&point=5y,2025-02-19,107.5 | INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5 | index_cds_option_vol_quote_key_matches_the_corpus |
-| oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&point=1m | INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/1M | index_cds_option_term_vol_quote_key_matches_the_corpus |
-| oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1 | cds_index_base_correlation_quote_key_no_ccy |
-| oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07 | INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07 | index_cds_tranche_base_correlation_quote_key_no_ccy |
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_matches_worked_example |
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&seniority=sr&tenor=5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_defaults_when_quote_absent |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&seniority=sr&tenor=5y | HAZARD_RATE/RATE/VOD/SR/EUR/5Y | hazard_rate_quote_key_matches_ore_format_6_segments |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&seniority=sr | RECOVERY_RATE/RATE/VOD/SR/EUR | recovery_rate_quote_key |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&seniority=snrfor&restructuring=xr14&tenor=10y | CDS/CREDIT_SPREAD/025ADX/SNRFOR/USD/XR14/10Y | cds_quote_key_carries_the_restructuring_clause |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&seniority=snrfor&restructuring=mr14 | RECOVERY_RATE/RATE/025ADX/SNRFOR/USD/MR14 | recovery_rate_quote_key_carries_the_restructuring_clause |
+| oresmd://credit/2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&tenor=5y&expiry=2025-02-19&strike=107.5 | INDEX_CDS_OPTION/RATE_LNVOL/2I65BYEG6/5Y/2025-02-19/107.5 | index_cds_option_vol_quote_key_matches_the_corpus |
+| oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&tenor=1m | INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/1M | index_cds_option_term_vol_quote_key_matches_the_corpus |
+| oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&tenor=5y&strike=0.1 | CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1 | cds_index_base_correlation_quote_key_no_ccy |
+| oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&tenor=5y&strike=0.07 | INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07 | index_cds_tranche_base_correlation_quote_key_no_ccy |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
-| oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y | round_trip_credit |
-| oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y | round_trip_hazard_rate |
-| oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | round_trip_recovery_rate |
-| oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | round_trip_cds_index |
-| oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07 | round_trip_index_cds_tranche |
-| oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&point=snrfor,xr14,10y | round_trip_cds_with_restructuring_clause |
-| oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&point=snrfor,mr14 | round_trip_recovery_rate_with_restructuring_clause |
-| oresmd://credit/2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&point=5y,2025-02-19,107.5 | round_trip_index_cds_option_vol |
-| oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&point=1m | round_trip_index_cds_option_term_vol |
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&seniority=sr&tenor=5y | round_trip_credit |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&seniority=sr&tenor=5y | round_trip_hazard_rate |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&seniority=sr | round_trip_recovery_rate |
+| oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&tenor=5y&strike=0.1 | round_trip_cds_index |
+| oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&tenor=5y&strike=0.07 | round_trip_index_cds_tranche |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=cds&seniority=snrfor&restructuring=xr14&tenor=10y | round_trip_cds_with_restructuring_clause |
+| oresmd://credit/025adx?ccy=usd&type=quote&quote=recovery_rate&seniority=snrfor&restructuring=mr14 | round_trip_recovery_rate_with_restructuring_clause |
+| oresmd://credit/2i65byeg6?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&tenor=5y&expiry=2025-02-19&strike=107.5 | round_trip_index_cds_option_vol |
+| oresmd://credit/cdxig?ccy=usd&type=vol&quote=index_cds_option&model=rate_lnvol&tenor=1m | round_trip_index_cds_option_term_vol |
 
 ** Rejection
 
 | uri | description |
 |-----+-------------|
 | oresmd://credit/itraxx-europe?ccy=eur&type=quote&index=libor | reject_credit_uri_with_ir_only_index_field |
-| oresmd://credit/itraxx-europe?type=quote&point=sr,5y | reject_credit_uri_missing_mandatory_ccy |
+| oresmd://credit/itraxx-europe?type=quote&seniority=sr&tenor=5y | reject_credit_uri_missing_mandatory_ccy |
 | oresmd://credit/itraxx-europe?ccy=eur&type=curve&quote=cds | reject_credit_quote_when_type_not_quote |
 | oresmd://credit/itraxx-europe?ccy=eur&type=quote&model=rate_lnvol | reject_credit_model_when_type_not_vol |

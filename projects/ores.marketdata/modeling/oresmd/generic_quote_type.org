@@ -86,7 +86,6 @@ A logical, possibly-partial oresmd requirement for a generic index.
 | role |
 | metric |
 | quote |
-| point |
 | source |
 | source_spelling |
 | delivery |

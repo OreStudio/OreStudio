@@ -73,9 +73,12 @@ market_data_identifier resolve_fx(const fx_market_data_requirement& req,
     id.pair = pick_mandatory_string(req.pair, d ? d->pair : std::string{}, "pair");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
     id.source = pick_optional(req.source, d ? d->source : std::nullopt);
     id.source_spelling = pick_optional(req.source_spelling, d ? d->source_spelling : std::nullopt);
+    id.maturity = pick_optional(req.maturity, d ? d->maturity : std::nullopt);
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
     return id;
 }
 
@@ -101,6 +104,10 @@ market_data_identifier resolve_ir(const ir_market_data_requirement& req,
     id.metric = pick_optional(req.metric, d ? d->metric : std::nullopt);
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.maturity = pick_optional(req.maturity, d ? d->maturity : std::nullopt);
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
     return id;
 }
 
@@ -112,7 +119,10 @@ market_data_identifier resolve_equity(const equity_market_data_requirement& req,
     id.ccy = pick_optional(req.ccy, d ? d->ccy : std::nullopt);
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.maturity = pick_optional(req.maturity, d ? d->maturity : std::nullopt);
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
     // Requiredness follows the entity kind here as well as in the parser. A
     // requirement resolved without a currency would otherwise produce an
     // identifier the parser refuses and no quote key can be built from, which
@@ -132,7 +142,12 @@ market_data_identifier resolve_credit(const credit_market_data_requirement& req,
     id.ccy = pick_mandatory_string(req.ccy, d ? d->ccy : std::string{}, "ccy");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.seniority = pick_optional(req.seniority, d ? d->seniority : std::nullopt);
+    id.restructuring = pick_optional(req.restructuring, d ? d->restructuring : std::nullopt);
+    id.tenor = pick_optional(req.tenor, d ? d->tenor : std::nullopt);
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
     return id;
 }
 
@@ -145,7 +160,8 @@ market_data_identifier resolve_correlation(const correlation_market_data_require
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
     id.second_factor = pick_optional(req.second_factor, d ? d->second_factor : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.expiry = pick_optional(req.expiry, d ? d->expiry : std::nullopt);
+    id.delta = pick_optional(req.delta, d ? d->delta : std::nullopt);
     return id;
 }
 
@@ -157,7 +173,11 @@ market_data_identifier resolve_inflation(const inflation_market_data_requirement
         pick_mandatory_string(req.index_code, d ? d->index_code : std::string{}, "index_code");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.maturity = pick_optional(req.maturity, d ? d->maturity : std::nullopt);
+    id.month = pick_optional(req.month, d ? d->month : std::nullopt);
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
     return id;
 }
 
@@ -170,8 +190,11 @@ market_data_identifier resolve_commodity(const commodity_market_data_requirement
     id.ccy = pick_optional(req.ccy, d ? d->ccy : std::nullopt);
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
     id.delivery = pick_optional(req.delivery, d ? d->delivery : std::nullopt);
+    id.maturity = pick_optional(req.maturity, d ? d->maturity : std::nullopt);
+    // The surface's own coordinates resolve as one value: a requirement names
+    // the surface, and the identifier keeps its model and coordinates together.
+    id.vol = req.vol ? req.vol : (d ? d->vol : std::nullopt);
     // Requiredness follows the entity kind here as well as in the parser. A
     // requirement resolved without a currency would otherwise produce an
     // identifier the parser refuses and no quote key can be built from, which
@@ -202,7 +225,10 @@ market_data_identifier resolve_shape_profile(const shape_profile_market_data_req
         pick_mandatory_string(req.profile_id, d ? d->profile_id : std::string{}, "profile_id");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.date = pick_optional(req.date, d ? d->date : std::nullopt);
+    id.second = pick_optional(req.second, d ? d->second : std::nullopt);
+    id.period = pick_optional(req.period, d ? d->period : std::nullopt);
+    id.dst = pick_optional(req.dst, d ? d->dst : std::nullopt);
     return id;
 }
 
@@ -214,7 +240,8 @@ market_data_identifier resolve_rating(const rating_market_data_requirement& req,
         pick_mandatory_string(req.provider_id, d ? d->provider_id : std::string{}, "provider_id");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
     id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
-    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
+    id.from = pick_optional(req.from, d ? d->from : std::nullopt);
+    id.to = pick_optional(req.to, d ? d->to : std::nullopt);
     return id;
 }
 

@@ -46,9 +46,12 @@ struct {{asset_class}}_market_data_requirement final {
 {{#has_quote_type}}
     std::optional<{{{quote_type_cpp_inner}}}> quote_type;
 {{/has_quote_type}}
-{{#has_point}}
-    std::optional<std::string> point;
-{{/has_point}}
+{{#coordinate_fields}}
+    std::optional<{{{cpp_type_inner}}}> {{name}};
+{{/coordinate_fields}}
+{{#has_vol}}
+    std::optional<volatility_surface_point> vol;
+{{/has_vol}}
 
     bool operator==(const {{asset_class}}_market_data_requirement&) const = default;
 };

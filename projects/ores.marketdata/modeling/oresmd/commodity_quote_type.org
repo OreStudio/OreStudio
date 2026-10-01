@@ -57,7 +57,6 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | ccy | std::optional<std::string> | no | ccy | |
 | type | instrument_type | yes | type | instrument_type::quote |
 | quote_type | std::optional<commodity_quote_type> | no | quote | |
-| point | std::optional<std::string> | no | point | |
 | delivery | std::optional<std::string> | no | delivery | |
 | vol | std::optional<volatility_surface_point> | no | | |
 
@@ -104,16 +103,16 @@ declared here or a field above, and absence means identity.
 |-----+----------+-------------|
 | oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | COMMODITY/PRICE/GOLD/USD | commodity_spot_quote_key |
 | oresmd://commodity/gold?ccy=usd&type=quote | COMMODITY/PRICE/GOLD/USD | commodity_quote_key_defaults_to_spot |
-| oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | COMMODITY_FWD/PRICE/WTI/USD/6M | commodity_fwd_quote_key |
-| oresmd://commodity/wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=1y,30.0 | COMMODITY_OPTION/RATE_LNVOL/WTI_USD_VOLS/USD/1Y/30.0 | commodity_option_vol_quote_key_matches_the_corpus |
+| oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&maturity=6m | COMMODITY_FWD/PRICE/WTI/USD/6M | commodity_fwd_quote_key |
+| oresmd://commodity/wti_usd_vols?ccy=usd&type=vol&quote=option&model=rate_lnvol&expiry=1y&strike=30.0 | COMMODITY_OPTION/RATE_LNVOL/WTI_USD_VOLS/USD/1Y/30.0 | commodity_option_vol_quote_key_matches_the_corpus |
 
 ** Round-trip
 
 | uri | description |
 |-----+-------------|
 | oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | round_trip_commodity |
-| oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | round_trip_commodity_fwd |
-| oresmd://commodity/ice:b?ccy=usd&type=vol&quote=option&model=rate_lnvol&point=10m,del,fwd,call,0.10 | round_trip_commodity_option_delta_vol |
+| oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&maturity=6m | round_trip_commodity_fwd |
+| oresmd://commodity/ice:b?ccy=usd&type=vol&quote=option&model=rate_lnvol&expiry=10m&delta=del&premium=fwd&call_put=call&strike=0.10 | round_trip_commodity_option_delta_vol |
 | oresmd://commodity/ice:b?type=fixing&delivery=2024-12 | round_trip_commodity_fixing_delivery |
 
 ** Rejection
@@ -124,4 +123,4 @@ declared here or a field above, and absence means identity.
 | oresmd://commodity/gold?ccy=usd&type=quote&role=discount | reject_commodity_uri_with_ir_only_role_field |
 | oresmd://commodity/gold?type=quote | reject_commodity_uri_missing_mandatory_ccy |
 | oresmd://commodity/gold?ccy=usd&type=quote&model=rate_lnvol | reject_commodity_model_when_type_not_vol |
-| oresmd://commodity/ice:b?ccy=usd&type=quote&quote=fwd&point=2024-12&delivery=2024-12 | reject_commodity_delivery_on_a_quote |
+| oresmd://commodity/ice:b?ccy=usd&type=quote&quote=fwd&delivery=2024-12&maturity=2024-12 | reject_commodity_delivery_on_a_quote |

@@ -97,7 +97,6 @@ struct fx_market_data_identifier final {
     std::optional<std::string> source;
     std::optional<std::string> source_spelling;
     std::optional<domain::fx_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -130,8 +129,8 @@ struct ir_market_data_identifier final {
     std::optional<std::string> day_count;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
-    std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -159,7 +158,6 @@ struct equity_market_data_identifier final {
     std::optional<std::string> ccy;
     instrument_type type = instrument_type::quote;
     std::optional<domain::equity_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -177,7 +175,6 @@ struct credit_market_data_identifier final {
     std::string ccy;
     instrument_type type = instrument_type::quote;
     std::optional<domain::credit_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> seniority;
     std::optional<std::string> restructuring;
     std::optional<std::string> tenor;
@@ -209,7 +206,6 @@ struct commodity_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<std::string> delivery;
     std::optional<domain::commodity_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<volatility_surface_point> vol;
 
@@ -229,7 +225,6 @@ struct inflation_market_data_identifier final {
     std::string index_code;
     instrument_type type = instrument_type::quote;
     std::optional<domain::inflation_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> maturity;
     std::optional<std::string> month;
     std::optional<volatility_surface_point> vol;
@@ -245,7 +240,8 @@ struct correlation_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<std::string> second_factor;
     std::optional<domain::correlation_quote_type> quote_type;
-    std::optional<std::string> point;
+    std::optional<std::string> expiry;
+    std::optional<std::string> delta;
 
     bool operator==(const correlation_market_data_identifier&) const = default;
 };
@@ -279,7 +275,6 @@ struct shape_profile_market_data_identifier final {
     std::string profile_id;
     instrument_type type = instrument_type::quote;
     std::optional<domain::shape_profile_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> date;
     std::optional<std::string> second;
     std::optional<std::string> period;
@@ -295,7 +290,6 @@ struct rating_market_data_identifier final {
     std::string provider_id;
     instrument_type type = instrument_type::quote;
     std::optional<domain::rating_quote_type> quote_type;
-    std::optional<std::string> point;
     std::optional<std::string> from;
     std::optional<std::string> to;
 

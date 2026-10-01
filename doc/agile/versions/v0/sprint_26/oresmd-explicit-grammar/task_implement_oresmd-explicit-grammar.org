@@ -36,7 +36,7 @@ The findings and the target grammar are recorded in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -225,3 +225,22 @@ Not done here, and unit 3's work: the =point= field still exists, the parser
 still reads the old spelling, and the series identity still clears the volatility
 struct. The corpus import therefore still fails, and the investigation's
 measurement of that failure stands.
+
+* Result
+
+Delivered through PR #2464 and merged as the first half of the story.
+
+What shipped: the twelve quote-type models declare their coordinate dimensions
+and the keys the old point corresponds to; the identifier holds a typed member
+per declared coordinate and a smile dimension of its own; the loader reads and
+cross-checks both tables; three surfaces that had no quote type of their own
+gained one; and =test_oresmd_coordinates.py= is the gate.
+
+Verified before the merge: full tree build, full ctest 89 of 89, database
+recreated, 24 services started, codegen suite 1,049, oresmd core suite 1,940
+assertions in 420 cases.
+
+The merge was forced. GitHub was slow, the run was cancelled at the author's
+request, and the two checks still running (Codegen drift, Codegen sweep) were
+cancelled rather than waited for. The other twelve had passed. The local
+verification above covers what no check covers.

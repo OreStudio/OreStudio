@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
-#+branch: feature/oresmd-explicit-grammar
+#+branch: feature/generate-the-oresmd-grammar
 #+pr:
 #+blocked_on:
 #+blocked_since:

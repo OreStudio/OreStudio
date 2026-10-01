@@ -62,40 +62,6 @@ parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
     }
 }
 
-std::string scope_label(synthetic::domain::scope value) {
-    switch (value) {
-        case synthetic::domain::scope::system:
-            return "system";
-        case synthetic::domain::scope::tenant:
-            return "tenant";
-        case synthetic::domain::scope::party:
-            return "party";
-    }
-    return "unknown";
-}
-
-std::string binding_mode_label(synthetic::domain::binding_mode value) {
-    switch (value) {
-        case synthetic::domain::binding_mode::bound:
-            return "bound";
-        case synthetic::domain::binding_mode::sandboxed:
-            return "sandboxed";
-    }
-    return "unknown";
-}
-
-std::optional<synthetic::domain::scope> parse_scope(std::ostream& out, const std::string& value) {
-    if (value == "system")
-        return synthetic::domain::scope::system;
-    if (value == "tenant")
-        return synthetic::domain::scope::tenant;
-    if (value == "party")
-        return synthetic::domain::scope::party;
-    fail(out) << "Invalid --scope value '" << value << "'; expected system, tenant or party."
-              << std::endl;
-    return std::nullopt;
-}
-
 // Parse "folder <token>" / "feed <token>" into (target, token); reports
 // usage. Folder tokens are UUIDs, exact names or standard codename
 // paths; feed tokens are UUIDs, ore keys or source_names -- the
@@ -496,12 +462,6 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                       },
                       "List the synthetic folder hierarchy visible to the logged-in party",
                       {"[--config-id <collection-id>] [--name <folder-name>]"});
-    list_menu->Insert("configs",
-                      [&session](std::ostream& out, std::vector<std::string> args) {
-                          process_list_configs(std::ref(out), std::ref(session), args);
-                      },
-                      "List market_data_generation_configs visible to the logged-in party/tenant",
-                      {"[--scope system|tenant|party]"});
     list_menu->Insert("feeds",
                       [&session](std::ostream& out, std::vector<std::string> args) {
                           process_list_feeds(std::ref(out), std::ref(session), args);
@@ -627,68 +587,6 @@ bool synthetic_commands::list_folders(std::ostream& out,
             printed += print_folder_tree(out, root, by_id, visited, 0);
 
     out << printed << " of " << result->total << " folders shown." << std::endl;
-    return true;
-}
-
-void synthetic_commands::process_list_configs(std::ostream& out,
-                                              nats_client& session,
-                                              const std::vector<std::string>& args) {
-    auto parsed =
-        parse_args(args, {{.name = "scope", .requires_value = true, .default_value = ""}});
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-    if (!parsed->positionals.empty()) {
-        fail(out) << "synthetic list configs takes no positional arguments; see help." << std::endl;
-        return;
-    }
-    if (!session.is_logged_in()) {
-        fail(out) << "Not logged in." << std::endl;
-        return;
-    }
-
-    std::optional<synthetic::domain::scope> scope_filter;
-    const auto& scope = parsed->flag("scope");
-    if (!scope.empty()) {
-        scope_filter = parse_scope(out, scope);
-        if (!scope_filter)
-            return;
-    }
-    list_configs(out, session, scope_filter);
-}
-
-bool synthetic_commands::list_configs(std::ostream& out,
-                                      nats_client& session,
-                                      std::optional<synthetic::domain::scope> scope_filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing market data generation configs.";
-
-    synthetic::messaging::list_market_data_generation_configs_request req{.offset = 0,
-                                                                          .limit = 1000};
-    auto result =
-        do_auth_request<synthetic::messaging::list_market_data_generation_configs_response>(
-            out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return false;
-    if (result->result.outcome != ores::utility::domain::outcome::ok) {
-        fail(out) << "Failed to list configs: " << result->result.message << std::endl;
-        return false;
-    }
-
-    std::size_t shown = 0;
-    for (const auto& c : result->market_data_generation_configs) {
-        if (scope_filter && c.scope != *scope_filter)
-            continue;
-        ++shown;
-        out << "  " << c.name << " (" << boost::uuids::to_string(c.id)
-            << ") scope=" << scope_label(c.scope)
-            << " binding=" << binding_mode_label(c.binding_mode)
-            << " enabled=" << (c.enabled ? "true" : "false");
-        if (c.party_id)
-            out << " party_id=" << boost::uuids::to_string(*c.party_id);
-        out << std::endl;
-    }
-    out << shown << " of " << result->total << " configs shown." << std::endl;
     return true;
 }
 

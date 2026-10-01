@@ -7,30 +7,30 @@
 #+level: s1
 #+filetags: :shell_surface_generation:sprint_26:v0:
 #+owner: marco
-#+branch: feature/generate-the-clean-components-shell-surface
-#+pr:
+#+branch: feature/generate-the-synthetic-shell-surface
+#+pr: 2472
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Every shell command synthetic answers is produced by a generated unit, or is recorded as a hand-craft with a reason. The hand-written synthetic menu lists folders, configs and feeds and runs start, stop and validate-vintage beside nine generated units, so each of its verbs needs to be either superseded or justified.
+Every shell command synthetic answers is produced by a generated unit, or is recorded as a hand-craft with a reason. The hand-written synthetic menu carries six verbs beside nine generated units. Each verb is either superseded by a generated unit or justified: the configs read sends the generated unit's own request and goes, and the folder tree, the running feeds, the feed controls and the vintage check rest on something no model states.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Not yet started.                       |
+| Now          | Measured; the configs read is retired and five verbs are signed off. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The iam task.                          |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,15 @@ Every shell command synthetic answers is produced by a generated unit, or is rec
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Compare each verb of the hand-written synthetic menu with the generated units by
+reading the request it sends, then apply one rule: retire the verb when the
+generated unit sends the same request and the hand-written one adds only a filter
+over a field the model already carries, and keep it with a reason when it
+presents a shape or a request no model states. The configs read sends
+=list_market_data_generation_configs_request= and filters on =c.scope=, so it
+goes. The folder read composes a parent/child tree and resolves names and paths,
+the feeds read reports service state rather than rows, and the three control
+verbs act on running feeds, so they stay.
 
 * Measurements
 
@@ -57,9 +63,46 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| synthetic models | 9, all entities | read =#+type:= across =projects/ores.synthetic/modeling/ores.*.org= | d281ee9e8c |
+| synthetic models rendering a unit | 9 | =ls projects/ores.shell/synthetic/include/ores.shell/app/commands/synthetic/=.hpp | branch |
+| Hand-written synthetic verbs before | 6: list folders, list configs, list feeds, start, stop, validate-vintage | read the =register_commands= body | branch |
+| Hand-written synthetic verbs after | 5, list configs retired | the same body | branch |
+| Lines removed | 102 from synthetic_commands.cpp and 134 across the pair | =git diff --stat= | branch |
+| Callers of any of the six verbs | 0 in recipes, manual or the script library | =grep -rn 'synthetic list\|synthetic start\|synthetic stop' doc/recipes doc/manual projects/ores.shell/scripts/library= | branch |
+| ores.shell.synthetic suite | 432 assertions in 153 test cases, all passed | =--target test_ores.shell.synthetic.tests= | branch |
+| Shell startup | 227 menus, no collision | =printf 'help\nexit\n' \| ./ores.shell= | branch |
 
 * Notes
+
+One verb is retired and five stay, and the rule that separates them is worth
+stating because it recurs across the story's components. A hand-written read goes
+when a generated unit sends the same request and the hand-written one adds only a
+filter over a field the model already carries. It stays when it presents a shape
+or a request no model states.
+
+=synthetic list configs= is the retired one. It sends
+=list_market_data_generation_configs_request=, the generated
+=market_data_generation_configs list= sends the same request, and its =--scope=
+flag filters the returned rows on =c.scope=, a field the config model carries.
+Nothing else was in it.
+
+The five that stay:
+
+- =synthetic list folders= composes the parent/child tree and resolves a folder by
+  exact name, display path, slug or slugged path. The generated =folders list=
+  returns rows.
+- =synthetic list feeds= reports the feeds running in the service, which is
+  process state and not a table.
+- =synthetic start= and =synthetic stop= act on running feeds, resolving a folder
+  subtree or one feed by id, ore key or source name.
+- =synthetic validate-vintage= checks vintage availability for a feed.
+
+None of the five has a model that could state it, so no generated unit
+supersedes them.
+
+Removing the configs read also removed the three helpers only it used:
+=scope_label=, =binding_mode_label= and =parse_scope=. The folder-tree helpers
+stay, because =start= and =stop= resolve a folder token with them.
 
 * Test Scenarios
 
@@ -76,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2472](https://github.com/OreStudio/OreStudio/pull/2472) | Generate the synthetic configs read |
 
 * Review
 
@@ -85,3 +128,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Synthetic's nine models all render a unit, and its hand-written menu now carries
+five verbs instead of six. =synthetic list configs= is gone: the generated
+=market_data_generation_configs list= sends the same request, and the only thing
+the hand-written verb added was a filter on =c.scope=, a field the model already
+carries. A caller who wants one scope reads the generated list and filters it.
+
+The other five verbs are signed off with their reasons. One composes a folder
+tree, one reports service state, two control running feeds and one validates
+vintage availability. No model states any of them, so no generated unit can
+supersede them.
+
+The suite passes 432 assertions in 153 cases, and the shell still registers its
+227 menus with no collision.

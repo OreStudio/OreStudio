@@ -26,11 +26,11 @@ Every shell command storage answers is produced by a generated unit, or is recor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] |
-| Now          | Measured; storage keeps its file-transfer menu with a reason. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The synthetic task.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

@@ -19,7 +19,9 @@
  *
  */
 
+import { z } from 'zod';
 import {
+    accountSchema,
     bootstrapStatusSchema,
     initialAdministratorSchema,
     loginResultSchema,
@@ -35,11 +37,16 @@ import {
     tenantPageSchema,
     tenantStatusesResponseSchema,
     workflowProgressSchema,
+    loginInfoSchema,
+    sessionSchema,
+    type Account,
     type BootstrapStatus,
     type CreateAdministratorRequest,
     type InitialAdministrator,
     type LeiEntityChoice,
+    type LoginInfo,
     type LoginResult,
+    type Session,
     type PasswordPolicy,
     type ProvisionPartyRequest,
     type ProvisionPartyResult,
@@ -142,6 +149,85 @@ export const api = {
      * first administrator. The answer is the server's own policy, so a screen
      * that shows it shows the rules the server applies.
      */
+    /**
+     * The accounts the tenant's administrator may see.
+     *
+     * The administrator's screen opens on this list, and the count travels with
+     * it so the screen can say how many the tenant holds without reading them.
+     */
+    async accounts(): Promise<{
+        readonly accounts: readonly Account[];
+        readonly totalCount: number;
+    }> {
+        return z
+            .object({ accounts: z.array(accountSchema), totalCount: z.int().nonnegative() })
+            .parse(await request('/api/accounts', { method: 'GET' }));
+    },
+
+    /**
+     * One account by username, or nothing when the tenant has none with it.
+     *
+     * The caller names a row it has just read out of the list, so the row
+     * having gone is an expected answer and not a failure.
+     */
+    async account(username: string): Promise<Account | null> {
+        const answer = z
+            .object({ account: accountSchema.nullable() })
+            .parse(
+                await request(`/api/accounts/${encodeURIComponent(username)}`, { method: 'GET' }),
+            );
+        return answer.account;
+    },
+
+    /**
+     * One account's login record, or nothing when it has never signed in.
+     *
+     * A record is written by signing in, so an account that has never done so
+     * has none, and the screen says that rather than showing zeros.
+     */
+    async loginInfo(accountId: string): Promise<LoginInfo | null> {
+        const answer = z.object({ loginInfo: loginInfoSchema.nullable() }).parse(
+            await request(`/api/login-info/${encodeURIComponent(accountId)}`, {
+                method: 'GET',
+            }),
+        );
+        return answer.loginInfo;
+    },
+
+    /** The tenant's login records, one page at a time. */
+    async loginInfoPage(): Promise<{
+        readonly loginInfo: readonly LoginInfo[];
+        readonly totalCount: number;
+    }> {
+        return z
+            .object({ loginInfo: z.array(loginInfoSchema), totalCount: z.int().nonnegative() })
+            .parse(await request('/api/login-info', { method: 'GET' }));
+    },
+
+    /** The tenant's sessions, one page at a time. */
+    async sessions(): Promise<{
+        readonly sessions: readonly Session[];
+        readonly totalCount: number;
+    }> {
+        return z
+            .object({ sessions: z.array(sessionSchema), totalCount: z.int().nonnegative() })
+            .parse(await request('/api/sessions', { method: 'GET' }));
+    },
+
+    /**
+     * The sessions with no end time.
+     *
+     * The server answers an empty list while its own read is incomplete, and
+     * that is an answer rather than a failure: the screen states that the list
+     * may be short rather than pretending the tenant has no sessions.
+     */
+    async activeSessions(): Promise<readonly Session[]> {
+        const answer = z
+            .object({ sessions: z.array(sessionSchema) })
+            .parse(await request('/api/sessions/active', { method: 'GET' }));
+        return answer.sessions;
+    },
+
     async passwordPolicy(): Promise<PasswordPolicy> {
         return passwordPolicySchema.parse(await request('/api/password-policy', { method: 'GET' }));
     },

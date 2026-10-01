@@ -156,6 +156,20 @@ authorization_routes::handle_get_role_permissions(const http_request& req, nats_
     }
 }
 
+boost::asio::awaitable<http_response>
+authorization_routes::handle_put_role_permissions(const http_request& req, nats_client& session) {
+    using request_type = messaging::put_role_permissions_request;
+    try {
+        const auto parsed = rfl::json::read<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::bad_request("Invalid request body");
+        }
+        co_return co_await forward(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::bad_request(e.what());
+    }
+}
+
 void authorization_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -220,7 +234,22 @@ void authorization_routes::register_routes(
     router->add_route(get_role_permissions_built);
     registry->register_route(get_role_permissions_built);
 
-    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 4 << " endpoint(s)";
+    auto put_role_permissions_route =
+        router->post("/api/v1/iam/roles/permissions/put")
+            .summary("Put role permissions")
+            .description("Forwards to the iam.v1.roles.permissions.put operation.")
+            .tags({"iam"})
+            .auth_required()
+            .body<messaging::put_role_permissions_request>()
+            .response<messaging::get_role_permissions_response>()
+            .handler([&session](const http_request& req) {
+                return handle_put_role_permissions(req, session);
+            });
+    const auto put_role_permissions_built = put_role_permissions_route.build();
+    router->add_route(put_role_permissions_built);
+    registry->register_route(put_role_permissions_built);
+
+    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 5 << " endpoint(s)";
 }
 
 }

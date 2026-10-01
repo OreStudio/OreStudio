@@ -50,13 +50,22 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::accounts:unlock', 'Unlock user accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::accounts:reset_password', 'Force password reset on user accounts');
 
-    -- Role management permissions
+    -- Role management permissions. The generated role write checks
+    -- iam::roles:write, and the bundle write checks iam::roles:update, whose
+    -- description already names the permission list rather than the role.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:create', 'Create new roles');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:read', 'View role details');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:write', 'Create and modify roles');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:update', 'Modify role permissions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:delete', 'Delete roles');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:assign', 'Assign roles to accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:revoke', 'Revoke roles from accounts');
+
+    -- Permission catalogue permissions. The generated permission CRUD checks
+    -- these two; the catalogue itself is seeded, so a screen picks from it
+    -- rather than creating a code nothing would enforce.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::permissions:write', 'Create and modify permissions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::permissions:delete', 'Delete permissions');
 
     -- Tenant management permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:create', 'Create new tenants');

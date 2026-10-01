@@ -154,8 +154,12 @@ domain::role authorization_service::create_role(const std::string& name,
     // Create role-permission mappings
     for (const auto& perm : resolved_perms) {
         domain::role_permission rp;
+        rp.tenant_id = ctx_.tenant_id();
         rp.role_id = role.id;
         rp.permission_id = perm.id;
+        rp.assigned_by = modified_by;
+        rp.change_reason_code = std::string{reason::codes::new_record};
+        rp.change_commentary = "Role created with its permission bundle";
         role_permission_repo_.write(rp);
     }
 
@@ -182,10 +186,118 @@ authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
     return codes;
 }
 
+role_permissions authorization_service::replace_role_permissions(
+    const boost::uuids::uuid& caller_id,
+    const boost::uuids::uuid& role_id,
+    const std::vector<std::string>& permission_codes,
+    const std::string& change_reason_code,
+    const std::string& change_commentary) {
+    using ores::utility::domain::outcome;
+
+    role_permissions answer;
+
+    /*
+     * The check runs before the role is looked up, so a caller without the
+     * permission learns nothing about whether the role exists.
+     */
+    if (!has_permission(caller_id, domain::permissions::roles_update)) {
+        BOOST_LOG_SEV(lg(), warn) << "Bundle write for role " << role_id << " denied: caller "
+                                  << caller_id << " lacks "
+                                  << domain::permissions::roles_update;
+        answer.result.outcome = outcome::denied;
+        answer.result.code = domain::permissions::roles_update;
+        answer.result.message = std::string("Permission denied: ") +
+                                std::string(domain::permissions::roles_update) + " required";
+        return answer;
+    }
+
+    if (!find_role(role_id)) {
+        BOOST_LOG_SEV(lg(), warn) << "Bundle write for a role that does not exist: " << role_id;
+        answer.result.outcome = outcome::missing;
+        answer.result.code = boost::lexical_cast<std::string>(role_id);
+        answer.result.message = "Role not found: " + boost::lexical_cast<std::string>(role_id);
+        return answer;
+    }
+
+    /*
+     * The whole bundle resolves before anything is written, so a code that is
+     * not a permission refuses the write rather than landing the part of it
+     * that was valid.
+     */
+    std::vector<domain::permission> desired;
+    desired.reserve(permission_codes.size());
+    for (const auto& code : permission_codes) {
+        auto permission = find_permission_by_code(code);
+        if (!permission) {
+            BOOST_LOG_SEV(lg(), warn) << "Bundle write names a code that is not a permission: "
+                                      << code;
+            answer.result.outcome = outcome::invalid;
+            answer.result.code = code;
+            answer.result.message = "Unknown permission code: " + code;
+            return answer;
+        }
+        desired.push_back(std::move(*permission));
+    }
+
+    std::sort(desired.begin(), desired.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.id < rhs.id;
+    });
+    desired.erase(std::unique(desired.begin(),
+                              desired.end(),
+                              [](const auto& lhs, const auto& rhs) { return lhs.id == rhs.id; }),
+                  desired.end());
+
+    const auto current = role_permission_repo_.read_latest_by_role(role_id);
+
+    const auto bundles = [](const std::vector<domain::role_permission>& links,
+                            const boost::uuids::uuid& permission_id) {
+        return std::any_of(links.begin(), links.end(), [&](const auto& link) {
+            return link.permission_id == permission_id;
+        });
+    };
+
+    const auto reason = change_reason_code.empty() ? std::string{reason::codes::new_record}
+                                                   : change_reason_code;
+
+    for (const auto& permission : desired) {
+        if (bundles(current, permission.id)) {
+            continue;
+        }
+        domain::role_permission link;
+        link.tenant_id = ctx_.tenant_id();
+        link.role_id = role_id;
+        link.permission_id = permission.id;
+        link.assigned_by = ctx_.actor();
+        link.change_reason_code = reason;
+        link.change_commentary = change_commentary;
+        role_permission_repo_.write(link);
+    }
+
+    for (const auto& link : current) {
+        const auto stays = std::any_of(desired.begin(), desired.end(), [&](const auto& permission) {
+            return permission.id == link.permission_id;
+        });
+        if (!stays) {
+            /*
+             * The delete rule closes the row and leaves its tail as the grant
+             * wrote it, so the record of who added the permission survives the
+             * removal. The same is true of an account's revoked role.
+             */
+            role_permission_repo_.remove(role_id, link.permission_id);
+        }
+    }
+
+    answer.permission_codes = get_role_permissions(role_id);
+    std::sort(answer.permission_codes.begin(), answer.permission_codes.end());
+
+    BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " bundles "
+                              << answer.permission_codes.size() << " permission(s).";
+    return answer;
+}
+
 // ============================================================================
 // Role Assignment
 // ============================================================================
-
 void authorization_service::assign_role(const boost::uuids::uuid& account_id,
                                         const boost::uuids::uuid& role_id,
                                         const std::string& assigned_by,

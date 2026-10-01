@@ -319,6 +319,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             rh->permissions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        put_role_permissions_request::nats_subject, qg, [rh](ores::nats::message msg) {
+            rh->put_permissions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         assign_role_by_name_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->assign_by_name(std::move(msg));
         }));

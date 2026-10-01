@@ -51,6 +51,21 @@ using ores::iam::repository::role_permission_repository;
 using ores::iam::repository::role_repository;
 using ores::iam::repository::permission_repository;
 
+namespace {
+
+/*
+ * The junction states its tail, as every other audited row does: the store
+ * stamps the actor and the time, and the writer states the reason. A link a
+ * test writes by hand is synthetic data.
+ */
+void state_the_tail(database_helper& h, role_permission& link) {
+    link.assigned_by = h.db_user();
+    link.change_reason_code = "system.test";
+    link.change_commentary = "Synthetic test data";
+}
+
+}
+
 TEST_CASE("write_single_role_permission", tags) {
     auto lg(make_logger(test_suite));
 
@@ -70,6 +85,7 @@ TEST_CASE("write_single_role_permission", tags) {
     rp.tenant_id = h.tenant_id();
     rp.role_id = r.id;
     rp.permission_id = p.id;
+    state_the_tail(h, rp);
 
     BOOST_LOG_SEV(lg, debug) << "Role permission - role_id: " << rp.role_id
                              << " permission_id: " << rp.permission_id;
@@ -95,6 +111,7 @@ TEST_CASE("read_latest_role_permissions", tags) {
     rp.tenant_id = h.tenant_id();
     rp.role_id = r.id;
     rp.permission_id = p.id;
+    state_the_tail(h, rp);
     repo.write(rp);
 
     auto read_rps = repo.read_latest();
@@ -124,11 +141,13 @@ TEST_CASE("read_latest_role_permissions_by_role", tags) {
     rp1.tenant_id = h.tenant_id();
     rp1.role_id = r.id;
     rp1.permission_id = p1.id;
+    state_the_tail(h, rp1);
 
     role_permission rp2;
     rp2.tenant_id = h.tenant_id();
     rp2.role_id = r.id;
     rp2.permission_id = p2.id;
+    state_the_tail(h, rp2);
 
     repo.write(rp1);
     repo.write(rp2);

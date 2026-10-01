@@ -176,6 +176,33 @@ struct get_role_permissions_response {
     std::vector<std::string> permission_codes;
 };
 
+/**
+ * @brief Replaces the permissions a role bundles.
+ *
+ * The codes are the whole bundle the role should carry, not an increment: a
+ * code the role bundles and this request omits is removed, and a code both
+ * name stays. The write answers with the bundle as stored, so the caller
+ * reads back what it wrote rather than assuming the two agree.
+ *
+ * The change reason and commentary are the junction row's own record of who
+ * changed the bundle, when and why; the actor is stamped from the request.
+ */
+struct put_role_permissions_request {
+    using response_type = struct get_role_permissions_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.permissions.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string role_id;
+    std::vector<std::string> permission_codes;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
 struct suggest_role_commands_request {
     using response_type = struct suggest_role_commands_response;
     static constexpr std::string_view nats_subject = "iam.v1.roles.suggest-commands";

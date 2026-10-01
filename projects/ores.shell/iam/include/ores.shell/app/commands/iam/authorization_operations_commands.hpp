@@ -112,6 +112,14 @@ public:
                                              const std::vector<std::string>& args);
 
     /**
+     * @brief put-role-permissions <role_id> <permission_codes> <change_reason_code>
+     * <change_commentary>
+     */
+    static void process_put_role_permissions(std::ostream& out,
+                                             ores::nats::service::nats_client& session,
+                                             const std::vector<std::string>& args);
+
+    /**
      * @brief suggest-role-commands <username> <tenant_id> <hostname>
      */
     static void process_suggest_role_commands(std::ostream& out,

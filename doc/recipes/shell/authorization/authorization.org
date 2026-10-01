@@ -159,6 +159,27 @@ It is addressed at =iam.v1.roles.permissions=.
 authorization get-role-permissions __none__
 #+end_src
 
+** =put-role-permissions=
+:PROPERTIES:
+:ID: 2D264CC1-C63D-51E2-88DB-3767F003D06A
+:END:
+
+Sends =put_role_permissions_request= and prints =get_role_permissions_response=, so the shape is the protocol's and the meaning is the service's. It reads =role_id=, =permission_codes=, =change_reason_code=, =change_commentary=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+authorization put-role-permissions <role_id> <permission_codes> <change_reason_code> <change_commentary>
+#+end_example
+
+It is addressed at =iam.v1.roles.permissions.put=.
+
+#+name: authorization-put-role-permissions
+#+begin_src ores-shell :tangle authorization-put-role-permissions.ores :exports none
+authorization put-role-permissions __none__ __none__ __none__ __none__
+#+end_src
+
 ** =suggest-role-commands=
 :PROPERTIES:
 :ID: EADC0056-801B-56EF-B1A3-A7B395D331B3

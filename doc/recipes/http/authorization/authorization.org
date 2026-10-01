@@ -104,3 +104,26 @@ Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
+** =POST /api/v1/iam/roles/permissions/put=
+:PROPERTIES:
+:ID: 2D264CC1-C63D-51E2-88DB-3767F003D06A
+:END:
+
+Put role permissions. It needs a session.
+
+It forwards to =iam.v1.roles.permissions.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/roles/permissions/put
+#+end_example
+
+#+name: authorization-put-role-permissions
+#+begin_src hurl :tangle authorization-put-role-permissions.hurl :exports none
+POST {{base_url}}/api/v1/iam/roles/permissions/put
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

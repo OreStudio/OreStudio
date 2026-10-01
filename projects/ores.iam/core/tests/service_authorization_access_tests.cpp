@@ -102,6 +102,9 @@ role write_role_bundling(database_helper& h, generation_context& gen, const std:
     link.tenant_id = h.tenant_id();
     link.role_id = r.id;
     link.permission_id = p.id;
+    link.assigned_by = h.db_user();
+    link.change_reason_code = "system.test";
+    link.change_commentary = "Synthetic test data";
     links.write(link);
 
     return r;
@@ -240,4 +243,138 @@ TEST_CASE("caller_account_is_empty_when_no_account_carries_the_actor", tags) {
     const auto resolved = svc.caller_account();
 
     CHECK_FALSE(resolved.has_value());
+}
+
+/*
+ * The bundle write. The codes the request names are the whole bundle the role
+ * carries afterwards, so a replacement is one call with both an addition and a
+ * removal in it.
+ */
+
+namespace {
+
+account caller_who_may_shape_roles(database_helper& h, generation_context& gen) {
+    auto caller = write_account(h, gen);
+    auto role = write_role_bundling(h, gen, std::string(permissions::roles_update));
+    assign(h, gen, caller, role);
+    return caller;
+}
+
+}
+
+TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = caller_who_may_shape_roles(h, gen);
+    auto role = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    const auto answer = svc.replace_role_permissions(caller.id,
+                                                     role.id,
+                                                     {std::string(permissions::roles_read)},
+                                                     "common.rectification",
+                                                     "The role was too broad");
+
+    BOOST_LOG_SEV(lg, debug) << "Bundle after replace: " << answer.permission_codes.size();
+
+    REQUIRE(answer.result.outcome == outcome::ok);
+    REQUIRE(answer.permission_codes.size() == 1);
+    CHECK(answer.permission_codes.front() == permissions::roles_read);
+
+    role_permission_repository links(h.context());
+    const auto stored = svc.get_role_permissions(role.id);
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front() == permissions::roles_read);
+
+    const auto rows = links.read_latest_by_role(role.id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().change_reason_code == "common.rectification");
+    CHECK(rows.front().change_commentary == "The role was too broad");
+    CHECK_FALSE(rows.front().assigned_by.empty());
+    CHECK(rows.front().assigned_at.time_since_epoch().count() != 0);
+}
+
+TEST_CASE("replace_role_permissions_is_denied_without_the_update_permission", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = write_account(h, gen);
+    auto role = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    const auto answer = svc.replace_role_permissions(caller.id,
+                                                     role.id,
+                                                     {std::string(permissions::roles_read)},
+                                                     "common.rectification",
+                                                     "Should not land");
+
+    CHECK(answer.result.outcome == outcome::denied);
+    CHECK(answer.result.code == permissions::roles_update);
+    CHECK_FALSE(answer.result.message.empty());
+
+    const auto stored = svc.get_role_permissions(role.id);
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front() == permissions::accounts_read);
+}
+
+TEST_CASE("replace_role_permissions_refuses_a_code_that_is_not_a_permission", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = caller_who_may_shape_roles(h, gen);
+    auto role = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    const auto answer =
+        svc.replace_role_permissions(caller.id, role.id, {"no::such:permission"}, "", "");
+
+    CHECK(answer.result.outcome == outcome::invalid);
+    CHECK(answer.result.code == "no::such:permission");
+
+    const auto stored = svc.get_role_permissions(role.id);
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front() == permissions::accounts_read);
+}
+
+TEST_CASE("replace_role_permissions_refuses_a_role_that_does_not_exist", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = caller_who_may_shape_roles(h, gen);
+
+    authorization_service svc(h.context());
+    const auto answer = svc.replace_role_permissions(caller.id,
+                                                     generate_synthetic_role(gen).id,
+                                                     {std::string(permissions::roles_read)},
+                                                     "",
+                                                     "");
+
+    CHECK(answer.result.outcome == outcome::missing);
+    CHECK_FALSE(answer.result.message.empty());
+}
+
+TEST_CASE("replace_role_permissions_can_empty_a_bundle", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto caller = caller_who_may_shape_roles(h, gen);
+    auto role = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    const auto answer = svc.replace_role_permissions(caller.id, role.id, {}, "", "");
+
+    REQUIRE(answer.result.outcome == outcome::ok);
+    CHECK(answer.permission_codes.empty());
+    CHECK(svc.get_role_permissions(role.id).empty());
 }

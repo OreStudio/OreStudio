@@ -891,8 +891,16 @@ begin
     end if;
 
     -- Insert assignment if it doesn't exist
-    insert into ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id, valid_from, valid_to)
-    values (p_tenant_id, v_role_id, v_permission_id, current_timestamp, ores_utility_infinity_timestamp_fn())
+    insert into ores_iam_role_permissions_tbl (
+        tenant_id, role_id, permission_id,
+        assigned_by, assigned_at,
+        change_reason_code, change_commentary,
+        valid_from, valid_to)
+    values (
+        p_tenant_id, v_role_id, v_permission_id,
+        p_assigned_by, current_timestamp,
+        'system.new_record', 'System seed data',
+        current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, role_id, permission_id)
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 end;

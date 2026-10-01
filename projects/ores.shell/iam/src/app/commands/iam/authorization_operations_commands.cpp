@@ -46,6 +46,34 @@ namespace ores::shell::app::commands {
 using namespace logging;
 using ores::nats::service::nats_client;
 
+namespace {
+
+/**
+ * @brief Split a comma-separated token into the elements of a list field.
+ *
+ * The token __NONE__ states the empty list, because the command line cannot
+ * carry an empty argument: the tokenizer drops one, and a command whose list
+ * field should be empty has no other way to say so.
+ */
+std::vector<std::string> split_list_token(const std::string& value) {
+    if (value == "__NONE__")
+        return {};
+    std::vector<std::string> parts;
+    std::string current;
+    for (const char c : value) {
+        if (c == ',') {
+            parts.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(c);
+        }
+    }
+    parts.push_back(current);
+    return parts;
+}
+
+} // namespace
+
 void authorization_operations_commands::register_commands(cli::Menu& root_menu,
                                                           nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("authorization");
@@ -98,6 +126,14 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
             process_get_role_permissions(std::ref(out), std::ref(session), std::move(args));
         },
         "get-role-permissions <role_id>");
+
+    menu->Insert(
+        "put-role-permissions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_put_role_permissions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "put-role-permissions <role_id> <permission_codes> <change_reason_code> "
+        "<change_commentary>");
 
     menu->Insert(
         "suggest-role-commands",
@@ -459,6 +495,61 @@ void authorization_operations_commands::process_get_role_permissions(
     std::size_t next = 0;
     try {
         req.role_id = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::get_role_permissions_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_role_permissions_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_role_permissions_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void authorization_operations_commands::process_put_role_permissions(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating put-role-permissions request.";
+
+    using request_type = ores::iam::messaging::put_role_permissions_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run put-role-permissions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 4;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.role_id = parsed->positionals[next++];
+        req.permission_codes = split_list_token(parsed->positionals[next++]);
+        req.change_reason_code = parsed->positionals[next++];
+        req.change_commentary = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

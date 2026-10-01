@@ -291,6 +291,51 @@ public:
         }
     }
 
+    void put_permissions(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<put_role_permissions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      get_role_permissions_response{
+                          .result = failed_result(
+                              "The authenticated actor names no account in this tenant")});
+                return;
+            }
+            auto answer = svc.replace_role_permissions(*caller_id,
+                                                       sg(req->role_id),
+                                                       req->permission_codes,
+                                                       req->change_reason_code,
+                                                       req->change_commentary);
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_role_permissions_response{.result = std::move(answer.result),
+                                                .permission_codes =
+                                                    std::move(answer.permission_codes)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_role_permissions_response{.result = failed_result(e.what())});
+        }
+    }
+
     void assign_by_name(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);

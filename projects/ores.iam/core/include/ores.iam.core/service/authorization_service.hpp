@@ -70,6 +70,20 @@ struct account_access {
 };
 
 /**
+ * @brief The answer to a bundle write: the outcome and the bundle as stored.
+ *
+ * The codes are the role's own list after the write, so the caller reads back
+ * what it wrote rather than assuming the two agree. A refusal is a value, as
+ * it is for the access reads: @c result.outcome is @c denied with the
+ * permission that was required, @c invalid with the code that was not a
+ * permission, or @c missing with the role that does not exist.
+ */
+struct role_permissions {
+    ores::utility::domain::result result;
+    std::vector<std::string> permission_codes;
+};
+
+/**
  * @brief Service for managing role-based access control (RBAC).
  *
  * This service provides functionality for:
@@ -164,6 +178,30 @@ public:
      * @brief Gets the permission codes assigned to a role.
      */
     std::vector<std::string> get_role_permissions(const boost::uuids::uuid& role_id);
+
+    /**
+     * @brief Replaces the permissions a role bundles.
+     *
+     * The codes are the whole bundle the role should carry, not an increment:
+     * a code the role bundles and this call omits is removed, a code both name
+     * stays, and a code neither names is added. The check on
+     * =iam::roles:update= runs before anything is read or written, the whole
+     * bundle resolves before anything is written, and every row this call
+     * creates carries the change reason and commentary it was given.
+     *
+     * @param caller_id The authenticated caller's account
+     * @param role_id The role whose bundle is being replaced
+     * @param permission_codes The complete bundle the role should carry
+     * @param change_reason_code Why the bundle changed; the new record reason
+     * when empty
+     * @param change_commentary The sentence that goes with the reason
+     * @return The outcome, and the bundle as stored
+     */
+    role_permissions replace_role_permissions(const boost::uuids::uuid& caller_id,
+                                              const boost::uuids::uuid& role_id,
+                                              const std::vector<std::string>& permission_codes,
+                                              const std::string& change_reason_code,
+                                              const std::string& change_commentary);
 
     // ========================================================================
     // Role Assignment

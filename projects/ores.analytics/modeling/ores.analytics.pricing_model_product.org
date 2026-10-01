@@ -99,6 +99,23 @@ Examples: 'DiscountingSwapEngine', 'Grid', 'AMC', 'AnalyticEuropeanEngine'.
 std::string("DiscountingSwapEngine")
 #+end_src
 
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the Product in.
+
+A document may carry the same pricing engine type more than once, so the type
+does not identify the row and the order cannot be recovered by sorting. It is
+carried here instead.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
 * SQL
 
 ** Flags

@@ -92,6 +92,7 @@ to_domain(const messaging::pricing_model_product_parameter_write& write) {
     v.parameter_scope = write.parameter_scope;
     v.parameter_name = write.parameter_name;
     v.parameter_value = write.parameter_value;
+    v.position = write.position;
     return v;
 }
 

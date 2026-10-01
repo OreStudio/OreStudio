@@ -89,6 +89,7 @@ domain::pricing_model_product to_domain(const messaging::pricing_model_product_w
     v.pricing_engine_type_code = write.pricing_engine_type_code;
     v.model = write.model;
     v.engine = write.engine;
+    v.position = write.position;
     return v;
 }
 

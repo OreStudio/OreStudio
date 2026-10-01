@@ -50,6 +50,7 @@ generate_synthetic_pricing_model_product_parameter(utility::generation::generati
     r.parameter_scope = std::string("model");
     r.parameter_name = std::string("Reversion");
     r.parameter_value = std::string("0.03");
+    r.position = 0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

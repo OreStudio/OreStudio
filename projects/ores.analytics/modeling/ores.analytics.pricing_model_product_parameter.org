@@ -113,6 +113,22 @@ All values stored as text. Examples: '0.03', 'Bootstrap', 'Y', '1.0,2.0,3.0'.
 std::string("0.03")
 #+end_src
 
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the parameter in, within its scope.
+
+A scope may name the same parameter twice, so the name does not identify the row
+and the order cannot be recovered by sorting. It is carried here instead.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
 * SQL
 
 ** Flags

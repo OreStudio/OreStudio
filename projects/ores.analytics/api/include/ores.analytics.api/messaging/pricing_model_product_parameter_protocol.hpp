@@ -46,6 +46,7 @@ struct pricing_model_product_parameter_write {
     std::string parameter_scope;
     std::string parameter_name;
     std::string parameter_value;
+    int position;
 };
 
 struct pricing_model_product_parameter_change {

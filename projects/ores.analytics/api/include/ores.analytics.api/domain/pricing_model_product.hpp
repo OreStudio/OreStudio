@@ -90,6 +90,14 @@ struct pricing_model_product final {
     std::string engine;
 
     /**
+     * @brief The order the document wrote the Product in.
+     *
+     * A document may carry the same pricing engine type more than once, so the type does not
+     * identify the row and the order cannot be recovered by sorting. It is carried here instead.
+     */
+    int position = 0;
+
+    /**
      * @brief Username of the person who last modified this pricing model product.
      */
     std::string modified_by;

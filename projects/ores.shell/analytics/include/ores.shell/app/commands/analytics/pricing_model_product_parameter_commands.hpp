@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <pricing_model_config_id> <pricing_model_product_id> <parameter_scope>
-     * <parameter_name> <parameter_value> <reason> <commentary>
+     * <parameter_name> <parameter_value> <position> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,7 @@ public:
 
     /**
      * @brief set <id> <pricing_model_config_id> <pricing_model_product_id> <parameter_scope>
-     * <parameter_name> <parameter_value> <reason> <commentary> [--version <n>]
+     * <parameter_name> <parameter_value> <position> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <pricing_model_config_id> <pricing_model_product_id>
-     * <parameter_scope> <parameter_name> <parameter_value> <reason> <commentary>
+     * <parameter_scope> <parameter_name> <parameter_value> <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

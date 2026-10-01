@@ -159,7 +159,7 @@ TEST_CASE("pricing_model_product_parameter_commands_process_add_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    pricing_model_product_parameter_commands::process_add(out, session, tokens(6));
+    pricing_model_product_parameter_commands::process_add(out, session, tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -193,7 +193,7 @@ TEST_CASE("pricing_model_product_parameter_commands_process_set_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    pricing_model_product_parameter_commands::process_set(out, session, tokens(6));
+    pricing_model_product_parameter_commands::process_set(out, session, tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -227,7 +227,7 @@ TEST_CASE("pricing_model_product_parameter_commands_process_put_many_requires_a_
     std::ostringstream out;
 
     command_feedback::reset();
-    pricing_model_product_parameter_commands::process_put_many(out, session, tokens(6));
+    pricing_model_product_parameter_commands::process_put_many(out, session, tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

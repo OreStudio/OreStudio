@@ -39,6 +39,7 @@ export interface PricingModelProductParameter {
     parameter_scope: string;
     parameter_name: string;
     parameter_value: string;
+    position: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

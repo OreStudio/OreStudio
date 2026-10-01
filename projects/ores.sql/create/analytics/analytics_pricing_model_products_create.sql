@@ -38,6 +38,7 @@ create table if not exists "ores_analytics_pricing_model_products_tbl" (
     "pricing_engine_type_code" text not null,
     "model" text not null,
     "engine" text not null,
+    "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

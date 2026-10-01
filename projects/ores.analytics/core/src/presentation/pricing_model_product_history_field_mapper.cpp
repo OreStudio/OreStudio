@@ -40,6 +40,7 @@ render_pricing_model_product_fields(const domain::pricing_model_product& v) {
     fields.push_back({.name = "Pricing Engine Type Code", .value = v.pricing_engine_type_code});
     fields.push_back({.name = "Model", .value = v.model});
     fields.push_back({.name = "Engine", .value = v.engine});
+    fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

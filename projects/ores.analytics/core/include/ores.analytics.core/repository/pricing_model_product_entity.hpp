@@ -49,6 +49,7 @@ struct pricing_model_product_entity {
     std::string pricing_engine_type_code;
     std::string model;
     std::string engine;
+    int position = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

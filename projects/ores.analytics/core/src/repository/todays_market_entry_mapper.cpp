@@ -46,7 +46,6 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
     r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2.value_or("");
-    r.entry_id = v.entry_id.value_or("");
     r.target = v.target;
     r.discounting = v.discounting.value_or("");
     r.position = v.position;
@@ -72,7 +71,6 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2.empty() ? std::nullopt : std::optional(v.key_value_2);
-    r.entry_id = v.entry_id.empty() ? std::nullopt : std::optional(v.entry_id);
     r.target = v.target;
     r.discounting = v.discounting.empty() ? std::nullopt : std::optional(v.discounting);
     r.position = v.position;

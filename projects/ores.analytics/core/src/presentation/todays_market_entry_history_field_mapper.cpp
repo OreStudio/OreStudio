@@ -42,7 +42,6 @@ render_todays_market_entry_fields(const domain::todays_market_entry& v) {
     fields.push_back({.name = "Key Attribute", .value = v.key_attribute});
     fields.push_back({.name = "Key Value", .value = v.key_value});
     fields.push_back({.name = "Key Value 2", .value = v.key_value_2});
-    fields.push_back({.name = "Entry ID", .value = v.entry_id});
     fields.push_back({.name = "Target", .value = v.target});
     fields.push_back({.name = "Discounting", .value = v.discounting});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});

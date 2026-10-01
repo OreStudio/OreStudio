@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <todays_market_config_id> <todays_market_collection_id> <key_attribute>
-     * <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
+     * <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,8 +96,8 @@ public:
 
     /**
      * @brief set <id> <todays_market_config_id> <todays_market_collection_id> <key_attribute>
-     * <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
-     * [--version <n>]
+     * <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -105,8 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <todays_market_config_id> <todays_market_collection_id>
-     * <key_attribute> <key_value> <key_value_2> <entry_id> <target> <discounting> <position>
-     * <reason> <commentary>
+     * <key_attribute> <key_value> <key_value_2> <target> <discounting> <position> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

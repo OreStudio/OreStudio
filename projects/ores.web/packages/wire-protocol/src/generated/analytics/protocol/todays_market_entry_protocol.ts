@@ -40,7 +40,6 @@ export interface TodaysMarketEntryWrite {
     key_attribute: string;
     key_value: string;
     key_value_2: string;
-    entry_id: string;
     target: string;
     discounting: string;
     position: number;

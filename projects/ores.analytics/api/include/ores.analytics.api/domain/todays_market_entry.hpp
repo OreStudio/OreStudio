@@ -103,14 +103,6 @@ struct todays_market_entry final {
     std::string key_value_2;
 
     /**
-     * @brief The entry's own id attribute, where the document writes one.
-     *
-     * No corpus file writes it, but every entry type declares it optional, so a document may.
-     * Carried so that such a document is not silently changed.
-     */
-    std::string entry_id;
-
-    /**
      * @brief The reference the entry resolves to, which is the element's text.
      *
      * Examples: 'Yield/EUR/EUR1D', 'SwaptionVolatility/EUR/EUR_SW_ATM'.

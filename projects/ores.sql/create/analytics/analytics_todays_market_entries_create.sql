@@ -48,7 +48,6 @@ create table if not exists "ores_analytics_todays_market_entries_tbl" (
     "key_attribute" text not null,
     "key_value" text not null,
     "key_value_2" text null,
-    "entry_id" text null,
     "target" text not null,
     "discounting" text null,
     "position" integer not null,

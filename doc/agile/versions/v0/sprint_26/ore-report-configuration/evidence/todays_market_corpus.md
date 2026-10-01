@@ -187,9 +187,58 @@ once.** Every other entry has exactly one key. Those two carry =key= and
 =currency= together, so a row keyed on one attribute alone would collapse two
 distinct entries into one on any document that used both.
 
-**Every entry type also declares an optional =id=.** It is not the key — no
-corpus file relies on it — but a document may write it, so the mapper has to
-carry it or lose it.
+**The =id= in the table above belongs to the collection, not to the entry.**
+The vocabulary extraction walked the collection type and so reported the
+wrapper's own =id= attribute alongside each entry's key. Reading the generated
+entry structs shows entries declare no =id= at all:
+
+#+begin_src cpp
+struct discountCurvesType_DiscountingCurve_t : xsd::string {
+    xsd::string currency{};
+};
+#+end_src
+
+So the earlier claim on this page that "every entry type also declares an
+optional =id=" was wrong, and the =todays_market_entry.entry_id= column it
+justified was dead. The column is removed. The collection's =id= is real and is
+now =todays_market_collection.collection_id= — one attribute, in one place, and
+the first pass of this census put it in the wrong one.
+
+**The entry attributes are not all strings, which is what the mapper has to
+absorb.** Three shapes appear:
+
+#+begin_src cpp
+struct indexForwardingCurvesType_Index_t : xsd::string {
+    domain::indexNameType name{};              // a typedef for xsd::string
+};
+struct fxSpotsType_FxSpot_t : xsd::string {
+    domain::currencyPair pair{};               // also a typedef
+};
+struct swaptionVolatilitiesType_SwaptionVolatility_t : xsd::string {
+    xsd::optional<xsd::string> key;            // optional
+    xsd::optional<domain::currencyCode> currency;  // optional, and an enum
+};
+#+end_src
+
+=currencyPair= and =indexNameType= are =typedef=s for =xsd::string=, so those
+copy straight across. =currencyCode= is an enum, so it needs a conversion rather
+than an assignment, and both members of the two-key entry are optional, so
+either may be absent.
+
+**And one entry does not derive from the reference text at all.**
+
+#+begin_src cpp
+struct swapIndexCurvesType_SwapIndex_t {
+    domain::indexNameType name{};
+    domain::indexNameType Discounting{};
+};
+#+end_src
+
+=SwapIndex= has no base string: its key is =name= and its child is
+=Discounting=, and there is no reference text. So the mapper cannot treat "the
+base string is the target" as a rule for all twenty-four; =SwapIndex= is the
+exception and the only one.
+
 
 * How the binding represents this, which is what the mapper encodes
 

@@ -121,22 +121,6 @@ by =key= and =currency= together.
 std::string("")
 #+end_src
 
-** entry_id
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-The entry's own =id= attribute, where the document writes one.
-
-No corpus file writes it, but every entry type declares it optional, so a
-document may. Carried so that such a document is not silently changed.
-
-#+begin_src cpp :name generator
-std::string("")
-#+end_src
-
 ** target
 :PROPERTIES:
 :type:     text

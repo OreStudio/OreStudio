@@ -50,7 +50,6 @@ generate_synthetic_todays_market_entry(utility::generation::generation_context& 
     r.key_attribute = std::string("currency");
     r.key_value = std::string("EUR");
     r.key_value_2 = std::string("");
-    r.entry_id = std::string("");
     r.target = std::string("Yield/EUR/EUR1D");
     r.discounting = std::string("");
     r.position = 0;

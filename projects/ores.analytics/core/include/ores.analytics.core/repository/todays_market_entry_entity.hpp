@@ -50,7 +50,6 @@ struct todays_market_entry_entity {
     std::string key_attribute;
     std::string key_value;
     std::optional<std::string> key_value_2;
-    std::optional<std::string> entry_id;
     std::string target;
     std::optional<std::string> discounting;
     int position = 0;

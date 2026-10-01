@@ -46,7 +46,6 @@ struct todays_market_entry_write {
     std::string key_attribute;
     std::string key_value;
     std::string key_value_2;
-    std::string entry_id;
     std::string target;
     std::string discounting;
     int position;

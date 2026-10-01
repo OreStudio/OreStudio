@@ -44,19 +44,8 @@ struct bond_future_write {
     std::string contract_name;
     ores::utility::decimal::decimal contract_notional;
     std::string long_short;
-    std::string currency;
-    std::string contract_month;
-    std::string deliverable_grade;
-    ores::utility::decimal::decimal fair_price;
-    std::string settlement;
-    bool settlement_dirty;
-    std::optional<std::chrono::year_month_day> root_date;
-    std::string expiry_basis;
-    std::string settlement_basis;
-    int expiry_lag;
-    int settlement_lag;
-    std::chrono::year_month_day last_trading_date;
-    std::chrono::year_month_day last_delivery_date;
+    std::optional<bool> apply_conversion_factor;
+    std::optional<bool> use_future_price;
 };
 
 struct bond_future_change {

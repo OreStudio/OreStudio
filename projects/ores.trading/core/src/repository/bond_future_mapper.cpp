@@ -24,12 +24,10 @@
  */
 #include "ores.trading.core/repository/bond_future_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_future_json_io.hpp" // IWYU pragma: keep.
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <chrono>
 
 namespace ores::trading::repository {
 
@@ -46,22 +44,8 @@ domain::bond_future bond_future_mapper::map(const bond_future_entity& v) {
     r.contract_name = v.contract_name;
     r.contract_notional = ores::utility::decimal::decimal::from_string(v.contract_notional).value();
     r.long_short = v.long_short;
-    r.currency = v.currency;
-    r.contract_month = v.contract_month;
-    r.deliverable_grade = v.deliverable_grade.value_or("");
-    r.fair_price = ores::utility::decimal::decimal::from_string(v.fair_price).value();
-    r.settlement = v.settlement;
-    r.settlement_dirty = v.settlement_dirty;
-    r.root_date =
-        v.root_date.has_value() ?
-            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.root_date)) :
-            std::nullopt;
-    r.expiry_basis = v.expiry_basis.value_or("");
-    r.settlement_basis = v.settlement_basis.value_or("");
-    r.expiry_lag = v.expiry_lag;
-    r.settlement_lag = v.settlement_lag;
-    r.last_trading_date = ores::platform::time::datetime::from_iso8601_date(v.last_trading_date);
-    r.last_delivery_date = ores::platform::time::datetime::from_iso8601_date(v.last_delivery_date);
+    r.apply_conversion_factor = v.apply_conversion_factor;
+    r.use_future_price = v.use_future_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -82,23 +66,8 @@ bond_future_entity bond_future_mapper::map(const domain::bond_future& v) {
     r.contract_name = v.contract_name;
     r.contract_notional = v.contract_notional.to_string();
     r.long_short = v.long_short;
-    r.currency = v.currency;
-    r.contract_month = v.contract_month;
-    r.deliverable_grade =
-        v.deliverable_grade.empty() ? std::nullopt : std::optional(v.deliverable_grade);
-    r.fair_price = v.fair_price.to_string();
-    r.settlement = v.settlement;
-    r.settlement_dirty = v.settlement_dirty;
-    r.root_date = v.root_date.has_value() ?
-                      std::optional(ores::platform::time::datetime::to_iso8601_date(*v.root_date)) :
-                      std::nullopt;
-    r.expiry_basis = v.expiry_basis.empty() ? std::nullopt : std::optional(v.expiry_basis);
-    r.settlement_basis =
-        v.settlement_basis.empty() ? std::nullopt : std::optional(v.settlement_basis);
-    r.expiry_lag = v.expiry_lag;
-    r.settlement_lag = v.settlement_lag;
-    r.last_trading_date = ores::platform::time::datetime::to_iso8601_date(v.last_trading_date);
-    r.last_delivery_date = ores::platform::time::datetime::to_iso8601_date(v.last_delivery_date);
+    r.apply_conversion_factor = v.apply_conversion_factor;
+    r.use_future_price = v.use_future_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

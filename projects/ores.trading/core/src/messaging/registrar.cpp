@@ -23,7 +23,6 @@
 #include "ores.trading.core/messaging/activity_type_registrar.hpp"
 #include "ores.trading.core/messaging/ascot_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_forward_history_provider_registrar.hpp"
-#include "ores.trading.core/messaging/bond_future_delivery_basket_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_future_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_call_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_conversion_target_history_provider_registrar.hpp"
@@ -137,7 +136,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_trade_envelope_additional_field_history_provider(hist_registry);
     register_ascot_history_provider(hist_registry);
     register_bond_forward_history_provider(hist_registry);
-    register_bond_future_delivery_basket_history_provider(hist_registry);
     register_bond_future_history_provider(hist_registry);
     register_bond_issue_call_date_history_provider(hist_registry);
     register_bond_issue_conversion_target_history_provider(hist_registry);

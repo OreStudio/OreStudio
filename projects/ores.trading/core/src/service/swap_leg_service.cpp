@@ -377,7 +377,18 @@ swap_leg_service::prepare_change(const messaging::swap_leg_change& change,
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
-    stamp(out,
+    // The audit reaches the row through whichever member carries it, so a
+    // grouped entity is stamped member by member; stamping it whole would
+    // find no audit column and leave the row without one.
+    stamp(out.identity,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    // The audit reaches the row through whichever member carries it, so a
+    // grouped entity is stamped member by member; stamping it whole would
+    // find no audit column and leave the row without one.
+    stamp(out.audit,
           ctx_,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :

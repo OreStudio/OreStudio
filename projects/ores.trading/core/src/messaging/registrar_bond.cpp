@@ -19,7 +19,6 @@
  */
 #include "ores.trading.core/messaging/ascot_registrar.hpp"
 #include "ores.trading.core/messaging/bond_forward_registrar.hpp"
-#include "ores.trading.core/messaging/bond_future_delivery_basket_registrar.hpp"
 #include "ores.trading.core/messaging/bond_future_registrar.hpp"
 #include "ores.trading.core/messaging/bond_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_call_date_registrar.hpp"
@@ -181,12 +180,6 @@ register_bond_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(bond_future_subs.begin()),
                 std::make_move_iterator(bond_future_subs.end()));
-
-    auto bond_future_delivery_basket_subs =
-        register_bond_future_delivery_basket_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(bond_future_delivery_basket_subs.begin()),
-                std::make_move_iterator(bond_future_delivery_basket_subs.end()));
 
     auto bond_trs_subs = register_bond_trs_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),

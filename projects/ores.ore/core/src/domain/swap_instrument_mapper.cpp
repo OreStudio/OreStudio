@@ -486,6 +486,47 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
 }
 
 // ---------------------------------------------------------------------------
+// Forward: KnockOutSwap
+// ---------------------------------------------------------------------------
+
+trading::domain::swap_instrument_data
+swap_instrument_mapper::forward_knock_out_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping KnockOutSwap: " << std::string(t.id);
+
+    knock_out_swap_instrument instr;
+    instr.identity.trade_type_code = "KnockOutSwap";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
+
+    trading::domain::swap_instrument_data result;
+    result.instrument = std::move(instr);
+
+    if (!t.KnockOutSwapData)
+        return result;
+    const auto& sd = *t.KnockOutSwapData;
+
+    auto& ki = std::get<knock_out_swap_instrument>(result.instrument);
+
+    ki.barrier_type = to_string(sd.BarrierData.Type);
+    ki.barrier_start_date = to_domain_date(std::string(sd.BarrierStartDate));
+    if (!sd.BarrierData.Levels.Level.empty())
+        ki.barrier_level = static_cast<double>(sd.BarrierData.Levels.Level.front());
+
+    if (!sd.LegData.empty()) {
+        ki.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
+        ki.maturity_date = end_date_from_schedule(sd.LegData.front().ScheduleData);
+    }
+
+    int leg_num = 1;
+    for (const auto& ld : sd.LegData)
+        result.legs.push_back(map_leg(ld, leg_num++));
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
 // Forward: InflationSwap
 // ---------------------------------------------------------------------------
 
@@ -702,6 +743,56 @@ trade swap_instrument_mapper::reverse_swap(const vanilla_swap_instrument& instr,
         sd.LegData.push_back(reverse_leg(instr.start_date, instr.maturity_date, sl));
 
     t.SwapData = std::move(sd);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: KnockOutSwap
+// ---------------------------------------------------------------------------
+
+namespace {
+
+// The ORE barrierType set, read back from the code the table holds.
+barrierType barrier_type_from_string(const std::string& code) {
+    if (code == "UpAndOut")
+        return barrierType::UpAndOut;
+    if (code == "UpAndIn")
+        return barrierType::UpAndIn;
+    if (code == "DownAndIn")
+        return barrierType::DownAndIn;
+    if (code == "KnockIn")
+        return barrierType::KnockIn;
+    if (code == "KnockOut")
+        return barrierType::KnockOut;
+    if (code == "CumulatedProfitCap")
+        return barrierType::CumulatedProfitCap;
+    if (code == "CumulatedProfitCapPoints")
+        return barrierType::CumulatedProfitCapPoints;
+    if (code == "FixingCap")
+        return barrierType::FixingCap;
+    if (code == "FixingFloor")
+        return barrierType::FixingFloor;
+    return barrierType::DownAndOut;
+}
+
+}
+
+trade swap_instrument_mapper::reverse_knock_out_swap(
+    const knock_out_swap_instrument& instr,
+    const std::vector<swap_leg>& legs) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping KnockOutSwap";
+
+    trade t;
+    t.TradeType = oreTradeType::KnockOutSwap;
+
+    knockOutSwapData d;
+    d.BarrierData.Type = barrier_type_from_string(instr.barrier_type);
+    static_cast<std::string&>(d.BarrierStartDate) = to_ore_date(instr.barrier_start_date);
+    d.BarrierData.Levels.Level.push_back(static_cast<float>(instr.barrier_level));
+    for (const auto& sl : legs)
+        d.LegData.push_back(reverse_leg(instr.start_date, instr.maturity_date, sl));
+
+    t.KnockOutSwapData = std::move(d);
     return t;
 }
 

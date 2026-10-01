@@ -50,6 +50,7 @@ struct knock_out_swap_instrument_entity {
     std::string party_id;
     std::string start_date;
     std::string maturity_date;
+    std::string barrier_start_date;
     double barrier_level = 0.0;
     std::string barrier_type;
     std::optional<std::string> description;

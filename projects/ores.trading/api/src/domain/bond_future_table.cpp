@@ -25,21 +25,33 @@
 #include "ores.trading.api/domain/bond_future_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<bond_future>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Contract" << "Contract Month" << "Long/Short" << "Currency"
-          << "Fair Price" << "Last Delivery" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Contract" << "Long/Short" << "Conversion Factor" << "Use Future Price"
+          << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& bf : v) {
-        table << bf.contract_name << bf.contract_month << bf.long_short << bf.currency
-              << bf.fair_price << bf.last_delivery_date << bf.modified_by << bf.version
-              << fort::endr;
+        table << bf.contract_name << bf.long_short << opt_str(bf.apply_conversion_factor)
+              << opt_str(bf.use_future_price) << bf.modified_by << bf.version << fort::endr;
     }
     return table.to_string();
 }

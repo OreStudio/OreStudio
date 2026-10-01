@@ -59,7 +59,6 @@ drop policy if exists ascots_tenant_isolation_policy on "ores_trading_ascots_tbl
 
 -- Shared instrument-keyed tables, task B753AD00, waves A.4 to B.4
 drop policy if exists bond_forwards_tenant_isolation_policy on "ores_trading_bond_forwards_tbl";
-drop policy if exists bond_future_delivery_baskets_tenant_isolation_policy on "ores_trading_bond_future_delivery_baskets_tbl";
 drop policy if exists bond_leg_amortizations_tenant_isolation_policy on "ores_trading_bond_leg_amortizations_tbl";
 drop policy if exists bond_leg_amounts_tenant_isolation_policy on "ores_trading_bond_leg_amounts_tbl";
 drop policy if exists bond_leg_rates_tenant_isolation_policy on "ores_trading_bond_leg_rates_tbl";

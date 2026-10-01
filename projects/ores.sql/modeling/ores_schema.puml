@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-01T10:50:34.682334Z
+' Generated: 2026-10-01T11:38:55.179024Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -6332,35 +6332,6 @@ package "trading" #E8F5E9 {
     null.
     end note
 
-    entity ores_trading_bond_future_delivery_baskets_tbl <<junction>> #ECECEC {
-        * tenant_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        * sequence_number : integer <<PK>>
-        * valid_from : timestamptz <<PK>>
-        --
-        * version : integer
-        * delivery_basket_id : text <<FK>>
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_bond_future_delivery_baskets_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Bond Future Delivery Basket Table
-    One row per deliverable identifier a bond future's basket names, keyed
-    to the instrument and the identifier's ordinal.
-    The schema states the basket as an unbounded list of identifiers, and
-    the ordinal preserves the document's order so export re-emits the
-    identifiers as the document held them.
-    The identifier is text because the document states a name, not a
-    reference to a bond row.
-    end note
-
     entity ores_trading_bond_futures_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -6369,19 +6340,8 @@ package "trading" #E8F5E9 {
         * contract_name : text
         * contract_notional : numeric(28, 10)
         * long_short : text
-        * currency : text
-        * contract_month : text
-          deliverable_grade : text
-        * fair_price : numeric(28, 10)
-        * settlement : text
-        * settlement_dirty : boolean
-          root_date : date
-          expiry_basis : text
-          settlement_basis : text
-        * expiry_lag : integer
-        * settlement_lag : integer
-        * last_trading_date : date
-        * last_delivery_date : date
+          apply_conversion_factor : boolean
+          use_future_price : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -6395,13 +6355,28 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Bond Future Table
-    One row per bond future trade, keyed by the instrument row it
-    extends. The columns fix the ER row ("delivery date and the facts the
-    XSD bondFutureData carries") from external/ore/xsd/instruments.xsd
-    lines 422-448: every single-valued scalar of the structure, minus the
-    DeliveryBasket list, which has no destination in the nine tables and
-    lands in the shared instrument-keyed underlyings of the parent story
-    (recorded scope limit, task D7943D7E wave 1.3).
+    One row per bond future trade, keyed by the trade. The row carries the
+    whole of bondFutureData, the only type the ORE schema states for the
+    product (instruments.xsd:428):
+    ContractName, ContractNotional and LongShort are required and
+    ApplyConversionFactor and UseFuturePrice are optional booleans.
+    v17 moved the contract's own terms out of the trade. Currency,
+    ContractMonth, DeliverableGrade, LastTradingDate,
+    LastDeliveryDate, Settlement, DirtyQuotation, RootDate,
+    ExpiryBasis, SettlementBasis, ExpiryLag and SettlementLag are
+    elements of bondFutureReferenceDatum (referencedata.xsd:132),
+    and DeliveryBasket is that datum's element too. FairPrice is not in
+    the schema at all. The table carries none of the thirteen, because ORE
+    states them on the datum and not on the trade; they are recorded as
+    dropped rather than kept in a place ORE does not state them (decision
+    D25).
+    The datum reaches only the ReferenceData document root, and the
+    generated ORE bindings cover the Portfolio root, so no trade document
+    can state one of these terms and no mapper can read one. The shared entity
+    that will hold them is keyed by the contract name, the way
+    ores.trading.bond_issue is keyed by the security id; it lands when the
+    reference-data document becomes importable, and the drop is recorded on
+    the bond pilot until then.
     end note
 
     entity ores_trading_bond_instruments_tbl <<temporal>> #C6F0D8 {
@@ -6832,6 +6807,8 @@ package "trading" #E8F5E9 {
           price_quote_base_value : text
           sub_type : text
           price_type : text
+          payer : text
+          credit_risk : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -6862,6 +6839,12 @@ package "trading" #E8F5E9 {
     notional. It stays because a row set that holds an issue and no legs
     still has to export a leg, and it is what that leg's notional is built
     from.
+    Two columns come from the trade's own copy of the datum and not from
+    bondReferenceDatum: payer and credit_risk are bondData's top-level
+    members (instruments.xsd lines 404 and 406), which the reference datum
+    does not state. They live here because bondData is the trade's copy of
+    the issue's terms and every other member of it is already mapped to this
+    row, so leaving the two out would drop them from the round trip.
     end note
 
     entity ores_trading_bond_leg_amortizations_tbl <<temporal>> #C6F0D8 {
@@ -8594,6 +8577,7 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
+        * barrier_start_date : date
         * barrier_level : numeric(18, 10)
         * barrier_type : text
           description : text

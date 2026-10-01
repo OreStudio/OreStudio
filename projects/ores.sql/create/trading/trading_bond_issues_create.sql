@@ -42,6 +42,13 @@
  * notional. It stays because a row set that holds an issue and no legs
  * still has to export a leg, and it is what that leg's notional is built
  * from.
+ *
+ * Two columns come from the trade's own copy of the datum and not from
+ * bondReferenceDatum: payer and credit_risk are bondData's top-level
+ * members (instruments.xsd lines 404 and 406), which the reference datum
+ * does not state. They live here because bondData is the trade's copy of
+ * the issue's terms and every other member of it is already mapped to this
+ * row, so leaving the two out would drop them from the round trip.
  */
 
 create table if not exists "ores_trading_bond_issues_tbl" (
@@ -63,6 +70,8 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "price_quote_base_value" text null,
     "sub_type" text null,
     "price_type" text null,
+    "payer" text null,
+    "credit_risk" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -170,8 +179,46 @@ create or replace trigger ores_trading_bond_issues_insert_trg
 before insert on "ores_trading_bond_issues_tbl"
 for each row execute function ores_trading_bond_issues_insert_fn();
 
+-- The rows this row owns, closed when it is deleted. A function and not a
+-- rule body, because the rule resolves the tables it names when it is
+-- created and a child may be created after its parent; a plpgsql body
+-- resolves them when it runs.
+create or replace function ores_trading_bond_issues_cascade_delete_fn(
+    p_row "ores_trading_bond_issues_tbl")
+returns void as $$
+begin
+    -- Close every row this row owns, so one delete removes the family and
+    -- not the header alone. The store enforces it, so every caller gets it.
+    delete from "ores_trading_bond_issue_legs_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_leg_amounts_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_leg_rates_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_leg_amortizations_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_leg_schedules_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_leg_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_call_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+    delete from "ores_trading_bond_issue_conversion_targets_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace rule ores_trading_bond_issues_delete_rule as
 on delete to "ores_trading_bond_issues_tbl" do instead (
+    select ores_trading_bond_issues_cascade_delete_fn(OLD);
     update "ores_trading_bond_issues_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id

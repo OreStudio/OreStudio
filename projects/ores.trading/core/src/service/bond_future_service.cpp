@@ -86,19 +86,8 @@ domain::bond_future to_domain(const messaging::bond_future_write& write) {
     v.contract_name = write.contract_name;
     v.contract_notional = write.contract_notional;
     v.long_short = write.long_short;
-    v.currency = write.currency;
-    v.contract_month = write.contract_month;
-    v.deliverable_grade = write.deliverable_grade;
-    v.fair_price = write.fair_price;
-    v.settlement = write.settlement;
-    v.settlement_dirty = write.settlement_dirty;
-    v.root_date = write.root_date;
-    v.expiry_basis = write.expiry_basis;
-    v.settlement_basis = write.settlement_basis;
-    v.expiry_lag = write.expiry_lag;
-    v.settlement_lag = write.settlement_lag;
-    v.last_trading_date = write.last_trading_date;
-    v.last_delivery_date = write.last_delivery_date;
+    v.apply_conversion_factor = write.apply_conversion_factor;
+    v.use_future_price = write.use_future_price;
     return v;
 }
 

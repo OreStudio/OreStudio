@@ -56,6 +56,8 @@ struct bond_issue_write {
     std::optional<std::string> price_quote_base_value;
     std::optional<std::string> sub_type;
     std::optional<std::string> price_type;
+    std::optional<std::string> payer;
+    std::optional<std::string> credit_risk;
 };
 
 struct bond_issue_change {

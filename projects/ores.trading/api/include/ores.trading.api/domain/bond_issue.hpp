@@ -57,6 +57,13 @@ namespace ores::trading::domain {
  * notional. It stays because a row set that holds an issue and no legs
  * still has to export a leg, and it is what that leg's notional is built
  * from.
+ *
+ * Two columns come from the trade's own copy of the datum and not from
+ * bondReferenceDatum: payer and credit_risk are bondData's top-level
+ * members (instruments.xsd lines 404 and 406), which the reference datum
+ * does not state. They live here because bondData is the trade's copy of
+ * the issue's terms and every other member of it is already mapped to this
+ * row, so leaving the two out would drop them from the round trip.
  */
 struct bond_issue final {
     /**
@@ -165,6 +172,24 @@ struct bond_issue final {
      * (Clean, Dirty). PR 4 tightens the soft reference into a real foreign key.
      */
     std::optional<std::string> price_type;
+
+    /**
+     * @brief The payer the document states for the bond itself, when it states one.
+     *
+     * bondData carries a top-level Payer beside each leg's own, and the two are separate elements:
+     * this column is the datum's, and ores.trading.bond_issue_leg.payer is the leg's.
+     * bondReferenceDatum, which the issue otherwise models, states neither.
+     */
+    std::optional<std::string> payer;
+
+    /**
+     * @brief The credit-risk flag the document states for the issue, when it states one.
+     *
+     * bondData's CreditRisk is ORE's loose bool, whose thirteen spellings include the empty element
+     * the schema writes for true, so the column holds the spelling as text the way end_of_month
+     * does. bondReferenceDatum states no such element.
+     */
+    std::optional<std::string> credit_risk;
 
     /**
      * @brief Username of the person who last modified this bond issue.

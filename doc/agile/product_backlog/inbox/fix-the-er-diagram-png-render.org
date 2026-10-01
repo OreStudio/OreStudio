@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: D6BB976D-8B44-4D25-94E9-1BFD52D44461
+:END:
+#+title: The ER diagram PNG cannot be rendered at the current schema …
+#+description: The ER diagram PNG cannot be rendered at the current schema size. Writing it fails with java.lang.NegativeArraySizeException because the image for 367 tables overflows a 32-bit pixel count, so the committed PNG is still the one main carries and it does not show the tables recent merges added or the bond_future_delivery_basket retirement. The .puml is correct and the drift job checks only it. Fix the render: split the diagram into per-package files, scale it down, or replace the PNG with an SVG that is rendered per package.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the ER diagram's PNG render again, or replace it with an artefact that
+can. `projects/ores.codegen/plantuml_er_generate.sh` parses the SQL tree and
+renders the `.puml`, then calls PlantUML to draw the image; the draw step
+now fails on the 367-table schema with
+`java.lang.NegativeArraySizeException`, because the full-resolution image
+overflows a 32-bit pixel count.
+
+* Why
+
+The `.puml` is the checked artefact and the `drift` job compares only it, so
+no gate is red. The committed PNG is therefore stale: it is the image main
+already carried, and it shows neither the tables the recent merges added nor
+the `bond_future_delivery_basket` retirement this pilot made. A reviewer who
+opens the PNG reads a schema that no longer exists, and the gap will widen
+with every merge. Candidates: emit one diagram per package, render at a
+reduced `PLANTUML_LIMIT_SIZE` with an explicit scale, or move to a
+format that does not need one giant raster.
+
+* References
+
+- =projects/ores.codegen/plantuml_er_generate.sh= — the parse, render and
+  draw steps.
+- =projects/ores.sql/modeling/ores_schema.puml= — the checked source.
+- =projects/ores.sql/modeling/CMakeLists.txt= — the diagram target and the
+  Java arguments.
+
+* See also
+
+- #2476, whose ER-diagram check passes on the `.puml` while the PNG stays
+  behind.

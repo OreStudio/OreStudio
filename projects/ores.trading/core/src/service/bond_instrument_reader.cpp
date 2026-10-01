@@ -87,7 +87,6 @@ struct instrument_rows final {
     std::vector<domain::instrument_option_payment_date> option_payment_dates;
     std::optional<domain::instrument_strike> strike;
     std::optional<domain::bond_forward> forward;
-    std::vector<domain::bond_future_delivery_basket> delivery_basket;
 };
 
 /**
@@ -95,8 +94,8 @@ struct instrument_rows final {
  *
  * A bond's own legs belong to the security rather than to the trade, so
  * they and everything they state key on the issue. The option block, the
- * strike, the forward and the delivery basket are the trade's product
- * and stay in instrument_rows.
+ * strike and the forward are the trade's product and stay in
+ * instrument_rows.
  */
 struct issue_leg_rows final {
     std::vector<domain::bond_issue_leg> legs;
@@ -230,9 +229,6 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& tr
 
     for (auto& row : repository::read_forwards_by_trade_ids(ctx, trade_ids))
         rows[boost::uuids::to_string(row.trade_id)].forward = std::move(row);
-
-    for (auto& row : repository::read_delivery_baskets_by_trade_ids(ctx, trade_ids))
-        rows[boost::uuids::to_string(row.trade_id)].delivery_basket.push_back(std::move(row));
 
     return rows;
 }
@@ -681,11 +677,6 @@ void apply_forward(domain::bond_instrument_data& data, const instrument_rows& ro
                                                             row.premium_date.value_or("")};
 }
 
-void apply_delivery_basket(domain::bond_instrument_data& data, const instrument_rows& rows) {
-    for (const auto& row : rows.delivery_basket)
-        data.future_delivery_basket.push_back(row.delivery_basket_id);
-}
-
 /**
  * @brief Copies the return-side members the fact row holds back into the container.
  *
@@ -792,7 +783,6 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
         apply_option_block(data, trade_rows);
         apply_strike(data, trade_rows);
         apply_forward(data, trade_rows);
-        apply_delivery_basket(data, trade_rows);
 
         const auto& ttc = data.instrument.identity.trade_type_code;
         if (ttc == "BondOption")

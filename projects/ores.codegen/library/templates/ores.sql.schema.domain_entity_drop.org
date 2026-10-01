@@ -42,6 +42,9 @@ drop function if exists {{sql_name_base}}_delete_fn;
 {{/sql.bitemporal_soft_update}}
 {{^sql.bitemporal_soft_update}}
 drop rule if exists {{sql_name_base}}_delete_rule on "{{sql_name_base}}_tbl";
+{{#has_delete_cascade}}
+drop function if exists {{sql_name_base}}_cascade_delete_fn("{{sql_name_base}}_tbl");
+{{/has_delete_cascade}}
 {{/sql.bitemporal_soft_update}}
 drop trigger if exists {{sql_name_base}}_insert_trg on "{{sql_name_base}}_tbl";
 drop function if exists {{sql_name_base}}_insert_fn;

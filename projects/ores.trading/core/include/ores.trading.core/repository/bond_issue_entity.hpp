@@ -61,6 +61,8 @@ struct bond_issue_entity {
     std::optional<std::string> price_quote_base_value;
     std::optional<std::string> sub_type;
     std::optional<std::string> price_type;
+    std::optional<std::string> payer;
+    std::optional<std::string> credit_risk;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

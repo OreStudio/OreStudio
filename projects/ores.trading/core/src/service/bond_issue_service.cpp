@@ -98,6 +98,8 @@ domain::bond_issue to_domain(const messaging::bond_issue_write& write) {
     v.price_quote_base_value = write.price_quote_base_value;
     v.sub_type = write.sub_type;
     v.price_type = write.price_type;
+    v.payer = write.payer;
+    v.credit_risk = write.credit_risk;
     return v;
 }
 

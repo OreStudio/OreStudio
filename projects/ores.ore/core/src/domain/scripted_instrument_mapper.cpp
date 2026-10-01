@@ -374,28 +374,6 @@ scripted_instrument_mapper::forward_performance_option_01(const trade& t) {
 }
 
 // ---------------------------------------------------------------------------
-// Forward: KnockOutSwap
-// ---------------------------------------------------------------------------
-
-trading::domain::scripted_instrument
-scripted_instrument_mapper::forward_knock_out_swap(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping KnockOutSwap: " << std::string(t.id);
-    trading::domain::scripted_instrument result = make_base("KnockOutSwap");
-    if (!t.KnockOutSwapData)
-        return result;
-    const auto& d = *t.KnockOutSwapData;
-    result.script_name = "KnockOutSwap";
-
-    std::string params = "{\"BarrierType\":\"" + to_string(d.BarrierData.Type) + "\"" +
-                         ",\"BarrierStartDate\":\"" + std::string(d.BarrierStartDate) + "\"";
-    if (!d.BarrierData.Levels.Level.empty())
-        params += ",\"BarrierLevel\":" + std::to_string(d.BarrierData.Levels.Level.front());
-    params += "}";
-    result.parameters_json = params;
-    return result;
-}
-
-// ---------------------------------------------------------------------------
 // Reverse: DoubleDigitalOption
 // ---------------------------------------------------------------------------
 
@@ -484,36 +462,4 @@ trade scripted_instrument_mapper::reverse_performance_option_01(const scripted_i
     t.PerformanceOption01Data = std::move(d);
     return t;
 }
-
-// ---------------------------------------------------------------------------
-// Reverse: KnockOutSwap
-// ---------------------------------------------------------------------------
-
-trade scripted_instrument_mapper::reverse_knock_out_swap(const scripted_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping KnockOutSwap";
-    trade t;
-    t.TradeType = oreTradeType::KnockOutSwap;
-    knockOutSwapData d;
-    d.BarrierData.Type = barrierType::DownAndOut;
-    static_cast<std::string&>(d.BarrierStartDate) = "2000-01-01";
-    for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
-        if (key == "BarrierStartDate")
-            static_cast<std::string&>(d.BarrierStartDate) = val;
-        else if (key == "BarrierLevel")
-            d.BarrierData.Levels.Level.push_back(std::stof(val));
-        else if (key == "BarrierType") {
-            if (val == "UpAndOut")
-                d.BarrierData.Type = barrierType::UpAndOut;
-            else if (val == "UpAndIn")
-                d.BarrierData.Type = barrierType::UpAndIn;
-            else if (val == "DownAndIn")
-                d.BarrierData.Type = barrierType::DownAndIn;
-            else
-                d.BarrierData.Type = barrierType::DownAndOut;
-        }
-    }
-    t.KnockOutSwapData = std::move(d);
-    return t;
-}
-
 }

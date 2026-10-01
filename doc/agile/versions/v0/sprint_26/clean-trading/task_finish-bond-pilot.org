@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/finish-bond-pilot
-#+pr:
+#+pr: 2476
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -34,12 +34,12 @@ identity keys and the security split, because those touch every family.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | PR 4 merged, so the security keys are stable. |
-| Next         | Re-model the bond future against the current schema. |
-| Last touched | 2026-09-26                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
 
 * Acceptance
 
@@ -59,14 +59,20 @@ identity keys and the security split, because those touch every family.
 - Deleting a bond instrument over the shell removes the header row and
   the fact rows and the issue it owns, or refuses with a stated reason.
   Today the delete sends one message and leaves the rest behind.
-- Adding a bond is one transaction. Today it is three saves with no
-  transaction.
-- A stated element whose value equals its type default survives export.
-  The abandoned task =A3DA0BB5= records the case: a bond future states
-  SettlementDirty, FairPrice and ExpiryLag, and the export drops all
-  three. The fix is a presence flag per optional member, which is a
-  modelling and codegen change to =ores.trading.bond_future= rather than
-  a mapper edit.
+- Adding a bond is one transaction. The shell verb is: it sends one
+  =put_bond_instrument_request= and =repo_.write= wraps it in one
+  transaction. The import still writes the issue, the instrument and the
+  product row as three requests; the shape that would make it one is a
+  composite request carrying all three, and it is recorded for the rates
+  work rather than taken here.
+- A stated element whose value equals its type default survives export. A
+  nullable column is the presence record: an unset member is null and a
+  stated =false= is false, and the export writes the one the document
+  stated (D24). The abandoned task =A3DA0BB5='s three named elements --
+  SettlementDirty, FairPrice and ExpiryLag -- are not in v17 and are
+  dropped with the other contract terms, so the rule is proven instead on
+  =ApplyConversionFactor=false= and =UseFuturePrice=true=, which the
+  round-trip test pins.
 - The zero-loss gate reads zero over the whole bond corpus of about 50
   documents, not over the two that were run live.
 - =check_component_drift.py --component trading-cpp --dry-run= reports
@@ -130,6 +136,251 @@ rows the work touches.
 
 * Notes
 
+- *=bond_future_delivery_basket= is retired.* The table held one
+  deliverable identifier per row, keyed by the trade, and ORE states
+  =DeliveryBasket= as an element of =bondFutureReferenceDatum=, which the
+  generated bindings reach only from the =ReferenceData= document root.
+  No trade document states one: the import's =save_delivery_basket= looped
+  over an always-empty list and the exporter never wrote the member back,
+  so the row had no producer and no consumer. That is the shape D26
+  refused to build for the underlyings table, and it is why this one is
+  removed rather than filled. The model, the generated domain class, table,
+  JSON IO, generator, protocol, event, handler, registrar, repository,
+  mapper, service, the two SQL scripts and the cascade entry in
+  =bond_instrument= are gone. Regeneration does not prune, so the
+  byproducts were removed by hand: the two cmake source lists
+  (=regenerate_cmake_component_files.py=), the registrar and composition
+  roots, the SQL include and row-level-security lists, and the ER diagram
+  (=plantuml_er_generate.sh=). The import handler, the reader, the
+  parent-scoped queries, the hand-carried bond container and their tests
+  no longer name the entity. The database is recreated, because the table
+  leaves the schema.
+- *Defects 14 and 16 are decided, and neither is the bond family's*
+  (D28, D29). Defect 14 asked for the coverage declaration first: every
+  instrument table now carries a =trade_type_code= constraint and their
+  union covers every code, so the measurement it wanted exists. What it
+  shows is that ten tables -- the rates, credit and commodity general
+  tables -- share one identical list of all 121 codes, so a list does not
+  say which products a table holds; the one table with no constraint,
+  =rpa_instrument=, has no producer, because the mapper sends
+  =RiskParticipationAgreement= to =credit_instrument=. Giving each table
+  its own list is the exclusive-or split defect 9 asks for. Defect 16's
+  observation schedule has a home: =instrument_schedules= is keyed by the
+  instrument and already carries =fixing_schedule= among its roles, and
+  the bond family writes there. The scalars it names are still in four
+  equity and commodity tables, and the twelve products that need an
+  observation schedule are theirs; moving the scalars into the shared
+  table is their reshape work. Both defects are fixed for the bond family
+  and recorded for the families that own the remainder.
+- *The delete closes the family now, from the model (D27).* The generated
+  delete rule calls a generated function that closes the rows the entity
+  owns, so one delete removes the family and not the header alone. The
+  entity declares its children in a =* Delete cascade= section, and an
+  optional =:cascade_orphan:= on a foreign key takes the referenced row
+  when the deleted row was the last to name it. =bond_instrument= declares
+  the seventeen trade-keyed tables and marks =issue_id= as an orphan;
+  =bond_issue= declares its eight issue-keyed tables. Two tests pin it:
+  =the_delete_closes_the_family_and_the_issue_it_owns= and
+  =the_issue_outlives_the_instrument_that_still_shares_it=.
+  The cascade is a plpgsql function rather than a rule body because a rule
+  resolves the tables it names when it is created, and =bond_issue_legs= is
+  created after =bond_issues=; a plpgsql body resolves them when it runs.
+- *The add path over the shell is already one transaction; the note that
+  said otherwise was stale.* The sprint 25 hand-written verb minted an
+  issue, then wrote the instrument, then the product row, and recorded the
+  three saves as its price. The regenerated verb is not that verb: it takes
+  =issue_id= as an argument and sends one =put_bond_instrument_request=
+  (=bond_instrument_commands.cpp:336-373=), and the service writes one row
+  through =repo_.write= (=bond_instrument_service.cpp:140-152=), which
+  =execute_write_query= wraps in one transaction. What is still three saves
+  is the *import*: =save_bond_issue=, then =put_bond_instrument_request=,
+  then the product row (=ore_import_execute_handler.cpp:1239-1412=), each
+  its own request and its own transaction. The shape that would make it one
+  is the one the composite family already has --
+  =put_composite_instrument_with_legs_request= carries the instrument and
+  its legs and is applied by one service call -- so a
+  =put_bond_instrument_with_family_request= carrying the issue, the
+  instrument and the product row is the work, and it is the same template
+  feature the delete's cascade wants.
+- *The underlyings table is recorded as out of scope, with the reason
+  (D26).* D21 settled its shape and left the second arm to the pilot. No
+  bond product states an underlying: all eleven =underlyingTypes= sites in
+  =instruments.xsd= are another family's (=varianceSwapData=,
+  =cliquetOptionData=, =settlementData=, =pricesType=, =equityOptionData=,
+  =eqBarrierOptionData=, =equityFutureOptionData=, =eqDigitalOptionData=,
+  =eqTouchOptionData=, =equityForwardData= and =genericBarrierOptionData=),
+  and the bond types state none. A table built in this PR would have no
+  producer and no consumer, which is the shape the pilot is retiring
+  elsewhere. The defect 15 fix belongs to the nine families that state an
+  underlying.
+- *The eight residue elements are resolved.* Six of them --
+  =CreditGroup=, =VolatilityCurveId=, =PriceQuoteMethod=,
+  =PriceQuoteBaseValue=, =PriceType= and =SubType= -- became columns of
+  =bond_issue= in the split, and the leg's own =Payer= is
+  =bond_issue_leg.payer=. The last two are =bondData='s *top-level*
+  =Payer= (instruments.xsd:404, an =xs:string=) and =CreditRisk= (406,
+  ORE's loose =bool=), which =bondReferenceDatum= does not state at all, so
+  neither had a home. Both are columns of =bond_issue= now: =payer= holds
+  the spelling as text, =credit_risk= holds the code the way =end_of_month=
+  does, and =the_datum_payer_and_credit_risk_survive_the_round_trip= pins
+  both directions.
+- *The bond future is reshaped to v17 (D25).* The table keeps the three
+  members =bondFutureData= requires, =contract_name=, =contract_notional=
+  and =long_short=, and gains its two optional booleans,
+  =apply_conversion_factor= and =use_future_price=, which the mapper had
+  ignored since the first pilot. The other thirteen columns are dropped:
+  twelve of them are elements of =bondFutureReferenceDatum=, which the
+  generated ORE bindings never emit because the datum reaches only the
+  =ReferenceData= document root, and =fair_price= is not in the schema at
+  all. A dropped column is recorded, not migrated, and the shared entity
+  that will hold the terms is keyed by the contract name, the way
+  =bond_issue= is keyed by the security id.
+- *The presence bullet is met by the optional type, not by a new column
+  (D24).* A stated =false= is a value and an absent element is null, so the
+  two stay different and the export writes the one the document stated.
+  =bond_future_maps_the_trade_level_facts= proves it: the authored document
+  states =ApplyConversionFactor=false= and =UseFuturePrice=true=, and both
+  survive the reverse.
+- *=bond_future_delivery_basket= is retired separately.* ORE's
+  =DeliveryBasket= is the reference datum's element, the table is keyed by
+  the trade, and the exporter never writes it, so nothing fills it from a
+  trade. Removing a generated entity touches five components and no tool
+  prunes the files it leaves behind, so it is the next unit rather than
+  part of the reshape.
+- *The corpus sweep reads in scope lost 0, unexplained 0, with all 354
+  trades exported.* That is the pilot's zero-loss acceptance over the whole
+  corpus of 49 bond portfolios, not over the two documents the sprint 25
+  recipe ran. Evidence: =evidence/pr6_corpus_sweep_first_run.txt=. What it
+  took, in order: the union must be deduplicated by trade id and folded to
+  one statement per security, and the folded union is what must be
+  imported (D22); a date must be compared as a date; a value may be read
+  as a date only when it spells a real calendar date, because the earlier
+  rule read the bond leg notional =10000000= as a date while the
+  exporter's =10000000.000000= stayed a number; a bond product does not
+  always state its =bondData= directly, so a forward bond's nested
+  statement is folded too; and an empty element states no content, so it
+  is the same statement as the element's absence (D24). The out-of-scope
+  residue is 5778 lost and 95 unexplained, and its largest block is the
+  swap legs the import never writes.
+- *The sweep's own harness had two defects.* It deleted its work directory
+  before classifying, so a run without =--keep= classified a directory that
+  was gone; and the pack's union file was always =000-union.xml=, whose
+  name becomes the book's name, so a second run against one database failed
+  at =save_book=. Both are fixed. A third remains and is recorded: the
+  import is create-only, so re-importing the corpus into a database that
+  already holds it fails with =All 706 trade save(s) failed=, and the sweep
+  still needs a freshly recreated database.
+- *The KnockOutSwap now round trips, and its home is the swap family
+  (D23).* The corpus's one trade of the type was saved and then dropped
+  from the export because its instrument never reached the database: the
+  import sent =KnockOutSwap= to =scripted_instrument=, whose closed
+  trade-type check does not name it, so the insert was refused.
+  =swap_leg= names the knock-out swap among the nine rates families whose
+  legs it holds, so the type is routed to =swap_instrument_mapper=, the
+  scripted path is removed, and =knock_out_swap_instrument= gains the
+  =barrier_start_date= column ORE states separately from the legs. The row
+  lands with start 2024-05-02, maturity 2029-05-02, barrier 2027-05-03 at
+  0.0500000000 UpAndOut, and the trade exports.
+- *The export still states no =LegData= for the KnockOutSwap, and the
+  document is therefore not schema-valid.* The import writes no swap legs
+  for any of the nine rates families: only bond legs and composite legs are
+  saved. Recorded as defect 18, which belongs to the rates families and not
+  to this pilot.
+- *Other families fail their own insert checks on the same run.* The
+  import reports warnings for =credit_instruments= (=tenor=),
+  =swaption_instruments= (=long_short=), =composite_instruments=
+  (=trade_type_code=, =GenericTRS=) and commodity instruments. They are out
+  of the bond scope and the same class of defect as the KnockOutSwap: a
+  closed set that does not name what the mapper produces. Recorded, not
+  taken here.
+- The corpus's in-scope losses before the fold and the date fixes were
+  lost 1745, unexplained 1293; after the date spelling fix alone, lost
+  1013, unexplained 583; after the fold, lost 256, unexplained 0.
+- Round trip, first run of the pilot (2026-09-30). The gate the split left
+  unrun now runs and reads zero: the bond example document
+  (=Cash_BondRepo_and_Bond.xml=) imports, exports again and classifies
+  as *lost 0, unexplained 0* in scope, with a worst relative error of
+  =2.2e-8=. What it took is below; the corpus sweep is still to run.
+- The import could not write a single trade. The cause was a generator
+  defect, not a trading one: the service template's =prepare_change=
+  stamped the domain object whole, which is right only for a flat entity.
+  A field-grouped entity reaches its audit through =audit= and an
+  identity-grouped one through =identity= and =audit=, so the stamp found
+  no =modified_by= to set and the insert trigger refused the row with
+  ="modified_by cannot be null or empty"=. Every =put= of a trade or a
+  bond instrument failed. Fixed at source in
+  =cpp_service.cpp.mustache= and =core.py=, which now name the members a
+  write stamps; a flat entity's emitted code is byte-identical, so no
+  other component moved. =test_service_write_stamps_audit.py= pins one
+  entity of each shape.
+- Run the round trip against a *freshly recreated* database. The book the
+  import writes is named =portfolio_roundtrip= every time, so a second run
+  against a database that already holds one fails at =save_book= with an
+  empty message. Recreate, then =bootstrap setup ... --profile
+  acme_demo= (the provisioning commands were renamed; =provision system=
+  is gone), then the three shell verbs.
+- Corpus sweep, first run (2026-09-30). The harness is
+  =scripts/ore_corpus_roundtrip.py=: it stages every bond portfolio and the
+  configuration documents beside it, packs and imports them in one go,
+  exports once, folds the sources into one Portfolio and runs the
+  classifier, because the export writes every trade the database holds and
+  the classifier pairs element paths rather than files. Evidence:
+  =evidence/pr6_corpus_sweep_first_run.txt=.
+- The union must be deduplicated by trade id before it is classified. The
+  corpus states 727 trades under 354 distinct ids -- 213 ids appear in
+  more than one document -- and the import keys on the id, so it saves
+  exactly the 354 and a raw union reads 373 phantom losses. The corrected
+  evidence file folds the source to one element per id first.
+- What the corrected run says. Of the 354 distinct trades, the export
+  holds 353: one, =KnockOutSwap_example= of type =KnockOutSwap=, never
+  comes out. In scope the classifier reads lost 1745, unexplained 1293,
+  and every lost pair sits under =Trade/BondData=: the leg type, the
+  issue date, the issuer, the credit curve, the fixed rate and the leg
+  schedule's four dates, for about 117 trades each. The single document
+  reads zero, so this is the inline bond case: a document that states its
+  bond inline rather than by reference loses the security's own terms,
+  which is the acceptance bullet the split claimed and the corpus denies.
+- The configuration documents make no difference to the numbers: the run
+  with them staged and the run without read the same, so whatever the
+  import is dropping, it is not the conventions.
+- The corpus is not a set of consistent reference data, and the
+  remaining losses are that, not a defect. It states 24 distinct
+  =SecurityId= values, and five of them are stated inconsistently, so
+  about 117 trades state =SECURITY_1=
+  with a different issuer, a different credit curve and a different
+  notional each: =CPTY_1= to =CPTY_100=, =BOND_BB= against =BOND_BBB=
+  against =CPTY_C=, and =10000000= against =1=. Our model holds one issue
+  per security, which is the point of the split, so the export can only
+  return one of the contradictory statements. A gate that reads zero
+  needs the corpus held to its own consistency: one statement per
+  security, with the rest recorded.
+- The classifier now compares a date as a date. =xs:date= admits the
+  basic ISO 8601 spelling the corpus's older documents state and the
+  extended one the exporter states, and the gate read a re-spelled date
+  as one lost pair and one unexplained pair. Normalising both sides took
+  the in-scope reading from lost 1316 to lost 1013.
+- The harness imports the *union*, not the documents it was folded from.
+  Importing every document leaves whichever copy of a duplicated trade id
+  the import saw last, while the comparison holds the one it folded from,
+  and the two disagree for reasons that are not the code's.
+- The in-scope losses are mostly the *spelling* of a date, not its loss.
+  Every source document that carries the full bond terms states them in
+  the corpus's basic ISO form and the export states the extended one: a
+  leg schedule rule reads =StartDate 20160203= in the source and
+  =StartDate 2016-02-09= in the output. The classifier compares element
+  text, so a re-spelled date is one lost pair and one unexplained pair.
+  The single document reads zero because it states the extended form
+  already, which is why the recipe never saw this. The dates also differ
+  in the day (the 3rd against the 9th), which is the business-day
+  adjustment the reader applies, so the corpus sweep needs a decision:
+  normalise both sides before comparing, or preserve the source's own
+  spelling and adjustment. The known basic-form gap is recorded on
+  =task_model-missing-trading-families.org=.
+- Keep =projects/ores.codegen/venv/bin= first on =PATH= when regenerating.
+  The sweep and the in-place regeneration format with whichever
+  =clang-format= wins, and 21 wraps a line that 18.1.3 does not, which
+  reads as drift in a file nothing changed.
+
 - The pilot's recorded results are in the sprint 25 task bodies. The
   zero-loss claim is =B753AD00= and the round trip is =D2D32410=. Read
   both before re-measuring, so a difference is attributable.
@@ -187,12 +438,45 @@ rows the work touches.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2476][#2476]] | [trading] Finish the bond pilot |
 |    | Finish the bond pilot |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The delete-cascade and audit-stamp text was written into the tangled =.mustache= templates, not their org sources, so the next tangle would drop both | =ores.sql.schema.domain_entity_create.org=, =..._drop.org=, =ores.cpp.service.service_impl.org= | Accepted, fixed | The org sources now carry the text and a tangle reproduces the mustache byte for byte (=903af94230=) |
+| 2 | "eighteen trade-keyed tables" does not match the generated cascade | task note | Accepted, fixed | The list holds seventeen |
+| 3 | "five distinct SecurityId values in total" contradicts the evidence's 24 | task note | Accepted, fixed | 24 ids, five of them stated inconsistently |
+| 4 | The evidence header names a commit older than the fixes its reading depends on | =evidence/pr6_corpus_sweep_first_run.txt= | Accepted | The header now names the re-run on the rebased tree |
+| 5 | =barrier_type_from_string= re-rolls the generic =parse_code= and defaults an unknown code silently | =swap_instrument_mapper.cpp= | Recorded, not taken | =parse_code= is file-local to =bond_instrument_mapper.cpp=; sharing it is its own refactor |
+| 6 | The classifier reads any 8-digit value of date shape as a date, so a real difference could be masked | =scripts/ore_mapper_roundtrip_diff.py= | Recorded as a limit | Named in the PR's Testing limitations; the rule stays value-shaped here |
+| 7 | The KnockOutSwap routing and the widened =barrier_type= check are not acceptance bullets | =trade_mapper.cpp=, =knock_out_swap_instrument.org= | Accepted | D23 is the authority; the check names the ten ORE spellings the round trip needs |
+| 8 | PR review: two deletes that share a parent can each read the other as still open and leave the parent behind | =trading_bond_instruments_create.sql= | Accepted, fixed | The cascade takes the parent with =for update= before the check. The reverse ordering, a child inserted just before the parent is closed, is recorded as still open: the insert trigger's soft-FK check reads without a lock, and closing that is the shared insert path's, not the cascade's |
+| 9 | PR review: pin the 8-digit date case with a test | =scripts/ore_mapper_roundtrip_diff.py= | Accepted, fixed | The self-check now pins a February 30th and a month 13, the shapes the calendar rejects |
+| 10 | PR review: the test evidence is self-reported and CI must be green | PR body | Accepted | All 17 checks pass on the branch |
+| 11 | PR review: the committed ER PNG is stale, not just the =puml= | =ores_schema.png= | Accepted, follow-up | Filed as the capture =fix-the-er-diagram-png-render=; the render overflows a 32-bit pixel count at 367 tables |
 
 * Result
+
+The bond pilot is complete. The bond future holds the five members
+=bondFutureData= declares; the thirteen contract terms are dropped with
+the reason, because ORE states them on =bondFutureReferenceDatum=, which
+the generated bindings never emit from a trade. The eight =bondData=
+residue elements are resolved: six became =bond_issue= columns in the
+split, and the top-level =payer= and =credit_risk= are columns of
+=bond_issue= now. The underlyings table is recorded as out of scope
+(D26), because no bond product states an underlying. The delete closes
+the family and the issue it owns, generated from the model (D27), and
+=bond_future_delivery_basket= is retired. Defects 14 and 16 are decided
+(D28, D29): both are fixed for the bond family and recorded for the
+families that own the remainder. The corpus round trip reads in scope
+lost 0 and unexplained 0 over 49 portfolios and 354 trades, with the
+out-of-scope residue recorded.
+
+Gates, on the rebased branch with the database recreated: the whole-tree
+build exits 0; =ctest -j 1= is 89 of 89; =pytest
+projects/ores.codegen/tests -q= is 1049 passed; =check_component_drift.py
+--component trading-cpp= is clean after the regeneration commit;
+=check_sql_hygiene.py= is 1813 files, 0 problems; =validate_docs.sh= is
+41 components; the ER-diagram check reports the puml up to date.

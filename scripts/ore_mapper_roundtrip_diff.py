@@ -31,6 +31,14 @@ a difference, and each one is classified:
   unexplained any other pair our output states that the source does not. A
               failure: it needs a decision.
 
+An empty element is not content, so it is the same statement as the
+element's absence: a pair whose value is empty is no difference whichever
+side states it. ORE's date type spells an unset date as the empty string
+and its elements are optional, so a document may write either, and the
+corpus writes both. The pairing above is tried first, because an empty
+element is also how ORE spells a true boolean, and that one has to be
+echoed as a boolean.
+
 Two scopes are reported. The in-scope pairs are the ones the bond programme
 gates on: everything under a bond product element, plus the top-level trade
 envelope. The out-of-scope pairs are the other instrument families, which this
@@ -57,6 +65,7 @@ Exit codes:
 """
 
 import argparse
+import datetime
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -143,10 +152,56 @@ def as_number(text: str):
         return None
 
 
+# The schema types a date as xs:date, which admits both the basic ISO 8601
+# spelling (20160203) and the extended one (2016-02-03). The corpus's older
+# documents state the basic form and the exporter states the extended one, so
+# a re-spelled date would read as one lost pair and one unexplained pair.
+# Both sides are canonicalised to the extended form, which is what the gate
+# means by zero loss: the same date, however it is written.
+#
+# The text alone cannot say whether an element is a date, so a value is read
+# as one only when it spells a real calendar date. A bare eight-digit number
+# is a plausible date and an equally plausible notional -- 10000000 is stated
+# as a bond leg's notional in the corpus -- so the month and day have to be
+# real, and the year has to be one the schema's dates live in. Without that,
+# the source's 10000000 canonicalises to a date while its exporter's
+# 10000000.000000 stays a number, and one value reads as both a loss and an
+# excess.
+_BASIC_DATE = re.compile(r"^(\d{4})(\d{2})(\d{2})$")
+_EXTENDED_DATE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
+DATE_YEARS = range(1500, 3000)
+
+
+def date_parts(text: str):
+    """The year, month and day of a spelled date, or None."""
+    match = _BASIC_DATE.match(text) or _EXTENDED_DATE.match(text)
+    if not match:
+        return None
+    year, month, day = (int(group) for group in match.groups())
+    if year not in DATE_YEARS:
+        return None
+    try:
+        datetime.date(year, month, day)
+    except ValueError:
+        return None
+    return year, month, day
+
+
+def canonical_date(text: str) -> str:
+    year, month, day = date_parts(text)
+    return f"{year:04d}-{month:02d}-{day:02d}"
+
+
+def is_iso_date(text: str) -> bool:
+    return date_parts(text) is not None
+
+
 def normalise_value(text: str | None) -> str:
     if text is None:
         return ""
     stripped = text.strip()
+    if is_iso_date(stripped):
+        return canonical_date(stripped)
     number = as_number(stripped)
     if number is None:
         return stripped
@@ -173,6 +228,59 @@ def group_by_path(pairs: Counter) -> dict:
     for (path, value), count in pairs.items():
         by_path.setdefault(path, Counter())[value] += count
     return by_path
+
+
+def normalisation_self_check() -> int:
+    """Pin the value normalisation both scopes read.
+
+    The date rule has already read a bond leg's notional as a date, so it is
+    asserted here rather than left for a corpus run to notice. The rule reads
+    a date from the value's shape alone, so a numeric value that spells a
+    real calendar date is normalised to one; the cases below pin the other
+    side, where the shape looks like a date but the calendar rejects it.
+    """
+    cases = (
+        ("20160203", "2016-02-03"),
+        ("2016-02-03", "2016-02-03"),
+        ("10000000", "10000000"),
+        ("10000000.000000", "10000000"),
+        ("28371509.989758", "28371509.989758"),
+        ("20261301", "20261301"),
+        ("20240230", "20240230"),
+        ("18001301", "18001301"),
+        ("0.05", "0.05"),
+        ("", ""),
+    )
+    failures = 0
+    for text, expected in cases:
+        actual = normalise_value(text)
+        if actual != expected:
+            print(f"SELF-CHECK FAILED: {text!r} normalises to {actual!r}, expected {expected!r}")
+            failures += 1
+
+    # The classification rule, over one path. Each case names the value the
+    # source states, the value the output states, and the kind it is
+    # expected to land in, or None for no difference at all.
+    path = "/Portfolio/Trade/BondData/LegData/ScheduleData/Rules/FirstDate"
+    kinds = ("numeric", "boolean", "lost", "unexplained")
+    classifications = (
+        ("", None, None),
+        (None, "", None),
+        ("", "true", "boolean"),
+        ("true", "", "lost"),
+        ("2016-02-03", None, "lost"),
+        (None, "2016-02-03", "unexplained"),
+    )
+    for stated, written, expected in classifications:
+        source_pairs = Counter({(path, stated): 1}) if stated is not None else Counter()
+        output_pairs = Counter({(path, written): 1}) if written is not None else Counter()
+        found = classify(source_pairs, output_pairs)
+        landed = next((kind for kind in kinds if found[kind]), None)
+        if landed != expected:
+            print(f"SELF-CHECK FAILED: source {stated!r} against output {written!r} "
+                  f"lands in {landed!r}, expected {expected!r}")
+            failures += 1
+    return failures
 
 
 def parse(path: Path):
@@ -220,11 +328,20 @@ def classify(source_pairs: Counter, output_pairs: Counter):
             elif extra and is_boolean_pair(value, extra[0]):
                 extra.pop(0)
                 found["boolean"].append((path, value))
+            elif value == "":
+                # An empty element states no content, so it is the same
+                # statement as the element's absence. ORE's date type
+                # spells an unset date as the empty string and its elements
+                # are optional, so a document may write either, and the
+                # corpus writes both. The pairing above runs first, because
+                # an empty element is also how ORE spells a true boolean.
+                continue
             else:
                 found["lost"].append((path, value))
 
         for value in extra:
-            found["unexplained"].append((path, value))
+            if value != "":
+                found["unexplained"].append((path, value))
 
     found["worst_numeric"] = worst
     return found
@@ -232,12 +349,19 @@ def classify(source_pairs: Counter, output_pairs: Counter):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-dir", required=True, type=Path)
-    parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument("--source-dir", type=Path)
+    parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--all-products", action="store_true",
                         help="gate on every product, not only the bond scope")
+    parser.add_argument("--self-check", action="store_true",
+                        help="check the value normalisation and exit")
     args = parser.parse_args()
+
+    if args.self_check:
+        return normalisation_self_check()
+    if args.source_dir is None or args.output_dir is None:
+        parser.error("--source-dir and --output-dir are required")
 
     if not args.source_dir.exists():
         print(f"ERROR: source directory not found: {args.source_dir}", file=sys.stderr)

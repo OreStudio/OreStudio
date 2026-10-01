@@ -52,7 +52,7 @@ that bound each one.
 | [[id:13217FCC-66E9-4887-B950-8C73FFC8D067][Model the unmodelled trading families and bind the unbound]] | DONE | | 2026-09-28 | PR 3. Author the missing entity models, bind the 26 unbound entities to profiles or record the no-match, clear the legacy model fragments, and close the type defects the trade model investigation lists. |
 | [[id:8EB4DE8E-1A9B-40CB-9B61-2918F778557C][Collapse the instrument identity into the trade]] | DONE | 2026-09-28 | 2026-09-28 | PR 4. One instrument identity, keyed by the trade, with the relationship declared where the schema can hold it. The bond security split moved to PR 5 by D17. |
 | [[id:FF88C139-9C8B-4A59-9CCD-38066CA049DD][Split the bond security from the trade]] | DONE | 2026-09-29 | 2026-09-30 | PR 5. Key the shared bond entities by the ORE reference datum id, hang the leg family off the security, give bond_issue the fields ORE has and take bond_notional onto the trade. Decides defect 15 as D21. |
-| [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | BACKLOG | | | PR 6. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, run the corpus-wide round trip, and carry defects 14 and 16. |
+| [[id:E586441E-B73E-4E8C-917F-50161B05588D][Finish the bond pilot]] | DONE | 2026-09-30 | 2026-10-01 | PR 6. Re-model the bond future against the current ORE schema, add the missing constraints and child tables, fix the delete and add paths, run the corpus-wide round trip, and carry defects 14 and 16. |
 | [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]] | BACKLOG | | | PR 7. Generate the shell units and recipes, seed the permissions, run the audits and the per-file survey, and enter the component in the registry. |
 
 * Where ores.trading stands (measured 2026-09-26)
@@ -271,10 +271,11 @@ belong to this story:
 | 11 | Staged reference data is never published | Out of scope, dq work |
 | 12 | The publish guard collapses every office onto one party | Out of scope, dq work |
 | 13 | Two names for an instrument's identity | Closed in PR 4: =instrument_id= is gone from the field group, from all 58 models that carried it, from the generated C++ and SQL and from every hand-written caller |
-| 14 | Declared coverage is incomplete, and elsewhere undeclared | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
-| 15 | An underlying is an unqualified name | Decided in PR 5 as D21, built in PR 6, the bond pilot, by the owner's ruling of 2026-09-29: the reshape takes underlying_name out of nine equity tables and basket_json out of two products, which is the pilot's shape |
-| 16 | No observation schedule | PR 6, the bond pilot, by the owner's ruling of 2026-09-28 |
+| 14 | Declared coverage is incomplete, and elsewhere undeclared | Decided in PR 6 as D28: every instrument table but one carries a =trade_type_code= constraint and their union covers every code, but ten general tables share one 121-code list, and the one table without a constraint has no producer. Giving each table its own list is the exclusive-or split (defect 9) of the families that own them |
+| 15 | An underlying is an unqualified name | Decided in PR 5 as D21 and re-scoped in PR 6 as D26: no bond product states an underlying, so a table built here would have no producer. The fix belongs to the nine families that state one |
+| 16 | No observation schedule | Decided in PR 6 as D29: the shared =instrument_schedules= table is the home and the bond family writes there; the twelve products that need one are equity, fx and commodity, and moving their scalar frequency columns into it is those families' reshape work |
 | 17 | The trade's declared key is nullable, and its fixture left it empty | PR 3 |
+| 18 | The import writes an instrument but not its legs for the nine rates families | Recorded, not the bond pilot's: the rates families own it. Found by the PR 6 corpus sweep, which reads one KnockOutSwap with no `LegData` in the export |
 
 Defect 17 surfaced in PR 2, not in PR 3, because the regenerated trade
 eventing test reads the version history by the declared key. The model
@@ -542,6 +543,135 @@ row is updated as each PR lands.
   pilot PR 6 and the shell and verification work PR 7. By the owner's
   ruling of 2026-09-28, defects 14 and 16 move to the bond pilot and
   defect 15 to the split.
+- *D22, how the sweep holds the corpus to one statement per security.*
+  The round-trip gate imports one document and exports it again, so the
+  source it compares has to be a document the database can hold. The
+  corpus is not one: it states five security ids across ten documents
+  that disagree about the issuer, the credit curve, the issue date and the
+  leg schedule, and about 117 trades name =SECURITY_1= between them. Our
+  model holds one issue per security -- that is the split's point -- so a
+  comparison against every restatement reads the corpus's own
+  contradiction as a loss. The sweep therefore folds the union before it
+  imports it: the first trade that names a security states the issue, and
+  every later trade is rewritten to that statement, leaving the two
+  members the model keeps on the trade's own instrument, =SecurityId= and
+  =BondNotional=, as the trade stated them. The sweep prints what it
+  overrode, by member, and =--raw-corpus= skips the fold so the
+  contradiction can be measured. The gate is then a statement about the
+  code, and the contradiction is recorded as the corpus's own.
+- *D23, the KnockOutSwap's home.* =swap_leg= names the knock-out swap
+  among the nine rates families whose legs it holds, and
+  =knock_out_swap_instrument= holds the barrier, the start and the
+  maturity as typed columns. The import sent the type to
+  =scripted_instrument= instead, where the closed trade-type check refused
+  the row, so the corpus's one trade of the type never reached the
+  database and the export dropped the trade it could not rebuild.
+  KnockOutSwap is routed to the swap family, which is what the legs table
+  states, and =scripted_instrument= stops naming it. ORE's own
+  AmericanMonteCarlo readme lists KnockOutSwap under "Scripted Trade Types
+  (AMC)", which is how the wrong home was available; D12's ban on a JSON
+  collection decides it the other way, because the type's two =LegData=
+  elements have nowhere to go in a flat scripted row.
+- *D24, what an empty element states.* ORE's =date= type spells an unset
+  date as the empty string and the elements that carry one are
+  =minOccurs="0"=, so a document may write an unset date as an empty
+  element or omit the element, and the corpus does both: 414
+  =FirstDate=/=LastDate= elements corpus-wide are empty and 278 are absent.
+  Both spell the same statement -- ORE's own reader resolves either to an
+  unset date -- so the gate compares content rather than element presence:
+  an empty element is no difference whichever side states it, and a
+  boolean spelling is paired first, because an empty element is also how
+  ORE spells =true= and that one has to be echoed as a boolean. The model
+  therefore needs one state and not three, and no presence flag is modelled
+  for an unset date. Where a member's *value* equals its type's default,
+  the optional column is the presence record: absent is null and a stated
+  =false= or =0= is the value, which is what the bond future's two optional
+  booleans rely on (definition of done, presence bullet).
+- *D25, the bond future's columns.* The synced XSD is the ground truth and
+  the table is older than it. =bondFutureData= states three required
+  members -- =ContractName=, =ContractNotional= and =LongShort= -- and two
+  optional booleans, =ApplyConversionFactor= and =UseFuturePrice=, which
+  the mapper has never read and the table has never held. The other
+  thirteen columns leave the table: twelve of them are elements of
+  =bondFutureReferenceDatum=, which v17 moved the contract terms to, and
+  the thirteenth, =fair_price=, is not in the schema at all. None of them
+  can be read from a trade, because the reference datum reaches only the
+  =ReferenceData= document root and the generated ORE bindings cover the
+  =Portfolio= root, so =input.xsd= never emits the type. The shared entity
+  that will hold them is keyed by the contract name, the way =bond_issue=
+  is keyed by the security id, and it lands with the reference-data
+  import; recorded rather than invented.
+  =bond_future_delivery_basket= is in the same position and is retired
+  separately: ORE's =DeliveryBasket= is that datum's element, the table is
+  keyed by the trade, and the exporter never writes it, so nothing fills it
+  from a trade and nothing reads it back. Removing a generated entity
+  touches five components and no tool prunes the files it leaves behind,
+  so it is its own unit rather than a footnote of this one. The two
+  optional booleans are nullable, so a stated =false= and an absent element
+  stay different values, which is D24's rule.
+- *D26, the underlyings table.* D21 settled its shape -- keyed by the
+  trade, holding an oresmd URI and an optional weight -- and left the
+  second arm, for an underlying that is itself a product, to the pilot. The
+  pilot records the table as out of scope for the bond rebuild, with the
+  reason: no bond product states an underlying. =underlyingTypes= is
+  referenced by eleven sites and every one is another family's --
+  =varianceSwapData=, =cliquetOptionData=, =settlementData=, =pricesType=,
+  =equityOptionData=, =eqBarrierOptionData=, =equityFutureOptionData=,
+  =eqDigitalOptionData=, =eqTouchOptionData=, =equityForwardData= and
+  =genericBarrierOptionData= -- while the bond family's own types
+  (=bondData=, =bondOptionData=, =bondFutureData=, =bondRepoData=,
+  =convertibleBondData=, =callableBondData= and =ascotData=) state none. A
+  table built here would have no producer and no consumer, which is the
+  shape this pilot is retiring elsewhere (=bond_future_delivery_basket=).
+  The defect 15 fix is a producer change across nine families and about
+  sixteen trade types, which the split task already recorded as not a bond
+  reshape. D21's shape stands as the design for that work; the second arm
+  is recorded as a kind that says URI or product, the URI, and the
+  product's own name.
+- *D27, how a delete removes the family.* The row a caller deletes is the
+  header of a family, so the store closes the family with it rather than
+  leaving it to each caller to remember. An entity names the rows it owns
+  in a =* Delete cascade= section -- a table and the column in it that
+  names the entity's key -- and the generated delete rule calls a
+  generated function that closes them. An optional =:cascade_orphan:= on a
+  foreign key takes the referenced row too when the deleted row was the
+  last to name it, which is what a parent shared by security id needs. The
+  cascade is a plpgsql function the rule calls and not a rule body,
+  because a rule resolves the tables it names when it is created and a
+  child may be created after its parent. The rule is D15's, applied to the
+  delete side: the relationship is enforced where the schema can hold it,
+  so the shell verb, the import rollback and every later caller get it
+  without repeating it.
+
+- *D28, what defect 14's coverage declaration now says.* Every instrument
+  table but one carries a =trade_type_code= constraint, and the union of
+  the lists covers every code in =ores_trading_trade_types_tbl=, so a
+  generator can ask each table what it holds. The bond table is the
+  tightest: =bond_instruments= names exactly the ten bond codes. But ten
+  tables -- the rates, credit and commodity general tables -- share one
+  identical list of all 121 codes, so their lists do not separate the
+  products they hold from the ones they do not, and =rpa_instruments=
+  carries no constraint at all because nothing writes it: the mapper sends
+  =RiskParticipationAgreement= to =credit_instruments=. The defect's
+  prescription, "declare coverage everywhere first", is met; what remains
+  is giving each table its own list and deciding the unproduced table,
+  which is the exclusive-or split defect 9 asks for and belongs to the
+  families that own those tables, not to the bond pilot.
+- *D29, where defect 16's observation schedule lives.* =instrument_schedules=
+  holds one row per schedule an instrument's owner states, keyed by the
+  trade, the owner, the schedule's role and the entry's ordinal, with
+  =schedule_kind= choosing the rule arm or the date arm and =schedule_role=
+  naming =schedule=, =payment_schedule=, =fixing_schedule= or
+  =reset_schedule=. It is keyed by the instrument rather than by a bond row,
+  so any family whose product states a schedule writes there without a new
+  table; the bond family's trade-owned schedules already do, and its
+  security-owned leg schedules live in =bond_issue_leg_schedule=. The
+  scalars the defect names are still spread over four tables
+  (=commodity_instruments=, =equity_asian_option_instruments=,
+  =equity_accumulator_instruments= and =equity_option_instruments=), and
+  the twelve products that need an observation schedule are equity, fx and
+  commodity. Moving those scalars into the shared table is those families'
+  reshape work, not the bond pilot's.
 
 * Delivery plan
 

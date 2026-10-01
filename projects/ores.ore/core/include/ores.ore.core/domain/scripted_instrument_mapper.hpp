@@ -52,14 +52,12 @@ public:
     static trading::domain::scripted_instrument forward_scripted_trade(const trade& t);
     static trading::domain::scripted_instrument forward_double_digital_option(const trade& t);
     static trading::domain::scripted_instrument forward_performance_option_01(const trade& t);
-    static trading::domain::scripted_instrument forward_knock_out_swap(const trade& t);
 
     static trade reverse_scripted_trade(const ores::trading::domain::scripted_instrument& instr);
     static trade
     reverse_double_digital_option(const ores::trading::domain::scripted_instrument& instr);
     static trade
     reverse_performance_option_01(const ores::trading::domain::scripted_instrument& instr);
-    static trade reverse_knock_out_swap(const ores::trading::domain::scripted_instrument& instr);
 };
 
 }

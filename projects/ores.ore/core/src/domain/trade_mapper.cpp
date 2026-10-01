@@ -114,6 +114,8 @@ trade_mapper::map_swap_instrument(const trade& v) {
         return swap_instrument_mapper::forward_flexi_swap(v);
     if (type == "BalanceGuaranteedSwap")
         return swap_instrument_mapper::forward_balance_guaranteed_swap(v);
+    if (type == "KnockOutSwap")
+        return swap_instrument_mapper::forward_knock_out_swap(v);
     return std::nullopt;
 }
 
@@ -284,8 +286,6 @@ trade_mapper::map_scripted_instrument(const trade& v) {
         return scripted_instrument_mapper::forward_double_digital_option(v);
     if (type == "PerformanceOption_01")
         return scripted_instrument_mapper::forward_performance_option_01(v);
-    if (type == "KnockOutSwap")
-        return scripted_instrument_mapper::forward_knock_out_swap(v);
     return std::nullopt;
 }
 

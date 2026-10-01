@@ -95,7 +95,6 @@ const std::set<std::string>& known_export_gaps() {
         "Exotic_EquityWorstOfBasketSwap.xml",
         "Exotic_FXWorstOfBasketSwap.xml",
         "Exotic_FxAccumulator.xml",
-        "Exotic_KnockOutSwap.xml",
         "Exotic_PerformanceOption_01_COM.xml",
         "Exotic_PerformanceOption_01_FX.xml",
         "FX_WorstOfBasketSwap.xml",

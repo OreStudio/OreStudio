@@ -24,13 +24,30 @@
  *
  * Bond Future Table
  *
- * One row per bond future trade, keyed by the instrument row it
- * extends. The columns fix the ER row ("delivery date and the facts the
- * XSD bondFutureData carries") from external/ore/xsd/instruments.xsd
- * lines 422-448: every single-valued scalar of the structure, minus the
- * DeliveryBasket list, which has no destination in the nine tables and
- * lands in the shared instrument-keyed underlyings of the parent story
- * (recorded scope limit, task D7943D7E wave 1.3).
+ * One row per bond future trade, keyed by the trade. The row carries the
+ * whole of bondFutureData, the only type the ORE schema states for the
+ * product (instruments.xsd:428):
+ * ContractName, ContractNotional and LongShort are required and
+ * ApplyConversionFactor and UseFuturePrice are optional booleans.
+ *
+ * v17 moved the contract's own terms out of the trade. Currency,
+ * ContractMonth, DeliverableGrade, LastTradingDate,
+ * LastDeliveryDate, Settlement, DirtyQuotation, RootDate,
+ * ExpiryBasis, SettlementBasis, ExpiryLag and SettlementLag are
+ * elements of bondFutureReferenceDatum (referencedata.xsd:132),
+ * and DeliveryBasket is that datum's element too. FairPrice is not in
+ * the schema at all. The table carries none of the thirteen, because ORE
+ * states them on the datum and not on the trade; they are recorded as
+ * dropped rather than kept in a place ORE does not state them (decision
+ * D25).
+ *
+ * The datum reaches only the ReferenceData document root, and the
+ * generated ORE bindings cover the Portfolio root, so no trade document
+ * can state one of these terms and no mapper can read one. The shared entity
+ * that will hold them is keyed by the contract name, the way
+ * ores.trading.bond_issue is keyed by the security id; it lands when the
+ * reference-data document becomes importable, and the drop is recorded on
+ * the bond pilot until then.
  */
 
 create table if not exists "ores_trading_bond_futures_tbl" (
@@ -40,19 +57,8 @@ create table if not exists "ores_trading_bond_futures_tbl" (
     "contract_name" text not null,
     "contract_notional" numeric(28, 10) not null,
     "long_short" text not null,
-    "currency" text not null,
-    "contract_month" text not null,
-    "deliverable_grade" text null,
-    "fair_price" numeric(28, 10) not null,
-    "settlement" text not null,
-    "settlement_dirty" boolean not null,
-    "root_date" date null,
-    "expiry_basis" text null,
-    "settlement_basis" text null,
-    "expiry_lag" integer not null,
-    "settlement_lag" integer not null,
-    "last_trading_date" date not null,
-    "last_delivery_date" date not null,
+    "apply_conversion_factor" boolean null,
+    "use_future_price" boolean null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -67,8 +73,7 @@ create table if not exists "ores_trading_bond_futures_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("long_short" in ('Long', 'Short')),
-    check ("last_delivery_date" >= "last_trading_date")
+    check ("long_short" in ('Long', 'Short'))
 );
 
 -- Version uniqueness for optimistic concurrency

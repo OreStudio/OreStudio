@@ -218,3 +218,56 @@ TEST_CASE("mapper_roundtrip_ccs_forward", tags) {
     REQUIRE(legs.size() >= 2);
     BOOST_LOG_SEV(lg, info) << "CCS forward-mapper test passed, legs: " << legs.size();
 }
+
+// =============================================================================
+// KnockOutSwap mapper tests
+// =============================================================================
+
+TEST_CASE("mapper_roundtrip_knock_out_swap_forward", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_first_trade("Exotic_KnockOutSwap.xml");
+
+    const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
+    REQUIRE(std::holds_alternative<ores::trading::domain::knock_out_swap_instrument>(
+        result.instrument));
+    const auto& instr =
+        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument);
+
+    CHECK(instr.identity.trade_type_code == "KnockOutSwap");
+    CHECK(instr.barrier_type == "UpAndOut");
+    CHECK(instr.barrier_level == Approx(0.05).epsilon(0.0001));
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.start_date) == "2024-05-02");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.maturity_date) == "2029-05-02");
+    CHECK(ores::platform::time::datetime::to_iso8601_date(instr.barrier_start_date) ==
+          "2027-05-03");
+
+    REQUIRE(result.legs.size() == 2);
+    CHECK(result.legs[0].leg_type_code == "Floating");
+    CHECK(result.legs[0].floating_index_code == "USD-SOFR");
+    CHECK(result.legs[0].notional.to_double() == Approx(100000000.0).epsilon(0.001));
+    CHECK(result.legs[1].leg_type_code == "Fixed");
+    CHECK(result.legs[1].fixed_rate == Approx(0.05).epsilon(0.0001));
+    BOOST_LOG_SEV(lg, info) << "KnockOutSwap forward-mapper test passed";
+}
+
+TEST_CASE("mapper_roundtrip_knock_out_swap_reverse", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_first_trade("Exotic_KnockOutSwap.xml");
+    const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
+
+    const auto reconstructed = swap_instrument_mapper::reverse_knock_out_swap(
+        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument),
+        result.legs);
+
+    REQUIRE(reconstructed.TradeType == ores::ore::domain::oreTradeType::KnockOutSwap);
+    REQUIRE(reconstructed.KnockOutSwapData.operator bool());
+    const auto& d = *reconstructed.KnockOutSwapData;
+    CHECK(d.BarrierData.Type == ores::ore::domain::barrierType::UpAndOut);
+    CHECK(std::string(d.BarrierStartDate) == "2027-05-03");
+    REQUIRE(d.BarrierData.Levels.Level.size() == 1);
+    CHECK(static_cast<float>(d.BarrierData.Levels.Level.front()) == Approx(0.05f).epsilon(0.0001f));
+    REQUIRE(d.LegData.size() == 2);
+    CHECK(d.LegData[0].LegType == ores::ore::domain::legType::Floating);
+    CHECK(d.LegData[1].LegType == ores::ore::domain::legType::Fixed);
+    BOOST_LOG_SEV(lg, info) << "KnockOutSwap reverse-mapper test passed";
+}

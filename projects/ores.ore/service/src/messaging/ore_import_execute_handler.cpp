@@ -33,7 +33,6 @@
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
-#include "ores.trading.api/messaging/bond_future_delivery_basket_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
@@ -1169,31 +1168,6 @@ std::string save_forward(Nats& nats,
 }
 
 /**
- * @brief Saves the delivery basket of a future, one row per identifier.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_delivery_basket(Nats& nats,
-                                 const boost::uuids::uuid& trade_id,
-                                 const std::vector<std::string>& basket) {
-    using ores::trading::messaging::put_bond_future_delivery_basket_request;
-
-    std::string error;
-    int sequence_number = 0;
-    for (const auto& delivery_basket_id : basket) {
-        put_bond_future_delivery_basket_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.delivery_basket_id = delivery_basket_id;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_future_delivery_basket failed" : error;
-    }
-    return {};
-}
-
-/**
  * @brief Saves one bond instrument: its issue row, its header row, the
  * issue's child rows, its legs, its option block and the product's fact row.
  *
@@ -1254,6 +1228,8 @@ save_bond_instrument(Nats& nats,
         issue_req.change.write.price_quote_base_value = issue.price_quote_base_value;
         issue_req.change.write.sub_type = issue.sub_type;
         issue_req.change.write.price_type = issue.price_type;
+        issue_req.change.write.payer = issue.payer;
+        issue_req.change.write.credit_risk = issue.credit_risk;
         auto resp = nats_call(nats, issue_req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_issue failed" : error;
@@ -1331,10 +1307,6 @@ save_bond_instrument(Nats& nats,
     if (auto failure = save_forward(nats, trade_id, data); !failure.empty())
         return failure;
 
-    if (auto failure = save_delivery_basket(nats, trade_id, data.future_delivery_basket);
-        !failure.empty())
-        return failure;
-
     if (auto failure = save_schedule(nats, trade_id, "trs", 1, "schedule", data.trs_schedule);
         !failure.empty())
         return failure;
@@ -1389,24 +1361,12 @@ save_bond_instrument(Nats& nats,
             return error.empty() ? "save_bond_repo failed" : error;
     } else if (ttc == "BondFuture" && data.future) {
         put_bond_future_request fact_req;
-        fact_req.change.write.trade_id = (*data.future).trade_id;
+        fact_req.change.write.trade_id = instrument.identity.trade_id;
         fact_req.change.write.contract_name = (*data.future).contract_name;
         fact_req.change.write.contract_notional = (*data.future).contract_notional;
         fact_req.change.write.long_short = (*data.future).long_short;
-        fact_req.change.write.currency = (*data.future).currency;
-        fact_req.change.write.contract_month = (*data.future).contract_month;
-        fact_req.change.write.deliverable_grade = (*data.future).deliverable_grade;
-        fact_req.change.write.fair_price = (*data.future).fair_price;
-        fact_req.change.write.settlement = (*data.future).settlement;
-        fact_req.change.write.settlement_dirty = (*data.future).settlement_dirty;
-        fact_req.change.write.root_date = (*data.future).root_date;
-        fact_req.change.write.expiry_basis = (*data.future).expiry_basis;
-        fact_req.change.write.settlement_basis = (*data.future).settlement_basis;
-        fact_req.change.write.expiry_lag = (*data.future).expiry_lag;
-        fact_req.change.write.settlement_lag = (*data.future).settlement_lag;
-        fact_req.change.write.last_trading_date = (*data.future).last_trading_date;
-        fact_req.change.write.last_delivery_date = (*data.future).last_delivery_date;
-        fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.apply_conversion_factor = (*data.future).apply_conversion_factor;
+        fact_req.change.write.use_future_price = (*data.future).use_future_price;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_future failed" : error;
@@ -1889,6 +1849,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
+                                req.change.write.barrier_start_date = instr.barrier_start_date;
                                 req.change.write.barrier_level = instr.barrier_level;
                                 req.change.write.barrier_type = instr.barrier_type;
                                 req.change.write.description = instr.description;

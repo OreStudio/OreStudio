@@ -188,7 +188,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =point= still on the IR identifier and requirement | =ir_quote_type.org= | Fixed | The IR Fields table still declared it; the row is removed and the identifier, requirement and resolver lose the member with it. |
+| 2 | Coordinate validation skipped when =quote_type= is unset | =ores.cpp.oresmd.parser.org= | Fixed | A type that resolves to no quote type now has every coordinate refused, by a generated =validate_<ac>_no_coordinates()=. |
+| 3 | Required coordinates no longer enforced | =ores.cpp.oresmd.parser.org= | Accepted | A partial identifier is what the requirement and resolver model is for, so the parser accepts one. What the old point checks really protected is the key projection, and that still refuses: =to_quote_key()= returns nothing when a coordinate it needs is absent. No model declares which coordinates a type requires, so a parser-side check would invent a rule. |
+| 4 | =delta= is uppercased but the comment says otherwise | =org_loader.py= | Fixed | The comment was stale; it now says only =smile= keeps its case, and says why. |
+| 5 | =canonical_values::point= names every coordinate | =oresmd_parser.hpp= | Fixed | Renamed to =coordinate=. |
+| 6 | Stale inflation comment naming =point= | =ores.cpp.oresmd.parser.org= | Fixed | Now names =quote= and =type=. |
+| 7 | =with_point()= drops a point for a spot quote | =ores.cpp.oresmd.parser.org= | Accepted | Deliberate and already pinned: =FX/RATE/EUR/USD= plus the SPOT a feed's column carries is the same series key, and the case asserts the key is unchanged. The comment says so. |
+| 8 | Corpus walk failure and the unmaterialised =metric= | — | Tracked | Both are in this task's Result. The walk is the next unit's (task =4204259C=), and it sits behind the hidden =[.corpus-full]= tag, so no green pull-request check hides it. |
 
 * Result
 
@@ -241,6 +248,11 @@ What is not met, recorded rather than glossed:
   type's own metric. Materialising it needs a per-quote-type metric constant the
   models do not carry for every class -- credit's =BASE_CORRELATION= has no
   =metric= enum member -- so it is left to a unit that can extend the enum.
+- The parser does not require a coordinate of a type. A =type=vol&quote=capfloor=
+  URI with no =strike= parses; the projection then refuses to emit a key. The old
+  grammar's point-arity errors are not re-stated as a parser-side rule, because
+  no model declares which coordinates a type requires and inventing one would put
+  a convention back in the parser that the declaration is supposed to replace.
 - The twelve models still carry a =point_keys= column, the ordered keys the old
   =point= value corresponded to. Nothing reads it now: the parser is hand-written
   per family and the codegen gate checks the named keys instead. Removing the

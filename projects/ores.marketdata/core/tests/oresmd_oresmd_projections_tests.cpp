@@ -65,7 +65,7 @@ TEST_CASE("fx_fwd_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "FXFWD/RATE/EUR/USD/6M");
 }
 
-TEST_CASE("fx_fwd_requires_point", tags) {
+TEST_CASE("fx_fwd_requires_its_coordinate", tags) {
     const auto id = parse("oresmd://fx/eurusd?type=quote&quote=fwd");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
@@ -409,7 +409,7 @@ TEST_CASE("equity_fwd_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M");
 }
 
-TEST_CASE("equity_dividend_requires_point", tags) {
+TEST_CASE("equity_dividend_requires_its_coordinate", tags) {
     const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
@@ -635,7 +635,7 @@ TEST_CASE("shape_profile_factor_dst_quote_key_matches_the_corpus", tags) {
             "SHAPE_PROFILE/SHAPE_FACTOR/PJM_WH_RT_PK/2021-01-01/7200/SEC/DST");
 }
 
-TEST_CASE("shape_profile_factor_rejects_a_point_that_is_not_a_coordinate", tags) {
+TEST_CASE("shape_profile_factor_rejects_an_incomplete_coordinate", tags) {
     const auto id = parse("oresmd://shape_profile/"
                           "pjm_wh_rt_pk?type=quote&quote=shape_factor&date=2021-03-01&second=0");
     REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());

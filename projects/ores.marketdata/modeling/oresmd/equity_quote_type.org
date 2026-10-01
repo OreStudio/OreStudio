@@ -106,7 +106,7 @@ declared here or a field above, and absence means identity.
 | oresmd://equity/aapl?ccy=usd&type=quote | EQUITY/PRICE/AAPL/USD | equity_quote_key_defaults_to_spot |
 | oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&maturity=1y | EQUITY_DIVIDEND/RATE/AAPL/USD/1Y | equity_dividend_quote_key |
 | oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&maturity=6m | EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M | equity_fwd_quote_key |
-| oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend | nullopt | equity_dividend_requires_point |
+| oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend | nullopt | equity_dividend_requires_its_coordinate |
 | oresmd://equity/sp5?ccy=usd&type=vol&expiry=6m&delta=atmf | EQUITY_OPTION/RATE_LNVOL/SP5/USD/6M/ATMF | equity_option_vol_quote_key_matches_the_corpus |
 | oresmd://equity/ric:.stoxx50e?ccy=eur&type=vol&model=price&expiry=2021-07-16&strike=1200&call_put=c | EQUITY_OPTION/PRICE/RIC:.STOXX50E/EUR/2021-07-16/1200/C | equity_option_price_quote_key_matches_the_corpus |
 | oresmd://equity/ric:.spx?ccy=usd&type=vol&expiry=1080d&delta=del&premium=spot&call_put=call&strike=0.1 | EQUITY_OPTION/RATE_LNVOL/RIC:.SPX/USD/1080D/DEL/SPOT/CALL/0.1 | equity_option_delta_quote_key_matches_the_corpus |

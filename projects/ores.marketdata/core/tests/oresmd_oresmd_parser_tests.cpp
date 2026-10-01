@@ -201,6 +201,16 @@ TEST_CASE("parse_swaption_vol_populates_tenor_and_vol_struct", tags) {
     REQUIRE(ir.vol->delta_type == "ATM");
 }
 
+TEST_CASE("an_incomplete_surface_parses_but_projects_no_key", tags) {
+    // The parser refuses a coordinate the resolved quote type does not carry, but
+    // it does not require one: a requirement is a partial description, so a
+    // surface that names only its expiry is an identifier the resolver completes.
+    // Completeness is the key projection's business, and there it is refused.
+    const auto id = oresmd_parser::parse(uri("oresmd://ir/chf?type=vol&quote=capfloor&expiry=5y"));
+    REQUIRE(std::get<ir_market_data_identifier>(id).type == instrument_type::vol);
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
 TEST_CASE("parse_equity_quote", tags) {
     const auto id = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));
     const auto& eq = std::get<equity_market_data_identifier>(id);
@@ -1896,7 +1906,7 @@ TEST_CASE("reject_rating_model_query_key", tags) {
         oresmd_exception);
 }
 
-TEST_CASE("reject_the_old_point_bag_on_a_rating_uri", tags) {
+TEST_CASE("reject_the_retired_point_key_on_a_rating_uri", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri(
             "oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y")),

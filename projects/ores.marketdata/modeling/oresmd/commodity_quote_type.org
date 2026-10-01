@@ -38,11 +38,12 @@ index name writes it (=2025-04=). ORE's commodity parser also reads a contract
 code that itself contains a dash and a full delivery date; neither is in the
 corpus, so neither is admitted here rather than guessed at.
 
-A quote carries its own period in =point= instead, because a quote's observations
-each name the period they are for and a fixing's do not. This class's validation
-is the shared one that the three delegating classes use, and it gates no query key
-by type, so a delivery on a quote is accepted and projects no index name, the way
-a point on a fixing is. Closing that gate for equity, credit and commodity is the
+A quote carries its own period in the =maturity= coordinate instead, because a
+quote's observations each name the period they are for and a fixing's do not.
+This class's validation is the shared one that the three delegating classes use,
+and it gates no query key by type, so a delivery on a quote is accepted and
+projects no index name, the way a coordinate on a fixing is. Closing that gate for
+equity, credit and commodity is the
 codegen gap recorded in the fixing-identity task.
 
 * Requirement brief

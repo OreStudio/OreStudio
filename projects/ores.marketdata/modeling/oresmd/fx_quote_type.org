@@ -119,7 +119,7 @@ no source, so a source on a quote names nothing.
 |-----+----------+-------------|
 | oresmd://fx/eurusd?type=quote | FX/RATE/EUR/USD | fx_quote_key_defaults_to_spot |
 | oresmd://fx/eurusd?type=quote&quote=fwd&maturity=6m | FXFWD/RATE/EUR/USD/6M | fx_fwd_quote_key |
-| oresmd://fx/eurusd?type=quote&quote=fwd | nullopt | fx_fwd_requires_point |
+| oresmd://fx/eurusd?type=quote&quote=fwd | nullopt | fx_fwd_requires_its_coordinate |
 | oresmd://fx/eurusd?type=vol&expiry=10y&delta=atm | FX_OPTION/RATE_LNVOL/EUR/USD/10Y/ATM | fx_option_vol_quote_key_matches_the_corpus |
 | oresmd://fx/eurusd?type=vol&expiry=1d&delta=25rr | FX_OPTION/RATE_LNVOL/EUR/USD/1D/25RR | fx_option_vol_quote_key_risk_reversal |
 | oresmd://fx/eurusd?type=fixing&source=ecb | nullopt | fx_fixing_has_no_quote_key |

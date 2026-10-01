@@ -39,8 +39,9 @@ METRIC column. Credit-only; only meaningful when `type=quote`.
 
 A fully-resolved oresmd identifier for a credit instrument (asset_class=credit).
 
-`point` carries both the seniority and tenor dimensions (e.g. "sr,5y"), since credit's
-quote-key shape has one more dimension than IR's.
+A cds key carries the seniority, the restructuring clause and the tenor as three
+declared coordinates (`seniority=sr`, `restructuring=xr14`, `tenor=5y`), since
+credit's quote-key shape has more dimensions than IR's.
 
 * Requirement brief
 

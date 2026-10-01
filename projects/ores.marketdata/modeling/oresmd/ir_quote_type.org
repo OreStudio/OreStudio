@@ -46,9 +46,9 @@ A fully-resolved oresmd identifier for an interest-rate instrument (asset_class=
 
 Only `ccy` and `type` are unconditionally mandatory; every other field is optional
 because which fields are meaningful depends on `type` (a fixing/curve needs
-`index`/`tenor`/`role` but no `point`; a quote needs `point` and, for `type=quote`
-specifically, `metric`) -- see "Tenor vs. point, and the par-rate/discount-factor
-ambiguity" in the design doc.
+`index`/`tenor`/`role` but no coordinate; a quote carries the coordinates its
+quote type declares, and `metric` for `type=quote`) -- see "Tenor vs. the
+coordinate keys, and the par-rate/discount-factor ambiguity" in the design doc.
 
 * Requirement brief
 

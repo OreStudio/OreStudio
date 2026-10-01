@@ -109,4 +109,4 @@ declared here or a field above, and absence means identity.
 | oresmd://rating/provider_1?ccy=usd&type=quote&quote=transition_probability&from=aaa&to=aa | reject_rating_uri_with_ccy |
 | oresmd://rating/provider_1?type=quote&quote=transition_probability&metric=rate&from=aaa&to=aa | reject_rating_uri_with_ir_only_metric |
 | oresmd://rating/provider_1?type=quote&quote=transition_probability&model=rate_lnvol&from=aaa&to=aa | reject_rating_model_query_key |
-| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y | reject_the_old_point_bag_on_a_rating_uri |
+| oresmd://rating/provider_1?type=quote&quote=transition_probability&point=aaa,aa,1y | reject_the_retired_point_key_on_a_rating_uri |

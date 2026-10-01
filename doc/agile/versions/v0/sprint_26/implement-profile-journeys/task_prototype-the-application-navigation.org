@@ -26,11 +26,11 @@ A clickable prototype of the application navigation that the design can be judge
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | The shell is designed: the menu, the cards, the avatar, and the four sign-ins. Four review rounds took it from an account menu to a menu of areas over a mode read from the sign-in. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing: the verdict is recorded and the implementation is the next task. |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance

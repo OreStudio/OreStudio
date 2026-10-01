@@ -58,7 +58,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:ECC602E3-71D3-4265-942B-063EFEB61495][Prototype the profile screen]] | DONE | 2026-09-30 | 2026-09-30 | Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants. |
-| [[id:A54241DF-7B50-4BE8-890C-1A3BB35EC709][Prototype the application navigation]] | STARTED | 2026-09-30 | | Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 22 journeys in 8 groups, for a member and a tenant administrator. |
+| [[id:A54241DF-7B50-4BE8-890C-1A3BB35EC709][Prototype the application navigation]] | DONE | 2026-09-30 | 2026-10-01 | Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 22 journeys in 8 groups, for a member and a tenant administrator. |
 
 * Decisions
 

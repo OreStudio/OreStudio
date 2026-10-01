@@ -226,6 +226,34 @@ file, and the reason for each not-applicable.
 
 * Notes
 
+- *V06 is one decision away.* With =trading-cpp= added to
+  =COMPONENTS_UNDER_TEST=, =check_component_drift.py --all --dry-run= exits
+  0 and checks trading at all six addresses, and
+  =check_registry_exceptions.py= exits 0. The entry was rehearsed and then
+  reverted, because listing a component is also a claim that every protocol
+  header has its TypeScript twin, and trading has none: it has no web
+  consumer. That is M06, and it is the owner's call whether the item does
+  not apply or the twins are wanted. The precedent is an
+  =ACCEPTED_EXCEPTIONS= entry on =component_registry.py=, the way
+  =variability-cpp= records V08 and =iam= records four items.
+- *P04 applies, and its two operations are modelled but not operation
+  models.* =trading.v1.trades.portfolio.export= and
+  =trading.v1.trades.export-to-storage= are not entity verbs, so P04 wants
+  them as operation models. Their request and response structs are
+  declared in a =cpp= block inside =ores.trading.trade.org= and pasted into
+  the generated =trade_protocol.hpp=, and their handlers are hand-written.
+  The fix is one operation model per verb, the shape =ores.dq.publish_bundle=
+  uses, which generates the protocol and its twin and leaves the handler
+  hand-written. Recorded as the next unit rather than taken here.
+- *M07 is not applicable: the component has no junction model.* All 85
+  models are entities, field groups, a component and a module. The
+  junction-shaped ones -- =trade_party_role=, =trade_identifier=,
+  =trade_envelope_portfolio_id=, =commodity_basket_constituent=,
+  =equity_position_option_underlying=, =bond_issue_conversion_target=,
+  =instrument_schedule_date=, =composite_leg=, =swap_leg= and =bond_leg= --
+  are entities whose key spans two sides, and each already carries a real
+  type per key column and tenant-scoped row-level security. A later
+  reclassification of any of them into a junction model opens the item.
 - *H02's structural items are already met, and the shapes are clean.* The
   two generator trees the Acceptance names have collapsed already: only
   =api/include/ores.trading.api/generators/= survives, with 85 entity

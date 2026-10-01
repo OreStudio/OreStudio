@@ -162,6 +162,26 @@ export const badgePresentationSchema = z.object({
 
 export type BadgePresentation = z.infer<typeof badgePresentationSchema>;
 
+/**
+ * One tenant lifecycle status, as a screen reads it.
+ *
+ * The words are the status row's own — `Suspended`, `Terminated` — and the
+ * colours are the badge's. Keeping the two apart is the point: the row names
+ * the state in the deployment's own vocabulary, and the badge catalogue
+ * supplies one visual language shared by every state in the platform.
+ *
+ * The badge is nullable because a status nobody has painted is written plainly
+ * rather than hidden.
+ */
+export const tenantStatusSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    description: z.string(),
+    badge: badgePresentationSchema.nullable(),
+});
+
+export type TenantStatus = z.infer<typeof tenantStatusSchema>;
+
 /** A page of accounts. `totalCount` counts every account the caller can see. */
 export const accountPageSchema = z.object({
     accounts: z.array(accountSchema),

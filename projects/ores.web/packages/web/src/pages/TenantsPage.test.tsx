@@ -47,24 +47,29 @@ const acme: TenantSummary = {
     registrationDefault: false,
 };
 
-/** The badge the catalogue maps `active` to, as the BFF answers it. */
-const activeBadge = {
+/** The active status as the BFF answers it: its own words, the badge's colours. */
+const activeStatus = {
     code: 'active',
-    label: 'Active',
-    description: 'Record is active and operational.',
-    backgroundColour: '#22c55e',
-    textColour: '#ffffff',
-    severity: 'success',
+    name: 'Active',
+    description: 'Tenant is active and fully operational',
+    badge: {
+        code: 'active',
+        label: 'Active',
+        description: 'Record is active and operational.',
+        backgroundColour: '#22c55e',
+        textColour: '#ffffff',
+        severity: 'success',
+    },
 };
 
 function render(
     tenants: readonly TenantSummary[],
     totalCount: number,
-    badges: Readonly<Record<string, unknown>> = { active: activeBadge },
+    statuses: readonly unknown[] = [activeStatus],
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['tenants'], { tenants, totalCount });
-    client.setQueryData(['badges', 'tenant_status'], { domain: 'tenant_status', badges });
+    client.setQueryData(['tenant-statuses'], statuses);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -96,28 +101,63 @@ describe('the tenant roster', () => {
     });
 
     /*
-     * The status is painted by the platform's badge catalogue, not by a table on
-     * this screen: the label, the two colours and the words behind it all come
-     * from the answer, so two screens showing the same status agree.
+     * The words are the status row's own and the colours are its badge's. The
+     * screen decides neither, so a status reads the same wherever it appears and
+     * the badge catalogue cannot replace the deployment's vocabulary.
      */
-    it('paints the status with the badge the catalogue maps it to', () => {
+    it('paints the status with its own name and its badge colours', () => {
         const html = render([acme], 1);
 
         expect(html).toContain('background-color:#22c55e');
         expect(html).toContain('color:#ffffff');
-        expect(html).toContain('title="Record is active and operational."');
+        expect(html).toContain('title="Tenant is active and fully operational"');
         expect(html).toContain('>Active<');
     });
 
     /*
-     * A value with no badge is shown as the server wrote it. A tenant in a state
-     * nobody has mapped is the row somebody needs to see, so swallowing it would
-     * hide the interesting case.
+     * A deployment whose status row reads `Suspended` shows the word
+     * `Suspended`, whatever the badge that paints it is called.
      */
-    it('shows a status the catalogue does not hold as it was written', () => {
-        const html = render([{ ...acme, status: 'quarantined' }], 1, {});
+    it('keeps the word the status row carries, not the badge name', () => {
+        const suspended = {
+            code: 'suspended',
+            name: 'Suspended',
+            description: 'Tenant is temporarily suspended - users cannot log in',
+            badge: {
+                code: 'frozen',
+                label: 'Frozen',
+                description: 'Record is frozen; no changes permitted.',
+                backgroundColour: '#eab308',
+                textColour: '#ffffff',
+                severity: 'warning',
+            },
+        };
+        const html = render([{ ...acme, status: 'suspended' }], 1, [suspended]);
+
+        expect(html).toContain('>Suspended<');
+        expect(html).not.toContain('>Frozen<');
+    });
+
+    /*
+     * A status the deployment does not hold is shown as the server wrote it. A
+     * tenant in a state nobody has described is the row somebody needs to see,
+     * so swallowing it would hide the interesting case.
+     */
+    it('shows a status the deployment does not hold as it was written', () => {
+        const html = render([{ ...acme, status: 'quarantined' }], 1, []);
 
         expect(html).toContain('quarantined');
+    });
+
+    /*
+     * A status whose badge has left the catalogue keeps its words and loses its
+     * colours, which is worse to look at and better than not being readable.
+     */
+    it('shows the words when the badge has gone', () => {
+        const unpainted = { ...activeStatus, code: 'retired', name: 'Retired', badge: null };
+        const html = render([{ ...acme, status: 'retired' }], 1, [unpainted]);
+
+        expect(html).toContain('Retired');
     });
 
     /*

@@ -50,6 +50,7 @@ export {
     badgePresentationSchema,
     partySummarySchema,
     tenantPageSchema,
+    tenantStatusSchema,
     tenantSummarySchema,
 } from './domain.js';
 export type {
@@ -60,12 +61,13 @@ export type {
     BadgePresentation,
     PartySummary,
     TenantPage,
+    TenantStatus,
     TenantSummary,
 } from './domain.js';
 
 export {
     apiErrorSchema,
-    badgeCatalogueSchema,
+    tenantStatusesResponseSchema,
     bootstrapStatusSchema,
     createAdministratorRequestSchema,
     initialAdministratorSchema,
@@ -81,7 +83,7 @@ export {
 } from './contracts.js';
 export type {
     ApiError,
-    BadgeCatalogueView,
+    TenantStatusesResponse,
     BootstrapStatus,
     CreateAdministratorRequest,
     InitialAdministrator,

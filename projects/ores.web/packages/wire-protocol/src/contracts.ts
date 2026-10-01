@@ -20,7 +20,7 @@
  */
 
 import { z } from 'zod';
-import { activePartySchema, badgePresentationSchema, partySummarySchema } from './domain.js';
+import { activePartySchema, partySummarySchema, tenantStatusSchema } from './domain.js';
 
 /**
  * The HTTP contract between the BFF and the browser.
@@ -55,18 +55,15 @@ export const sessionModeSchema = z.enum([
 export type SessionMode = z.infer<typeof sessionModeSchema>;
 
 /**
- * How the values of one code domain are painted.
+ * The tenant lifecycle statuses, with the badge each one is painted with.
  *
- * Keyed by the domain's own value, so a screen looks up the value it is holding
- * rather than translating it into a badge code first. A value that is absent
- * has no badge, which is a different answer from a badge that paints it the
- * same as everything else.
+ * The words come from the status row and the colours from the badge, so a
+ * screen showing a tenant's status reads one list rather than joining two.
  */
-export const badgeCatalogueSchema = z.object({
-    domain: z.string(),
-    badges: z.record(z.string(), badgePresentationSchema),
+export const tenantStatusesResponseSchema = z.object({
+    statuses: z.array(tenantStatusSchema),
 });
-export type BadgeCatalogueView = z.infer<typeof badgeCatalogueSchema>;
+export type TenantStatusesResponse = z.infer<typeof tenantStatusesResponseSchema>;
 
 /** The signed-in session as the browser sees it. */
 export const sessionViewSchema = z.object({

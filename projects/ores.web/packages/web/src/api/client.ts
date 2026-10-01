@@ -20,7 +20,6 @@
  */
 
 import {
-    badgeCatalogueSchema,
     bootstrapStatusSchema,
     initialAdministratorSchema,
     loginResultSchema,
@@ -34,9 +33,9 @@ import {
     sessionViewSchema,
     signupResultSchema,
     tenantPageSchema,
+    tenantStatusesResponseSchema,
     workflowProgressSchema,
     type BootstrapStatus,
-    type BadgeCatalogueView,
     type CreateAdministratorRequest,
     type InitialAdministrator,
     type LeiEntityChoice,
@@ -53,6 +52,7 @@ import {
     type SignupRequest,
     type SignupResult,
     type TenantPage,
+    type TenantStatus,
     type WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
@@ -201,16 +201,17 @@ export const api = {
     },
 
     /**
-     * How one code domain paints its values.
+     * The tenant lifecycle statuses, with the badge each one is painted with.
      *
-     * The colours, the label and the words behind a badge are reference data,
-     * so a screen asks for the domain it is drawing rather than holding a table
-     * of its own. A value the answer does not hold has no badge.
+     * The words are the status's own and the colours are the badge's, so a
+     * screen showing a tenant's status reads one list rather than joining two.
+     * A status whose badge has left the catalogue carries no colours.
      */
-    async badges(domain: string): Promise<BadgeCatalogueView> {
-        return badgeCatalogueSchema.parse(
-            await request(`/api/badges/${encodeURIComponent(domain)}`, { method: 'GET' }),
+    async tenantStatuses(): Promise<readonly TenantStatus[]> {
+        const payload = tenantStatusesResponseSchema.parse(
+            await request('/api/tenant-statuses', { method: 'GET' }),
         );
+        return payload.statuses;
     },
 
     /**

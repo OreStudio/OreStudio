@@ -44,6 +44,7 @@ struct tenant_status_write {
     std::string name;
     std::string description;
     int display_order;
+    std::string badge_code;
 };
 
 struct tenant_status_change {

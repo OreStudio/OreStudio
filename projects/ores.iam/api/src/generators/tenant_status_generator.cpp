@@ -50,6 +50,7 @@ generate_synthetic_tenant_status(utility::generation::generation_context& ctx) {
     r.name = std::string(faker::word::adjective()) + " Status" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
+    r.badge_code = std::string{};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

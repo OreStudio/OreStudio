@@ -33,7 +33,6 @@ import {
     OresClient,
     SUBJECTS,
     SYSTEM_TENANT_ID,
-    badgeCatalogueSchema,
     bootstrapStatusSchema,
     changeOwnPassword,
     changeOwnPasswordRequestSchema,
@@ -62,10 +61,10 @@ import {
     readAccount,
     readAccountsPage,
     readActiveSessions,
-    readBadgesForDomain,
     readLoginInfo,
     readLoginInfoPage,
     readSessionsPage,
+    readTenantStatuses,
     readTenantsPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
@@ -74,6 +73,7 @@ import {
     signupRequestSchema,
     signupResultSchema,
     tenantPageSchema,
+    tenantStatusesResponseSchema,
     workflowProgressSchema,
     NotAuthenticatedError,
     type LoginOutcome,
@@ -847,29 +847,18 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * How the values of one code domain are painted.
+     * The tenant lifecycle statuses, and the badge each one is painted with.
      *
-     * The badge catalogue is the platform's, not a screen's: `ores.dq` holds the
-     * badges and the mapping from a domain value to one, so two screens showing
-     * the same status paint it the same way. The route joins the two reads,
-     * because the alternative is every screen holding both tables to answer one
-     * question.
-     *
-     * The domain is named by the screen, because which domain paints a column is
-     * a fact about the column and not about the caller. A domain nobody has
-     * mapped answers an empty catalogue rather than a refusal: a value with no
-     * badge is a normal state, and the screen shows the value as it is.
+     * The status row carries the badge's code, so this is a lookup and not a
+     * mapping: nothing says which badge a status gets, because the status
+     * already names it. The words in the answer are the status's own and the
+     * colours are the badge's, which is what stops a deployment's vocabulary
+     * from being replaced by a generic one.
      */
-    server.get('/api/badges/:domain', async (request) => {
+    server.get('/api/tenant-statuses', async (request) => {
         const session = requireSession(request);
-        const params = request.params as { domain?: string };
-        const domain = params.domain ?? '';
-        if (domain.length === 0) {
-            throw invalidRequest('A code domain is required.');
-        }
-        return badgeCatalogueSchema.parse({
-            domain,
-            badges: await readBadgesForDomain(session.client, domain),
+        return tenantStatusesResponseSchema.parse({
+            statuses: await readTenantStatuses(session.client),
         });
     });
 

@@ -68,10 +68,12 @@ const party = {
     businessCenterCode: 'WRLD',
 };
 
-function mapping(entityCode: string, badgeCode: string): unknown {
+function status(code: string, name: string, badgeCode: string | null): unknown {
     return {
-        code_domain_code: 'tenant_status',
-        entity_code: entityCode,
+        status: code,
+        name,
+        description: `${name} explanation.`,
+        display_order: 0,
         badge_code: badgeCode,
     };
 }
@@ -139,95 +141,113 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
     };
 }
 
-describe('GET /api/badges/:domain', () => {
-    it('joins the mappings of a domain to the badges they name', async () => {
+describe('GET /api/tenant-statuses', () => {
+    it('joins a status row to the badge the row names', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'dq.v1.badge_mappings.list_by_code_domain_code': {
-                badge_mappings: [mapping('active', 'active'), mapping('suspended', 'frozen')],
+            'iam.v1.tenant_statuses.list': {
+                statuses: [
+                    status('suspended', 'Suspended', 'frozen'),
+                    status('active', 'Active', 'active'),
+                ],
             },
             'dq.v1.badge_definitions.list': {
                 definitions: [
                     definition('active', 'Active', '#22c55e'),
                     definition('frozen', 'Frozen', '#eab308'),
-                    definition('archived', 'Archived', '#ef4444'),
                 ],
             },
         });
 
         const response = await server.inject({
             method: 'GET',
-            url: '/api/badges/tenant_status',
+            url: '/api/tenant-statuses',
             cookies: { ores_web_session: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({
-            domain: 'tenant_status',
-            badges: {
-                active: {
+            statuses: [
+                {
+                    code: 'suspended',
+                    name: 'Suspended',
+                    description: 'Suspended explanation.',
+                    badge: {
+                        code: 'frozen',
+                        label: 'Frozen',
+                        description: 'Frozen explanation.',
+                        backgroundColour: '#eab308',
+                        textColour: '#ffffff',
+                        severity: 'primary',
+                    },
+                },
+                {
                     code: 'active',
-                    label: 'Active',
+                    name: 'Active',
                     description: 'Active explanation.',
-                    backgroundColour: '#22c55e',
-                    textColour: '#ffffff',
-                    severity: 'primary',
+                    badge: {
+                        code: 'active',
+                        label: 'Active',
+                        description: 'Active explanation.',
+                        backgroundColour: '#22c55e',
+                        textColour: '#ffffff',
+                        severity: 'primary',
+                    },
                 },
-                suspended: {
-                    code: 'frozen',
-                    label: 'Frozen',
-                    description: 'Frozen explanation.',
-                    backgroundColour: '#eab308',
-                    textColour: '#ffffff',
-                    severity: 'primary',
-                },
-            },
+            ],
         });
-        expect(calls[0]?.body).toMatchObject({ code_domain_code: 'tenant_status' });
+        expect(calls[0]?.subject).toBe('iam.v1.tenant_statuses.list');
 
         await server.close();
     });
 
     /*
-     * A mapping whose badge has gone from the catalogue is dropped. A pill with
-     * no colours is worse than the value written plainly, and the screen already
-     * knows how to write it plainly.
+     * The words survive a badge that has gone. The status is still readable, it
+     * has simply lost its colours, which is worse to look at and better than
+     * being hidden.
      */
-    it('drops a mapping whose badge the catalogue no longer holds', async () => {
+    it('keeps the words when a status names a badge the catalogue has lost', async () => {
         const { server, sessionId } = buildTestServer({
-            'dq.v1.badge_mappings.list_by_code_domain_code': {
-                badge_mappings: [mapping('active', 'active'), mapping('suspended', 'gone')],
+            'iam.v1.tenant_statuses.list': {
+                statuses: [status('suspended', 'Suspended', 'gone')],
             },
-            'dq.v1.badge_definitions.list': {
-                definitions: [definition('active', 'Active', '#22c55e')],
-            },
-        });
-
-        const response = await server.inject({
-            method: 'GET',
-            url: '/api/badges/tenant_status',
-            cookies: { ores_web_session: sessionId },
-        });
-
-        expect(response.statusCode).toBe(200);
-        expect(Object.keys(response.json().badges)).toEqual(['active']);
-
-        await server.close();
-    });
-
-    it('answers an empty catalogue for a domain nobody has mapped', async () => {
-        const { server, sessionId } = buildTestServer({
-            'dq.v1.badge_mappings.list_by_code_domain_code': { badge_mappings: [] },
             'dq.v1.badge_definitions.list': { definitions: [] },
         });
 
         const response = await server.inject({
             method: 'GET',
-            url: '/api/badges/nothing_maps_this',
+            url: '/api/tenant-statuses',
             cookies: { ores_web_session: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ domain: 'nothing_maps_this', badges: {} });
+        expect(response.json().statuses).toEqual([
+            {
+                code: 'suspended',
+                name: 'Suspended',
+                description: 'Suspended explanation.',
+                badge: null,
+            },
+        ]);
+
+        await server.close();
+    });
+
+    it('answers a status that names no badge as unpainted', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.tenant_statuses.list': {
+                statuses: [status('retired', 'Retired', null)],
+            },
+            'dq.v1.badge_definitions.list': { definitions: [] },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenant-statuses',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().statuses[0].badge).toBeNull();
 
         await server.close();
     });
@@ -235,7 +255,7 @@ describe('GET /api/badges/:domain', () => {
     it('refuses a request with no session', async () => {
         const { server } = buildTestServer({});
 
-        const response = await server.inject({ method: 'GET', url: '/api/badges/tenant_status' });
+        const response = await server.inject({ method: 'GET', url: '/api/tenant-statuses' });
 
         expect(response.statusCode).toBe(401);
 

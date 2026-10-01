@@ -43,6 +43,7 @@ domain::tenant_status tenant_status_mapper::map(const tenant_status_entity& v) {
 
     r.description = v.description;
     r.display_order = v.display_order;
+    r.badge_code = v.badge_code.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,6 +66,7 @@ tenant_status_entity tenant_status_mapper::map(const domain::tenant_status& v) {
 
     r.description = v.description;
     r.display_order = v.display_order;
+    r.badge_code = v.badge_code.empty() ? std::nullopt : std::optional(v.badge_code);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

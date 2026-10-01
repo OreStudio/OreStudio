@@ -772,7 +772,14 @@ namespace ores #F2F2F2 {
                 +role_id : string
             }
             class get_role_permissions_response <<struct>> {
+                +result : ores::utility::domain::result
                 +permission_codes : vector<string>
+            }
+            class put_role_permissions_request <<struct>> {
+                +role_id : string
+                +permission_codes : vector<string>
+                +change_reason_code : string
+                +change_commentary : string
             }
             class suggest_role_commands_request <<struct>> {
                 +username : string
@@ -2119,6 +2126,10 @@ class ores::iam::messaging::get_my_roles_request <<struct>> {
 }
 class ores::iam::messaging::get_role_permissions_request <<struct>> {
     {static} +nats_subject : string_view = "iam.v1.roles.permissions"
+    {static} +requires_session : bool = true
+}
+class ores::iam::messaging::put_role_permissions_request <<struct>> {
+    {static} +nats_subject : string_view = "iam.v1.roles.permissions.put"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::suggest_role_commands_request <<struct>> {

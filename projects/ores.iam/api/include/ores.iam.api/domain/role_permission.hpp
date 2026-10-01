@@ -22,6 +22,8 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
 
 namespace ores::iam::domain {
 
@@ -31,6 +33,10 @@ namespace ores::iam::domain {
  * This is a junction entity that links roles to permissions, supporting
  * many-to-many relationships. A role can have multiple permissions, and
  * a permission can be assigned to multiple roles.
+ *
+ * The tail records who wrote the link, when and why, the same as an
+ * account-role assignment. The store stamps =assigned_at= and the actor; the
+ * writer states the reason and commentary.
  */
 struct role_permission final {
     /**
@@ -47,6 +53,26 @@ struct role_permission final {
      * @brief The permission being granted to the role.
      */
     boost::uuids::uuid permission_id;
+
+    /**
+     * @brief The account that wrote the link, by username.
+     */
+    std::string assigned_by;
+
+    /**
+     * @brief When the store wrote the link.
+     */
+    std::chrono::system_clock::time_point assigned_at;
+
+    /**
+     * @brief Why the link was written.
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief The sentence that goes with the reason.
+     */
+    std::string change_commentary;
 };
 
 }

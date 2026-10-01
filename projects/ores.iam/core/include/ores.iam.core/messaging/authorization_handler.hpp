@@ -71,6 +71,13 @@ inline get_account_roles_response to_response(service::account_access answer) {
 }
 
 /*
+ * The sentence every operation answers when the authenticated actor names no
+ * account in the tenant. One string, so the sites cannot drift apart.
+ */
+constexpr std::string_view no_account_answer =
+    "The authenticated actor names no account in this tenant";
+
+/*
  * A response for a failure that stopped the work rather than a refusal the
  * operation decided. The outcome is set because the default is ok, and an
  * exception reported as ok would read as an account that holds nothing.
@@ -116,9 +123,18 @@ public:
             }
             const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service svc(ctx);
-            if (!svc.has_permission(caller_id, domain::permissions::roles_assign)) {
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      assign_role_response{
+                          .success = false,
+                          .error_message =
+                              std::string{no_account_answer}});
+                return;
+            }
+            if (!svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:assign permission";
                 reply(nats_,
@@ -155,9 +171,18 @@ public:
             }
             const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service svc(ctx);
-            if (!svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      revoke_role_response{
+                          .success = false,
+                          .error_message =
+                              std::string{no_account_answer}});
+                return;
+            }
+            if (!svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:revoke permission";
                 reply(nats_,
@@ -195,7 +220,16 @@ public:
             const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
             service::authorization_service svc(ctx);
-            auto answer = svc.read_account_access(sg(ctx.actor()), sg(req->account_id));
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      get_account_roles_response{
+                          .result = failed_result(
+                              std::string{no_account_answer})});
+                return;
+            }
+            auto answer = svc.read_account_access(*caller_id, sg(req->account_id));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
@@ -216,9 +250,17 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
             service::authorization_service svc(ctx);
-            auto answer = svc.read_own_access(sg(ctx.actor()));
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      get_account_roles_response{
+                          .result = failed_result(
+                              std::string{no_account_answer})});
+                return;
+            }
+            auto answer = svc.read_own_access(*caller_id);
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, to_response(std::move(answer)));
         } catch (const std::exception& e) {
@@ -256,6 +298,51 @@ public:
         }
     }
 
+    void put_permissions(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(authorization_handler_lg(), msg);
+        auto req = decode<put_role_permissions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            boost::uuids::string_generator sg;
+            service::authorization_service svc(ctx);
+            const auto caller_id = svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      get_role_permissions_response{
+                          .result = failed_result(
+                              std::string{no_account_answer})});
+                return;
+            }
+            auto answer = svc.replace_role_permissions(*caller_id,
+                                                       sg(req->role_id),
+                                                       req->permission_codes,
+                                                       req->change_reason_code,
+                                                       req->change_commentary);
+            BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_role_permissions_response{.result = std::move(answer.result),
+                                                .permission_codes =
+                                                    std::move(answer.permission_codes)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(authorization_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_role_permissions_response{.result = failed_result(e.what())});
+        }
+    }
+
     void assign_by_name(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);
@@ -272,10 +359,18 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service caller_svc(ctx);
-            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_assign)) {
+            const auto caller_id = caller_svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false,
+                          .error_message =
+                              std::string{no_account_answer}});
+                return;
+            }
+            if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:assign permission";
                 reply(nats_,
@@ -365,10 +460,18 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
-            boost::uuids::string_generator sg;
-            const auto caller_id = sg(ctx.actor());
             service::authorization_service caller_svc(ctx);
-            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
+            const auto caller_id = caller_svc.caller_account();
+            if (!caller_id) {
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false,
+                          .error_message =
+                              std::string{no_account_answer}});
+                return;
+            }
+            if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(authorization_handler_lg(), warn)
                     << msg.subject << " denied: caller lacks iam::roles:revoke permission";
                 reply(nats_,

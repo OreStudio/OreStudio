@@ -101,6 +101,7 @@ namespace ores #F2F2F2 {
                     +process_get_account_roles(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_get_my_roles(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_get_role_permissions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_put_role_permissions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_suggest_role_commands(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class bootstrap_operations_commands {

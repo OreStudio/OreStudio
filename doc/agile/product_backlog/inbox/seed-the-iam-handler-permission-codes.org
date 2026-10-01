@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D0B8F570-25B7-4BC4-905D-077FFFA5E009
+:END:
+#+title: Twelve permission codes the iam handlers check are still not…
+#+description: Twelve permission codes the iam handlers check are still not seeded, so only the bare wildcard reaches those operations. check_handler_permissions.py derives the codes from the handler files and compares them to iam_permissions_populate.sql; iam is deliberately outside its REGISTRY because of this gap, which means the gate does not protect iam at all. The twelve are iam::account_contact_informations:write and :delete, iam::account_statuses:write and :delete, iam::account_types:write and :delete, iam::sessions:delete, iam::tenants:write, iam::tenant_statuses:write and :delete, and iam::tenant_types:write and :delete. Each is the same shape as the iam::roles:write gap that the bundle write closed: the generated handler asks for the resource's :write or :delete while the seed defines a different action for the same resource (for example iam::tenants:update, which the generated tenant write does not check). The seed is the side to move, because the generator emits <component>::<plural>:write and <component>::<plural>:delete unconditionally for every entity, so a handler cannot be given a different code without a model or template change. Closing all twelve lets iam join the REGISTRY in projects/ores.codegen/scripts/check_handler_permissions.py, after which the gate fails any future iam handler whose code no seed defines. The same audit is worth running for the other components that are still outside the registry.
+#+type: capture
+#+level: cross
+#+filetags: :iam:permissions:codegen:capture:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

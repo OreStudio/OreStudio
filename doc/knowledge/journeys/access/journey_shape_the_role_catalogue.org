@@ -47,10 +47,14 @@ reproduced.
    platform defines, with its code and description. Permissions are seeded
    constants, so the screen offers no "new permission".
 4. *Choose the bundle.* The administrator ticks the permissions the role should
-   bundle and unticks the ones it should not. The system has no operation for
-   this step: a role's permissions can only be read.
-5. *Save the bundle.* There is nothing to call. The screen cannot save the
-   change, so the bundle stays as it was.
+   bundle and unticks the ones it should not. The request carries the whole
+   ticked set rather than an increment, so a permission the role held and the
+   administrator unticked is removed by the same call that adds the others.
+5. *Save the bundle.* The administrator saves, and the role bundles exactly the
+   permissions that were ticked. The call is
+   =iam.v1.roles.permissions.put=, it needs =iam::roles:update=, and it answers
+   with the bundle as stored so the screen renders what was saved rather than
+   what it hoped to save.
 6. *Check the result.* The system re-reads the role and its permissions. The
    administrator compares them with the intent.
 
@@ -81,11 +85,18 @@ There is no module entity and no module table. The component segment of the
 code — =iam= in =iam::accounts:read= — is what plays the part a module would
 play, and the catalogue is grouped by that segment.
 
-The =role_permission= row carries only =valid_from= and =valid_to=. It has no
-=assigned_by=, no =assigned_at= and no change reason, unlike =account_role=.
-So a change to a role's bundle would leave no record of who made it or why.
-The question is already open in
-[[id:C70C3D05-88BD-4468-ABCB-3DBF165090FC][Evaluate change reasons for role permission tables]].
+The =role_permission= row carries the same tail as =account_role=:
+=assigned_by=, =assigned_at=, =change_reason_code= and =change_commentary=. A
+bundle change is attributable to the account that made it and to the reason it
+gave, and the store stamps the time.
+
+The tail belongs to the grant rather than to the change. An addition writes it.
+A removal closes the row and leaves the tail the grant wrote, so a bundle reads
+as its live rows plus the record of when each permission ended; the caller's
+reason covers what the call adds, and a removal has no reason of its own. The
+alternative, restamping the tail on removal, would erase who granted the
+permission, which is the record this journey exists for. A reason per removal
+needs somewhere to put it that is not the grant's own row.
 
 No credential field appears on this screen. =password_hash=, =password_salt=,
 =service_password_hash=, =totp_secret=, cleartext passwords and JWTs stay on
@@ -97,51 +108,61 @@ the server.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Open the catalogue | List the roles in the tenant | =iam.v1.roles.list= | exists |
-| Create or pick a role | Write a role | =iam.v1.roles.put= | partial |
+| Create or pick a role | Write a role | =iam.v1.roles.put= | exists |
 | Read the permission catalogue | List the permissions the platform defines | =iam.v1.permissions.list= | exists |
 | Choose the bundle | Read the permissions a role bundles | =iam.v1.roles.permissions= | exists |
-| Choose the bundle | Add a permission to a role | none | missing |
-| Choose the bundle | Remove a permission from a role | none | missing |
+| Choose the bundle | Write the permissions a role bundles | =iam.v1.roles.permissions.put= | exists |
 | Remove a role | Delete a role | =iam.v1.roles.delete= | exists |
 | Check the result | Read a role and its permissions | =iam.v1.roles.get=, =iam.v1.roles.permissions= | exists |
 
 The role subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
-=iam.v1.roles.permissions= is a read. No write subject for the
-role-to-permission link exists in the generated protocol, and
-=iam.v1.permissions.put= writes the catalogue of atomic permissions, not the
-link. So it does not fill the gap.
+=iam.v1.roles.permissions= is a read and =iam.v1.roles.permissions.put= is the
+write, and the write answers with the read's own response: the codes as stored,
+so the two cannot disagree about the bundle.
 
-=iam.v1.roles.put= checks =iam::roles:write=. The seeded catalogue defines
-=iam::roles:update= ("Modify role permissions"), not =iam::roles:write=. Only
-an account that holds the bare =*= wildcard passes the check, and =TenantAdmin=
-holds it. A delegated administrator that holds the documented
-=iam::roles:update= is refused. So =partial= here means the operation exists and
-the permission the caller is meant to hold does not satisfy it.
+Replacing the bundle is one subject rather than an add and a remove. The screen
+knows the set it wants, not the difference, and two verbs would make it compute
+the difference and then depend on both landing. The write is idempotent: sending
+the same set twice leaves the role bundling it once.
 
-* What is missing
+Writes are checked against a permission the seed defines:
+=iam::roles:write= for a role's own fields, which the generated role write
+checks, and =iam::roles:update= for its permission bundle, which is what the
+seeded description of that code already says. The two are separate because they
+are separate capabilities: an administrator can be trusted to shape what a role
+grants without being able to rename or delete the role itself.
 
-1. *No permission-to-role write.* No subject adds or removes a permission on a
-   role. The candidate is =iam.v1.roles.permissions.put= and =...put_many=,
-   carrying the role id and the chosen permission ids or codes, with a change
-   reason. Until it exists, the screen must show the bundle read-only, exactly
-   as the Qt client did, and a new role stays an empty shell.
-2. *The role write permission code disagrees with the catalogue.* The handler
-   asks for =iam::roles:write=; the seed defines =iam::roles:update=. The
-   candidate is to change the handler to =iam::roles:update=, or to seed
-   =iam::roles:write= and retire the other. Until then only the bare wildcard
-   reaches the role write.
-3. *No audit on the role-permission link.* =role_permission= carries
-   =valid_from= and =valid_to= only. It has no author, no time and no reason, so
-   a bundle change would not be attributable. The candidate is to give the
-   junction the same audit tail as =account_role=.
-4. *Permission CRUD is open to the wildcard alone.* =iam.v1.permissions.put=,
-   =put_many=, =delete= and =delete_many= exist and check
-   =iam::permissions:write= and =iam::permissions:delete=. Neither code is
-   seeded, so only the bare wildcard reaches them. The candidate is to seed the
-   two codes, or to drop the permission CRUD subjects, because the model says
-   permissions are system-defined constants seeded from bootstrap data. The
-   role catalogue screen must pick from the seeded list either way.
+A write that is refused answers at the operation rather than in the envelope:
+the response carries a =result= whose outcome is =denied=, =invalid= or
+=missing=, the same contract the
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][authorised reads]] page states. An
+unknown permission code is =invalid= and writes nothing, because the whole
+bundle resolves before any row lands.
+
+* What is left
+
+1. *The screen is not built.* The operations exist and the journey runs at the
+   protocol, but nothing in =ores.web= draws the catalogue, the selected role
+   and the permission bundle yet, and nothing reaches them from the shell's
+   menus. A journey a person cannot reach from a screen is not finished.
+2. *=iam::roles:create= is enforced by nothing.* The generated role write
+   checks =iam::roles:write=, which covers a create and a modify, so the seeded
+   =iam::roles:create= is a code no handler reaches. Either the write grows a
+   create precondition that checks it or the code is retired; until then it is
+   a grant that means nothing.
+3. *Nothing tells a holder that the bundle moved.* A change to a role's
+   permissions changes what every account holding the role may do, and the
+   session's permission claim is a snapshot taken at sign-in. The database-backed
+   check reads the change immediately, but a caller relying on the claim does
+   not. The service declares an =account_permissions_changed_event= for an
+   assignment change and no caller passes it an event bus, so nothing is
+   published for a bundle change either.
+4. *A permission code an administrator invents is not enforced anywhere.* This
+   is by design rather than a gap: the catalogue is seeded, the screen picks
+   from it, and creating a code would grant a capability no handler checks. The
+   permission write subjects exist for the seed's purposes and are hidden from
+   the journey.
 
 * Related journeys
 

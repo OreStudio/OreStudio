@@ -20,12 +20,17 @@
 
 -- =============================================================================
 -- Many-to-many: roles to permissions.
+-- Tracks who changed the bundle, when and why, the same as account_roles.
 -- =============================================================================
 
 create table if not exists ores_iam_role_permissions_tbl (
     "tenant_id" uuid not null,
     "role_id" uuid not null,
     "permission_id" uuid not null,
+    "assigned_by" text not null,
+    "assigned_at" timestamp with time zone not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (role_id, permission_id, valid_from),
@@ -69,6 +74,10 @@ begin
 
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
+    new.assigned_at = current_timestamp;
+    new.assigned_by := ores_iam_validate_account_username_fn(coalesce(nullif(new.assigned_by, ''), ores_iam_current_actor_fn(), current_user));
+
+    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
     return new;
 end;

@@ -1147,6 +1147,8 @@ class ores::iam::service::authorization_service {
     +find_role_by_name(name : string) : optional<role>
     +create_role(name : string, description : string, permission_codes : vector<string>, modified_by : string) : role
     +get_role_permissions(role_id : uuid) : vector<string>
+    +replace_role_permissions(caller_id : uuid, role_id : uuid, permission_codes : vector<string>, change_reason_code : string, change_commentary : string) : role_permissions
+    +caller_account() : optional<uuid>
     +assign_role(account_id : uuid, role_id : uuid, assigned_by : string, change_commentary : string)
     +revoke_role(account_id : uuid, role_id : uuid)
     +get_account_roles(account_id : uuid) : vector<role>

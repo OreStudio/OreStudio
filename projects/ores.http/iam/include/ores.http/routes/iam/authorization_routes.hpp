@@ -99,6 +99,13 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_role_permissions(const ores::http::domain::http_request& req,
                                 ores::nats::service::nats_client& session);
+
+    /**
+     * @brief POST /api/v1/iam/roles/permissions/put — Put role permissions.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_put_role_permissions(const ores::http::domain::http_request& req,
+                                ores::nats::service::nats_client& session);
 };
 
 }

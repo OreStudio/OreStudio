@@ -103,6 +103,24 @@ export interface GetRolePermissionsResponse {
     permission_codes: string[];
 }
 
+/**
+ * @brief Replaces the permissions a role bundles.
+ *
+ * The codes are the whole bundle the role should carry, not an increment: a
+ * code the role bundles and this request omits is removed, and a code both
+ * name stays. The write answers with the bundle as stored, so the caller
+ * reads back what it wrote rather than assuming the two agree.
+ *
+ * The change reason and commentary are the junction row's own record of who
+ * changed the bundle, when and why; the actor is stamped from the request.
+ */
+export interface PutRolePermissionsRequest {
+    role_id: string;
+    permission_codes: string[];
+    change_reason_code: string;
+    change_commentary: string;
+}
+
 export interface SuggestRoleCommandsRequest {
     username: string;
     tenant_id: string;
@@ -121,6 +139,7 @@ export const subjects = {
     get_account_roles_request: 'iam.v1.roles.by-account',
     get_my_roles_request: 'iam.v1.roles.mine',
     get_role_permissions_request: 'iam.v1.roles.permissions',
+    put_role_permissions_request: 'iam.v1.roles.permissions.put',
     suggest_role_commands_request: 'iam.v1.roles.suggest-commands',
 } as const;
 /**
@@ -136,5 +155,6 @@ export const requiresSession = {
     get_account_roles_request: true,
     get_my_roles_request: true,
     get_role_permissions_request: true,
+    put_role_permissions_request: true,
     suggest_role_commands_request: true,
 } as const;

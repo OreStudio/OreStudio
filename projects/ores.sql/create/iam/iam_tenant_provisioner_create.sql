@@ -150,13 +150,19 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % roles', v_copied_count;
 
-    -- Copy role_permissions (simple junction table)
-    -- Need to map old role/permission IDs to new IDs by name/code
-    insert into ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id)
+    -- Copy role_permissions. Need to map old role/permission IDs to new IDs
+    -- by name/code. The copy states the same tail the roles copy does, so a
+    -- provisioned tenant's bundle rows say where they came from.
+    insert into ores_iam_role_permissions_tbl (
+        tenant_id, role_id, permission_id,
+        assigned_by, assigned_at,
+        change_reason_code, change_commentary)
     select
         v_tenant_id,
         new_r.id,
-        new_p.id
+        new_p.id,
+        v_actor, current_timestamp,
+        'system.new_record', 'Copied from system tenant during provisioning'
     from ores_iam_role_permissions_tbl rp
     join ores_iam_roles_tbl old_r on old_r.id = rp.role_id
         and old_r.tenant_id = v_system_tenant_id

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-01T14:06:25.355612Z
+' Generated: 2026-10-01T17:12:06.948243Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -363,11 +363,16 @@ package "iam" #E8F4FD {
         * valid_from : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
+        * assigned_by : text
+        * assigned_at : timestamptz
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_to : timestamptz
     }
 
     note right of ores_iam_role_permissions_tbl
     Many-to-many: roles to permissions.
+    Tracks who changed the bundle, when and why, the same as account_roles.
     end note
 
     entity ores_iam_roles_tbl <<temporal>> #C6F0D8 {

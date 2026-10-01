@@ -8,40 +8,77 @@
 #+filetags: :implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-access-journeys
-#+pr:
+#+pr: 2484
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add the write the [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role
+catalogue]] journey has never had. A role's permission list can be composed and
+saved in one operation, permission-gated, with the change reason and commentary
+every other write carries.
+
+The junction row also gains the audit tail =account_role= already has, so a
+bundle change records who made it, when and why. The permission codes the role
+write and the permission CRUD check are seeded, so an administrator holding the
+documented code reaches them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
 
 * Acceptance
 
--
+- =iam.v1.roles.permissions.put= replaces a role's bundle: the codes it names
+  are the codes the role bundles once it returns. An addition is recorded with
+  the caller's actor, the reason it gave and its commentary; a removal closes
+  the row it removes.
+- A removal has no reason of its own. The delete rule closes the row and leaves
+  the tail the grant wrote, so a bundle reads as its live rows plus when each
+  ended. Restamping the tail on removal would lose who granted the permission,
+  which is the record the journey exists for.
+- The write is refused without =iam::roles:update=, as a =denied= result
+  carrying that code, before anything is read or written.
+- An unknown permission code is refused as =invalid=, and no row is written.
+- The junction row carries =assigned_by=, =assigned_at=,
+  =change_reason_code= and =change_commentary=. The write records the reason it
+  is given, and an empty reason becomes =system.new_record=, the same default
+  every other write in the tree applies, so the store is never asked to invent
+  one.
+- The response carries the bundle as stored, so the screen that saved it reads
+  back what it wrote instead of hoping.
+- The codes the handlers check are the codes the seed defines:
+  =iam::roles:write= for the generated role write, and
+  =iam::permissions:write= and =iam::permissions:delete= for the permission CRUD.
+- The caller's account id is resolved from the request's actor in one place,
+  and a test proves a username resolves to its account. Every subject that needs
+  the caller uses it; none parses the actor as a uuid.
+- The shell and the HTTP gateway reach the same subject, and a role's bundle
+  can be written from either.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+| # | Step | What it leaves behind |
+|---+------+-----------------------|
+| 1 | Resolve the caller from the actor | One service method, the five subjects that need it, and a regression test. |
+| 2 | Give the junction its audit tail | Four columns, a migration, the entity, the mapper and the domain struct. |
+| 3 | Add the write subject | The model declaration, the handler, the service method, the registrar and the generated shell and HTTP surfaces. |
+| 4 | Seed the codes the handlers check | The seed rows and the constants that name them. |
+| 5 | Prove it | Service tests for the replace, the refusal, the unknown code and the tail, then the tree's gates. |
 
 * Measurements
 
@@ -55,9 +92,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| New IAM test cases | 7 | =ctest -R ores.iam.core.tests -V= | [iam] Let a role's permission bundle be written |
+| IAM suites | 5 of 5 pass | =ctest -R "ores.iam.*\|ores.http.iam.*\|ores.shell.iam.*"= | branch tip, PR #2484 |
+| Permission codes seeded for iam | 3 added, 12 still unseeded | =check_handler_permissions.required_codes('iam')= | [iam] Let a role's permission bundle be written |
+| Permissions in a freshly created database | 555 | =compass db recreate -y -k= | branch tip, PR #2484 |
+| Role-permission assignments in a freshly created database | 133 | =compass db recreate -y -k= | branch tip, PR #2484 |
+| Permission upserts the seed defines | 555 | =grep -c ores_iam_permissions_upsert_fn iam_permissions_populate.sql= | branch tip, PR #2484 |
+| Local gates | 22 pass, 0 fail | =build/audit/run_local_gates.sh= | branch tip, PR #2484 |
+| Codegen test suite | 1052 pass | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | branch tip, PR #2484 |
+| Web workspace | typecheck, format and 51 tests pass | =npm run typecheck && npm run format:check && npm test= | branch tip, PR #2484 |
+| ER diagram | up to date | =plantuml_er_generate.py ... --check= | branch tip, PR #2484 |
 
 * Notes
+
+- The Commit column names a commit by its subject or by the branch tip, not by a hash, because this branch has been rebased three times onto =origin/main= and every rebase rewrites the hashes. A subject survives that, and the branch is PR #2484. Where a row names the branch tip it means the head of that pull request at the time of the measurement.
+- The database was recreated a second time after the third rebase, so the two rows above are measured on the current base. The first run, on the first base, produced the same two figures.
+- The IAM core suite failed on the rebased base until that recreate: =origin/main= added =badge_code= to =ores_iam_tenant_statuses_tbl=, and a database created before it answers =column "badge_code" does not exist=. Nothing in this branch was involved, and the suite passes on the recreated schema.
+- All 22 local gates pass on the rebased base. The one failure the battery reported before the first rebase, =projects/ores.ore/core/src/component_files.cmake=, was stale on the older =origin/main= and has since been fixed there by its owner, so this branch no longer inherits it.
+- Tangling the shell and HTTP recipes materialised =projects/ores.shell/scripts/library/curve_sections/= and =projects/ores.http/scripts/library/currencies/=, whose recipe sources were committed and whose generated artefacts were not. =curve_sections= has since been committed on =origin/main= by its owner, and the duplicate the tangle wrote here was moved aside to =build/audit/superseded/= before the rebase; =currencies= is still outstanding on =main=.
+- The migration was not replayed against a database that predates the columns. A fresh database proves the create script, which is what the environment runs; the migration exists for the rollout, and its own docstring says so.
 
 * Test Scenarios
 
@@ -74,12 +127,51 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2484][#2484]] | [iam] Write a role's permission bundle |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The generated list helper tests =__NONE__= while the loader and every recipe write =__none__=, so an empty bundle is sent as the literal code | =ores.cpp.shell-command.operation_implementation.org= | accepted | Fixed at the template, which is where the token is read; the three generated copies are regenerated (=[codegen] Read the empty-list token the loader writes=). |
+| 2 | The "actor names no account" sentence is copied at seven sites | =authorization_handler.hpp= | accepted | One =no_account_answer= constant (=[iam] Answer the review of the bundle write=). |
+| 3 | The list helper is copied into a third generated command file | three =*_operations_commands.cpp= | accepted in part | One template emits all three, so the copy is generated, not hand-written. Lifting it into the shell API is a template change shared with the entity command facet, and belongs with the generator work rather than here. |
+| 4 | =change_reason_code= and =change_commentary= travel together through five layers | request, domain, entity, SQL, service | declined | The tree spells the pair out everywhere, including =account_role=, and a type for it would diverge from the audited-entity shape the generator emits. |
+| 5 | =service::role_permissions= mirrors the wire response field for field | =authorization_service.hpp= | declined | The service and the wire carry separate shapes in this component by design (see =account_access= against =account_role_access=); the mapping is the seam that keeps the wire from reaching the store. |
+| 6 | =bundles= and =stays= re-implement one membership test under vague names | =authorization_service.cpp= | accepted | Renamed to =bundles_permission= and =wanted=, which is as far as the two shapes (links against permissions) allow without a second type. |
+| 7 | No test crosses the handler or the registration seam, which is where the caller bug hid | =authorization_handler.hpp= | accepted with a reason | A handler test needs the live NATS harness the scheduler's handler test uses, which no IAM test has today. The defect class it would catch is now covered by the =caller_account= cases at the service. Recorded, not built. |
+| 8 | The Plan claims constants for the new codes and none were added | =permission_codes.hpp= | accepted | =roles_write=, =permissions_write= and =permissions_delete= added and asserted in the constants test (=[iam] Answer the review of the bundle write=). |
+| 9 | A removal records neither actor nor reason, so "both an addition and a removal are recorded" is not true | =authorization_service.cpp=, journey | accepted | The delete rule closes the row and keeps the grant's tail. The acceptance and the journey now say exactly that, and why restamping the tail is worse (=[docs] Say what a removal does and does not record=). |
+| 10 | =create_role=, the seed's assign function and the tenant provisioner changed although the task does not name them | four files | declined | The new columns are =not null=, so every writer must state the tail or the seed and the provisioning copy fail. Forced by the schema, not creep. |
+| 11 | An empty reason silently becomes =system.new_record=, so the write does not always state its reason | =authorization_service.cpp= | accepted | Kept, because =stamp()= gives every generated write the same default, and the store still validates whatever it is given. The acceptance now states the default instead of claiming the caller always speaks. |
+| 12 | The write answers sorted codes and the read does not, so the two can disagree about a bundle they agree on | =authorization_service.cpp= | accepted | The sort moved into =get_role_permissions=, which is the list both answers use (=[iam] Answer the review of the bundle write=). |
 
 * Result
+
+A role's permission bundle can be written. =iam.v1.roles.permissions.put=
+takes the role and the complete bundle it should carry, checks
+=iam::roles:update= before it looks anything up, resolves every code before
+it writes anything, and answers with the codes as stored. The
+role-permission junction gained the audit tail =account_role= already had, so
+an added permission records who added it, when and why, and a removal closes
+the row while the grant's tail survives.
+
+The caller resolution the write needs is fixed underneath it: the access
+subjects built the caller's account id by parsing the request's actor, which
+is a username, as a uuid, so =iam.v1.roles.mine=, =.by-account=, =.assign=,
+=.revoke= and both by-name subjects failed every live request. The service
+resolves the actor to their account in one place now, and a test proves a
+username resolves.
+
+Three permission codes the handlers check are seeded (=iam::roles:write=,
+=iam::permissions:write=, =iam::permissions:delete=); twelve remain, and
+they are filed as a capture with the gate that would protect them once
+seeded.
+
+Evidence: the database was recreated from the changed create scripts (555
+permissions, 133 role-permission assignments); the five IAM suites pass, with
+seven new cases over the caller resolution and the bundle write; all 22 local
+gates pass on the rebased base, as does the ER diagram check, and CI reports
+18 of 18 checks green on the pull request. Two review rounds ran before the
+PR, and every accepted finding is in the commits above.
+

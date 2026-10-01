@@ -34,6 +34,9 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * relationship. A role can have multiple permissions, and a permission can
  * be assigned to multiple roles.
  *
+ * The row carries the same audit tail as an account-role assignment: who wrote
+ * the link, when and why. A grant is attributable, so a bundle change is too.
+ *
  * Note: The actual primary key is a composite key (role_id, permission_id,
  * valid_from) defined at the database schema level. sqlgen does not support
  * composite primary keys, so this entity omits the PrimaryKey wrapper.
@@ -45,6 +48,10 @@ struct role_permission_entity {
     std::string tenant_id;
     std::string role_id;
     std::string permission_id;
+    std::string assigned_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp assigned_at = "9999-12-31 23:59:59";
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };

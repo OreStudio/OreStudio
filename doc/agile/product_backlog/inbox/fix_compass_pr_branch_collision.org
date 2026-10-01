@@ -47,6 +47,13 @@ share the same branch by design.
 * References
 
 - PR [[https://github.com/OreStudio/OreStudio/pull/1873][#1873]] — both incidents happened here.
+- PR [[https://github.com/OreStudio/OreStudio/pull/2484][#2484]] — recurred on 2026-10-01. Five tasks in
+  =doc/agile/versions/v0/sprint_26/implement-access-journeys/= share
+  =#+branch: feature/implement-access-journeys=, and =pr create= recorded the PR
+  against the first match, =task_close-the-access-reads.org=, overwriting its
+  =#+pr: 2455= and prepending a row naming the wrong pull request. Corrected by
+  hand: the field and the table restored on the reads task, and the PR recorded
+  on =task_let-a-role-s-permission-bundle-be-written.org=, which raised it.
 - =doc/agile/versions/v0/sprint_25/refactor_codegen_cpp/task_apply_safe_drift.org= — the correct task.
 - =doc/agile/versions/v0/sprint_25/refactor_codegen_cpp/task_apply_safe_drift_analytics.org= — wrongly recorded by =pr create=.
 - =doc/agile/versions/v0/sprint_25/refactor_codegen_cpp/task_apply_safe_drift_compute.org= — wrongly flagged by =pr merge='s guard.

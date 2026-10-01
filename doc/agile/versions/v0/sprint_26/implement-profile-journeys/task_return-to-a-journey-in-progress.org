@@ -29,11 +29,11 @@ run belonged to which tenant.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Target on the run, roster column and run page built; unit tests pass. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the roster and the run page against the running deployment. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * The defect, as found
@@ -118,8 +118,24 @@ what the shell has to offer back is the work that has a run behind it.
   "Failed at step N", "Rolling back" or "Rolled back", and links to
   =/tenants/runs/:id=. That page shows the run's rail with retry. A completed
   run shows nothing, because the tenant status already says the tenant is there.
+- *Only creatable tenants are offered.* The fallback home card no longer
+  offers *New tenant*, because only system administration can create one. In
+  the new tenant journey, a starting point whose fixed tenant code exists is
+  greyed out and carries a green "✓ Installed" badge.
+- *Found in the manual check.* The roster's run read was written by hand and
+  left out the unused optional filters. The C++ decoder requires every field,
+  so the Setup column stayed empty. The client now sends every filter. The
+  correct fix is to generate the protocol, and it is captured for the
+  =ores.workflow= clean-up:
+  [[id:5C04D943-1792-43C5-883E-A0938DE2B00F][Model the workflow query protocol as an operation]].
+- *Component audit.* =validate_docs= passes for all 41 components. The task
+  changed no folder layout, template or sub-component and cleared no drift, so
+  no audit trigger applies. =ores.workflow= gets its full audit in its
+  clean-standard story.
 - *Not in scope.* The form of an abandoned journey is not restored, and the
   hand-off step is not offered again. The tenant detail screen is a later PR.
+  Tenant administration's own landing and the raw SQL refusal on a duplicate
+  code are captured.
 
 * Measurements
 

@@ -5945,7 +5945,25 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     qts: list[dict[str, Any]] = []
     if qt_section:
         for row in _parse_org_table_rows(qt_section):
-            qts.append({k: v for k, v in row.items()})
+            row = {k: v for k, v in row.items()}
+            # The `coordinates` cell is the ordered list of coordinate query
+            # keys this quote type carries. The order is per type, because one
+            # key sits at different positions in different types (`tenor` is
+            # first for cds_index and second for index_cds_option).
+            row["coordinates"] = [
+                key.strip() for key in row.get("coordinates", "").split(",")
+                if key.strip()
+            ]
+            # The ordered keys the old comma-joined `point` value corresponds
+            # to, identity keys included: a capfloor's point is an expiry, a
+            # float tenor, two surface flags and a strike, of which only two are
+            # coordinates. It is what the grammar generation reads to place each
+            # token, and what the declaration check reads to bound the count.
+            row["point_keys"] = [
+                key.strip() for key in row.get("point_keys", "").split(",")
+                if key.strip()
+            ]
+            qts.append(row)
     result["quote_types"] = qts
 
     # --- Enum brief: the class enum's doc comment, verbatim (line breaks
@@ -6038,6 +6056,88 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         if fm.get("ccy_optional_for_fixing", "false") == "true":
             result["ccy_optional_for_fixing"] = True
     result["fields"] = fields
+
+    # --- Coordinates table: the dimensions an asset class's keys carry, as a
+    # declaration rather than as a comma-joined string. Every key a Quote types
+    # row lists must be declared here or be a field above; a key declared in
+    # both must agree on its cpp_type, so the two tables cannot drift.
+    coords_section = _section(doc.root, "Coordinates")
+    coordinate_keys: list[dict[str, Any]] = []
+    if coords_section:
+        for row in _parse_org_table_rows(coords_section):
+            key = row.get("query_key", "")
+            if not key:
+                continue
+            coordinate_keys.append({
+                "query_key": key,
+                "cpp_type": row.get("cpp_type", "std::string"),
+                "value_kind": row.get("value_kind", "string"),
+                "notes": row.get("notes", ""),
+            })
+    result["coordinate_keys"] = coordinate_keys
+
+    declared = {c["query_key"]: c for c in coordinate_keys}
+    field_types = {f["name"]: f["cpp_type"] for f in fields}
+    for field in fields:
+        if field["name"] in declared:
+            declared_type = declared[field["name"]]["cpp_type"]
+            if declared_type != field["cpp_type"]:
+                raise ValueError(
+                    f"{path.name}: '{field['name']}' is declared as "
+                    f"{declared_type} in Coordinates but {field['cpp_type']} in Fields"
+                )
+    for qt in qts:
+        for key in qt["coordinates"]:
+            if key not in declared and key not in field_types:
+                raise ValueError(
+                    f"{path.name}: quote type '{qt.get('enum_name')}' lists "
+                    f"coordinate '{key}', which is declared nowhere"
+                )
+        for key in qt["point_keys"]:
+            if key not in declared and key not in field_types:
+                raise ValueError(
+                    f"{path.name}: quote type '{qt.get('enum_name')}' lists "
+                    f"point key '{key}', which is declared nowhere"
+                )
+
+    # A coordinate the identifier does not already carry as a field becomes one,
+    # named exactly as its query key. The surface's own coordinates live in
+    # volatility_surface_point, which the template writes by hand, so they are
+    # not repeated here.
+    surface_member = {
+        "expiry": "expiry",
+        "strike": "strike",
+        "delta": "delta_type",
+        "call_put": "call_put",
+        "premium": "premium_type",
+        "smile": "smile",
+    }
+    result["coordinate_fields"] = [
+        {"name": c["query_key"], "cpp_type": c["cpp_type"]}
+        for c in coordinate_keys
+        if c["query_key"] not in field_types and c["query_key"] not in surface_member
+    ]
+    # The coordinates the URI writer emits by hand, because the uri_order loop
+    # above only walks the Fields table: a coordinate already emitted there as a
+    # field (an IR curve's tenor, a future's contract fields) is skipped. The
+    # surface's own coordinates are read through the vol member.
+    uri_covered = {f["query_key"] for f in fields if f.get("query_key")}
+    coordinate_uri: list[dict[str, Any]] = []
+    for c in coordinate_keys:
+        key = c["query_key"]
+        if key in uri_covered:
+            continue
+        if key in surface_member:
+            coordinate_uri.append(
+                {"key": key, "member": surface_member[key], "in_surface": True,
+                 "qp_member": key})
+        else:
+            # `from` is the query key and cannot be the query_params member: that
+            # struct has a static `from` that reads the URL.
+            coordinate_uri.append(
+                {"key": key, "member": key, "in_surface": False,
+                 "qp_member": "from_grade" if key == "from" else key})
+    result["coordinate_uri"] = coordinate_uri
 
     # --- Per-struct doc comments: identifier/requirement briefs, in the
     # same " * " continuation scheme as the enum brief (the header

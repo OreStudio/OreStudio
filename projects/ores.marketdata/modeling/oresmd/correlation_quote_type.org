@@ -15,9 +15,9 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+------------+-----------------+-----------------+-------------------------------------------------|
-| pairwise | CORRELATION | RATE | surface | pairwise_surface | CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two operands with the expiry and strike after them. |
+| enum_name | ore_type    | ore_metric | point_semantics | qualifier_shape  | comment                                                                                                                       | coordinates  | point_keys   |
+|-----------+-------------+------------+-----------------+------------------+-------------------------------------------------------------------------------------------------------------------------------+--------------+--------------|
+| pairwise  | CORRELATION | RATE       | surface         | pairwise_surface | CORRELATION/RATE (pairwise factor correlation): one factor pair alone, or two operands with the expiry and strike after them. | expiry,delta | expiry,delta |
 
 * Enum brief
 
@@ -41,6 +41,18 @@ A logical, possibly-partial oresmd requirement for a correlation instrument.
 | quote_type | std::optional<correlation_quote_type> | no | quote | |
 | second_factor | std::optional<std::string> | no | second_factor | |
 | point | std::optional<std::string> | no | point | |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| expiry | std::optional<std::string> | string | The surface point's expiry. |
+| delta | std::optional<std::string> | enum | The moneyness or delta convention: atm, ... |
 
 * Reject keys
 

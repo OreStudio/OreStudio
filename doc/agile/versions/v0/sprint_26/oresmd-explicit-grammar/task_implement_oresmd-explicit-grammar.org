@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: 55EDA7FC-5AD9-4D90-93D0-9D5C48590389
+:END:
+#+title: Task: Declare the oresmd coordinates in the models
+#+description: Add a Coordinates table and an identity/coordinate role to the twelve oresmd quote-type models, and remove the point field from them. The grammar is declared before it is generated.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-explicit-grammar:sprint_26:v0:
+#+owner: marco
+#+branch: feature/oresmd-explicit-grammar
+#+pr: 2464
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The oresmd grammar is declared in its models rather than in the generated
+parser. Each of the twelve quote-type models states, for every query key, its
+role (identity or coordinate), its value kind and its order; and it states, per
+quote type, which coordinate keys that type carries. The =point= bag is removed.
+
+No generated C++ changes in this unit. The point of the unit is that the next
+unit can generate the parser, the writer and the series identity from a
+declaration a reviewer can read, instead of from a hand-written visitor.
+
+The findings and the target grammar are recorded in
+[[id:1C9EE1D4-651E-49D9-927C-F4891FF1ACEB][The oresmd URI grammar: silent defaults and the untyped coordinate]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Read the investigation's "Proposed grammar" and "The model change" sections. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- Every dimension a =point==-bearing URI carries is a declared coordinate key.
+- Every query key of every quote type is either a declared coordinate or
+  identity, and the generated series identity is the identity keys alone.
+- The four volatility families with no quote type of their own gain one:
+  =swaption= for IR, and an =option= member for FX, equity and commodity.
+- A codegen test walks every =point==-bearing URI in the model test tables and
+  fails while any is not expressible as declared keys. It passes at the end of
+  this unit and its check is the record's evidence.
+- The generated parser and writer accept and produce exactly what they do
+  today, except that the quote-type enums gain the four new members. No URI that
+  parses today stops parsing.
+
+* Plan
+
+** The model change
+
+One new table per model, one new column per quote type, and one row added:
+
+- Each model gains a =* Coordinates= table:
+
+  | query_key | cpp_type | value_kind | notes |
+  |-----------+----------+------------+-------|
+
+  =value_kind= is =string= or =enum=.
+- Each row of the =* Quote types= table gains a =coordinates= column: the ordered
+  comma list of the coordinate keys that quote type carries. The order is per
+  quote type, because one key sits at different positions in different types
+  (=tenor= is first for =cds_index= and second for =index_cds_option=).
+- The =point= field, the identifier structs and the parser are untouched here.
+  Removing =point= is unit 3's work, so this diff reads as a specification rather
+  than as a grammar.
+- A quote type whose last coordinate is either a number or a moneyness token
+  lists both =strike= and =delta=. The parser tries the enum first, so =ATM= is
+  a delta and a decimal is a strike.
+- The four surfaces that had no quote type of their own gain one: =swaption= for
+  IR, and an =option= member for FX and equity. Commodity already had one. Each
+  gains a round-trip case, so the coverage record that requires both directions
+  of every modelled type stays empty rather than gaining an exemption.
+
+** The coordinate inventory
+
+Union per asset class, from the census in the investigation:
+
+| Asset class | Coordinate keys, in order |
+|-------------+--------------------------|
+| fx | maturity; expiry, delta |
+| ir | maturity; tenor; contract_code, tenor (mm_future); contract_month, contract_code, tenor (oi_future); expiry, strike/delta, smile |
+| equity | maturity; expiry, delta, premium, call_put, strike |
+| commodity | maturity; expiry, delta, premium, call_put, strike |
+| credit | seniority, restructuring, tenor; expiry, strike |
+| inflation | maturity; month; expiry, cap_floor, strike |
+| correlation | expiry, delta |
+| rating | from, to |
+| shape_profile | date, second, period, dst |
+| security, generic, power | none |
+
+Per quote type:
+
+| Quote type | Coordinates, in order |
+|------------+-----------------------|
+| fx spot | — |
+| fx fwd | maturity |
+| fx option (new) | expiry, delta |
+| ir ir_swap, mm, fra, imm_fra, bma_swap, basis_swap, cc_basis_swap, cc_fix_float_swap, zero | maturity |
+| ir discount | tenor |
+| ir mm_future | contract_code, tenor |
+| ir oi_future | contract_month, contract_code, tenor |
+| ir capfloor | expiry, strike |
+| ir swaption (new), bond_option | expiry, smile, strike/delta |
+| equity spot | — |
+| equity dividend, fwd | maturity |
+| equity option (new) | expiry, delta, premium, call_put, strike |
+| commodity spot | — |
+| commodity fwd | maturity |
+| commodity option (new) | expiry, delta, premium, call_put, strike |
+| credit cds, hazard_rate | seniority, restructuring, tenor |
+| credit recovery_rate | seniority, restructuring |
+| credit cds_index, index_cds_tranche | tenor, strike |
+| credit index_cds_option | tenor, expiry, strike |
+| inflation zc_swap, yy_swap | maturity |
+| inflation seasonality | month |
+| inflation zc_capfloor, yy_capfloor, cf_price | expiry, cap_floor, strike |
+| correlation pairwise | expiry, delta |
+| rating transition_probability | from, to |
+| shape_profile shape_factor | date, second, period, dst |
+
+** The loader
+
+=load_org_oresmd_quote_type_model()= reads the new table into
+=result["coordinate_keys"]= (per asset class), splits each quote type's
+=coordinates= cell into an ordered list, and refuses a key that is declared as a
+coordinate in one table and as another type in the other, or that a quote type
+lists and nothing declares. The templates that consume the keys are unit 3's
+work.
+
+** The check
+
+=projects/ores.codegen/tests/test_oresmd_coordinates.py= reads the same models
+the generator reads and asks, of every declared test-case URI that still spells
+a =point=: does it name a quote type, once the asset class's own default is
+applied, and does that type declare the coordinates its key carries? It pins a
+floor on the number of URIs it looked at, so a loader that returns nothing fails
+there instead of passing over an empty set.
+
+It does not map a token to the key it lands on, because the old =point= mixes
+coordinate and identity dimensions and its arity varies with the key's shape, as
+a swaption's smile form shows. What it does assert is the bound: the token count
+never exceeds the keys the type's =point_keys= column declares, and every one of
+those keys is a declared coordinate or a field. A key the point carries and the
+model does not declare fails there. The generated parser of unit 3 is what
+replaces the positional mapping.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Market payloads under =external/ore/examples= | 96 | python predicate, =is_market_payload= in =corpus_files.hpp= | 80d03bab8f |
+| Fixing payloads under =external/ore/examples= | 66 | python predicate, =is_fixing_payload= | 80d03bab8f |
+| Payloads carrying a lognormal and a normal vol at one date and coordinate | 22 | python scan of =*market*.txt/csv= | 80d03bab8f |
+| Such groups across the corpus | 23,828 | same scan | 80d03bab8f |
+| Whole-corpus import | Fails on its 32nd file, duplicate key | =ores.marketdata.core.tests "every_line_of_the_whole_corpus_reaches_the_database"= | 80d03bab8f |
+
+* Notes
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2464][#2464]] | [marketdata] Declare the oresmd coordinate dimensions |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The twelve quote-type models declare their coordinates, and the generator reads
+them. Every =point=-bearing test URI resolves to a quote type that declares what
+its key carries.
+
+Delivered:
+
+- A =* Coordinates= table in each of the twelve models, and a =coordinates=
+  column on every =* Quote types= row.
+- =load_org_oresmd_quote_type_model()= reads both, and refuses a key declared as
+  a coordinate in one table and another type in the other, or listed by a quote
+  type and declared nowhere.
+- =test_oresmd_coordinates.py=, the declaration check described above.
+- Three quote types: =ir.swaption=, =fx.option= and =equity.option=.
+  =commodity.option= already existed. Each gained a round-trip case, so
+  =TEST_COVERAGE_EXEMPT= stays empty.
+- A generator defect fixed at its source: the =* Quote types= header of
+  =credit_quote_type.org= and =commodity_quote_type.org= declared no =notes=
+  column while their rows carried one, so the notes text landed in the =comment=
+  slot and the generated enum documented the key shape where the meaning
+  belonged. The header now declares =notes=, and the regenerated enums carry the
+  real comments.
+- The one hand-written switch the new members reached,
+  =default_metric(ir_quote_type)=, gained its case in
+  =ores.cpp.oresmd.projections.org=, from which the template is tangled.
+
+Evidence:
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| codegen suite | 1,049 passed | =venv/bin/python -m pytest projects/ores.codegen/tests -q= | uncommitted at measurement |
+| oresmd core tests | 1,940 assertions in 420 cases, all passed | =ores.marketdata.core.tests= | uncommitted at measurement |
+
+Not done here, and unit 3's work: the =point= field still exists, the parser
+still reads the old spelling, and the series identity still clears the volatility
+struct. The corpus import therefore still fails, and the investigation's
+measurement of that failure stands.

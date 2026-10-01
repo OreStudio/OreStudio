@@ -16,11 +16,11 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+------------+-----------------+-----------------+--------------------------------------------------|
-| spot | COMMODITY | PRICE | scalar | with_ccy | COMMODITY/PRICE (spot price, the default). |
-| fwd | COMMODITY_FWD | PRICE | tenor | with_ccy | COMMODITY_FWD/PRICE (commodity forward price). |
-| option | COMMODITY_OPTION | RATE | surface | with_ccy | COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity option's three shapes, with a commodity code where the equity has a ticker; the metric segment is the vol model, not this table's ore_metric | COMMODITY_OPTION (commodity option implied vol). |
+| enum_name | ore_type         | ore_metric | point_semantics | qualifier_shape | notes                                                                                                                                                                                                                             | comment                                          | coordinates                          | point_keys                           |
+|-----------+------------------+------------+-----------------+-----------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------+--------------------------------------+--------------------------------------|
+| spot      | COMMODITY        | PRICE      | scalar          | with_ccy        |                                                                                                                                                                                                                                   | COMMODITY/PRICE (spot price, the default).       |                                      |                                      |
+| fwd       | COMMODITY_FWD    | PRICE      | tenor           | with_ccy        |                                                                                                                                                                                                                                   | COMMODITY_FWD/PRICE (commodity forward price).   | maturity                             | maturity                             |
+| option    | COMMODITY_OPTION | RATE       | surface         | with_ccy        | COMMODITY_OPTION/MODEL/CODE/CCY/EXPIRY[/DELTA/PREMIUM/CALL_PUT]/STRIKE -- the equity option's three shapes, with a commodity code where the equity has a ticker; the metric segment is the vol model, not this table's ore_metric | COMMODITY_OPTION (commodity option implied vol). | expiry,delta,premium,call_put,strike | expiry,delta,premium,call_put,strike |
 
 * Enum brief
 
@@ -60,6 +60,22 @@ A logical, possibly-partial oresmd requirement for a commodity instrument.
 | point | std::optional<std::string> | no | point | |
 | delivery | std::optional<std::string> | no | delivery | |
 | vol | std::optional<volatility_surface_point> | no | | |
+
+* Coordinates
+
+The coordinate dimensions this asset class's keys carry, and the kind of
+value each holds. A key that also appears in the Fields table above must
+declare the same cpp_type; every key a =* Quote types= row lists is either
+declared here or a field above, and absence means identity.
+
+| query_key | cpp_type | value_kind | notes |
+|-----------+----------+------------+-------|
+| maturity | std::optional<std::string> | string | The quoted instrument's own term. |
+| expiry | std::optional<std::string> | string | A surface point's option expiry. |
+| delta | std::optional<std::string> | enum | The moneyness or delta convention: del, ... |
+| premium | std::optional<std::string> | enum | Where the premium is read: fwd, ... |
+| call_put | std::optional<std::string> | enum | The option's call or put flag. |
+| strike | std::optional<std::string> | string | A surface point's fixed strike. |
 
 * Reject keys
 

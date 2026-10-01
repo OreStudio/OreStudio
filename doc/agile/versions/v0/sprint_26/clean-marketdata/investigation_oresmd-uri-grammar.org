@@ -1,0 +1,474 @@
+:PROPERTIES:
+:ID: 1C9EE1D4-651E-49D9-927C-F4891FF1ACEB
+:END:
+#+title: Investigation: The oresmd URI grammar: silent defaults and the untyped coordinate
+#+description: The grammar omits a key when it holds its default, and flattens every surface and composite coordinate into one comma-separated point string. Both make the URI's meaning depend on knowledge the reader does not have. This records the findings, the design options, and the proposed target grammar.
+#+type: investigation
+#+level: s1
+#+filetags: :clean-marketdata:sprint_26:v0:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+A point-in-time record, written while the story that commissioned it was open. It answers two questions raised against the oresmd URI grammar, and it proposes a target grammar.
+
+* Context
+
+oresmd is ORE Studio's canonical identity for a market datum. Its URI is not a
+label: it is the primary key. =market_series.oresmd_uri= is the series identity
+and =market_observations.point_id= is the coordinate. So an ambiguity in the URI
+is an ambiguity in the catalogue itself.
+
+Two questions were raised against the grammar:
+
+1. =oresmd://ir/chf?tenor=10y&type=vol&point=6m,10y,atm= carries =10y= and =atm=
+   inside one string. Why are those not variables, such as =delta=atm=?
+2. The same URI omits =model=. An absent =model= silently means lognormal.
+   A reader cannot know that without the design document.
+
+While answering those, the whole-corpus import was run and failed. That failure
+is the same defect seen from the database side, and it is recorded here too.
+
+* Methodology
+
+Read, in this order:
+
+- =doc/knowledge/domain/market_data_urn.org= — the grammar's design record.
+- The twelve quote-type models under
+  =projects/ores.marketdata/modeling/oresmd/= — the per-asset-class specification
+  of every quote type, its =point_semantics=, its =qualifier_shape=, its query
+  keys and their defaults.
+- =projects/ores.marketdata/core/src/oresmd/oresmd_parser.cpp= (1,296 lines) and
+  =oresmd_projections.cpp= (2,534 lines) — both generated from the models.
+- =projects/ores.marketdata/core/src/service/import_service.cpp= — the writer.
+- =projects/ores.sql/create/marketdata/marketdata_market_observations_create.sql=
+  — the uniqueness rule the identity has to satisfy.
+
+Ran:
+
+- The hidden corpus walk,
+  =ores.marketdata.core.tests "every_line_of_the_whole_corpus_reaches_the_database"=.
+- A temporary probe case in =oresmd_oresmd_projections_tests.cpp=, to print the
+  identifier, the series identity and the datum identity of the two colliding
+  keys. The probe was reverted after the run.
+- A census over the twelve quote-type models: every quote type with its =point_semantics=,
+  its =qualifier_shape=, and every =point==-shaped URI in its test tables.
+
+* Paths taken
+
+** The corpus walk
+
+The walk imports every market payload under =external/ore/examples= through the
+import service, then reads the rows back. It is the only test that measures the
+whole path. It is also hidden behind Catch2's =.corpus-full= tag, so =ctest=
+never runs it.
+
+It failed on its 32nd file:
+
+#+begin_example
+AmericanMonteCarlo/Input/market_20160205_flat_fixed_fxfwd.txt
+Repository error: Executing INSERT failed: ERROR: duplicate key value violates
+unique constraint "_hyper_13_8_chunk_market_observations_observations_current_uniq"
+DETAIL: Key (tenant_id, party_id, series_id, observation_datetime, point_id)
+=(..., 76778039-..., 2016-02-05, 6M/10Y/ATM) already exists.
+#+end_example
+
+** The probe
+
+The file carries both =SWAPTION/RATE_LNVOL/CHF/6M/10Y/ATM= and
+=SWAPTION/RATE_NVOL/CHF/6M/10Y/ATM=. The probe printed:
+
+#+begin_example
+ln data   : oresmd://ir/chf?tenor=10y&type=vol&point=6m,10y,atm
+nv data   : oresmd://ir/chf?tenor=10y&type=vol&point=6m,10y,atm&model=rate_nvol
+ln series : oresmd://ir/chf?tenor=10y&type=vol
+nv series : oresmd://ir/chf?tenor=10y&type=vol
+#+end_example
+
+The two data identities differ by =model=. The two series identities are equal.
+The observation's unique key is the series identity, the date and the
+coordinate, so the second row cannot be inserted. The failing file is not
+unusual: 22 of the 96 market payloads carry a lognormal and a normal vol at the
+same date and coordinate, and the scan counts 23,828 such groups.
+
+** Nothing was abandoned
+
+The only path set aside was treating the failure as a duplicate-data problem. It
+is not: the two keys are different quotes, and the file is a faithful ORE
+example.
+
+* Findings
+
+** F1 — The writer suppresses the model when it holds the default
+
+=to_uri()= writes =model= only when it differs from =rate_lnvol=
+(=oresmd_parser.cpp=, six copies, one per asset class). The
+struct's member carries the default, so the parser knows the value and the
+writer discards it. Absence therefore means "lognormal" to a reader who knows the
+default, and "unspecified" to every other reader. The design record says the
+parser "must not silently default it"; the writer silently omits it.
+
+This is the only place the writer discards a value it holds. It is enough to
+lose an entire volatility surface.
+
+** F2 — =point= is an untyped bag, and its arity varies per quote type
+
+One query key carries between one and five dimensions, in a comma-joined string,
+with the meaning of each position defined by the quote type:
+
+| Quote type | =point= example | Dimensions, in order |
+|------------+-----------------+----------------------|
+| =discount=, =ir_swap=, =mm=, =fra= | =5y= | maturity |
+| =fx/eurusd?type=vol= | =10y,atm= | expiry, delta |
+| =ir/eur?type=vol= | =5y,2y,atm= | expiry, swap tenor, delta |
+| =ir/eur?type=vol= | =6m,2y,Smile,-0.02= | expiry, swap tenor, smile marker, strike |
+| =ir/chf?quote=capfloor= | =5y,6m,0,0,0.03= | maturity, float tenor, shift, strip, strike |
+| =credit/vod?quote=cds= | =snrfor,xr14,10y= | seniority, restructuring clause, tenor |
+| =rating/provider_1= | =aaa,aa= | from grade, to grade (a third token is rejected) |
+| =shape_profile/pjm= | =2021-03-01,10800,sec,dst= | date, second of the day, period, dst flag |
+| =correlation/...= | =1y,atm= | expiry, delta |
+| =equity/...?type=vol= | =1080d,del,spot,call,0.1= | expiry, delta, premium, call/put, strike |
+| =inflation/...?quote=cf_price= | =10y,c,0.00= | expiry, cap-or-floor flag, strike |
+| =credit/...?quote=cds_index= | =5y,0.1= | tenor, base-correlation strike |
+| =credit/...?quote=index_cds_option= | =5y,2025-02-19,107.5= | index tenor, expiry, strike |
+
+The reader must know the quote type, and often the family's own conventions, to
+read the string. This is the opacity the grammar exists to remove.
+
+** F3 — =atm= is stored as a strike
+
+The struct =volatility_surface_point= has a =delta_type= member. Its own comment
+says it holds "DEL, ATM or ATMF". The parser fills it only for the four-token
+smile form (=oresmd_parser.cpp:420=). For the common three-token form it assigns
+the third token to =strike= (=:416=). So =ATM=, a moneyness dimension, is kept in
+the strike slot. ORE's own =curveconfig.xml= calls it a dimension:
+=[[<Dimension>ATM</Dimension>]]=.
+
+The consequence is not only cosmetic. A strike and a delta are different
+coordinates. Storing one in the other's field makes a real strike and a moneyness
+marker indistinguishable in the data, and it is why the URI cannot name the
+dimension the user asked about.
+
+** F4 — The swaption URI names its swap tenor twice
+
+=SWAPTION/RATE_LNVOL/CHF/6M/10Y/ATM= parses to =tenor=10y= *and* =point=6m,10y,atm=.
+The writer emits both, because =tenor= is set and =point= is set. The same fact
+appears in two slots.
+
+The round-trip tests do not catch it. They assert
+=parse(uri) == parse(to_uri(parse(uri)))= — identifier equality, not URI-text
+equality (=oresmd_oresmd_parser_tests.cpp:1108-1123=). A URI may therefore
+normalise on the way out without any test noticing.
+
+** F5 — The series identity drops the whole volatility struct
+
+=to_series_uri()= clears =point= and then =vol= wholesale
+(=oresmd_parser.cpp:1193-1200=), on the reasoning that "the surface is its vol
+point". That reasoning is right for the coordinates and wrong for the model. The
+model subtype is not a coordinate: it selects *which surface* is being sampled.
+Two ORE quote types, =RATE_LNVOL= and =RATE_NVOL=, are two surfaces over one
+underlying, and the corpus publishes both. Clearing the struct merges them.
+
+This is the root cause of the corpus failure. It is also invisible to the
+coverage tests, because every key still names and still round-trips: the failure
+appears only when two surfaces meet in one database key.
+
+** F6 — Identity versus coordinate is hand-written, not declared
+
+=to_series_uri()= is a =std::visit= with three special cases for IR (a discount
+curve's tenor, a future's contract fields, an overnight future's contract
+month). Everything else is a consequence of where the parser happened to put a
+value. The model declares =point_semantics= — =scalar=, =tenor=, =surface=,
+=composite= — but that is a class of coordinate, not the list of keys or their
+role. Nothing in the model says "=model= is identity, =strike= is a coordinate",
+so the rule lives in one function and the models cannot check it.
+
+** F7 — One datum has two different coordinate strings
+
+The URI's coordinate is comma-joined and lower-cased (=6m,10y,atm=). The
+database's coordinate is the registry's slash-joined ORE form
+(=6M/10Y/ATM=, =ores_series_key_shapes=). The import bridges them at
+=import_service.cpp:329-331=: take the registry's =point_id= when it has one,
+else the parser's. Two spellings of one coordinate, bridged in a caller.
+
+The observation table's uniqueness rule makes this worse: the coordinate is part
+of the key (=market_observations_observations_current_uniq_idx=), so the two
+spellings must agree exactly for the identity to be stable.
+
+** F8 — Defaults are materialised inconsistently
+
+Some defaults are written into the identifier and some are not. FX spot sets
+=quote_type=fx_quote_type::spot= (=oresmd_projections.cpp:1430=), so the writer
+emits =quote=spot=. An IR =metric= is left unset when the ORE key does not carry
+the second segment, and the projection defaults it later
+(=default_metric=, =oresmd_projections.cpp:213=). A reader of a URI cannot tell
+which keys were defaulted, because both spellings are legal for the same datum.
+
+* Options
+
+| Option | Description | Verdict |
+|--------+-------------+---------|
+| A. Named coordinate keys, defaults always written | Replace =point= with one query key per dimension. Classify every key as identity or coordinate in the model. Always write a key that has a grammar default. | Proposed. It is the only option that removes both defects at the source, and it fits the existing mechanism: the grammar is already query keys. |
+| B. Keep =point= but make it self-describing | =point=expiry:6m,tenor:10y,delta:atm=. | Rejected. It is still one untyped string, and it invents a nested grammar inside a value. |
+| C. A structured sub-object, such as JSON in one parameter | =point={"expiry":"6m",...}= | Rejected. It does not round-trip through ORE's key grammar, and it hides the dimensions from the query-key vocabulary the parser already validates. |
+| D. Keep the grammar and document the defaults | — | Rejected. Documentation does not fix an identity that two surfaces can share. The corpus failure stands. |
+
+* Proposed grammar
+
+** P1 — No key's absence carries meaning
+
+A key the grammar defines for a =(type, quote)= pair is always present. Where
+the grammar has a default, the parser materialises it and the writer emits it.
+=model= is always present for =type=vol=, =metric= always for =type=quote=, and
+=type= always. A reader never has to know a default to read a URI.
+
+A consequence worth stating: four volatility families have no quote type of
+their own today. An IR swaption is the implicit default for =type=vol=, and the
+FX, equity and commodity options are the same on their asset classes. P1 removes
+the right to leave the key out, so each gains a member: =swaption= for IR, and an
+=option= member for FX, equity and commodity. Keeping =quote= absent for those
+four would leave exactly the silence P1 removes.
+
+** P2 — Every coordinate dimension has its own key
+
+=point= is removed. Each dimension is a query key named after the dimension.
+Which keys a quote type carries is declared in the model, so the parser rejects
+an unknown or misplaced one by construction rather than by hand-written checks.
+
+The vocabulary, with the existing IR fields reused:
+
+| Dimension | Key | Value kind | Where it already lives |
+|-----------+-----+------------+------------------------|
+| the quoted instrument's own term | =maturity= | string | =point=, today |
+| surface expiry | =expiry= | string | =vol.expiry= |
+| the underlying's tenor | =tenor= | string | already a key |
+| a fixed strike | =strike= | string | =vol.strike= |
+| a moneyness or delta convention | =delta= | enum | =vol.delta_type=, today only for smiles |
+| call or put | =call_put= | enum | =vol.call_put= |
+| where the premium is read | =premium= | enum | =vol.premium_type= |
+| cap-or-floor flag | =cap_floor= | enum | =vol.call_put=, today |
+| displacement model | =shift= | string | already a key |
+| caplet strip | =strip= | string | already a key |
+| credit seniority | =seniority= | enum | =point=, today |
+| credit restructuring clause | =restructuring= | enum | =point=, today |
+| rating grades | =from=, =to= | string | =point=, today |
+| shape-profile dimensions | =date=, =second=, =period=, =dst= | mixed | =point=, today |
+| correlation factors | =factor=, =second_factor= | string | =second_factor= already a key |
+| a fixing's observation date | =date= | string | =point= on =generic=, today |
+| seasonality's month | =month= | enum | =point=, today |
+| contract fields | =contract_month=, =contract_code= | string | already keys |
+| a commodity contract period | =delivery= | string | already a key |
+
+A worked example. The series identity is the datum identity with the coordinate
+keys removed, so the two spellings differ by exactly the coordinates:
+
+#+begin_example
+before  datum   oresmd://ir/chf?type=vol&point=6m,10y,atm
+        series  oresmd://ir/chf?tenor=10y&type=vol      <- model dropped: the bug
+
+after   datum   oresmd://ir/chf?type=vol&quote=swaption&model=rate_lnvol
+                       &tenor=10y&expiry=6m&delta=atm
+        series  oresmd://ir/chf?type=vol&quote=swaption&model=rate_lnvol&tenor=10y
+
+after   datum   oresmd://ir/chf?type=vol&quote=capfloor&model=rate_lnvol
+                       &tenor=6m&shift=0&strip=0&expiry=5y&strike=0.03
+        series  oresmd://ir/chf?type=vol&quote=capfloor&model=rate_lnvol
+                       &tenor=6m&shift=0&strip=0
+
+after   datum   oresmd://credit/vod?ccy=eur&type=quote&quote=cds&metric=credit_spread
+                       &seniority=snrfor&restructuring=xr14&maturity=10y
+        series  oresmd://credit/vod?ccy=eur&type=quote&quote=cds&metric=credit_spread
+#+end_example
+
+** P3 — Identity and coordinate are declared, per key, in the model
+
+Every query key the model declares gains one attribute: =role=, either
+=identity= or =coordinate=. Then:
+
+- the series identity is the identifier with the coordinate keys removed;
+- the datum identity is the whole identifier;
+- =to_series_uri()= is the rule, not a visitor with special cases.
+
+For a volatility surface, =model= moves from being dropped to being identity,
+while =expiry=, =strike=, =delta=, =call_put= and =premium= stay coordinates.
+=tenor=, =shift=, =strip= and the rest of the surface's own conventions are
+identity today and stay identity; that is a deliberate choice to keep one series
+per quoted surface rather than one per currency. The one change is that the
+model joins them. That single classification fixes F5: lognormal and normal vol
+become two series, and the corpus import can store both.
+
+** P4 — One canonical coordinate, in the database and in the registry
+
+The database coordinate is the typed keys rendered in the model's declaration
+order, for example =seniority=snrfor,restructuring=xr14,maturity=10y=. It is
+self-describing, so the row and the URI agree without translation. The
+registry's ORE-form =point_id= (=ores_series_key_shapes=) is derived for key
+projection and no longer written to the observation.
+
+** The model change
+
+Each of the twelve =*.org= quote-type models gains a =Coordinates= table:
+
+| query_key | role | value_kind | order | required_when |
+|-----------+------+------------+-------+---------------|
+| expiry    | coordinate | string | 0 | type=vol |
+| tenor     | coordinate | string | 1 | quote in {swaption, capfloor, index_cds_option} |
+| delta     | coordinate | enum   | 2 | quote in {swaption, bond_option, fx_option, ...} |
+| strike    | coordinate | string | 2 | quote in {capfloor, ...} |
+
+The =point_semantics= column stays, as the class, and the table becomes its
+expansion. The generator reads the table to emit the identifier struct, the
+parser, the writer and the tests. The hand-written per-family blocks in
+=oresmd_parser.cpp= and the three special cases in =to_series_uri()= are deleted
+against it.
+
+* Impact
+
+| Area | Change |
+|------+--------|
+| 13 quote-type models | A =Coordinates= table, a =role= attribute per query key, =point= removed |
+| =ores.cpp.oresmd.identifiers.org= | =point= removed; the surface struct and each identifier keep only declared keys |
+| =ores.cpp.oresmd.parser.org= | Generated parse and write from the tables; no per-family code |
+| =ores.cpp.oresmd.projections.org= | Key projection reads the typed coordinates; =split_point= and much of the per-family branching go |
+| =ores.cpp.oresmd.requirements.org=, =resolver= | Follow the identifier |
+| Design record =market_data_urn.org= | Rewritten for the new grammar |
+| =series_key_registry= / =ores_series_key_shapes= | =point_id= derived, not stored |
+| =import_service.cpp=, =ore_export_service.cpp= | No two-spelling bridge |
+| SQL migration | Rewrite =market_series.oresmd_uri= and =market_observations.point_id= |
+| Tests | All generated parser/projection/round-trip cases; the coverage cases; the corpus walk |
+| Consumers | Any reader of =point_id= and any code that builds an oresmd URI |
+
+** Migration
+
+The observation row already stores the producer's own key in
+=market_observations.key= (for example =SWAPTION/RATE_LNVOL/CHF/6M/10Y/ATM=).
+A migration can therefore re-derive both the series identity and the coordinate
+from data the row already holds, rather than parse the old URI. Rows whose key
+is null cannot be re-derived and must be reported.
+
+Existing databases hold only one of each colliding pair, because the insert of
+the second always failed. The migration splits the stored row only where the
+retained key names a different surface from the row's model.
+
+* Delivery plan
+
+A new story is proposed, because this changes the identity of every market row
+and is not part of the clean standard. One unit per verifiable state:
+
+1. *This investigation* — the findings and the target grammar. Delivered.
+2. *Declare the coordinates in the models.* Add the =Coordinates= table and the
+   =role= attribute to the twelve quote-type models; no generated code changes yet. A
+   codegen test proves every =point=-bearing URI in the model test tables is
+   expressible as declared keys.
+3. *Generate the grammar.* Identifiers, parser and writer from the tables.
+   Generated parser and round-trip tests move to the new spelling. The design
+   record is rewritten in the same unit, because the URI text changes.
+4. *Move the stored identity.* Unify the coordinate on the canonical form, derive
+   the registry's =point_id=, add the SQL migration, and prove the corpus walk
+   green in full.
+5. *Close out.* Coverage record, knowledge pages, and the corpus walk promoted
+   out of the hidden tag so it runs where a regression can be seen.
+
+Unit 2 is the one to review hardest: it decides what each dimension is called,
+and every later unit inherits that.
+
+* The =todaysmarket.xml= ownership decision
+
+The question was whether today's market belongs to =ores.refdata=, alongside the
+other configuration, and whether the rule that decides it is applied
+consistently.
+
+** What today's market holds
+
+=TodaysMarket= binds a role to a named set and a name to a curve. It holds no
+values. Two layers:
+
+#+begin_example
+<Configuration id="ois">
+  <DiscountingCurvesId>xois_eur</DiscountingCurvesId>
+  <YieldCurvesId>xois_eur</YieldCurvesId>
+  <IndexForwardingCurvesId>default</IndexForwardingCurvesId>
+</Configuration>
+<DiscountingCurves id="ois">
+  <DiscountingCurve currency="EUR">Yield/EUR/EUR1D</DiscountingCurve>
+</DiscountingCurves>
+#+end_example
+
+The leaves are ORE curve keys, which oresmd already names as =type=curve=:
+=Yield/EUR/EUR1D= is =oresmd://ir/eur?curve_id=eur1d&type=curve=. So today's
+market is the binding between the market series, the curve definitions
+(=curveconfig.xml=) and a named market a run selects.
+
+** Who owns what today
+
+| Model | Component | Kind |
+|-------+-----------+------|
+| conventions, calendars, currencies, tenors | =ores.refdata= | reference configuration |
+| =ir_curve_bootstrap_config= | =ores.refdata= | curve recipe |
+| simulation, pricing models, credit simulation | =ores.analytics= | analytics configuration |
+| run document, report definitions, market bindings | =ores.reporting= | run configuration |
+| series, observations, fixings, feed bindings | =ores.marketdata= | market values |
+
+** The rule the reporting story wrote down
+
+"If ORE names the document in the Analytics block it belongs to =ores.analytics=;
+if the run or an analytic merely references it, it belongs to the component that
+owns the concept, which is =ores.refdata= for curves, conventions, calendars,
+currencies and tenors, and =ores.reporting= for the run document and the
+registry."
+
+** Applying it
+
+- =curveconfig.xml= names curves and quotes. In scope of the reporting story
+  (tasks =DB247C1C= and =E13E6DCD=). Owner: =ores.refdata=.
+- =todaysmarket.xml= names *sets of curves* and the role each set plays. The
+  concept is a curve selection. By the same rule its owner is =ores.refdata=.
+  =simm_todaysmarket.xml= has the same root and goes with it.
+- The =<Simulation><Market>= documents (=crifmarket.xml=, =sensimarket.xml=,
+  =stressmarket.xml=, =xvasensimarket.xml=) configure an analytic's market.
+  Owner: =ores.analytics=, with simulation.
+- =ore_market.xml= has root =<ORE>=. It is a run document, and it goes to
+  =ores.reporting= with the other run documents.
+
+So the recommendation is that today's market goes to =ores.refdata=, with
+=curveconfig.xml= and the conventions. One note for the record.
+=ores.reporting.report_market_binding='s generated comment says the value it
+holds "names a configuration set built in todaysmarket.xml, which is market data
+and belongs to another component". The phrase "market data" is loose. The
+document is market *configuration*, and the binding row correctly stays in
+reporting. That comment should be corrected in the same unit that models today's
+market, so the record does not point at =ores.marketdata= by accident.
+
+* Conclusions
+
+The grammar's two defects are one defect. Because every coordinate is an
+untyped string and every default is silence, the grammar cannot say what a
+datum is, and the series identity built from it cannot keep two genuine
+surfaces apart. The corpus import fails for that reason, not because the corpus
+is malformed.
+
+Nothing here is a reason to doubt oresmd's intent. The query-key vocabulary, the
+per-asset-class specifications and the identity model are all present and
+consistent. What is missing is that the *coordinate* was left as one string, and
+that =to_series_uri()= reached into the struct instead of reading a declared
+role.
+
+* Recommendations
+
+1. Adopt the proposed grammar: named coordinate keys, defaults always written,
+   and a declared identity/coordinate role per key.
+2. Model each dimension as a typed key, and =ATM= as a delta rather than a
+   strike.
+3. Re-derive the stored identity and coordinate from the producer's key in
+   =market_observations.key=, and unify the two coordinate spellings.
+4. Promote the corpus walk out of the hidden tag when unit 4 lands, so that the
+   whole-corpus import is a gate rather than a manual probe.
+5. Send =todaysmarket.xml= to =ores.refdata=, with =curveconfig.xml=, and record
+   the placement rule beside the other ORE configuration documents. Correct the
+   =report_market_binding= comment at the same time.
+
+* See also
+
+- =doc/knowledge/domain/market_data_urn.org= — the grammar this proposes to change.
+- =doc/knowledge/domain/market_data_identifier.org= — the identifier model.
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] — the story that commissioned this.
+- [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] — the ownership rule in "Applying it".

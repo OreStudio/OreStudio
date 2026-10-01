@@ -208,12 +208,13 @@ metric default_metric(ir_quote_type qt) {
         case ir_quote_type::mm_future:
         case ir_quote_type::oi_future:
             return metric::price;
-        // A capfloor's and a bond option's ORE metric segment is their vol
-        // model, which the metric enum has no member for; quote_key_ir reads
-        // ore_vol_model() for it and never this. The cases exist so the switch
-        // stays exhaustive.
+        // A capfloor's, a bond option's and a swaption's ORE metric segment is
+        // their vol model, which the metric enum has no member for; quote_key_ir
+        // reads ore_vol_model() for it and never this. The cases exist so the
+        // switch stays exhaustive.
         case ir_quote_type::capfloor:
         case ir_quote_type::bond_option:
+        case ir_quote_type::swaption:
             return metric::rate;
     }
     return metric::rate;

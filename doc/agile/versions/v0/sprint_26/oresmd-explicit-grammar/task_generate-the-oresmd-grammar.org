@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 9EC8025D-D661-4BD7-92B0-26EB8AAAB4E2
+:END:
+#+title: Task: Generate the oresmd grammar from the models
+#+description: Generate the identifier structs, the parser, the writer and the key projections from the declared coordinates, and rewrite the design record for the new URI spelling.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-explicit-grammar:sprint_26:v0:
+#+owner: marco
+#+branch: feature/oresmd-explicit-grammar
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The oresmd grammar that ships is the one the models declare. A URI names every
+coordinate dimension with its own query key, writes every key the grammar
+defines for its type, and names no default by silence. =point= is gone from the
+identifier, the parser, the writer and every declared test case.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
+| Now          | The declaration and the identifier's typed members have landed. The parser, the writer and the projections' key builders are unchanged, so no URI has moved yet. |
+| Waiting on   | Nothing.                               |
+| Next         | Make the projections' =from_ore_key()= builders set the typed members, then change the writer and the parser together. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- No query key is silently defaulted: the parser materialises a grammar default
+  and the writer emits it, so =model= is always present for =type=vol= and
+  =metric= and =quote= always for =type=quote=.
+- No coordinate is a comma-joined string: =point= is gone from the identifier,
+  the parser and the writer.
+- =ATM= is a =delta= and not a =strike=.
+- Every URI in every model's test tables uses the new spelling, the generated
+  tests pass, and a URI carrying =point= is refused.
+- =doc/knowledge/domain/market_data_urn.org= describes the grammar that ships.
+
+* Plan
+
+** The identifier
+
+Every declared coordinate key becomes a top-level member of its asset class's
+identifier, =std::optional<std::string>=, named exactly as the query key:
+=maturity=, =expiry=, =tenor=, =contract_month=, =contract_code=, =strike=,
+=delta=, =smile=, =seniority=, =restructuring=, =from=, =to=, =date=, =second=,
+=period=, =dst=, =month=, =cap_floor=, =call_put=, =premium=.
+
+=volatility_surface_point= is deleted. Its members are the surface's declared
+coordinates, and keeping them in a nested struct while the quote coordinates sit
+at the top level is two storage shapes for one idea. =point= is deleted with it.
+
+A key already declared in =Fields= (=tenor=, =contract_month=, =contract_code=)
+keeps its member and gains no second one.
+
+** The parser
+
+The per-family point blocks are deleted. Each =parse_<asset>()= reads every
+declared coordinate key by its query-key name, rejects a key the resolved quote
+type does not carry, and rejects =point= outright with a message naming the
+replacement. The resolved quote type's =coordinates= list drives the check, so a
+key on the wrong family fails at the boundary rather than being stored.
+
+Placing an ORE key's tokens is driven by the =point_keys= column added in
+=c917ad6c2d=: it names, in order, the keys a type's old point corresponds to,
+identity keys included. That is what lets both directions be generated rather
+than hand-written per family.
+
+The three-token swaption form is where =ATM= stops being a strike: the last
+token is a =delta= when it matches the declared delta vocabulary and a =strike=
+when it is a number. The four-token smile form carries =smile= as its own key.
+
+** The writer
+
+=to_uri()= emits, in the declared order, every identity key that is set and
+every declared coordinate that is set, and always emits =model= for =type=vol=,
+=metric= and =quote= for =type=quote=, and =type=. The six per-asset
+=if (model_subtype != rate_lnvol)= suppressions are deleted; the default is
+written like any other value.
+
+** The series identity
+
+=to_series_uri()= keeps the declared identity keys and clears the declared
+coordinates. The =std::visit= with three IR special cases is deleted, because
+the model now says which keys are which. =model= is identity, so lognormal and
+normal vol become two series and the corpus import can store both.
+
+** The projections' key builders, and their readers
+
+This is the piece that forces the order. =from_ore_key()= builds the identifier
+from an ORE key, and its per-family blocks set =id.point= to the comma-joined
+coordinate. A writer that emits typed keys reads the typed members, so every one
+of those blocks must set the member its family's =point_keys= names instead --
+about twenty sites, done and verified in the attempt recorded here.
+
+The read side has to move with them, and that is the whole of what remains:
+=quote_key_ir()= and its siblings read =*id.point=, and =split_point(*id.point)=,
+for the single-coordinate families. A URI that names its coordinates leaves
+=id.point= unset, so every projection of a parsed URI returns nothing until those
+readers read the typed members. The measured shape of that: rewriting the models'
+113 test URIs to the typed spelling took the suite from 17 failures to 105, all
+of them the projection returning no key, because the parser filled the typed
+members and the projections did not look at them.
+
+Two attempts failed by stopping before the readers. The order is: builders,
+readers, then the writer and the parser and the URIs in one commit.
+
+** The test cases
+
+Every =point==-bearing URI in the twelve models' test tables is rewritten to the
+named keys, from the inventory in task 55EDA7FC. The rewrite is mechanical and
+scripted, and the script is not kept: the shape the models carry afterwards is
+the source. New cases assert that =point= is refused, that =model= is written
+even when it is =rate_lnvol=, and that a malformed coordinate is refused.
+
+** The projection switches**
+
+The generated switches follow the models. The one hand-written switch the new
+members reached, =default_metric(ir_quote_type)=, already carries =swaption=.
+The build is the check for any other.
+
+** The design record**
+
+=doc/knowledge/domain/market_data_urn.org= is rewritten in the same unit,
+because the URI text changes under it: the query-key table loses =point= and
+gains the coordinate keys, the =model= default becomes "always written", and the
+per-family worked examples move to the new spelling.
+
+** Sequencing**
+
+One commit, because the spells cannot half-change: the parser, the writer and
+every declared test case must move together or the suite is red between them.
+The unit is verified by the codegen suite, the full marketdata core suite, and a
+full-tree build, before unit 4 touches the stored data.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

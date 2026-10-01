@@ -229,12 +229,13 @@ metric default_metric(ir_quote_type qt) {
         case ir_quote_type::mm_future:
         case ir_quote_type::oi_future:
             return metric::price;
-        // A capfloor's and a bond option's ORE metric segment is their vol
-        // model, which the metric enum has no member for; quote_key_ir reads
-        // ore_vol_model() for it and never this. The cases exist so the switch
-        // stays exhaustive.
+        // A capfloor's, a bond option's and a swaption's ORE metric segment is
+        // their vol model, which the metric enum has no member for; quote_key_ir
+        // reads ore_vol_model() for it and never this. The cases exist so the
+        // switch stays exhaustive.
         case ir_quote_type::capfloor:
         case ir_quote_type::bond_option:
+        case ir_quote_type::swaption:
             return metric::rate;
     }
     return metric::rate;
@@ -271,6 +272,8 @@ std::string_view ore_type(ir_quote_type qt) {
             return ore_type_spec::capfloor;
         case ir_quote_type::bond_option:
             return ore_type_spec::bond_option;
+        case ir_quote_type::swaption:
+            return ore_type_spec::swaption;
     }
     return ore_type_spec::ir_swap;
 }
@@ -577,6 +580,8 @@ std::string_view ore_type(fx_quote_type qt) {
             return ore_type_spec::fx;
         case fx_quote_type::fwd:
             return ore_type_spec::fxfwd;
+        case fx_quote_type::option:
+            return ore_type_spec::fx_option;
     }
     return ore_type_spec::fx;
 }
@@ -585,6 +590,7 @@ std::string_view ore_fx_metric(fx_quote_type qt) {
     switch (qt) {
         case fx_quote_type::spot:
         case fx_quote_type::fwd:
+        case fx_quote_type::option:
             return ore_metric_spec::rate;
     }
     return ore_metric_spec::rate;
@@ -630,6 +636,8 @@ std::string_view ore_type(equity_quote_type qt) {
             return ore_type_spec::equity_dividend;
         case equity_quote_type::fwd:
             return ore_type_spec::equity_fwd;
+        case equity_quote_type::option:
+            return ore_type_spec::equity_option;
     }
     return ore_type_spec::equity;
 }
@@ -640,6 +648,7 @@ std::string_view ore_equity_metric(equity_quote_type qt) {
         case equity_quote_type::fwd:
             return ore_metric_spec::price;
         case equity_quote_type::dividend:
+        case equity_quote_type::option:
             return ore_metric_spec::rate;
     }
     return ore_metric_spec::price;

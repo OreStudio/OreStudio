@@ -86,7 +86,7 @@ function connect(url) {
         '--hide-scrollbars',
         `--remote-debugging-port=${PORT}`,
         '--user-data-dir=/tmp/ev_chrome_tenants',
-        '--window-size=1440,1000',
+        '--window-size=1920,1080',
         'about:blank',
     ], { stdio: 'ignore' });
 
@@ -172,6 +172,30 @@ function connect(url) {
             rows.every((row) => !row.includes('Root Tenant')),
             'the roster holds no row for the system tenant',
         );
+        check(text.includes('New tenant'), 'the page offers the journey that creates a tenant');
+
+        /*
+         * The table is the page. A card around it makes it narrower than the
+         * screen the shell gave it, which is the whole of what a list-shaped
+         * screen asks for.
+         */
+        const boxed = await client.send('Runtime.evaluate', {
+            expression: `(() => {
+                const table = document.querySelector('table');
+                return table === null ? null : table.closest('.card') !== null;
+            })()`,
+            returnByValue: true,
+        });
+        check(boxed.result.value === false, 'the table is not wrapped in a card');
+
+        const width = await client.send('Runtime.evaluate', {
+            expression: `(() => {
+                const table = document.querySelector('table');
+                return table === null ? null : Math.round(table.getBoundingClientRect().width);
+            })()`,
+            returnByValue: true,
+        });
+        console.log(`      the table draws ${width.result.value}px wide`);
 
         const shot = await client.send('Page.captureScreenshot', { format: 'png' });
         fs.writeFileSync(OUT, Buffer.from(shot.data, 'base64'));

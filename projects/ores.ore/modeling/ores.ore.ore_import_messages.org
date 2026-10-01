@@ -31,6 +31,14 @@ cannot be referenced from a second model's header or its TypeScript twin; a
 single model keeps the shared type local, and the service includes one header
 rather than two.
 
+* Physical space
+
+The shell commands are switched off: the component has no part under
+=projects/ores.shell=, so a generated unit has nowhere to land. The import
+reaches a person through the hand-written =ore= menu, whose =import= verb uploads
+the package and then sends =ore_import_request=, and whose =export= verb sends
+the trading protocol's portfolio export.
+
 * Includes
 
 #+begin_src cpp :name includes

@@ -30,6 +30,14 @@ The handlers that serve them stay hand-written beside this model, because the
 instance read joins two repositories and the status read evaluates cron
 expressions. An operation model generates no service handler.
 
+* Physical space
+
+The shell commands are switched off, and the reason is the component rather than
+this operation: the scheduler has no part under =projects/ores.shell=, so a
+generated unit has nowhere to land. The hand-written =scheduler= menu answers
+these subjects today. Adding the shell part and then enabling the facet is the
+next unit of the scheduler clean-up.
+
 * Includes
 
 #+begin_src cpp :name includes

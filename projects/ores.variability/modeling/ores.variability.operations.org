@@ -30,6 +30,13 @@ and the two are different parties here. The tenant is still derived from the
 validated token, so the operation can only ever affect a party inside the
 caller's own tenant.
 
+* Physical space
+
+The shell commands are switched off. These messages change platform state rather
+than read or write a row: one clears bootstrap mode once the first administrator
+exists, and the other completes a party's onboarding. The shell renders the
+=system_setting= entity's unit, and nothing in the shell sends these two.
+
 * Includes
 
 #+begin_src cpp :name includes

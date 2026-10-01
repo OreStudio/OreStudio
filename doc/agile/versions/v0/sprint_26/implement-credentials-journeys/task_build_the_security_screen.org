@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: E172BBAB-7001-4626-8B91-D8F064883F9B
+:END:
+#+title: Task: Build the member's Security screen
+#+description: Protect my account runs in ores.web on the accepted variant B: the places the account is signed in lead, and the password form and sign-in state share the row under them.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
+#+owner: marco
+#+branch: feature/security-screen-v2
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] in
+=ores.web= against the real server, on variant B of the accepted prototype: the
+places the account is signed in lead, and the password form and the sign-in
+state share the row under them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done 2026-10-01.
+
+=Security= is a route behind the signed-in shell. It reads the account's login
+record, the tenant's sessions for the account and the server's password policy,
+and changes the password through the route that already existed. The screen is
+the accepted prototype's variant B.
+
+Two things the server cannot do yet are stated on the screen rather than hidden:
+ending one other sign-in has no operation, so no row offers it; and nothing
+writes a session's end time, so the list holds every session the deployment has
+created and an old one cannot be told from a live one.
+
+Verification: 334 tests green in three packages (bff 97 in 20 files, web 186 in
+17, wire-protocol 51 in 7), typecheck clean, Prettier clean. The screen's copy is
+plain English and not in the three locales yet, which the story records as its
+own follow-up.

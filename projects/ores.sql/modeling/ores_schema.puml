@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-09-30T15:16:45.012956Z
+' Generated: 2026-10-01T10:22:55.996839Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -848,12 +848,15 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Asset Class Code Table
     General-purpose classification of the top-level asset class a market
-    series, instrument, or curve belongs to. This table is the single
-    source of truth for the taxonomy. Code carries no parallel
-    enumeration, because the list is runtime-managed and no compiled list
-    can be exhaustive over it. Other entities (instrument_code,
-    market_series, feed_binding) FK-validate against this table.
-    Managed by the system tenant, like other shared code tables.
+    series, instrument, or curve belongs to. The taxonomy's codes and their
+    prose are declared once, in ores.refdata.asset_class_catalogue, which
+    also declares the oresmd namespace and the mapping between the two; the
+    seed SQL this table is populated from is generated from it, so this model
+    carries no copy of the list. Code carries no parallel enumeration, because
+    the list is runtime-managed and no compiled list can be exhaustive over
+    it. Other entities (instrument_code, market_series, feed_binding)
+    FK-validate against this table. Managed by the system tenant, like other
+    shared code tables.
     end note
 
     entity ores_refdata_asset_classes_tbl <<temporal>> #C6F0D8 {

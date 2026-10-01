@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: D024F7F9-92A0-442F-9EDE-4BBD23597859
+:END:
+#+title: Story: Hotfix: the ER diagram no longer matches the SQL tree
+#+description: The codegen drift job fails at "Check the ER diagram matches the SQL schema" for every pull request, because the committed projects/ores.sql/modeling/ores_schema.puml fell behind the SQL the recent reporting, asset-class and curve merges added. The diagram is regenerated.
+#+type: story
+#+level: s2
++#+filetags: :hotfix:sql:codegen:diagram:sprint_26:v0:
+#+created: 2026-10-01
++#+updated: 2026-10-01
++#+environment: clever_dijkstra
++#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The =drift= job passes its first step and fails its second:
+
+#+begin_src text
+Check generated output matches the models: No drift: regenerated output matches the checked-in tree.
+Check the ER diagram matches the SQL schema: ##[error]Process completed with exit code 1.
+#+end_src
+
+The cross-component diagram is generated from the SQL tree and nothing
+regenerated it, so it fell behind the SQL that the reporting analytics, the
+asset class catalogue and the curve configuration merges added. Every pull
+request is red for it, including ones that touch no SQL.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                          |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-01                               |
+
+* Acceptance
+
+- =ores_schema.puml= matches a fresh render, so =plantuml_er_generate.py --check= passes.
+- The diagram tool is not needed: the render is text from the model.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B51F14EF-5143-4425-885D-2BEBD9BEDAA4][Implement Hotfix: the ER diagram no longer matches the SQL tree]] | DONE | 2026-10-01 | 2026-10-01 | Parse the SQL tree, regenerate the diagram, and prove the check clean. |
+
+* Decisions
+
+- The diagram is regenerated rather than the check relaxed. The step exists
+  because the diagram fell a month behind its own generator once before, and
+  the answer then was the same.
+
+* Out of scope
+
+- Why the merges that drifted it did not regenerate it: their branches do not
+  fire the ER step, because the job's path filter watches the SQL tree and the
+  generator, and the puml is neither.

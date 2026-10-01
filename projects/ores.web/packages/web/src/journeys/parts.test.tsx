@@ -199,7 +199,7 @@ describe('the tenant form', () => {
         const html = render(
             <TenantForm
                 profile={blank}
-                details={detailsFor(blank)}
+                details={detailsFor(blank, '')}
                 policy={policy}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -218,7 +218,7 @@ describe('the tenant form', () => {
             <TenantForm
                 server={fakeServer()}
                 profile={gleif}
-                details={detailsFor(gleif)}
+                details={detailsFor(gleif, '')}
                 policy={policy}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -235,7 +235,7 @@ describe('the tenant form', () => {
             <TenantForm
                 server={fakeServer()}
                 profile={gleif}
-                details={detailsFor(gleif)}
+                details={detailsFor(gleif, '')}
                 policy={policy}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -249,7 +249,7 @@ describe('the tenant form', () => {
 
     it('states the entity that was chosen instead of the letters that found it', () => {
         const chosen: TenantDetails = {
-            ...detailsFor(gleif),
+            ...detailsFor(gleif, ''),
             parameters: { root_lei: '213800LBQA1Y9L22JB70' },
         };
         const html = render(
@@ -276,7 +276,7 @@ describe('the tenant form', () => {
             <TenantForm
                 server={fakeServer()}
                 profile={blank}
-                details={detailsFor(blank)}
+                details={detailsFor(blank, '')}
                 policy={policy}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -291,7 +291,7 @@ describe('the tenant form', () => {
         const html = render(
             <TenantForm
                 profile={profile}
-                details={detailsFor(profile)}
+                details={detailsFor(profile, 'Issued-Password-1')}
                 policy={policy}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -308,7 +308,7 @@ describe('the tenant form', () => {
         const html = render(
             <TenantForm
                 profile={blank}
-                details={detailsFor(blank)}
+                details={detailsFor(blank, '')}
                 policy={policy}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -330,7 +330,7 @@ describe('the tenant form', () => {
         const html = render(
             <TenantForm
                 profile={blank}
-                details={detailsFor(blank)}
+                details={detailsFor(blank, '')}
                 policy={lengthOnly}
                 creatingPassword="Issued-Password-1"
                 onChange={() => undefined}
@@ -348,7 +348,7 @@ describe('the review', () => {
         const html = render(
             <TenantSummary
                 profile={profile}
-                details={detailsFor(profile)}
+                details={detailsFor(profile, 'Issued-Password-1')}
                 creatingPassword="Issued-Password-1"
             />,
         );

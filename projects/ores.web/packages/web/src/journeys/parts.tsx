@@ -403,7 +403,13 @@ export function TenantForm({
                         onChange={(event) => set('adminEmail', event.target.value)}
                     />
                 </Field>
-                {profile.inheritsAdminPassword && (
+                {/*
+                 * The offer stands only while there is a password to hand over.
+                 * A journey that holds none cannot keep it, and offering a
+                 * choice that leaves the step unable to continue is worse than
+                 * not offering it.
+                 */}
+                {profile.inheritsAdminPassword && creatingPassword !== '' && (
                     <label className="flex items-center gap-2 text-sm sm:col-span-2">
                         <input
                             type="checkbox"

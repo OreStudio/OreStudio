@@ -116,7 +116,7 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
      * opens on the starting points, which is the first thing it asks.
      */
     const [at, setAt] = useState<number>();
-    const tenant = useNewTenant();
+    const tenant = useNewTenant('');
 
     /*
      * The two reads the journey cannot start without: the rules every new
@@ -181,18 +181,21 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
         );
     }
 
+    /*
+     * This journey holds no creating administrator's password, and no read
+     * returns one: nobody signed in as the account that creates the tenant. A
+     * starting point that would hand that password on cannot, so the form asks
+     * for a password of the tenant's own instead. The empty string is what says
+     * so, and it travels into the tenant state as well as into the steps.
+     */
+    const creatingPassword = '';
     const steps = newTenantSteps({
         t,
         server,
         policy,
         profiles,
         state: tenant,
-        /*
-         * The signed-in administrator's password is not held here, and no read
-         * returns one: a starting point that hands it on needs one typed for
-         * the tenant's administrator, which the form says.
-         */
-        creatingPassword: '',
+        creatingPassword,
         onHandOff: handOff,
     });
 

@@ -175,34 +175,45 @@ describe('the tenant journey a signed-in administrator runs', () => {
         ]);
     });
 
-    it('describes the demo tenant without a password of its own to type', () => {
+    it('asks the demonstration tenant for a password of its own, because this journey holds none', () => {
         /*
          * The demonstration profile hands the creating administrator's password
-         * to the tenant's administrator, and this journey does not hold that
-         * password: the person must type one, so the step cannot move on until
-         * they have.
+         * to the tenant's administrator. This journey has no creating
+         * administrator, so there is nothing to hand over: the offer is dropped
+         * and the person types a password. The step therefore cannot move on
+         * until they have, and it moves on as soon as they do.
          */
-        const details = detailsFor(demonstration);
-        const without = steps(
-            tenantState({ profile: demonstration, details: { ...details, useMyPassword: true } }),
-        );
+        const details = detailsFor(demonstration, '');
+        expect(details.useMyPassword).toBe(false);
+
+        const without = steps(tenantState({ profile: demonstration, details }));
         expect(without[1]!.next?.enabled).toBe(false);
 
         const withTyped = steps(
             tenantState({
                 profile: demonstration,
-                details: { ...details, useMyPassword: false, adminPassword: 'Typed-Password-1' },
+                details: { ...details, adminPassword: 'Typed-Password-1' },
                 passwordAcceptable: true,
             }),
         );
         expect(withTyped[1]!.next?.enabled).toBe(true);
     });
 
+    it('keeps the offer for first run, which does hold the creating password', () => {
+        const details = detailsFor(demonstration, 'Creating-Password-1');
+        expect(details.useMyPassword).toBe(true);
+
+        const state = tenantState({ profile: demonstration, details });
+        expect(steps(state, { creatingPassword: 'Creating-Password-1' })[1]!.next?.enabled).toBe(
+            true,
+        );
+    });
+
     it('provisions the described tenant and records the run it starts', async () => {
         const server = fakeServer();
         const state = tenantState({
             profile: operational,
-            details: { ...detailsFor(operational), adminPassword: 'Typed-Password-1' },
+            details: { ...detailsFor(operational, ''), adminPassword: 'Typed-Password-1' },
             passwordAcceptable: true,
         });
 
@@ -225,7 +236,7 @@ describe('the tenant journey a signed-in administrator runs', () => {
     it('handing off to somebody else ends the session and stops there', async () => {
         const server = fakeServer();
 
-        await handOffToTenant(server, detailsFor(operational), false, 'choose one');
+        await handOffToTenant(server, detailsFor(operational, ''), false, 'choose one');
 
         expect(server.signOut).toHaveBeenCalled();
         expect(server.signIn).not.toHaveBeenCalled();
@@ -234,7 +245,7 @@ describe('the tenant journey a signed-in administrator runs', () => {
     it('continuing as the tenant admin signs in as the account it just made', async () => {
         const server = fakeServer();
 
-        await handOffToTenant(server, detailsFor(operational), true, 'choose one');
+        await handOffToTenant(server, detailsFor(operational, ''), true, 'choose one');
 
         expect(server.signOut).toHaveBeenCalled();
         expect(server.signIn).toHaveBeenCalledWith({
@@ -252,7 +263,7 @@ describe('the tenant journey a signed-in administrator runs', () => {
             })),
         });
 
-        await handOffToTenant(server, detailsFor(operational), true, 'choose one');
+        await handOffToTenant(server, detailsFor(operational, ''), true, 'choose one');
 
         expect(server.chooseParty).toHaveBeenCalledWith(party.id, [party]);
     });
@@ -268,7 +279,7 @@ describe('the tenant journey a signed-in administrator runs', () => {
         });
 
         await expect(
-            handOffToTenant(server, detailsFor(operational), true, 'choose one'),
+            handOffToTenant(server, detailsFor(operational, ''), true, 'choose one'),
         ).rejects.toThrow('choose one');
         expect(server.chooseParty).not.toHaveBeenCalled();
     });

@@ -117,6 +117,16 @@ describe('the application shell', () => {
         expect(renderAppShell('Northwind Trading')).toContain('Northwind Trading');
     });
 
+    /*
+     * A journey that stands something up draws the same banner the public shell
+     * draws, and a banner fills the width it is given. The public shell bounds
+     * its column and the signed-in shell did not, so the same journey drew a
+     * wall on a wide display once somebody had signed in.
+     */
+    it('bounds the screen it wraps, as the public shell bounds its own', () => {
+        expect(renderAppShell('Acme Operations')).toContain('max-w-[1100px]');
+    });
+
     it('states the mode the session runs in', () => {
         expect(renderAppShell('Acme Operations', 'system-administration')).toContain(
             'System administration',

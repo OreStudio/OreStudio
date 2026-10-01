@@ -119,7 +119,17 @@ export function AppShell({
                     </div>
                 </div>
             </header>
-            <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">{children}</main>
+            {/*
+             * The screen is bounded and centred, and the scroll area is not.
+             * A journey that stands something up draws the same banner the
+             * public shell draws, and that banner fills the width it is given:
+             * an unbounded column turns it into a wall on a wide display. The
+             * bound is the public shell's own, so a screen looks the same
+             * whether or not somebody has signed in.
+             */}
+            <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
+                <div className="mx-auto w-full max-w-[1100px]">{children}</div>
+            </main>
             <VersionFooter serverVersion={serverVersion} />
         </div>
     );

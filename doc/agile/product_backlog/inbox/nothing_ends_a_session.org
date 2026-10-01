@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C3920569-BE0A-43A4-82B7-DE9739A6DB53
+:END:
+#+title: Nothing ends a session, so every session is an open one
+#+description: ores_iam_sessions_tbl carries end_time text not null default '', and an empty end_time is what makes a session active. Nothing ever writes it: after signing out through POST /api/session and DELETE /api/session the row still has an empty end time, and a live read of the fleet's sessions found 17 rows and not one with an end time. The consequences for the credentials work are that iam.v1.sessions.active answers every session the deployment has ever created rather than the open ones, the audit screen cannot show a session that has ended or a sign-out at all, and iam.v1.sessions.end - the operation the audit and rescue screens both want, to end another account's session - has no counterpart writer behind it either. Found while implementing the active sessions read (PR #2468).
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

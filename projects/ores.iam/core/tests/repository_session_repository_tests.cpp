@@ -56,36 +56,6 @@ TEST_CASE("create_single_session", tags) {
     CHECK_NOTHROW(repo.write(h.context(), s));
 }
 
-TEST_CASE("read_active_returns_the_sessions_that_have_not_ended", tags) {
-    auto lg(make_logger(test_suite));
-
-    database_helper h;
-    auto gen_ctx = ores::testing::make_generation_context(h);
-
-    session_repository repo;
-    auto open = generate_synthetic_session(gen_ctx);
-    open.end_time.clear();
-    repo.write(h.context(), open);
-
-    auto ended = generate_synthetic_session(gen_ctx);
-    ended.end_time = "2026-09-30 09:00:00Z";
-    repo.write(h.context(), ended);
-
-    const auto active = repo.read_active(h.context());
-
-    // Other cases in this suite write sessions into the same tenant, so what is
-    // asserted is what the read includes and leaves out, not how many rows it
-    // answers with.
-    bool saw_open = false;
-    bool saw_ended = false;
-    for (const auto& s : active) {
-        saw_open = saw_open || s.id == open.id;
-        saw_ended = saw_ended || s.id == ended.id;
-    }
-    CHECK(saw_open);
-    CHECK_FALSE(saw_ended);
-}
-
 TEST_CASE("read_session_by_id", tags) {
     auto lg(make_logger(test_suite));
 

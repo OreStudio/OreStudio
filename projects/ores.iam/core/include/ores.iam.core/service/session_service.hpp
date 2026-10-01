@@ -99,14 +99,6 @@ public:
     std::vector<domain::session> list_sessions(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief The sessions that have not ended.
-     *
-     * The read behind =iam.v1.sessions.active=: a session is open while its
-     * =end_time= is empty, and the screen's active list is exactly those rows.
-     */
-    std::vector<domain::session> active_sessions();
-
-    /**
      * @brief Gets the total count of active sessions.
      *
      * @return Total number of active sessions.

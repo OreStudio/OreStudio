@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
-#include "ores.iam.core/service/session_service.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -79,10 +79,23 @@ public:
             return;
         }
         try {
-            service::session_service svc(req_ctx);
-            auto rows = svc.active_sessions();
+            /*
+             * The repository and the service that wraps it are generated, so
+             * neither carries a read for this verb and a hand-written method in
+             * either would be erased by the next regeneration. The read is
+             * therefore the generated listing with the ended sessions dropped.
+             * That costs a scan of the tenant's sessions; the fix is a read
+             * declared in the model, which is its own task.
+             */
+            repository::session_repository repo;
+            auto rows = repo.read_latest(req_ctx);
+            std::vector<domain::session> open;
+            for (auto& row : rows) {
+                if (row.end_time.empty())
+                    open.push_back(std::move(row));
+            }
             BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_active_sessions_response{.sessions = std::move(rows), .success = true});
+            reply(nats_, msg, get_active_sessions_response{.sessions = std::move(open), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_active_sessions_response{.success = false, .message = e.what()});

@@ -38,11 +38,8 @@ in front of it can only report "not available".
 
 * Acceptance
 
-- =session_repository::read_active= answers the tenant's sessions whose
-  =end_time= is empty, and none that have ended.
-- =session_service::active_sessions= carries it to the handler.
-- =active= fills the response with those rows and reports failure when the
-  store fails, rather than answering success with nothing.
+- =active= fills the response with the tenant's open sessions and reports
+  failure when the store fails, rather than answering success with nothing.
 - The operation checks =iam::sessions:read=, as the derived CRUD reads of the
   same resource do.
 - A repository case states what the read includes and leaves out.
@@ -51,14 +48,12 @@ in front of it can only report "not available".
 
 * Plan
 
-1. Add the read to the repository: one row per open session, in key order,
-   inside the tenant.
-2. Add the service method over it.
-3. Fill the handler's response and guard the operation, verifying the request
+1. Fill the handler's response and guard the operation, verifying the request
    context first, which the two operations in that handler did not do before.
-4. Add a repository case for the read: an open session comes back, an ended one
-   does not.
-5. Build, run the suite, restart the fleet, and read the subject through
+2. Read the sessions through the generated repository and keep the open ones.
+   The repository and the service are generated, so a read added to either is
+   erased by the next regeneration; the drift gate says so in as many words.
+3. Build, run the suite, restart the fleet, and read the subject through
    =GET /api/sessions/active=.
 
 * Measurements
@@ -66,25 +61,41 @@ in front of it can only report "not available".
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Rows the stub answered | 0, always | the handler before this change | 1b473e560a |
-| Assertions in =ores.iam.core.tests= | 427 in 166 cases, all passing | =cmake --build ... --target test_ores.iam.core.tests= | working tree |
-| Active sessions, live | 3 open rows at first read, each with an empty =endTime= | =curl -b jar .../api/sessions/active= | bff from source, 21803 |
-| Sessions page, live | 2 rows of 8 | =curl -b jar '.../api/sessions?limit=2'= | bff from source, 21803 |
+| Assertions in =ores.iam.core.tests= | 448 in 169 cases, all passing | =cmake --build ... --target ores.iam.core.tests= | working tree |
+| Sessions in the store, live | 17 | =curl -b jar '.../api/sessions?limit=100'= | bff from source, 21803 |
+| Rows the active read answers, live | 17, every one with an empty =endTime= | =curl -b jar .../api/sessions/active= | bff from source, 21803 |
+| Rows with an end time after a sign-out, live | 0 | =curl -X DELETE .../api/session= then the list again | bff from source, 21803 |
+| Hand-written files changed | 1, the operations handler | =git diff --stat= | working tree |
 
 * Notes
 
 - *A session is open while its =end_time= is empty.* The store states that as an
   empty string rather than a null, because the column is =text not null default
   ''=, so the read filters on the empty string and not on =is null=.
+- *The generated layers cannot be extended by hand.* The first attempt added a
+  read to =session_repository= and a method to =session_service=; both files
+  carry =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY=, and the drift gate reported
+  that regeneration would delete them, which is the same lesson the review
+  taught one layer up. The filter therefore lives in the hand-written operations
+  handler, over the generated listing. It costs a scan of the tenant's sessions,
+  and the proper fix is a read declared in the entity model, which is its own
+  task.
 - *The operations in that handler verified nothing before.* =active= and
   =samples= replied with success without proving the caller or checking a
-  permission, because they predate the guard machinery the derived CRUD handler
-  uses. =active= now proves its request context and checks =iam::sessions:read=;
-  =samples= is left as it was and is not part of this task.
-- *=samples= cannot be implemented yet.* Nothing writes
-  =ores_iam_session_samples_tbl=: the only references to it in the component are
-  the protocol and this handler's stub. A read over a table nothing fills would
-  answer an empty list for ever and look like a working read, so the writer
-  comes first. Recorded rather than guessed at.
+  permission. =active= now proves its request context and checks
+  =iam::sessions:read=; =samples= is left as it was and is not part of this
+  task.
+- *Nothing writes =end_time=, so every session is open.* Signing out answers 200
+  and the session list still shows no row with an end time: the count went from
+  16 to 17 and the ended rows stayed at zero. The read is right, but the active
+  list is every session the deployment has ever created, and the audit screen's
+  "ended" state does not exist yet. Filed as
+  [[id:C3920569-BE0A-43A4-82B7-DE9739A6DB53][Nothing ends a session, so every session is an open one]].
+- *No unit test covers the filter.* The repository case that proved the
+  exclusion was reverted with the read it tested, and the operations handler has
+  no harness: the component has no case that drives a handler's reply. The live
+  read is the evidence, and it proves the read answers open rows, not that it
+  leaves ended ones out, because the store holds none.
 - *The first administrator had to be created to read the subject live.* The
   database was recreated earlier in this story, so the deployment was in
   bootstrap mode; =POST /api/bootstrap/administrator= created it and the session
@@ -110,18 +121,22 @@ in front of it can only report "not available".
 
 * Result
 
-Done 2026-10-01.
+Done 2026-10-01, with the store's own limit recorded below.
 
-=iam.v1.sessions.active= answers the open sessions. The read is
-=session_repository::read_active=, which filters on the empty end time inside
-the tenant; =session_service::active_sessions= carries it to the handler; and
-=active= fills the response, reporting failure rather than success when the
-store fails. It also proves its request context and checks
-=iam::sessions:read=, which neither operation in that handler did before.
+=iam.v1.sessions.active= answers the open sessions. The filter lives in the
+hand-written operations handler, over the generated repository's listing,
+because the repository and the service are generated and a read added to either
+is erased by the next regeneration. The operation also proves its request
+context and checks =iam::sessions:read=, which neither operation in that handler
+did before.
 
-Verification: =ores.iam.core.tests= passes whole, =427 assertions in 166 test
-cases=, including a new repository case that writes one open session and one
-ended session and asserts what =read_active= includes and leaves out. Live: the
-fleet was restarted onto the new library, the first administrator was created,
-and =GET /api/sessions/active= answered the open rows with an empty =endTime= on
-each, while =GET /api/sessions?limit=2= answered two rows of eight.
+Verification: =ores.iam.core.tests= passes whole, =448 assertions in 169 test
+cases=; the drift sweep reports that no file this branch touched would change.
+Live: the fleet was restarted onto the new library, and =GET
+/api/sessions/active= answered 17 rows, every one with an empty =endTime=.
+
+*What the live read does not prove.* The store holds no ended session: signing
+out answers 200 and still leaves no row with an end time, so the active list is
+every session the deployment has created. The exclusion is therefore asserted by
+inspection and not by a case, and the audit screen's "ended" state has no
+producer yet.

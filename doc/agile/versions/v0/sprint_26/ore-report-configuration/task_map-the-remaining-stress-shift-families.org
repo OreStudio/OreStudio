@@ -26,11 +26,11 @@ Every shift family a shipped stresstest.xml uses round trips, so the stress kind
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -84,3 +84,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All sixteen shift families map both ways, so every shipped stress document
+round trips. The mapper went from one family to sixteen.
+
+A family keeps four fields in columns of their own: =shift_type=, =shifts=,
+=shift_tenors= and =shift_expiries=. Everything else travels in =extras= as
+=name=value= pairs joined by =;=, and a nested struct joins its own fields by
+=|=. =ParShifts= is three flags rather than a list, so it becomes one row
+carrying them in =extras=. A composite key joins its present parts with =|=,
+and a leading =|= marks a key with no currency.
+
+Three defects were found and fixed on the way. A =ParConversion= convention id
+shared the separator of the structure holding it, so the id and every
+convention after the first were destroyed. The composite key decoder guessed a
+lone part's meaning from the currency vocabulary, so a key that spelled a
+currency was silently read as the currency and lost. The library flag was
+written back with a capitalised boolean, so no document round tripped byte for
+byte. The build then found a fourth: the =configuration_id= generator called
+=boost::uuids::nil_uuid()= without the header declaring it.
+
+The round trip is proved twice, and the second proof is the load-bearing one.
+Over the corpus: twenty files, forty-six scenarios, 2047 assertions. Over a
+document that fills every member of every family at once: 147 checks. The
+corpus alone would not have found the =ParConversion= collision, because no
+shipped file carries that element; the maximal document did.
+
+=compass build= succeeds, and =ores.ore.core.tests=, =ores.analytics.core.tests=,
+=ores.analytics.service.tests= and =ores.shell.analytics.tests= all pass against
+a fleet restarted on a database recreated from the tree. Merged as PR #2488.
+
+One limit is recorded rather than hidden: a separator embedded inside a data
+value still corrupts, 45 adversarial probes failing. No realistic value in
+this domain contains one, so no shipped document is affected. Escaping is a
+task of its own and the data does not ask for it yet.

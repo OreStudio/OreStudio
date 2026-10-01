@@ -35,9 +35,9 @@ Every shell command workspace answers is produced by a generated unit, or the mo
 
 * Acceptance
 
-- - Every entity, junction and operation model in the component either renders a generated shell unit or states, in its own Physical space section, the reason it renders none.
-- - Every hand-written command in the component's orbit is compared with the generated units and either retired as superseded or recorded with its reason.
-- - The component's shell suite passes and check_component_drift.py --all reports no drift.
+- Every entity, junction and operation model in the component either renders a generated shell unit or states, in its own Physical space section, the reason it renders none.
+- Every hand-written command in the component's orbit is compared with the generated units and either retired as superseded or recorded with its reason.
+- The component's shell suite passes and check_component_drift.py --all reports no drift.
 
 * Plan
 

@@ -32,6 +32,15 @@ rather than stored.
 The profile supplies =:no_audit_columns:=, which keeps the version column, the
 audit tail and the transaction timestamp off the struct.
 
+* Physical space
+
+The shell commands are switched off.
+
+A result is a projection returned inside a history response. It has no table,
+no protocol and no subject, so the shell's command registry has nothing to
+address. The profile withholds every facet at the root rather than this model
+naming an override.
+
 * C++
 
 ** Flags

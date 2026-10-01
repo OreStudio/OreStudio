@@ -39,6 +39,14 @@ column, the audit tail and the transaction timestamp off the struct. This model
 deliberately does not restate it: the profile exists so that four records cannot
 each pick their own answer.
 
+* Physical space
+
+The shell commands are switched off.
+
+A span is a byte range inside a value, carried with the entry that owns it and
+never stored on its own. It has no table, no protocol and no subject, so the
+shell's command registry has nothing to address.
+
 * C++
 
 ** Flags

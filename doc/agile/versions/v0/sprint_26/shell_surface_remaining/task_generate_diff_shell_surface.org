@@ -26,24 +26,32 @@ Every shell command diff answers is produced by a generated unit, or the model s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | The four models state the reason; no code changed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The compute task.                      |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
 
-- - Every entity, junction and operation model in the component either renders a generated shell unit or states, in its own Physical space section, the reason it renders none.
-- - Every hand-written command in the component's orbit is compared with the generated units and either retired as superseded or recorded with its reason.
-- - The component's shell suite passes and check_component_drift.py --all reports no drift.
+- Every entity, junction and operation model in the component either renders a generated shell unit or states, in its own Physical space section, the reason it renders none.
+- Every hand-written command in the component's orbit is compared with the generated units and either retired as superseded or recorded with its reason.
+- The component's shell suite passes and check_component_drift.py --all reports no drift.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+diff cannot render a shell unit, so the task proves that rather than changing it,
+and leaves the proof where the next reader meets it.
+
+Three checks establish it. The profile: =table-less-record= disables every facet
+at the root and lets only the C++ and TypeScript domain types back in, so there is
+no protocol and no subject for a command to address. The tree: the component has
+no part under =projects/ores.shell=, so no generated unit has anywhere to land.
+The shell: no hand-written unit registers a diff menu.
+
+Then each of the four models gains a =* Physical space= section stating why, which
+is the shape =ores.scheduler.job_definition= already uses.
 
 * Measurements
 
@@ -57,9 +65,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| diff entity models | 4, all bound to table-less-record | =ls projects/ores.diff/modeling/ores.*.org= | 30251f222c |
+| Facets the profile admits | =ores.cpp.domain= and =ores.ts.domain= only; the root is disabled | =grep -A20 'Physical space' projects/modeling/variability_table_less_record.org= | 30251f222c |
+| diff shell part under projects/ores.shell | none | =ls -d projects/ores.shell/diff= | 30251f222c |
+| diff models rendering a shell unit | 0, which is the profile's decision | the mapping script | 30251f222c |
+| Hand-written diff command units | 0 | the shell tree scan for files without the AUTO-GENERATED marker | 30251f222c |
+| Models that now state the reason | 4 | =grep -c 'Physical space' projects/ores.diff/modeling/ores.*.org= | branch |
+| Regeneration diff | 0 | =check_component_drift.py --all= | branch |
+| Shell suite | none exists: the component has no shell part | =ls projects/ores.shell/diff= | 30251f222c |
 
 * Notes
+
+The four models are the diff vocabulary the compare engine emits: an entry, the
+result that holds entries, a span inside a value, and a named value. None is
+stored and none is addressed by identity, so none has a subject.
+
+That is why the shell cannot carry a command for them. A command is a NATS caller,
+and there is no subject to call. A person meets a diff through the history
+command's diff renderer, which lives in the shell's own API part; the component
+supplies the vocabulary and the shell renders it.
+
+The repository already had the shape for this note. =ores.scheduler.job_definition=
+states why its shell facet is off in its own =* Physical space= section, so the
+four diff models follow that precedent rather than inventing one. Each says it in
+its own words, because a span and a result are absent for different reasons.
+
+The profile does the withholding, so no model names an override row: the root is
+disabled and only two facets are let back in.
 
 * Test Scenarios
 
@@ -85,3 +117,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+diff needs no code change. Its four entities are table-less records, the profile
+admits only the C++ and TypeScript domain types, and the component has no part
+under =projects/ores.shell= for a generated unit to land in. Nothing hand-written
+registers a diff menu.
+
+What the task changes is four =* Physical space= sections, one per model, so the
+absence reads as a decision rather than an oversight. A full regeneration produces
+no diff, which confirms the additions are documentation and nothing else.

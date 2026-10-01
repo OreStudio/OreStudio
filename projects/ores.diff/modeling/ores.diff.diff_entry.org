@@ -36,6 +36,16 @@ rather than stored.
 The profile supplies =:no_audit_columns:=, which keeps the version column, the
 audit tail and the transaction timestamp off the struct.
 
+* Physical space
+
+The shell commands are switched off.
+
+A changed field is never stored, so it has no table, no protocol and no
+subject, and the shell's command registry has nothing to address. It crosses the
+wire inside a history response, and the diff renderer behind the history command
+is where a person meets it. The profile withholds every facet at the root rather
+than this model naming an override.
+
 * C++
 
 ** Flags

@@ -22,6 +22,9 @@
 #include "ores.shell/app/commands/analytics/pricing_model_config_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_product_commands.hpp"
 #include "ores.shell/app/commands/analytics/pricing_model_product_parameter_commands.hpp"
+#include "ores.shell/app/commands/analytics/stress_test_library_commands.hpp"
+#include "ores.shell/app/commands/analytics/stress_test_scenario_commands.hpp"
+#include "ores.shell/app/commands/analytics/stress_test_shift_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -35,6 +38,9 @@ void analytics_commands::register_commands(cli::Menu& root_menu, nats_client& se
     pricing_model_config_commands::register_commands(root_menu, session);
     pricing_model_product_commands::register_commands(root_menu, session);
     pricing_model_product_parameter_commands::register_commands(root_menu, session);
+    stress_test_library_commands::register_commands(root_menu, session);
+    stress_test_scenario_commands::register_commands(root_menu, session);
+    stress_test_shift_commands::register_commands(root_menu, session);
 }
 
 }

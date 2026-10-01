@@ -97,20 +97,25 @@ coordinates. The =std::visit= with three IR special cases is deleted, because
 the model now says which keys are which. =model= is identity, so lognormal and
 normal vol become two series and the corpus import can store both.
 
-** The projections' key builders
+** The projections' key builders, and their readers
 
 This is the piece that forces the order. =from_ore_key()= builds the identifier
 from an ORE key, and its per-family blocks set =id.point= to the comma-joined
 coordinate. A writer that emits typed keys reads the typed members, so every one
 of those blocks must set the member its family's =point_keys= names instead --
-~15 sites. The read side (=to_quote_key= and the surface readers) then reads the
-typed members rather than =*id.point=, which is where the =split_point= calls and
-the remaining =id.vol->= uses live.
+about twenty sites, done and verified in the attempt recorded here.
 
-Attempted first the other way round -- parser and writer changed first -- and it
-fails for this reason: a typed URI parses into typed members, but an identifier
-built by =from_ore_key= has none, so the writer emits a URI with no coordinate.
-The builders move first, or the two directions disagree.
+The read side has to move with them, and that is the whole of what remains:
+=quote_key_ir()= and its siblings read =*id.point=, and =split_point(*id.point)=,
+for the single-coordinate families. A URI that names its coordinates leaves
+=id.point= unset, so every projection of a parsed URI returns nothing until those
+readers read the typed members. The measured shape of that: rewriting the models'
+113 test URIs to the typed spelling took the suite from 17 failures to 105, all
+of them the projection returning no key, because the parser filled the typed
+members and the projections did not look at them.
+
+Two attempts failed by stopping before the readers. The order is: builders,
+readers, then the writer and the parser and the URIs in one commit.
 
 ** The test cases
 

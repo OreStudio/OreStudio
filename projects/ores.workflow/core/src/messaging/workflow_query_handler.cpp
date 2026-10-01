@@ -28,9 +28,11 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
+#include <exception>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace ores::workflow::messaging {
 
@@ -305,10 +307,18 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
             ds.type_name = def.type_name;
             ds.description = def.description;
 
-            // Call build_steps with empty inputs to get a representative step
-            // list for display. All currently registered workflows are
-            // deterministic so this produces the canonical step sequence.
-            const auto steps = def.build_steps("", "", "");
+            // A definition whose steps do not depend on its request yields its
+            // canonical sequence from an empty one. A definition whose steps the
+            // request decides -- tenant provisioning builds one step per kind its
+            // profile orders -- refuses an empty request, and is listed with no
+            // steps rather than failing the whole read.
+            std::vector<service::workflow_step_def> steps;
+            try {
+                steps = def.build_steps("", "", "");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), debug) << "Definition " << def.type_name
+                                           << " builds its steps from its request: " << e.what();
+            }
             ds.step_count = static_cast<int>(steps.size());
 
             for (int i = 0; i < static_cast<int>(steps.size()); ++i) {

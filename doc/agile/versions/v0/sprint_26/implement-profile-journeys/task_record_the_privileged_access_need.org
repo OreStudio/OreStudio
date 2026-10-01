@@ -8,7 +8,7 @@
 #+filetags: :security:iam:ux:modes:approval:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/record-the-break-glass-need
-#+pr:
+#+pr: 2456
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2456][#2456]] | [agile] Capture the break-glass need behind the modes |
 
 * Review
 

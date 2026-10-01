@@ -78,6 +78,25 @@ and never more. One nullable column on =todays_market_entry= covers it. A table
 of its own would trade one nullable column for a table, a join and a second
 mapper path, for one collection.
 
+**The entry table carries the key attribute's name, and two collections carry
+two keys.**
+
+Reading the entry attributes out of the schema, rather than inferring them from
+the corpus, changed the entry table. The key is =name= for nineteen collections,
+=currency= for =DiscountingCurves=, =pair= for the two FX collections, and the
+literal string =key= for =SwaptionVolatilities= and =CapFloorVolatilities=. So
+=entry_key= would hold a different attribute depending on the row and its own
+name collides with one of the values it stores. The entry table therefore
+carries the attribute name beside the value.
+
+=SwaptionVolatilities= and =CapFloorVolatilities= identify by =key= *and*
+=currency= together, so they need a second key column; a row keyed on one
+attribute would collapse two distinct entries. Every entry type also declares an
+optional =id= that no corpus file writes, which the mapper has to carry so that a
+document which does write it is not silently changed.
+
+The full table is in [[file:evidence/todays_market_corpus.md][the census]].
+
 **Order is stored rather than recovered.**
 
 A collection may name the same key twice, and a reference cannot be sorted back

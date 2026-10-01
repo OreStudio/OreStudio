@@ -137,3 +137,57 @@ under two spellings or two different concepts. Nothing in the corpus
 distinguishes them, so the mapper has to either keep the attribute name or the
 model has to state which collections use which; silently normalising them would
 round trip and would lose the distinction if one exists.
+
+* The mapper's vocabulary, read from the schema
+
+Each collection owns an entry element, and every entry identifies itself by an
+attribute. Read out of =todaysmarket.xsd= rather than inferred from the corpus,
+because the corpus only shows the attribute each file happened to write:
+
+| Collection | Entry element | Key attribute |
+|------------+---------------+---------------|
+| =YieldCurves= | =YieldCurve= | =name= |
+| =DiscountingCurves= | =DiscountingCurve= | =currency= |
+| =IndexForwardingCurves= | =Index= | =name= |
+| =SwapIndexCurves= | =SwapIndex= | =name= |
+| =ZeroInflationIndexCurves= | =ZeroInflationIndexCurve= | =name= |
+| =YYInflationIndexCurves= | =YYInflationIndexCurve= | =name= |
+| =FxSpots= | =FxSpot= | =pair= |
+| =FxVolatilities= | =FxVolatility= | =pair= |
+| =SwaptionVolatilities= | =SwaptionVolatility= | =key=, =currency= |
+| =YieldVolatilities= | =YieldVolatility= | =name= |
+| =CapFloorVolatilities= | =CapFloorVolatility= | =key=, =currency= |
+| =CDSVolatilities= | =CDSVolatility= | =name= |
+| =DefaultCurves= | =DefaultCurve= | =name= |
+| =YYInflationCapFloorVolatilities= | =YYInflationCapFloorVolatility= | =name= |
+| =ZeroInflationCapFloorVolatilities= | =ZeroInflationCapFloorVolatility= | =name= |
+| =EquityCurves= | =EquityCurve= | =name= |
+| =EquityVolatilities= | =EquityVolatility= | =name= |
+| =Securities= | =Security= | =name= |
+| =BaseCorrelations= | =BaseCorrelation= | =name= |
+| =CommodityCurves= | =CommodityCurve= | =name= |
+| =CommodityVolatilities= | =CommodityVolatility= | =name= |
+| =Correlations= | =Correlation= | =name= |
+| =BondFutureVolatilities= | =BondFutureVolatility= | =name= |
+| =IntradayPowerPriceCurves= | =IntradayPowerPriceCurve= | =name= |
+
+Two things fall out of this table that the prose above could not settle.
+
+**The key attribute is four different words, not one.** It is =name= for
+nineteen of the twenty-four collections, =currency= for =DiscountingCurves=,
+=pair= for the two FX collections, and =key= — the literal string =key= — for
+=SwaptionVolatilities= and =CapFloorVolatilities=. So a single =entry_key=
+column would be storing a different attribute name depending on the row, and the
+column name would collide with one of the values it stores. Either the entry
+table carries the attribute name beside the value, or it carries the four
+attributes as four columns. The plan's lookup does the former.
+
+**=SwaptionVolatilities= and =CapFloorVolatilities= identify by two attributes at
+once.** Every other entry has exactly one key. Those two carry =key= and
+=currency= together, so a row keyed on one attribute alone would collapse two
+distinct entries into one on any document that used both.
+
+**Every entry type also declares an optional =id=.** It is not the key — no
+corpus file relies on it — but a document may write it, so the mapper has to
+carry it or lose it.
+

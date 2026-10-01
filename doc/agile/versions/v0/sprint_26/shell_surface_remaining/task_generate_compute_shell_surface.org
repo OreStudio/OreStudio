@@ -26,11 +26,11 @@ Every shell command compute answers is produced by a generated unit, or the mode
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | The three entities were already recorded; the two operations and the five hand-written verbs are now. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The telemetry task.                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

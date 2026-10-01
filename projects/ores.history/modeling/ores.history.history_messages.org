@@ -20,6 +20,14 @@ strings. No typed domain payload crosses the wire for history: the fields arrive
 rendered, and the diff arrives computed, because the comparison is entity-agnostic
 once both sides are strings and belongs on the server where it is done once.
 
+* Physical space
+
+The shell commands are switched off. The generic history read reaches a person
+through the hand-written =history get= command, which sends
+=get_entity_history_request= and renders a unified diff between two versions
+through the diff renderer. A generated unit would print the response as JSON
+instead, so it would be a second command for one read and would lose the diff.
+
 * Includes
 
 #+begin_src cpp :name includes

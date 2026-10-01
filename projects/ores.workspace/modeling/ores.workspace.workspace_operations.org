@@ -26,6 +26,13 @@ model describes. An operation model generates no service handler.
 The remaining workspace verbs are the entity's own and generate from
 [[id:B09B3A40-C58C-4918-AFD6-22CFF2B4E4C6][ores.workspace.workspace]].
 
+* Physical space
+
+The shell commands are switched off. These messages resolve and set the acting
+workspace and its trade scope, which the service answers from the caller's session
+rather than from a row, in the way the account menu's sign-in and sign-out change
+this client's own state. The shell renders the =workspace= entity's unit.
+
 * Includes
 
 #+begin_src cpp :name includes

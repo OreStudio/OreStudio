@@ -8,12 +8,12 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-scheduler-shell-surface
-#+pr:
+#+pr: 2480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command workspace answers is produced by a generated unit, or the mo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | The operations model states the reason; the entity renders its unit. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The close of the story. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,10 @@ Every shell command workspace answers is produced by a generated unit, or the mo
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+* Plan
+
+Check the two models against the one unit the shell part carries. The entity
+renders a unit; the operation does not, and it gains the reason.
 
 * Measurements
 
@@ -57,9 +58,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| workspace models | 2: workspace_operations (operation), workspace (entity) | read =#+type:= across =projects/ores.workspace/modeling/ores.*.org= | c71cceb504 |
+| workspace shell part | 1 unit: workspace | =ls projects/ores.shell/workspace/include/ores.shell/app/commands/workspace/=.hpp | c71cceb504 |
+| workspace models rendering a unit | 1 | the mapping script | c71cceb504 |
+| Models with no unit | 1: workspace_operations | the same script | c71cceb504 |
+| Hand-written workspace command units | 0 | the shell tree scan for files without the AUTO-GENERATED marker | c71cceb504 |
+| Models that now state the reason | 1 | =grep -c 'Physical space' projects/ores.workspace/modeling/ores.*.org= | branch |
+| ores.shell.workspace suite | 48 assertions in 17 test cases, all passed | =--target test_ores.shell.workspace.tests= | branch |
 
 * Notes
+
+The three operation messages resolve and set the acting workspace and its trade
+scope. The service answers them from the caller's session rather than from a row,
+which is the same reason the account menu's sign-in and sign-out are hand-written:
+a unit that sends a request and prints the reply cannot express changing this
+client's own context.
+
+The =workspace= entity renders its unit, so the component does have a shell surface.
+Nothing hand-written registers a workspace menu.
 
 * Test Scenarios
 
@@ -76,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2480](https://github.com/OreStudio/OreStudio/pull/2480) | Record why the last five components render no shell command |
 
 * Review
 
@@ -85,3 +101,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+workspace needs no code change. Its entity renders a unit, its operation renders
+none, and the operation now states why: its messages change the caller's own
+context rather than reading or writing a row.
+
+Nothing hand-written registers a workspace menu, so there was nothing to retire. A
+full regeneration produces no diff.

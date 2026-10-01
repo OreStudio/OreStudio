@@ -8,12 +8,12 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-scheduler-shell-surface
-#+pr:
+#+pr: 2480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command history answers is produced by a generated unit, or the mode
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | The operation states the reason; the hand-written command is signed off. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The ore task. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,12 @@ Every shell command history answers is produced by a generated unit, or the mode
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+* Plan
+
+Check the tree, the model and the shell. The component has no part under
+=projects/ores.shell=. The one model is the generic history operation. The one
+hand-written unit sends that operation's own request and renders the reply as a
+unified diff, which is the reason it stays.
 
 * Measurements
 
@@ -57,9 +60,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| history models | 1, the history operation | read =#+type:= across =projects/ores.history/modeling/ores.*.org= | c71cceb504 |
+| history shell part under projects/ores.shell | none | =ls -d projects/ores.shell/history= | c71cceb504 |
+| history models rendering a shell unit | 0 | the mapping script | c71cceb504 |
+| Hand-written history command units | 1: history_commands, menu =history=, verb =get= | the shell tree scan for files without the AUTO-GENERATED marker | c71cceb504 |
+| Request the hand-written verb sends | =get_entity_history_request=, the operation's own | =grep -n 'history_protocol' projects/ores.shell/application/src/app/commands/history_commands.cpp= | c71cceb504 |
+| Models that now state the reason | 1 | =grep -c 'Physical space' projects/ores.history/modeling/ores.*.org= | branch |
+| Shell suite | none exists: the component has no shell part | =ls projects/ores.shell/history= | c71cceb504 |
 
 * Notes
+
+=history get <entity_type> <entity_id> [--diff] [--version <n>]= is the shell's
+history surface for every entity, not for this component's own records. It sends
+=get_entity_history_request= and renders the answer through the diff renderer,
+which computes a unified diff between two versions.
+
+That is why it stays and why the operation renders no unit. A generated unit
+would send the same request and print the reply as JSON, so it would be a second
+command for one read and the diff would be lost. The reason is the same shape as
+dq's =bundles publish=: the hand-written verb does something the reply does not
+carry.
+
+No hand-written command reads the component's own tables, because the generic
+read is what a client uses.
 
 * Test Scenarios
 
@@ -76,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2480](https://github.com/OreStudio/OreStudio/pull/2480) | Record why the last five components render no shell command |
 
 * Review
 
@@ -85,3 +108,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+history needs no code change. Its one model is the operation behind the
+hand-written =history get=, the component has no shell part, and the operation now
+states why it renders nothing.
+
+The hand-written verb is signed off rather than retired: it renders a unified diff
+between two versions, which the generated command would replace with JSON. A full
+regeneration produces no diff.

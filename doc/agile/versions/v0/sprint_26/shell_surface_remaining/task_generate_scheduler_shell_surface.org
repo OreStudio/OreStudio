@@ -8,12 +8,12 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-scheduler-shell-surface
-#+pr:
+#+pr: 2480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command scheduler answers is produced by a generated unit, or the mo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | Both models now state the reason; the six hand-written verbs are recorded. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The ore task. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,13 @@ Every shell command scheduler answers is produced by a generated unit, or the mo
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+* Plan
+
+Read both models, then every hand-written verb.
+
+job_definition already recorded its reason. scheduling_operations had none, so it
+gains one. Then map the hand-written menu's six verbs to the requests they send,
+because the answer decides whether this is a retirement or a record.
 
 * Measurements
 
@@ -57,9 +61,34 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| scheduler models | 2: job_definition (entity), scheduling_operations (operation) | read =#+type:= across =projects/ores.scheduler/modeling/ores.*.org= | c71cceb504 |
+| scheduler shell part under projects/ores.shell | none | =ls -d projects/ores.shell/scheduler= | c71cceb504 |
+| scheduler models rendering a shell unit | 0 | the mapping script | c71cceb504 |
+| Hand-written scheduler verbs | 6: jobs, schedule, remove, instances, status, watch | =projects/ores.shell/application/src/app/commands/scheduler_commands.cpp= | c71cceb504 |
+| Requests the verbs send | list_job_definitions, put_job_definition, delete_job_definition, get_job_instances, get_scheduler_status; watch is a subscription, not a request | =grep -n '_request\b' projects/ores.shell/application/src/app/commands/scheduler_commands.cpp= | c71cceb504 |
+| Models that now state the reason | 2 | =grep -c 'Physical space' projects/ores.scheduler/modeling/ores.*.org= | branch |
+| Shell suite | none exists: the component has no shell part | =ls projects/ores.shell/scheduler= | c71cceb504 |
 
 * Notes
+
+This is the one component in the story whose hand-written menu generation would
+supersede if it could land. Five of the six verbs send exactly the requests the
+generated units would send:
+
+| Verb | Request | Generated unit that would answer it |
+|------+---------+-------------------------------------|
+| =scheduler jobs= | =list_job_definitions_request= | the =job_definitions= unit |
+| =scheduler schedule= | =put_job_definition_request= | the =job_definitions= unit |
+| =scheduler remove= | =delete_job_definition_request= | the =job_definitions= unit |
+| =scheduler instances= | =get_job_instances_request= | the =scheduling_operations= unit |
+| =scheduler status= | =get_scheduler_status_request= | the =scheduling_operations= unit |
+| =scheduler watch= | none: it subscribes to the change event | nothing |
+
+The units cannot land, because the component has no part under
+=projects/ores.shell=. So the verbs are recorded rather than retired, and the
+follow-up is named in both models: add the shell part, register its commands, then
+enable the facet. Until that happens the generated scheduler surface does not
+exist, which is a gap rather than a duplicate.
 
 * Test Scenarios
 
@@ -76,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2480](https://github.com/OreStudio/OreStudio/pull/2480) | Record why the last five components render no shell command |
 
 * Review
 
@@ -85,3 +114,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+scheduler needs no code change, and its gap is named in both models. The component
+has no shell part, so neither the =job_definitions= unit nor the
+=scheduling_operations= unit can land, and the hand-written menu carries the whole
+surface.
+
+Five of its six verbs send the requests those units would send, so this is the one
+place in the story where generation would supersede a hand-written command once
+the part exists. The follow-up is recorded in =job_definition= and in
+=scheduling_operations= rather than left to a reader to work out. A full
+regeneration produces no diff.

@@ -26,11 +26,11 @@ Every shell command telemetry answers is produced by a generated unit, or the mo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | The three operations state the reason; no code changed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The history task.                      |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

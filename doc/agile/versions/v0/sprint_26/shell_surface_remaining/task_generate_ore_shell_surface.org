@@ -8,12 +8,12 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-scheduler-shell-surface
-#+pr:
+#+pr: 2480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every shell command ore answers is produced by a generated unit, or the model st
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | Not yet started.                       |
+| Now          | series_key_shape already recorded; ore_import now states its reason; three verbs recorded. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The variability task. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +41,13 @@ Every shell command ore answers is produced by a generated unit, or the model st
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+* Plan
+
+Read both models and the hand-written menu.
+
+series_key_shape already says why nothing is generated for it, shell unit
+included. ore_import_messages had no such note, so it gains one. Then follow the
+three hand-written verbs to their requests, and note where the menu lives.
 
 * Measurements
 
@@ -57,9 +61,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ore models | 2: ore_import_messages (operation), series_key_shape (entity) | read =#+type:= across =projects/ores.ore/modeling/ores.*.org= | c71cceb504 |
+| ore shell part under projects/ores.shell | none | =ls -d projects/ores.shell/ore= | c71cceb504 |
+| ore models rendering a shell unit | 0 | the mapping script | c71cceb504 |
+| Hand-written ore verbs | 3: upload, import, export, in the trading shell part | =projects/ores.shell/application/src/app/commands/trading/ore_commands.cpp= | c71cceb504 |
+| Requests the verbs send | import sends =ore_import_request=; export sends the trading protocol's =export_portfolio_request=; upload sends none and moves a file | the same file | c71cceb504 |
+| Models that now state the reason | 2 | =grep -c 'Physical space' projects/ores.ore/modeling/ores.*.org= | branch |
+| Shell suite | none exists: the component has no shell part | =ls projects/ores.shell/ore= | c71cceb504 |
 
 * Notes
+
+The =ore= menu is the ORE document round trip: upload a package, import it, and
+export a portfolio. It lives in the trading shell part because the round trip
+writes trading entities, not because this component owns the menu.
+
+Two of the three verbs compose more than one step. =ore import= uploads the
+package and then sends =ore_import_request=; =ore upload= moves a file and sends
+nothing. =ore export= sends the trading protocol's portfolio export, which belongs
+to another component's model.
+
+So there is nothing here for a generated unit in this component to supersede. The
+=ore_import= operation renders no unit because the component has no shell part, and
+the menu that reaches it does more than send the request.
 
 * Test Scenarios
 
@@ -76,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2480](https://github.com/OreStudio/OreStudio/pull/2480) | Record why the last five components render no shell command |
 
 * Review
 
@@ -85,3 +108,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ore needs no code change. =series_key_shape= already recorded why nothing is
+generated for it, and =ore_import= now says the same for itself: the component has
+no shell part, and the hand-written =ore= menu carries the round trip.
+
+All three hand-written verbs are signed off. Two compose several steps and one
+moves a file. A full regeneration produces no diff.

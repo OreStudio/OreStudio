@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: feature/implement-the-active-sessions-read
-#+pr:
+#+pr: 2468
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -100,7 +100,7 @@ in front of it can only report "not available".
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2468][#2468]] | [iam] Implement the active sessions read |
 
 * Review
 

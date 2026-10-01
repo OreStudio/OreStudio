@@ -229,7 +229,7 @@ export function FirstRunJourney({
      * to the beginning of work that is partly done.
      */
     const [at, setAt] = useState<number>();
-    const tenant = useNewTenant();
+    const tenant = useNewTenant(creatingPassword);
     const started = useRef(false);
 
     /*

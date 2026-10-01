@@ -57,8 +57,18 @@ export interface TenantDetails {
     readonly parameters: Readonly<Record<string, string>>;
 }
 
-/** What a profile proposes before anybody types. */
-export function detailsFor(profile: SeedProfileChoice): TenantDetails {
+/**
+ * What a profile proposes before anybody types.
+ *
+ * A profile may propose that the tenant's administrator takes the creating
+ * administrator's password, and that proposal stands only while the journey
+ * holds one. The standalone journey does not: nobody signed in to create the
+ * tenant, so there is no password to hand over. A proposal that nothing can
+ * satisfy leaves the details step with no password control and a Continue that
+ * never enables, so it is dropped where it cannot be kept and the form asks for
+ * a password instead.
+ */
+export function detailsFor(profile: SeedProfileChoice, creatingPassword: string): TenantDetails {
     return {
         name: profile.tenant.name,
         code: profile.tenant.code,
@@ -66,7 +76,7 @@ export function detailsFor(profile: SeedProfileChoice): TenantDetails {
         adminUsername: profile.tenant.adminUsername,
         adminEmail: profile.tenant.adminEmail,
         adminPassword: '',
-        useMyPassword: profile.inheritsAdminPassword,
+        useMyPassword: profile.inheritsAdminPassword && creatingPassword !== '',
         parameters: Object.fromEntries(
             profile.parameters.map((parameter) => [parameter.name, parameter.defaultValue]),
         ),
@@ -130,7 +140,16 @@ export interface NewTenant {
     recordRunComplete(): void;
 }
 
-export function useNewTenant(): NewTenant {
+/**
+ * The tenant a journey is describing.
+ *
+ * The creating administrator's password is an input, because whether a profile
+ * may hand that password to the tenant's administrator depends on whether the
+ * journey holds one. First run holds the password the creating administrator
+ * typed; the standalone journey holds none, because nobody signed in to create
+ * the tenant.
+ */
+export function useNewTenant(creatingPassword: string): NewTenant {
     const [profile, setProfile] = useState<SeedProfileChoice>();
     const [details, setDetails] = useState<TenantDetails>();
     const [passwordAcceptable, setPasswordAcceptable] = useState(false);
@@ -145,7 +164,7 @@ export function useNewTenant(): NewTenant {
         runComplete,
         chooseProfile: (chosen) => {
             setProfile(chosen);
-            setDetails(detailsFor(chosen));
+            setDetails(detailsFor(chosen, creatingPassword));
             // The new profile's password is its own, so the last one's verdict
             // does not carry over to it.
             setPasswordAcceptable(false);

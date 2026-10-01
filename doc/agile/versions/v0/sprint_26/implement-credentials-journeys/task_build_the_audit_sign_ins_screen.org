@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :implement-credentials-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/audit-sign-ins-screen
+#+pr: 2494
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -33,11 +33,11 @@ rather than drawing an empty one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The screen is landed on the branch, over the reads the group already served. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review, then merge.                    |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2494][#2494]] | [web] Build the sign-in audit screen |
 
 * Review
 
@@ -108,3 +108,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Built 2026-10-01.
+
+=Audit: sign-ins= is a route behind the signed-in shell, and it adds no server
+work: it reads the sessions, the active sessions and the login records through
+the routes the group already landed. The screen is the accepted prototype's
+variant B, and the reading in view is a query parameter, so =/audit?tab=failures=
+opens the failed attempts directly.
+
+Every reading the server cannot serve says so rather than being drawn empty. The
+account filter is disabled because the session read takes no account filter, and
+the event filter because no subject carries the events. The session-activity
+panel shows the session row's own byte totals and states that the sample series
+behind them has no producer, because nothing writes a row of
+=ores_iam_session_samples_tbl=; no empty chart is drawn. The sessions panel says
+that nothing writes an end time, so every session reads as open and an old one
+cannot be told from a live one.
+
+The period filter works, and the screen says how: the reads take no time bound,
+so it filters in the browser over the page that was read.
+
+[[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] is corrected in
+this branch for the claims this group's own work made false: the BFF now serves
+the three reads the journey said it did not, and =iam.v1.sessions.active= is no
+longer a stub that answers with no rows.
+
+Verification. =npm run typecheck= passes across the three packages, Prettier is
+clean, and the suites are green: bff 102 tests in 21 files, web 198 in 19,
+wire-protocol 51 in 7. Six of the web tests render each reading from a fixture
+and assert the reading each tab shows, the two filters being unavailable with
+their reasons, the sample series being stated as missing, and the gap list.
+
+*What is still missing.* The screen has no test that drives a browser, because
+the web package has no DOM harness; the readings are rendered from a fixture
+instead. And the session reads need =iam::sessions:read= and the login-record
+read =iam::login_info:read=, which the inventory records where the catalogue
+grants them.

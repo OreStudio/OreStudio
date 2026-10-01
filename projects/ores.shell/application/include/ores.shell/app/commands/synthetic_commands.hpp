@@ -41,14 +41,15 @@ namespace ores::shell::app::commands {
  * @brief Commands for the synthetic market simulator.
  *
  * Exposes market simulator operations scriptably: listing the
- * folder tree, market_data_generation_configs and running feeds,
- * starting/stopping individual feeds or whole folder subtrees, and
- * validating vintage data availability -- the same operations the Qt
- * Market Simulator window performs, without the GUI. Every feed verb
- * works for any asset class: the shell never enumerates feed kinds.
- * All requests are authenticated and inherit the viewer's context, so
- * RLS and scope-based filtering apply exactly as they do in the
- * client.
+ * folder tree and the running feeds, starting and stopping individual
+ * feeds or whole folder subtrees, and validating vintage data
+ * availability -- the operations the Qt Market Simulator window
+ * performs that no entity model states. Every feed verb works for any
+ * asset class: the shell never enumerates feed kinds. All requests are
+ * authenticated and inherit the viewer's context, so RLS and
+ * scope-based filtering apply exactly as they do in the client.
+ * The entity reads are generated units of their own, under the
+ * folders, market_data_generation_configs and related menus.
  */
 class synthetic_commands {
 private:
@@ -65,7 +66,7 @@ public:
      * @brief Register synthetic-data commands.
      *
      * Creates the synthetic submenu: the market simulator command group
-     * (list folders/configs/feeds, start/stop folder/feed,
+     * (list folders/feeds, start/stop folder/feed,
      * validate-vintage). The organisation generator that used to sit beside
      * it is gone; see the component overview for why.
      */
@@ -100,29 +101,6 @@ public:
                              ores::nats::service::nats_client& session,
                              const std::string& collection_id,
                              const std::string& folder_name);
-
-    /**
-     * @brief List generation configs: synthetic list configs
-     * [--scope=system|tenant|party].
-     *
-     * Prints name, id, scope, party_id, binding_mode and enabled status
-     * for every market_data_generation_config visible to the logged-in
-     * party/tenant; the optional --scope flag further filters by scope
-     * level.
-     */
-    static void process_list_configs(std::ostream& out,
-                                     ores::nats::service::nats_client& session,
-                                     const std::vector<std::string>& args);
-
-    /**
-     * @brief Execute a generation-config list request, printing a row
-     * per config, filtered to @p scope_filter when non-null.
-     *
-     * @return true on success.
-     */
-    static bool list_configs(std::ostream& out,
-                             ores::nats::service::nats_client& session,
-                             std::optional<ores::synthetic::domain::scope> scope_filter);
 
     /**
      * @brief List running feeds: synthetic list feeds.

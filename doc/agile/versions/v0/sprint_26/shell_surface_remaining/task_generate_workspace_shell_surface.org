@@ -64,7 +64,7 @@ task and name that file in the Command column.
 | Models with no unit | 1: workspace_operations | the same script | c71cceb504 |
 | Hand-written workspace command units | 0 | the shell tree scan for files without the AUTO-GENERATED marker | c71cceb504 |
 | Models that now state the reason | 1 | =grep -c 'Physical space' projects/ores.workspace/modeling/ores.*.org= | branch |
-| Shell suite | =ores.shell.workspace= exists | =ls projects/ores.shell/workspace= | c71cceb504 |
+| ores.shell.workspace suite | 48 assertions in 17 test cases, all passed | =--target test_ores.shell.workspace.tests= | branch |
 
 * Notes
 

@@ -64,7 +64,7 @@ task and name that file in the Command column.
 | Models with no unit | 1: operations | the same script | c71cceb504 |
 | Hand-written variability command units | 0 | the shell tree scan for files without the AUTO-GENERATED marker | c71cceb504 |
 | Models that now state the reason | 1 | =grep -c 'Physical space' projects/ores.variability/modeling/ores.*.org= | branch |
-| Shell suite | =ores.shell.variability= exists | =ls projects/ores.shell/variability= | c71cceb504 |
+| ores.shell.variability suite | 48 assertions in 17 test cases, all passed | =--target test_ores.shell.variability.tests= | branch |
 
 * Notes
 

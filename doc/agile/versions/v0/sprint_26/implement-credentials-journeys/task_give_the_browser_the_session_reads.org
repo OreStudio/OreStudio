@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: feature/credentials-session-reads
-#+pr:
+#+pr: 2454
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -98,7 +98,7 @@ neither, because the BFF is its only HTTP surface and serves no session route.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2454][#2454]] | [web] Give the browser the session reads |
 
 * Review
 

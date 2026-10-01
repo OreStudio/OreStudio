@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 1BCEA32A-47C1-4DE0-8A6A-3DB5B7BE9723
+:END:
+#+title: Task: Implement the super administrator sign-in
+#+description: Deliver the session mode and the system administration landing, so the super administrator signs in and reaches the tenant management journeys.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:modes:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/implement-the-super-administrator-sign-in
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The super administrator signs in and the application knows which mode the
+session runs in. The shell states that mode and draws the system administration
+landing, and the tenant management journeys are reached from it.
+
+One thing the mode is not: a menu item. First run belongs to a plain
+installation, where there is no account to sign in with and no menu to draw.
+It is the door of that state, not a place inside the application, so nothing
+offers it from a menu.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The session view and the login answer carry the mode.
+- The mode is stated by the server and delivered with the session. The browser
+  reads the field and never derives it, so a change to how the mode is decided
+  moves no client code.
+- A session in the system tenant's context reads *system administration*. Every
+  other session reads *application* until the tenant-scoped context exists.
+- The shell states the mode of the open session.
+- The system administration landing lists its areas, and its *Tenants* area
+  holds [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] and
+  [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]].
+- No area holds [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], and no
+  menu offers it.
+- The tenant management journeys are reachable from the landing, and the one
+  that is built opens the screen that exists.
+- A journey the catalogue holds but the tree has not built yet is drawn as not
+  built rather than hidden, and a journey nothing may run is not drawn at all.
+- Every new behaviour is proved by a test, and the tests run head-less.
+
+* Plan
+
+Four units, in this order, because each one is what the next one reads.
+
+1. *The mode rides the session.* Add it to the session view in the wire
+   contract, and have the BFF state it when the session is created so every
+   later read carries it. The BFF is the server from the browser's side, and it
+   already holds the tenant the login answered with; the rule stays out of the
+   browser. When =ores.iam= states the mode on =login_response= the BFF passes
+   that answer through instead of computing it, and no client changes.
+
+   The mode names a context, so the field carries the three contexts the
+   contract lists. Only two can be decided today: the system tenant's context
+   is system administration, and every other tenant is the application. A
+   tenant-scoped session does not exist, so *tenant administration* is declared
+   and not yet produced.
+
+2. *The menu is data, not markup.* The areas each mode shows and the journeys
+   each area holds live in one module the shell reads, so a later group adds a
+   journey by adding a row. The journeys the catalogue holds but the tree has
+   not built are rows too, and the screen states that they are not built rather
+   than pretending they are.
+
+3. *The landing draws it.* The home page becomes the mode's landing: the mode,
+   the areas, and each area's journeys as cards. A journey the session may not
+   run is absent.
+
+4. *Bootstrap leaves the menu.* First run keeps the route it has, and the route
+   table keeps sending a plain installation to it. It stops being an area.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The mode the login states for the super administrator | =system-administration= | =curl -s -H 'content-type: application/json' -d '{"username":"super_admin","password":"Secure-Password-123"}' http://127.0.0.1:21402/api/session= | 6d5549ebe2 |
+| The mode the same deployment states for a tenant administrator | =application= | the party choice, then =GET /api/session= | 6d5549ebe2 |
+| BFF suite | 16 files, 75 tests | =npm run test= in =projects/ores.web/packages/bff= | 6d5549ebe2 |
+| Web suite | 16 files, 174 tests | =npm run test= in =projects/ores.web/packages/web= | 6d5549ebe2 |
+| Wire contract suite | 7 files, 51 tests | =npm run test= in =projects/ores.web/packages/wire-protocol= | 6d5549ebe2 |
+| Prototype harness | 12 sign-in/state combinations, 26 promises | =node evidence/navigation_check.js= | 6d5549ebe2 |
+| Live harness | 8 promises | =node evidence/super_admin_sign_in_check.js= | 6d5549ebe2 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The super administrator signs in and the session states the context it opened
+in. The session view and the login answer gained =mode=, and the BFF decides it
+from the tenant the login answered with: the system tenant is
+=system-administration= and every other tenant is =application=. The browser
+reads the field and never derives it, so the rule moves to =ores.iam= without a
+client changing.
+
+The shell states the mode, offers the areas that mode shows, and the home page
+is the mode's landing. *System administration* lands on the *Tenants* area,
+which offers *New tenant* — a link to the journey that is built — and *Retire or
+reset a tenant*, drawn as not built because the tree has not built it. The
+areas and their journeys are client data in one module, so a later group adds a
+journey by adding a row.
+
+First run left the menu, and the prototype was corrected with it. It belongs to
+a plain installation, where nobody can be signed in, so it is the door of that
+state rather than a destination. The system administration menu is therefore
+the *Tenants* area alone.
+
+What is deliberately not done, and where it goes next:
+
+- *Tenant administration is declared and not produced.* The mode names a
+  context, and a tenant-scoped session — one acting as the tenant rather than as
+  one of its parties — does not exist. Until it does, a tenant administrator's
+  session reads =application=, which is the context it is in. The application
+  mode therefore shows no areas yet, and the home page keeps the session card it
+  had. This is the honest half of the contract, not an omission.
+
+- *The menu does not yet take its authority from permissions.* A journey's
+  rank within a mode — a regular party user against a privileged one — needs the
+  permission codes the session holds, and the BFF exposes none yet. Rather than
+  guess, the application mode declares no areas. The permission read is the
+  next unit this contract names.
+
+- *The person's own journeys are still not under their name.* The avatar menu is
+  the Profile group's work, and the shell keeps its session line and sign out
+  until that group draws it.
+
+Proved live, not only in tests: the harness photographs the landing the browser
+draws after a real sign-in against the running BFF.

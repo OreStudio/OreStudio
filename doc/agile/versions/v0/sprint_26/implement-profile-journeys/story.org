@@ -61,6 +61,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:A54241DF-7B50-4BE8-890C-1A3BB35EC709][Prototype the application navigation]] | DONE | 2026-09-30 | 2026-10-01 | Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 22 journeys in 8 groups, for a member and a tenant administrator. |
 | [[id:0341CAE9-DD19-4B6C-995B-95B74DB51B45][Record the privileged-access need]] | DONE | 2026-10-01 | 2026-10-01 | Write the capture that records why the shell's modes need a recorded break-glass process behind them, what the systems that do this well have in common, and the decisions it leaves open. |
 | [[id:8F698AF3-CA0B-4151-8F67-0915FBAD40CE][Define the session mode and capability contract]] | DONE | 2026-10-01 | 2026-10-01 | Write the target state that fixes how the browser learns its mode and what it may see: the mode is computed by the server and delivered with the session, and the menu is built from the permissions the server already answers. The protocol change that implies, and what does not change. |
+| [[id:1BCEA32A-47C1-4DE0-8A6A-3DB5B7BE9723][Implement the super administrator sign-in]] | STARTED | 2026-10-01 | | Deliver the session mode and the system administration landing, so the super administrator signs in and reaches the tenant management journeys. |
 
 * Decisions
 
@@ -77,6 +78,24 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   is a party job done by somebody with authority in it, not a tenant
   administrator's job, and a regular party user is not shown the door to it at
   all.
+- *The bootstrap journey is a door, not an area.* First run belongs to a plain
+  installation, where there is no account to sign in with and therefore no shell
+  to draw a menu in. It is the way out of the state the shell cannot be entered
+  from, so no menu offers it. The system administration menu is the *Tenants*
+  area, which holds the tenant management journeys: creating a tenant, and
+  retiring or resetting one. *Tune the tenant* is the tenant administrator's and
+  stays in their mode. (Product owner, 2026-10-01.)
+- *The mode is stated by the server and read by the browser.* The session view
+  and the login answer carry it, and the shell draws its menu from the value it
+  is given. The BFF states it today, from the tenant the login answered with,
+  because that is the fact the session already holds and the rule stays out of
+  the browser; when =ores.iam= states it on the login answer the rule goes and
+  nothing on the client moves. (Implementation, 2026-10-01.)
+- *A mode with no implemented journeys shows the session, not an empty menu.*
+  The application mode declares no areas because a tenant-scoped session and the
+  permission codes it needs do not exist yet. It shows the tenant and the party
+  the person works in, which are facts, rather than drawing areas it cannot
+  fill. (Implementation, 2026-10-01.)
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own

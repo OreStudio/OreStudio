@@ -256,7 +256,13 @@ begin
       and trade_id = p_row.trade_id;
     -- A row this one was the last to name goes with it, so a shared parent
     -- survives and its last child does not leave an orphan. This row is
-    -- still open here, so the count excludes it.
+    -- still open here, so the count excludes it. The parent is taken first:
+    -- two deletes that share it would otherwise each see the other's row
+    -- still open and leave the parent behind.
+    perform 1 from "ores_trading_bond_issues_tbl"
+    where tenant_id = p_row.tenant_id
+      and issue_id = p_row.issue_id
+    for update;
     if not exists (
         select 1 from "ores_trading_bond_instruments_tbl"
         where tenant_id = p_row.tenant_id

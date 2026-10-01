@@ -1,6 +1,18 @@
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.domain.domain_types.org. Edit the org source. }}
 {{{ts_license}}}
 {{#domain_entity}}
+{{#has_domain_groups}}
+{{#domain_groups}}
+import type { {{ts_type}} } from '{{ts_import}}';
+{{/domain_groups}}
+
+{{/has_domain_groups}}
+{{#has_identity_group}}
+import type { {{identity_group_pascal}} } from '{{identity_group_import}}';
+{{/has_identity_group}}
+{{#has_audit_group}}
+import type { {{audit_group_pascal}} } from '{{audit_group_import}}';
+{{/has_audit_group}}
 /**
  * The {{entity_singular_words}} wire shape.
  *
@@ -65,6 +77,19 @@ export interface {{entity_pascal}} {
 {{/has_domain_groups}}
 }
 {{/domain_entity}}
+{{#field_group}}
+/**
+ * The {{entity_pascal}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ */
+export interface {{entity_pascal}} {
+{{#fields}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+{{/field_group}}
 {{#junction}}
 /**
  * The {{name_singular_words}} wire shape.

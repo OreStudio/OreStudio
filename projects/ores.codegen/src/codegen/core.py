@@ -4825,18 +4825,34 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if _mapped:
                 _field['ts_type'] = _mapped
         # A composed struct reaches its fields through a group member, and
-        # the interface names that member's own interface. The field-group
-        # interface is not emitted yet, so a grouped entity's domain module
-        # is a known gap -- see the archetype doc.
+        # the interface names that member's own interface. The entity imports
+        # it: a group the entity's own component declares sits beside it in
+        # the generated tree, and one from another component sits under that
+        # component's directory. A group is named either dotted
+        # (ores.trading.instrument_identity) or colons-qualified
+        # (ores::dq::domain::audit_record), so both are read.
+        def _group_import(_qualified: str) -> str:
+            _parts = (_qualified or '').replace('::', '.').split('.')
+            _stem = _parts[-1]
+            _owner = _parts[1] if len(_parts) > 1 else domain_entity.get('component')
+            if _owner == domain_entity.get('component'):
+                return f"./{_stem}.js"
+            return f"../../{_owner}/domain/{_stem}.js"
+
         for _group in domain_entity.get('domain_groups') or []:
             _group['ts_type'] = _to_pascal_case(
                 (_group.get('type_qualified') or '').split('::')[-1])
+            _group['ts_import'] = _group_import(_group.get('field_group'))
         if domain_entity.get('has_identity_group'):
             domain_entity['identity_group_pascal'] = _to_pascal_case(
+                domain_entity.get('identity_group_type', ''))
+            domain_entity['identity_group_import'] = _group_import(
                 domain_entity.get('identity_group_type', ''))
         if domain_entity.get('has_audit_group'):
             domain_entity['audit_group_pascal'] = _to_pascal_case(
                 (domain_entity.get('audit_group_qualified') or '').split('::')[-1])
+            domain_entity['audit_group_import'] = _group_import(
+                domain_entity.get('audit_group_qualified'))
         # A domain member the projection cannot state would render
         # '<member>: ;', a module that does not compile. Only the TypeScript
         # domain twin refuses the model; the C++ class has no such gap, so the
@@ -5270,6 +5286,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # line after it (no stray blank before the closing brace).
         if fg.get('fields'):
             fg['fields'][-1]['last'] = True
+        # The TypeScript domain twin renders the group as its own interface,
+        # so it needs the interface name and a wire type per field, the same
+        # way an entity's columns are mapped.
+        from .org_loader import _to_pascal_case, _ts_domain_type
+
+        fg['entity_pascal'] = _to_pascal_case(fg.get('entity_singular', ''))
+        for _field in fg.get('fields') or []:
+            _mapped = _ts_domain_type(_field.get('cpp_type'))
+            if _mapped:
+                _field['ts_type'] = _mapped
         data['field_group'] = fg
 
     if is_operation and isinstance(model, dict) and 'operation' in model:

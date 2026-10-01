@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 8F698AF3-CA0B-4151-8F67-0915FBAD40CE
+:END:
+#+title: Task: Define the session mode and capability contract
+#+description: Write the target state that fixes how the browser learns its mode and what it may see: the mode is computed by the server and delivered with the session, and the menu is built from the permissions the server already answers. The protocol change that implies, and what does not change.
+#+type: task
+#+level: s1
+#+filetags: :security:iam:ux:modes:protocol:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/define-the-session-mode-contract
+#+pr: 2459
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The target state a later sprint builds from, so the shell can be implemented against a contract that survives the security journey rather than one it will replace: where the mode comes from, where the menu's authority comes from, and the subjects and fields that change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The four modes and the rule that they are read and never chosen are stated, and the protocol change that delivers them is named.
+- The document splits structure from authority: the client owns where a journey lives in the menu, the server owns whether the person may run it.
+- Every subject and field it relies on is named, and each is marked as existing or missing against the tree.
+- What does not change is stated, so the shell can be built now without a rewrite later.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2459][#2459]] | [docs] Fix the contract the modes are delivered through |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]] is
+the target state, at =doc/knowledge/security/= and listed in the identity and
+access hub's reading order.
+
+It fixes the mode as computed by the server and delivered with the session, the
+menu's authority as the permission codes the server already answers, and the
+protocol change that implies. It marks two things to confirm rather than assume:
+the permission =iam.v1.roles.permissions-by-account= demands of its caller, and
+whether a member may ask for their own account.
+
+What it does not settle is recorded: how a person comes to hold a privileged
+mode, which is [[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][captured]] on its
+own, and whether a deployment can switch a journey off for everybody as against
+a person not holding its permission.

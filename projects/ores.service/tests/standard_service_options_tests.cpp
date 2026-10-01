@@ -78,11 +78,14 @@ TEST_CASE("read_options reports no logging until logging is switched on", tags) 
 TEST_CASE("read_options honours the filename it is given", tags) {
     const auto od = standard_service_options::make_options_description(log_file);
     const auto on = standard_service_options::read_options(
-        standard_service_options::parse(
-            od,
-            {"--db-user", "ores_test_user", "--db-database", "ores_test_db",
-             "--log-enabled", "--log-filename=custom.log"},
-            app_name));
+        standard_service_options::parse(od,
+                                        {"--db-user",
+                                         "ores_test_user",
+                                         "--db-database",
+                                         "ores_test_db",
+                                         "--log-enabled",
+                                         "--log-filename=custom.log"},
+                                        app_name));
     REQUIRE(on.logging.has_value());
     REQUIRE(on.logging->filename == "custom.log");
     REQUIRE(on.logging->output_to_console);

@@ -954,10 +954,8 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", tags) 
     fixture f;
     // The definition would roll a failure back. A deadline stops regardless,
     // because a step that went silent is a step whose work is unknown.
-    f.register_steps("test_deadline_workflow",
-                     {"one"},
-                     failure_policy::compensate,
-                     std::chrono::seconds{60});
+    f.register_steps(
+        "test_deadline_workflow", {"one"}, failure_policy::compensate, std::chrono::seconds{60});
     const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
@@ -994,10 +992,8 @@ TEST_CASE("workflow_engine keeps a failure when the step answers later", tags) {
     auto lg(make_logger(test_suite));
 
     fixture f;
-    f.register_steps("test_late_answer_workflow",
-                     {"one"},
-                     failure_policy::stop,
-                     std::chrono::seconds{60});
+    f.register_steps(
+        "test_late_answer_workflow", {"one"}, failure_policy::stop, std::chrono::seconds{60});
     const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
@@ -1054,8 +1050,8 @@ TEST_CASE("workflow_engine starts nothing for a definition whose step states no 
 
     fixture f;
     // Zero is what a definition that forgot to say leaves behind.
-    f.register_steps("test_undeadlined_workflow", {"one"}, failure_policy::stop,
-                     std::chrono::seconds{0});
+    f.register_steps(
+        "test_undeadlined_workflow", {"one"}, failure_policy::stop, std::chrono::seconds{0});
     f.register_steps("test_deadlined_workflow", {"one"});
     const auto refused_id = boost::uuids::to_string(boost::uuids::random_generator()());
 

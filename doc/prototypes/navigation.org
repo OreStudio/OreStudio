@@ -122,6 +122,11 @@ How a person learns that a journey exists but cannot be run. Nothing here states
 what a deployment switches on or off, because no document says a journey has a
 switch.
 
+The mode is read from the sign-in, and the contract that delivers it — the
+server stating the mode with the session, and the menu taking its authority from
+the permission codes the session holds — is
+[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]].
+
 How the account a person signs in with comes to *be* the privileged one. The
 mode is read from the sign-in, which is only honest if a super administrator's
 account is distinguishable from a person who happens to hold the role — and

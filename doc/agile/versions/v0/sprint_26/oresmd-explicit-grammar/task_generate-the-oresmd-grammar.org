@@ -8,7 +8,7 @@
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-oresmd-grammar
-#+pr:
+#+pr: 2485
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -182,7 +182,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2485][#2485]] | [marketdata] Generate the oresmd grammar from the declared coordinates |
 
 * Review
 

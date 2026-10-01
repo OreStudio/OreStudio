@@ -59,6 +59,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 |------+-------+-------+-----+-------------|
 | [[id:ECC602E3-71D3-4265-942B-063EFEB61495][Prototype the profile screen]] | DONE | 2026-09-30 | 2026-09-30 | Build the throwaway static prototype that argues the profile screen's layout: which panel is writable for whom, how a photo is replaced and approved, and how a reporting-line proposal waits for approval, in three structural variants. |
 | [[id:A54241DF-7B50-4BE8-890C-1A3BB35EC709][Prototype the application navigation]] | DONE | 2026-09-30 | 2026-10-01 | Build the throwaway static prototype that argues how a signed-in person reaches any journey in the catalogue: five structural models, over the catalogue's real 22 journeys in 8 groups, for a member and a tenant administrator. |
+| [[id:0341CAE9-DD19-4B6C-995B-95B74DB51B45][Record the privileged-access need]] | STARTED | 2026-10-01 | | Write the capture that records why the shell's modes need a recorded break-glass process behind them, what the systems that do this well have in common, and the decisions it leaves open. |
 
 * Decisions
 

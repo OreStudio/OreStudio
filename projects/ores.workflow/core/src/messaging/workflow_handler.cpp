@@ -26,7 +26,6 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_retry_protocol.hpp"
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include <boost/uuid/uuid_generators.hpp>
@@ -46,86 +45,6 @@ workflow_handler::workflow_handler(ores::nats::service::client& nats,
     , ctx_(std::move(ctx))
     , signer_(std::move(signer))
     , engine_(std::move(engine)) {}
-
-void workflow_handler::provision_parties(ores::nats::message msg) {
-    const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);
-    BOOST_LOG_SEV(lg(), info) << "provision_parties correlation_id=" << correlation_id;
-
-    // Validate JWT and build per-request context.
-    auto ctx_expected = ores::service::service::make_request_context(
-        ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>(signer_));
-    if (!ctx_expected) {
-        error_reply(nats_, msg, ctx_expected.error());
-        return;
-    }
-    const auto& req_ctx = *ctx_expected;
-
-    if (!has_permission(req_ctx, "workflow::parties:provision")) {
-        error_reply(nats_, msg, ores::service::error_code::forbidden);
-        return;
-    }
-
-    auto req = decode<provision_parties_request>(msg);
-    if (!req) {
-        reply(nats_,
-              msg,
-              provision_parties_response{.success = false, .message = "Invalid request payload."});
-        return;
-    }
-
-    if (req->parties.empty()) {
-        reply(nats_,
-              msg,
-              provision_parties_response{.success = false, .message = "No parties specified."});
-        return;
-    }
-
-    const auto tenant_id_str = boost::uuids::to_string(req_ctx.tenant_id().to_uuid());
-
-    provision_parties_response resp;
-    resp.success = true;
-    resp.correlation_id = correlation_id;
-
-    boost::uuids::random_generator gen;
-    for (const auto& input : req->parties) {
-        const auto party_id = gen();
-        const auto party_id_str = boost::uuids::to_string(party_id);
-
-        // Build the per-party workflow request that the engine will store and
-        // pass to the step builders.
-        provision_party_workflow_request wf_req;
-        wf_req.party_id = party_id_str;
-        wf_req.full_name = input.full_name;
-        wf_req.short_code = input.short_code;
-        wf_req.party_category = input.party_category;
-        wf_req.party_type = input.party_type;
-        wf_req.business_center_code = input.business_center_code;
-        wf_req.parent_party_id = input.parent_party_id;
-        // The provisioning wizard fires on first login, so the account waits.
-        wf_req.status = "Inactive";
-        wf_req.principal = input.principal;
-        wf_req.password = input.password;
-        wf_req.totp_secret = input.totp_secret;
-        wf_req.email = input.email;
-        wf_req.account_type = input.account_type;
-
-        start_workflow_message start_msg;
-        start_msg.type = "provision_parties_workflow";
-        start_msg.tenant_id = tenant_id_str;
-        start_msg.request_json = rfl::json::write(wf_req);
-        start_msg.correlation_id = correlation_id;
-
-        nats_.js_publish(start_workflow_message::nats_subject,
-                         ores::nats::default_wire_codec().encode(start_msg),
-                         ores::nats::service::forwarded_caller_headers(msg));
-
-        resp.party_ids.push_back(party_id_str);
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "provision_parties dispatched " << req->parties.size()
-                               << " workflow(s).";
-    reply(nats_, msg, resp);
-}
 
 void workflow_handler::retry_instance(ores::nats::message msg) {
     const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);

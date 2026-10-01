@@ -24,12 +24,10 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
-#include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_retry_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
@@ -107,7 +105,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Build workflow registry (one entry per known workflow type).
     // ----------------------------------------------------------------
     auto registry = std::make_shared<service::workflow_registry>();
-    refdata::workflow::register_provision_parties_workflow(*registry);
     ore::workflow::register_ore_import_workflow(*registry);
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
@@ -166,17 +163,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             qh->get_step_result(std::move(msg));
         }));
 
-    // ----------------------------------------------------------------
-    // Provision parties request/reply handler.
-    // Validates JWT, pre-generates party UUIDs, and dispatches one
-    // start_workflow_message per party (fire-and-forget).
-    // ----------------------------------------------------------------
     auto wh = std::make_shared<workflow_handler>(nats, std::move(ctx), std::move(signer), engine);
-
-    subs.push_back(nats.queue_subscribe(
-        provision_parties_request::nats_subject, qg, [wh](ores::nats::message msg) {
-            wh->provision_parties(std::move(msg));
-        }));
 
     // Resuming a run is the engine's work, so the handler that answers this
     // subject hands the request to the engine that holds the dispatch path.

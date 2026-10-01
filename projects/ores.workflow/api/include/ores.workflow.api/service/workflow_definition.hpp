@@ -252,7 +252,7 @@ struct workflow_definition {
     /**
      * @brief Unique type name matching workflow_instance.type.
      *
-     * E.g. "provision_parties_workflow"
+     * E.g. "provision_tenant_workflow"
      */
     std::string type_name;
 

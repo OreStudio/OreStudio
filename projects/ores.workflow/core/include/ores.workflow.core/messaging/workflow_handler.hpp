@@ -35,11 +35,10 @@ class workflow_engine;
 namespace ores::workflow::messaging {
 
 /**
- * @brief NATS message handler for workflow orchestration endpoints.
+ * @brief NATS message handler for the requests that change a run.
  *
- * Handles inbound workflow requests, validates the caller's JWT, and
- * dispatches one start_workflow_message per item to the engine via NATS
- * (fire-and-forget).  Replies immediately with pre-generated IDs.
+ * Validates the caller's JWT and hands the request to the engine, which holds
+ * the dispatch path. Reads of runs are workflow_query_handler's.
  */
 class ORES_WORKFLOW_CORE_EXPORT workflow_handler {
 private:
@@ -56,15 +55,6 @@ public:
                      ores::database::context ctx,
                      ores::security::jwt::jwt_authenticator signer,
                      std::shared_ptr<service::workflow_engine> engine);
-
-    /**
-     * @brief Handles workflow.v1.parties.provision requests.
-     *
-     * Validates the JWT, pre-generates one UUID per party, dispatches one
-     * start_workflow_message per party, and replies immediately with the
-     * pre-generated party_ids.  Workflow execution is asynchronous.
-     */
-    void provision_parties(ores::nats::message msg);
 
     /**
      * @brief Handles workflow.v1.instances.retry requests.

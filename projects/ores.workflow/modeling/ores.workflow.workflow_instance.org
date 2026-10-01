@@ -46,7 +46,7 @@ UUID primary key for the workflow instance.
 :nullable: false
 :END:
 
-Workflow type name, e.g. 'provision_parties_workflow'.
+Workflow type name, e.g. 'provision_tenant_workflow'.
 
 ** target_kind
 :PROPERTIES:

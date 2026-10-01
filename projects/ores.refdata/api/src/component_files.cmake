@@ -1126,5 +1126,4 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/zero_convention_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/zero_inflation_index_convention_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/ores.refdata.api.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/workflow/provision_parties_workflow.hpp"
 )

@@ -49,7 +49,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/steps_query_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_events.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_instance_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_query_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_retry_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_step_protocol.hpp"

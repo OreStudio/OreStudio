@@ -170,7 +170,7 @@ class ores::workflow::messaging::registrar <<hand-written>> {
 }
 
 class ores::workflow::messaging::workflow_handler <<hand-written>> {
-    +provision_parties(msg) : void
+    +retry_instance(msg) : void
 }
 
 class ores::workflow::messaging::workflow_query_handler <<hand-written>> {
@@ -282,7 +282,7 @@ class ores::workflow::service::workflow_engine <<hand-written>> {
 "ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::register_workflow_step_history_provider" : folds
 "ores::workflow::messaging::registrar" ..> "ores::workflow::service::workflow_engine" : builds, starts recovery
 "ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_query_handler" : subscribes four queries
-"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_handler" : subscribes the provision request
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_handler" : subscribes the retry request
 "ores::workflow::messaging::registrar" ..> "ores::workflow::service::load_fsm_states" : loads once at startup
 
 note bottom of "ores::workflow::messaging::registrar"

@@ -226,6 +226,12 @@ file, and the reason for each not-applicable.
 
 * Notes
 
+- *H02's structural items are already met, and the shapes are clean.* The
+  two generator trees the Acceptance names have collapsed already: only
+  =api/include/ores.trading.api/generators/= survives, with 85 entity
+  generators, and the singular =generator/= tree is gone. A scan over the
+  component finds no =#if 0= block, no commented-out code and no
+  =TODO=/=FIXME=/=XXX= marker.
 - *B06 is clean, and it found three stale headers.* The census ran over the
   1273 public headers of =api= and =core= against every tracked consumer in
   the tree, with =service/include/= (93 headers, about 42 of them consumed

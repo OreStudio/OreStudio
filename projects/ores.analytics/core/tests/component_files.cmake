@@ -38,4 +38,7 @@ set(files
     "stress_test_scenario_eventing_integration_tests.cpp"
     "stress_test_shift_eventing_integration_tests.cpp"
     "todays_market_config_eventing_integration_tests.cpp"
+    "todays_market_configuration_binding_eventing_integration_tests.cpp"
+    "todays_market_configuration_eventing_integration_tests.cpp"
+    "todays_market_entry_eventing_integration_tests.cpp"
 )

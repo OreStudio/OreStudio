@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 5DA8DEBE-22BE-57C0-BF62-2E5DAAD1BA5D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the todays_market_entries commands from the shell?
+#+description: Every command the todays_market_entries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:todays_market_entries:
+
+This file documents the todays_market_entries resource at the shell, one section per command. Every command is a subcommand of =todays_market_entries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 27A737A0-F190-5852-BC12-D81D08AD4F69
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.list=.
+
+#+name: todays_market_entries-list
+#+begin_src ores-shell :tangle todays_market_entries-list.ores :exports none
+todays_market_entries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: BDADEF16-B75D-56D6-AD3E-9ED925E68272
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries get <key_value>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.get=.
+
+#+name: todays_market_entries-get
+#+begin_src ores-shell :tangle todays_market_entries-get.ores :exports none
+todays_market_entries get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 8A54DF5F-11EE-5E0D-8D1C-4325823BAAA7
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries get-many <key_value>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.get_many=.
+
+#+name: todays_market_entries-get-many
+#+begin_src ores-shell :tangle todays_market_entries-get-many.ores :exports none
+todays_market_entries get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3690C6B5-1607-52BF-820C-BD199E13E3D7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries add <todays_market_config_id> <collection> <key_attribute> <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.put=.
+
+#+name: todays_market_entries-add
+#+begin_src ores-shell :tangle todays_market_entries-add.ores :exports none
+todays_market_entries add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E8F8E3D3-18E6-5EA8-BFB9-996218CA81B0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries set <id> <todays_market_config_id> <collection> <key_attribute> <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.put=.
+
+#+name: todays_market_entries-set
+#+begin_src ores-shell :tangle todays_market_entries-set.ores :exports none
+todays_market_entries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 79D69F05-8A46-5E52-9617-5D3701E2C2DA
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries put-many --count <n> <id> <todays_market_config_id> <collection> <key_attribute> <key_value> <key_value_2> <entry_id> <target> <discounting> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.put_many=.
+
+#+name: todays_market_entries-put-many
+#+begin_src ores-shell :tangle todays_market_entries-put-many.ores :exports none
+todays_market_entries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E689963A-9D89-501C-9EA8-69E11E181B9C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries delete <key_value> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.delete=.
+
+#+name: todays_market_entries-delete
+#+begin_src ores-shell :tangle todays_market_entries-delete.ores :exports none
+todays_market_entries delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8DC2D028-EA93-53F0-9BC4-825A1DC87ACA
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries delete-many <key_value> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.delete_many=.
+
+#+name: todays_market_entries-delete-many
+#+begin_src ores-shell :tangle todays_market_entries-delete-many.ores :exports none
+todays_market_entries delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-todays-market-config-id=
+:PROPERTIES:
+:ID: 58636B0F-D597-54BD-9961-50DF0DC2E505
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries by-todays-market-config-id <todays_market_config_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries.list_by_todays_market_config_id=.
+
+#+name: todays_market_entries-by-todays-market-config-id
+#+begin_src ores-shell :tangle todays_market_entries-by-todays-market-config-id.ores :exports none
+todays_market_entries by-todays-market-config-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 91401B90-CEBE-56E4-9A82-69E9E57237C1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries versions <key_value> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries_versions.list=.
+
+#+name: todays_market_entries-versions
+#+begin_src ores-shell :tangle todays_market_entries-versions.ores :exports none
+todays_market_entries versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6886E498-34AD-508B-8892-AE03EA4D7BAD
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_entries version <key_value> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_entries_versions.get=.
+
+#+name: todays_market_entries-version
+#+begin_src ores-shell :tangle todays_market_entries-version.ores :exports none
+todays_market_entries version __none__ --version 1
+#+end_src
+

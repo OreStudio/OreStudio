@@ -34,4 +34,7 @@ set(files
     "stress_test_scenario_commands_tests.cpp"
     "stress_test_shift_commands_tests.cpp"
     "todays_market_config_commands_tests.cpp"
+    "todays_market_configuration_binding_commands_tests.cpp"
+    "todays_market_configuration_commands_tests.cpp"
+    "todays_market_entry_commands_tests.cpp"
 )

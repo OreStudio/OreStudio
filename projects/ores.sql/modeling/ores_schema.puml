@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-02T02:16:59.160596Z
+' Generated: 2026-10-02T02:18:05.277170Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11366,6 +11366,108 @@ package "analytics" #E8F5E9 {
     todays_market_configuration_binding. This row is only the identity of the
     document, so that a tenant may hold more than one and a report may choose
     between them.
+    end note
+
+    entity ores_analytics_todays_market_configuration_bindings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * todays_market_configuration_id : uuid <<FK>>
+        * collection : text
+        * reference : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_configuration_bindings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Configuration Binding Table
+    One reference a configuration makes. A Configuration block writes up to
+    twenty-three of these, each naming the collection it selects from and the entry
+    it selects within that collection.
+    The reference is a name, not a foreign key to todays_market_entry. A
+    configuration may name an entry that the same document also defines, and the
+    corpus does that, but the reference is what the document holds and the two are
+    not required to agree; tying them together would refuse a document that ORE
+    accepts. Whether that should become a real key is a modelling question this
+    table leaves open on purpose.
+    end note
+
+    entity ores_analytics_todays_market_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * todays_market_config_id : uuid <<FK>>
+        * configuration_id : text <<FK>>
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Configuration Table
+    One Configuration block. It is not a collection of entries: it is a bundle of
+    references, each naming one entry of one collection, so that a report can select
+    a coherent set of curves and volatilities by name instead of restating them.
+    It identifies itself by a required id attribute, which is unique within a
+    document. The references it makes live on
+    todays_market_configuration_binding.
+    end note
+
+    entity ores_analytics_todays_market_entries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * todays_market_config_id : uuid <<FK>>
+        * collection : text
+        * key_attribute : text
+        * key_value : text
+          key_value_2 : text
+          entry_id : text <<FK>>
+        * target : text
+          discounting : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_entries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Entry Table
+    One entry of one collection. Twenty-three of the document's twenty-four
+    collections are this shape: an entry identifying itself by one attribute and
+    carrying a reference as its text, in a position.
+    The attribute is not one name. It is name for nineteen collections,
+    currency for DiscountingCurves, pair for the two FX collections and the
+    literal string key for SwaptionVolatilities and CapFloorVolatilities.
+    key_attribute records which one this row used, so a column named key_value
+    does not have to pretend the attribute is always the same word.
+    SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
+    once, so key_value_2 carries the second. SwapIndexCurves is the only
+    collection whose entry nests, and discounting carries its one child.
     end note
 
 }

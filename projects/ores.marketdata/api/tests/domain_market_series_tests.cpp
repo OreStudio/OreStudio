@@ -98,7 +98,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
 
     market_series sut;
     sut.version = 1;
-    sut.oresmd_uri = "oresmd://ir/eur?tenor=2y&type=vol&point=5y,2y,atm";
+    sut.oresmd_uri = "oresmd://ir/eur?tenor=2y&type=vol&quote=swaption&expiry=5y&delta=ATM&model=rate_lnvol";
     sut.series_subclass = "volatility";
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -107,7 +107,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Swaption vol series: " << sut;
 
-    CHECK(sut.oresmd_uri == "oresmd://ir/eur?tenor=2y&type=vol&point=5y,2y,atm");
+    CHECK(sut.oresmd_uri == "oresmd://ir/eur?tenor=2y&type=vol&quote=swaption&expiry=5y&delta=ATM&model=rate_lnvol");
     CHECK(sut.series_subclass == "volatility");
 }
 

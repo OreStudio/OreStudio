@@ -30,6 +30,7 @@ import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { NewPartyJourney } from './journeys/NewPartyJourney.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { AppShell } from './components/AppShell.js';
+import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { HomePage } from './pages/HomePage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
@@ -178,11 +179,22 @@ export function AppRoutes({
                     />
                 ))}
             />
+            {/*
+             * The roster is a table, so it takes the room it is given: a list
+             * bounded at the width a form wants leaves a dead margin on either
+             * side of nothing.
+             */}
             <Route
                 path="/tenants"
-                element={signedIn(gate.version, session, onSignOut, () => (
-                    <TenantsPage />
-                ))}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    onSignOut,
+                    () => (
+                        <TenantsPage />
+                    ),
+                    'workspace',
+                )}
             />
             <Route
                 path="/tenants/new"
@@ -273,6 +285,7 @@ function signedIn(
     session: SessionState,
     onSignOut: () => void,
     screen: (session: SessionView) => ReactNode,
+    width: ShellWidth = 'column',
 ): ReactNode {
     if (session.status !== 'authenticated') {
         return <Navigate to="/login" replace />;
@@ -290,6 +303,7 @@ function signedIn(
             tenantName={view.tenantName}
             partyName={view.party.name}
             mode={view.mode}
+            width={width}
             serverVersion={version}
             onSignOut={onSignOut}
         >

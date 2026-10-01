@@ -8,7 +8,7 @@
 #+filetags: :shell_surface_generation:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-synthetic-shell-surface
-#+pr:
+#+pr: 2472
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2472](https://github.com/OreStudio/OreStudio/pull/2472) | Generate the synthetic configs read |
 
 * Review
 

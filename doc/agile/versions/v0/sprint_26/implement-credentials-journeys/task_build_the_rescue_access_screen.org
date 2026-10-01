@@ -8,7 +8,7 @@
 #+filetags: :implement-credentials-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/rescue-access-screen
-#+pr:
+#+pr: 2493
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2493][#2493]] | [web] Build the administrator's Rescue access screen |
 
 * Review
 

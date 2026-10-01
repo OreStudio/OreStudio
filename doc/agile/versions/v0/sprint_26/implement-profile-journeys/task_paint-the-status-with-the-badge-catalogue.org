@@ -8,7 +8,7 @@
 #+filetags: :web:ux:badges:dq:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/paint-the-status-with-the-badge-catalogue
-#+pr:
+#+pr: 2478
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2478][#2478]] | [web] Paint the tenant status with the badge catalogue |
 
 * Review
 

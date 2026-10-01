@@ -182,3 +182,17 @@ via its "Verifies task" field.
 | 6 | Minor: misspell-fixer reports EXPLICT in sprint 25 and 26 task pages. | not in this diff | No action | None of the hits is in a file this branch changed. |
 
 Verdict: ready to merge. Nothing critical; the two important findings are recorded follow-ups.
+
+Round 2 (PR #2491, @claude review and CI):
+
+| #  | Comment summary | File | Decision | Notes |
+|----+-----------------+------+----------+-------|
+| 7  | CI: the shell-script drift check failed on the workflow instance scripts. | =ores.shell/scripts/library/workflow_instances= | Accept | Retangled from the regenerated recipe. |
+| 8  | A half target is dropped silently; confirm the iam call sites always pass a UUID. | =workflow_engine.cpp= | No change | Both call sites take the id from a uuid column (=id::text=, or the id the create function returns). The refusal matches the function's other refusals. |
+| 9  | The target index is unused, because the list filters in memory. | =ores.workflow.workflow_instance.org= | Accept | Index dropped from the model and the SQL; it returns with a repository read that filters by target. |
+| 10 | The 1000-run cut can hide the oldest tenants' runs with no warning; pin the order. | =wire-protocol/src/tenants.ts= | Accept | The read reports when it reached the limit and the BFF logs a warning. Tests pin the first-run-wins order. The real fix, a latest-run-per-target read, belongs to the workflow protocol capture. |
+| 11 | The hand-written protocol mirror. | =wire-protocol/src/tenants.ts= | Decline here | Already captured for the =ores.workflow= clean-up. |
+| 12 | A compensated run has no link to retry from. | =TenantsPage.tsx= | No change | Every unfinished state links to the run page, compensated included; only completed shows nothing. |
+| 13 | A cold link to a run outside the first roster page shows the generic title. | =TenantRunPage.tsx= | Decline | The rail still loads; the title falls back by design. |
+| 14 | No migration for existing databases. | =workflow_workflow_instances_create.sql= | No change | The project recreates its database from the create scripts. |
+| 15 | No test drives the list filters. | =workflow_query_handler.cpp= | Decline here | Same as finding 2; the capture adds the boundary test. |

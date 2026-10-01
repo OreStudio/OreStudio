@@ -20,7 +20,7 @@
 
 -- =============================================================================
 -- MQ queue statistics time-series table.
--- Populated by ores_mq_queue_stats_scrape_fn() via a pg_cron job.
+-- Populated by ores_mq_queue_stats_scrape_fn() via an ores.scheduler job.
 -- TimescaleDB hypertable when available; degrades gracefully to a plain table.
 -- Partitioned by recorded_at with 1-day chunks and 30-day retention.
 -- =============================================================================

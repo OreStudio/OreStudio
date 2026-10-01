@@ -15,11 +15,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Installs PostgreSQL extensions required by OreStudio:
+# Installs the PostgreSQL extension required by OreStudio:
 #
-#   - pg_cron     (apt package, postgres-database scheduler)
-#   - timescaledb (from timescaledb apt repository, time-series storage)
-#   - pgmq        (built from source, no Debian package available)
+#   - timescaledb (apt package, time-series storage)
 #
 # Must be run after PostgreSQL is installed.  Use --configure to update
 # postgresql.conf with shared_preload_libraries, and --restart to restart
@@ -84,8 +82,8 @@ echo ""
 sudo apt-get install -y -q gnupg curl lsb-release
 
 # ---------------------------------------------------------------------------
-# PGDG apt repository (needed for postgresql-server-dev-N on CI runners that
-# only have the distro-default PostgreSQL version pre-installed)
+# PGDG apt repository (needed on CI runners that only have the
+# distro-default PostgreSQL version pre-installed)
 # ---------------------------------------------------------------------------
 if [[ ! -f /etc/apt/sources.list.d/pgdg.list ]]; then
     echo "Adding PostgreSQL PGDG apt repository for PostgreSQL ${pg_major}..."
@@ -96,18 +94,6 @@ https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
         | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
     sudo apt-get update -q
 fi
-
-sudo apt-get install -y -q "postgresql-server-dev-${pg_major}"
-
-# ---------------------------------------------------------------------------
-# pg_cron: job scheduler (apt package)
-# Must be installed in the postgres database only. ores.scheduler uses
-# cron.schedule_in_database() so the cron.database_name setting should be
-# left at its default value (postgres).
-# ---------------------------------------------------------------------------
-echo "Installing pg_cron for PostgreSQL ${pg_major}..."
-sudo apt-get install -y "postgresql-${pg_major}-cron" || \
-    echo "Warning: pg_cron install failed — ores.scheduler will not function."
 
 # ---------------------------------------------------------------------------
 # timescaledb: time-series storage (Debian sid native package)
@@ -120,22 +106,6 @@ sudo apt-get install -y "postgresql-${pg_major}-timescaledb" || \
     echo "Warning: timescaledb install failed — sessions will use regular tables."
 
 # ---------------------------------------------------------------------------
-# pgmq: message queue (built from source — no Debian package available)
-# ---------------------------------------------------------------------------
-echo "Installing pgmq for PostgreSQL ${pg_major}..."
-
-pgmq_tmp=$(mktemp -d)
-trap 'rm -rf "$pgmq_tmp"' EXIT
-
-git clone --depth=1 https://github.com/pgmq/pgmq.git "$pgmq_tmp/pgmq"
-
-pushd "$pgmq_tmp/pgmq/pgmq-extension" > /dev/null
-make PG_CONFIG="/usr/lib/postgresql/${pg_major}/bin/pg_config"
-sudo make install PG_CONFIG="/usr/lib/postgresql/${pg_major}/bin/pg_config" || \
-    echo "Warning: pgmq install failed — message queue features will not function."
-popd > /dev/null
-
-# ---------------------------------------------------------------------------
 # postgresql.conf: shared_preload_libraries
 # ---------------------------------------------------------------------------
 if [[ $configure -eq 1 ]]; then
@@ -144,7 +114,7 @@ if [[ $configure -eq 1 ]]; then
         echo "Warning: Could not find postgresql.conf — skipping shared_preload_libraries config."
     else
         echo "Configuring shared_preload_libraries in ${pg_conf}..."
-        required_libs=("pg_cron" "timescaledb")
+        required_libs=("timescaledb")
         if grep -q "^shared_preload_libraries" "$pg_conf"; then
             # Read the existing value and append only missing libraries
             current=$(grep "^shared_preload_libraries" "$pg_conf" \
@@ -160,7 +130,7 @@ if [[ $configure -eq 1 ]]; then
                 "s|^shared_preload_libraries.*|shared_preload_libraries = '${new_val}'|" \
                 "$pg_conf"
         else
-            echo "shared_preload_libraries = 'pg_cron,timescaledb'" | sudo tee -a "$pg_conf" > /dev/null
+            echo "shared_preload_libraries = 'timescaledb'" | sudo tee -a "$pg_conf" > /dev/null
         fi
         echo "shared_preload_libraries set."
     fi
@@ -178,10 +148,10 @@ fi
 
 echo ""
 echo "======================================================================="
-echo "  PostgreSQL ${pg_major} extensions installed."
+echo "  PostgreSQL ${pg_major} extension installed."
 echo "======================================================================="
 echo ""
-echo "  Installed: pg_cron, timescaledb, pgmq"
+echo "  Installed: timescaledb"
 echo ""
 if [[ $configure -eq 0 ]]; then
     echo "  NOTE: shared_preload_libraries not configured automatically."

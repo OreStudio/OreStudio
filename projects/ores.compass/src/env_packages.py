@@ -1,11 +1,10 @@
 """compass env install-packages — install system packages for OreStudio.
 
 Ported from build/scripts/install_debian_packages.sh; behaviour is preserved:
-- Baseline packages (X11/GL headers, NATS, etc.) are always installed.
+- Baseline packages (autotools for vcpkg ports, NATS) are always installed.
 - --full-install adds the complete developer toolchain.
 - --with-valgrind adds Valgrind.
-After a --full-install, setup_postgres_extensions.sh is run to add pg_cron,
-timescaledb, and pgmq.
+After a --full-install, setup_postgres_extensions.sh is run to add timescaledb.
 """
 
 import argparse
@@ -19,25 +18,10 @@ _BASELINE = [
     "autoconf",
     "autoconf-archive",
     "automake",
-    "fontconfig",
     "nats-server",
-    "freeglut3-dev",
-    "libegl1",
     "libltdl-dev",
     "libtool",
-    "^libxcb.*-dev",
-    "libx11-xcb-dev",
-    "libglu1-mesa-dev",
-    "libxrender-dev",
-    "libxi-dev",
-    "libxkbcommon-dev",
-    "libxkbcommon-x11-dev",
-    "libegl1-mesa-dev",
-    "libxcursor-dev",
-    "libxinerama-dev",
-    "mesa-common-dev",
     "pkg-config",
-    "xorg-dev",
 ]
 
 _FULL = [

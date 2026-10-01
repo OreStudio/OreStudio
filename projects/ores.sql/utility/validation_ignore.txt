@@ -155,13 +155,6 @@ TENANT_002 ores_compute_workflow_batch_links_tbl
 TENANT_001 ores_database_info_tbl
 
 # =============================================================================
-# MQ metrics samples table - system-level time-series, not tenant-specific.
-# pgmq queues are global (shared infrastructure); metrics_all() returns no
-# tenant context. tenant_id has no meaning in this monitoring table.
-# =============================================================================
-TENANT_001 ores_mq_metrics_samples_tbl
-
-# =============================================================================
 # MQ queues table - supports party/tenant/system scopes with nullable tenant_id.
 # For system-scope queues tenant_id is intentionally NULL; a non-null tenant_id
 # column check is not applicable.

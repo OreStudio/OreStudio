@@ -226,6 +226,33 @@ file, and the reason for each not-applicable.
 
 * Notes
 
+- *V06 is done: ores.trading is in COMPONENTS_UNDER_TEST.* The M06
+  question the rehearsal raised was settled by generating the twins, and
+  doing so exposed the last hand-written wire type: =instrument_protocol.hpp=
+  declared nothing -- two includes whose types neither consumer used and an
+  empty namespace -- yet the trade model named it in its protocol includes
+  and the ORE import handler included it. Both references and the header
+  are gone, and the whole tree still builds, so the includes were
+  vestigial. The twin gate then reads 293 protocol headers across 14
+  components with every one twinned.
+- *The field-group projection was the work behind M06.* Trading is the
+  first field-grouped component projected to TypeScript, and the domain
+  facet admitted neither =field_group= models nor the imports an entity
+  needs for the groups it composes. The facet now admits them, the
+  archetype renders each group as its own interface, and an entity imports
+  it from its own component or across, as trading's audit group does from
+  =ores.dq.audit_record=. Two latent bugs surfaced on the way:
+  =_to_pascal_case= and =_ts_domain_type= are imported locally in the
+  entity and junction branches, so the field-group branch had neither.
+- *The gates are green with the component listed.* =--all= exits 0 with no
+  drift at all six addresses; the twin gate is 293 of 293; the registry
+  exception gate passes; the whole tree builds; =compass db recreate -y -k=
+  after stopping the fleet recreates from scratch and the fleet serves; and
+  =ctest -j 1= is 89 of 89 on that database. =pytest= is 1063.
+- *The first recreate attempt failed on an active connection.* =db recreate
+  -y -k= did not kill the fleet's connection and aborted, so the suite ran
+  against the existing database. =compass services stop= first is what made
+  the recreate real. Worth doing in that order for any later PR.
 - *V06 is one decision away.* With =trading-cpp= added to
   =COMPONENTS_UNDER_TEST=, =check_component_drift.py --all --dry-run= exits
   0 and checks trading at all six addresses, and

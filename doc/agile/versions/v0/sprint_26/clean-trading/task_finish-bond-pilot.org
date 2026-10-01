@@ -452,6 +452,10 @@ rows the work touches.
 | 5 | =barrier_type_from_string= re-rolls the generic =parse_code= and defaults an unknown code silently | =swap_instrument_mapper.cpp= | Recorded, not taken | =parse_code= is file-local to =bond_instrument_mapper.cpp=; sharing it is its own refactor |
 | 6 | The classifier reads any 8-digit value of date shape as a date, so a real difference could be masked | =scripts/ore_mapper_roundtrip_diff.py= | Recorded as a limit | Named in the PR's Testing limitations; the rule stays value-shaped here |
 | 7 | The KnockOutSwap routing and the widened =barrier_type= check are not acceptance bullets | =trade_mapper.cpp=, =knock_out_swap_instrument.org= | Accepted | D23 is the authority; the check names the ten ORE spellings the round trip needs |
+| 8 | PR review: two deletes that share a parent can each read the other as still open and leave the parent behind | =trading_bond_instruments_create.sql= | Accepted, fixed | The cascade takes the parent with =for update= before the check. The reverse ordering, a child inserted just before the parent is closed, is recorded as still open: the insert trigger's soft-FK check reads without a lock, and closing that is the shared insert path's, not the cascade's |
+| 9 | PR review: pin the 8-digit date case with a test | =scripts/ore_mapper_roundtrip_diff.py= | Accepted, fixed | The self-check now pins a February 30th and a month 13, the shapes the calendar rejects |
+| 10 | PR review: the test evidence is self-reported and CI must be green | PR body | Accepted | All 17 checks pass on the branch |
+| 11 | PR review: the committed ER PNG is stale, not just the =puml= | =ores_schema.png= | Accepted, follow-up | Filed as the capture =fix-the-er-diagram-png-render=; the render overflows a 32-bit pixel count at 367 tables |
 
 * Result
 

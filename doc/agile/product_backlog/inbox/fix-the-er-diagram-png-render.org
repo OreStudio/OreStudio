@@ -13,16 +13,33 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Make the ER diagram's PNG render again, or replace it with an artefact that
+can. `projects/ores.codegen/plantuml_er_generate.sh` parses the SQL tree and
+renders the `.puml`, then calls PlantUML to draw the image; the draw step
+now fails on the 367-table schema with
+`java.lang.NegativeArraySizeException`, because the full-resolution image
+overflows a 32-bit pixel count.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The `.puml` is the checked artefact and the `drift` job compares only it, so
+no gate is red. The committed PNG is therefore stale: it is the image main
+already carried, and it shows neither the tables the recent merges added nor
+the `bond_future_delivery_basket` retirement this pilot made. A reviewer who
+opens the PNG reads a schema that no longer exists, and the gap will widen
+with every merge. Candidates: emit one diagram per package, render at a
+reduced `PLANTUML_LIMIT_SIZE` with an explicit scale, or move to a
+format that does not need one giant raster.
 
 * References
 
--
+- =projects/ores.codegen/plantuml_er_generate.sh= — the parse, render and
+  draw steps.
+- =projects/ores.sql/modeling/ores_schema.puml= — the checked source.
+- =projects/ores.sql/modeling/CMakeLists.txt= — the diagram target and the
+  Java arguments.
 
 * See also
 
--
+- #2476, whose ER-diagram check passes on the `.puml` while the PNG stays
+  behind.

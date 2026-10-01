@@ -8,7 +8,7 @@
 #+filetags: :implement-credentials-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/audit-sign-ins-screen
-#+pr: 2494
+#+pr: 2495
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -99,6 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2495][#2495]] | [agile] Close the credentials journeys story |
 | [[https://github.com/OreStudio/OreStudio/pull/2494][#2494]] | [web] Build the sign-in audit screen |
 
 * Review

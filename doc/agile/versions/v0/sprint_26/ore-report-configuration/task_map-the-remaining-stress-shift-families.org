@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/map-the-remaining-stress-shift-families
-#+pr:
+#+pr: 2488
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2488][#2488]] | [ore] Map every stress shift family in both directions |
 
 * Review
 

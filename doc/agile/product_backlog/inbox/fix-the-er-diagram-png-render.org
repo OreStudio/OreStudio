@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D6BB976D-8B44-4D25-94E9-1BFD52D44461
+:END:
+#+title: The ER diagram PNG cannot be rendered at the current schema …
+#+description: The ER diagram PNG cannot be rendered at the current schema size. Writing it fails with java.lang.NegativeArraySizeException because the image for 367 tables overflows a 32-bit pixel count, so the committed PNG is still the one main carries and it does not show the tables recent merges added or the bond_future_delivery_basket retirement. The .puml is correct and the drift job checks only it. Fix the render: split the diagram into per-package files, scale it down, or replace the PNG with an SVG that is rendered per package.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

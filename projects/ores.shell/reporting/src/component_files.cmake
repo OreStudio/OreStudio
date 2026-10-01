@@ -27,9 +27,11 @@ set(files
     "app/commands/reporting/configuration_type_commands.cpp"
     "app/commands/reporting/parameter_definition_commands.cpp"
     "app/commands/reporting/parameter_value_domain_commands.cpp"
+    "app/commands/reporting/report_analytic_parameter_commands.cpp"
     "app/commands/reporting/report_configuration_commands.cpp"
     "app/commands/reporting/report_definition_commands.cpp"
     "app/commands/reporting/report_instance_commands.cpp"
+    "app/commands/reporting/report_market_binding_commands.cpp"
     "app/commands/reporting/report_operations_operations_commands.cpp"
     "app/commands/reporting/report_type_commands.cpp"
 )
@@ -43,9 +45,11 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/configuration_type_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/parameter_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/parameter_value_domain_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_analytic_parameter_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_configuration_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_definition_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_instance_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_market_binding_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_type_commands.hpp"
 )

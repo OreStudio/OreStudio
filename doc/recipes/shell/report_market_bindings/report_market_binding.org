@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 5303CFC9-F28E-5554-90DC-6961327581D2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the report_market_bindings commands from the shell?
+#+description: Every command the report_market_bindings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_market_bindings:
+
+This file documents the report_market_bindings resource at the shell, one section per command. Every command is a subcommand of =report_market_bindings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E0A57740-E53F-5C59-BE95-ED14A13C268D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.list=.
+
+#+name: report_market_bindings-list
+#+begin_src ores-shell :tangle report_market_bindings-list.ores :exports none
+report_market_bindings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B125BC84-275E-5B6D-9E42-A6F8F2061ED1
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings get <id>
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.get=.
+
+#+name: report_market_bindings-get
+#+begin_src ores-shell :tangle report_market_bindings-get.ores :exports none
+report_market_bindings get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A0E30032-DDD5-50AC-A8E3-793CD89C9E93
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.get_many=.
+
+#+name: report_market_bindings-get-many
+#+begin_src ores-shell :tangle report_market_bindings-get-many.ores :exports none
+report_market_bindings get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6CFD316C-AEF1-58DC-A1D7-3179209EC687
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings add <report_definition_id> <role> <configuration_name> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.put=.
+
+#+name: report_market_bindings-add
+#+begin_src ores-shell :tangle report_market_bindings-add.ores :exports none
+report_market_bindings add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 0B38DD19-519E-5A11-8493-BE25C01E422A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings set <id> <report_definition_id> <role> <configuration_name> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.put=.
+
+#+name: report_market_bindings-set
+#+begin_src ores-shell :tangle report_market_bindings-set.ores :exports none
+report_market_bindings set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: D774B1EB-9DDB-5B38-9C25-7B858E0CCB21
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings put-many --count <n> <id> <report_definition_id> <role> <configuration_name> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.put_many=.
+
+#+name: report_market_bindings-put-many
+#+begin_src ores-shell :tangle report_market_bindings-put-many.ores :exports none
+report_market_bindings put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 5C5F7E95-1E7E-5100-81A7-DFD21C48C7DA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.delete=.
+
+#+name: report_market_bindings-delete
+#+begin_src ores-shell :tangle report_market_bindings-delete.ores :exports none
+report_market_bindings delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 406AD8ED-AD99-5997-BC06-1B491F25C1D9
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings.delete_many=.
+
+#+name: report_market_bindings-delete-many
+#+begin_src ores-shell :tangle report_market_bindings-delete-many.ores :exports none
+report_market_bindings delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C62C387D-9C0D-5CBF-9036-2821D876B65B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings_versions.list=.
+
+#+name: report_market_bindings-versions
+#+begin_src ores-shell :tangle report_market_bindings-versions.ores :exports none
+report_market_bindings versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: DC094688-873D-5173-A2D8-CB4A41C60098
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_market_bindings version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.report_market_bindings_versions.get=.
+
+#+name: report_market_bindings-version
+#+begin_src ores-shell :tangle report_market_bindings-version.ores :exports none
+report_market_bindings version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

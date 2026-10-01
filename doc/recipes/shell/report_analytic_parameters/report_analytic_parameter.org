@@ -1,0 +1,266 @@
+:PROPERTIES:
+:ID: 2B4A520B-F99C-53AF-956D-96588F275C71
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the report_analytic_parameters commands from the shell?
+#+description: Every command the report_analytic_parameters submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_analytic_parameters:
+
+This file documents the report_analytic_parameters resource at the shell, one section per command. Every command is a subcommand of =report_analytic_parameters=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5CC69388-5CA6-5F40-8217-453CAE0F97EF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.list=.
+
+#+name: report_analytic_parameters-list
+#+begin_src ores-shell :tangle report_analytic_parameters-list.ores :exports none
+report_analytic_parameters list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5A2B3D63-CA07-5989-97A3-0A366C3D96A6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters get <id>
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.get=.
+
+#+name: report_analytic_parameters-get
+#+begin_src ores-shell :tangle report_analytic_parameters-get.ores :exports none
+report_analytic_parameters get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 279CB540-BF26-50D7-A1F2-6703D03714CE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.get_many=.
+
+#+name: report_analytic_parameters-get-many
+#+begin_src ores-shell :tangle report_analytic_parameters-get-many.ores :exports none
+report_analytic_parameters get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 6FA1954A-B4EA-584A-AD36-CB99AD4B44FA
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters add <report_analytic_id> <parameter_definition_id> <value> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.put=.
+
+#+name: report_analytic_parameters-add
+#+begin_src ores-shell :tangle report_analytic_parameters-add.ores :exports none
+report_analytic_parameters add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5D536C45-3293-5512-AD44-DEC2535EE66B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters set <id> <report_analytic_id> <parameter_definition_id> <value> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.put=.
+
+#+name: report_analytic_parameters-set
+#+begin_src ores-shell :tangle report_analytic_parameters-set.ores :exports none
+report_analytic_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: AF176A27-CF98-5A26-9D26-0D68529C69AC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters put-many --count <n> <id> <report_analytic_id> <parameter_definition_id> <value> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.put_many=.
+
+#+name: report_analytic_parameters-put-many
+#+begin_src ores-shell :tangle report_analytic_parameters-put-many.ores :exports none
+report_analytic_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6130A35F-1B86-58A7-9B55-239FF7DA5872
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.delete=.
+
+#+name: report_analytic_parameters-delete
+#+begin_src ores-shell :tangle report_analytic_parameters-delete.ores :exports none
+report_analytic_parameters delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1C7D9CD9-2158-55E9-B1DF-99C058944755
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.delete_many=.
+
+#+name: report_analytic_parameters-delete-many
+#+begin_src ores-shell :tangle report_analytic_parameters-delete-many.ores :exports none
+report_analytic_parameters delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-report-analytic-id=
+:PROPERTIES:
+:ID: 555C63C2-2D3E-50CC-AC6C-E4B58F0702B7
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters by-report-analytic-id <report_analytic_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.list_by_report_analytic_id=.
+
+#+name: report_analytic_parameters-by-report-analytic-id
+#+begin_src ores-shell :tangle report_analytic_parameters-by-report-analytic-id.ores :exports none
+report_analytic_parameters by-report-analytic-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-parameter-definition-id=
+:PROPERTIES:
+:ID: 1D8A3B16-B67F-5CCF-905B-D475458C30F0
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters by-parameter-definition-id <parameter_definition_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters.list_by_parameter_definition_id=.
+
+#+name: report_analytic_parameters-by-parameter-definition-id
+#+begin_src ores-shell :tangle report_analytic_parameters-by-parameter-definition-id.ores :exports none
+report_analytic_parameters by-parameter-definition-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1AE66FCC-60FE-55D0-880A-5FE6724934D8
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters_versions.list=.
+
+#+name: report_analytic_parameters-versions
+#+begin_src ores-shell :tangle report_analytic_parameters-versions.ores :exports none
+report_analytic_parameters versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 3D83D1DD-B763-5D89-90A1-7777D8086660
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_analytic_parameters version <id> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.report_analytic_parameters_versions.get=.
+
+#+name: report_analytic_parameters-version
+#+begin_src ores-shell :tangle report_analytic_parameters-version.ores :exports none
+report_analytic_parameters version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -28,9 +28,11 @@ set(files
     "main.cpp"
     "parameter_definition_commands_tests.cpp"
     "parameter_value_domain_commands_tests.cpp"
+    "report_analytic_parameter_commands_tests.cpp"
     "report_configuration_commands_tests.cpp"
     "report_definition_commands_tests.cpp"
     "report_instance_commands_tests.cpp"
+    "report_market_binding_commands_tests.cpp"
     "report_operations_operations_commands_tests.cpp"
     "report_type_commands_tests.cpp"
 )

@@ -272,9 +272,16 @@ describe('GET /api/tenants', () => {
             error: 'Seeding failed.',
         });
         expect(calls[1]?.subject).toBe('workflow.v1.instances.list');
-        expect(calls[1]?.body).toMatchObject({
+        /*
+         * Every filter is on the wire, because the server refuses a request
+         * that leaves one out; the ones not in use are empty.
+         */
+        expect(calls[1]?.body).toEqual({
+            limit: 1000,
+            status_filter: '',
             type_filter: 'provision_tenant_workflow',
             target_kind_filter: 'tenant',
+            target_id_filter: '',
         });
 
         await server.close();

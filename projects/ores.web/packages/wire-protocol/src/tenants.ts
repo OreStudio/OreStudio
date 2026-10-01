@@ -124,10 +124,15 @@ export const PROVISION_TENANT_TARGET_KIND = 'tenant';
 /** `list_workflow_instance_summaries_request`, sent on `workflow.v1.instances.list`. */
 export const listWorkflowInstancesRequestSchema = z.object({
     limit: z.int().positive().max(1000).default(200),
-    status_filter: z.string().optional(),
-    type_filter: z.string().optional(),
-    target_kind_filter: z.string().optional(),
-    target_id_filter: z.string().optional(),
+    /*
+     * The server's decoder needs every field present, even the optional ones:
+     * a missing key fails the whole request. An empty string is what the
+     * handler reads as "no filter", so an unused filter is sent as one.
+     */
+    status_filter: z.string().default(''),
+    type_filter: z.string().default(''),
+    target_kind_filter: z.string().default(''),
+    target_id_filter: z.string().default(''),
 });
 export type ListWorkflowInstancesRequest = z.input<typeof listWorkflowInstancesRequestSchema>;
 

@@ -7,10 +7,20 @@
 #+level: cross
 #+filetags: :analysis:capture:next:
 #+created: 2026-05-21
-#+updated: 2026-07-11
+#+updated: 2026-10-01
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 Should role and permission junction tables have change reason support? Analyse
 whether the audit trail benefit justifies the additional complexity for these
 administrative tables.
+
+* Answered
+
+The audit trail did justify it, and the answer is the whole tail rather than a
+reason alone. =ores_iam_role_permissions_tbl= carries =assigned_by=,
+=assigned_at=, =change_reason_code= and =change_commentary=, the same four
+columns =ores_iam_account_roles_tbl= already had, with the same insert trigger.
+A role's bundle can be written, and a write nobody can attribute is worse than
+no write, which is what settled it. The rule is recorded in
+[[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]].

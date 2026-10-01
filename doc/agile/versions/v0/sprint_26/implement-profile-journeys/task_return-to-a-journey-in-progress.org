@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:setup:v0:sprint_26:implement-profile-journeys:
 #+owner: marco
 #+branch: feature/return-to-a-journey-in-progress
-#+pr:
+#+pr: 2491
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2491][#2491]] | [web] Return to a tenant's setup run from the roster |
 
 * Review
 

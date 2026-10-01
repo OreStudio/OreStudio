@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0EBEBF7B-EF41-4088-9CCF-CEB054D4635E
+:END:
+#+title: A generated shell command with no arguments wraps an empty try block
+#+description: The shell operation command generator emits a try/catch around the block that populates a request from the parsed arguments. A request model with no fields produces no statements in that block, so the generated command contains 'try { } catch (const std::exception& e) { ... }' with nothing between the braces. It is harmless but it is noise in every no-argument command, and the first one is authorization_operations_commands::process_get_my_roles, generated from iam.v1.roles.mine. The candidate is for the command template to skip the block when the request declares no fields. The generator lives in projects/ores.codegen/library/templates/, so the fix is a template change plus a regeneration, not a hand edit of the generated file.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:capture:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -22,7 +22,7 @@
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -182,7 +182,7 @@ bool run_and_follow(std::ostream& out,
     }
 
     out << "  Run started: " << started->instance_id << std::endl;
-    return workflow_operation_commands::wait_for_instance(
+    return workflow_run_commands::wait_for_instance(
         out, session, started->instance_id, timeout);
 }
 

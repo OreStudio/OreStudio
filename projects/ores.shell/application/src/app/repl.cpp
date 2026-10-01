@@ -61,7 +61,8 @@
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/variability/system_setting_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
-#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_operations_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_step_commands.hpp"
 #include "ores.shell/app/commands/workspace/workspace_commands.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
@@ -132,7 +133,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     bundles_commands::register_commands(*root, session_);
     workflow_instance_commands::register_commands(*root, session_);
     workflow_step_commands::register_commands(*root, session_);
-    workflow_operation_commands::register_commands(*root, session_);
+    workflow_operations_commands::register_commands(*root, session_);
+    workflow_run_commands::register_commands(*root, session_);
     workspace_commands::register_commands(*root, session_);
     scheduler_commands::register_commands(*root, session_);
     lei_commands::register_commands(*root, session_);

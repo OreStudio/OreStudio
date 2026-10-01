@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 7189B63B-E93F-5C59-B8FA-9327D70B806E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the workflow commands from the shell?
+#+description: Every command the workflow submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =workflow=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =step-result=
+:PROPERTIES:
+:ID: A6350436-0796-5C26-A8EB-B24CCA83497A
+:END:
+
+Sends =get_step_result_request= and prints =get_step_result_response=, so the shape is the protocol's and the meaning is the service's. It reads =step_id=, =tenant_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow step-result <step_id> <tenant_id>
+#+end_example
+
+It is addressed at =workflow.v1.steps.get-result=.
+
+#+name: workflow-step-result
+#+begin_src ores-shell :tangle workflow-step-result.ores :exports none
+workflow step-result __none__ __none__
+#+end_src
+
+** =instances=
+:PROPERTIES:
+:ID: 3DA7AD7A-ACA7-5216-AEF6-15D50D9F556E
+:END:
+
+Sends =list_workflow_instance_summaries_request= and prints =list_workflow_instance_summaries_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow instances [--limit <v>] [--status_filter <v>] [--type_filter <v>] [--target_kind_filter <v>] [--target_id_filter <v>]
+#+end_example
+
+It is addressed at =workflow.v1.instances.list=.
+
+#+name: workflow-instances
+#+begin_src ores-shell :tangle workflow-instances.ores :exports none
+workflow instances
+#+end_src
+
+** =steps=
+:PROPERTIES:
+:ID: 881BD7C3-DC8A-5D04-890A-B8496D63DE53
+:END:
+
+Sends =get_workflow_steps_request= and prints =get_workflow_steps_response=, so the shape is the protocol's and the meaning is the service's. It reads =workflow_instance_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow steps <workflow_instance_id>
+#+end_example
+
+It is addressed at =workflow.v1.instances.steps=.
+
+#+name: workflow-steps
+#+begin_src ores-shell :tangle workflow-steps.ores :exports none
+workflow steps __none__
+#+end_src
+
+** =definitions=
+:PROPERTIES:
+:ID: F2CC6B80-4D70-5394-B33A-CC890E0140A3
+:END:
+
+Sends =list_workflow_definitions_request= and prints =list_workflow_definitions_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow definitions
+#+end_example
+
+It is addressed at =workflow.v1.definitions.list=.
+
+#+name: workflow-definitions
+#+begin_src ores-shell :tangle workflow-definitions.ores :exports none
+workflow definitions
+#+end_src
+
+** =retry=
+:PROPERTIES:
+:ID: F6F15B6C-5D9A-5EC9-9221-79D3B4ABDDB4
+:END:
+
+Sends =retry_workflow_instance_request= and prints =retry_workflow_instance_response=, so the shape is the protocol's and the meaning is the service's. It reads =workflow_instance_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow retry <workflow_instance_id> [--step_name <v>]
+#+end_example
+
+It is addressed at =workflow.v1.instances.retry=.
+
+#+name: workflow-retry
+#+begin_src ores-shell :tangle workflow-retry.ores :exports none
+workflow retry __none__
+#+end_src
+

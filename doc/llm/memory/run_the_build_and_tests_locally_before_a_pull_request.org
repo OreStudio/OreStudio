@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 153DA8FE-BDF5-4B82-829A-525503BC7812
+:END:
+#+title: Run the build, the tests and a service start locally before raising a pull request
+#+description: GitHub gates a pull request on drift and lint alone. Nothing on the pull-request path compiles C++, runs ctest or starts a service, and that is deliberate: a gate that does was added on 2026-09-29 and removed on 2026-09-30 because it cost more than it caught. The full build, ctest and a service start are the author's job, and the pull request description is the only record that they ran.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :ci:process:verification:memory:feedback:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+Classify the diff with the table in the compass-pr-raise skill and run the matching checks on your own machine before you raise the pull request. For any code class that means a full build and ctest, and a service start when the change can affect a service. Put the result in the pull request description.
+
+*Why:* The only thing that catches a broken build before review is the author running it, because no pull-request workflow builds or tests the tree. A gate that did was added to pull-request-verify.yml on 2026-09-29 by the prime_origin environment and removed on 2026-09-30: it configured, built every target, ran ctest and started the services on every pull request that could break a build, which took longer than every other check on the pull request put together, and what it caught the author was about to find anyway. The scheduled Continuous Linux job still builds and tests off the pull-request path, so the estate is not unverified.
+
+*How to apply:* When you are about to raise a pull request, and again when you record one as ready for review. Classify the diff with the table in the =compass-pr-raise= skill: documentation takes the site check, code and the catch-all take a full build and ctest, and a path under a service directory takes a service start as well. For the code class that is =compass build= and then =compass test run=, which already takes the host-wide build lock; do not reach for raw =cmake= or =ctest=. Put the verdict in the Testing section of the pull request, because that description is the only record that the checks ran, and an empty evidence section reads as though they did not. If you are tempted to add a workflow that builds on =pull_request= so that nobody has to do this, do not: that was tried on 2026-09-29 and removed a day later.

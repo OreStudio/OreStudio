@@ -234,7 +234,10 @@ def normalisation_self_check() -> int:
     """Pin the value normalisation both scopes read.
 
     The date rule has already read a bond leg's notional as a date, so it is
-    asserted here rather than left for a corpus run to notice.
+    asserted here rather than left for a corpus run to notice. The rule reads
+    a date from the value's shape alone, so a numeric value that spells a
+    real calendar date is normalised to one; the cases below pin the other
+    side, where the shape looks like a date but the calendar rejects it.
     """
     cases = (
         ("20160203", "2016-02-03"),
@@ -243,6 +246,8 @@ def normalisation_self_check() -> int:
         ("10000000.000000", "10000000"),
         ("28371509.989758", "28371509.989758"),
         ("20261301", "20261301"),
+        ("20240230", "20240230"),
+        ("18001301", "18001301"),
         ("0.05", "0.05"),
         ("", ""),
     )

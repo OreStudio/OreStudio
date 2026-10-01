@@ -63,6 +63,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:8F698AF3-CA0B-4151-8F67-0915FBAD40CE][Define the session mode and capability contract]] | DONE | 2026-10-01 | 2026-10-01 | Write the target state that fixes how the browser learns its mode and what it may see: the mode is computed by the server and delivered with the session, and the menu is built from the permissions the server already answers. The protocol change that implies, and what does not change. |
 | [[id:1BCEA32A-47C1-4DE0-8A6A-3DB5B7BE9723][Implement the super administrator sign-in]] | DONE | 2026-10-01 | 2026-10-01 | Deliver the session mode and the system administration landing, so the super administrator signs in and reaches the tenant management journeys. |
 | [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]] | DONE | 2026-10-01 | 2026-10-01 | Give the system administration area a read-only tenant roster, as its own journey, and the read the screen needs. |
+| [[id:618DDCAD-49A8-4161-A2BD-8AAE3C36CC47][Bound the signed-in layout and unblock the tenant details step]] | STARTED | 2026-10-01 | | The splash is unbounded on a signed-in journey, and a seed profile that inherits the administrator password leaves the second step of New tenant with a disabled Continue. |
 
 * Decisions
 
@@ -110,6 +111,18 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   permission. A menu that omits an area is structure; a route that refuses a
   caller is a boundary, and only the second one is authority. (Implementation,
   2026-10-01.)
+- *The signed-in shell bounds its screen at the public shell's width.* A journey
+  that stands something up draws the same banner before and after a sign-in, and
+  a banner fills the column it is given. One shell capped its column and the
+  other did not, so the same screen was a comfortable width at the door and a
+  wall once somebody was through it. One number, in both shells.
+  (Implementation, 2026-10-01.)
+- *An offer to inherit a password stands only while there is one to inherit.* A
+  starting point may propose that the tenant's administrator takes the creating
+  administrator's password, and a journey with no creating administrator has
+  nothing to hand over. The proposal is dropped where the details are built
+  rather than drawn and then refused, because a choice that cannot be kept
+  leaves a step nobody can leave. (Implementation, 2026-10-01.)
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own

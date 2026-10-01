@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 618DDCAD-49A8-4161-A2BD-8AAE3C36CC47
+:END:
+#+title: Task: Bound the signed-in layout and unblock the tenant details step
+#+description: The splash is unbounded on a signed-in journey, and a seed profile that inherits the administrator password leaves the second step of New tenant with a disabled Continue.
+#+type: task
+#+level: s1
+#+filetags: :web:ux:journeys:shell:v0:sprint_26:implement-profile-journeys:
+#+owner: marco
+#+branch: feature/unblock-the-tenant-journey
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two defects a person found by using the site. A journey that stands something
+up drew its banner at the full width of a wide display once somebody had signed
+in, and the second step of *New tenant* could not be left at all for the
+starting point that offers to hand the creating administrator's password on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
+| Now          | Both defects are fixed and read against the running deployment. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- A screen inside the signed-in shell is bounded and centred at the width the
+  wide public shell already uses, so a banner fills the same column in both.
+- The details step of *New tenant* offers a password of its own for a starting
+  point that inherits the creating administrator's password, because this
+  journey holds no such password.
+- The details step moves on once the password and its confirmation are typed,
+  and stays put until then.
+- First run keeps the offer, because it does hold the creating password.
+- The offer of a password that cannot be handed over is not drawn.
+- The tests that recorded the broken state as correct are corrected, and one
+  asserts each half of the rule.
+- Both defects were read in a browser against the running deployment.
+
+* Plan
+
+1. *The layout is the shell's, not the journey's.* The banner is already sized
+   correctly and states no height, so the defect is the column it is given.
+   The bound goes on the signed-in shell, where every screen gets it, and it is
+   the public shell's own number so the two agree.
+2. *The password rule, not the screen.* Whether a profile may hand the creating
+   administrator's password on is a fact about whether the journey holds one,
+   so the proposal is dropped where it is built, and the form stops offering a
+   choice that cannot be kept.
+3. *Correct the test that agreed with the defect.* The old test asserted that
+   the broken state was correct. It now asserts both halves of the rule: a
+   journey holding no password asks for one, and first run, which holds the
+   creating password, keeps the offer.
+4. *Read it in a browser.* Both defects are about what a screen draws, so both
+   are read against the running deployment, not only in a test.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The banner's rendered width on the details step | 794px of a 1600px viewport | =node evidence/tenant_journey_check.js= | the branch tip |
+| BFF suite | 19 files, 93 tests | =npm run test= in =projects/ores.web/packages/bff= | the branch tip |
+| Web suite | 17 files, 179 tests | =npm run test= in =projects/ores.web/packages/web= | the branch tip |
+| Wire contract suite | 7 files, 51 tests | =npm run test= in =projects/ores.web/packages/wire-protocol= | the branch tip |
+| Live tenant journey harness | 9 promises | =node evidence/tenant_journey_check.js= | the branch tip |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both defects are fixed, and both were read in a browser against the running
+deployment.
+
+- *The banner is bounded.* The image was never the defect: it states its ratio
+  and no height. The column it was given was. The public shell has always
+  capped and centred its screen at =max-w-[1100px]= and the signed-in shell did
+  not, so the same journey drew a wall once somebody had signed in. The
+  signed-in shell now uses the public shell's own bound, and every screen gets
+  it. On a 1600px display the banner draws 794px wide, as it does before a
+  sign-in, instead of filling the window.
+
+- *The details step can be left.* A starting point may offer to hand the
+  creating administrator's password to the tenant's administrator, and the
+  standalone *New tenant* journey holds no such password: nobody signed in as
+  the account that creates the tenant. The offer stood anyway, which hid the
+  password field and left Continue disabled with no way forward that a person
+  could see. The proposal is now dropped where the details are built, when the
+  journey holds nothing to hand over, and the form asks for a password of the
+  tenant's own. First run is unchanged, because it does hold the creating
+  password.
+
+- *The test that agreed with the defect is corrected.* The old test asserted
+  that a demonstration profile with an unheld password leaves the step disabled,
+  which was the defect written down as the rule. It now asserts both halves: a
+  journey holding no password asks for one and moves on once it is typed, and a
+  journey holding one keeps the offer and moves on without asking.
+
+Proved live: the harness signs in, opens *New tenant*, chooses the starting
+point that inherits the password, moves to the details step, confirms the
+password and its confirmation are asked for, types them, and confirms the step
+then moves on. Screenshot in =evidence/tenant_details.png=; harness in
+=evidence/tenant_journey_check.js=.
+
+What this task does not do. The bound is one number shared by the two shells,
+so a screen that wants a different width changes both. The details step still
+opens as a summary that must be expanded to reach the settings, which is a
+separate question about how much a person should have to read before typing.

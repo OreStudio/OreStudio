@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:credentials:v0:sprint_26:implement-credentials-journeys:
 #+owner: marco
 #+branch: fix/guard-the-session-reads
-#+pr: 2465
+#+pr: 2492
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -36,11 +36,11 @@ these reads.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
-| Now          | The three guards are in the handler; the build and the suites have not run yet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next          | Build =ores.iam= and run its suites, then raise the pull request. |
+| Next          | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -95,6 +95,7 @@ these reads.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2492][#2492]] | [agile] Record the remaining credentials build tasks |
 | [[https://github.com/OreStudio/OreStudio/pull/2465][#2465]] | [iam] Guard the session reads with the permission the catalogue grants |
 
 * Review

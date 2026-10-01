@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/bond_forward.hpp"
-#include "ores.trading.api/domain/bond_future_delivery_basket.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/bond_issue_leg.hpp"
@@ -301,17 +300,6 @@ read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_forward>
 read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
-
-/**
- * @brief Reads the delivery basket of a set of instruments.
- *
- * Rows come back in instrument order, then in ordinal order.
- *
- * @param ctx The database context, which carries the tenant.
- * @param trade_ids UUIDs of the trades whose delivery basket to read.
- */
-ORES_TRADING_CORE_EXPORT std::vector<domain::bond_future_delivery_basket>
-read_delivery_baskets_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**@}*/
 

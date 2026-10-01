@@ -33,7 +33,6 @@
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
-#include "ores.trading.api/messaging/bond_future_delivery_basket_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
@@ -1169,31 +1168,6 @@ std::string save_forward(Nats& nats,
 }
 
 /**
- * @brief Saves the delivery basket of a future, one row per identifier.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string save_delivery_basket(Nats& nats,
-                                 const boost::uuids::uuid& trade_id,
-                                 const std::vector<std::string>& basket) {
-    using ores::trading::messaging::put_bond_future_delivery_basket_request;
-
-    std::string error;
-    int sequence_number = 0;
-    for (const auto& delivery_basket_id : basket) {
-        put_bond_future_delivery_basket_request req;
-        req.change.write.trade_id = trade_id;
-        req.change.write.sequence_number = ++sequence_number;
-        req.change.write.delivery_basket_id = delivery_basket_id;
-        auto resp = nats_call(nats, req, error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-            return error.empty() ? "save_bond_future_delivery_basket failed" : error;
-    }
-    return {};
-}
-
-/**
  * @brief Saves one bond instrument: its issue row, its header row, the
  * issue's child rows, its legs, its option block and the product's fact row.
  *
@@ -1331,10 +1305,6 @@ save_bond_instrument(Nats& nats,
     }
 
     if (auto failure = save_forward(nats, trade_id, data); !failure.empty())
-        return failure;
-
-    if (auto failure = save_delivery_basket(nats, trade_id, data.future_delivery_basket);
-        !failure.empty())
         return failure;
 
     if (auto failure = save_schedule(nats, trade_id, "trs", 1, "schedule", data.trs_schedule);

@@ -811,20 +811,6 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
--- Bond Future Delivery Baskets
-alter table ores_trading_bond_future_delivery_baskets_tbl enable row level security;
-
-drop policy if exists bond_future_delivery_baskets_tenant_isolation_policy
-    on ores_trading_bond_future_delivery_baskets_tbl;
-
-create policy bond_future_delivery_baskets_tenant_isolation_policy on ores_trading_bond_future_delivery_baskets_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
 -- -----------------------------------------------------------------------------
 -- Commodity Instruments
 -- -----------------------------------------------------------------------------

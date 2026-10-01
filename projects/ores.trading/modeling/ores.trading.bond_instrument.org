@@ -240,12 +240,6 @@ closes them when the last instrument of the issue is deleted.
 :column: trade_id
 :END:
 
-** bond_future_delivery_baskets
-:PROPERTIES:
-:table:  ores_trading_bond_future_delivery_baskets_tbl
-:column: trade_id
-:END:
-
 ** bond_futures
 :PROPERTIES:
 :table:  ores_trading_bond_futures_tbl

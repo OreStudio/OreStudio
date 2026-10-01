@@ -1078,8 +1078,6 @@ TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     REQUIRE(f.use_future_price);
     CHECK(*f.use_future_price);
 
-    CHECK(r.future_delivery_basket.empty());
-
     // A future carries no bond terms, so the issue row its NOT NULL
     // issue_id points at is minted empty.
     CHECK(r.issue.security_id.empty());

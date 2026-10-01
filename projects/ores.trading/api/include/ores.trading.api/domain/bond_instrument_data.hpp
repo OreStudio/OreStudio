@@ -57,8 +57,8 @@ namespace ores::trading::domain {
  *
  * The remainder members carry what the nine tables cannot store, so
  * that export re-emits what the document held. Each one is a recorded
- * scope limit of the fidelity work. The exercise dates, the four
- * leg schedules and the delivery basket go to the parent story's shared
+ * scope limit of the fidelity work. The exercise dates and the four
+ * leg schedules go to the parent story's shared
  * instrument-keyed schedule and underlyings tables; the leg payer flags
  * and the total return price type have no column anywhere.
  */
@@ -155,11 +155,6 @@ struct bond_instrument_data final {
     std::optional<std::string> option_redemption;
     std::optional<std::string> option_price_type;
     std::optional<std::string> option_knocks_out;
-
-    /**
-     * @brief Every delivery basket identifier the future's basket lists.
-     */
-    std::vector<std::string> future_delivery_basket;
 
     /**
      * @brief The total return price type the document states (Dirty or Clean).

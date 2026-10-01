@@ -239,9 +239,6 @@ begin
     delete from "ores_trading_bond_forwards_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
-    delete from "ores_trading_bond_future_delivery_baskets_tbl"
-    where tenant_id = p_row.tenant_id
-      and trade_id = p_row.trade_id;
     delete from "ores_trading_bond_futures_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;

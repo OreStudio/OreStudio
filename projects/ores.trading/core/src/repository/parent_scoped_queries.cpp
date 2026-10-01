@@ -22,8 +22,6 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.core/repository/bond_forward_entity.hpp"
 #include "ores.trading.core/repository/bond_forward_mapper.hpp"
-#include "ores.trading.core/repository/bond_future_delivery_basket_entity.hpp"
-#include "ores.trading.core/repository/bond_future_delivery_basket_mapper.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_mapper.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_entity.hpp"
@@ -539,26 +537,6 @@ read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_id
         [](const auto& entities) { return bond_forward_mapper::map(entities); },
         lg(),
         "Reading bond forwards by instrument ids.");
-}
-
-std::vector<domain::bond_future_delivery_basket>
-read_delivery_baskets_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
-    if (trade_ids.empty())
-        return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<bond_future_delivery_basket_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
-
-    return execute_read_query<bond_future_delivery_basket_entity,
-                              domain::bond_future_delivery_basket>(
-        ctx,
-        query,
-        [](const auto& entities) { return bond_future_delivery_basket_mapper::map(entities); },
-        lg(),
-        "Reading bond future delivery baskets by instrument ids.");
 }
 
 }

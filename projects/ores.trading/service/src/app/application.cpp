@@ -33,7 +33,6 @@
 #include "ores.trading.service/messaging/ascot_event_registrar.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_forward_event_registrar.hpp"
-#include "ores.trading.service/messaging/bond_future_delivery_basket_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_future_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/bond_issue_call_date_event_registrar.hpp"
@@ -283,9 +282,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, event_bus, nats);
     auto bond_forward_sub = ores::trading::service::messaging::register_bond_forward_event_mapping(
         event_source, event_bus, nats);
-    auto bond_future_delivery_basket_sub =
-        ores::trading::service::messaging::register_bond_future_delivery_basket_event_mapping(
-            event_source, event_bus, nats);
     auto bond_future_sub = ores::trading::service::messaging::register_bond_future_event_mapping(
         event_source, event_bus, nats);
     auto bond_issue_call_date_sub =

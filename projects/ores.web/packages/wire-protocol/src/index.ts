@@ -263,6 +263,7 @@ export {
     readLoginInfo,
     readLoginInfoPage,
     readSessionsPage,
+    setAccountLocked,
 } from './credentials.js';
 
 // The HTTP contract shared by the BFF and the browser. Both sides parse with

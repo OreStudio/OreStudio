@@ -70,6 +70,7 @@ import {
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
+    setAccountLocked,
     signupRequestSchema,
     signupResultSchema,
     tenantPageSchema,
@@ -731,6 +732,43 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw invalidRequest('A username is required.');
         }
         return { account: await readAccount(session.client, username) };
+    });
+
+    /**
+     * Locks one account.
+     *
+     * A lock refuses the next sign-in and leaves every session the account
+     * already holds open, which is why the screen says so beside the control: an
+     * administrator who expects a lock to end a stolen session has to know that
+     * it does not.
+     */
+    server.post('/api/accounts/:accountId/lock', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { accountId?: string };
+        const accountId = params.accountId ?? '';
+        if (accountId.length === 0) {
+            throw invalidRequest('An account id is required.');
+        }
+        await setAccountLocked(session.client, { accountId, locked: true });
+        return { success: true };
+    });
+
+    /**
+     * Unlocks one account.
+     *
+     * The server clears the failed attempt count as part of the write, so an
+     * account unlocked after a run of failed attempts starts the count again
+     * rather than one attempt from locking itself.
+     */
+    server.post('/api/accounts/:accountId/unlock', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { accountId?: string };
+        const accountId = params.accountId ?? '';
+        if (accountId.length === 0) {
+            throw invalidRequest('An account id is required.');
+        }
+        await setAccountLocked(session.client, { accountId, locked: false });
+        return { success: true };
     });
 
     /**

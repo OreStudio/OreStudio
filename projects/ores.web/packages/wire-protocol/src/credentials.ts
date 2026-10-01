@@ -20,6 +20,8 @@
  */
 
 import type { AuthenticatedCaller } from './account-operations.js';
+import { ACCOUNT_SUBJECTS, setAccountsLocked } from './account-operations.js';
+import { OperationFailedError } from './errors.js';
 import type { Account, LoginInfo } from './domain.js';
 import { subjects as loginInfoSubjects } from './generated/iam/protocol/login_info_protocol.js';
 import { subjects as sessionSubjects } from './generated/iam/protocol/session_protocol.js';
@@ -50,9 +52,10 @@ import {
  * for the reason the account operations give: the subjects stay beside the
  * shapes they carry, and a route can name what it reads.
  *
- * Nothing here writes. The account and login-record reads are the two the
- * member's screen and the administrator's screen share, and both answer over
- * subjects that already work.
+ * The reads here are the ones the member's screen and the administrator's
+ * screen share. The one write, {@link setAccountLocked}, is the administrator's
+ * lock and unlock, and it collapses the wire's per-account reply into the one
+ * account the screen asked about.
  */
 
 /** Subjects for the credentials reads, kept beside the operations that use them. */
@@ -141,4 +144,31 @@ export async function readActiveSessions(caller: AuthenticatedCaller): Promise<W
         {},
         activeSessionsReplySchema,
     );
+}
+
+/**
+ * Locks or unlocks one account.
+ *
+ * The wire answers per account, so a refusal is a result inside a successful
+ * reply rather than a failed call. A caller that returned the list would make
+ * every screen decide what a one-row list means, so the single account the
+ * screen asked about is collapsed here and a refusal is thrown as the failure
+ * it is.
+ */
+export async function setAccountLocked(
+    caller: AuthenticatedCaller,
+    input: { readonly accountId: string; readonly locked: boolean },
+): Promise<void> {
+    const subject = input.locked ? ACCOUNT_SUBJECTS.lock : ACCOUNT_SUBJECTS.unlock;
+    const results = await setAccountsLocked(caller, {
+        accountIds: [input.accountId],
+        locked: input.locked,
+    });
+    const result = results[0];
+    if (result === undefined || !result.success) {
+        throw new OperationFailedError(
+            subject,
+            result?.message ?? 'The server refused the change.',
+        );
+    }
 }

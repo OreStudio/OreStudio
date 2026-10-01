@@ -301,6 +301,11 @@ with the site chrome."
   ;; of the Profile journeys' screen, for both actors, mock data only.
   (ores-deploy-web-app
    "./doc/prototypes/profile" site-dir "doc/prototypes/profile"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Application navigation prototype: the same body reset. Five structural
+  ;; models for reaching every journey, which no document owns, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/navigation" site-dir "doc/prototypes/navigation"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

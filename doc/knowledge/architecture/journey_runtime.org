@@ -23,6 +23,13 @@ why a journey's state is a workflow instance rather than a journey
 entity. Read that page for what happens when a step runs on the server,
 and this one for what the browser is allowed to do.
 
+This page describes the *rail*: the shape a journey takes when its work is a run
+with a beginning and an end. The words are
+[[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]]'s — a journey is
+what one person is trying to do, a screen is where it happens, and the rail is
+one screen shape among several. The profile screen is a journey that is a page,
+and this runtime is not what renders it.
+
 The implementation is
 =projects/ores.web/packages/web/src/journeys/runtime.ts=. It is generic
 over the step body, so it carries no rendering library and its tests need

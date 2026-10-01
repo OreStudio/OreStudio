@@ -1,0 +1,29 @@
+Evidence: the shell prototype's matrix, driven without a browser.
+
+Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/navigation_check.js
+Run from: the repository root, on branch feature/prototype-the-account-menu.
+Environment: eager_maxwell.
+
+The harness runs doc/prototypes/navigation/prototype.js against a minimal DOM
+shim and asserts what the prototype promises a reviewer: every sign-in and state
+renders; the sign-in decides the mode and the note names it; the shell is drawn
+in every state but the one where a journey owns the screen; the super
+administrator lands in the system mode with its tenants and its bootstrap; the
+tenant administrator lands in the tenant mode with its parties and its role
+catalogue; a privileged party user gets the people of the party; a regular party
+user gets neither the people of the party nor the sign-in audit; the avatar
+carries the journeys about the person in every sign-in, and only the party modes
+offer where they work; an area opens to its cards; and a journey opens under its
+mode.
+
+Four of the promises are about absence, which is where the mode does its real
+work: the super administrator is not offered a party area or the people of a
+party, the tenant administrator is not offered the bootstrap or a party area,
+the system mode offers no party to choose, and there is no sidebar anywhere.
+
+The screenshots beside this file are the four sign-ins and the states in Chrome.
+
+--- output ---
+
+rendered 12 sign-in/state combinations and 25 promises
+ALL CHECKS PASSED

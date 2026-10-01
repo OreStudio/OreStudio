@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D6FEA3EB-0820-4848-9845-DE65996755D6
+:END:
+#+title: The curve_sections scripts were never tangled into the library
+#+description: bright_faraday's curve_sections recipe is committed but its ten .ores scripts are not, and the shell-script-drift job diffs only tracked files so it never notices. Commit the tangle or drop the recipe's tangle targets.
+#+type: capture
+#+level: cross
+#+filetags: :shell:codegen:drift:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

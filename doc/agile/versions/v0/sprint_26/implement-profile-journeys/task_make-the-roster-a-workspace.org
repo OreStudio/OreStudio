@@ -29,11 +29,11 @@ gives a list-shaped screen more room than it gives a form.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Built and read against the running deployment. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the result, then decide on the sidebar. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

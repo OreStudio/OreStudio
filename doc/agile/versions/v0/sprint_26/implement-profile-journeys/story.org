@@ -64,7 +64,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:1BCEA32A-47C1-4DE0-8A6A-3DB5B7BE9723][Implement the super administrator sign-in]] | DONE | 2026-10-01 | 2026-10-01 | Deliver the session mode and the system administration landing, so the super administrator signs in and reaches the tenant management journeys. |
 | [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]] | DONE | 2026-10-01 | 2026-10-01 | Give the system administration area a read-only tenant roster, as its own journey, and the read the screen needs. |
 | [[id:618DDCAD-49A8-4161-A2BD-8AAE3C36CC47][Bound the signed-in layout and unblock the tenant details step]] | DONE | 2026-10-01 | 2026-10-01 | The splash is unbounded on a signed-in journey, and a seed profile that inherits the administrator password leaves the second step of New tenant with a disabled Continue. |
-| [[id:1D532014-FD6C-4EBE-982D-3D17C1B768F1][Make the tenant roster a workspace]] | STARTED | 2026-10-01 | | Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens. |
+| [[id:1D532014-FD6C-4EBE-982D-3D17C1B768F1][Make the tenant roster a workspace]] | DONE | 2026-10-01 | 2026-10-01 | Take the table out of its card, put the title, the count and the primary action in a page header, and give the shell a width for list-shaped screens. |
 
 * Decisions
 

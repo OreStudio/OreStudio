@@ -26,11 +26,11 @@ A capture in the backlog inbox that a later sprint can pull: the problem the mod
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -85,3 +85,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+[[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][Privileged access needs a recorded
+break-glass process]] is in the backlog inbox. It records the problem the modes
+rest on, the two families of solution with what the systems that do this well
+have in common, and six questions that must be answered before either is built.
+
+The one it settles is the one that mattered here: this is the second place the
+platform needs an approval, and the reporting line is the first, so the
+primitive is built once.
+
+The shell prototype's page points at it from what it does not settle, and the
+target state it is blind to is
+[[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]].

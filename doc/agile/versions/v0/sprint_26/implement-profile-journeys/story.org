@@ -62,6 +62,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:0341CAE9-DD19-4B6C-995B-95B74DB51B45][Record the privileged-access need]] | DONE | 2026-10-01 | 2026-10-01 | Write the capture that records why the shell's modes need a recorded break-glass process behind them, what the systems that do this well have in common, and the decisions it leaves open. |
 | [[id:8F698AF3-CA0B-4151-8F67-0915FBAD40CE][Define the session mode and capability contract]] | DONE | 2026-10-01 | 2026-10-01 | Write the target state that fixes how the browser learns its mode and what it may see: the mode is computed by the server and delivered with the session, and the menu is built from the permissions the server already answers. The protocol change that implies, and what does not change. |
 | [[id:1BCEA32A-47C1-4DE0-8A6A-3DB5B7BE9723][Implement the super administrator sign-in]] | DONE | 2026-10-01 | 2026-10-01 | Deliver the session mode and the system administration landing, so the super administrator signs in and reaches the tenant management journeys. |
+| [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]] | STARTED | 2026-10-01 | | Give the system administration area a read-only tenant roster, as its own journey, and the read the screen needs. |
 
 * Decisions
 
@@ -96,6 +97,19 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   permission codes it needs do not exist yet. It shows the tenant and the party
   the person works in, which are facts, rather than drawing areas it cannot
   fill. (Implementation, 2026-10-01.)
+- *The roster of tenants is its own journey.* The list existed only as step 1 of
+  *Retire or reset a tenant*, so finding out what tenants a deployment holds
+  meant opening a journey that destroys one. Reading is its own goal, and the
+  catalogue already has the shape: *See who has access* is the same read-only
+  roster for the people of a party. *See the tenants* joins the Tenancy group,
+  and *Retire or reset a tenant* picks its tenant from it. (Product owner,
+  2026-10-01.)
+- *A read the browser may not make is refused at the route, not only hidden.*
+  The mode says which context a session acts in, so a route can refuse a session
+  that is acting inside a tenant even while the subject behind it checks no
+  permission. A menu that omits an area is structure; a route that refuses a
+  caller is a boundary, and only the second one is authority. (Implementation,
+  2026-10-01.)
 
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own

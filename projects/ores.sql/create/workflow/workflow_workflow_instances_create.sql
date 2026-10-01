@@ -86,9 +86,6 @@ on "ores_workflow_workflow_instances_tbl" (state_id);
 create index if not exists workflow_instances_tenant_type_idx
 on "ores_workflow_workflow_instances_tbl" (tenant_id, type);
 
-create index if not exists workflow_instances_target_idx
-on "ores_workflow_workflow_instances_tbl" (target_kind, target_id);
-
 create or replace function ores_workflow_workflow_instances_insert_fn()
 returns trigger as $$
 declare

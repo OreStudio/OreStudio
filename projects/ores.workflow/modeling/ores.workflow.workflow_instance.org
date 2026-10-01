@@ -195,9 +195,10 @@ instance, so the tenant index and the tenant-scoped unique index are the hot
 paths. The engine's own list read is not: it spans every tenant, so it cannot
 use a leading =tenant_id=, and it reads the open rows in one pass at startup.
 That pass is bounded by the runs in flight rather than by the table, so a scan
-is the honest cost of recovering all of them. A read that asks which runs act on
-one entity leads with the target index, which is how a component finds the work
-it has in flight on something it owns.
+is the honest cost of recovering all of them. The target has no index yet: the
+list read filters by target in memory, after the tenant's rows are read, so an
+index would cost every write and help no read. It comes with a repository read
+that filters by target.
 
 ** tenant_id
 :PROPERTIES:
@@ -212,11 +213,6 @@ it has in flight on something it owns.
 ** tenant_type
 :PROPERTIES:
 :columns: tenant_id, type
-:END:
-
-** target
-:PROPERTIES:
-:columns: target_kind, target_id
 :END:
 
 * C++

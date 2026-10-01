@@ -128,3 +128,4 @@ that reads what this contract delivers.
 - [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — the journey that reads the roles and permissions this contract delivers.
 - [[id:AC2BA866-D2C3-4C8B-AF5A-D573D1317A78][Privileged access needs a recorded break-glass process]] — the work this contract is deliberately blind to.
 - [[id:FA7DCE9E-FB6B-439D-86C8-8BF138D38A96][Journey screen]] — the vocabulary the modes and their cards rest on.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note this page is read under.

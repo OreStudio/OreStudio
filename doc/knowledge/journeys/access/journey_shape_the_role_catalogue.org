@@ -88,8 +88,15 @@ play, and the catalogue is grouped by that segment.
 The =role_permission= row carries the same tail as =account_role=:
 =assigned_by=, =assigned_at=, =change_reason_code= and =change_commentary=. A
 bundle change is attributable to the account that made it and to the reason it
-gave, and the store stamps the time. Closing a link leaves the tail of the grant
-it closes, so who added a permission survives its removal.
+gave, and the store stamps the time.
+
+The tail belongs to the grant rather than to the change. An addition writes it.
+A removal closes the row and leaves the tail the grant wrote, so a bundle reads
+as its live rows plus the record of when each permission ended; the caller's
+reason covers what the call adds, and a removal has no reason of its own. The
+alternative, restamping the tail on removal, would erase who granted the
+permission, which is the record this journey exists for. A reason per removal
+needs somewhere to put it that is not the grant's own row.
 
 No credential field appears on this screen. =password_hash=, =password_salt=,
 =service_password_hash=, =totp_secret=, cleartext passwords and JWTs stay on

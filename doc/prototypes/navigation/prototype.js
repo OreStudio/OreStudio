@@ -51,35 +51,35 @@
        what the today state shows. */
     var GROUPS = [
         { name: 'Setup', landed: true, fullscreen: true, journeys: [
-            ['First run', '/setup/first-run', 'admin'],
-            ['New tenant', '/tenants/new', 'admin'],
-            ['New party', '/parties/new', 'admin']] },
+            ['First run', '/setup/first-run', 'admin', 'Tenant'],
+            ['New tenant', '/tenants/new', 'admin', 'Tenant'],
+            ['New party', '/parties/new', 'admin', 'Tenant']] },
         { name: 'Entry', landed: false, nav: false, journeys: [
             ['Sign in', '/login', 'all'],
             ['Sign up', '/sign-up', 'all']] },
         { name: 'Profile', landed: false, journeys: [
-            ['Present myself', '/profile', 'me'],
-            ['Keep my details current', '/profile/details', 'me'],
-            ["Change someone's details", '/people/:id', 'admin']] },
+            ['Present myself', '/profile', 'me', 'me'],
+            ['Keep my details current', '/profile/details', 'me', 'me'],
+            ["Change someone's details", '/people/:id', 'admin', 'People']] },
         { name: 'Credentials', landed: false, journeys: [
-            ['Protect my account', '/profile/security', 'me'],
-            ['Rescue access', '/people/:id/rescue', 'admin'],
-            ['Audit sign-ins', '/audit/sign-ins', 'admin']] },
+            ['Protect my account', '/profile/security', 'me', 'me'],
+            ['Rescue access', '/people/:id/rescue', 'admin', 'People'],
+            ['Audit sign-ins', '/audit/sign-ins', 'admin', 'People']] },
         { name: 'Access', landed: false, journeys: [
-            ['Know what I may do', '/profile/access', 'me'],
-            ['Ask for more access', '/profile/access/request', 'me'],
-            ["Change someone's access", '/people/:id/access', 'admin'],
-            ['Shape the role catalogue', '/roles', 'admin']] },
+            ['Know what I may do', '/profile/access', 'me', 'me'],
+            ['Ask for more access', '/profile/access/request', 'me', 'me'],
+            ["Change someone's access", '/people/:id/access', 'admin', 'People'],
+            ['Shape the role catalogue', '/roles', 'admin', 'Tenant']] },
         { name: 'Membership', landed: false, journeys: [
-            ['Choose where I work', '/work', 'me'],
-            ['Draw the reporting line', '/reporting-lines', 'admin']] },
+            ['Choose where I work', '/work', 'me', 'me'],
+            ['Draw the reporting line', '/reporting-lines', 'admin', 'People']] },
         { name: 'Directory', landed: false, journeys: [
-            ['See who has access', '/people', 'admin'],
-            ['Bring someone in', '/people/new', 'admin'],
-            ['Register a service account', '/service-accounts/new', 'admin']] },
+            ['See who has access', '/people', 'admin', 'People'],
+            ['Bring someone in', '/people/new', 'admin', 'People'],
+            ['Register a service account', '/service-accounts/new', 'admin', 'People']] },
         { name: 'Tenancy', landed: false, journeys: [
-            ['Tune the tenant', '/tenant', 'admin'],
-            ['Retire or reset a tenant', '/tenant/retire', 'admin']] }
+            ['Tune the tenant', '/tenant', 'admin', 'Tenant'],
+            ['Retire or reset a tenant', '/tenant/retire', 'admin', 'Tenant']] }
     ];
 
     /* The areas of activity: the trading floor's own shape, which the Qt menu
@@ -95,8 +95,8 @@
         { name: 'Analytics', waiting: true },
         { name: 'Compute', waiting: true },
         { name: 'Reporting', waiting: true },
-        { name: 'Administration', groups: [
-            'Directory', 'Access', 'Membership', 'Tenancy', 'Credentials', 'Profile', 'Setup'] }
+        { name: 'People' },
+        { name: 'Tenant' }
     ];
 
     var PERSON = {
@@ -171,20 +171,31 @@
 
     // -------------------------------------------------------- the areas
 
-    function areaOf(groupName) {
-        var found = null;
-        AREAS.forEach(function (a) {
-            if ((a.groups || []).indexOf(groupName) >= 0) found = a;
+    function areaCards(areaName) {
+        var cards = [];
+        groups(false).forEach(function (g) {
+            var mine = g.journeys.filter(function (j) { return j[3] === areaName; });
+            if (mine.length) {
+                cards.push({ name: g.name, journeys: mine, fullscreen: g.fullscreen, landed: g.landed });
+            }
         });
-        return found;
+        return cards;
     }
 
-    function areaGroups(area) {
-        if (!area || !area.groups) return [];
-        var all = groups(false);
-        return area.groups.map(function (n) {
-            return all.filter(function (g) { return g.name === n; })[0];
-        }).filter(Boolean);
+    function areaSize(area) {
+        return journeyCount(areaCards(area.name));
+    }
+
+    /* The journeys about the person themselves. They are not an area: every
+       system puts them under the avatar, and nobody gives them a menu. */
+    function meJourneys() {
+        var mine = [];
+        groups(false).forEach(function (g) {
+            g.journeys.forEach(function (j) {
+                if (j[3] === 'me') mine.push({ journey: j, group: g.name });
+            });
+        });
+        return mine;
     }
 
     /* An area with nothing extracted is offered to a tenant administrator,
@@ -192,12 +203,8 @@
     function visibleAreas() {
         return AREAS.filter(function (a) {
             if (a.waiting) return isAdmin();
-            return areaGroups(a).length > 0;
+            return areaCards(a.name).length > 0;
         });
-    }
-
-    function areaSize(area) {
-        return journeyCount(areaGroups(area));
     }
 
     function activeArea() {
@@ -206,9 +213,18 @@
             var named = areas.filter(function (a) { return a.name === S.area; })[0];
             if (named) return named;
         }
-        var current = currentGroup(groups(false));
-        var owner = current ? areaOf(current.name) : null;
-        return owner || areas[0];
+        var owner = null;
+        groups(false).forEach(function (g) {
+            g.journeys.forEach(function (j) {
+                if (j[1] === S.at && j[3] && j[3] !== 'me') owner = j[3];
+            });
+        });
+        if (owner) {
+            var match = areas.filter(function (a) { return a.name === owner; })[0];
+            if (match) return match;
+        }
+        var withCards = areas.filter(function (a) { return !a.waiting; });
+        return withCards[0] || areas[0];
     }
 
     function areaNav() {
@@ -238,6 +254,32 @@
         }
         return '<button class="trigger' + (S.open ? ' open' : '') + '" data-act="toggle">' + body +
             '<span class="caret">' + (S.open ? '\u25b2' : '\u25bc') + '</span></button>';
+    }
+
+    /* The Me menu. This is the Google shape the review asked for: the avatar
+       carries the things about the person, and no area does. */
+    function meMenu() {
+        if (!S.open) return '';
+        var p = person();
+        var mine = meJourneys();
+        var byGroup = [];
+        mine.forEach(function (row) {
+            var found = byGroup.filter(function (b) { return b.name === row.group; })[0];
+            if (!found) { found = { name: row.group, rows: [] }; byGroup.push(found); }
+            found.rows.push(row.journey);
+        });
+        return '<div class="menu">' +
+            '<div class="head">' + face('face') +
+            '<div><div class="nm">' + esc(p.name) + '</div>' +
+            '<div class="sub">' + esc(p.title) + ' \u00b7 ' + esc(p.party) + '</div></div></div>' +
+            byGroup.map(function (b) {
+                return '<div class="group"><div class="groupname">' + esc(b.name) + '</div>' +
+                    b.rows.map(function (j) {
+                        return '<a href="#" data-act="go" data-screen="' + j[1] + '"' + (here(j[1]) ? ' class="here"' : '') + '>' +
+                            esc(j[0]) + '</a>';
+                    }).join('') + '</div>';
+            }).join('') +
+            '<div class="group"><button class="item out" data-act="signout">Sign out</button></div></div>';
     }
 
     function accountMenu() {
@@ -340,29 +382,34 @@
        journeys, and an honest word when the area has none yet. */
     function areaPage(area) {
         var p = person();
-        var gs = areaGroups(area);
-        var head = '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>' +
-            '<h1>' + esc(area.name) + '</h1>';
-        if (!gs.length) {
-            return '<div class="card">' + head +
+        var head = '<div class="crumb">' + esc(p.tenant) + ' \u00b7 ' + esc(p.party) + '</div>';
+        if (!area) {
+            return '<div class="card">' + head + '<h1>Nothing here yet</h1>' +
+                '<p class="lead">No journey has been built for this person yet. The areas appear in the header as ' +
+                'they land, and the avatar holds the journeys about you.</p></div>';
+        }
+        var cards = areaCards(area.name);
+        if (!cards.length) {
+            return '<div class="card">' + head + '<h1>' + esc(area.name) + '</h1>' +
                 '<p class="lead">No journeys have been extracted for this area yet. The area is named because it ' +
                 'exists on the trading floor; it stays empty until a component\u2019s journeys land in it, and ' +
                 'nothing is invented to fill it.</p></div>';
         }
-        var total = journeyCount(gs);
-        var navs = gs.filter(function (g) { return !g.fullscreen; });
-        var runs = gs.filter(function (g) { return g.fullscreen; });
+        var total = journeyCount(cards);
+        var navs = cards.filter(function (c) { return !c.fullscreen; });
+        var runs = cards.filter(function (c) { return c.fullscreen; });
         var runsCard = runs.length
             ? '<div class="card" style="margin-top:14px"><h2>Starts a run</h2>' +
               '<p class="lead">These journeys stand something up, so they take the whole screen and give it back ' +
               'when they are done.</p>' +
-              runs.reduce(function (all, g) { return all.concat(g.journeys); }, []).map(function (j) {
+              runs.reduce(function (all, c) { return all.concat(c.journeys); }, []).map(function (j) {
                   return '<button class="btn" data-act="run" style="margin-right:8px">' + esc(j[0]) + '</button>';
               }).join('') + '</div>'
             : '';
         return '<div class="card">' + head +
-            '<p class="lead">' + total + ' journey' + (total === 1 ? '' : 's') + ' in ' + gs.length +
-            ' group' + (gs.length === 1 ? '' : 's') + '.</p></div>' +
+            '<h1>' + esc(area.name) + '</h1>' +
+            '<p class="lead">' + total + ' journey' + (total === 1 ? '' : 's') + ' in ' + cards.length +
+            ' group' + (cards.length === 1 ? '' : 's') + '.</p></div>' +
             (navs.length ? '<div class="groupgrid">' + navs.map(groupCard).join('') + '</div>' : '') +
             runsCard;
     }
@@ -461,7 +508,7 @@
         if (!full) {
             if (S.variant === 'H') {
                 head = '<header class="appheader"><div class="appheader-inner">' + brand() + areaNav() +
-                    '<div class="accounts">' + accountChip(false) + '</div></div></header>';
+                    '<div class="accounts">' + accountChip(true) + meMenu() + '</div></div></header>';
             } else if (S.variant === 'N') {
                 head = '<header class="appheader"><div class="appheader-inner">' + brand() + navbar() +
                     '<div class="accounts">' + accountChip(false) + '</div></div></header>';

@@ -18,10 +18,13 @@ with nothing today is told so; and the narrow state is the narrow shell.
 
 The two-axis model has its own promises: the areas sit in the header and the
 journeys are cards on the area landing; it has no sidebar, because the cards
-already say what one would; an area whose journeys have not been extracted is
-named rather than filled, and says so in as many words; and a full-screen
-journey is offered as a run from the area that owns it, not as a journey that
-keeps the shell.
+already say what one would; People holds the journeys about other people and
+Tenant the catalogue and the tenancy; the avatar carries the journeys about the
+person, grouped by topic, and a member gets only those; nobody gets an area the
+catalogue has not reached; "Administration" is not an area; an area whose
+journeys have not been extracted is named rather than filled and says so in as
+many words; and a full-screen journey is offered as a run from the area that
+owns it, not as a journey that keeps the shell.
 
 The full-screen journey is asserted against every model at once: it always
 offers the way out, and it never draws a header, a navbar or a sidebar, because
@@ -35,5 +38,5 @@ The screenshots beside this file are the models in Chrome.
 
 --- output ---
 
-rendered 60 model/actor/state combinations and 41 promises
+rendered 60 model/actor/state combinations and 52 promises
 ALL CHECKS PASSED

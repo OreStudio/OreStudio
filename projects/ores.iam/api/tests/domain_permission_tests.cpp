@@ -191,10 +191,14 @@ TEST_CASE("well_known_permission_codes_are_consistent", tags) {
 
     CHECK(std::string(roles_create) == "iam::roles:create");
     CHECK(std::string(roles_read) == "iam::roles:read");
+    CHECK(std::string(roles_write) == "iam::roles:write");
     CHECK(std::string(roles_update) == "iam::roles:update");
     CHECK(std::string(roles_delete) == "iam::roles:delete");
     CHECK(std::string(roles_assign) == "iam::roles:assign");
     CHECK(std::string(roles_revoke) == "iam::roles:revoke");
+
+    CHECK(std::string(permissions_write) == "iam::permissions:write");
+    CHECK(std::string(permissions_delete) == "iam::permissions:delete");
 
     CHECK(std::string(login_info_read) == "iam::login_info:read");
 

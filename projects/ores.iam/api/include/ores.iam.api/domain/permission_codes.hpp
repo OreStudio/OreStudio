@@ -53,10 +53,16 @@ constexpr auto accounts_reset_password = "iam::accounts:reset_password";
 // Roles management
 constexpr auto roles_create = "iam::roles:create";
 constexpr auto roles_read = "iam::roles:read";
+constexpr auto roles_write = "iam::roles:write";
 constexpr auto roles_update = "iam::roles:update";
 constexpr auto roles_delete = "iam::roles:delete";
 constexpr auto roles_assign = "iam::roles:assign";
 constexpr auto roles_revoke = "iam::roles:revoke";
+
+// Permission catalogue. The generated permission write and delete check these
+// two; the catalogue itself is seeded, so no screen creates a code.
+constexpr auto permissions_write = "iam::permissions:write";
+constexpr auto permissions_delete = "iam::permissions:delete";
 
 // Login info (read-only audit data)
 constexpr auto login_info_read = "iam::login_info:read";

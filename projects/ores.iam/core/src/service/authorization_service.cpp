@@ -183,6 +183,13 @@ authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
         }
     }
 
+    /*
+     * The order is the answer's, not the store's: the write answers with this
+     * same list, and two calls that bundle the same codes must not disagree
+     * about how to spell them.
+     */
+    std::sort(codes.begin(), codes.end());
+
     return codes;
 }
 
@@ -249,8 +256,8 @@ role_permissions authorization_service::replace_role_permissions(
 
     const auto current = role_permission_repo_.read_latest_by_role(role_id);
 
-    const auto bundles = [](const std::vector<domain::role_permission>& links,
-                            const boost::uuids::uuid& permission_id) {
+    const auto bundles_permission = [](const std::vector<domain::role_permission>& links,
+                                       const boost::uuids::uuid& permission_id) {
         return std::any_of(links.begin(), links.end(), [&](const auto& link) {
             return link.permission_id == permission_id;
         });
@@ -260,7 +267,7 @@ role_permissions authorization_service::replace_role_permissions(
                                                    : change_reason_code;
 
     for (const auto& permission : desired) {
-        if (bundles(current, permission.id)) {
+        if (bundles_permission(current, permission.id)) {
             continue;
         }
         domain::role_permission link;
@@ -274,10 +281,10 @@ role_permissions authorization_service::replace_role_permissions(
     }
 
     for (const auto& link : current) {
-        const auto stays = std::any_of(desired.begin(), desired.end(), [&](const auto& permission) {
+        const auto wanted = std::any_of(desired.begin(), desired.end(), [&](const auto& permission) {
             return permission.id == link.permission_id;
         });
-        if (!stays) {
+        if (!wanted) {
             /*
              * The delete rule closes the row and leaves its tail as the grant
              * wrote it, so the record of who added the permission survives the
@@ -288,7 +295,6 @@ role_permissions authorization_service::replace_role_permissions(
     }
 
     answer.permission_codes = get_role_permissions(role_id);
-    std::sort(answer.permission_codes.begin(), answer.permission_codes.end());
 
     BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " bundles "
                               << answer.permission_codes.size() << " permission(s).";

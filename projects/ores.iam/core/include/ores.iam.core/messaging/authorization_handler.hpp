@@ -71,6 +71,13 @@ inline get_account_roles_response to_response(service::account_access answer) {
 }
 
 /*
+ * The sentence every operation answers when the authenticated actor names no
+ * account in the tenant. One string, so the sites cannot drift apart.
+ */
+constexpr std::string_view no_account_answer =
+    "The authenticated actor names no account in this tenant";
+
+/*
  * A response for a failure that stopped the work rather than a refusal the
  * operation decided. The outcome is set because the default is ok, and an
  * exception reported as ok would read as an account that holds nothing.
@@ -124,7 +131,7 @@ public:
                       assign_role_response{
                           .success = false,
                           .error_message =
-                              "The authenticated actor names no account in this tenant"});
+                              std::string{no_account_answer}});
                 return;
             }
             if (!svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
@@ -172,7 +179,7 @@ public:
                       revoke_role_response{
                           .success = false,
                           .error_message =
-                              "The authenticated actor names no account in this tenant"});
+                              std::string{no_account_answer}});
                 return;
             }
             if (!svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
@@ -219,7 +226,7 @@ public:
                       msg,
                       get_account_roles_response{
                           .result = failed_result(
-                              "The authenticated actor names no account in this tenant")});
+                              std::string{no_account_answer})});
                 return;
             }
             auto answer = svc.read_account_access(*caller_id, sg(req->account_id));
@@ -250,7 +257,7 @@ public:
                       msg,
                       get_account_roles_response{
                           .result = failed_result(
-                              "The authenticated actor names no account in this tenant")});
+                              std::string{no_account_answer})});
                 return;
             }
             auto answer = svc.read_own_access(*caller_id);
@@ -315,7 +322,7 @@ public:
                       msg,
                       get_role_permissions_response{
                           .result = failed_result(
-                              "The authenticated actor names no account in this tenant")});
+                              std::string{no_account_answer})});
                 return;
             }
             auto answer = svc.replace_role_permissions(*caller_id,
@@ -360,7 +367,7 @@ public:
                       assign_role_by_name_response{
                           .success = false,
                           .error_message =
-                              "The authenticated actor names no account in this tenant"});
+                              std::string{no_account_answer}});
                 return;
             }
             if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
@@ -461,7 +468,7 @@ public:
                       revoke_role_by_name_response{
                           .success = false,
                           .error_message =
-                              "The authenticated actor names no account in this tenant"});
+                              std::string{no_account_answer}});
                 return;
             }
             if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {

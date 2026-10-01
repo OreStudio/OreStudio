@@ -30,7 +30,7 @@ A clickable prototype of the application navigation that the design can be judge
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
 | Now          | The shell is designed: the menu, the cards, the avatar, and the four sign-ins. Four review rounds took it from an account menu to a menu of areas over a mode read from the sign-in. |
 | Waiting on   | Nothing.                               |
-| Next         | Confirm the mode names and the area list, then implement the shell. |
+| Next         | Nothing: the verdict is recorded and the implementation is the next task. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
@@ -111,3 +111,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The shell is [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]], at
+=doc/prototypes/navigation/= and published on the site. It renders the menu,
+the cards and the avatar for the four sign-ins that decide the mode.
+
+The verdict is recorded on that page, and so is why each of the five rejected
+shapes went: the account menu, one axis of journey groups, a sidebar beside the
+cards, "Administration" as an area, and a mode the person chooses.
+
+The decisions it settles are distilled into the parent story's =* Decisions=.
+What it does not settle is recorded too: how a person learns a journey exists
+but is switched off, and where a party user with no areas of their own lands
+once the party's data is real.

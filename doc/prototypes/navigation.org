@@ -29,6 +29,26 @@ Open the [[file:navigation/][shell]].
 
 * Detail
 
+** The verdict
+
+Accepted on 2026-10-01: the menu, the cards and the avatar, with the mode read
+from the sign-in. This is the shell the Profile journeys hang from, and the
+implementation is scheduled from it.
+
+** What was rejected, and why
+
+The page went through four review rounds. Each rejection is the reason the
+design is what it is, so they belong in the record even though the shapes
+themselves are not drawn any more.
+
+| Shape | Why it went |
+|-------+-------------|
+| An account menu holding every journey | At twenty journeys it holds neither the administrator's work nor the groups, and its trigger tried to answer a question about the account rather than about the product. |
+| One axis of journey groups across the header | A journey group is a topic ("Profile", "Credentials"); an *area* of activity is above it ("Reference Data", "Trading"). A trading system has the areas, and the Qt client's first level already said so. |
+| A sidebar beside the area's cards | It listed the same journeys the cards already list, one beside the other. The cards are the navigation; a second copy of them is a cost with no reader. |
+| "Administration" as an area | A name that means everything we could not place. The scopes are Me, People and Tenant, and they account for all twenty journeys with nothing left over. |
+| A mode the person chooses | The mode is the context the server already scopes everything by — the system tenant, the tenant, the party the session acts for. Reading it from the sign-in is the only version that cannot disagree with the data. |
+
 ** The mode comes from the sign-in
 
 | Sign in as | Mode | The context |

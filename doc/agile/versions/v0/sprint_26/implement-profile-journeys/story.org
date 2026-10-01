@@ -62,6 +62,20 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 
 * Decisions
 
+- *The shell is a menu, the cards, and the avatar.* The header carries a menu of
+  areas, an area opens its journeys as cards, and the person's own journeys are
+  under their name and photo. Nothing else: there is no sidebar and no second
+  list of what the cards already say. (Prototype verdict, 2026-10-01.)
+- *The mode is read from the sign-in, never chosen.* A super administrator works
+  in the system tenant's context, a tenant administrator in a tenant's, and a
+  party user in a party's — the contexts the server already scopes everything
+  by, so the mode cannot disagree with the data and there is no switch to get
+  wrong.
+- *People is the privileged party user's area.* Managing the people of a party
+  is a party job done by somebody with authority in it, not a tenant
+  administrator's job, and a regular party user is not shown the door to it at
+  all.
+
 - *The screen is one page, and each panel saves itself.* Variant *B* of the
   prototype is accepted: the profile and the contact record carry their own
   versions and their own change reasons, so each panel writes its own record

@@ -21,11 +21,11 @@ Each of diff, compute, telemetry, history, scheduler, ore, variability and works
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Batch 3: the five operation-only components. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Close the story; the facet default waits for the programme. |
+| Next          | Nothing. The three batches carry the work. |
 | Last touched  | 2026-10-01                               |
 
 * Acceptance
@@ -41,11 +41,11 @@ Each of diff, compute, telemetry, history, scheduler, ore, variability and works
 | [[id:6FD89D23-BE2A-434A-8E2C-A18566572369][Generate the diff shell surface]] | DONE | | 2026-10-01 | Check every diff command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
 | [[id:AA5A7533-ECF0-40B6-89F6-E1025A7D51FC][Generate the compute shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every compute command the shell answers, generate the units its entities should have, and record every hand-craft with its reason. |
 | [[id:5C1AD81D-EBCC-43BC-8D9C-79A3E7A3BED5][Generate the telemetry shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every telemetry command the shell answers, make each operation state why it renders no unit, and record every hand-craft with its reason. |
-| [[id:EDB2ED57-3BEC-4F74-B5B0-D58640E51E0C][Generate the history shell surface]] | STARTED | 2026-10-01 | | Check every history command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
-| [[id:5D16A0C9-1472-4C91-8C79-7281E59F00A1][Generate the scheduler shell surface]] | STARTED | 2026-10-01 | | Check every scheduler command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
-| [[id:70717187-0883-4CAD-BCB2-CA903C5BFB39][Generate the ore shell surface]] | STARTED | 2026-10-01 | | Check every ore command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
-| [[id:12FCC005-2639-47BF-BFDF-90B28A98E814][Generate the variability shell surface]] | STARTED | 2026-10-01 | | Check every variability command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
-| [[id:5A00D0BB-CE04-4F3F-84AD-416B12474980][Generate the workspace shell surface]] | STARTED | 2026-10-01 | | Check every workspace command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:EDB2ED57-3BEC-4F74-B5B0-D58640E51E0C][Generate the history shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every history command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:5D16A0C9-1472-4C91-8C79-7281E59F00A1][Generate the scheduler shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every scheduler command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:70717187-0883-4CAD-BCB2-CA903C5BFB39][Generate the ore shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every ore command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:12FCC005-2639-47BF-BFDF-90B28A98E814][Generate the variability shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every variability command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
+| [[id:5A00D0BB-CE04-4F3F-84AD-416B12474980][Generate the workspace shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every workspace command the shell answers, make each model state why it renders no unit, and record every hand-craft with its reason. |
 
 * Notes
 
@@ -83,3 +83,34 @@ Each of diff, compute, telemetry, history, scheduler, ore, variability and works
 - =reporting=, whose profiles another environment is binding now.
 - =http=, by decision.
 - =trading= and =marketdata=, which are large enough to want their own story.
+
+* Result
+
+Merged in three batches, with every check green: PR #2477 for the scaffold and
+diff, #2479 for compute and telemetry, and #2480 for history, scheduler, ore,
+variability and workspace.
+
+Nineteen models across the eight components now state, in their own Physical
+space, why no shell command reaches them. That was the story's whole shape: five
+of the eight have no part under =projects/ores.shell=, so generation could not
+land a unit in them, and the work was to record that rather than to build the
+parts.
+
+Nothing was retired. None of the eight has a generated unit that duplicates one of
+its hand-written commands, which is where this story differs from the first: the
+first seven had eighteen superseded verbs, and these have none.
+
+Two findings came out of it that are worth more than the records.
+
+The first is a defect. Three compute models named =| ores.cpp.shell | false |=
+in their Physical space tables. There is no =ores.cpp.shell= facet; the address is
+=ores.cpp.shell-command=. The rows did nothing, and the shell units were withheld
+only because =ores.cpp.protocol= happened to be off too. A validator over every
+model's Physical space now reports no address that does not exist.
+
+The second is a gap with a name. The scheduler's hand-written menu sends exactly
+the requests the =job_definitions= unit and the =scheduling_operations= unit would
+send, across five of its six verbs. It is the one place in the story where
+generation would supersede a hand-written command the moment the component has a
+shell part. Both models now say so, so the follow-up is written where the next
+reader meets it.

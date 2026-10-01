@@ -26,11 +26,11 @@ Every shell command workspace answers is produced by a generated unit, or the mo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] |
-| Now          | The operations model states the reason; the entity renders its unit. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The close of the story. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance

@@ -50,6 +50,12 @@ struct workflow_instance_summary {
     std::string created_at;
     std::optional<std::string> completed_at;
     std::string error;
+    /**
+     * @brief What the run acts on, and its identity, as the start message named
+     * them. Both are empty when the run acts on no entity.
+     */
+    std::string target_kind;
+    std::string target_id;
 };
 
 /**
@@ -74,6 +80,22 @@ struct list_workflow_instance_summaries_request {
      *               "compensating", "compensated"
      */
     std::optional<std::string> status_filter;
+
+    /**
+     * @brief Optional type filter. Empty string means return every type.
+     */
+    std::optional<std::string> type_filter;
+
+    /**
+     * @brief Optional target filters: the kind and the identity of the entity
+     * the run acts on. Omitted means return runs that act on anything.
+     *
+     * Each is matched exactly and applied on its own, so a caller that names the
+     * kind alone gets every run that acts on that kind of entity. A run with no
+     * target matches neither.
+     */
+    std::optional<std::string> target_kind_filter;
+    std::optional<std::string> target_id_filter;
 };
 
 struct list_workflow_instance_summaries_response {

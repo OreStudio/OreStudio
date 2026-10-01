@@ -659,6 +659,29 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         return;
     }
 
+    // Parse the target, which is what the run acts on. A caller that names one
+    // and cannot be read is refused here: a run stored without the target it was
+    // given is a run the caller can no longer find by the thing it acts on.
+    boost::uuids::uuid target_id{};
+    if (!req.target_id.empty()) {
+        if (req.target_kind.empty()) {
+            BOOST_LOG_SEV(lg(), error) << "A target_id was given with no target_kind: "
+                                       << req.target_id;
+            return;
+        }
+        try {
+            target_id = boost::lexical_cast<boost::uuids::uuid>(req.target_id);
+        } catch (...) {
+            BOOST_LOG_SEV(lg(), error) << "Invalid target_id: " << req.target_id;
+            return;
+        }
+    }
+    if (!req.target_kind.empty() && req.target_id.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "A target_kind was given with no target_id: "
+                                   << req.target_kind;
+        return;
+    }
+
     // Build the step list for this specific instance. A definition that cannot
     // read the start message, or that does not recognise the chain the message
     // asks for, has no run to create; the refusal is recorded here rather than
@@ -723,6 +746,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.id = instance_id;
     instance.tenant_id = utility::uuid::tenant_id::from_uuid(tenant_id).value();
     instance.type = req.type;
+    instance.target_kind = req.target_kind;
+    instance.target_id = target_id;
     instance.state_id = instance_states_.require("in_progress");
     instance.request_json = req.request_json;
     instance.correlation_id = req.correlation_id;

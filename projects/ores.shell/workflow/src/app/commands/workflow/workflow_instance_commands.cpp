@@ -141,27 +141,27 @@ void workflow_instance_commands::register_commands(cli::Menu& root_menu, nats_cl
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <type> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> "
-        "<current_step_index> <step_count> <materialised_steps_json> <completed_at> "
-        "<last_event_at> <reason> <commentary>");
+        "add <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> "
+        "<correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> "
+        "<completed_at> <last_event_at> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <type> <state_id> <request_json> <result_json> <error> <correlation_id> "
-        "<created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> "
-        "<last_event_at> <reason> <commentary> [--version <n>]");
+        "set <id> <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> "
+        "<correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> "
+        "<completed_at> <last_event_at> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <type> <state_id> <request_json> <result_json> <error> "
-        "<correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> "
-        "<completed_at> <last_event_at> <reason> <commentary>");
+        "put-many --count <n> <id> <type> <target_kind> <target_id> <state_id> <request_json> "
+        "<result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> "
+        "<materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,13 +355,15 @@ void workflow_instance_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
         read_token(req.change.write.type, parsed->positionals[next++], "type");
+        read_token(req.change.write.target_kind, parsed->positionals[next++], "target_kind");
+        read_token(req.change.write.target_id, parsed->positionals[next++], "target_id");
         read_token(req.change.write.state_id, parsed->positionals[next++], "state_id");
         read_token(req.change.write.request_json, parsed->positionals[next++], "request_json");
         read_token(req.change.write.result_json, parsed->positionals[next++], "result_json");
@@ -418,13 +420,15 @@ void workflow_instance_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 15 + 2) {
+            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.type, parsed->positionals[next++], "type");
+        read_token(req.change.write.target_kind, parsed->positionals[next++], "target_kind");
+        read_token(req.change.write.target_id, parsed->positionals[next++], "target_id");
         read_token(req.change.write.state_id, parsed->positionals[next++], "state_id");
         read_token(req.change.write.request_json, parsed->positionals[next++], "request_json");
         read_token(req.change.write.result_json, parsed->positionals[next++], "result_json");
@@ -493,8 +497,8 @@ void workflow_instance_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 13 + 2) {
-            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 15 + 2) {
+            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -502,6 +506,8 @@ void workflow_instance_commands::process_put_many(std::ostream& out,
             messaging::workflow_instance_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.type, parsed->positionals[next++], "type");
+            read_token(change.write.target_kind, parsed->positionals[next++], "target_kind");
+            read_token(change.write.target_id, parsed->positionals[next++], "target_id");
             read_token(change.write.state_id, parsed->positionals[next++], "state_id");
             read_token(change.write.request_json, parsed->positionals[next++], "request_json");
             read_token(change.write.result_json, parsed->positionals[next++], "result_json");

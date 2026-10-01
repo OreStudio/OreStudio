@@ -84,6 +84,8 @@ domain::workflow_instance to_domain(const messaging::workflow_instance_write& wr
     domain::workflow_instance v;
     v.id = write.id;
     v.type = write.type;
+    v.target_kind = write.target_kind;
+    v.target_id = write.target_id;
     v.state_id = write.state_id;
     v.request_json = write.request_json;
     v.result_json = write.result_json;

@@ -42,6 +42,8 @@ struct workflow_instance_key {
 struct workflow_instance_write {
     boost::uuids::uuid id;
     std::string type;
+    std::string target_kind;
+    boost::uuids::uuid target_id;
     boost::uuids::uuid state_id;
     std::string request_json;
     std::string result_json;

@@ -8,7 +8,7 @@
 #+filetags: :shell_surface_remaining:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-remaining-shell-surfaces
-#+pr:
+#+pr: 2477
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#2477](https://github.com/OreStudio/OreStudio/pull/2477) | Scaffold the remaining shell surfaces and close off diff |
 
 * Review
 

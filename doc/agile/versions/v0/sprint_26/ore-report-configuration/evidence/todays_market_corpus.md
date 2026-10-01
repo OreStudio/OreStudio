@@ -239,6 +239,57 @@ struct swapIndexCurvesType_SwapIndex_t {
 base string is the target" as a rule for all twenty-four; =SwapIndex= is the
 exception and the only one.
 
+* Every entry shape, read from the binding
+
+The complete set, so the mapper is mechanical rather than exploratory:
+
+| Collection | Entry member | Shape |
+|------------+--------------+-------|
+| =YieldCurves= | =YieldCurve= | =xsd::string name= |
+| =DiscountingCurves= | =DiscountingCurve= | =xsd::string currency= |
+| =IndexForwardingCurves= | =Index= | =indexNameType name= |
+| =SwapIndexCurves= | =SwapIndex= | =name= + =Discounting=, no base |
+| =ZeroInflationIndexCurves= | =ZeroInflationIndexCurve= | =xsd::string name= |
+| =YYInflationIndexCurves= | =YYInflationIndexCurve= | =xsd::string name= |
+| =FxSpots= | =FxSpot= | =currencyPair pair= |
+| =FxVolatilities= | =FxVolatility= | =currencyPair pair= |
+| =SwaptionVolatilities= | =SwaptionVolatility= | optional =key= + optional =currencyCode= |
+| =YieldVolatilities= | =YieldVolatility= | =xsd::string name= |
+| =CapFloorVolatilities= | =CapFloorVolatility= | optional =key= + optional =currencyCode= |
+| =CDSVolatilities= | =CDSVolatility= | =xsd::string name= |
+| =DefaultCurves= | =DefaultCurve= | =xsd::string name= |
+| =YYInflationCapFloorVolatilities= | =YYInflationCapFloorVolatility= | =xsd::string name= |
+| =ZeroInflationCapFloorVolatilities= | =ZeroInflationCapFloorVolatility= | =xsd::string name= |
+| =EquityCurves= | =EquityCurve= | =xsd::string name= |
+| =EquityVolatilities= | =EquityVolatility= | =xsd::string name= |
+| =Securities= | =Security= | =xsd::string name= |
+| =BaseCorrelations= | =BaseCorrelation= | =xsd::string name= |
+| =CommodityCurves= | =CommodityCurve= | =xsd::string name= |
+| =CommodityVolatilities= | =CommodityVolatility= | =xsd::string name= |
+| =Correlations= | =Correlation= | =xsd::string name= |
+| =BondFutureVolatilities= | =BondFutureVolatility= | =xsd::string name= |
+| =IntradayPowerPriceCurves= | =IntradayPowerPriceCurve= | =xsd::string name= |
+
+=indexNameType= and =currencyPair= are =typedef=s for =xsd::string=, so nineteen
+entries copy a plain =name= straight across and four copy their own attribute
+name. =currencyCode= is an enum, so the two volatility collections need a
+conversion rather than an assignment. And one entry has no base string. Four
+cases for the mapper, not twenty-four.
+
+Reproduce it by dumping each entry struct, and note the anchoring:
+
+#+begin_src sh
+H=projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp
+awk "/^struct discountCurvesType_DiscountingCurve_t /,/^};/" $H
+#+end_src
+
+The trailing space matters. Without it the pattern also matches the forward
+declaration =struct X;= and walks forward into an unrelated struct's body — the
+first pass of this extraction reported all twenty-four entries as holding
+=std::vector<domain::trade>=, which is a struct belonging to a different schema
+entirely.
+
+
 
 * How the binding represents this, which is what the mapper encodes
 

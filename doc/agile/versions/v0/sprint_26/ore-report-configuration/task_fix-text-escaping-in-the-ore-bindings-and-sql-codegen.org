@@ -29,11 +29,11 @@ the SQL codegen writes into a literal cannot break the script it is written into
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -188,6 +188,13 @@ database test proves an ampersand is stored as the character.
 =book_error_message=, the only model text written into a SQL literal. No model
 holds one today, so no generated file changed. The recipe no longer tells
 authors to avoid apostrophes.
+
+**Component audit.** The task touched =ores.ore= and =ores.codegen=. The
+automated half, =projects/ores.codegen/validate_docs.sh=, passes for all 41
+components. The task added or moved no file, folder, type or component: it
+changed one parser function, the harness comparison, one loader function and
+their tests. So the shape, morphology, naming, registry and diagram checks
+have nothing new to judge. The comment checks were applied to the changed code.
 
 **In =xsdcpp=.** Committed on =fix-abstract-element-refs= as =09f0dec=, after
 =2f7dc07=, which commits the resolver fix in =Reader.cpp= that had been

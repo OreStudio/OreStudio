@@ -106,6 +106,40 @@ The pilot entity =ores.refdata.party= under
 up via the =modeling_dir= entry and produces byte-identical output to
 the legacy =party_entity.org= location.
 
+* Two things a new entity needs that no gate will tell you about
+
+Adding an entity to an existing component passes =compass build=, the model
+drift check and every test, and still never reaches the database. Both failures
+below were found by creating the today's market entities; neither is visible to
+an automated check.
+
+**1. List the table in the component's create and drop aggregates.**
+
+=projects/ores.sql/create/<component>/<component>_create.sql= is
+*hand-curated*, not generated. It is a list of =\ir ./...= lines in dependency
+order with prose explaining the component, so a new table is absent from a
+recreate until it is added by hand. The recreate then reports success while
+creating nothing. Check it really landed:
+
+#+begin_src sh
+compass sql -- -c "select table_name from information_schema.tables where table_name like 'ores_analytics_todays_market%'"
+#+end_src
+
+Do the same in =projects/ores.sql/drop/<component>/drop_<component>.sql=,
+children first so nothing is dropped while a reference holds.
+
+**2. Keep an apostrophe out of a foreign key's =error_message=.**
+
+The message is emitted into a SQL string literal, so =No active today's market
+configuration= produces:
+
+#+begin_src
+ERROR:  syntax error at or near "s"
+#+end_src
+
+and the recreate stops with whatever was already built left in place — on this
+occasion two of five tables. Write it without the apostrophe.
+
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the spec the scaffold mirrors.

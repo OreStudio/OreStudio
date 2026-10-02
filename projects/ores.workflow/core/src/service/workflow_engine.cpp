@@ -1034,13 +1034,9 @@ std::size_t workflow_engine::expire_overdue_steps() {
 
             set_step_state(step.id, step_failed, "", reason);
             ++expired;
-            it = awaiting_.erase(it);
 
             const auto instances =
                 instance_repo_.read_latest(ctx_, boost::uuids::to_string(waiting.instance_id));
-            if (instances.empty())
-                continue;
-
             /*
              * The run stops, whatever failure policy its definition declares.
              *
@@ -1052,7 +1048,12 @@ std::size_t workflow_engine::expire_overdue_steps() {
              * leaves the decision to a person -- retrying is safe because a step is
              * idempotent, and discarding is a separate action.
              */
-            stop_on_failure(instances.front(), reason);
+            if (!instances.empty())
+                stop_on_failure(instances.front(), reason);
+
+            // Erased last: waiting refers into this entry, and the handler below
+            // erases it instead if anything above throws.
+            it = awaiting_.erase(it);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Dropping a step the deadline pass cannot judge: step=" << waiting.name

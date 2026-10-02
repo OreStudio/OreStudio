@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 5BB8C9C8-A5C4-4463-AA0C-4030C8EBC6CF
+:END:
+#+title: Task: Implement Hotfix: the workflow deadline pass reads an entry it has freed
+#+description: Initial task for: Hotfix: the workflow deadline pass reads an entry it has freed
+#+type: task
+#+level: s1
+#+filetags: :workflow-deadline-pass-reads-a-freed-entry:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/workflow-deadline-pass-reads-a-freed-entry
+#+pr: 2508
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB941293-1DBD-4FC3-B291-78374B10AC4D][Hotfix: the workflow deadline pass reads an entry it has freed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=expire_overdue_steps()= erases a step's awaiting entry only after it has read
+and stopped the run the entry names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB941293-1DBD-4FC3-B291-78374B10AC4D][Hotfix: the workflow deadline pass reads an entry it has freed]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- No read through =waiting= happens after its entry is erased.
+- An exception after the step is failed erases the entry once, through the
+  handler, not twice.
+- Valgrind reports no error on either deadline case, and the workflow suite
+  passes.
+
+* Plan
+
+Diagnosis: the loop binds =const auto& waiting = it->second=, fails the step,
+calls =it = awaiting_.erase(it)=, and then reads =waiting.instance_id= to find
+the run. The node is freed by then. libstdc++ leaves the freed bytes in place,
+so Linux reads the right id by accident; on macOS the id reads back wrong, the
+run lookup returns nothing, the =continue= skips =stop_on_failure=, and the run
+keeps its state. That is every macOS symptom: the step is failed, the run is
+not, and a retry refuses a run that has not stopped.
+
+A second fault sat beside it: if the run read or =stop_on_failure= threw, the
+handler erased =it= again, which by then pointed at the next entry or at
+=end()=.
+
+Fix: move the erase to the end of the expiry branch, after the run is read and
+stopped. The handler's erase is then the only one on that path.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| valgrind, before | 1 error: invalid read of size 16 at =workflow_engine.cpp:1040=, freed at =:1037= by =awaiting_.erase= | =valgrind ores.workflow.core.tests "workflow_engine stops a run whose step outlives its deadline"= | =1d1dde7ca6= plus the marketdata hotfix |
+| valgrind, after | 0 errors on both deadline cases; 12 and 15 assertions pass | the same, for both cases | =cd34c7c753= plus this change |
+| Workflow suite, after | passed, 9.38 s | ctest =-R "^ores.workflow.core.tests$"= | =cd34c7c753= plus this change |
+| macOS CI, before | both deadline cases fail on both jobs | Continuous MacOS runs 36932809229, 36957593572, 36987873236 | =8f8789e0a3= to =ee63ba0aa3= |
+
+* Notes
+
+Found from the macOS logs while fixing the marketdata timeout, captured as
+[[id:64739960-499A-4B10-AFCF-C8EE3DB87476][The workflow step-deadline tests fail
+on macOS]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2508][#2508]] | [workflow] Erase an overdue step's entry after its run is stopped |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The erase moved after the run is read and stopped. Valgrind went from one
+invalid read to none, and the workflow suite passes. macOS CI is the remaining
+check.

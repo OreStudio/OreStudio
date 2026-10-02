@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: CB941293-1DBD-4FC3-B291-78374B10AC4D
+:END:
+#+title: Story: Hotfix: the workflow deadline pass reads an entry it has freed
+#+description: expire_overdue_steps() erases a step's awaiting entry and then reads the run id through a reference into it, so on macOS the run is never failed and two deadline tests fail.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:workflow:sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A step that outlives its deadline stops its run on every platform. On macOS the
+run was never stopped: =workflow_engine::expire_overdue_steps()= failed the
+step, then read the run's id through a reference into a map entry it had just
+erased. Two =ores.workflow.core.tests= cases have failed on both macOS CI jobs
+since the deadline landed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- The deadline pass reads nothing it has freed: valgrind reports no error on
+  the two deadline cases.
+- =ores.workflow.core.tests= passes on Linux and on both macOS CI jobs.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A35C2D49-C3D2-4B7C-86CA-B758287E0EA3][Scaffold story: Hotfix: the workflow deadline pass reads an entry it has freed]] | DONE | 2026-10-02 | 2026-10-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5BB8C9C8-A5C4-4463-AA0C-4030C8EBC6CF][Implement Hotfix: the workflow deadline pass reads an entry it has freed]] | DONE | | 2026-10-02 | Initial task for: Hotfix: the workflow deadline pass reads an entry it has freed |
+
+* Decisions
+
+* Out of scope
+
+- A test that fails on Linux without the fix. The fault is a read of freed
+  memory, which only an allocator that reuses the block, or valgrind, makes
+  visible; the two existing macOS cases are the regression check.
+
+* Result
+
+The pass now erases a step's awaiting entry after it has read and stopped the
+run, and the exception handler still erases it once if anything throws. Valgrind
+reported one invalid read on the deadline case before the change and none
+after; the workflow suite passes.

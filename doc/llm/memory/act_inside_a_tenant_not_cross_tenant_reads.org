@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C3D570EF-468D-427D-B355-30C0443BCDDF
+:END:
+#+title: Read another tenant's data from inside it
+#+description: A system administrator reads a tenant's data by entering the tenant, not through cross-tenant subjects.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:tenancy:security:project:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A system administrator who needs a tenant's data enters the tenant visibly, with a session scoped to it, and uses the ordinary reads; row-level security scopes them from the token. Do not add reads that take a tenant parameter or cross-tenant subjects.
+
+*Why:* The tenant detail screen got a hand-written refdata.v1.parties.list-of-tenant read. The user pointed out that the tenant is already in the JWT and RLS scopes the plain read, and chose a visible switch into the tenant.
+
+*How to apply:* When a system administration screen needs a tenant's own data, use the Act inside a tenant session; when designing a read, never add a tenant field.

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 92F755EA-5FA9-48DF-82F2-FF3E8F2236C7
+:END:
+#+title: Lists are always paged
+#+description: Every list read pages with offset, limit and the server total; never a fixed cap.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:protocol:web:feedback:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+Every list read pages through the generated list contract: offset, limit and the server's total, with a pager on the screen. Never read a list once with a large fixed limit and treat that as all of it.
+
+*Why:* The tenant detail screen read up to 1000 parties in one call and listed the cap as a known limit; the user said we should always use paging.
+
+*How to apply:* When a screen, BFF route or service reads a list, page it and show the total. If ordering or filtering is missing, extend the generated contract rather than writing a hand-made read.

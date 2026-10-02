@@ -30,11 +30,11 @@ and they hide the real tenants.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Plan written. No code has changed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1: the tenant type badges. |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -117,3 +117,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- *The type is a badge.* =ores.iam.tenant_type= gains =badge_code=, as the
+  status row did, and the four seeded types name four new badges, each called by
+  its type's own word: System, Production, Evaluation, Automation. The roster
+  paints the type column with it.
+- *The filters.* =GET /api/tenant-types= serves the types with their badges; the
+  roster has a type select (without =system=, which names only the deployment's
+  own bookkeeping) and a status select, both from the deployment's own rows.
+- *Test tenants hidden.* The search request leaves a type out, so the server
+  answers "every type but automation" and its total counts the same rows. The
+  BFF hides =automation= unless =includeTest= is set or that type is asked for by
+  name, and answers how many it hid; the screen shows a *Show test tenants*
+  toggle with that count, and a deployment holding only test tenants still
+  offers it.
+- *Checked live.* With Acme provisioned and ctest's fixtures present: the
+  default roster answers 1 tenant with 31 test tenants hidden; the toggle shows
+  32; the automation type alone 31; evaluation alone 1; =/api/tenant-types=
+  answers each type with its badge colour.
+- *Tests.* One new iam test for leaving a type out; BFF 10 and web 213, with two
+  and four new; full ctest 89 of 89 on a fresh database.
+- *Recorded.* The See the tenants journey and its wireframe show the filters and
+  the toggle, and its gaps list closes the search and the system-tenant rule. A
+  memory records that a badge's text is the value it paints.
+- *Not done.* The junk =CD= tenant types the iam tests leave behind still show in
+  the type filter on a development database; that is the capture
+  [[id:41566F78-970A-4019-B6A1-F076D7D21C88][Tests leave synthetic rows in the tenant lookups]].

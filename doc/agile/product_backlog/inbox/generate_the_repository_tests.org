@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 6CBBE33F-3E9D-475F-9B09-4F0C09287D04
+:END:
+#+title: Generate a repository test for every entity, and retire the hand-written ones
+#+description: Codegen has no repository-test archetype, so 90 hand-written CRUD test files cover some entities across 12 components and most entities have none.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tests:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a codegen archetype that generates a repository test for each entity:
+write and read latest, read a key that does not exist, and remove. Then
+delete the hand-written repository tests that the generated ones replace.
+Keep a hand-written test only where it covers a hand-written repository
+method or a case the template cannot state, and record why.
+
+Today codegen generates no repository test. The only generated C++ tests
+are the eventing integration tests (41 in ores.trading). The repository
+tests are all hand-written: 90 files across 12 components, measured
+2026-10-02:
+
+| Component | Hand-written repository test files |
+|-----------+------------------------------------|
+| ores.refdata | 26 |
+| ores.trading | 19 |
+| ores.dq | 16 |
+| ores.iam | 11 |
+| ores.analytics | 4 |
+| ores.reporting, ores.marketdata, ores.assets | 3 each |
+| ores.scheduler | 2 |
+| ores.workspace, ores.telemetry, ores.compute | 1 each |
+
+In ores.trading the 19 files cover 9 equity and 7 FX instruments, plus
+=activity_type=, =bond_leg_amount= and =trade_type=. The
+component has 85 models, so most of its generated repositories have no
+repository test at all.
+
+* Why
+
+The repository code is generated, but its tests are not. So the coverage
+depends on which entities someone happened to test by hand. A template
+defect in the repository layer reaches every entity, but only the tested
+ones can catch it. The hand-written tests are also the largest group of
+hand-written files in a clean component: in ores.trading they are 19 of
+the 83. Each trading file holds the same three cases, so the shape is
+mechanical and suits a template. The V07 vacuous-test census had to
+strengthen these files by hand; a generated test gets that fix once, in
+the template.
+
+* References
+
+- =projects/ores.trading/core/tests/repository_fx_forward_instrument_repository_tests.cpp=: a typical hand-written file.
+- =projects/ores.codegen/library/templates/ores.cpp.eventing-integration-test.org=: the one generated test archetype, as a model for the new one.
+
+* See also
+
+- [[id:CFD27CC5-451E-4DED-AFB7-84FDF6419582][Generate equality that ignores the columns the store stamps]]: a generated test needs whole-object comparison.
+- [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]]: where the count was found.

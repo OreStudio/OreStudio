@@ -1128,3 +1128,23 @@ tangled into the runnable script library
 * Stress Test Shifts
 
 - [[id:60EE9B0A-074D-5455-8A8B-578FCE2F5CC0][How do I run the stress_test_shifts commands from the shell?]]
+
+* Todays Market Collections
+
+- [[id:4515C97F-DACD-5657-A2B5-C9986A9469C9][How do I run the todays_market_collections commands from the shell?]]
+
+* Todays Market Configs
+
+- [[id:B4866151-A20B-5F35-ADB3-1A51F4C10DA8][How do I run the todays_market_configs commands from the shell?]]
+
+* Todays Market Configuration Bindings
+
+- [[id:00E94708-6AE9-51AD-AE77-F6C18C15706D][How do I run the todays_market_configuration_bindings commands from the shell?]]
+
+* Todays Market Configurations
+
+- [[id:9353C22A-3636-59F9-B460-2715FC36FF3B][How do I run the todays_market_configurations commands from the shell?]]
+
+* Todays Market Entries
+
+- [[id:5DA8DEBE-22BE-57C0-BF62-2E5DAAD1BA5D][How do I run the todays_market_entries commands from the shell?]]

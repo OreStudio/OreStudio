@@ -20,15 +20,18 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.workflow.core/messaging/workflow_handler.hpp"
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
@@ -296,6 +299,35 @@ std::optional<Response> await_reply(ores::nats::service::buffered_subscription& 
     return std::nullopt;
 }
 
+
+/**
+ * @brief A request a caller in @p tenant signs, with @p roles as its grants.
+ *
+ * The handlers build their context from the bearer token, so a test that
+ * drives one directly signs the token the way the gateway would.
+ */
+ores::nats::message signed_request(const std::string& secret,
+                                   const std::string& tenant,
+                                   const std::vector<std::string>& roles) {
+    ores::security::jwt::jwt_claims claims;
+    claims.subject = boost::uuids::to_string(boost::uuids::random_generator()());
+    claims.username = "workflow_handler_test";
+    claims.tenant_id = tenant;
+    claims.roles = roles;
+    claims.issued_at = std::chrono::system_clock::now();
+    claims.expires_at = claims.issued_at + std::chrono::hours(1);
+    const auto token =
+        ores::security::jwt::jwt_authenticator::create_hs256(secret).create_token(claims);
+    REQUIRE(token.has_value());
+    ores::nats::message msg;
+    msg.headers[std::string(ores::nats::headers::authorization)] =
+        std::string(ores::nats::headers::bearer_prefix) + *token;
+    msg.reply_subject = reply_subject;
+    return msg;
+}
+
+const std::string handler_secret = "workflow-handler-test-secret";
+
 } // namespace
 
 TEST_CASE("workflow_engine starts nothing for a type it does not know", tags) {
@@ -414,6 +446,17 @@ TEST_CASE("workflow_engine refuses a start that names half a target", tags) {
         f.engine->on_start_workflow(as_message(req));
         CHECK(instances.read_latest(f.h.context(), req.instance_id).empty());
     }
+
+    // The control is the same start with both halves, so the refusals above are
+    // about the half target and not about a start that could not have worked:
+    // an engine that does nothing passes the checks above and fails this one.
+    auto whole = start_for("test_half_target_workflow",
+                           f.tenant(),
+                           boost::uuids::to_string(boost::uuids::random_generator()()));
+    whole.target_kind = "tenant";
+    whole.target_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    f.engine->on_start_workflow(as_message(whole));
+    CHECK(instances.read_latest(f.h.context(), whole.instance_id).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Half targets refused.";
 }
 
@@ -1022,6 +1065,164 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     REQUIRE(defective != answer->definitions.end());
     CHECK(defective->step_count == 0);
     BOOST_LOG_SEV(lg, debug) << "Definitions listed: " << answer->definitions.size();
+}
+
+TEST_CASE("workflow_query_handler filters runs by type and by target", tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::workflow::messaging::list_workflow_instance_summaries_request;
+    using ores::workflow::messaging::list_workflow_instance_summaries_response;
+    using ores::workflow::messaging::workflow_query_handler;
+
+    fixture f;
+    f.register_steps("test_filter_workflow_a", {"one"});
+    f.register_steps("test_filter_workflow_b", {"one"});
+    const auto first = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto second = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    // Four runs the filters must tell apart: two of type a acting on two
+    // tenants, one of type b acting on a party with the first tenant's id, and
+    // one of type a acting on nothing.
+    const auto start =
+        [&](const std::string& type, const std::string& kind, const std::string& target) {
+            auto req = start_for(
+                type, f.tenant(), boost::uuids::to_string(boost::uuids::random_generator()()));
+            req.target_kind = kind;
+            req.target_id = target;
+            f.engine->on_start_workflow(as_message(req));
+            return req.instance_id;
+        };
+    const auto a_first = start("test_filter_workflow_a", "tenant", first);
+    const auto a_second = start("test_filter_workflow_a", "tenant", second);
+    const auto b_party = start("test_filter_workflow_b", "party", first);
+    const auto a_none = start("test_filter_workflow_a", "", "");
+
+    auto handler = std::make_shared<workflow_query_handler>(
+        f.nats,
+        f.service_context(),
+        ores::security::jwt::jwt_authenticator::create_hs256(handler_secret),
+        f.instance_states,
+        f.step_states,
+        f.registry);
+
+    auto replies = f.nats.subscribe_buffered(reply_subject, 10);
+    const auto ask = [&](const list_workflow_instance_summaries_request& req) {
+        auto msg = signed_request(handler_secret, f.tenant(), {});
+        msg.data = ores::nats::default_wire_codec().encode(req);
+        const auto before = replies.size();
+        handler->list_instances(std::move(msg));
+        const auto answer = await_reply<list_workflow_instance_summaries_response>(
+            replies, before, std::chrono::seconds(5));
+        REQUIRE(answer.has_value());
+        REQUIRE(answer->success);
+        std::vector<std::string> ids;
+        for (const auto& run : answer->instances)
+            ids.push_back(run.id);
+        return std::make_pair(ids, answer->instances);
+    };
+    const auto has = [](const std::vector<std::string>& ids, const std::string& id) {
+        return std::ranges::find(ids, id) != ids.end();
+    };
+
+    // Kind and identity together name one run.
+    list_workflow_instance_summaries_request exact;
+    exact.target_kind_filter = "tenant";
+    exact.target_id_filter = first;
+    const auto [exact_ids, exact_runs] = ask(exact);
+    REQUIRE(exact_ids.size() == 1);
+    CHECK(exact_ids.front() == a_first);
+    CHECK(exact_runs.front().target_kind == "tenant");
+    CHECK(exact_runs.front().target_id == first);
+
+    // The identity alone matches across kinds; a run with no target matches none.
+    list_workflow_instance_summaries_request by_id;
+    by_id.target_id_filter = first;
+    const auto [id_ids, id_runs] = ask(by_id);
+    CHECK(id_ids.size() == 2);
+    CHECK(has(id_ids, a_first));
+    CHECK(has(id_ids, b_party));
+
+    // The type alone keeps its own runs, targeted or not, and no other type's.
+    list_workflow_instance_summaries_request by_type;
+    by_type.type_filter = "test_filter_workflow_a";
+    const auto [type_ids, type_runs] = ask(by_type);
+    CHECK(has(type_ids, a_first));
+    CHECK(has(type_ids, a_second));
+    CHECK(has(type_ids, a_none));
+    CHECK_FALSE(has(type_ids, b_party));
+    BOOST_LOG_SEV(lg, debug) << "Filters checked over " << type_runs.size() << " run(s).";
+}
+
+TEST_CASE("workflow_handler retries a run only for a permitted caller in its tenant", tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::workflow::messaging::retry_workflow_instance_request;
+    using ores::workflow::messaging::retry_workflow_instance_response;
+    using ores::workflow::messaging::workflow_handler;
+
+    fixture f;
+    f.register_steps("test_handler_retry_workflow", {"one"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_handler_retry_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    workflow_step_repository steps;
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "broke")));
+
+    auto handler = std::make_shared<workflow_handler>(
+        f.nats,
+        f.service_context(),
+        ores::security::jwt::jwt_authenticator::create_hs256(handler_secret),
+        f.engine);
+
+    auto replies = f.nats.subscribe_buffered(reply_subject, 10);
+    const auto send = [&](const std::string& tenant,
+                          const std::vector<std::string>& roles,
+                          const std::string& id) {
+        auto msg = signed_request(handler_secret, tenant, roles);
+        retry_workflow_instance_request req;
+        req.workflow_instance_id = id;
+        msg.data = ores::nats::default_wire_codec().encode(req);
+        const auto before = replies.size();
+        handler->retry_instance(std::move(msg));
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+        while (replies.size() <= before && std::chrono::steady_clock::now() < deadline)
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        REQUIRE(replies.size() > before);
+        return replies.snapshot().back();
+    };
+    const auto decode = [](const ores::nats::message& reply) {
+        const auto answer =
+            ores::nats::default_wire_codec().decode<retry_workflow_instance_response>(reply.data);
+        REQUIRE(answer);
+        return *answer;
+    };
+
+    // A caller whose grants name other permissions is refused before anything.
+    const auto forbidden = send(f.tenant(), {"iam::accounts:read"}, instance_id);
+    CHECK(forbidden.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
+
+    // An identifier that is not one is answered, not thrown.
+    const auto malformed = decode(send(f.tenant(), {"workflow::*"}, "not-a-uuid"));
+    CHECK_FALSE(malformed.success);
+    CHECK(malformed.message == "Invalid workflow_instance_id.");
+
+    // Another tenant cannot resume this tenant's run.
+    const auto elsewhere = decode(send(f.service_tenant_id(), {"workflow::*"}, instance_id));
+    CHECK_FALSE(elsewhere.success);
+
+    // The run's own tenant, with the grant, resumes it from the failed step.
+    const auto resumed = decode(send(f.tenant(), {"workflow::*"}, instance_id));
+    CHECK(resumed.success);
+    CHECK(resumed.step_name == "one");
+    CHECK(resumed.step_index == 0);
+    BOOST_LOG_SEV(lg, debug) << "Retry refused twice, then resumed.";
 }
 
 TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for the service",

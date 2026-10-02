@@ -119,7 +119,7 @@ The order the document wrote the collection in.
 :target_column: id
 :parent_entity: todays_market_config
 :nullable:      false
-:error_message: Invalid todays_market_config_id: %. No active today's market configuration found with this id.
+:error_message: Invalid todays_market_config_id: %. No active today market configuration found with this id.
 :list_by:       true
 :END:
 

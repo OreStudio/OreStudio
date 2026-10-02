@@ -33,6 +33,7 @@ set(files
     "ore_run_document_database_roundtrip_tests.cpp"
     "planner_import_planner_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
+    "todays_market_database_roundtrip_tests.cpp"
     "xml_bond_fact_mapper_roundtrip_tests.cpp"
     "xml_bond_golden_roundtrip_tests.cpp"
     "xml_bond_mapper_roundtrip_tests.cpp"

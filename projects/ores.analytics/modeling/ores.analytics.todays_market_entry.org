@@ -183,7 +183,7 @@ sorting.
 :target_column: id
 :parent_entity: todays_market_config
 :nullable:      false
-:error_message: Invalid todays_market_config_id: %. No active today's market configuration found with this id.
+:error_message: Invalid todays_market_config_id: %. No active today market configuration found with this id.
 :list_by:       true
 :END:
 
@@ -193,7 +193,7 @@ sorting.
 :target_column: id
 :parent_entity: todays_market_collection
 :nullable:      false
-:error_message: Invalid todays_market_collection_id: %. No active today's market collection found with this id.
+:error_message: Invalid todays_market_collection_id: %. No active today market collection found with this id.
 :list_by:       true
 :END:
 

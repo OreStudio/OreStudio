@@ -88,7 +88,7 @@ begin
           and id = NEW.todays_market_configuration_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid todays_market_configuration_id: %. No active today's market configuration found with this id.', NEW.todays_market_configuration_id
+        raise exception 'Invalid todays_market_configuration_id: %. No active today market configuration found with this id.', NEW.todays_market_configuration_id
             using errcode = '23503';
     end if;
 

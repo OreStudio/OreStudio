@@ -342,7 +342,7 @@ collection *wrapper* declares its own optional =id= — =discountCurvesType::id=
 The collection's does not, because a collection is a discriminator on the entry
 table rather than a table of its own, so there is nowhere to put it.
 
-No corpus file writes it, so nothing fails today. A document that did would lose
+(Correction, PR #2500 review: this is wrong. Almost every corpus file writes a collection id, and a =Configuration= selects a collection by it. Only ten collection elements in the corpus omit it.) No corpus file writes it, so nothing fails today. A document that did would lose
 it, and the loss would be invisible because the corpus cannot show it — the same
 trap =ParConversion= set for the stress mapper. Either the entry table carries
 =collection_id= as a denormalised copy, or the collection earns a table of its

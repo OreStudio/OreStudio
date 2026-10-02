@@ -2,7 +2,7 @@
 :ID: 0D7AA741-C938-4C63-B074-9A134067A658
 :END:
 #+title: Task: Round trip today's market configuration
-#+description: todaysmarket*.xml end to end: the market configuration sets a report's valuation reads. A document is an ordered set of 24 optional collections — yield, discounting, index-forwarding, swap index, inflation, fx, equity, commodity, correlation, default and volatility curves and spots — plus Configuration blocks that name one entry in each collection by reference. Neither the entity model nor a mapper exists, and the corpus holds 98 files under the TodaysMarket root, so nothing of this kind round trips. Model the entities in the component that owns the concept, write both mappers, and prove the round trip with the harness over every file in the corpus.
+#+description: todaysmarket*.xml end to end: the market configuration sets a report's valuation reads. A document is an ordered set of 24 optional collections — yield, discounting, index-forwarding, swap index, inflation, fx, equity, commodity, correlation, default and volatility curves and spots — plus Configuration blocks that select one collection of each kind by its id. Neither the entity model nor a mapper exists, and the corpus holds 98 files under the TodaysMarket root, so nothing of this kind round trips. Model the entities in the component that owns the concept, write both mappers, and prove the round trip with the harness over every file in the corpus.
 #+type: task
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
@@ -29,7 +29,7 @@ Every todaysmarket*.xml in the corpus round trips through the entities, both way
 | State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing technical. The branch is one commit ahead of main and is not pushed. |
+| Waiting on   | Review of PR #2500. |
 | Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
@@ -155,6 +155,18 @@ task and name that file in the Command column.
 
 * Notes
 
+**Corrections from the PR #2500 review.** Three points in the Plan above are
+wrong or were not done. The Plan stays as written because it is the record of what was
+believed:
+- "No corpus file writes" a collection =id=. Almost every file does: 195
+  =DiscountingCurves= elements and 103 =YieldCurves= elements carry one, and only
+  ten collection elements in the corpus omit it.
+- A =Configuration= does not select one *entry* from each collection. It selects
+  one *collection* of each kind by that collection's =id=.
+- The seeded lookup for the collection kinds was not built. It moved to
+  [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]].
+
+
 **The description this task was scaffolded with named four things the schema
 does not have.** It claimed the document carries "the calendar, the sensitivity
 and report currency settings, and the ibor fallback and pricing engine binds".
@@ -195,58 +207,79 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unknown collection and binding names are dropped silently on reverse | =todays_market_mapper.cpp= | Accepted | Both chains throw in a final =else=. A synthetic document with all 24 collections and bindings proves every branch, including =BondFutureVolatilities=, which no corpus file uses. |
+| 2 | Absent and empty optional attributes collapse into one value | =todays_market_mapper.cpp=, entry and collection models | Accepted | =key_value=, =key_value_2=, =discounting= and =collection_id= are =std::optional<std::string>= and null in SQL. The entry is keyed by =id=, as =stress_test_shift= is, because =key_value= is not unique and is now optional. |
+| 3 | Fragile currency parse: magic count, silent USD fallback | =todays_market_mapper.cpp= | Accepted | Uses the shared =parse_currency_code= in =ore_code_tables.hpp=, which throws on unknown text. |
+| 4 | Dead =entries_of= lambda | =todays_market_mapper.cpp= | Accepted | Removed. |
+| 5 | Duplication, and no proof that map and reverse cover the same names | =todays_market_mapper.cpp= | Partly accepted | =add_collection= removes the repeated row creation. One table for both directions is declined: each binding slot is its own type. The throw plus the all-collections test catch any drift. |
+| 6a | Hard-coded config name "TodaysMarket" collides on a second import | =todays_market_mapper.cpp= | Declined here | The credit simulation mapper does the same. The config is now linked to its reporting configuration by =configuration_id=, so the caller registers and names it. Naming on import is a story-level question for both mappers. |
+| 6b | Fallback parameter on the currency parser | =todays_market_mapper.cpp= | Accepted | Gone with item 3. |
+| 6c | No test with an explicit collection id | tests | Accepted | The synthetic document has ids on 23 collections and none on one. The corpus also writes ids almost everywhere, which the PR text got wrong. |
+| 7 | Own review: five tables had =tenant_id= and no row-level security | five models | Accepted | =:rls_tenant_isolation: true= on all five. The parser reported =RLS_001= for each, but CI does not fail on parser warnings. |
+| 8 | Own review: the config was not linked to =reporting.configurations= | =todays_market_config= model | Accepted | Nullable =configuration_id= foreign key, as on =credit_simulation_config=. |
+| 9 | Own review: the harness change hid a binding defect | =roundtrip_harness.hpp= | Moved | The binding does not decode entities in element text. The fix and restoring the harness cycle are [[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]]. |
+| 10 | Own review: hand-written aggregates; the wiring check only warns | SQL aggregates, CI | Moved | [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]]. The recipe now says what the parser checks and how to run it. |
+| 11 | Own review: collection kinds as a seeded lookup, as the plan said | entry and collection models | Deferred | Recorded on [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]]. Binding-to-collection foreign key recorded on [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]]. |
 
 * Result
 
-Complete. The kind is modelled, mapped in both directions, and proven twice:
-over every shipped document in memory, and through PostgreSQL.
+Complete. The kind is modelled, mapped in both directions, and proven over every
+shipped document in memory, over a synthetic document that uses every
+collection, and through PostgreSQL.
 
-**The model is five tables.** A document; its collections; the entries those
-collections hold; the configurations; and the references a configuration makes.
-Twenty-three of the twenty-four collections are one shape and share one table
-behind a discriminator. Two decisions were forced by reading the schema and the
-binding rather than the corpus:
+**The model is five tables.**
 
-- The entry table carries the key attribute's *name* beside its value, because
-  the key is =name= for nineteen collections, =currency= for
-  =DiscountingCurves=, =pair= for the two FX collections and the literal string
-  =key= for the swaption and cap-floor families. Two of those also identify by
-  two attributes at once.
-- Every collection element declares its own optional =id=, separate from the
-  =id= of the entries inside it. No corpus file writes one, so a model without a
-  place for it would have round tripped all ninety-eight files and lost data on
-  a document that wrote one. That is why the collection has a table.
+| Table | One row per | Holds |
+|-------+-------------+-------|
+| =todays_market_config= | document | name, description, and =configuration_id=, the reporting configuration it is registered as |
+| =todays_market_collection= | collection element | the kind (=DiscountingCurves= and so on), its =id=, its position |
+| =todays_market_entry= | entry in a collection | the key attribute name and value, an optional second key, the reference text, the =Discounting= child, the position |
+| =todays_market_configuration= | =Configuration= element | its =id=, its position |
+| =todays_market_configuration_binding= | =*Id= child of a configuration | the kind, and the =id= of the collection it selects |
+
+Every table is tenant-isolated by row-level security. An attribute the schema
+makes optional is null when the document left it out and the empty string when
+the document wrote it empty.
+
+**How a run reaches the data.** =ore.xml= names the file in
+=marketConfigFile= and binds each analytic stage to a configuration id in its
+=Markets= block; both are stored by the run document mapper.
+=todays_market_config.configuration_id= joins the document to its
+=reporting.configurations= header. Inside the document every link is text: a
+binding of =DiscountingCurves= to =inccy= selects the =DiscountingCurves=
+collection whose id is =inccy=, and each entry's reference names a curve in
+=curveconfig.xml=.
+
+**Decisions forced by the schema and the binding rather than the corpus.**
+- The entry table carries the key attribute's *name* beside its value: =name=
+  for eighteen kinds and for =SwapIndexCurves=, =currency= for
+  =DiscountingCurves=, =pair= for the two FX kinds, and an optional =key= with an
+  optional =currency= for the swaption and cap-floor kinds.
+- A document may write a kind more than once under different ids, and a
+  configuration selects one by id. That is why the collection has a table.
 
 **The proof.**
 
 | What | Result | How |
 |------+--------+-----|
 | Corpus round trip | 98 of 98, no failures | =every today's market document round trips through the entities= |
+| Every collection and binding | passed | =a document with every collection and every binding round trips= |
+| Absent versus empty | passed | =an optional attribute left out is stored as null, and one written empty is not= |
+| Unknown names | passed | =a collection or a binding the mapper does not know is an error= |
 | Database round trip | passed | =todays_market_roundtrip_through_the_database= |
 | Whole component suite | passed | =compass test run -- -R ores.ore.core.tests= |
 
-**Two defects found on the way, neither visible to the build.**
-
-*The harness compared after a spare save/load cycle.* Five files failed with an
-extra level of ampersand escaping. A probe showed the mapper was faithful — the
-imported and rebuilt values were identical. The binding decodes an entity
-reference in an attribute but leaves one in element text alone, while the writer
-escapes on the way out, so a text value containing an ampersand gains a level
-per cycle and the spare cycle manufactured the difference. The harness now
-compares the rebuilt document against the imported one directly, and every other
-kind in the component was re-run to show that changed nothing else.
-
-*Creating a new entity in a real database needs two steps the build never asks
-for.* The per-component create and drop aggregates are hand-curated rather than
-generated, so a new table is absent from a recreate until it is listed — and the
-recreate reports success while creating nothing. And a foreign key's
-=error_message= is emitted into a SQL string literal, so the apostrophe in
-"today's market" produced =syntax error at or near "s"= and aborted the recreate
-with two of five tables left behind. Both are recorded here because the build,
-the codegen and the drift check are all green while the entity never reaches the
-database.
+**Left to other tasks.**
+- The XML binding does not decode entities in element text, so an imported
+  =&= is stored as =&amp;=. This PR changed the harness to stop comparing after a
+  save/load cycle, which hides the defect rather than fixing it. Both are
+  [[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]].
+- The component aggregates are hand-written, and the wiring check only warns:
+  [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+- The collection kinds as a seeded lookup:
+  [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]].
+- Whether a binding should be a foreign key to its collection:
+  [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]].
 
 **What is not claimed.** The corpus walk is in memory; one document goes through
 the database. That is the same split every other kind in this story uses.
-

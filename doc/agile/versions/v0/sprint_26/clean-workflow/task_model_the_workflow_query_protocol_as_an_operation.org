@@ -31,12 +31,12 @@ left pending, and it does the payload move that task planned.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
-| Now          | Inventory taken and plan written. No code has changed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1: the vocabulary header and the custom type rows. |
-| Last touched | 2026-10-01                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
 
 * Why this task exists
 
@@ -115,6 +115,47 @@ The dependency inversion the clean-up task also found -- the engine's registrar
 calls dq, ore, refdata and reporting to register their definitions -- is out of
 scope. It needs workflow definitions as data, and it gets its own capture.
 
+* Result
+
+- *The conversation is one model.* =ores.workflow.workflow_messages= declares
+  all 17 messages with today's subjects, and renders the C++ protocol, its
+  TypeScript twin and a shell unit. The five hand-written headers are deleted
+  and 15 includers moved to the generated one. The enumerations and NATS header
+  names are in =workflow_vocabulary.hpp=, registered as custom types.
+- *The dead payload is deleted, not moved.* Nothing sent
+  =workflow.v1.parties.provision=; the shell and the web use
+  =iam.v1.parties.provision=. The payload, the handler method, refdata's
+  definition, its registration, its permission and the engine's link to
+  =ores.refdata.api= are gone. The product owner chose this over the planned
+  move.
+- *The filters are strings.* The four =std::optional<std::string>= filters are
+  plain strings with an empty default, which the handler already read as "no
+  filter", and which the shell can fill as flags.
+- *The shell is generated.* =definitions=, =instances=, =steps=, =retry= and
+  =step-result= come from the model. =wait= and =start= stay hand-written in
+  =workflow_run_commands=, because neither is a message with a reply, and join
+  the generated menu through =extend_menu=.
+- *The web uses the generated protocol.* The roster, progress and retry calls
+  send generated request types and take generated subjects, and each reply
+  schema is held to its generated interface with =satisfies=. Removing a field
+  from a schema fails =tsc= (checked). The two entities' TypeScript modules are
+  committed too.
+- *The boundary is tested.* ores.web writes the encoded roster request to a
+  fixture, and the workflow api's C++ test decodes it. With the request the
+  hand-written client used to send, the C++ test fails as the service did
+  (checked).
+- *A defect found on the way.* =workflow.v1.definitions.list= threw on tenant
+  provisioning, which builds its steps from its request, and never replied, so
+  =workflow definitions= and =workflow start= timed out for everyone. Such a
+  definition is now listed with no steps; a test covers it.
+- *Records corrected.* The clean-up task's M06, P01, P03, P04 and P05 rows and
+  its Result carry a dated correction, the false P04 row in =ores.service='s
+  clean-up task is corrected, and the engine's dependency on its commissioners
+  is a capture.
+- *Not done.* The provisioning type and target-kind constants in
+  =wire-protocol/src/tenants.ts= still mirror iam's C++ constants, because they
+  are values and not protocol, and no model declares them.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -127,7 +168,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Messages in the model | 17 | =grep -c '^\*\* ' projects/ores.workflow/modeling/ores.workflow.workflow_messages.org= | =848165c4c0= |
+| Hand-written messaging headers left in =ores.workflow.api= | 0 of 6 (=workflow_vocabulary.hpp= holds no message) | =grep -L AUTO-GENERATED projects/ores.workflow/api/include/ores.workflow.api/messaging/*.hpp= | =848165c4c0= |
+| Includers moved to the generated header | 15 | the include rewrite in =612258c114= | =612258c114= |
+| Workflow shell recipes answering on the live fleet | 11 of 11 | =check_shell_recipes.py workflow= | =848165c4c0= |
+| Codegen drift, registry components | none | =check_component_drift.py --all= | =848165c4c0= |
 
 * Notes
 
@@ -152,7 +197,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Minor: the provisioning type and target-kind constants still mirror iam's C++ constants by hand. | =wire-protocol/src/tenants.ts= | Decline | Values, not protocol; no model declares them. Recorded under Result. |
+| 2 | Minor: a definition that builds its steps from its request is listed with zero steps, which a reader could take for an empty workflow. | =workflow_query_handler.cpp= | Decline | The read used to fail for every caller; a flag on the summary is a protocol change for another task. |
+| 3 | Minor: the TypeScript module now carries the start message and the step event, which no web caller sends. | =generated/workflow/protocol/workflow_protocol.ts= | No change | One model is the price of a TypeScript projection that cannot reference a sibling model. |
+| 4 | Checked: no end-of-line comment in the diff and no misspelling in a changed file. | -- | -- | =misspell-fixer= over the changed files is clean. |
+
+Verdict: ready to merge.
 
 * Result
 

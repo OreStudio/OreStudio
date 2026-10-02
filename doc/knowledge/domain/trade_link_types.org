@@ -55,7 +55,7 @@ the /to/ end the trade it reaches, and the roles column names both.
 | Linked cash | trade → cash flow | A coupon, fee, rebate or principal falls due | [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] |
 | Fixing | fixed → fixing | The rate of a non-deliverable forward fixes | [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]; [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 | Wash or back-to-back | client-facing → risk-bearing | Risk is routed to the book that owns it | [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] |
-| Book move | backed-out → destination | The trade changes book | [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] |
+| Book move | backed-out → destination | The trade must change to a book with a different legal entity, branch, regulatory book or accounting classification, so it is closed out and rebooked | [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] |
 | Hedge | hedged → hedging | A desk records a risk relationship | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 | User-defined link | either → either | A user records an association | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 
@@ -99,6 +99,11 @@ trades, and it carries no link. Credit netting is the
 /Split has two senses./ Allocating a block splits it into child trades,
 an operation covered by [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]]. Separately, the
 blotter's /Link Split/ breaks an existing link.
+
+/A move within the boundary is not a link./ A trade that moves to a
+book with the same legal entity, branch, regulatory book and accounting
+classification keeps its identity: the move amends its booking and
+creates no trade and no link. See [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]].
 
 /Restructure is not a link./ A restructure renegotiates the terms of
 the same trade, so it is an amendment that cuts a new version; see

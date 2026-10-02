@@ -110,6 +110,8 @@ etc.); and a *Control Explain* process explicitly calls out book moves
 as a cause of hard-to-spot P&L breaks between days, since the deal's
 prior book is not retained on the deal record itself (see
 [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
+[[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] describes the postings an allowed move produces and why a
+booking that keeps its history removes the break.
 
 Two ledger-adjacent control reports exist specifically for book static
 data: the *Amended Books* report (books whose static data changed

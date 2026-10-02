@@ -196,7 +196,7 @@ trade, with a fresh =id=, replaces it.
 | Reason | Link type | Direction |
 |--------+-----------+-----------|
 | The counterparty changes | Novation or assignment | transferred → new counterparty |
-| The trade moves to a book owned by another legal entity | Book move (see [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]) | backed-out → destination |
+| The trade moves to a book with a different legal entity, branch, regulatory book or accounting classification | Book move (see [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]]) | backed-out → destination |
 | The original was booked in error | Misbooking correction | correction → erroneous original |
 
 The firm's own legal entity and the counterparty are fixed for a

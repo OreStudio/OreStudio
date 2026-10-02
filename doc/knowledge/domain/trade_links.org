@@ -94,11 +94,11 @@ Several routes carry every link.
   back-to-back pair is generated with the client-facing trade, so the
   two sides of the risk route exist together (see
   [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk
-  routing]]). A book move pairs a back-out trade with the trade in the
-  destination book in a single transaction; where ownership differs,
-  the move goes through a novation-like close-out and rebook, linked
-  both times (see [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book
-  lifecycle]]). A correction trade is linked back to the erroneous
+  routing]]). A trade that must change to a book with a different
+  legal entity, branch, regulatory book or accounting classification
+  is closed out and rebooked, and the two trades are linked; a move
+  within those lines amends the trade's booking and creates no link
+  (see [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]]). A correction trade is linked back to the erroneous
   original by a misbooking correction link (see
   [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]).
 
@@ -137,7 +137,7 @@ the group, and the group carries who ran it, when and why.
    a split, a route, a move, a correction.
 
 3. /Created together./ Trades a single act generates — a back-to-back
-   pair, a book move's two sides, every trade of a run — are written in
+   pair, a close-out and its rebooking, every trade of a run — are written in
    one transaction with their links or their group, or not at all. No
    reader sees half of the act.
 
@@ -221,6 +221,6 @@ The material analysed, in full:
 - [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] — the links between a trade and its cash.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — Link / Unlink, and the linked forms.
 - [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — back-to-back generation and its audit requirement.
-- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the book move, its single transaction, and the novation-like move between owners.
+- [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] — which book moves amend a trade and which close it out and rebook it.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events, and which of them cut a version.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

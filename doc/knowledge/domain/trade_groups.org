@@ -111,6 +111,7 @@ and in what role, and that record does not change afterwards.
 | Funding roll | Act | Rolls a book's currency balances to the next day | generated | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
 | Sweep run | Act | Centralises residual balances | generated | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
 | Cleardown | Act | Resets book results at a period boundary | generated | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] |
+| Bulk book move | Act | Moves many trades to another book in one operation | moved | [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] |
 
 Every act has the same properties, whatever its kind:
 

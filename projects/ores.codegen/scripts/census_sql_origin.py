@@ -2,9 +2,10 @@
 """Report which SQL files codegen produces, which another tool produces, and
 which are written by hand.
 
-A "generated" comment in a file cannot answer this. No drop template writes
-one, and some files keep one after the input that generated them was deleted.
-So this asks the generator instead: it renders every catalogue component at
+A "generated" comment in a file cannot answer this on its own: a file keeps
+its comment after the input that generated it is deleted, and a template that
+forgets to write one leaves its output looking hand-written. So this asks the
+generator instead: it renders every catalogue component at
 the whole ``ores`` address into a scratch root, with the same functions
 ``check_component_drift.py --sweep`` uses. A file under ``projects/ores.sql``
 is entity codegen output exactly when that root contains it. A file the root

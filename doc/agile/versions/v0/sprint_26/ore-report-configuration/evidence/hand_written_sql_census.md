@@ -138,6 +138,9 @@ per-component policy file, not the inline output.
   files are named exceptions in =validation_ignore.txt=, each with what runs
   it.
 - CI runs the parser with =--strict=, and it reports no warning.
+- Both drop templates write the generated marker, and all 537 generated drop
+  files are regenerated with it. A regeneration of =ores.sql.schema= for every
+  component changes nothing else.
 - The origin census is committed as
   =projects/ores.codegen/scripts/census_sql_origin.py=. At the end of the task
   it reports 1119 codegen, 148 other generator and 517 hand-written of 1784

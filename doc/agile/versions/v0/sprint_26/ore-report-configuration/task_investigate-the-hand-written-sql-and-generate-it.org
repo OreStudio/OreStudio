@@ -47,10 +47,10 @@ generates. What stays hand-written is checked by a gate that fails the build.
 - The =WIRE_001= wiring check, and the other parser warnings, fail CI rather than
   print.
 - Generated drop files carry the same generated marker as the create files, so a
-  count of hand-written files is possible. /Replaced, with the operator's
-  approval: a marker cannot answer the question, because 44 files keep one after
-  their generator's input was deleted. The committed census script renders the
-  generator's output and counts exactly, so it meets the purpose of this line./
+  count of hand-written files is possible. /Both templates write it now, and
+  all 537 generated drop files carry it. A marker alone still cannot count
+  exactly, because 44 files keep one after their generator's input was deleted,
+  so the census script renders the generator's output as well./
 
 * Plan
 
@@ -99,6 +99,7 @@ task and name that file in the Command column.
 | Parser warnings with =--strict= after the fixes | 0 | =plantuml_er_parse_sql.py ... --strict= | working tree |
 | Full =drop/drop.sql= against a recreated database | completes, no error; 0 tables and 115 functions left | =compass sql -- -v ON_ERROR_STOP=1 -f projects/ores.sql/drop/drop.sql= | working tree |
 | Database recreate after the deletions and the wiring | succeeds in 27 s, 372 tables | =compass db recreate -y -k= | working tree |
+| Generated drop files with the generated marker | 537 of 537, from 0 | =regenerate --all --address ores.sql.schema= then the census | working tree |
 | Census at the end of the task | 1119 codegen, 148 other generator, 517 hand-written of 1784 | =census_sql_origin.py= | working tree |
 
 The marker-based counts this task was scaffolded with (144 of 754 create
@@ -191,7 +192,8 @@ earlier components and hand files that name tables at creation need order.
 **Gates.** The schema parser fails CI on any warning. =WIRE_001= now covers
 every =.sql= file in the three trees, reached from their roots and from the
 bootstrap scripts, which found fifteen dead files and two populate scripts that
-never ran. The five real drop gaps are wired and the full drop script runs
+never ran. Both drop templates now write the generated marker the create
+templates write, so the 537 generated drop files no longer look hand-written. The five real drop gaps are wired and the full drop script runs
 clean. The census is committed as a tool.
 
 **Recorded, not fixed here.** Three captures: =ores_iam_auth_events_tbl= has a

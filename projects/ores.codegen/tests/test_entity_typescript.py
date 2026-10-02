@@ -358,7 +358,7 @@ def test_the_tenant_type_twin_matches_the_domain_class(tmp_path):
                if line.strip()]
     assert members == [
         "version", "tenant_id", "type", "name", "description",
-        "display_order", "modified_by", "performed_by",
+        "display_order", "badge_code", "modified_by", "performed_by",
         "change_reason_code", "change_commentary", "recorded_at"]
 
     protocol = (tmp_path / "tenant_type_protocol.ts").read_text(encoding="utf-8")

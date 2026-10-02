@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 64739960-499A-4B10-AFCF-C8EE3DB87476
+:END:
+#+title: The workflow step-deadline tests fail on macOS
+#+description: Two ores.workflow.core.tests cases fail on both macOS CI jobs: the overdue step is marked failed, but its run does not reach the failed state, and a late answer leaves one row where the test expects two.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two step-deadline cases in =workflow_engine_tests.cpp= fail on both macOS CI
+jobs and pass on Linux. In "workflow_engine stops a run whose step outlives its
+deadline", =expire_overdue_steps()= returns 1 and the step row is =failed=, but
+the instance stays in its previous state and carries no "did not answer
+within" error. In "workflow_engine keeps a failure when the step answers
+later", the same instance check fails, =outcome.resumed= is false, and the
+history holds one row where the test expects two. Both cases come from the
+task that gave a workflow step a deadline.
+
+* Why
+
+The macOS jobs of Continuous MacOS run 36957593572 (commit =7fb78ed6e4=) fail
+on these cases alone. The pattern (step updated, instance not) suggests the
+instance transition depends on ordering or timing that differs on macOS. Not
+yet re-checked on a later commit: run 36987873236 was still running when this
+was filed.
+
+* References
+
+- Continuous MacOS run 36957593572, jobs macos-clang-release-ninja and macos-clang-debug-ninja.
+- =projects/ores.workflow/core/tests/workflow_engine_tests.cpp=.
+
+* See also
+
+- [[id:BFC0B81D-9DAB-421F-B199-68188E1BD64C][Hotfix: the marketdata core suite times out in CI]], where it was found.

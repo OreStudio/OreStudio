@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 86769F34-BE1A-4C90-8B4B-5F406C826A9D
+:END:
+#+title: How do I rebuild the ORE market datum catalogue?
+#+description: Regenerate external/ore/catalogue, the fields ORE's own parser assigns to every documented key form and every corpus key, from a local ORE build.
+#+type: recipe
+#+level: cross
+#+filetags: :ore:marketdata:oresmd:recipe:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+The catalogue is the reference the oresmd key codec is tested against: what
+ORE's own =parseMarketDatum= puts in each field of a key. It is built by a small
+harness linked against a local ORE engine, because the ORE Studio build does not
+link ORE. A round trip of key text against itself cannot show a token read into
+the wrong field; a comparison with ORE's own fields can.
+
+* Question
+
+How do I rebuild the ORE market datum catalogue?
+
+* Answer
+
+1. /Build ORE./ The harness needs an ORE engine checkout and its build: the
+   =OREData=, =QuantExt= and =QuantLib= shared libraries and headers. Any ORE
+   build made with clang and the system Boost serves.
+
+2. /Regenerate./ The script writes the inspector dump from ORE's
+   =marketdatum.hpp=, builds the harness in a temporary directory, and writes
+   the three catalogue files:
+
+   #+begin_src sh :results verbatim
+   external/ore/tools/datum_catalogue/regenerate.sh \
+     <ORE source dir> <ORE build dir>
+   #+end_src
+
+   | File | What it holds |
+   |------+---------------|
+   | =external/ore/catalogue/forms.jsonl= | One line per key in =forms.txt=: every form ORE's parser documents, and the keys it refuses |
+   | =external/ore/catalogue/corpus.jsonl.gz= | One line per distinct key in the example corpus |
+   | =external/ore/catalogue/ore_version.txt= | The ORE tag and commit the catalogue came from |
+
+3. /Check the result./ A rebuild from the same ORE commit is byte-identical,
+   so a diff that is not empty means ORE's parser changed:
+
+   #+begin_src sh :results verbatim
+   git status --short external/ore/catalogue external/ore/tools/datum_catalogue
+   #+end_src
+
+4. /Add a form./ When ORE gains a key form, add one key for it to
+   =external/ore/tools/datum_catalogue/forms.txt= under the heading for its
+   instrument type, citing the parser line that reads it, and regenerate.
+
+* Script
+
+=external/ore/tools/datum_catalogue/regenerate.sh= drives
+=generate_dump.py= (the inspector dump), the =datum_catalogue= harness and
+=extract_corpus_keys.py= (the corpus key list). The harness reads one key per
+line on standard input and writes one JSON object per key: the datum class,
+the instrument type, the quote type and every inspector the class declares, or
+ORE's error for a key it refuses.
+
+Two things in the output come from ORE rather than from the key. The as-of date
+is the earliest date QuantLib allows, so a key ORE turns into a date relative to
+it (an equity forward or dividend given as a tenor) carries a date in 1901. And
+=BOND_FUTURE_OPTION= prints its instrument type as =?=, because ORE's own enum
+printer has no entry for it.
+
+* Tested by
+
+=ores.marketdata.core.tests=, =oresmd_ore_catalogue_tests.cpp=, reads both
+catalogue files: every ORE instrument type has a form, and every corpus key ORE
+accepts is measured through the oresmd grammar.
+
+* See also
+
+- =external/ore/catalogue/README.md= -- the catalogue's files and the two values that come from ORE rather than from the key.

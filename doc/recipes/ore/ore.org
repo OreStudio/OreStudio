@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: B13943FF-CA36-49E4-B556-39FD8E5CA6EF
+:END:
+#+title: ORE recipes
+#+description: Recipes for the vendored ORE material under external/ore: its examples, packages and the market datum catalogue.
+#+type: knowledge
+#+level: cross
+#+filetags: :recipe:ore:index:knowledge:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+Recipes for the ORE material ORE Studio vendors under =external/ore=: the
+example corpus, the packaged engine and the market datum catalogue built from
+ORE's own parser. New recipes for that material go in this folder; add a link
+here.
+
+* Detail
+
+** Market data
+
+- [[id:86769F34-BE1A-4C90-8B4B-5F406C826A9D][How do I rebuild the ORE market datum catalogue?]]
+
+* See also
+
+- [[id:2EAC4BEA-53D3-4CF1-AC00-1459F3B2D19D][Ops recipes]]

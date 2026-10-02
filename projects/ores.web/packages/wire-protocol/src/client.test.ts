@@ -21,7 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { OresClient } from './client.js';
-import { NotAuthenticatedError } from './errors.js';
+import { NotAuthenticatedError, OperationFailedError, TenantSessionEndedError } from './errors.js';
 import { WireCodec } from './codec.js';
 import type { Reply, RequestHeaders, Transport } from './transport.js';
 
@@ -308,5 +308,103 @@ describe('OresClient authenticated calls', () => {
             name: 'SessionExpiredError',
             code: 'max_session_exceeded',
         });
+    });
+});
+
+/**
+ * Entering a tenant swaps the session's token, and every way back restores the
+ * token it entered from, so the session is never stranded inside a tenant.
+ */
+describe('OresClient inside a tenant', () => {
+    const accountsReply = { accounts: [], total_available_count: 0 };
+    const ACME = '44444444-4444-4444-4444-444444444444';
+    const entered = {
+        success: true,
+        message: '',
+        token: 'tenant-token',
+        tenant_id: ACME,
+        tenant_code: 'acme_corporation',
+        tenant_name: 'Acme Corporation',
+        party_id: '66666666-6666-6666-6666-666666666666',
+        party_name: 'System Party',
+        access_lifetime_s: 900,
+    };
+
+    it('enters with its own token, then calls with the tenant token', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.enter_tenant': [{ body: entered }],
+            'iam.v1.accounts.list': [{ body: accountsReply }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const tenant = await client.enterTenant(ACME);
+        await client.listAccounts();
+
+        expect(tenant.tenantName).toBe('Acme Corporation');
+        expect(client.enteredTenant?.tenantCode).toBe('acme_corporation');
+        expect(transport.decodeCall(1)).toEqual({ tenant_id: ACME });
+        expect(transport.calls[1]?.headers['Authorization']).toBe('Bearer token-one');
+        expect(transport.calls[2]?.headers['Authorization']).toBe('Bearer tenant-token');
+    });
+
+    it('stays outside when the server refuses the entry', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.enter_tenant': [
+                {
+                    body: {
+                        ...entered,
+                        success: false,
+                        token: '',
+                        message: 'No tenant has this id.',
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.enterTenant(ACME)).rejects.toThrow(OperationFailedError);
+        expect(client.enteredTenant).toBeUndefined();
+        expect(client.token).toBe('token-one');
+    });
+
+    it('leaves with the tenant token and returns to its own', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.enter_tenant': [{ body: entered }],
+            'iam.v1.ops.leave_tenant': [{ body: { success: true, message: '' } }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+        await client.enterTenant(ACME);
+
+        await client.leaveTenant();
+
+        expect(transport.calls[2]?.headers['Authorization']).toBe('Bearer tenant-token');
+        expect(client.enteredTenant).toBeUndefined();
+        expect(client.token).toBe('token-one');
+    });
+
+    /*
+     * A tenant session is never refreshed. When it lapses, the client goes back
+     * to its own token without asking the server, and says so.
+     */
+    it('returns to its own token when the tenant session lapses', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.enter_tenant': [{ body: entered }],
+            'iam.v1.accounts.list': [{ headers: { 'X-Error': 'token_expired' } }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+        await client.enterTenant(ACME);
+
+        await expect(client.listAccounts()).rejects.toThrow(TenantSessionEndedError);
+        expect(client.enteredTenant).toBeUndefined();
+        expect(client.token).toBe('token-one');
+        expect(transport.calls.map((call) => call.subject)).not.toContain('iam.v1.auth.refresh');
     });
 });

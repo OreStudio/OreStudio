@@ -149,12 +149,11 @@ void bundles_commands::process_publish(std::ostream& out,
         out << "Follow progress with: workflow wait " << result->instance_id << std::endl;
         return;
     }
-    workflow_run_commands::wait_for_instance(
-        out,
-        session,
-        result->instance_id,
-        *wait_timeout,
-        static_cast<std::size_t>(result->datasets_dispatched));
+    workflow_run_commands::wait_for_instance(out,
+                                             session,
+                                             result->instance_id,
+                                             *wait_timeout,
+                                             static_cast<std::size_t>(result->datasets_dispatched));
 }
 
 }

@@ -394,15 +394,18 @@ TEST_CASE("workflow_engine refuses a start that names half a target", tags) {
 
     // A run stored without the target it was given cannot be found by what it
     // acts on, so each half on its own, and an id that is not one, is refused.
-    auto kind_only = start_for("test_half_target_workflow", f.tenant(),
+    auto kind_only = start_for("test_half_target_workflow",
+                               f.tenant(),
                                boost::uuids::to_string(boost::uuids::random_generator()()));
     kind_only.target_kind = "tenant";
 
-    auto id_only = start_for("test_half_target_workflow", f.tenant(),
+    auto id_only = start_for("test_half_target_workflow",
+                             f.tenant(),
                              boost::uuids::to_string(boost::uuids::random_generator()()));
     id_only.target_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
-    auto bad_id = start_for("test_half_target_workflow", f.tenant(),
+    auto bad_id = start_for("test_half_target_workflow",
+                            f.tenant(),
                             boost::uuids::to_string(boost::uuids::random_generator()()));
     bad_id.target_kind = "tenant";
     bad_id.target_id = "not-a-uuid";
@@ -967,8 +970,9 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     request_built.type_name = "test_listed_request_built_workflow";
     request_built.description = "steps come from the request";
     request_built.steps_depend_on_request = true;
-    request_built.build_steps = [](const std::string&, const std::string&, const std::string&)
-        -> std::vector<workflow_step_def> {
+    request_built.build_steps = [](const std::string&,
+                                   const std::string&,
+                                   const std::string&) -> std::vector<workflow_step_def> {
         throw std::runtime_error("This definition cannot read an empty request.");
     };
     f.registry->register_definition(std::move(request_built));
@@ -978,8 +982,11 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     workflow_definition broken;
     broken.type_name = "test_listed_broken_workflow";
     broken.description = "a builder with a defect";
-    broken.build_steps = [](const std::string&, const std::string&, const std::string&)
-        -> std::vector<workflow_step_def> { throw std::runtime_error("A defect in the builder."); };
+    broken.build_steps = [](const std::string&,
+                            const std::string&,
+                            const std::string&) -> std::vector<workflow_step_def> {
+        throw std::runtime_error("A defect in the builder.");
+    };
     f.registry->register_definition(std::move(broken));
 
     auto handler = std::make_shared<workflow_query_handler>(

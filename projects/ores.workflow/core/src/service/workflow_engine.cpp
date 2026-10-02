@@ -665,8 +665,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     boost::uuids::uuid target_id{};
     if (!req.target_id.empty()) {
         if (req.target_kind.empty()) {
-            BOOST_LOG_SEV(lg(), error) << "A target_id was given with no target_kind: "
-                                       << req.target_id;
+            BOOST_LOG_SEV(lg(), error)
+                << "A target_id was given with no target_kind: " << req.target_id;
             return;
         }
         try {
@@ -677,8 +677,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         }
     }
     if (!req.target_kind.empty() && req.target_id.empty()) {
-        BOOST_LOG_SEV(lg(), error) << "A target_kind was given with no target_id: "
-                                   << req.target_kind;
+        BOOST_LOG_SEV(lg(), error)
+            << "A target_kind was given with no target_id: " << req.target_kind;
         return;
     }
 

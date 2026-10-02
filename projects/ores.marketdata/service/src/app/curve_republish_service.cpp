@@ -350,8 +350,8 @@ void curve_republish_service::republish(context ctx,
         // comment ("A rerun of a derivation over the same tenor/point natural key closes the
         // prior generation's lineage row and inserts a new one"). Minting a fresh id every
         // republish bypassed that and hit the natural-key unique index instead.
-        const auto existing = lineage_repo.read_latest_by_observation(
-            ctx, config.output_series_id, as_of, datum_uri);
+        const auto existing =
+            lineage_repo.read_latest_by_observation(ctx, config.output_series_id, as_of, datum_uri);
 
         domain::observation_lineage lin;
         lin.tenant_id = ctx.tenant_id();

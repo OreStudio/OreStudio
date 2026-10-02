@@ -139,81 +139,80 @@ void workflow_run_commands::register_commands(cli::Menu& root_menu, nats_client&
     // The workflow menu belongs to the generated operations unit. These two verbs
     // are not messages, so they join that menu rather than claim one.
     ores::shell::app::extend_menu(root_menu, "workflow", [&session](cli::Menu& workflow_menu) {
+        workflow_menu.Insert(
+            "wait",
+            [&session](std::ostream& out, std::vector<std::string> args) {
+                auto parsed = parse_args(
+                    args,
+                    {{.name = "timeout",
+                      .requires_value = true,
+                      .default_value = std::to_string(default_timeout.count())},
+                     {.name = "expect-steps", .requires_value = true, .default_value = "0"},
+                     {.name = "expect-state", .requires_value = true, .default_value = ""}});
+                if (!parsed) {
+                    fail(out) << parsed.error() << std::endl;
+                    return;
+                }
+                if (parsed->positionals.size() != 1) {
+                    fail(out) << "Usage: workflow wait <instance_id> [--timeout <seconds>] "
+                                 "[--expect-steps <n>] [--expect-state <state>]"
+                              << std::endl;
+                    fail(out)
+                        << "Without --expect-state the wait asserts that every step completed. "
+                           "With it, it asserts the instance's own terminal state, which is "
+                           "what a run that is meant to fail has to assert: completed, failed "
+                           "or compensated."
+                        << std::endl;
+                    return;
+                }
 
-    workflow_menu.Insert(
-        "wait",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            auto parsed =
-                parse_args(args,
-                           {{.name = "timeout",
-                             .requires_value = true,
-                             .default_value = std::to_string(default_timeout.count())},
-                            {.name = "expect-steps", .requires_value = true, .default_value = "0"},
-                            {.name = "expect-state", .requires_value = true, .default_value = ""}});
-            if (!parsed) {
-                fail(out) << parsed.error() << std::endl;
-                return;
-            }
-            if (parsed->positionals.size() != 1) {
-                fail(out) << "Usage: workflow wait <instance_id> [--timeout <seconds>] "
-                             "[--expect-steps <n>] [--expect-state <state>]"
-                          << std::endl;
-                fail(out) << "Without --expect-state the wait asserts that every step completed. "
-                             "With it, it asserts the instance's own terminal state, which is "
-                             "what a run that is meant to fail has to assert: completed, failed "
-                             "or compensated."
-                          << std::endl;
-                return;
-            }
+                auto timeout = parse_positive_seconds(parsed->flag("timeout"));
+                if (!timeout) {
+                    fail(out) << "Timeout must be a positive number of seconds: "
+                              << parsed->flag("timeout") << std::endl;
+                    return;
+                }
 
-            auto timeout = parse_positive_seconds(parsed->flag("timeout"));
-            if (!timeout) {
-                fail(out) << "Timeout must be a positive number of seconds: "
-                          << parsed->flag("timeout") << std::endl;
-                return;
-            }
+                auto expected = parse_uint32(parsed->flag("expect-steps"));
+                if (!expected) {
+                    fail(out) << "Flag --expect-steps must be an unsigned integer: "
+                              << parsed->flag("expect-steps") << std::endl;
+                    return;
+                }
 
-            auto expected = parse_uint32(parsed->flag("expect-steps"));
-            if (!expected) {
-                fail(out) << "Flag --expect-steps must be an unsigned integer: "
-                          << parsed->flag("expect-steps") << std::endl;
-                return;
-            }
+                const auto& expected_state = parsed->flag("expect-state");
+                if (!expected_state.empty() && expected_state != "completed" &&
+                    expected_state != "failed" && expected_state != "compensated") {
+                    fail(out) << "--expect-state must be completed, failed or compensated: "
+                              << expected_state << std::endl;
+                    return;
+                }
 
-            const auto& expected_state = parsed->flag("expect-state");
-            if (!expected_state.empty() && expected_state != "completed" &&
-                expected_state != "failed" && expected_state != "compensated") {
-                fail(out) << "--expect-state must be completed, failed or compensated: "
-                          << expected_state << std::endl;
-                return;
-            }
+                wait_for_instance(std::ref(out),
+                                  std::ref(session),
+                                  parsed->positionals.front(),
+                                  *timeout,
+                                  *expected,
+                                  expected_state);
+            },
+            "Wait for a workflow instance to reach a terminal state",
+            {"instance_id [--timeout <seconds>] [--expect-steps <n>] [--expect-state <state>]"});
 
-            wait_for_instance(std::ref(out),
-                              std::ref(session),
-                              parsed->positionals.front(),
-                              *timeout,
-                              *expected,
-                              expected_state);
-        },
-        "Wait for a workflow instance to reach a terminal state",
-        {"instance_id [--timeout <seconds>] [--expect-steps <n>] [--expect-state <state>]"});
-
-    workflow_menu.Insert("start",
-                          [&session](std::ostream& out, std::vector<std::string> args) {
-                              process_start(std::ref(out), std::ref(session), args);
-                          },
-                          "Start a workflow and print the instance id to follow",
-                          {"<type> <request_json> [--instance-id <uuid>]"});
-
+        workflow_menu.Insert("start",
+                             [&session](std::ostream& out, std::vector<std::string> args) {
+                                 process_start(std::ref(out), std::ref(session), args);
+                             },
+                             "Start a workflow and print the instance id to follow",
+                             {"<type> <request_json> [--instance-id <uuid>]"});
     });
 }
 
 bool workflow_run_commands::wait_for_instance(std::ostream& out,
-                                                    nats_client& session,
-                                                    const std::string& instance_id,
-                                                    std::chrono::seconds timeout,
-                                                    std::size_t expected_steps,
-                                                    const std::string& expected_state) {
+                                              nats_client& session,
+                                              const std::string& instance_id,
+                                              std::chrono::seconds timeout,
+                                              std::size_t expected_steps,
+                                              const std::string& expected_state) {
     BOOST_LOG_SEV(lg(), info) << "Waiting for workflow instance: " << instance_id
                               << " (timeout: " << timeout.count() << "s)";
 
@@ -322,8 +321,8 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
 }
 
 void workflow_run_commands::process_start(std::ostream& out,
-                                                nats_client& session,
-                                                const std::vector<std::string>& args) {
+                                          nats_client& session,
+                                          const std::vector<std::string>& args) {
     auto parsed = parse_args(args, {{.name = "instance-id", .requires_value = true}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;

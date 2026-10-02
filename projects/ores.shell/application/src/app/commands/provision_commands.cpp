@@ -182,8 +182,7 @@ bool run_and_follow(std::ostream& out,
     }
 
     out << "  Run started: " << started->instance_id << std::endl;
-    return workflow_run_commands::wait_for_instance(
-        out, session, started->instance_id, timeout);
+    return workflow_run_commands::wait_for_instance(out, session, started->instance_id, timeout);
 }
 
 /// The timeout a command was given, or nothing after reporting a value it

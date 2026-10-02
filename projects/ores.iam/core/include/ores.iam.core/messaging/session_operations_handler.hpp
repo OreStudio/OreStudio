@@ -95,7 +95,9 @@ public:
                     open.push_back(std::move(row));
             }
             BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_active_sessions_response{.sessions = std::move(open), .success = true});
+            reply(nats_,
+                  msg,
+                  get_active_sessions_response{.sessions = std::move(open), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_active_sessions_response{.success = false, .message = e.what()});

@@ -20,11 +20,11 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/msgpack.hpp>
 #include <cctype>
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
+#include <rfl/msgpack.hpp>
 #include <span>
 #include <sstream>
 #include <string>

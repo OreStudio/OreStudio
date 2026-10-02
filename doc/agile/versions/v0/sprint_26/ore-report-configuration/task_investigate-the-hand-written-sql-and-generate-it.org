@@ -28,11 +28,11 @@ generates. What stays hand-written is checked by a gate that fails the build.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -200,6 +200,12 @@ clean. The census is committed as a tool.
 =tenant_id= and no RLS policy despite an ignore reason calling it tenant-scoped;
 two populate scripts were never wired, and wiring them changes what a recreate
 seeds; the drop script leaves 115 functions behind.
+
+**Component audit.** The task touched =ores.codegen= and =ores.sql=. The
+automated half, =validate_docs.sh=, passes for all 41 components. It added one
+script to =ores.codegen/scripts= beside its peers, deleted sixteen dead SQL
+files and changed no folder, type or component, so the shape, morphology,
+naming and registry checks have nothing new to judge.
 
 **One operational note.** The first recreate hung for minutes in =DROP
 DATABASE= on =ProcSignalBarrier=, with this environment's services still

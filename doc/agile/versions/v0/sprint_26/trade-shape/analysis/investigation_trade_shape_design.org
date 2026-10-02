@@ -302,8 +302,11 @@ workspace into every key, query and foreign key.
 /Decided/: workspaces are removed from the trade model. The
 [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] replaces them:
 
-- A top-level sandbox portfolio per tenant, with experiments, samples
-  and imports beneath it.
+- A sandbox is an entity anchored to a node of the official portfolio
+  tree (a business, a desk), opened only by users holding that right at
+  the node, private or shared through the anchor's permissions so desks
+  keep their Chinese walls. A single tenant-wide sandbox portfolio was
+  considered and rejected for exactly that reason.
 - Its books are /virtual books/: created by the trading system, never
   mapped to the ledger, holding no position of the firm.
 - A trade in a virtual book is a draft recorded before any agreement, a

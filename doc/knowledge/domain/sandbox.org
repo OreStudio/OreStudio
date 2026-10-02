@@ -2,7 +2,7 @@
 :ID: 4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F
 :END:
 #+title: Sandbox
-#+description: Importing and experimenting without disturbing official data: the sandbox portfolio, virtual books that never reach the ledger, the states their trades may hold, how a sandbox trade becomes real, and the regulatory rules that bound it.
+#+description: Importing and experimenting without disturbing official data: sandboxes anchored to the official portfolio tree, virtual books that never reach the ledger, the states their trades may hold, how a sandbox trade becomes real, and the regulatory rules that bound it.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:book:sandbox:
@@ -19,14 +19,19 @@ Users need two things that must not disturb the firm's official data:
    against the changes, and comparing the results with the official
    ones.
 
-The *sandbox* meets both without a second copy of the firm's data.
+A *sandbox* meets both without a second copy of the firm's data.
 Trades are isolated by where they are booked and by what they are; market
 data and configuration are isolated by what a report selects. Nothing is
 hidden inside a container, and no official row is ever edited.
 
-- The sandbox is a top-level [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][portfolio]]. Its books are
+- A sandbox is an entity with an owner, a purpose and an /anchor/: the
+  node of the official portfolio tree it belongs to, such as a business
+  or a desk. A user opens one only where they hold the right to, and the
+  anchor decides who else may see it, so desks keep their Chinese walls.
+- Each sandbox has its own small [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][portfolio]] tree of
   *virtual books*: books the trading system creates itself, which are
-  never mapped to the ledger and hold no position of the firm.
+  never mapped to the ledger and hold no position of the firm. That
+  tree never hangs under the official one.
 - A trade in a virtual book is a draft, a test or a hypothetical. It is
   never live, so it is never a concluded agreement, never in a capital
   calculation, never reported and never in the ledger.
@@ -43,26 +48,62 @@ hidden inside a container, and no official row is ever edited.
 
 * Detail
 
-** The sandbox portfolio
+** Sandboxes
 
-Each tenant has one top-level portfolio named *Sandbox*. Under it:
+A firm with hundreds of users cannot share one sandbox. Desks would see
+each other's experiments and imports, and the permission model must be
+able to enforce Chinese walls between desks (see
+[[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]]). A sandbox is therefore an entity of
+its own, opened where the work belongs.
 
-| Portfolio | Holds | Typical content |
-|-----------+-------+-----------------|
-| Experiments | One sub-portfolio per user | What-if copies of official trades, hypothetical new trades, trial structures |
-| Samples | One sub-portfolio per sample set | The trades of an imported ORE sample |
-| Imports | One sub-portfolio per import | Trades imported to inspect, reconcile or rehearse a migration |
+| Attribute | Meaning |
+|-----------+---------|
+| Name and purpose | What the sandbox is for: an /experiment/, a /sample/ set, or an /import/ |
+| Anchor | The node of the official portfolio tree it belongs to: a business, a desk, a sub-desk |
+| Owner | The user who opened it, answerable for it |
+| Visibility | /Private/ to the owner; /shared/ with everyone who may read the anchor; or shared with named members |
+| Status | /Open/, or /archived/ and read-only |
+| Review date | When the owner must confirm the sandbox is still needed |
 
 The name follows market usage: a sandbox is a space where actions have
 no effect outside it. The analysis notes use the same word for the
 holding area where broker-originated trades wait for a human check.
 
-The portfolio tree is the trading system's own hierarchy and never
-reaches the ledger (see [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]]), so the
-sandbox needs no accounting set-up. An experiments sub-portfolio is
-visible to its owner only, in the way the analysis notes describe
-personal portfolios: users experiment freely, but not where the firm's
-official risk is computed.
+*** The anchor is a reference, not containment
+
+The anchor decides who may open the sandbox and who may see it. It does
+not place the sandbox inside the official tree. Each sandbox has its own
+portfolio tree, rooted at the sandbox, holding its virtual books; no
+official portfolio contains it, so no official aggregation, report or
+rollup can include it, even by a forgotten filter.
+
+The analysis notes describe personal portfolios the same way: used by
+traders to experiment, and not linked to the main global tree, whose
+changes are restricted to heads of desk.
+
+*** Opening a sandbox
+
+Opening a sandbox at a node needs a right held at that node: the right
+to open sandboxes there. A head of desk grants it on the desk, so users
+open sandboxes only where the desk allows; a quantitative team may hold
+it at the top of the tree to keep firm-wide sample sets. The right is
+reviewed and lapses like any other access to a book.
+
+*** What a sandbox may hold
+
+A user may copy into a sandbox only the trades they may already read.
+A what-if on a desk's trade therefore needs read access to that desk,
+and a sandbox shared at the anchor never shows its members anything the
+anchor's permissions would hide. Imported data belongs to the sandbox
+that imported it and to nothing else.
+
+*** Keeping sandboxes in check
+
+The review date and the archive keep sandboxes from accumulating:
+the owner confirms a sandbox is still needed, or archives it, and an
+archived sandbox is read-only. Nothing in a sandbox is deleted; trades
+in it are cancelled, because drafts are records (see the regulatory
+boundary below).
 
 ** Virtual books
 
@@ -71,13 +112,12 @@ created by Finance; the trading system holds a view of them and cannot
 create one. A *virtual book* is the one exception, and the rules that
 make it safe are what define it:
 
-1. /It is created by the trading system/, under the sandbox portfolio,
-   by the user or process that needs it.
+1. /It is created by the trading system/, inside a sandbox, by the
+   user or process that needs it.
 2. /It is never mapped to the ledger./ Its ledger feed is none, and no
    ledger book corresponds to it.
-3. /It lives only under the sandbox./ A virtual book cannot be placed
-   in any other portfolio, and a real book cannot be placed under the
-   sandbox.
+3. /It belongs to exactly one sandbox./ A virtual book sits only in its
+   sandbox's portfolio tree, and a real book never does.
 4. /It holds no position of the firm./ The next section states what
    its trades may be.
 5. /Nothing official reads it./ Official P&L, risk, capital, the
@@ -131,8 +171,9 @@ makes a hypothetical copy.
 ** Experimenting on official trades
 
 A what-if on a live trade never edits it. The user makes a
-/hypothetical copy/ in their experiments portfolio, linked to the
-original, and changes the copy. The link lets a report set the copy
+/hypothetical copy/ in one of their sandboxes, linked to the original,
+and changes the copy. The copy needs read access to the original, so a
+user experiments only on trades they may already see. The link lets a report set the copy
 beside the original, and lets a reader see what the experiment was
 about. A structure or a hedge can be tried the same way, from copies.
 
@@ -167,24 +208,26 @@ admission is recorded as an activity with who and why.
 A [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][report definition]] states its inputs explicitly: the
 trades in scope, the market data configuration and snapshot, and the
 analytics configuration. An experiment is a report whose scope is a
-sandbox portfolio, or whose market data or configuration points at
-sandbox data. A comparison is two runs that differ in one input. A
-report whose scope reaches into the sandbox is marked unofficial, and
-an official report cannot include the sandbox.
+sandbox, or whose market data or configuration points at sandbox data. A comparison is two runs that differ in one input. A
+report whose scope reaches into a sandbox is marked unofficial, and
+an official report cannot include any sandbox.
 
 ** Imports
 
 An import is an act with an identity: who ran it, when, from what
 source, and what it created (see [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]]).
 
-- /An import to inspect, reconcile or rehearse/ creates hypothetical or
-  test trades in the import's virtual books, its market data under the
-  import's source, and its configuration under the import's name.
+- /An import to inspect, reconcile or rehearse/ runs into a sandbox
+  whose purpose is import, anchored where the importing team works. It
+  creates hypothetical or test trades in that sandbox's virtual books,
+  its market data under the import's source, and its configuration
+  under the import's name.
   Discarding it cancels what it created; nothing is deleted.
-- /An ORE sample/ is such an import: one sample set, one sub-portfolio
-  of Samples, one source, one configuration, and a report definition
-  that ties them together.
-- /Real deals/ are not imported into the sandbox. A concluded deal is
+- /An ORE sample/ is such an import into a sandbox whose purpose is
+  sample: one sample set, one sandbox, one source, one configuration,
+  and a report definition that ties them together. A team that keeps
+  firm-wide samples anchors their sandboxes at the top of the tree.
+- /Real deals/ are never imported into a sandbox. A concluded deal is
   booked into a real book at once, and held as unauthorised until
   Operations releases it; the authorisation queue is the controlled
   staging area for agreements. The next section explains why.
@@ -213,9 +256,16 @@ never a source for official P&L, capital or regulatory figures.
 
 This section is analysis rather than reported practice.
 
+- =sandbox= is an entity: name, purpose, anchor (an official
+  portfolio), owner, visibility, members, status and review date. Its
+  root portfolio is its own, and no official portfolio contains it.
+- The right to open sandboxes is held at a node of the official tree,
+  and a sandbox's anchor must be a node where its owner holds it.
 - A book carries whether it is virtual. A virtual book has no ledger
-  book, sits under the sandbox portfolio, and the portfolio tree rejects
-  a virtual book elsewhere and a real book under the sandbox.
+  book and belongs to exactly one sandbox's portfolio tree; a real book
+  never does.
+- Copying a trade into a sandbox checks the user's read access to the
+  original.
 - A trade's booking may name a virtual book only while the trade is
   =draft=, =test= or =hypothetical=. The transition to =live= requires a
   real book in the same write.
@@ -236,7 +286,7 @@ This section is analysis rather than reported practice.
   dedicated demonstration tenant keeps the tenant clean at the cost of
   switching tenants to explore a sample.
 - /Retention of experiments./ Whether hypothetical trades in an
-  experiments portfolio fall under the record-keeping rules — they are
+  experiment sandbox fall under the record-keeping rules — they are
   neither orders nor transactions — decides whether a user may discard
   an experiment completely or only cancel it.
 
@@ -277,6 +327,7 @@ analysis.
 * See also
 
 - [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — the book and portfolio split the sandbox builds on.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — the permission model and Chinese walls a sandbox's anchor relies on.
 - [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the dimensions every book carries, virtual books included.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade classification]] — booking nature, which selects the machine a sandbox trade runs through.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] — the draft state and the Execute transition out of the sandbox.

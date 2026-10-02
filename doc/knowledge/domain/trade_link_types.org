@@ -56,7 +56,7 @@ the /to/ end the trade it reaches, and the roles column names both.
 | Fixing | fixed → fixing | The rate of a non-deliverable forward fixes | [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]; [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 | Wash or back-to-back | client-facing → risk-bearing | Risk is routed to the book that owns it | [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] |
 | Book move | backed-out → destination | The trade must change to a book with a different legal entity, branch, regulatory book or accounting classification, so it is closed out and rebooked | [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] |
-| What-if copy | original → hypothetical | A user copies a trade into the sandbox to experiment on it | [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] |
+| What-if copy | original → hypothetical | A user copies a trade into a sandbox to experiment on it | [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] |
 | Dealt from | hypothetical → actual | A hypothetical is dealt, so a new actual trade is booked | [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]; [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] |
 | Hedge | hedged → hedging | A desk records a risk relationship | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 | User-defined link | either → either | A user records an association | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |

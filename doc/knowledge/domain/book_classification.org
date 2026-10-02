@@ -67,8 +67,8 @@ desk structure, capital treatment, and switching restrictions.
 - *Test books* — used to book dummy/test trades in production,
   isolated from the main book population, ideally owned by test
   entities restricted to IT users.
-- *Virtual books* — books the trading system creates itself under the
-  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] portfolio, with no ledger book and no position of the
+- *Virtual books* — books the trading system creates itself inside a
+  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]], with no ledger book and no position of the
   firm. They hold only drafts, test and hypothetical trades, and they
   carry a classification like any book so that what-if valuations know
   which regulatory book they imitate.

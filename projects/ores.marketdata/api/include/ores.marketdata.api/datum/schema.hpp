@@ -245,9 +245,41 @@ struct field_spec {
     bool may_be_none;
 };
 
+/**
+ * @brief The asset class an instrument type belongs to, which an oresmd URI
+ * writes as its authority.
+ *
+ * The names are the oresmd authorities ores.refdata's asset class catalogue
+ * maps onto its asset classes.
+ */
+enum class asset_class : std::uint8_t {
+    ir,
+    fx,
+    credit,
+    equity,
+    commodity,
+    inflation,
+    security,
+    correlation,
+    rating,
+    shape_profile
+};
+
+inline constexpr std::size_t asset_class_count = 10;
+
+/// The asset class as an oresmd URI's authority writes it: ir, shape_profile.
+ORES_MARKETDATA_API_EXPORT std::string_view name_of(asset_class a);
+
+/// The asset class @p name names, or nothing.
+ORES_MARKETDATA_API_EXPORT std::optional<asset_class> asset_class_named(std::string_view name);
+
 struct schema_row {
     instrument_type type;
     std::span<const field_spec> fields;
+    asset_class asset;
+    /// The field that names what the datum is about: the currency of a rate,
+    /// the reference entity of a CDS. An oresmd URI writes it as its path.
+    field subject;
 };
 
 namespace detail {
@@ -370,51 +402,51 @@ using t = instrument_type;
  * expiry -- gives that field none.
  */
 inline constexpr std::array<schema_row, instrument_type_count> schema{{
-    {detail::t::zero, detail::zero},
-    {detail::t::discount, detail::discount},
-    {detail::t::mm, detail::mm},
-    {detail::t::mm_future, detail::mm_future},
-    {detail::t::oi_future, detail::oi_future},
-    {detail::t::fra, detail::fra},
-    {detail::t::imm_fra, detail::imm_fra},
-    {detail::t::ir_swap, detail::ir_swap},
-    {detail::t::basis_swap, detail::basis_swap},
-    {detail::t::bma_swap, detail::bma_swap},
-    {detail::t::cc_basis_swap, detail::cc_basis_swap},
-    {detail::t::cc_fix_float_swap, detail::cc_fix_float_swap},
-    {detail::t::cds, detail::cds},
-    {detail::t::cds_index, detail::cds_index},
-    {detail::t::fx_spot, detail::fx_spot},
-    {detail::t::fx_fwd, detail::fx_fwd},
-    {detail::t::hazard_rate, detail::hazard_rate},
-    {detail::t::recovery_rate, detail::recovery_rate},
-    {detail::t::assumed_recovery_rate, detail::recovery_rate},
-    {detail::t::swaption, detail::swaption},
-    {detail::t::capfloor, detail::capfloor},
-    {detail::t::fx_option, detail::fx_option},
-    {detail::t::zc_inflation_swap, detail::inflation_swap},
-    {detail::t::zc_inflation_capfloor, detail::inflation_capfloor},
-    {detail::t::yy_inflation_swap, detail::inflation_swap},
-    {detail::t::yy_inflation_capfloor, detail::inflation_capfloor},
-    {detail::t::seasonality, detail::seasonality},
-    {detail::t::equity_spot, detail::equity_spot},
-    {detail::t::equity_fwd, detail::equity_dated},
-    {detail::t::equity_dividend, detail::equity_dated},
-    {detail::t::equity_option, detail::equity_option},
-    {detail::t::bond, detail::bond},
-    {detail::t::bond_future, detail::bond_future},
-    {detail::t::bond_option, detail::bond_option},
-    {detail::t::bond_future_option, detail::bond_future_option},
-    {detail::t::index_cds_option, detail::index_cds_option},
-    {detail::t::index_cds_tranche, detail::index_cds_tranche},
-    {detail::t::commodity_spot, detail::commodity_spot},
-    {detail::t::commodity_fwd, detail::commodity_fwd},
-    {detail::t::correlation, detail::correlation},
-    {detail::t::commodity_option, detail::commodity_option},
-    {detail::t::commodity_calendar_spread_option, detail::commodity_calendar_spread_option},
-    {detail::t::shape_profile, detail::shape_profile},
-    {detail::t::cpr, detail::cpr},
-    {detail::t::rating, detail::rating},
+    {detail::t::zero, detail::zero, asset_class::ir, field::ccy},
+    {detail::t::discount, detail::discount, asset_class::ir, field::ccy},
+    {detail::t::mm, detail::mm, asset_class::ir, field::ccy},
+    {detail::t::mm_future, detail::mm_future, asset_class::ir, field::ccy},
+    {detail::t::oi_future, detail::oi_future, asset_class::ir, field::ccy},
+    {detail::t::fra, detail::fra, asset_class::ir, field::ccy},
+    {detail::t::imm_fra, detail::imm_fra, asset_class::ir, field::ccy},
+    {detail::t::ir_swap, detail::ir_swap, asset_class::ir, field::ccy},
+    {detail::t::basis_swap, detail::basis_swap, asset_class::ir, field::ccy},
+    {detail::t::bma_swap, detail::bma_swap, asset_class::ir, field::ccy},
+    {detail::t::cc_basis_swap, detail::cc_basis_swap, asset_class::ir, field::ccy},
+    {detail::t::cc_fix_float_swap, detail::cc_fix_float_swap, asset_class::ir, field::fixed_ccy},
+    {detail::t::cds, detail::cds, asset_class::credit, field::underlying_name},
+    {detail::t::cds_index, detail::cds_index, asset_class::credit, field::cds_index_name},
+    {detail::t::fx_spot, detail::fx_spot, asset_class::fx, field::unit_ccy},
+    {detail::t::fx_fwd, detail::fx_fwd, asset_class::fx, field::unit_ccy},
+    {detail::t::hazard_rate, detail::hazard_rate, asset_class::credit, field::underlying_name},
+    {detail::t::recovery_rate, detail::recovery_rate, asset_class::credit, field::underlying_name},
+    {detail::t::assumed_recovery_rate, detail::recovery_rate, asset_class::credit, field::underlying_name},
+    {detail::t::swaption, detail::swaption, asset_class::ir, field::ccy},
+    {detail::t::capfloor, detail::capfloor, asset_class::ir, field::ccy},
+    {detail::t::fx_option, detail::fx_option, asset_class::fx, field::unit_ccy},
+    {detail::t::zc_inflation_swap, detail::inflation_swap, asset_class::inflation, field::index},
+    {detail::t::zc_inflation_capfloor, detail::inflation_capfloor, asset_class::inflation, field::index},
+    {detail::t::yy_inflation_swap, detail::inflation_swap, asset_class::inflation, field::index},
+    {detail::t::yy_inflation_capfloor, detail::inflation_capfloor, asset_class::inflation, field::index},
+    {detail::t::seasonality, detail::seasonality, asset_class::inflation, field::index},
+    {detail::t::equity_spot, detail::equity_spot, asset_class::equity, field::eq_name},
+    {detail::t::equity_fwd, detail::equity_dated, asset_class::equity, field::eq_name},
+    {detail::t::equity_dividend, detail::equity_dated, asset_class::equity, field::eq_name},
+    {detail::t::equity_option, detail::equity_option, asset_class::equity, field::eq_name},
+    {detail::t::bond, detail::bond, asset_class::security, field::security_id},
+    {detail::t::bond_future, detail::bond_future, asset_class::security, field::security_id},
+    {detail::t::bond_option, detail::bond_option, asset_class::security, field::qualifier},
+    {detail::t::bond_future_option, detail::bond_future_option, asset_class::security, field::contract_name},
+    {detail::t::index_cds_option, detail::index_cds_option, asset_class::credit, field::index_name},
+    {detail::t::index_cds_tranche, detail::index_cds_tranche, asset_class::credit, field::cds_index_name},
+    {detail::t::commodity_spot, detail::commodity_spot, asset_class::commodity, field::commodity_name},
+    {detail::t::commodity_fwd, detail::commodity_fwd, asset_class::commodity, field::commodity_name},
+    {detail::t::correlation, detail::correlation, asset_class::correlation, field::index1},
+    {detail::t::commodity_option, detail::commodity_option, asset_class::commodity, field::commodity_name},
+    {detail::t::commodity_calendar_spread_option, detail::commodity_calendar_spread_option, asset_class::commodity, field::commodity_name},
+    {detail::t::shape_profile, detail::shape_profile, asset_class::shape_profile, field::quote_name},
+    {detail::t::cpr, detail::cpr, asset_class::security, field::security_id},
+    {detail::t::rating, detail::rating, asset_class::rating, field::rating_name},
 }};
 
 /// The row for @p t.
@@ -455,12 +487,27 @@ constexpr bool every_row_has_an_identity() {
     return true;
 }
 
+constexpr bool every_subject_always_names_the_series() {
+    for (const auto& row : schema) {
+        bool found = false;
+        for (const auto& spec : row.fields) {
+            found = found || (spec.name == row.subject && spec.role == field_role::identity &&
+                              !spec.may_be_none);
+        }
+        if (!found)
+            return false;
+    }
+    return true;
+}
+
 }
 
 static_assert(detail::rows_follow_the_enum(), "schema rows must follow instrument_type's order");
 static_assert(detail::no_row_repeats_a_field(), "a schema row names a field twice");
 static_assert(detail::every_row_has_an_identity(),
               "every schema row needs a field that always names the series");
+static_assert(detail::every_subject_always_names_the_series(),
+              "a row's subject must be one of its identity fields that is never none");
 
 }
 

@@ -237,3 +237,16 @@ TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary
         CHECK(codes_of(f).empty() == (kind_of(f) != value_kind::code));
     }
 }
+
+TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", tags) {
+    std::set<asset_class> used;
+    for (const auto& row : schema)
+        used.insert(row.asset);
+    for (std::size_t i = 0; i < asset_class_count; ++i) {
+        const auto a = static_cast<asset_class>(i);
+        INFO("asset class: " << name_of(a));
+        CHECK(asset_class_named(name_of(a)) == a);
+        CHECK(used.contains(a));
+    }
+    CHECK_FALSE(asset_class_named("interest_rates"));
+}

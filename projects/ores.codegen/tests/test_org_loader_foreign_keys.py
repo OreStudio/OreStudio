@@ -139,3 +139,35 @@ def test_referenced_column_is_not_a_recognised_override():
     )
     assert fk["target_column"] == "id"
     assert fk.get("referenced_column") == "code"
+
+
+def test_error_message_apostrophe_is_escaped_for_the_sql_literal():
+    """The insert trigger raises the message inside a single-quoted literal.
+    An unescaped apostrophe ends the literal and aborts the create script."""
+    [fk] = _foreign_keys(
+        """
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_example_configs_tbl
+:error_message: Invalid config_id: %. No active today's market config.
+:END:
+"""
+    )
+    assert fk["error_message"] == "Invalid config_id: %. No active today''s market config."
+
+
+def test_error_message_without_an_apostrophe_is_unchanged():
+    [fk] = _foreign_keys(
+        """
+* Foreign keys
+
+** owner_id
+:PROPERTIES:
+:table:         ores_example_owners_tbl
+:error_message: Invalid owner_id: %.
+:END:
+"""
+    )
+    assert fk["error_message"] == "Invalid owner_id: %."

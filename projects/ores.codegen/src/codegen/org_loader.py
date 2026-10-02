@@ -1001,6 +1001,16 @@ def _primary_key_dict(fields: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def _sql_literal_text(value: Any) -> Any:
+    """Escape text a SQL template writes inside a single-quoted literal.
+
+    A model's prose is free text, and an apostrophe in it ends the literal
+    and breaks the script the template writes. Doubling it is the SQL
+    escape. Every consumer of a value passed through here is a SQL literal.
+    """
+    return value.replace("'", "''") if isinstance(value, str) else value
+
+
 def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     """Convert a soft FK validation heading into a template-ready dict.
 
@@ -1021,6 +1031,8 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     out: dict[str, Any] = {"column": node.title}
     for k, v in node.properties.items():
         out[k.lower()] = _parse_typed(v)
+    if "error_message" in out:
+        out["error_message"] = _sql_literal_text(out["error_message"])
     # Target table's PK column defaults to "id" -- the shape every
     # existing soft-FK target uses. Override via :target_column: for a
     # target with a differently-named PK (e.g. ores_assets_images_tbl's
@@ -1451,9 +1463,10 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         # cannot carry.
         book_section = _section(sql_section, "Party id from book id")
         if book_section and book_section.properties:
-            de.setdefault("sql", {})["party_id_from_book_id"] = {
-                k.lower(): v for k, v in book_section.properties.items()
-            }
+            book = {k.lower(): v for k, v in book_section.properties.items()}
+            if "book_error_message" in book:
+                book["book_error_message"] = _sql_literal_text(book["book_error_message"])
+            de.setdefault("sql", {})["party_id_from_book_id"] = book
         # An entity guarded by a state machine cannot be rewritten with the
         # activity that booked it: that activity names a transition which
         # starts the machine, and the row already has a state. The model

@@ -39,6 +39,7 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C71DC2F8-5438-4FE4-BB92-B095AA104539][Call the firm's own id the trade id throughout the knowledge notes]] | BACKLOG | | | Replace deal id and Deal ID with trade id in the knowledge notes, so one concept has one word. |
+| [[id:1B923662-9C54-48D8-B918-D97848259781][Design the trade shape and document the trade domain it rests on]] | DONE | | 2026-10-03 | Run the trade shape design to a settled target, record it in the investigation, write the knowledge notes it needed, and scaffold the implementation stories. |
 
 * Decisions
 

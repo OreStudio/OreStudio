@@ -8,7 +8,7 @@
 #+filetags: :act_inside_a_tenant:sprint_26:v0:
 #+owner: marco
 #+branch: feature/act-inside-a-tenant
-#+pr:
+#+pr: 2523
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2523][#2523]] | [agile] Scaffold the Act inside a tenant story |
 
 * Review
 

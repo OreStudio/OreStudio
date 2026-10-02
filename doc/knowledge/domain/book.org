@@ -47,6 +47,9 @@ accounting ledger.
   control).
 - *Lifecycle* → [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] (opening, moving deals between books,
   closing).
+- *Sandbox* → [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] (importing and experimenting without
+  disturbing official data: virtual books, the states their trades may
+  hold, and the regulatory boundary they stay outside).
 - *Book moves* → [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] (which moves the regulatory and
   accounting rules allow, how the ledger sees a move, and why some
   systems cannot move a trade at all).

@@ -23,9 +23,9 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Trade shape design recorded through section 8 in the analysis; paused on workspaces. |
-| Waiting on    | The workspace design, which decides how a trade is overridden and copied across workspaces. |
-| Next          | Design workspaces, then resume the trade shape at the copy-back question. |
+| Now           | Workspaces are replaced by the sandbox; the trade shape design resumes with the instrument family tables. |
+| Waiting on    | Nothing. |
+| Next          | Detail the instrument family tables, then check every table against the C1202 limit. |
 | Last touched  | 2026-10-02                               |
 
 * Acceptance
@@ -43,8 +43,9 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 * Decisions
 
 The decisions so far, each with the alternatives it set aside, are in
-[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sections 1 to 13. The design is
-paused at the workspace dependency that investigation names.
+[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sections 1 to 13. Section 13
+records why workspaces are removed from the trade model and the
+[[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] replaces them.
 
 * Out of scope
 

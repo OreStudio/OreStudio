@@ -112,6 +112,7 @@ and in what role, and that record does not change afterwards.
 | Sweep run | Act | Centralises residual balances | generated | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
 | Cleardown | Act | Resets book results at a period boundary | generated | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] |
 | Bulk book move | Act | Moves many trades to another book in one operation | moved | [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] |
+| Import | Act | Brings trades, market data and configuration into the sandbox to inspect or rehearse | created | [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] |
 
 Every act has the same properties, whatever its kind:
 

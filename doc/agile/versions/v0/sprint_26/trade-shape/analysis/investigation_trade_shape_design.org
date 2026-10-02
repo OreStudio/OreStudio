@@ -2,7 +2,7 @@
 :ID: FDC35F65-CBF0-40A0-96D0-EA180F2237EE
 :END:
 #+title: Investigation: the trade shape
-#+description: The target shape of the trade on data-oriented principles: the anchor, the components by access pattern, links, sets and groups, activities, authorisation, the client-facing version, structures, netting sets, and the open dependency on workspaces.
+#+description: The target shape of the trade on data-oriented principles: the anchor, the components by access pattern, links, sets and groups, activities, authorisation, the client-facing version, structures, netting sets, and the sandbox that replaces workspaces.
 #+type: investigation
 #+level: s1
 #+filetags: :trade-shape:sprint_26:v0:analysis:
@@ -281,17 +281,49 @@ created them.
 /Set aside/: groups as separate entities pointing at an activity, and a
 table pair per kind.
 
-** 13. Workspace
+** 13. Workspaces, and what replaced them
 
-- A copy of a trade into another workspace keeps its trade id; the
-  workspace becomes part of every trade key, so the anchor's key is
-  (tenant, workspace, id), and no link, structure or act can cross a
-  workspace.
-- Paused there. The existing workspace design layers workspaces over
-  their parents, copy-on-write, so a workspace's rows override the
-  parent's; it was designed before the trade was split into
-  components. The next question — what copying a changed trade back to
-  Live does — depends on that design.
+The design first kept a copy of a trade in another workspace under the
+same trade id, with the workspace in every key. It paused there, because
+the layered workspace design overrides a parent's rows copy-on-write and
+was never designed for a trade split into components.
+
+The owner then reframed the question from the use cases rather than the
+data model. Users need two things without disturbing official data: to
+import trades and market data, and to experiment with trades and market
+data and run reports against the changes. Prior art — Calypso's pricing
+environment, Murex's what-if simulation and hypothetical trades, ORE's
+run-time stress scenarios, and the analysis notes on personal
+portfolios, test books and perturbed market data — isolates by explicit
+inputs and by classification, not by a copy of everything. A layered
+workspace is an application-level database branch, and it pushes a
+workspace into every key, query and foreign key.
+
+/Decided/: workspaces are removed from the trade model. The
+[[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] replaces them:
+
+- A top-level sandbox portfolio per tenant, with experiments, samples
+  and imports beneath it.
+- Its books are /virtual books/: created by the trading system, never
+  mapped to the ledger, holding no position of the firm.
+- A trade in a virtual book is a draft recorded before any agreement, a
+  test or a hypothetical, and is never live. A draft becomes real by
+  Execute into a real book; a hypothetical by a new actual trade linked
+  to it. Both go through the ordinary lifecycle and authorisation.
+- Real concluded deals are never parked in the sandbox: they are booked
+  into real books at once and held as unauthorised until Operations
+  releases them.
+- Imported and perturbed market data sit in the universe under their
+  own source; the official configuration does not resolve to them. A
+  report definition selects its inputs explicitly.
+- The regulatory boundary was checked: Basel RBC25.1-2 (every
+  instrument held is in the trading or banking book), MAR12, EMIR
+  Article 9 (reporting of concluded contracts), MiFIR Article 25 and
+  MiFID II Article 16(6) (record keeping). Each is met by the rule that
+  a sandbox trade is never live.
+
+The anchor's key returns to (tenant, id), and the real foreign keys need
+no workspace.
 
 * Conclusions
 
@@ -299,7 +331,7 @@ table pair per kind.
 
 | Table | Key | Content | Changes |
 |-------+-----+---------+---------|
-| =trade= (anchor) | tenant, workspace, id | party, counterparty, trade type, counterparty scope, booking nature, origin, audit | Never |
+| =trade= (anchor) | tenant, id | party, counterparty, trade type, counterparty scope, booking nature, origin, audit | Never |
 | =trade_booking= | trade | book, netting set, trade date, execution time | Temporal: moves, re-papering |
 | =trade_state= | trade | trade status | Temporal: lifecycle events |
 | =trade_identifier= | trade, scheme | value, issuer | When a scheme is added |
@@ -329,43 +361,30 @@ table pair per kind.
   book; anything else is rejected as a move.
 - Denied authorisation is final; the authorised status is derived.
 - Structures nest one level at most.
+- A trade's booking names a virtual book only while the trade is a
+  pre-agreement draft, a test or a hypothetical; going live requires a
+  real book in the same write.
 
 ** Documentation produced on the way
 
 Trade sets, groups and links; Netting sets; Trade compression; Trade
-merge; Trade allocation; Book moves; and consistency passes over the
+merge; Trade allocation; Book moves; Sandbox; and consistency passes over the
 link catalogue, Trade Links, Trade Versioning, Trade Activity, Trade
 Structures, the Trade hub, the book cluster and the funding and sweep
 notes. On branch =feature/document-trade-groups=.
 
 * Recommendations
 
-** Settle workspaces first
+** Workspaces are settled
 
-The trade shape cannot be finished until the workspace design is. Five
-questions the split trade raises against the existing layered design:
-
-1. /The unit of override./ Does a workspace override a whole trade or
-   each component? Per-component resolution can show a workspace's
-   instrument with Live's booking — the intended what-if, or an
-   inconsistent mix.
-2. /Real foreign keys under inheritance./ A component row overriding a
-   Live trade points at an anchor. Either the anchor is copied too, or
-   the key ignores the workspace and the real foreign keys are lost.
-3. /Links, structures and acts across inherited trades./ With the
-   workspace in every key, joining inherited Live trades in a workspace
-   needs a copy first.
-4. /Copy back to Live./ Whether a copied-back trade amends the Live
-   trade or is refused; the pending state and approval (Track 2) were
-   never built.
-5. /Scenarios./ The analysis notes treat perturbed data as new items
-   with their own identity, a sibling of reality; the workspace design
-   treats a shock as an override in a child workspace. The two need
-   reconciling.
+The sandbox replaces workspaces in the trade model; the five questions
+the layered design raised no longer apply. Removing workspaces from the
+other entities that carry them, and from report definitions, is a
+separate piece of work this design depends on only in that trades no
+longer carry one.
 
 ** Then finish the trade shape
 
-- Resume at the copy-back question.
 - Detail the instrument family tables: the shared key group, the pinned
   composite key, and the trade-type to table routing as data the code
   generator reads.

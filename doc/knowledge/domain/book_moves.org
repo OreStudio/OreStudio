@@ -104,6 +104,14 @@ The first two are limits of the system, not of the domain: a booking
 that keeps its history, and a move that carries its own valuation,
 remove them.
 
+** Leaving the sandbox is not a move
+
+A trade in a virtual book of the [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] is a draft, a test or a
+hypothetical, and it holds no position. It leaves the sandbox through
+the lifecycle — a draft is executed into a real book, and a hypothetical
+is dealt as a new trade — not through a book move. A live trade never
+enters a virtual book.
+
 ** Moving risk without moving a trade
 
 Two mechanisms move risk rather than trades, and neither is a book
@@ -190,4 +198,5 @@ analysis.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the internal version a move cuts, and cancel and rebook.
 - [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the link that joins a closed-out trade to its rebooking.
 - [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — moving risk rather than trades.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — virtual books, which a trade leaves through its lifecycle rather than by a move.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

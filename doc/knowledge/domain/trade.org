@@ -178,6 +178,9 @@ or not its terms have been confirmed.
   sensitivities a trade carries, each taken with respect to one of
   those requirements.
 
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — where trades are imported and experimented on without
+  disturbing official data, and how a sandbox trade becomes real.
+
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — what a trade
   becomes once aggregated. A deal is an event and a position is a
   state, which is why a position has no identity of its own.

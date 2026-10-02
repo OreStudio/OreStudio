@@ -43,7 +43,7 @@ A system administrator can enter one tenant on purpose, see on every screen that
 |------+-------+-------+-----+-------------|
 | [[id:C3C1A72A-C50C-4C4E-9BC3-08C0C5050C78][Scaffold story: Act inside a tenant]] | DONE | 2026-10-03 | 2026-10-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:41A46D59-D62F-4805-B8ED-C014D9F87A47][Write the act inside a tenant journey]] | DONE | 2026-10-03 | 2026-10-03 | Initial task for: Act inside a tenant |
-| [[id:31596B62-7CA7-4B67-AE79-613429ECCD80][Issue a session inside a tenant]] | BACKLOG | | | An iam operation that gives a system administrator a session scoped to one tenant: it checks iam::tenants:impersonate, refuses the system tenant, and records the entry in the audit trail. |
+| [[id:31596B62-7CA7-4B67-AE79-613429ECCD80][Issue a session inside a tenant]] | STARTED | 2026-10-03 | | An iam operation that gives a system administrator a session scoped to one tenant: it checks iam::tenants:impersonate, refuses the system tenant, and records the entry in the audit trail. |
 | [[id:A4D22DF4-E42E-463A-9451-F1A0D274B4E3][Enter and leave a tenant in the web]] | BACKLOG | | | The tenant screen offers Act in this tenant; while in it, every screen says so and offers the way out; leaving returns to system administration. |
 | [[id:AABD139C-4579-4C77-A670-05E4EAD0F1B0][Read a tenant's parties from inside it]] | BACKLOG | | | Read the tenant's parties with the ordinary paged refdata.v1.parties.list in the tenant's session, and remove the cross-tenant read and its 1000 cap. |
 

@@ -1037,17 +1037,21 @@ class SQLParser:
         sides = [(create_dir, 'create.sql'), (drop_dir, 'drop.sql')]
         if populate_dir is not None and populate_dir.exists():
             sides.append((populate_dir, 'populate.sql'))
+        roots = {(d / name).resolve() for d, name in sides}
         for side_dir, root_name in sides:
             root = side_dir / root_name
             reachable_files: set[Path] = set()
             if root.exists():
                 self._collect_included_files(root, reachable_files)
-            # The bootstrap scripts beside the trees (setup_schema.sql,
-            # recreate_database.sql) are what a recreate runs, and they include
-            # some files directly rather than through the tree's root, such
-            # as the foundation seeds.
+            # Every top-level script beside the trees counts as a bootstrap
+            # root, deliberately: setup_schema.sql and recreate_database.sql
+            # are what a recreate runs, and they include some files directly,
+            # such as the foundation seeds. The walk stops at another tree's
+            # root, so a file is wired only through its own tree or directly.
+            other_roots = frozenset(roots - {root.resolve()})
             for bootstrap in sorted(side_dir.parent.glob('*.sql')):
-                self._collect_included_files(bootstrap, reachable_files)
+                self._collect_included_files(bootstrap, reachable_files,
+                                             other_roots)
 
             for sql_file in sorted(side_dir.rglob('*.sql')):
                 if sql_file.resolve() == root.resolve():
@@ -1065,9 +1069,15 @@ class SQLParser:
                     f"component aggregator chain)",
                     entity_name=sql_file.name)
 
-    def _collect_included_files(self, sql_file: Path, visited: set) -> None:
-        """Recursively collect files reachable via \\ir includes from sql_file."""
-        ir_pattern = re.compile(r'\\ir\s+(\S+)', re.IGNORECASE)
+    def _collect_included_files(self, sql_file: Path, visited: set,
+                                stop: frozenset = frozenset()) -> None:
+        """Recursively collect files reachable via \\ir includes from sql_file.
+
+        Only an \\ir that starts its line counts, so a commented-out
+        include such as -- \\ir ./old.sql wires nothing. A file in stop is
+        recorded but not followed.
+        """
+        ir_pattern = re.compile(r'^[ \t]*\\ir\s+(\S+)', re.IGNORECASE | re.MULTILINE)
         try:
             content = sql_file.read_text(encoding='utf-8', errors='replace')
         except OSError:
@@ -1076,7 +1086,8 @@ class SQLParser:
             included = (sql_file.parent / match.group(1)).resolve()
             if included not in visited:
                 visited.add(included)
-                self._collect_included_files(included, visited)
+                if included not in stop:
+                    self._collect_included_files(included, visited, stop)
 
     def _add_warning(self, file_path: str, line: int, code: str, message: str,
                      entity_name: str = '') -> None:

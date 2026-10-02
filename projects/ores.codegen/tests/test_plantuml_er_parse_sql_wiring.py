@@ -207,3 +207,36 @@ def test_populate_tree_is_skipped_when_not_given(tmp_path):
     parser = SQLParser(warn=True)
     parser.validate_component_wiring(create_dir, drop_dir)
     assert _wire_warnings(parser) == []
+
+
+def test_a_file_reached_only_through_another_tree_is_not_wired(tmp_path):
+    """A drop file that create.sql includes runs during a create, not a drop,
+    so it is not wired into the drop tree."""
+    create_dir = tmp_path / "create"
+    drop_dir = tmp_path / "drop"
+    _write(create_dir, "create.sql", "\\ir ../drop/comp/misplaced_drop.sql\n")
+    _write(drop_dir, "drop.sql")
+    _write(drop_dir, "comp/misplaced_drop.sql")
+    _write(tmp_path, "setup_schema.sql", "\\ir ./create/create.sql\n")
+
+    parser = SQLParser(warn=True)
+    parser.validate_component_wiring(create_dir, drop_dir)
+    warnings = _wire_warnings(parser)
+    assert len(warnings) == 1
+    assert "misplaced_drop.sql" in warnings[0].message
+
+
+def test_a_commented_out_include_wires_nothing(tmp_path):
+    create_dir = tmp_path / "create"
+    drop_dir = tmp_path / "drop"
+    _write(create_dir, "create.sql",
+           "\\ir ./comp/wired_create.sql\n-- \\ir ./comp/retired_create.sql\n")
+    _write(create_dir, "comp/wired_create.sql")
+    _write(create_dir, "comp/retired_create.sql")
+    _write(drop_dir, "drop.sql")
+
+    parser = SQLParser(warn=True)
+    parser.validate_component_wiring(create_dir, drop_dir)
+    warnings = _wire_warnings(parser)
+    assert len(warnings) == 1
+    assert "retired_create.sql" in warnings[0].message

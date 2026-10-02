@@ -44,8 +44,9 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 * Decisions
 
 The decisions so far, each with the alternatives it set aside, are in
-[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sections 1 to 13. Section 13
-records why workspaces are removed from the trade model and the
+[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], in the sixteen numbered
+sections under its "Paths taken" heading. Section 13 records why
+workspaces are removed from the trade model and the
 [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] replaces them.
 
 * Implementation stories

@@ -59,6 +59,19 @@ task and name that file in the Command column.
 
 * Notes
 
+Known scope, measured on main when the task was scaffolded:
+
+- =trade_blotter.org=, lines 105 and 344: the blotter's Deal ID column.
+- =positions.org=, line 39: "a unique deal id".
+- =dynamic_books.org=, lines 27 and 31, and =books_and_portfolios.org=,
+  line 137: deal ID as a filter field.
+
+Not in scope, and not to be renamed to trade id: "OS deal ID" in
+=trade_blotter.org=, lines 276 and 389. That is the originating system's
+identifier for the trade, which is a scheme in =trade_identifier=, not
+the firm's own trade id. Rename it to the originating system's trade
+identifier, so the two are not confused.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

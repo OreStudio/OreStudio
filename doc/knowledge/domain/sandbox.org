@@ -326,6 +326,8 @@ analysis.
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — the book and portfolio split the sandbox builds on.
 - [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — the permission model and Chinese walls a sandbox's anchor relies on.
 - [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the dimensions every book carries, virtual books included.

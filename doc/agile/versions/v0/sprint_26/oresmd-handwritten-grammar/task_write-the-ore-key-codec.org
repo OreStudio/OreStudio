@@ -65,8 +65,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Documented forms checked | 141: 121 read as ORE reads them, 19 refused as ORE refuses them, 1 refused on purpose | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
 | Corpus keys checked | 108,057, all read, written back and matched field by field | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
-| Corpus check time | 4.9 s (debug build) | =ores.marketdata.core.tests "[ore_key_codec]"= =--durations yes= | 725b4271f7 |
-| Codec test cases | 9 cases, 41 assertions, all passed | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
+| Corpus check time | 6.3 s (debug build; =write= reads each key back) | =ores.marketdata.core.tests "[ore_key_codec]"= =--durations yes= | 7275f56751 |
+| Codec test cases | 10 cases, 45 assertions, all passed | =ores.marketdata.core.tests "[ore_key_codec]"= | 7275f56751 |
 | Missing dispatch case | build fails: "enumeration value 'shape_profile' not handled in switch [-Werror,-Wswitch]" | =compass build ores.marketdata.core.lib= with the case removed | 725b4271f7 |
 
 * Notes
@@ -95,6 +95,19 @@ back, so the codec refuses it.
   The documented "index term then expiry" form therefore works in ORE only for
   an expiry that does not start with a digit. The catalogue form is listed in
   the test's =deliberately_refused= table with this reason.
+
+  This is a bug in ORE's =OREData=, not in QuantLib. ORE commit =fb09012aa=
+  (2020-04-06) added the index term and states the rule in a comment: "If
+  the last token is a number, we have 2) an expiry and a strike." Its
+  =tryParseReal= had used =std::stod= since =3687c5743= (2018-02-26), and
+  =std::stod= reads the leading number of =1Y= and ignores the rest, so the
+  rule never held for a period expiry. The consequence is wrong, not merely
+  lenient: =CDSVolCurve= takes the quote as a 5Y expiry with the curve's
+  default term, not a 1Y expiry on the 5Y index. ORE's own example data has
+  no five-token key (44 have four tokens, 7,566 have six), which explains why
+  the bug went unnoticed. This is the only place the parser chooses a form
+  with =tryParseReal=. The codec keeps its refusal: reading the key as ORE
+  intends would store a datum that ORE itself then reads differently.
 - The forms in the unit test =the_codec_refuses_tokens_it_could_not_write_back=:
   a cap/floor or swaption shift with a trailing flag, a base correlation tranche
   with an attachment point, and a shape profile with a sixth token other than
@@ -115,7 +128,8 @@ only. No MSVC build ran on this branch, so the MSVC side is unverified.
 ** Open point
 
 QuantLib reads a signed period such as =-1Y=. The model's period does not. No
-catalogue key has a signed period, so the codec refuses one.
+catalogue key has a signed period, so the codec refuses one. Captured as
+[[id:0351618B-470B-4A5B-BE94-FFB132C9A396][The ORE key codec refuses a signed period]].
 
 * Test Scenarios
 
@@ -143,6 +157,12 @@ via its "Verifies task" field.
 | 3 | Local review (minor): =_MSC_VER= appears outside =ores.platform=. | =ore_key_codec.cpp= | Declined | It is a compiler check for one warning pragma, not a platform switch; =ores.ore/core/src/domain/domain.cpp= sets the same precedent. |
 | 4 | Local review: a flag token outside its vocabulary had no test, because the catalogue has no such key. | =datum_ore_key_codec_tests.cpp= | Accepted | Added =a_flag_outside_its_vocabulary_is_refused=. |
 | 5 | Local review: the acceptance claimed MSVC catches a missing case, but nothing turned C4062 on. | =ore_key_codec.cpp= | Accepted | A =#pragma warning(error : 4062)= under =_MSC_VER=. Not built on MSVC here. |
+| 6 | PR 2517 round 1: =type_tokens= relies on its order matching the enum. | =ore_key_codec.cpp= | Accepted | The table is gone. =token_of= is ORE's name, with a switch for the four types whose key spells it differently; =type_from_token= iterates the enum through =token_of=. |
+| 7 | PR 2517 round 1: =read= catches only =refusal=. | =ore_key_codec.cpp= | Declined | The parsers it calls return =std::expected=; anything else thrown is a programming error, and catching every exception would hide it. |
+| 8 | PR 2517 round 1: exceptions as control flow cost a throw per refused key. | =ore_key_codec.cpp= | Declined | Measured: the corpus runs in about 6 s in a debug build. Revisit if the codec sits on a hot ingest path. |
+| 9 | PR 2517 round 1: =write= drops none fields, so a datum built directly can write a key that reads as another form. | =ore_key_codec.cpp= | Accepted | =write= returns =std::expected= and refuses a series or a datum whose key does not read back equal. Test =a_datum_whose_key_reads_as_another_form_has_no_key=. |
+| 10 | PR 2517 round 1: the MSVC pragma is untested. | =ore_key_codec.cpp= | Deferred | Waiting for the next build with an MSVC leg. |
+| 11 | PR 2517 round 1: the too-few-tokens message could say what is needed. | =ore_key_codec.cpp= | Accepted | It now names the instrument type, the quote type and one field. |
 
 * Result
 

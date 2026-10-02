@@ -27,7 +27,8 @@
  * as, which is how a report reaches them. The pricing model configuration now
  * carries it too. The column is nullable, because a document can be imported
  * before it is registered, so existing rows need no backfill: none of them is
- * registered yet.
+ * registered yet. The insert trigger is refreshed so that a new row's link is
+ * checked.
  *
  * On a freshly recreated database the create script already emits the column
  * and this migration is unnecessary. It exists for databases created before
@@ -36,3 +37,9 @@
 
 alter table ores_analytics_pricing_model_configs_tbl
     add column if not exists "configuration_id" uuid null;
+
+-- The insert trigger checks the new column against the reporting
+-- configurations. The create script is safe to run on an existing table: it
+-- creates nothing that exists and replaces the trigger function, so including
+-- it installs the check without copying the generated function here.
+\ir ../create/analytics/analytics_pricing_model_configs_create.sql

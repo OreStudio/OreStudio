@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/write-the-oresmd-uri-codec
-#+pr:
+#+pr: 2522
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -142,7 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2522][#2522]] | [marketdata] Write the oresmd URI codec over the schema rows |
 
 * Review
 

@@ -1168,3 +1168,7 @@ tangled into the runnable script library
 * Tenant Roster
 
 - [[id:C580E7BE-D0A5-589E-9DBD-97E721D94E26][How do I run the tenant_roster commands from the shell?]]
+
+* Tenant Party
+
+- [[id:2F6C97DD-4F60-5936-870C-ACA6B4DD4811][How do I run the tenant_party commands from the shell?]]

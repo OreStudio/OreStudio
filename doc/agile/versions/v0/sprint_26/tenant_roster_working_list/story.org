@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790
+:END:
+#+title: Story: Make the tenant roster a working list
+#+description: The tenant roster reads the tenants but cannot search, filter, page or act on one. Bring it to the design the See the tenants journey and the proposed layout describe: search and paging, type and status filters, a per-row actions menu, and a tenant detail screen.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:tenancy:sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A system administrator finds a tenant among many and acts on it from the roster: they search by code, name or hostname, filter by type and status, page through the list with its total, open a tenant's detail, and reach the operations a tenant offers from its row.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- The roster searches over code, name and hostname, and pages with a total.
+- The roster filters by tenant type and by status, and the See the tenants journey and its wireframe record both filters.
+- Each row carries an actions menu: open the tenant, resume setup when its run is unfinished, and the retire or reset journey.
+- Opening a tenant shows its details, its provisioning run and its parties, from a journey document written first.
+- Every new behaviour is proved by a test, and each screen was read against the running deployment.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EFB1AB02-7AA4-4337-825A-8251D67B53AC][Scaffold story: Make the tenant roster a working list]] | DONE | 2026-10-02 | 2026-10-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4A15EFC1-447A-4573-9BF1-5B9E69A9C7D7][Search and page the tenant roster]] | BACKLOG | | | Add search over code, name and hostname and paging with a total to the tenant roster, as the See the tenants journey asks, and record the gap on the task that built the roster. |
+| [[id:49E680DA-EC29-42A7-89BD-0D40481539A5][Filter the tenant roster by type and status]] | BACKLOG | | | Add type and status filters to the tenant roster, and record them in the See the tenants journey and its wireframe. |
+| [[id:6768638B-7471-4CFA-9F81-83DDB4E36CC9][Act on a tenant from its row]] | BACKLOG | | | Give each roster row an actions menu: open the tenant, resume setup when its provisioning run is unfinished, and the retire or reset journey. |
+| [[id:45E4EB0A-73ED-4361-920F-8928AAE2D9AB][Show one tenant]] | BACKLOG | | | Write the journey for one tenant's detail, then build the screen: the tenant's fields, its provisioning run and its parties, opened from the roster. |
+
+* Notes
+
+- *The journey already asks for part of this.*
+  [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] specifies a search
+  field over code, name and hostname, paging with a total, and picking a row to
+  go on to another operation. The task that built the roster,
+  [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]],
+  closed DONE without them, because its acceptance did not carry them.
+- *The proposed layout.* A page header with the title, a one-line description
+  and *New tenant*; a search field and type and status filters above the table;
+  columns code, name, hostname, type, status and actions; a footer that counts
+  the rows shown against the total.
+
+#+begin_example
+Tenants                                                   [ + New Tenant ]
+Manage and monitor organization tenants across the system.
+
+[ Search tenants...         ]  [ Filter: All Types v ]  [ Status: Active v ]
+
+CODE          NAME              HOSTNAME          TYPE         STATUS   ACTIONS
+acme_corp     Acme Corporation  acme_corporation  evaluation   [Active]   [...]
+
+Showing 1 of 1 tenant
+#+end_example
+
+- *What the screen has today.* The five columns, the Setup column with its link
+  to the run page, *New tenant* in the header, and the empty state.
+- *The tenant detail screen* was deferred from
+  [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]]
+  and is the last task here.
+
+* Decisions
+
+* Out of scope
+
+-

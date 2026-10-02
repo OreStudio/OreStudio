@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-text-escaping-in-the-ore-bindings-and-sql-codegen
+#+pr: 2505
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ the SQL codegen writes into a literal cannot break the script it is written into
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -54,9 +54,13 @@ the SQL codegen writes into a literal cannot break the script it is written into
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Reproduce at the binding: test cases that load a document with entities in
+   element text and fail against the current binding.
+2. Fix the parser in =xsdcpp= (=src/XmlParser.cpp=), with tests there.
+3. Regenerate the bindings with the fixed generator and take the parser change.
+4. Restore the save and load cycle in the round-trip harness, and prove the
+   database holds the decoded character.
+5. Escape the model text the SQL codegen writes into literals, with a test.
 
 * Measurements
 
@@ -70,6 +74,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| New binding cases failing before the fix | 5 of 5 | =ores.ore.core.tests "[file_io]"= against the old binding | 280b15590c |
+| Full test suite after the fix | 89 of 89 suites pass | =compass test run= | ea17fd2cd5 |
+| Today's market cases after the fix, harness cycle restored | 8 cases, 459 assertions pass | =ores.ore.core.tests "[todaysmarket]"= | ea17fd2cd5 |
+| xsdcpp suites with the fix | 9 of 10 pass; =Ecoa_test= fails the same way without the fix | =ctest= in a fresh clang build | xsdcpp =09f0dec= |
+| Codegen tests | 1055 pass | =pytest projects/ores.codegen/tests= | ea17fd2cd5 |
+| Models with an apostrophe in an error message | 0 | =grep -rlE "^:(book_)?error_message:.*'" projects/*/modeling= | ea17fd2cd5 |
 | Corpus files with an entity in element text, by kind | todaysmarket 5, curveconfig 5, simulation 3, sensimarket 1 | =grep -rlE ">[^<]*&(amp\|lt\|gt\|quot\|apos);[^<]*<" external/ore/examples --include=*.xml= | 73c00d0dfb |
 
 * Notes
@@ -143,12 +153,55 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2505][#2505]] | [ore] Decode entity references in element text and escape SQL literals |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the =book_error_message= escaping had no test | =test_org_loader_foreign_keys.py= | Accepted | Added a case for the party-from-book section. |
+| 2 | Local review: the five new binding cases did not log, as the checklist and the file's other cases do | =xml_file_io_tests.cpp= | Accepted | One =BOOST_LOG_SEV(lg, info)= per case. |
+| 3 | Local review: =&#0;= decodes to an embedded NUL | =domain.cpp= (=xsdcpp=) | Declined | Attributes already did this before the change. XML forbids the reference, and no corpus file uses it. |
+| 4 | Local review: an unterminated comment in element text makes =decodeText= scan past its range for =-= | =domain.cpp= (=xsdcpp=) | Declined | Present before this change in =stripComments=, for malformed input only. Out of scope for an escaping fix. |
+| 5 | PR review: =holds_an_ampersand= fails without saying it depends on the fixture | =todays_market_database_roundtrip_tests.cpp= | Accepted | An =INFO= names the fixture and what it must contain. |
+| 6 | PR review: escaping in the loader means the model holds the escaped text; a template-level filter would be more robust | =org_loader.py= | Declined | The templates are Mustache, which has no filters. The loader is the one place these values enter, both are used only inside SQL literals, and the helper's docstring states that contract. |
+| 7 | PR review: a reference split by a comment is not decoded | =domain.cpp= (=xsdcpp=) | No change | The reviewer advises leaving it: very rare, and identical to the generated parser. |
 
 * Result
+
+Text now survives import, storage and export unchanged.
+
+**The binding.** The defect was in =xsdcpp='s embedded parser, not in ORE
+Studio code. =stripComments=, the element-text path, removed comments and
+unwrapped CDATA but decoded nothing, while attributes went through
+=unescapeString=. It is now =decodeText=, which decodes references outside
+CDATA. =unescapeString= also matched entity names by prefix, so =&a;= and =&;=
+both decoded as an apostrophe; a name must now match exactly.
+
+The fix lives in =xsdcpp= (=src/XmlParser.cpp= and =test/XmlParser_test.cpp=),
+so the next regeneration keeps it. The ORE Studio bindings take only the three
+parser hunks of that regeneration, which are byte-identical to the generated
+ones. The same regeneration also changed the =trade= and =componentSubTrade=
+types, an unexplained generator drift unrelated to escaping, which would make
+the trade parser accept unknown child elements. That is recorded on
+[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] and left out.
+
+**The harness.** The round-trip harness compares after a save and load cycle
+again, as before PR #2500. The today's market corpus passes with it, and the
+database test proves an ampersand is stored as the character.
+
+**The SQL codegen.** The loader doubles apostrophes in =error_message= and
+=book_error_message=, the only model text written into a SQL literal. No model
+holds one today, so no generated file changed. The recipe no longer tells
+authors to avoid apostrophes.
+
+**Component audit.** The task touched =ores.ore= and =ores.codegen=. The
+automated half, =projects/ores.codegen/validate_docs.sh=, passes for all 41
+components. The task added or moved no file, folder, type or component: it
+changed one parser function, the harness comparison, one loader function and
+their tests. So the shape, morphology, naming, registry and diagram checks
+have nothing new to judge. The comment checks were applied to the changed code.
+
+**In =xsdcpp=.** Committed on =fix-abstract-element-refs= as =09f0dec=, after
+=2f7dc07=, which commits the resolver fix in =Reader.cpp= that had been
+uncommitted since the 2026-09-26 regeneration.

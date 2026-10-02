@@ -68,7 +68,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:9302B80C-A7E3-4D70-ACD0-4F122B06B30A][Bind the standard profiles to the configuration entities that carry none]] | STARTED | 2026-10-01 | | Solid Dirac's shell-surface census found that analytics' three stress-test entities render no shell unit because their models carry no :profile: at all. A repo-wide census found eight entity models authored from this environment with no profile binding, across analytics, refdata and reporting. Each one hand-authors a feature combination instead of naming it, so codegen cannot guarantee a known-good shape and no profile-enabled facet fires. Bind each entity to the catalogued profile its shape matches, drop the redundant per-feature declarations the profile now supplies, and regenerate. Do not touch the profile-less models owned by other environments; report them instead. |
 | [[id:91F567D4-53F3-4ED7-AE70-452B1E816AE9][Round trip the pricing engine configuration]] | BACKLOG | | | pricingengine*.xml end to end: the engine definitions a report's valuation selects, with the model and product each engine binds, the engine-to-currency and engine-to-product assignments, and the grid and script settings. Neither the entity model nor a mapper exists, and the corpus holds 125 files under the PricingEngines root, so nothing of this kind round trips. Model the entities in the component that owns the concept, write both mappers, and prove the round trip with the harness over every file in the corpus. |
 | [[id:0D7AA741-C938-4C63-B074-9A134067A658][Round trip today's market configuration]] | DONE | 2026-10-01 | 2026-10-02 | todaysmarket*.xml end to end: an ordered set of 24 optional collection kinds — yield, discounting, index-forwarding, swap index, inflation, fx, equity, commodity, correlation, default and volatility curves and spots — each kind written once or more under its own id, plus Configuration blocks that select one collection of each kind by that id. Five tables, both mappers, all 98 corpus files and a database round trip. |
-| [[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]] | BACKLOG | | | The ORE XML binding decodes entities in attributes but not in element text, so an imported ampersand is stored as &amp; and the export double-escapes it; the round-trip harness was changed to stop seeing this rather than fixed. The SQL codegen emits a foreign key error_message into a string literal unescaped, so an apostrophe aborts a database recreate. Fix both at their generators and restore the harness check. |
+| [[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]] | DONE | 2026-10-02 | 2026-10-02 | The ORE XML binding decodes entities in attributes but not in element text, so an imported ampersand is stored as &amp; and the export double-escapes it; the round-trip harness was changed to stop seeing this rather than fixed. The SQL codegen emits a foreign key error_message into a string literal unescaped, so an apostrophe aborts a database recreate. Fix both at their generators and restore the harness check. |
 | [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]] | BACKLOG | | | Every component's create and drop aggregate is hand-curated, and 144 of the 754 create scripts carry no generated marker, so a new entity silently misses a recreate until someone lists it by hand. Measure what is hand-written and why, decide what codegen can own, and turn the wiring check that exists today into a gate. |
 
 * Decisions
@@ -197,6 +197,17 @@ A report definition's configuration is a set of strongly typed entities rather t
   set none, and it derives the nature from it. The rule generalises: where a
   document's field is the vendor's vocabulary and not ours, it is stored as the
   vendor wrote it, and our classification of it is a separate derived column.
+
+- **A round trip is compared after a save and load cycle.** A document that
+  cannot survive its own export and re-import is not a round trip, and the
+  cycle is what proves the binding decodes the text it escapes. PR #2500
+  dropped the cycle to hide a binding defect; it is back, with the defect fixed.
+- **The ORE parser is fixed in =xsdcpp=, not in the bindings.** The generator
+  embeds =src/XmlParser.cpp= verbatim into =domain.cpp=, so a parser fix made
+  only in ORE Studio would be lost at the next regeneration. Until the
+  unexplained =trade= and =componentSubTrade= drift in a full regeneration is
+  resolved, the bindings take only the parser hunks, byte-identical to the
+  generated ones.
 
 * Out of scope
 

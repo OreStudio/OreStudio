@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:xsdcpp:ore:external:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-10-02
 
 * Summary
 
@@ -46,10 +46,11 @@ The tool is a separate checkout, not a build dependency:
 | Path | =/home/marco/Vault/Development/xsdcpp= |
 | Binary | =build/src/xsdcpp= |
 | Version | =xsdcpp 1.0.3= |
-| Checkout commit | =51b1de5= (2026-04-09) |
-| Local modification | an uncommitted two-pass group and substitution-group resolver fix in =src/Reader.cpp=, which the built binary carries |
+| Checkout commit | =09f0dec= (2026-10-02) |
+| Branch | =fix-abstract-element-refs= |
+| Local modifications | none. =2f7dc07= holds the two-pass group and substitution-group resolver fix in =src/Reader.cpp=, which was uncommitted until 2026-10-02; =09f0dec= decodes entity references in element text in =src/XmlParser.cpp= |
 
-The local modification matters. Without it, =input.xsd= fails with
+The =Reader.cpp= fix matters. Without it, =input.xsd= fails with
 =could not find group 'oreTradeData'=, which is why regeneration was
 blocked for months. The backlog capture that says so is stale: the fix is
 present in the binary, and the bindings were regenerated with it on
@@ -57,6 +58,24 @@ present in the binary, and the bindings were regenerated with it on
 
 Nothing in the repository records the pin. This page is the record. If the
 checkout moves, update the table.
+
+** Building it
+
+The =build/= directory in the checkout was configured from an older path,
+=/home/marco/Development/xsdcpp=, so =make= there fails at the CMake check.
+Configure a fresh build tree instead. The bundled =libnstd= does not compile
+with GCC 16, so use clang:
+
+#+begin_src sh
+cmake -S /home/marco/Vault/Development/xsdcpp -B <build-dir> \
+    -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
+cmake --build <build-dir> -j6
+(cd <build-dir> && ctest)
+#+end_src
+
+=Ecoa_test= fails with "Unexpected element" errors, with or without the
+=XmlParser.cpp= change, so it is not caused by the text decoding fix. The other
+nine suites pass.
 
 ** Generating the bindings
 
@@ -85,6 +104,22 @@ Run it whenever =external/ore/xsd/= changes, even if only =examples/= moved.
 =external/ore/tools/update_ore_samples.sh= syncs the schemas and the
 examples together and records the engine commit in =external/ore/xsd/manifest.json=.
 The bindings and the schema must land in step.
+
+** The parser is part of the output
+
+=src/XmlParser.cpp= is not a library the bindings link to. The generator embeds
+it verbatim into =domain.cpp=, so a parser fix needs a regeneration to reach
+the bindings.
+
+On 2026-10-02 a regeneration with the current checkout also changed two types
+that have nothing to do with the parser: =trade= gained =other_elements=, and
+=componentSubTrade= gained "any" attribute and element capture. The binary in
+=build/src/xsdcpp= produces the first of these as well. The committed bindings
+had these removed on 2026-08-01 and 2026-09-26. That drift is unexplained, and
+it would make the trade parser accept unknown child elements, so the escaping
+fix took only the three parser hunks of that regeneration, which are
+byte-identical to the generated ones. Resolve the drift before the next full
+regeneration.
 
 ** What a run changes
 

@@ -106,11 +106,11 @@ The pilot entity =ores.refdata.party= under
 up via the =modeling_dir= entry and produces byte-identical output to
 the legacy =party_entity.org= location.
 
-* Three things a new entity needs that the build does not enforce
+* Two things a new entity needs that the build does not enforce
 
 Adding an entity to an existing component passes =compass build=, the model
 drift check and every test, and can still miss the database. The schema parser
-reports two of the three below, but CI runs it with =--warn= and not =--strict=,
+reports both of the problems below, but CI runs it with =--warn= and not =--strict=,
 so its report only prints. Run it yourself and read its warnings:
 
 #+begin_src sh
@@ -137,20 +137,6 @@ nothing is dropped while a reference holds.
 Without the flag the table has a =tenant_id= and no row-level security policy,
 so every tenant can read every other tenant's rows. Set it under =* SQL= /
 =** Flags=, next to =:tablename:=.
-
-**3. Keep an apostrophe out of a foreign key's =error_message=.**
-
-The codegen writes the message into a SQL string literal without escaping it,
-so =No active today's market configuration= produces:
-
-#+begin_src
-ERROR:  syntax error at or near "s"
-#+end_src
-
-and the recreate stops with part of the schema built. Write the message without
-an apostrophe until
-[[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]]
-makes the codegen escape it.
 
 * See also
 

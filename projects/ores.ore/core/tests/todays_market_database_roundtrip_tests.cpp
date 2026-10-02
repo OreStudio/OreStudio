@@ -138,6 +138,19 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     REQUIRE(configurations.size() == mapped.configurations.size());
     REQUIRE(bindings.size() == mapped.bindings.size());
 
+    // The document names its correlations with an ampersand. The database must
+    // hold the character the document means, not the escape it was written in.
+    bool holds_an_ampersand = false;
+    for (const auto& e : entries) {
+        INFO(e.target);
+        CHECK(e.target.find("&amp;") == std::string::npos);
+        if (e.target.find('&') != std::string::npos)
+            holds_an_ampersand = true;
+    }
+    INFO("expected a correlation entry containing '&' in "
+         << f.string() << "; if the fixture changed, pick one that has one");
+    CHECK(holds_an_ampersand);
+
     // Export from what the database returned, not from what was written.
     mapped_todays_market from_database;
     from_database.config = mapped.config;

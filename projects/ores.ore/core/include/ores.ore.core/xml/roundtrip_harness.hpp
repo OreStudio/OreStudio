@@ -105,17 +105,13 @@ parsed_text_difference(const Document& lhs, const Document& rhs, const std::stri
  * @brief Builds a kind from a mapper pair and a comparison.
  *
  * Import loads the file into the ORE binding, maps it to the entities, maps
- * them back, and compares the rebuilt document against the imported one. A
- * mapper is free to normalise a document and is not free to lose a field.
+ * them back and exports. The comparison then decides whether the export, read
+ * back in, is the same document as the import, so a mapper is free to normalise
+ * a document and is not free to lose a field.
  *
- * The rebuilt document is compared directly rather than after a round trip
- * through =save_data= and =load_data=. That extra cycle looks harmless and is
- * not: the binding decodes an entity reference in an attribute but leaves one
- * in element text alone, while the writer escapes =&= on the way out, so a text
- * value containing an ampersand gains one escaping level per cycle. Comparing
- * after the cycle therefore reports a difference the mapper did not create. The
- * comparison itself still serialises both sides, so a normalisation a kind
- * needs is still expressed by its own comparison function.
+ * The export is read back rather than compared in memory, because a document
+ * that cannot survive its own save and load is not a round trip. That cycle is
+ * also what proves the binding decodes the text it escapes.
  */
 template <typename Document, typename Mapped>
 roundtrip_kind make_roundtrip_kind(std::string name,
@@ -141,7 +137,10 @@ roundtrip_kind make_roundtrip_kind(std::string name,
             const Mapped mapped = map(original);
             const Document rebuilt = reverse(mapped);
 
-            const std::string detail = compare(original, rebuilt, path.string());
+            Document exported;
+            load_data(save_data(rebuilt), exported);
+
+            const std::string detail = compare(original, exported, path.string());
             if (detail.empty())
                 return {true, {}};
             return {false, detail};

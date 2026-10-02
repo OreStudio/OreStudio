@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: D763C85A-5B93-4573-A397-6B0BD4B7D7C4
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.iam.tenant_roster_messages
+#+description: Codegen operation model for the tenant roster's search, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: tenant_roster
+#+namespace: ores::iam::messaging
+#+brief: The tenant roster's search.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+The system administrator's roster reads the tenants a deployment holds through
+this search. The generated tenant list pages the registry and nothing more; the
+roster also searches, filters by type and status, and leaves out the system
+tenant, which is the deployment's own bookkeeping rather than a tenant somebody
+set up. The rule lives on the server, beside the registry, so every reader of
+the roster gets it.
+
+The entity singular is =tenant_roster= because the =tenants= shell menu belongs
+to the generated tenant entity unit.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/tenant.hpp"
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** search_tenants_request
+:PROPERTIES:
+:subject: iam.v1.tenants.search
+:response: search_tenants_response
+:shell_command: search
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of the tenants that match a search and two filters.
+ *
+ * The system tenant is never in the answer. The page is in code order, and the
+ * answer carries how many tenants match in all.
+ */
+#+end_src
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Text matched, without regard to case, anywhere in the code, the name
+ * or the hostname. Empty matches every tenant.
+ */
+#+end_src
+
+*** type_filter
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A tenant type code to keep. Empty keeps every type.
+ */
+#+end_src
+
+*** status_filter
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A tenant status code to keep. Empty keeps every status.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many matching tenants to skip.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 100
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The most tenants to return. The handler caps it at 1000.
+ */
+#+end_src
+
+** search_tenants_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the search failed, or empty.
+ */
+#+end_src
+
+*** tenants
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::tenant>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The page of matching tenants, in code order.
+ */
+#+end_src
+
+*** total
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many tenants match in all, across every page.
+ */
+#+end_src

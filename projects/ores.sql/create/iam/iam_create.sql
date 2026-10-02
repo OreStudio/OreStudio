@@ -88,6 +88,7 @@
 \ir ./iam_tenant_purger_create.sql
 \ir ./iam_system_reset_create.sql
 \ir ./iam_tenant_terminator_create.sql
+\ir ./iam_tenant_search_create.sql
 
 -- Admin utilities (helper functions for administrative tasks)
 \ir ./iam_admin_utilities_create.sql

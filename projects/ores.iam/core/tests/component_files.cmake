@@ -36,6 +36,7 @@ set(files
     "repository_role_repository_tests.cpp"
     "repository_session_repository_tests.cpp"
     "repository_tenant_repository_tests.cpp"
+    "repository_tenant_search_tests.cpp"
     "repository_tenant_status_repository_tests.cpp"
     "repository_tenant_type_repository_tests.cpp"
     "role_eventing_integration_tests.cpp"

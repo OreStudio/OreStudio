@@ -90,7 +90,6 @@
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
 #include "ores.refdata.core/messaging/series_subclass_code_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
-#include "ores.refdata.core/messaging/tenant_party_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_resolution_registrar.hpp"
@@ -232,7 +231,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_handlers(nats, ctx, verifier));
     append(register_calendar_date_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
-    append(register_tenant_party_handlers(nats, ctx, verifier));
     append(register_calendar_adjustment_handlers(nats, ctx, verifier));
     append(register_calendar_event_handlers(nats, ctx, verifier));
     append(register_calendar_type_handlers(nats, ctx, verifier));

@@ -141,10 +141,10 @@ This section is analysis rather than reported practice.
 
 ** Open questions
 
-- /Economic effect./ The [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][link catalogue]] files allocation
-  as an annotation, because the firm's risk does not move. But the
-  counterparty does move, and the allocations need confirming. Whether
-  that makes allocation a trade event for the children is not settled.
+- /Economic effect./ The [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][catalogue]] records no
+  economic effect on the firm's risk, and notes that the counterparty
+  moves to the allocations, which are then confirmed. Whether that
+  makes allocation a trade event for the children is not settled.
 - /The block's end state./ Whether an allocated block keeps its state
   and gains an "allocated" flag, or moves to a state of its own, decides
   how reports exclude it.

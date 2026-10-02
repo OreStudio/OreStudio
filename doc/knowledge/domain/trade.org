@@ -29,9 +29,12 @@ every change.
 *What does it need, and what does it become?* Market data in order to
 be valued, and a position once aggregated with its neighbours.
 
-*What does it link to?* Other trades. A structure binds its legs
-economically; a [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]]
-records every other relation, with a type that names the reason.
+*What does it link to, and what does it belong to?* Other trades,
+sets and groups. A trade belongs to sets through its attributes — its
+book, its counterparty, its netting set — and to groups that operations
+create: a structure, a merge, a compression. A
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]] records every
+other relation, with a type that names the reason.
 
 Each question is independent of the others. A trade's
 classification does not change over its life, its lifecycle does not
@@ -134,8 +137,8 @@ or not its terms have been confirmed.
   carries an economic effect.
 
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and
-  Deal Composition]] — structure membership, the strongest link, and
-  the operations that create and reshape a structure.
+  Deal Composition]] — the structure, the group that is also a
+  product, and the operations that create and reshape it.
 
 - [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] — the cash
   a trade explains, and the drill-down from a balance back to the

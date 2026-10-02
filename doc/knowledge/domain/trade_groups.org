@@ -138,10 +138,9 @@ misbooking correction, exercise, fixing, wash or back-to-back, book
 move, hedge, linked cash and user-defined links. Most join two trades,
 and each carries a type, a direction and named roles.
 
-The catalogue currently lists structure membership, merge,
-compression, allocation, funding roll, sweep run and cleardown as link
-types. Under this test each of them is a group, and its trades
-reference the group rather than each other.
+The catalogue lists the groups in a section of their own, with the
+economic effect of each, so that every relation between trades is
+found in one place whether it is a link or a group.
 
 ** What is neither
 

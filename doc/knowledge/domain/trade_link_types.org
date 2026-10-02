@@ -2,7 +2,7 @@
 :ID: 04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921
 :END:
 #+title: Trade link types
-#+description: The catalogue of trade link types: what each one connects, which process creates it, and whether it carries an economic effect.
+#+description: The catalogue of trade link types: what each one connects, the role of each end, which process creates it, and whether it carries an economic effect.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_links:
@@ -12,11 +12,17 @@
 * Summary
 
 A link type names the reason two trades are joined. The trade model
-carries the types below; each row says what the link connects, what
-causes it, and which page owns the detail. One property sorts them:
-the economic effect. A type with an effect is a trade event, and a type
-without is an annotation. Adding a reason means adding a row here, not
-a special case in code.
+carries the types below; each row says what the link connects, the
+role each end plays, what causes it, and which page owns the detail.
+One property sorts them: the economic effect. A type with an effect is
+a trade event, and a type without is an annotation. Adding a reason
+means adding a row here, not a special case in code.
+
+Some collections of trades used to be filed here and are not links:
+structures, merges, compressions, allocations and process runs. Each
+is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity of its own, and its trades
+reference the group rather than each other. The last section lists
+them and where they now live.
 
 * Detail
 
@@ -29,32 +35,29 @@ split. The first table's links cut a version of the trades they join,
 and some of them need a confirmation. The second table's links are
 recorded, displayed and reported, and they change no term.
 
+A link is directed. The /from/ end is the trade the link starts at and
+the /to/ end the trade it reaches, and the roles column names both.
+
 ** Trade events: links with an economic effect
 
-| Link type | Connects | Cause | Detail |
-|-----------+----------+-------+--------|
-| Structure membership | A structure and its legs | The trade is assembled from its parts | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
-| Close-out | The live trade and the equal-and-opposite trade that ends it | The parties end the trade early | [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]]; [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] |
-| Novation or assignment | The transferred trade and the trade with the new counterparty | One party transfers its position to a third party | the note below |
-| Roll or restructure | The replaced trade and its replacement | The parties replace the trade | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]]; [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
-| Merge (aggregate, net) | The netted trade and its contributors | Trades combine into one trade, or into one net position | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]]; [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
-| Compression (tear-up) | The replacement set and the terminated set | The parties eliminate offsetting trades without changing net risk | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
-| Misbooking correction | The correction trade and the erroneous original | A trade was booked in error | [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] |
+| Link type | From → to | Cause | Detail |
+|-----------+-----------+-------+--------|
+| Close-out | original → closing | The parties end the trade early, in full or in part | [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]]; [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] |
+| Novation or assignment | transferred → new counterparty | One party transfers its position to a third party | the note below |
+| Roll | rolled → replacement | A position is rolled to a new date by closing the trade and booking a replacement | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]]; [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+| Exercise | exercised → resulting | The holder exercises an option, in full or in part, into a new trade | the note below |
+| Misbooking correction | correction → erroneous original | A trade was booked in error and is cancelled and rebooked | [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] |
 
 ** Annotations: links with no economic effect
 
-| Link type | Connects | Cause | Detail |
-|-----------+----------+-------+--------|
-| Linked cash | A trade and the cash flows it explains | A coupon, fee, rebate or principal falls due | [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] |
-| Fixing | A non-deliverable forward and its fixing trade or cash flow | The rate fixes | [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]; [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
-| Funding roll | The trades of one Tom/Next run | The desk funds a currency position overnight | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
-| Sweep run | The trades of one sweep run | The desk centralises residual balances | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
-| Cleardown | The synthetic reset legs and the book result they reset | The period closes | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] — see its cleardown section |
-| Wash or back-to-back | The client-facing trade and the risk-bearing trade | Risk is routed to the book that owns it | [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] |
-| Book move | The back-out trade and the trade in the destination book | The trade changes book | [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] |
-| Allocation | A block trade and its child trades | The block is distributed across clients or accounts | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]]; [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
-| Hedge | The hedged trade and its hedge | A desk records a risk relationship | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
-| User-defined link | Any two trades | A user records an association | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
+| Link type | From → to | Cause | Detail |
+|-----------+-----------+-------+--------|
+| Linked cash | trade → cash flow | A coupon, fee, rebate or principal falls due | [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] |
+| Fixing | fixed → fixing | The rate of a non-deliverable forward fixes | [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]; [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
+| Wash or back-to-back | client-facing → risk-bearing | Risk is routed to the book that owns it | [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] |
+| Book move | backed-out → destination | The trade changes book | [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] |
+| Hedge | hedged → hedging | A desk records a risk relationship | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
+| User-defined link | either → either | A user records an association | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 
 ** Notes
 
@@ -66,22 +69,65 @@ transferor, the transferee and the remaining party. The substance is
 that a novation is a new legal relationship, not an edit to an existing
 one, and a system that models it as an edit loses the audit trail. Our
 model treats it as a link between two trades, directed from the
-transferred trade to the trade with the new counterparty.
+transferred trade to the trade with the new counterparty. The firm's
+own side is just as fixed: a trade that must move to a book owned by
+another legal entity is closed out and rebooked in the new book, and
+the two trades are linked (see [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]).
 
-/Netting has two senses./ Merging trades into one is a trade event and
-appears in the first table. Netting settlement amounts is a payment
-mechanic: it nets cash flows, not trades, and it carries no trade link.
+/On exercise./ Exercising an option ends it, or reduces it, and may
+create a trade. A physically settled FX option exercised into an FX
+forward or spot is the common case: the option is the /exercised/ end
+and the new trade the /resulting/ end. A partial exercise reduces the
+option's notional by amendment and links it to the trade generated for
+the exercised amount. An option that settles in cash creates no trade;
+its settlement is [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][linked cash]]. FpML calls the two ends the
+originating and the resulting trade.
 
-/Split has two senses./ Allocating a block splits it into child trades
-and creates no trade event. Separately, the blotter's /Link Split/
-breaks an existing link. This catalogue uses allocation for the first
-meaning throughout.
+/On misbooking correction./ A correction cancels the erroneous trade
+and books a new one, and the link runs from the correction back to the
+original. It replaces the single =successor_trade_id= field: that field
+named one kind of relation on one side of it, while the link names its
+reason and both ends. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] sets out the
+cancel-and-rebook sequence.
+
+/Netting has several senses./ Merging trades into one is an operation
+with an identity, covered by [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]]. Netting
+settlement amounts is a payment mechanic: it nets cash flows, not
+trades, and it carries no link. Credit netting is the
+[[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting set]].
+
+/Split has two senses./ Allocating a block splits it into child trades,
+an operation covered by [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]]. Separately, the
+blotter's /Link Split/ breaks an existing link.
+
+/Restructure is not a link./ A restructure renegotiates the terms of
+the same trade, so it is an amendment that cuts a new version; see
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]. A roll is
+a link only where it closes the trade and books a replacement.
 
 /Expiry and downsizing are not links./ Expiry moves a trade to
 =expired= and generates nothing; a partial close-out reduces the
-notional of the same trade by amendment. Where exercise or expiry
-produces a settlement, the resulting cash is
-[[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][linked cash]].
+notional of the same trade by amendment. Where expiry produces a
+settlement, the resulting cash is [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][linked cash]]. Exercise
+into a new trade is the exception, and has its own row.
+
+** Groups, not links
+
+These collections have an identity of their own: an operation attaches
+to the set of trades as a whole, and the business refers to the
+collection by name. Under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]]
+each is a group. Its trades reference the group, and each trade's role
+in it is recorded with the reference.
+
+| Group | Economic effect | Roles of its trades | Detail |
+|-------+-----------------+---------------------+--------|
+| Structure | Yes; a change to a leg is a change to the deal | leg, by its role in the structure | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+| Merge | Yes; the contributors close and the result opens | contributor, result, bridge | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
+| Compression | Yes; trades terminate or reduce | terminated, partially terminated, replacement | [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] |
+| Allocation | None for the firm's risk; the counterparty moves to the allocations | block, allocation, bridge | [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] |
+| Funding roll | None; a funding mechanic | generated | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
+| Sweep run | None; a cash-management mechanic | generated | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
+| Cleardown | None; a period-end reset | generated | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] — see its cleardown section |
 
 ** Sources
 
@@ -91,6 +137,7 @@ produces a settlement, the resulting cash is
 * See also
 
 - [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the principle, the invariants, and the prior art behind the term.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why the collections in the last table are groups.
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder and the structure operations.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the activity taxonomy, and which activities cut a version.

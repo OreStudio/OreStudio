@@ -157,7 +157,7 @@ reason from one made because the booking was wrong.
 
 ** Normal amendment
 
-When a trade's terms are amended (e.g. Restructure, Novation, Upsize), ORE
+When a trade's terms are amended (e.g. Restructure, Upsize, Partial Close-Out), ORE
 Studio does not create a new trade record. Instead, it uses temporal versioning:
 
 - The existing trade row's =valid_to= is set to the current timestamp.
@@ -181,24 +181,38 @@ trade_id = X
 
 ** Cancel and rebook
 
-The =successor_trade_id= field is used exclusively for /cancel and rebook/
-scenarios, where a trade is cancelled and an entirely new trade is created to
-replace it. This is distinct from a normal amendment:
+Some changes cannot be an amendment of the same trade, because what
+changes is not a term but the trade's identity: who the parties are, or
+whether the original booking should ever have existed. These are
+/cancel and rebook/: the original trade is cancelled and an entirely new
+trade, with a fresh =id=, replaces it.
 
 - The original trade is moved to =cancelled= status.
 - A new trade with a fresh =id= is created (entering =booked= status).
-- The new trade's =successor_trade_id= is set to the original trade's =id= for
-  traceability.
+- A [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]] joins the two,
+  and its type names the reason. The two trades and the link are written
+  in one transaction.
 
-Use cases: Misbooking correction, administrative re-booking.
+| Reason | Link type | Direction |
+|--------+-----------+-----------|
+| The counterparty changes | Novation or assignment | transferred → new counterparty |
+| The trade moves to a book owned by another legal entity | Book move (see [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]]) | backed-out → destination |
+| The original was booked in error | Misbooking correction | correction → erroneous original |
+
+The firm's own legal entity and the counterparty are fixed for a
+trade's life, so a change to either is always a cancel and rebook,
+never an amendment. The link, not a field on either trade, carries the
+relation, so both trades keep their own history and either can be read
+from the other. [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] lists every type.
 
 ** Misbooking correction
 
-A misbooking creates a /correction trade/ with =successor_trade_id= pointing to
-the erroneous original:
+A misbooking creates a /correction trade/, linked back to the erroneous
+original:
 
 1. Original erroneous trade: status → =cancelled=.
-2. Correction trade created: fresh =id=, =successor_trade_id= = original =id=.
+2. Correction trade created with a fresh =id=, and a misbooking
+   correction link from the correction trade to the original.
 3. Correction trade status begins at =booked=, and reaches =live= through
    verification and, where the trade faces a counterparty, confirmation.
 

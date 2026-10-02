@@ -28,6 +28,7 @@ def main():
     root = Path(sys.argv[1])
     keys = set()
     files = 0
+    skipped = 0
     for path in sorted(root.rglob("*")):
         if not path.is_file() or not is_market_payload(path):
             continue
@@ -39,9 +40,12 @@ def main():
             fields = re.split(r"[\s,;]+", line)
             if len(fields) >= 3:
                 keys.add(fields[1])
+            else:
+                skipped += 1
     for key in sorted(keys):
         print(key)
-    print(f"{len(keys)} keys from {files} files", file=sys.stderr)
+    print(f"{len(keys)} keys from {files} files, {skipped} lines skipped as not "
+          f"date, key and value", file=sys.stderr)
 
 
 if __name__ == "__main__":

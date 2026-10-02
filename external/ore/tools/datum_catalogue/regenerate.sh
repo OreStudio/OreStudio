@@ -27,10 +27,16 @@ cmake --build "${work}/build" > /dev/null
 
 mkdir -p "${out}"
 "${work}/build/datum_catalogue" < "${here}/forms.txt" > "${out}/forms.jsonl"
+python3 "${here}/extract_instrument_types.py" "${ore_source}" > "${out}/instrument_types.txt"
 python3 "${here}/extract_corpus_keys.py" "${ore_root}/examples" > "${work}/corpus_keys.txt"
 "${work}/build/datum_catalogue" < "${work}/corpus_keys.txt" | gzip -n -9 > "${out}/corpus.jsonl.gz"
 
 version="$(git -C "${ore_source}" describe --tags --always 2>/dev/null || echo unknown)"
 commit="$(git -C "${ore_source}" rev-parse --short HEAD 2>/dev/null || echo unknown)"
-echo "${version} ${commit}" > "${out}/ore_version.txt"
+# The .jsonl content is reproducible from the same ORE commit; the compressed
+# bytes are reproducible only with the same gzip, so its version is kept too.
+{
+    echo "ore ${version} ${commit}"
+    echo "gzip $(gzip --version | head -1 | awk '{print $NF}')"
+} > "${out}/ore_version.txt"
 echo "Catalogue written to ${out} from ORE ${version} (${commit})."

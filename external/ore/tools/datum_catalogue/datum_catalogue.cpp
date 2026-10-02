@@ -146,7 +146,10 @@ std::string json_escape(const std::string& s) {
                 out += "\\t";
                 break;
             default:
-                out += c;
+                if (static_cast<unsigned char>(c) < 0x20)
+                    out += std::format("\\u{:04x}", static_cast<unsigned char>(c));
+                else
+                    out += c;
         }
     }
     return out;

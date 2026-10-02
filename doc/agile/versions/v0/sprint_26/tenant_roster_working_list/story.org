@@ -44,7 +44,7 @@ A system administrator finds a tenant among many and acts on it from the roster:
 | [[id:EFB1AB02-7AA4-4337-825A-8251D67B53AC][Scaffold story: Make the tenant roster a working list]] | DONE | 2026-10-02 | 2026-10-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:4A15EFC1-447A-4573-9BF1-5B9E69A9C7D7][Search and page the tenant roster]] | DONE | 2026-10-02 | 2026-10-02 | Add search over code, name and hostname and paging with a total to the tenant roster, as the See the tenants journey asks, and record the gap on the task that built the roster. |
 | [[id:49E680DA-EC29-42A7-89BD-0D40481539A5][Filter the tenant roster by type and status]] | DONE | 2026-10-02 | 2026-10-02 | Add type and status filters to the tenant roster, hide automation tenants by default behind a Show test tenants toggle, and record both in the See the tenants journey and its wireframe. |
-| [[id:6768638B-7471-4CFA-9F81-83DDB4E36CC9][Act on a tenant from its row]] | BACKLOG | | | Give each roster row an actions menu: open the tenant, resume setup when its provisioning run is unfinished, and the retire or reset journey. |
+| [[id:6768638B-7471-4CFA-9F81-83DDB4E36CC9][Act on a tenant from its row]] | STARTED | 2026-10-02 | | Give each roster row an actions menu: open the tenant, resume setup when its provisioning run is unfinished, and the retire or reset journey. |
 | [[id:45E4EB0A-73ED-4361-920F-8928AAE2D9AB][Show one tenant]] | BACKLOG | | | Write the journey for one tenant's detail, then build the screen: the tenant's fields, its provisioning run and its parties, opened from the roster. |
 
 * Notes

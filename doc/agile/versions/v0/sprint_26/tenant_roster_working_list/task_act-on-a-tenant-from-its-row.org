@@ -7,41 +7,61 @@
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/act-on-a-tenant-from-its-row
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A system administrator acts on a tenant from its row in the roster: one menu
+per row holds what can be done to that tenant, and says plainly what cannot be
+done yet.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written. No code has changed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Build the menu. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
 
--
+- Each roster row has an actions menu.
+- *Resume setup* opens the tenant's provisioning run when that run is
+  unfinished or failed, and is not offered otherwise.
+- *Open* and *Retire or reset* are shown as not built yet, the way the shell
+  marks a journey the tree has not built, rather than hidden or broken. *Open*
+  is wired when [[id:45E4EB0A-73ED-4361-920F-8928AAE2D9AB][Show one tenant]]
+  lands; *Retire or reset* waits for the capture
+  [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]].
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decision, 2026-10-02, the product owner's: build the menu now with *Resume
+setup* working, and *Open* and *Retire or reset* marked as not built; wire
+*Open* when the detail task lands. The retire or reset backend is mostly
+missing (no suspend, terminate or purge subject), so it is a capture rather
+than part of this task.
+
+1. A menu per row, built from a =details= element so it opens without
+   script and renders in the static web tests.
+2. *Resume setup* links to =/tenants/runs/:id= when the run is not completed.
+3. *Open* and *Retire or reset* render disabled with the shell's
+   "Not built yet" words.
+4. Tests for each item's state, then a live read.
 
 * Measurements
 

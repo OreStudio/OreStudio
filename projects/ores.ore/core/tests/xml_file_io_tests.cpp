@@ -104,3 +104,66 @@ TEST_CASE("todaysmarket_load_file_save_file_roundtrip", tags) {
 
     BOOST_LOG_SEV(lg, info) << "File I/O roundtrip passed for todaysmarket";
 }
+
+// =============================================================================
+// Entity and character references in element text
+// =============================================================================
+
+namespace {
+
+ores::ore::domain::correlationsType_Correlation_t
+only_correlation(const std::string& xml) {
+    ores::ore::domain::todaysmarket doc;
+    ores::ore::domain::load_data(xml, doc);
+    REQUIRE(doc.Correlations.size() == 1);
+    REQUIRE(doc.Correlations.front().Correlation.size() == 1);
+    return doc.Correlations.front().Correlation.front();
+}
+
+std::string correlation_document(const std::string& name, const std::string& text) {
+    return "<TodaysMarket><Correlations id=\"default\"><Correlation name=\"" + name + "\">" + text +
+           "</Correlation></Correlations></TodaysMarket>";
+}
+
+std::string text_of(const ores::ore::domain::correlationsType_Correlation_t& c) {
+    return static_cast<const xsd::string&>(c);
+}
+
+}
+
+TEST_CASE("element_text_decodes_entity_references_as_attributes_do", tags) {
+    const auto c = only_correlation(correlation_document("A&amp;B", "Correlation/A&amp;B"));
+    CHECK(std::string(c.name) == "A&B");
+    CHECK(text_of(c) == "Correlation/A&B");
+}
+
+TEST_CASE("element_text_decodes_every_predefined_and_numeric_reference", tags) {
+    const auto c = only_correlation(
+        correlation_document("x", "&lt;&gt;&amp;&quot;&apos;&#38;&#x26;"));
+    CHECK(text_of(c) == "<>&\"'&&");
+}
+
+TEST_CASE("element_text_survives_any_number_of_save_and_load_cycles", tags) {
+    using ores::ore::domain::todaysmarket;
+    todaysmarket first;
+    ores::ore::domain::load_data(correlation_document("A&amp;B", "Correlation/A&amp;B"), first);
+
+    const std::string once = ores::ore::domain::save_data(first);
+    todaysmarket second;
+    ores::ore::domain::load_data(once, second);
+    const std::string twice = ores::ore::domain::save_data(second);
+
+    CHECK(once == twice);
+    CHECK(text_of(second.Correlations.front().Correlation.front()) == "Correlation/A&B");
+}
+
+TEST_CASE("element_text_leaves_cdata_content_undecoded", tags) {
+    const auto c = only_correlation(correlation_document("x", "a&amp;<![CDATA[&amp;]]>b"));
+    CHECK(text_of(c) == "a&&amp;b");
+}
+
+TEST_CASE("an_entity_name_is_matched_exactly_not_by_prefix", tags) {
+    const auto c = only_correlation(correlation_document("&a;", "&a;&;&ampx;"));
+    CHECK(std::string(c.name) == "&a;");
+    CHECK(text_of(c) == "&a;&;&ampx;");
+}

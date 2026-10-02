@@ -2,16 +2,16 @@
 :ID: 24748A22-DB67-4E22-A52F-5D0FBA668D10
 :END:
 #+title: Trade
-#+description: Hub note for trades in ORE Studio's domain model: the entities a trade is built from, the three classifications it carries, the two lifecycles it runs, and what it needs in order to be valued.
+#+description: Hub note for trades in ORE Studio's domain model: the entities a trade is built from, the three classifications it carries, the two lifecycles it runs, what it links to, and what it needs in order to be valued.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:trading:
 #+created: 2026-09-16
-#+updated: 2026-09-16
+#+updated: 2026-10-02
 
 * Summary
 
-A trade is the record of an agreement. Describing one fully takes four
+A trade is the record of an agreement. Describing one fully takes five
 questions, and each has its own answer and its own document.
 
 *What is it made of?* Four entities, not one: the product type, the
@@ -29,7 +29,11 @@ every change.
 *What does it need, and what does it become?* Market data in order to
 be valued, and a position once aggregated with its neighbours.
 
-Each of the four questions is independent of the others. A trade's
+*What does it link to?* Other trades. A structure binds its legs
+economically; a trade link records every other relation, with a type
+that names the reason.
+
+Each question is independent of the others. A trade's
 classification does not change over its life, its lifecycle does not
 depend on what it is made of, and its market data requirements follow
 from its entities rather than from its state. Conflating them is the
@@ -118,6 +122,24 @@ independent of one another.
 The two lifecycles are independent, which is the point. A trade is live
 and carrying risk from the moment it is released into the book, whether
 or not its terms have been confirmed.
+
+** What a trade links to
+
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — start
+  here. What a link is, the three ways links come into being, the
+  invariants they satisfy, and the prior art behind the term.
+
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the
+  catalogue: what each type connects, what causes it, and whether it
+  carries an economic effect.
+
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and
+  Deal Composition]] — structure membership, the strongest link, and
+  the operations that create and reshape a structure.
+
+- [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] — the cash
+  a trade explains, and the drill-down from a balance back to the
+  trades behind it.
 
 ** What a trade needs and becomes
 

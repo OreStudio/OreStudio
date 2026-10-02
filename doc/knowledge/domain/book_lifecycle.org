@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08
-#+updated: 2026-07-09
+#+updated: 2026-10-02
 
 * Summary
 
@@ -117,7 +117,7 @@ tightly governed operation:
 - If the target book has different ownership (e.g. a different
   branch), a direct move is not allowed; instead the deal must go
   through a novation-like activity: close out the original deal and
-  rebook it in the new book, generating an explicit linkage between
+  rebook it in the new book, generating an explicit link between
   the two.
 - Operationally, a book move should result in a single transaction
   pairing a deal that backs out the original trade with the new trade

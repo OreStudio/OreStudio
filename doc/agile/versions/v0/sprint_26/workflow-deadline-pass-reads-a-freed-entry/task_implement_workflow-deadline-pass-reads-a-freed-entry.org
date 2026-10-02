@@ -8,7 +8,7 @@
 #+filetags: :workflow-deadline-pass-reads-a-freed-entry:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/workflow-deadline-pass-reads-a-freed-entry
-#+pr:
+#+pr: 2508
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2508][#2508]] | [workflow] Erase an overdue step's entry after its run is stopped |
 
 * Review
 

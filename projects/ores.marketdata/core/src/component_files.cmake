@@ -30,6 +30,7 @@ set(files
     "datum/ore_key_rates.cpp"
     "datum/ore_key_securities.cpp"
     "datum/ore_key_volatility.cpp"
+    "datum/oresmd_uri_codec.cpp"
     "messaging/feed_binding_history_provider_registrar.cpp"
     "messaging/feed_binding_registrar.cpp"
     "messaging/market_fixing_registrar.cpp"
@@ -89,6 +90,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/classification/series_classifier.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/datum/ore_key_codec.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/datum/oresmd_uri_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/feed_binding_handler.hpp"

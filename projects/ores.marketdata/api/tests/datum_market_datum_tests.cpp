@@ -162,6 +162,21 @@ TEST_CASE("free_text_keeps_its_case", tags) {
     CHECK(*datum.get<field::eq_name>() == "Lufthansa");
 }
 
+TEST_CASE("free_text_cannot_be_empty", tags) {
+    const auto datum = market_datum::make(
+        instrument_type::equity_spot,
+        quote_type::price,
+        {{field::eq_name, std::string()}, {field::ccy, std::string("EUR")}});
+    REQUIRE_FALSE(datum);
+    CHECK(datum.error().contains("eq_name"));
+
+    const auto series = market_datum::make_series(
+        instrument_type::equity_spot,
+        quote_type::price,
+        {{field::eq_name, std::string()}, {field::ccy, std::string("EUR")}});
+    CHECK_FALSE(series);
+}
+
 TEST_CASE("two_datums_are_equal_when_every_part_is", tags) {
     CHECK(cds() == cds());
     auto fields = without(cds_fields(), field::term);
@@ -236,4 +251,17 @@ TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary
         CHECK(used.contains(f));
         CHECK(codes_of(f).empty() == (kind_of(f) != value_kind::code));
     }
+}
+
+TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", tags) {
+    std::set<asset_class> used;
+    for (const auto& row : schema)
+        used.insert(row.asset);
+    for (std::size_t i = 0; i < asset_class_count; ++i) {
+        const auto a = static_cast<asset_class>(i);
+        INFO("asset class: " << name_of(a));
+        CHECK(asset_class_named(name_of(a)) == a);
+        CHECK(used.contains(a));
+    }
+    CHECK_FALSE(asset_class_named("interest_rates"));
 }

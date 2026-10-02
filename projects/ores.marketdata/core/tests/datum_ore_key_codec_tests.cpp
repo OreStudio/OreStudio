@@ -18,17 +18,13 @@
  *
  */
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.platform/filesystem/file.hpp"
+#include "datum_catalogue.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
-#include "ores.testing/project_root.hpp"
-#include "ores.utility/compression/gzip.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cmath>
 #include <format>
 #include <map>
-#include <rfl/json.hpp>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -54,59 +50,11 @@ namespace {
 const std::string tags("[marketdata][datum][ore_key_codec]");
 
 using namespace ores::marketdata::datum;
-using catalogue_line = std::map<std::string, std::string>;
-
-std::vector<catalogue_line> lines_of(const std::string& content) {
-    std::vector<catalogue_line> result;
-    std::istringstream stream(content);
-    std::string line;
-    while (std::getline(stream, line)) {
-        if (line.empty())
-            continue;
-        auto parsed = rfl::json::read<catalogue_line>(line);
-        if (!parsed)
-            FAIL("unreadable catalogue line: " << line);
-        result.push_back(std::move(*parsed));
-    }
-    return result;
-}
-
-std::filesystem::path catalogue_dir() {
-    return ores::testing::project_root::resolve("external/ore/catalogue");
-}
-
-const std::vector<catalogue_line>& forms() {
-    static const auto result = lines_of(
-        ores::platform::filesystem::file::read_content(catalogue_dir() / "forms.jsonl"));
-    return result;
-}
-
-const std::vector<catalogue_line>& corpus() {
-    static const auto result = [] {
-        const auto compressed =
-            ores::platform::filesystem::file::read_content(catalogue_dir() / "corpus.jsonl.gz");
-        const auto content = ores::utility::compression::gzip_decompress(compressed);
-        return lines_of(std::string(content.begin(), content.end()));
-    }();
-    return result;
-}
-
-bool accepted(const catalogue_line& line) { return line.at("accepted") == "true"; }
-
-/// The key with an alias ORE reads replaced by the spelling the codec writes.
-std::string canonical(const std::string& key) {
-    const auto first = key.find('/');
-    const auto second = key.find('/', first + 1);
-    auto type = key.substr(0, first);
-    auto quote = key.substr(first + 1, second - first - 1);
-    if (type == "FX_SPOT")
-        type = "FX";
-    if (type == "FX_FWD")
-        type = "FXFWD";
-    if (quote == "RATE_GVOL")
-        quote = "RATE_LNVOL";
-    return type + "/" + quote + key.substr(second);
-}
+using ores::marketdata::test::accepted_by_ore;
+using ores::marketdata::test::canonical_key;
+using ores::marketdata::test::catalogue_corpus;
+using ores::marketdata::test::catalogue_forms;
+using ores::marketdata::test::catalogue_line;
 
 // --- What ORE prints ------------------------------------------------------
 
@@ -696,7 +644,7 @@ tally check(const std::vector<catalogue_line>& lines) {
                 t.fail(key, "the codec should refuse it: " + deliberately_refused.at(key));
             continue;
         }
-        if (!accepted(line)) {
+        if (!accepted_by_ore(line)) {
             if (datum)
                 t.fail(key, "ORE refuses it (" + line.at("error") + ") and the codec accepts it");
             continue;
@@ -708,7 +656,7 @@ tally check(const std::vector<catalogue_line>& lines) {
         const auto written = ore_key_codec::write(*datum);
         if (!written)
             t.fail(key, "does not write back: " + written.error());
-        else if (*written != canonical(key))
+        else if (*written != canonical_key(key))
             t.fail(key, "writes back as " + *written);
         for (const auto& d : differences(*datum, line))
             t.fail(key, d);
@@ -719,16 +667,16 @@ tally check(const std::vector<catalogue_line>& lines) {
 }
 
 TEST_CASE("the_codec_reads_every_documented_ore_form_as_ore_does", tags) {
-    const auto t = check(forms());
-    CHECK(t.lines == forms().size());
+    const auto t = check(catalogue_forms());
+    CHECK(t.lines == catalogue_forms().size());
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
     CHECK(t.failures.empty());
 }
 
 TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", tags) {
-    const auto t = check(corpus());
-    CHECK(t.lines == corpus().size());
+    const auto t = check(catalogue_corpus());
+    CHECK(t.lines == catalogue_corpus().size());
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
     CHECK(t.failures.empty());

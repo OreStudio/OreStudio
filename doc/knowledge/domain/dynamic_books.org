@@ -24,11 +24,11 @@ traders an ad hoc grouping mechanism that sits outside the formal
 ** Rule set
 
 A dynamic book's filter is a named rule set of the form /Property /
-Operator / Value/ — e.g. =Deal ID Equals X=, =Book Not Y= — chained
+Operator / Value/ — e.g. =Trade ID Equals X=, =Book Not Y= — chained
 together with comparison operators (=GT=, =LT=, =GTE=, and similar)
 and all AND-ed together. Any deal property can be used: instrument
 type, counterparty, maturity, trade date, delivery date,
-entity/business/centre, EOD, trader, asset, deal ID, or brokerage
+entity/business/centre, EOD, trader, asset, trade id, or brokerage
 properties.
 
 ** Live membership

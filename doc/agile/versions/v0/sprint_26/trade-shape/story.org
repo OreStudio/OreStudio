@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_26:v0:
 #+created: 2026-10-02
-#+updated: 2026-10-02
-#+environment:
+#+updated: 2026-10-03
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The design is settled through section 16, and the implementation stories are scaffolded. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Rename deal id to trade id in the knowledge notes, then start the code generator story. |
-| Last touched  | 2026-10-02                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-03                               |
 
 * Acceptance
 
@@ -38,7 +38,7 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C71DC2F8-5438-4FE4-BB92-B095AA104539][Call the firm's own id the trade id throughout the knowledge notes]] | BACKLOG | | | Replace deal id and Deal ID with trade id in the knowledge notes, so one concept has one word. |
+| [[id:C71DC2F8-5438-4FE4-BB92-B095AA104539][Call the firm's own id the trade id throughout the knowledge notes]] | DONE | 2026-10-03 | 2026-10-03 | Replace deal id and Deal ID with trade id in the knowledge notes, so one concept has one word. |
 | [[id:1B923662-9C54-48D8-B918-D97848259781][Design the trade shape and document the trade domain it rests on]] | DONE | | 2026-10-03 | Run the trade shape design to a settled target, record it in the investigation, write the knowledge notes it needed, and scaffold the implementation stories. |
 
 * Decisions
@@ -75,3 +75,16 @@ the investigation:
 * Out of scope
 
 -
+
+* Result
+
+The target shape of the trade is settled and recorded in
+[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sixteen decisions each with the
+alternatives they set aside. Every acceptance line is met: the design is
+recorded; the workspace question is settled by replacing workspaces in
+the trade model with sandboxes; and the implementation is scaffolded as
+seven stories in this sprint and seven instrument-family stories in the
+backlog. The knowledge base was brought to one consistent story on the
+way, with seven new notes, and the firm's own identifier is called the
+trade id throughout. The build starts with Teach the code generator the
+trade shape.

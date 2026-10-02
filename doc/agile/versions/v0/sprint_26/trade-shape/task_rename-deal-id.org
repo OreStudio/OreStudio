@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-shape:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/rename-deal-id
+#+pr: 2524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
-#+updated: 2026-10-02
-#+environment:
+#+updated: 2026-10-03
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Use trade id, never deal id, for the firm's own identifier of a trade, as the tr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-02                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
 
 * Acceptance
 
@@ -69,7 +69,7 @@ Known scope, measured on main when the task was scaffolded:
 Not in scope, and not to be renamed to trade id: "OS deal ID" in
 =trade_blotter.org=, lines 276 and 389. That is the originating system's
 identifier for the trade, which is a scheme in =trade_identifier=, not
-the firm's own trade id. Rename it to the originating system's trade
+the firm's own trade id. Rename it to the originating-system
 identifier, so the two are not confused.
 
 * Test Scenarios
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2524][#2524]] | [doc] Call the firm's own id the trade id throughout the knowledge notes |
 
 * Review
 
@@ -96,3 +96,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The knowledge notes call the firm's own identifier the trade id. Six
+uses changed: the blotter's column and the mini-blotter header in
+=trade_blotter.org=, the identity row of =positions.org=, the filter
+example and the property list in =dynamic_books.org=, and the property
+list in =books_and_portfolios.org=. The originating system's deal ID in
+=trade_blotter.org= is now the originating-system identifier: it is a scheme in
+=trade_identifier=, not the trade id. No durable document outside the
+agile records still says deal id; the agile records are history and
+keep their words.

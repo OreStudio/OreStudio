@@ -26,11 +26,11 @@ A discriminator is data, so adding a kind is a seeded row and never a column or 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -78,7 +78,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Configuration types seeded | 17 | recreate output, =Configuration Types \| 17= | 14ec81e5b8 |
+| Kinds the binding can save, checked against the seeded root | 12 of 17; 5 listed as unbound | =ores.ore.core.tests "[configuration_types]"= | 14ec81e5b8 |
+| Seed test against a prefix-broken root | fails, then passes on restore | update one row, run, restore | 14ec81e5b8 |
+| Migration on a database created before the change | 17 rows, required columns not null, second run harmless | rolled-back transaction | 14ec81e5b8 |
 
 * Notes
 
@@ -111,3 +114,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The configuration types are seeded, so a reporting configuration can now be
+registered, and through it a report can point at its configuration.
+
+**What a configuration type holds.** Its code, name and order, and now the root
+element of the ORE document it serialises to, the component that owns its
+entities, and the run-document parameter that names its file. The mapping from
+a kind to its document is data, not code.
+
+**The seventeen kinds** are the global elements of ORE's configuration schemas,
+derived as recorded in
+[[file:evidence/configuration_types_derivation.md][the derivation]]. The run
+document is not one: a report owns its run setup directly through
+=report_definition_id=. Historical return and Basel traffic light have no
+run-document parameter, because no shipped run document names one.
+
+**How it is proven.** For each of the twelve kinds the binding can save, an
+empty document must open with exactly the seeded root element; breaking one row
+to a prefix of the real name makes the test fail. The five kinds without a
+binding are listed, so one that gains a binding without joining the check fails.
+A migration adds the columns and the rows to a database created before the
+change.
+
+**Moved out.** The today's market collection kinds and the stress shift kinds
+became tasks of their own, so that each can close with its own pull request.
+The other lookups the task named were already seeded (analytic types, value
+domains, pricing engine types) or wait for work that does not exist yet (risk
+classes, for SIMM calibration).
+
+**Component audit.** The task touched =ores.reporting= through one model, and
+added a seed, a migration and a test. =validate_docs.sh= passes for all 41
+components, and no folder, type or component changed.

@@ -67,6 +67,11 @@ desk structure, capital treatment, and switching restrictions.
 - *Test books* — used to book dummy/test trades in production,
   isolated from the main book population, ideally owned by test
   entities restricted to IT users.
+- *Virtual books* — books the trading system creates itself inside a
+  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]], with no ledger book and no position of the
+  firm. They hold only drafts, test and hypothetical trades, and they
+  carry a classification like any book so that what-if valuations know
+  which regulatory book they imitate.
 - *Sales books* / desk-specific risk books — e.g. a forward desk's
   risk book, used when routing risk between spot and forward desks.
 - *Central Sweep Book* — the book [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][spot sweep]] centralises Sweepable
@@ -201,3 +206,4 @@ is framed as a book-scoped netting set.
   value, and why it doesn't combine with Remittance target.
 - [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance (profit remittance)]] — the Remittance-target
   purpose value.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — virtual books and the regulatory boundary they stay outside.

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 0A473EFE-3E52-461D-8035-18247C9A853A
+:END:
+#+title: Story: Model operational authorisation and the client-facing agreement
+#+description: Record authorisation as append-only decisions with a derived status and the queue as a read model, and hold the external version and confirmation status on the agreement unit.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement section 7 of the trade shape investigation and the external version of section 8: authorisation decisions, auto-authorisation rules, the queue, and the agreement that carries the client-facing version.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- authorisation_decision is append-only; a unit is authorised when its latest decision authorises the current version, and a later amendment withdraws it without a reset.
+- Denied is final, enforced by the schema; auto-authorisation rules and their effect are reported.
+- agreement is the structure when its kind confirms as a whole, otherwise the trade; its external version moves only for a confirmable activity.
+- Operations authorises the same unit the customer confirms.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 73766E2D-D01B-4628-A1A0-78C9BBF709F6
+:END:
+#+title: Trade allocation
+#+description: Splitting a block trade across the accounts it was dealt for: when it happens, what the block and its allocations are, the no-residual rule, and why each allocation has an identity.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:allocation:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+An *allocation* splits a /block trade/ into child trades, one per
+client, fund or account the block was dealt for. An asset manager
+deals one large amount on behalf of many funds; an electronic
+communication network (ECN) executes one block for many clients; a
+client books a trade as pending and names its funds later. In each
+case the block carries the risk at once, and the allocations say whose
+it is.
+
+The children together must account for the whole block: an
+allocation that leaves a residual is refused. The firm's net risk does
+not change, so an allocation is an annotation rather than a trade event
+in the sense of [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade links]]. What changes is who the
+firm faces, which is why the allocations, not the block, are
+confirmed and settled.
+
+Each allocation is one operation over a set of trades, so it is a
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity: when it ran, who ran it, the
+template it followed, the block it split and the children it created.
+
+* Detail
+
+** When allocation happens
+
+| Situation | The block | The allocations |
+|-----------+-----------+-----------------|
+| Block execution | One trade dealt with an asset manager for many funds | One trade per fund |
+| ECN execution | One trade executed on the venue for many clients | One trade per client, possibly submitted back to the ECN |
+| Pending client trade | A trade the client booked as pending, ahead of naming its funds | The trades that replace it once the client sends its allocations |
+| Break account | A client trade held against a break counterparty until the correct fund is identified | The trade booked against the fund once it is known |
+
+The analysis notes state the pending case most precisely. A pending
+trade sends no confirmation and does not settle, but it does flow to
+the trader's book, so the risk is managed from the start. The client's
+later allocations, amendments or netting requests replace it.
+
+A break account is the controlled holding place for the same gap from
+the other side: Operations monitors how long trades sit there, and
+reports their age.
+
+** How an allocation is made
+
+The blotter's /Allocate (Split)/ action splits a block into child
+trades across clients, notionals or value dates. The user can:
+
+- enter each child by hand;
+- apply a saved allocation template, which fills in the split ratios;
+- auto-split from a predefined template;
+- submit the allocations to an ECN.
+
+The analysis notes ask for /auto-linking/ as well: given the ECN's
+specification, find the block automatically.
+
+When a user starts a link from a block, the blotter restricts the
+eligible children by product:
+
+| Block | Eligible allocations |
+|-------+----------------------|
+| Spot | Spot, outright, swap |
+| Outright | Outright, spot |
+| Swap | Swap only |
+
+** What an allocation does to its trades
+
+| Role | What happens to the trade |
+|------+---------------------------|
+| Block | Stays as the record of the execution. It stops settling and confirming in its own right once allocated. |
+| Allocation | A new trade with the block's economics, its own amount and its own counterparty or account. It is the one that confirms and settles. |
+| Bridge | An inter-desk transfer generated where allocations land in books other than the block's, so that no book's risk moves. |
+
+The inter-desk transfer mechanics are those of deal netting, run in the
+other direction: [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] describes them.
+
+** Effects
+
+- /Risk./ Unchanged for the firm: the allocations sum to the block.
+- /Counterparty./ Changes. The block faces the dealing agent or the
+  venue; each allocation faces its own fund or client. Credit, netting
+  set and confirmation follow the allocation.
+- /Confirmation and settlement./ The allocations confirm and settle;
+  the block does not, from the moment it is allocated.
+- /Regulatory reporting./ Each allocation is reported as a trade with
+  an identifier of its own. How the block is reported depends on the
+  regime and on whether it is allocated on the day.
+
+** The no-residual rule
+
+The allocations must add up to the block exactly, for each currency
+amount. An allocation that would leave an unexplained remainder is
+rejected rather than reconciled approximately. The analysis notes on
+internal trades state the rule for netting and allocation together.
+
+** Why an allocation has an identity
+
+An allocation is an operation that attaches to a set of trades as a
+whole, so under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]] it is a
+group. The business needs it in its own right:
+
+- /When and who./ The time of the allocation, the user or process that
+  made it, and any notes.
+- /How./ The template applied, or the ECN message the allocation came
+  from.
+- /What it did./ The block, its children and any bridges, so the
+  block's history lists its allocations and each child names its
+  block.
+- /Correction./ A wrong allocation is replaced as a whole: the old
+  children are cancelled and a new allocation of the same block is
+  made, which keeps the history of both.
+
+** What follows for the model
+
+This section is analysis rather than reported practice.
+
+- /The allocation./ One row per allocation: the block, its source
+  (manual, template, ECN or client request), the template where one
+  was used, its time, who made it, and notes.
+- /Participation./ One row per child and per bridge, with its role and
+  its share of the block.
+- /One live allocation per block./ A block has at most one current
+  allocation. A re-allocation supersedes the previous one and records
+  that it did.
+- /The no-residual rule./ The children's amounts equal the block's
+  amounts, checked before anything is written.
+- /Created together./ The allocation, its participation rows, the
+  children and the bridges are written in one transaction.
+- /The block stays./ The block trade is not deleted or cancelled by the
+  allocation. Its contribution to settlement and confirmation stops,
+  which is a property of its allocated state rather than of its terms.
+
+** Open questions
+
+- /Economic effect./ The [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][catalogue]] records no
+  economic effect on the firm's risk, and notes that the counterparty
+  moves to the allocations, which are then confirmed. Whether that
+  makes allocation a trade event for the children is not settled.
+- /The block's end state./ Whether an allocated block keeps its state
+  and gains an "allocated" flag, or moves to a state of its own, decides
+  how reports exclude it.
+- /Partial allocation./ Whether a block may be allocated in stages,
+  with the remainder held, conflicts with the no-residual rule unless
+  the remainder is an explicit holding allocation.
+
+* Sources
+
+The allocation situations, the blotter operations, the eligibility
+table, the pending and break-account treatments and the no-residual
+rule are drawn from internal analysis notes on the trade blotter, deal
+linkage, non-contributing trades and internal trades. The model
+consequences are this page's own analysis.
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why an allocation is a group with an identity.
+- [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] — the inverse operation, and the inter-desk transfer mechanics.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — pending and internal trades, and what each contributes to.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — which trade the customer confirms.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — Allocate (Split) and Link.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

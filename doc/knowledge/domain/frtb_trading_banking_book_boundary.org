@@ -98,13 +98,19 @@ it so heavily compared to the pre-2019 rules.
 
 ** Switching restrictions
 
-Moving an instrument between books after initial designation is
-deliberately restricted and heavily disincentivised: a switch
-generally requires supervisory approval, must be justified by a
-genuine change in intent (not a capital-driven decision), and — if
-approved — the capital benefit of a favourable switch is typically
-required to be held as a capital surcharge rather than released,
-removing the incentive to reclassify purely to reduce capital.
+Moving an instrument between the trading book and the banking book
+after initial designation is deliberately restricted and heavily
+disincentivised. Under RBC25.14-16 a switch is allowed only in
+extraordinary circumstances — the standard's example is a publicly
+announced restructuring that permanently closes trading desks. It must
+be approved by senior management and by the supervisor, documented,
+publicly disclosed, and it is irrevocable. RBC25.15 removes any
+incentive to switch for capital: the bank computes its total capital
+requirement before and immediately after the switch, and any reduction
+is imposed as a disclosed Pillar 1 surcharge. Risk otherwise crosses the
+boundary only through internal risk transfer trades (RBC25.19-25).
+[[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] sets this alongside the other boundaries a book move may
+not cross.
 
 * See also
 

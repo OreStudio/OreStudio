@@ -117,8 +117,9 @@ stale-data error if underlying deals or rates moved since the dry run.
 
 ** Audit, governance, and P&L treatment
 
-- All deals from one funding run must be linked together, and the run
-  must be re-runnable/cancellable as a unit.
+- All deals from one funding run must reference the run, and the run
+  must be re-runnable/cancellable as a unit. The run is a
+  [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity of its own.
 - Funding runs require sign-off, alongside brokerage payments and
   [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][spot sweep]] runs.
 - A funding trade is a canonical *system-generated trade* — booked

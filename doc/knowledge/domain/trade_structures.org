@@ -2,7 +2,7 @@
 :ID: FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160
 :END:
 #+title: Trade Structures and Deal Composition
-#+description: How a deal is built from its parts: the composition ladder, deal topology, structure operations, and the place of structures among the wider family of trade links.
+#+description: How a deal is built from its parts: the composition ladder, deal topology, structure operations, and the place of structures among the groups and links between trades.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:structures:deal_composition:
@@ -44,14 +44,16 @@ are not synonyms:
 - A /structure/ binds its parts economically. The parts have roles, and
   the whole prices differently from the sum of the parts. A straddle is
   a structure.
-- A /group/ is a bundle a user assembles for convenience. The trades in
-  it keep their own economics. A hedge group is a group.
-- A /set/ is a collection with no relationship at all. A portfolio of
-  unrelated trades is a set.
+- A /group/ is a set of trades associated with an operation, such as
+  authorise, cancel or compress. It has an identity of its own, and it
+  is not a product. A compression run is a group.
+- A /set/ is an assortment of trades that share an attribute, with no
+  operation attached. The trades in a book are a set.
 
-Reserve "structure" for the first case. The other two are display and
-organisation concepts, and they belong to the blotter, not to the trade
-model.
+Reserve "structure" for the first case: a structure is a product
+implemented as a group. [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] states the
+test that separates the three, and why each group and the entity
+behind each set is modelled with an identity of its own.
 
 ** The composition ladder
 
@@ -130,8 +132,8 @@ Four rules govern this tree:
    posting and regulatory reporting all work on trades, not on the
    container.
 4. The tree may be rebuilt. A restructure of the deal produces a new
-   version of the tree with new links, and it leaves the old version
-   readable.
+   version of the tree, with legs added or removed, and it leaves the
+   old version readable.
 
 ** Pricing a structure
 
@@ -171,6 +173,10 @@ is a change to the structure. The rules in brief:
 
 - A change to any component increments the structure version. The
   version belongs to the deal, not to the leg.
+- The client-facing, external version lives at the level the
+  confirmation is issued at: on the structure when it confirms as one
+  document, and on each trade when a package confirms trade by trade.
+  The internal version is kept at both levels.
 - Authorisation does not increment it. Authorisation is metadata about
   the deal, not a term of it.
 - An economic change is confirmable. A life-cycle event that the
@@ -196,17 +202,21 @@ Split, link, unstructure and lock change only what the system records
 about the deal. Merge, roll and any change to a term change the deal
 itself, and they travel to the customer as a confirmation.
 
-** Structures and the wider family of links
+** Structures among groups and links
 
-Structures are the strongest
-[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][link]] between trades, but not the only one.
-The wider family — close-outs, novations, rolls, fixings, allocations,
-book moves and the rest — is catalogued on
-[[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]]. The
-principle that sorts the family is stated on
-[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]]: a link with
-an economic effect is a trade event; a link with no economic effect is
-an annotation.
+A structure is the strongest relation between trades, and it is a
+group rather than a link: it has an identity of its own, and its legs
+reference it. [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] sets out the
+difference, and the other groups — merges, compressions, allocations
+and process runs.
+
+Trades are also related by links that hold nothing — close-outs,
+novations, rolls, exercises, fixings, book moves and the rest — which
+[[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]]
+catalogues. The principle that sorts both is stated on
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]]: a relation
+with an economic effect is a trade event; one with no economic effect
+is an annotation.
 
 [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] describes these operations as the front office sees
 them: Link / Unlink, Allocate (Split), Aggregate / Net, and Roll
@@ -242,8 +252,10 @@ original UTI stays with the original trade. Clearing houses keep the
 link explicit: Eurex records the superseded identifier in a
 =priorUTI= field on the new trade.
 
-Both obligations pull in the same direction for us. Keep the successor
-link on the replacement trade, and never reuse an identifier.
+Both obligations pull in the same direction for us. A replacement
+trade records the compression run it came from, and through the run
+the trades it replaced; it never reuses an identifier. [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]]
+describes the run.
 
 ** What the customer sees
 
@@ -318,7 +330,9 @@ Development on structures should ground on four rules:
 1. Every atomic trade gets a unique identifier, including premium,
    brokerage and hedge legs.
 2. A structure references its legs by key. No parent owns a child.
-3. The structure version is read from the legs, not stored beside them.
+3. The structure's internal version is read from the legs, not stored
+   beside them. Its external version is the one the customer confirms,
+   and it lives where the confirmation is issued.
 4. A link that carries an economic effect is a trade event; a link that
    carries none is an annotation.
 
@@ -359,7 +373,9 @@ Development on structures should ground on four rules:
   principle that sorts the family, and the invariants every link
   satisfies.
 - [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the
-  catalogue of links, of which structure membership is one.
+  catalogue of links between trades.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a structure
+  is a group, and the other groups beside it.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the structure view, and the deal actions that
   operate on a structure.
 - [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional

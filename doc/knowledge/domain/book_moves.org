@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0
+:END:
+#+title: Book moves
+#+description: Moving a trade from one book to another: which moves the regulatory and accounting rules allow, why some systems cannot move a trade at all, how the ledger sees a move, and what follows for the model.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:book:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+A *book move* changes the book a trade is booked in. Whether a trade
+can be moved at all is often described as an accounting impossibility,
+but no accounting standard or regulation forbids moving a trade between
+two books that share a legal entity, a branch, a regulatory book and an
+accounting classification. The restrictions apply when a move would
+cross one of those four lines.
+
+That gives one rule:
+
+#+begin_quote
+A trade moves between two books by amending its booking when the two
+books have the same legal entity, branch, regulatory book and
+accounting classification. Any other change of book is not a move: the
+trade is closed out and a new trade is booked, or the risk crosses by
+internal risk transfer trades.
+#+end_quote
+
+The accounting constraint people remember is real, but it governs the
+ledger postings, not the trade. Up to the move the trade's P&L belongs
+to the source book and after it to the destination, so the ledger
+closes the position in one book and opens it in the other at fair
+value. A system that keeps only the current book on the trade can show
+that only as a back-out and a rebooking, which is why a move can look
+impossible without new trades.
+
+* Detail
+
+** What the rules forbid
+
+| Boundary crossed | Rule | Effect on a move |
+|------------------+------+------------------|
+| Legal entity | A trade sits on one entity's balance sheet | Not a move. The trade is closed out and rebooked, or novated |
+| Branch | The analysis notes: where the target book has a different owner, such as another branch, "a direct move is not allowed" and the deal is closed out and rebooked with an explicit link | Treated as a change of legal entity |
+| Trading book and banking book | Basel RBC25.14-16: reassignment only "in extraordinary circumstances", such as "the permanent closure of trading desks"; approved by senior management and the supervisor, documented, publicly disclosed and irrevocable; RBC25.15 imposes any capital benefit as a Pillar 1 surcharge. Risk otherwise crosses only as internal risk transfer trades, RBC25.19-25 | Not a move. Risk crosses through new trades |
+| Accounting classification | IFRS 9 paragraph 4.4.1: financial assets are reclassified only when the business model for managing them changes, prospectively. Derivatives are measured at fair value through profit or loss and cannot be reclassified | Not a move, except a firm-wide change of business model |
+| Trading desk | Basel MAR12.4(a)(iii): each trading account is assigned to a single desk. RBC25.28: internal risk transfers between desks receive capital recognition. Nothing forbids reassigning a position between desks | Allowed. Desk-level P&L and backtesting see the change |
+| Two books with the same legal entity, branch, regulatory book and classification | No rule restricts it | Allowed |
+
+The trading-desk row is the one that surprises. A move between two
+desks of the same entity and classification is permitted; the desk's
+P&L attribution and backtesting see the position arrive or leave, and
+the move must not be made to improve the outcome of those tests.
+[[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] covers the regulatory
+classification itself.
+
+** How the systems the analysis notes describe treat a move
+
+The analysis notes on books record what the front office expects:
+
+- A deal can change book freely when the move keeps it within the same
+  logical grouping — same legal entity, same branch — so that there is
+  no legal impact, and the system should support that automatically.
+- A move to a book with a different owner goes through a close-out and
+  a rebooking, linked.
+- A move should be a single transaction pairing a deal that backs out
+  the original trade with the new trade in the destination book.
+- Moves can be made in bulk, "with or without historic cash flow
+  moves", and an erroneous move is reversed by an explicit /Undo Book
+  Move/.
+
+The same notes list book moves first in the priority order of /reasons
+for update/ — the reasons a trade /version/ records — and the notes on
+confirmations list them among the internal changes that are "not the
+customer's business". In those systems an allowed move is therefore an
+internal amendment of the same trade: the trade keeps its identity, its
+internal version moves, and its external version does not.
+
+The back-out and the new trade belong to the ledger side of that
+amendment. They are the postings that close the position in the source
+book and open it in the destination, written in one transaction so that
+no report sees the position in neither book or in both.
+
+** Why some systems cannot move a trade
+
+Three properties, common in older systems, make every move look like an
+accounting impossibility:
+
+1. /The sub-ledger is keyed by book./ Accruals, realised P&L and cash
+   are held per book, so moving the trade without moving them leaves
+   the source book holding a balance for a trade it no longer has.
+2. /Only the current book is kept./ The analysis notes call book moves
+   a source of P&L breaks that are hard to explain, because "only the
+   current book ID is reported": a P&L explain has to find the previous
+   day's record to learn where the trade was.
+3. /Books are mapped to ledger entities./ Where books map to different
+   ledger entities or general ledger accounts, a move that changes the
+   mapping changes the balance sheet, and is genuinely a new trade.
+
+The third is the real restriction, and the boundary table states it.
+The first two are limits of the system, not of the domain: a booking
+that keeps its history, and a move that carries its own valuation,
+remove them.
+
+** Leaving the sandbox is not a move
+
+A trade in a virtual book of a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]] is a draft, a test or a
+hypothetical, and it holds no position. It leaves its sandbox through
+the lifecycle — a draft is executed into a real book, and a hypothetical
+is dealt as a new trade — not through a book move. A live trade never
+enters a virtual book.
+
+** Moving risk without moving a trade
+
+Two mechanisms move risk rather than trades, and neither is a book
+move:
+
+- /Intra-book hedging./ A trader moves an amount of risk between two
+  books they manage by booking a deal in the source book and an
+  offsetting deal with the inverse direction in the destination book,
+  both against an internal counterparty. The two deals are booked and
+  tracked together.
+- /Risk routing./ Routing rules split and aggregate client trades to
+  reach the desk that manages the risk, through wash books and
+  back-to-backs. See [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]].
+
+** What follows for the model
+
+This section is analysis rather than reported practice.
+
+- /A book carries the four attributes./ Legal entity, branch,
+  regulatory book (trading or banking) and accounting classification
+  are attributes of the book, not of the trade.
+- /An allowed move amends the booking./ When the source and destination
+  books agree on all four, the move is a new version of the trade's
+  booking, with /book move/ as its reason. The trade keeps its id, its
+  internal version moves and its external version does not.
+- /Any other change of book is refused as a move./ The schema can
+  enforce it: a booking change whose books differ on any of the four
+  attributes is rejected, and the change must be made as a close-out
+  and rebooking linked by a [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][book move link]], or as
+  internal risk transfer trades.
+- /The move carries its valuation./ The move records the trade's fair
+  value at the moment of the move, and whether historic cash flows move
+  with it, so the ledger can post the close in the source book and the
+  open in the destination without new trades.
+- /The booking keeps its history./ Because the booking is versioned in
+  time, the book a trade sat in on any date is a plain read as of that
+  date. That removes the P&L break the analysis notes describe.
+- /Undo is a version./ Undoing a move is a further version of the
+  booking that restores the source book, with its own reason; the
+  erroneous version stays in the record.
+- /Bulk moves are a group./ A bulk move of many trades is one operation
+  over a set of trades, so it is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an
+  identity: who moved them, when, why, and whether historic cash flows
+  moved.
+
+* Sources
+
+- Basel Committee on Banking Supervision, Basel Framework RBC25,
+  /Boundary between the banking book and the trading book/, paragraphs
+  RBC25.14-16 (reassignment) and RBC25.19-29 (internal risk
+  transfers):
+  https://www.bis.org/committees/bcbs/basel-framework/standard/rbc/25/inforce/2023-01-01/published/2020-03-27
+- Basel Committee on Banking Supervision, Basel Framework MAR12,
+  /Definition of trading desk/, paragraph MAR12.4:
+  https://www.bis.org/basel_framework/chapter/MAR/12.htm?inforce=20230101&published=20200327
+- IFRS Foundation, IFRS 9 /Financial Instruments/, paragraph 4.4.1
+  (reclassification):
+  https://www.ifrs.org/content/dam/ifrs/publications/html-standards/english/2023/issued/ifrs9.html
+- IFRS Community, /Classification of financial assets and financial
+  liabilities under IFRS 9/:
+  https://ifrscommunity.com/knowledge-base/ifrs-9-classification-of-financial-assets-and-financial-liabilities/
+- European Banking Authority, no-action letter on the boundary between
+  the banking book and the trading book:
+  https://www.eba.europa.eu/eba-publishes-letter-boundary-between-banking-book-and-trading-book-provisions
+- Risk.net, /FRTB: banks fearful of risk transfer missteps/:
+  https://www.risk.net/risk-management/2476693/frtb-banks-fearful-of-risk-transfer-missteps
+
+The front-office expectations, the reason-for-update priority, the
+P&L-break observation and the intra-book hedging mechanism are drawn
+from internal analysis notes on books, deal linkage, confirmations and
+versioning, and internal trades. Vendor manuals for the major trading
+platforms are not public, so the description of how those systems
+implement a move rests on the analysis notes rather than on vendor
+documentation. The rule and the model consequences are this page's own
+analysis.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the hub for the book cluster.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — opening, moving and closing a book.
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the dimensions a book is classified along.
+- [[id:36B8F463-121F-42D6-8048-3C62C21AF557][FRTB trading book / banking book boundary]] — the regulatory classification a move may not cross.
+- [[id:D215AB01-8BE4-4E2B-930C-17AC80491C9D][Book and the ledger]] — the ledger postings a move produces, and P&L by book.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the internal version a move cuts, and cancel and rebook.
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the link that joins a closed-out trade to its rebooking.
+- [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — moving risk rather than trades.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — virtual books, which a trade leaves through its lifecycle rather than by a move.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

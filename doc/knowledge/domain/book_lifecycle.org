@@ -108,42 +108,28 @@ re-requested — see [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and 
 ** Moving deals between books
 
 Moving a deal's book assignment (a "book move") is a routine but
-tightly governed operation:
+tightly governed operation. [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] covers it in full; in brief:
 
-- Deals can only change books freely if the move keeps them within the
-  same logical grouping — same legal entity, same branch, etc. — so
-  that there is no legal impact. The system should support this
-  automatically.
-- If the target book has different ownership (e.g. a different
-  branch), a direct move is not allowed; instead the deal must go
-  through a novation-like activity: close out the original deal and
-  rebook it in the new book, generating an explicit
-  [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][link]] between the two.
-- Operationally, a book move should result in a single transaction
-  pairing a deal that backs out the original trade with the new trade
-  in the destination book.
+- A deal moves by amending its booking when the source and destination
+  books share a legal entity, a branch, a regulatory book and an
+  accounting classification. The deal keeps its identity, and the move
+  cuts an internal version with /book move/ as its reason.
+- Any other change of book is not a move. The deal is closed out and
+  rebooked in the destination book, and the two are joined by an
+  explicit [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][link]].
+- The ledger sees an allowed move as a pair of postings, a back-out in
+  the source book and an opening in the destination, written in one
+  transaction.
 - Book moves are one of the highest-priority trade activity types in
-  the reason-for-update taxonomy (ranked above funding rolls, reserve
-  postings, CEM charges, contra revenue, and close-outs), and are
-  supported as a bulk operation ("book move of trades with or without
-  historic cash flow moves").
-- Book moves are a known source of P&L breaks that are hard to
-  explain: a deal's book history is not fully retained (only the
-  current book ID is reported), so a downstream P&L explain has to
-  locate the deal's previous day's record to discover what its prior
-  book was.
-- Erroneous moves can be reversed via an explicit *Undo Book Move*
-  action.
-- A related but distinct mechanism is *intra-book hedging*, used when
-  a trader wants to move risk (not a specific deal) from one book to
-  another: a deal is booked in the source book for the amount to be
-  moved, and an offsetting deal with inverse direction is booked in
-  the destination book, both against an internal counterparty to
-  denote the intra-desk hedge. The broader term for moving risk
-  (rather than deals) across books is
-  *[[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Risk Routing]]*, governed by
-  routing rules that determine how trades are split and aggregated to
-  reach the right desk (e.g. spot vs forward desk).
+  the reason-for-update taxonomy, and are supported as a bulk
+  operation, "with or without historic cash flow moves". An erroneous
+  move is reversed by an explicit *Undo Book Move*.
+- Book moves are a known source of P&L breaks that are hard to explain
+  when only the current book is kept on the deal; a booking that keeps
+  its history removes them.
+- Moving risk rather than a deal — intra-book hedging and
+  [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Risk Routing]] — is not a
+  book move.
 
 ** Closing a book
 

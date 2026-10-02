@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 1B923662-9C54-48D8-B918-D97848259781
+:END:
+#+title: Task: Design the trade shape and document the trade domain it rests on
+#+description: Run the trade shape design to a settled target, record it in the investigation, write the knowledge notes it needed, and scaffold the implementation stories.
+#+type: task
+#+level: s1
+#+filetags: :trade-shape:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr: 2521
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle the target trade shape with the owner, decision by decision, and leave the knowledge base telling one consistent story about it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- The investigation records sections 1 to 16 with each decision and the alternatives it set aside.
+- The knowledge notes the design needed exist and agree with each other: sets, groups and links; netting sets; compression, merge and allocation; book moves; the sandbox.
+- The implementation stories are scaffolded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2521][#2521]] | [doc,agile] Design the trade shape and document the trade domain |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The trade shape is settled and recorded in
+[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sixteen sections, each with the
+decision and the alternatives it set aside. The trade becomes an
+immutable anchor with components per access pattern; sets, groups and
+links are told apart; activities, authorisation decisions, the agreement
+and structures are entities; every instrument family follows the rule
+the bonds arrived at; workspaces leave the trade model and sandboxes
+replace them.
+
+The knowledge base needed to tell one story first, so the design produced
+seven notes — Trade sets, groups and links; Netting sets; Trade
+compression; Trade merge; Trade allocation; Book moves; Sandbox — and
+brought the link catalogue, Trade Links, Trade Versioning, Trade
+Activity, Trade Structures, the book cluster and the funding and sweep
+notes into line. The book move and sandbox notes were checked against
+Basel RBC25 and MAR12, IFRS 9, EMIR Article 9, MiFIR Article 25 and
+MiFID II Article 16(6).
+
+Seven implementation stories are in sprint 26 and seven instrument family
+stories in the backlog. The deal id to trade id rename is a task of its
+own on the story.

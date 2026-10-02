@@ -74,7 +74,7 @@ counterparty.
 | Restructure / Roll | Terms of an existing trade renegotiated: components added, removed, or heavily modified. Requires new confirmation.      | New temporal version of trade → =live=                                   |
 | Partial Close-Out  | Notionals of an existing trade reduced. Also known as tear-up or downsize. Requires new confirmation.                    | New temporal version of trade → =live=                                   |
 | Upsize             | Notionals of an existing trade increased. Requires new confirmation.                                                     | New temporal version of trade → =live=                                   |
-| Novation           | Trade counterparty changed (assignment). Bank may step in/out with or without risk change. New confirmation required.    | New temporal version of trade → =live=                                   |
+| Novation           | Trade counterparty changed (assignment). Bank may step in/out with or without risk change. New confirmation required. The trade with the new counterparty is a new trade, linked to the transferred one by a novation link. | Original trade → =cancelled=; new trade → =live=                          |
 | Funding Roll       | P&L from new funding tickets rolling a book balance from day T to T+1. Includes interest paid/received on the position. | New trade → =live=                                                       |
 | Contra Revenue     | Revenue reduction (expense-like): brokerage, agency commissions, bullion fees, sales credits, transfer pricing.         | New trade → =live=                                                       |
 | CVA / WWR          | Credit Valuation Adjustment or Wrong-Way Risk trade. Captures counterparty default risk and correlated credit exposure.  | New trade → =live=                                                       |
@@ -92,7 +92,7 @@ the original contract. No legal confirmation is required.
 | Notional Reset     | Notional changes per contract terms (e.g. resettable notional). Not an upsize or downsize; no confirmation needed.       | None                      |
 | Strike Reset       | Strike reset per contract terms. Supported for resettable call/put and resettable double-digital barriers.               | None                      |
 | Expired            | Trade status changed because it expired out of the money, referenced against an expiry fixing.                           | =live= → =expired=        |
-| Exercised          | Trade status changed because it was exercised in the money, referenced against an expiry fixing.                         | =live= → =expired=        |
+| Exercised          | Trade status changed because it was exercised in the money, referenced against an expiry fixing. A physical exercise into a new trade books that trade and links it to the option by an exercise link. | =live= → =expired=; resulting trade, if any → =live= |
 | Physical Delivery  | Physical settlement during the life of the trade or at expiry.                                                           | None                      |
 | Cash Settlement    | Cash payment during the life of a trade or at expiry. Includes option rebates.                                           | None                      |
 | Maturity           | Contract ceases after its last fixing or payment. Trade has passed its maturity date. No confirmation required.          | =live= → =expired=        |
@@ -109,7 +109,7 @@ original contract.
 
 | Activity Type | Description                                                                                                              | Status Effect                                           |
 |---------------+--------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------|
-| Misbooking    | Correction of an erroneous booking. Creates a correction trade with =successor_trade_id= referencing the original trade. | Original → =cancelled=; correction trade → =live=        |
+| Misbooking    | Correction of an erroneous booking. Creates a correction trade, linked back to the original by a misbooking correction link. | Original → =cancelled=; correction trade → =live=        |
 
 ** Valuation Changes
 
@@ -151,7 +151,7 @@ approved are no longer the terms on the book.
 | Restructure / Roll         | New Activity     | unchanged                                   | Withdrawn      | Yes              |
 | Partial Close-Out          | New Activity     | unchanged                                   | Withdrawn      | Yes              |
 | Upsize                     | New Activity     | unchanged                                   | Withdrawn      | Yes              |
-| Novation                   | New Activity     | unchanged                                   | Withdrawn      | Yes              |
+| Novation                   | New Activity     | original → =cancelled=; new trade → =live=  | n/a: new trade | Yes              |
 | Funding Roll               | New Activity     | (init) → =live=                             | n/a: new trade | Yes              |
 | Contra Revenue             | New Activity     | (init) → =live=                             | n/a: new trade | Yes              |
 | CVA / WWR                  | New Activity     | (init) → =live=                             | n/a: new trade | Yes              |
@@ -161,7 +161,7 @@ approved are no longer the terms on the book.
 | Notional Reset             | Life-Cycle Event | unchanged                                   | Kept           | No               |
 | Strike Reset               | Life-Cycle Event | unchanged                                   | Kept           | No               |
 | Expired                    | Life-Cycle Event | =live= → =expired=                          | Kept           | No               |
-| Exercised                  | Life-Cycle Event | =live= → =expired=                          | Kept           | No               |
+| Exercised                  | Life-Cycle Event | =live= → =expired=; resulting trade → =live= | Kept           | No               |
 | Physical Delivery          | Life-Cycle Event | unchanged                                   | Kept           | No               |
 | Cash Settlement            | Life-Cycle Event | unchanged                                   | Kept           | No               |
 | Maturity                   | Life-Cycle Event | =live= → =expired=                          | Kept           | No               |

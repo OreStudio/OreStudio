@@ -29,9 +29,12 @@ every change.
 *What does it need, and what does it become?* Market data in order to
 be valued, and a position once aggregated with its neighbours.
 
-*What does it link to?* Other trades. A structure binds its legs
-economically; a [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]]
-records every other relation, with a type that names the reason.
+*What does it link to, and what does it belong to?* Other trades,
+sets and groups. A trade belongs to sets through its attributes — its
+book, its counterparty, its netting set — and to groups that operations
+create: a structure, a merge, a compression. A
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]] records every
+other relation, with a type that names the reason.
 
 Each question is independent of the others. A trade's
 classification does not change over its life, its lifecycle does not
@@ -134,12 +137,36 @@ or not its terms have been confirmed.
   carries an economic effect.
 
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and
-  Deal Composition]] — structure membership, the strongest link, and
-  the operations that create and reshape a structure.
+  Deal Composition]] — the structure, the group that is also a
+  product, and the operations that create and reshape it.
 
 - [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] — the cash
   a trade explains, and the drill-down from a balance back to the
   trades behind it.
+
+** What a trade belongs to
+
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and
+  links]] — start here. The three ways trades relate, the test that
+  tells them apart, and why a set's entity and every group carry an
+  identity of their own.
+
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the
+  trades whose values may legally offset for credit exposure: the
+  agreement behind them, the aggregation they change, and how ORE
+  represents them.
+
+- [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] — the
+  run that replaces offsetting trades with fewer trades of the same
+  net risk.
+
+- [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] — the
+  operation that combines several trades into one, and the inter-desk
+  transfers that keep each book's risk unchanged.
+
+- [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] — the
+  operation that splits a block trade across the accounts it was dealt
+  for.
 
 ** What a trade needs and becomes
 
@@ -150,6 +177,9 @@ or not its terms have been confirmed.
 - [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the
   sensitivities a trade carries, each taken with respect to one of
   those requirements.
+
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — where trades are imported and experimented on without
+  disturbing official data, and how a sandbox trade becomes real.
 
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — what a trade
   becomes once aggregated. A deal is an event and a position is a

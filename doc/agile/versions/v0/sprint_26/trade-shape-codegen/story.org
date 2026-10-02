@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: DBF5FE8D-6B25-492E-8DEB-B6A0931F6835
+:END:
+#+title: Story: Teach the code generator the trade shape
+#+description: Add the generator capabilities the trade shape needs: immutable anchors with real foreign keys, pinned composite keys, catalogue-driven check lists and routing, nested groups, the derived authorisation status and the blotter view.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give the code generator every capability the trade shape design (Investigation: the trade shape) relies on, so the trade, refdata and instrument stories generate their entities rather than hand-write them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- An entity can be declared immutable (non-temporal), and other entities reference it with real foreign keys.
+- A model can pin a copied fact with a composite foreign key to its source.
+- Check lists of trade-type codes and the trade-type to table routing are generated from one catalogue.
+- Key and context field groups nest, and every generated struct stays within nine effective fields.
+- The derived authorisation status and the blotter's common-date view are generated.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

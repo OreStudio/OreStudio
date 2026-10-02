@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: BBD96309-7C59-4D94-BDA7-27EAB7A8612E
+:END:
+#+title: Trade merge
+#+description: Combining several trades into one trade: client netting, deal netting with inter-desk transfers, expiry netting, the no-residual rule, and why each merge has an identity.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:merge:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+A *merge* combines several trades into one trade, or into a small
+fixed number of trades. The contributors close and the result opens.
+Front-office systems call it /aggregate/, /net/ or /link net/; this
+page uses /merge/, the term of the [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][link catalogue]], because
+"netting" already names the credit concept of [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting sets]] and a
+payment mechanic.
+
+A merge changes which trade the customer sees, so it is a trade event:
+the result is confirmed and the contributors are not. Where the
+contributors sit in different books, the merge also generates
+inter-desk transfers so that no book's risk moves. And a merge that
+would leave a residual is refused.
+
+Each merge is one operation over a set of trades, so it is a
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity: when it ran, who ran it, which
+trades contributed, which trade resulted, and which transfers bridged
+the books.
+
+* Detail
+
+** Kinds of merge
+
+| Kind | Contributors | Result | Trigger |
+|------+--------------+--------+---------|
+| Execution netting | The fills of one execution algorithm | One ticket at the average rate | The execution ends |
+| Scheduled netting | The fills of a hedging algorithm with no end time | Two tickets: the average of the buys and the average of the sells | A schedule, once or several times a day |
+| Deal netting | Client trades of the same currency pair and value date | One net trade | A user, or a client's netting request |
+| Expiry netting | Options expiring together | One net FX trade or one net cash flow | The expiry process |
+| Premium netting | Premiums falling due together | One net cash flow | The expiry or payment process |
+
+*** Execution and scheduled netting
+
+The analysis notes on confirmations describe the case most clearly.
+When an execution algorithm finishes, all its fills are replaced by a
+single ticket at the average rate, and that ticket is the only deal
+confirmed with the client and the only one the client keys into its
+own system. A hedging algorithm has no end, so netting runs on a
+schedule and produces one ticket for the buys and one for the sells.
+
+*** Deal netting
+
+The blotter's /Aggregate/ and /Link Net/ actions combine selected
+trades of the same currency pair and value date into one net trade.
+The system checks that every selected trade is eligible before it
+proceeds; swaps are not eligible.
+
+Where the contributors were booked in different spot books, combining
+them would change what each book holds. The analysis notes on internal
+trades state the rule: each contributing book's position must stay
+unchanged from the trader's point of view. /Inter-desk transfers/
+(IDTs) make it true:
+
+- One IDT is generated per contributing trade, except where a book's
+  position already matches the netted trade exactly.
+- The IDT's counterparty is the spot book of the netted trade.
+- Every such IDT is a spot.
+- A netting that would leave a residual is rejected outright rather
+  than reconciled approximately.
+
+A client may also send netting requests against trades it booked as
+/pending/ ahead of allocation. The resulting trades replace the
+originals.
+
+*** Expiry and premium netting
+
+When options expire together, their settlements can be netted. The
+notes describe three styles: /no netting/, /net as FX/ — the
+settlements become one FX trade, possibly at a rate different from any
+strike — and /net as cash/ for digitals and cash-settled options. A
+zero net FX amount generates no trade and no confirmation. Operations
+marks premium netting and expiry netting off in the authorisation
+queue.
+
+Some trades are excluded from expiry netting by policy; the notes give
+American digitals, especially pay-at-hit, as the example. That
+operational "non-nettable" is a different attribute from the credit
+one.
+
+** What a merge does to its trades
+
+| Role | What happens to the trade |
+|------+---------------------------|
+| Contributor | Closes. Its state moves to its end state, with the merge as the cause. |
+| Result | A new trade, created by the merge. It is the one the customer confirms. |
+| Bridge | An inter-desk transfer generated to keep a contributing book's risk unchanged. |
+
+A merge is a trade event in the sense of [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade links]]: the
+customer's agreement moves from the contributors to the result.
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] follows the trade population, not the message
+flow, which is why one confirmation covers the result of an execution
+merge.
+
+** How merge differs from its neighbours
+
+| Neighbour | The difference |
+|-----------+----------------|
+| [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Compression]] | Compression removes offsetting risk across a portfolio, within tolerances, and may leave several replacement trades. A merge combines like trades into one result of the same kind. |
+| [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Allocation]] | Allocation splits one trade into many; a merge combines many into one. They are inverse operations, and both use IDTs. |
+| Settlement netting | Settlement netting pays several cash flows as one amount and changes no trade. A merge replaces trades. |
+| [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting set]] | A netting set is a legal grouping for credit exposure. Its trades stay separate. |
+
+** Why a merge has an identity
+
+A merge is an operation that attaches to a set of trades as a whole,
+so under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]] it is a group.
+The business needs it in its own right:
+
+- /When and who./ The time of the merge, the user or process that ran
+  it, and any notes.
+- /The policy./ The kind of merge and, for expiry netting, the style.
+- /What it did./ The contributors, the result and the bridges, so that
+  a contributor's history says what replaced it and the result's
+  history says what it came from.
+- /Undo./ A merge done in error must be undone as a whole: the result
+  and the bridges cancelled and the contributors restored together.
+
+Pairwise links cannot carry any of these for a merge of twenty fills
+into one ticket with five bridges.
+
+** What follows for the model
+
+This section is analysis rather than reported practice.
+
+- /The merge./ One row per merge: its kind, its policy, its time, who
+  ran it, and notes.
+- /Participation./ One row per trade the merge touched, with its role:
+  contributor, result or bridge. A merge has at least two contributors
+  and, except for a zero expiry net, at least one result.
+- /The no-residual rule./ The contributors' amounts must equal the
+  result's amount for each currency, with the bridges accounting for
+  each book's share. The check runs before anything is written.
+- /Created together./ The merge, its participation rows, the
+  contributors' state changes, the result and the bridges are written
+  in one transaction.
+- /Undo./ An undo is a second merge-kind act that references the first
+  and reverses it; the first is never deleted.
+
+** Open questions
+
+- /Contributor end state./ Whether a merged contributor is cancelled,
+  or terminated with merge as the cause, decides which reports still
+  see it. The execution case reads as a cancellation, because the
+  client never confirmed the fills.
+- /Eligibility rules./ The notes give same currency pair and value date
+  for deal netting, and exclude swaps. The full rule per product type
+  is not written down.
+
+* Sources
+
+The kinds of merge, the confirmation consequences, the IDT mechanics,
+the no-residual rule and the expiry netting styles are drawn from
+internal analysis notes on confirmations and versioning, internal
+trades, the trade blotter and netting sets. The model consequences are
+this page's own analysis.
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a merge is a group with an identity.
+- [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] — the inverse operation.
+- [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] — the portfolio-wide relative.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the credit sense of netting.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — which trade the customer confirms.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — Aggregate / Net and Link Net.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

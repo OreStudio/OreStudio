@@ -1,0 +1,261 @@
+:PROPERTIES:
+:ID: 5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F
+:END:
+#+title: Netting sets
+#+description: The trades with a counterparty that may legally offset each other for credit exposure: the legal basis, what determines a set, how it changes aggregation and collateral, and how ORE represents it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:netting:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+A *netting set* is the group of trades with one counterparty whose
+values may legally offset one another when credit exposure is
+computed. Whether two trades can offset is a legal question: it needs a
+netting agreement, legal opinion that the agreement is enforceable,
+and, in the firm's own credit practice, the two trades falling under
+the same credit limit.
+
+Exposure, credit line utilisation and collateral are all computed per
+netting set, and nettable and non-nettable trades are aggregated by
+different formulas. In the vocabulary of [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups
+and links]] it is a set: no operation attaches to its trades as a
+whole, and every trade belongs to exactly one. The identity behind it
+is the netting set itself, which carries the agreement and the
+collateral terms that govern its members.
+
+"Netting" also names three operational mechanics — deal netting,
+expiry netting and settlement netting. None of them is a netting set,
+and the last section keeps them apart.
+
+* Detail
+
+** The legal basis
+
+*** Master agreements
+
+The market-standard documentation for OTC derivatives is the /ISDA
+Master Agreement/: one master document setting the terms for every
+derivative transaction between two parties, tailored by a /Schedule/
+of elections. It covers payment obligations, representations, events
+of default and termination, settlement on default and termination,
+and the netting of payments. Other agreement families sit alongside
+it, such as the French AFB and FBF agreements, and each has to be
+signed off as nettable before trades under it can offset.
+
+*** Netting agreements and close-out netting
+
+A netting agreement is a legal document that allows the parties to
+aggregate the amounts each owes the other under it and replace them
+with a single net amount payable by one party.
+
+The reason it matters is default. Without enforceable netting, a firm
+whose counterparty defaults must pay on its out-of-the-money trades
+and lodge a claim for its in-the-money trades. With /close-out
+netting/, every contract between the two parties terminates on default
+and only the net amount is claimed or paid.
+
+Trades are non-nettable when no netting agreement is in place, or when
+legal opinion advises that netting is not enforceable in the relevant
+jurisdiction.
+
+*** Sign-off granularity
+
+Nettability is not one yes or no per counterparty. The sign-off of an
+agreement as nettable can differ by contract type and by dealing
+centre, and collateral additionally needs a valid collateral netting
+option for the jurisdiction.
+
+** What determines a netting set
+
+| Dimension | Rule |
+|-----------+------|
+| Counterparty | Netting is bilateral, so a set never spans counterparties |
+| Legal entity | A set belongs to one legal entity on the firm's side |
+| Netting agreement | Every trade in the set is eligible under the same agreement |
+| Enforceability | The agreement is signed off as nettable for the trade's contract type and dealing centre |
+| Credit limit | Where one agreement covers trades under several limits, netting is restricted to the trades within one limit |
+| Trade eligibility | Some trades are carved out whatever the agreement says |
+
+One counterparty may therefore have several netting sets, one per
+agreement and limit, plus a residual population of non-nettable
+trades.
+
+Two kinds of trade never net, even inside an agreement. A /trade
+overwrite/ — a manually entered flat exposure profile for an exotic or
+a product with no valuation model — is a single positive value and is
+carved out of any netting agreement; it can apply to an atomic trade or
+to a structure. A /gross add-on/ for an intraday trade is floored at
+zero and added on, so it does not net either.
+
+A netting set is not a book. Books are an internal risk-management
+construct; a netting set is a legal and credit grouping that cuts
+across books.
+
+** How netting changes exposure aggregation
+
+Counterparty exposure is built from trade-level values per simulated
+scenario and future time point (a /grid point/), aggregated up to the
+counterparty. Nettable and non-nettable trades take different paths.
+
+| Population | Value at a grid point, per scenario |
+|------------+-------------------------------------|
+| Nettable trades in one set | max(MtM_1 + MtM_2 + … + MtM_n, 0) |
+| Non-nettable trades | max(MtM_1, 0) + max(MtM_2, 0) + … + max(MtM_n, 0) |
+
+Repeated over every scenario, the values form a distribution per grid
+point, and its percentiles give potential future exposure. Offsetting
+inside a netting set lowers that exposure relative to the sum of each
+trade's own exposure.
+
+The same split survives every methodology. Scenario-consistent
+aggregation sums like shifts of like risk factors inside a set and
+floors non-nettable values first. Credit line utilisation keeps the
+netted and non-netted figures separate, and adds trade overwrites
+after both. An intraday trade booked between full runs is handled by a
+gross add-on: its floored exposure is added to the counterparty's
+profile, so it earns no netting benefit until the next full run.
+
+** Netting and collateral
+
+A /Credit Support Annex/ (CSA) is an optional part of an ISDA Master
+Agreement that regulates collateral. It sits on top of netting:
+netting reduces exposure, and collateral mitigates what remains. The
+firm's practice requires a separate CSA for each counterparty limit,
+which matches the agreement-and-limit granularity of the netting set.
+
+Collateral exposure is portfolio-based: one threshold, one minimum
+transfer amount, and one collateral valuation per collateralised
+portfolio. A trade qualifies for collateral only when its agreement is
+signed off as nettable, its jurisdiction has a valid collateral
+netting option, and its contract type is in the permitted list.
+Non-nettable trades, excluded contract types and trades whose netting
+agreement does not match the collateral agreement are treated as
+uncollateralised.
+
+** How ORE represents a netting set
+
+[[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] is the ground truth for what can be priced, so its shape
+constrains ours.
+
+- /On the trade./ The trade envelope names its netting set in one of
+  two forms. =NettingSetId= is a plain identifier. =NettingSetDetails=
+  is a composite: a =NettingSetId= together with =AgreementType=,
+  =CallType=, =InitialMarginType= and =LegalEntityId=. ORE therefore
+  already treats the agreement type and the legal entity as part of a
+  netting set's identity.
+- /As a definition./ =nettingsetdefinitions.xml= declares each
+  netting set once. A definition carries =ActiveCSAFlag= and, when the
+  flag is set, =CSADetails=: whether the CSA is bilateral, the CSA
+  currency and index, the pay and receive thresholds and minimum
+  transfer amounts, the independent amount, the margining frequency,
+  the margin period of risk, the collateral compounding spreads, the
+  eligible collateral currencies, and the initial margin settings.
+- /Balances./ =collateralbalances.xml= states the initial and
+  variation margin held per netting set at the valuation date (see
+  [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]]).
+
+ORE makes every trade name a netting set. A trade with nothing to net
+against sits in a netting set of its own.
+
+** What follows for the model
+
+This section is analysis rather than reported practice.
+
+*** Three entities, not one
+
+The material above describes three things that a single "netting set
+id" column conflates:
+
+| Entity | What it is | Identity |
+|--------+------------+----------|
+| Netting agreement | The legal document between two legal entities | Agreement number; type (ISDA, AFB, FBF and so on); the two parties; governing law |
+| Netting set | The trades that offset under one agreement within one limit | The agreement, the limit, and the ORE details: call type and initial margin type |
+| Credit Support Annex | The collateral terms attached to a set | The agreement and limit it serves; it carries the =CSADetails= terms |
+
+The agreement is the legal fact; the netting set is the credit
+grouping the agreement makes possible; the CSA is a term sheet
+attached to the set. Each has a lifecycle of its own: an agreement is
+signed, amended and terminated, a set is opened under it, and a CSA is
+added, changed or switched off without touching the trades.
+
+*** Every trade belongs to exactly one set
+
+Following ORE, membership is total: a trade always names a netting
+set. A non-nettable trade does not have an absent netting set; it
+belongs to a set whose agreement is missing or not enforceable, and
+the set says so. Nettability is then a property of the set, derived
+from its agreement's sign-off for the trade's contract type and
+dealing centre, rather than a flag maintained on each trade.
+
+Because membership is total and a trade sits in one set at a time, it
+is a key on the trade's booking rather than a membership table.
+
+*** Integrity the schema can enforce
+
+- A set's counterparty and legal entity are those of its agreement.
+- A trade's counterparty and legal entity equal its set's. A
+  composite key from the trade's booking to the set enforces this, so
+  a trade cannot be filed in another counterparty's set.
+- A CSA references exactly one set, and a set has at most one active
+  CSA at a time.
+- Moving a trade to another set is a change to the trade's booking and
+  is versioned with it. Re-papering — moving a population of trades to
+  a new agreement — is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity,
+  because an operation attaches to the population as a whole.
+
+** Not to be confused with operational netting
+
+The word "netting" names three other mechanics. They share the word
+and not the legal meaning, and none of them changes a netting set.
+
+| Kind | What is netted | Covered by |
+|------+----------------+------------|
+| Deal netting | Client allocations or trades combined into one netted trade, with inter-desk transfers keeping each book's risk unchanged | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
+| Expiry netting | Expiring options combined into one net FX trade or one net cash flow | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
+| Settlement netting | All cash flows in one currency on one date paid as one amount | A payment mechanic; no trade changes |
+
+The analysis notes also describe operational /netting groups/: sets
+of trades with a policy for expiry and settlement netting, possibly
+instantiated from structure templates. A netting group is not a
+netting set, and "non-nettable" in the operational sense — American
+digitals excluded from expiry netting — is a different attribute from
+"non-nettable" in the credit sense.
+
+** Open questions
+
+- /Is the limit part of the set everywhere?/ Restricting netting to one
+  limit is a credit-limit choice rather than a legal one, and the notes
+  do not say whether it is general practice.
+- /How is a trade assigned?/ The set could be captured at booking,
+  derived from the counterparty, legal entity and product, or
+  maintained by Credit. Derivation fits a closed rule best; capture fits
+  exceptions best.
+- /What happens when sign-off changes?/ A change in legal opinion
+  changes nettability for existing trades. Whether historical exposure
+  is restated or only future runs change is not settled.
+- /Gross add-on conservatism./ An intraday trade never reduces exposure
+  until the next full run; limit breaches caused only by that are not
+  discussed.
+
+* Sources
+
+The legal basis, the aggregation formulas, the collateral rules and
+the operational senses of netting are drawn from internal analysis
+notes on netting sets, which summarise credit, collateral and
+agreement material. The ORE representation is read from the ORE
+schema: =nettingsetdefinitions.xsd= and the =nettingSetDetails= type.
+The three-entity split, the total membership rule and the integrity
+rules are this page's own analysis.
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a netting set is a set whose identity is the netting set itself.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] — the envelope that names a trade's netting set.
+- [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] — deal and expiry netting, which share the word only.
+- [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — the reports exposure feeds.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — the collateral balances file.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

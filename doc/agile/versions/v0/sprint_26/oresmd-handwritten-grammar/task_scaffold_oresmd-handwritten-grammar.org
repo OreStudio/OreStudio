@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/review-marketdata-component
-#+pr:
+#+pr: 2504
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2504][#2504]] | [agile] Review ores.marketdata and plan the hand-written oresmd grammar |
 
 * Review
 

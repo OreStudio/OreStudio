@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/filter-the-tenant-roster
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ and they hide the real tenants.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written. No code has changed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 1: the tenant type badges. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -57,9 +57,25 @@ and they hide the real tenants.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Badges.* Four badge definitions, one per tenant type, in both the
+   artefact and the system badge populates; =automation= reads as test
+   infrastructure.
+2. *The type row names its badge.* =ores.iam.tenant_type= gains =badge_code=,
+   a soft reference to the badge catalogue, as =tenant_status= did. Regenerate
+   the entity, and seed the four types with their badges.
+3. *The type read.* A =readTenantTypes= beside =readTenantStatuses=, and
+   =GET /api/tenant-types= with each type's badge.
+4. *Leaving a type out.* The search request gains =exclude_type_filter=, and
+   =ores_iam_tenants_search_fn= a matching parameter, so the server answers
+   "every type but automation" with a total that counts the same rows. Test it.
+5. *The BFF.* =/api/tenants= takes =type=, =status= and =includeTest=. Without
+   =includeTest= it leaves =automation= out, and answers how many tenants that
+   hid.
+6. *The screen.* A type select and a status select from the deployment's own
+   rows, a *Show test tenants* toggle that states the hidden count, and the type
+   column painted with its badge.
+7. *Records.* The See the tenants journey and its wireframe gain the filters
+   and the toggle.
 
 * Measurements
 

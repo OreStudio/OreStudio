@@ -30,6 +30,13 @@ instance transition depends on ordering or timing that differs on macOS. Not
 yet re-checked on a later commit: run 36987873236 was still running when this
 was filed.
 
+* Resolution
+
+Fixed by [[id:CB941293-1DBD-4FC3-B291-78374B10AC4D][Hotfix: the workflow deadline
+pass reads an entry it has freed]]. The pass read the run id through a reference
+into a map entry it had already erased; libstdc++ left the bytes in place, so
+only macOS saw the wrong id. Valgrind proved the invalid read on Linux.
+
 * References
 
 - Continuous MacOS run 36957593572, jobs macos-clang-release-ninja and macos-clang-debug-ninja.

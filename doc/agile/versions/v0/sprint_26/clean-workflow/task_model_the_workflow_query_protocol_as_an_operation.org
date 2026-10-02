@@ -204,6 +204,18 @@ via its "Verifies task" field.
 
 Verdict: ready to merge.
 
+Round 2 (PR #2498, @claude review):
+
+| #  | Comment summary | File | Decision | Notes |
+|----+-----------------+------+----------+-------|
+| 5  | The api diagram still declares the provision_parties messages and the hand-written query protocol. | =ores.workflow.api.puml= | Accept | The automated passes of the api, core and shell workflow diagrams are regenerated and their manual passes rewritten. |
+| 6  | The definitions fix catches every exception and logs at debug, so a builder defect is hidden. | =workflow_query_handler.cpp= | Accept | =workflow_definition::steps_depend_on_request= states the case; tenant, party and identity set it and are not asked for steps. Any other throw is a defect, logged at warn, and the read still answers. The test now fails against the unguarded handler (checked). |
+| 7  | Existing databases keep the deleted permission row. | =iam_permissions_populate.sql= | No change | The project recreates its database from the create scripts. |
+| 8  | A client that sends null for a filter no longer decodes. | =workflow_protocol.hpp= | No change | The in-tree callers are the shell and ores.web, both generated or typed against the model; there is no external caller. |
+| 9  | The provisioning constants are still copied by hand. | =workflow-boundary.test.ts= | Accept | A test reads iam's header and fails if either constant changes on one side. |
+| 10 | Nit: a missing timestamp now reads as null, not undefined. | =operations.ts= | No change | No consumer compares with undefined. |
+| 11 | Nit: an unknown enum string throws in the reflector. | =workflow_vocabulary.hpp= | No change | reflect-cpp's parser catches a reflector's exception and returns a decode error, which the decode helper logs. |
+
 * Result
 
 * Promoted from capture

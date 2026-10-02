@@ -102,8 +102,8 @@ record each item's result in the table below.
 | V04 | Pass. The workflow commands run against the live fleet and answer. =workflow_instances list= and =workflow_steps list= both return a well-formed empty result, and =workflow wait= polls, reports the missing instance as transient, and times out with its hint naming =workflow_steps by-workflow-id=. The item asks for every generated command; these are the three the module owns, and the list command only worked after the name collision below was fixed. | The shell run is below. It also needed a bootstrapped administrator, because a recreated database has no accounts and the shell rejects the banner's own =bootstrap= spelling. |
 | V05 | Pass for the gates that apply to this component. The two that do not are recorded rather than waived: =check_protocol_twin_coverage.py= covers only the three committed components and cannot see this one (M06), and the tree-wide CMake source-list check fails on 24 other components, verified pre-existing against =ores.reporting.core=. | =check_component_drift.py --component workflow-cpp= reports no drift; =regenerate_shell_recipe_inventory.py --check= is silent; the handler-permission and populate-reference gates pass in CI; =regenerate_cmake_component_files.py= is up to date for all three modules. |
 | V06 | Done, with the half that cannot pass recorded. The component is in =COMPONENTS_UNDER_TEST=. =check_component_drift.py --all= still fails on roughly 24 components, none of them this one, and the control is =ores.reporting.core=, which this work never touched. | =component_registry.py=; the =--all= run and its control. Detail below. |
-| V07 | Not surveyed. Recorded rather than passed. | -- |
-| V08 | Not surveyed. Recorded rather than passed. | -- |
+| V07 | Not surveyed. Recorded rather than passed. Correction 2026-10-02: surveyed and passed in [[id:0A693959-69DF-4DDB-B6FC-49EC7CBB93C7][Close the workflow verification items]]. | -- |
+| V08 | Not surveyed. Recorded rather than passed. Correction 2026-10-02: surveyed and passed in [[id:0A693959-69DF-4DDB-B6FC-49EC7CBB93C7][Close the workflow verification items]]. | -- |
 
 * Notes
 

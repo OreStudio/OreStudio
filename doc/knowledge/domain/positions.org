@@ -36,7 +36,7 @@ nothing else.
 | | Deal | Position |
 |-+------+----------|
 | *Nature* | An event; a legal agreement | A state; an aggregate |
-| *Identity* | A unique deal id, mandatory even for components that make no sense alone | None; it is derived |
+| *Identity* | A unique trade id, mandatory even for components that make no sense alone | None; it is derived |
 | *Versioning* | Internal and external versions; every amend is tracked | None |
 | *Counterparty* | Always has one | None; it spans every counterparty in scope |
 | *Lifecycle* | New, amend, cancel, expiry, exercise, novation | None; it simply changes value |

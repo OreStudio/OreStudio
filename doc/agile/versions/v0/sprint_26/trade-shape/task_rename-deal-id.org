@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-shape:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rename-deal-id
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Use trade id, never deal id, for the firm's own identifier of a trade, as the tr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -96,3 +96,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The knowledge notes call the firm's own identifier the trade id. Six
+uses changed: the blotter's column and the mini-blotter header in
+=trade_blotter.org=, the identity row of =positions.org=, the filter
+example and the property list in =dynamic_books.org=, and the property
+list in =books_and_portfolios.org=. The originating system's deal ID in
+=trade_blotter.org= is now the OS trade identifier: it is a scheme in
+=trade_identifier=, not the trade id. No durable document outside the
+agile records still says deal id; the agile records are history and
+keep their words.

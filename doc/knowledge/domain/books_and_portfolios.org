@@ -134,7 +134,7 @@ Beyond the formal book/portfolio hierarchy, users must be able to
 define their own sets of books that do not follow it at all —
 arbitrary logical groupings by instrument type, counterparty,
 maturity, trade date, delivery date, entity/business/centre, EOD,
-trader, asset, deal ID, or brokerage properties. The live-filter
+trader, asset, trade ID, or brokerage properties. The live-filter
 mechanism that realises this is covered separately in
 [[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]].
 

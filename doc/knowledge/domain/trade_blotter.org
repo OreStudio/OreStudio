@@ -102,7 +102,7 @@ full book tree selection. Refreshes on demand or on a user-configurable interval
 
 | Column          | Description                                                             |
 |-----------------+-------------------------------------------------------------------------|
-| Deal ID         | Unique deal identifier across the system                                |
+| Trade ID        | Unique trade identifier across the system                               |
 | Structure ID    | Parent structure identifier; blank for standalone trades                |
 | Version         | Amendment counter; 0 = original booking                                 |
 | Trade Date      | Date the deal was booked                                                |
@@ -273,7 +273,7 @@ is product-aware: the fields shown depend on the product type.
 ** Tabs
 
 - *Overview*: All primary economic fields. Default view on open.
-- *F/O Details*: Front-office metadata — broker, STP origin system, OS deal ID,
+- *F/O Details*: Front-office metadata — broker, STP origin system, OS trade identifier,
   OS counterparty, OS trader account, message ID, Cit code, deal notes.
 - *Confos / Settlements*: Confirmation and settlement status (sent, received,
   matched), SWIFT details, netting group assignment.
@@ -341,7 +341,7 @@ Detail Panel switches to Structure View.
 ├──────────────────────────────────────────────────────────────────┤
 │  Mini Blotter — all legs for this structure                      │
 │  ┌──────────┬──────────┬──────────┬──────────┬────────────────┐  │
-│  │ Deal ID  │ Type     │ Ccy Pair │ Notional │ Strike / Rate  │  │
+│  │ Trade ID │ Type     │ Ccy Pair │ Notional │ Strike / Rate  │  │
 │  ├──────────┼──────────┼──────────┼──────────┼────────────────┤  │
 │  │ 10042    │ Option   │ EUR/USD  │ 5,000,000│ 1.0900 Call    │  │
 │  │ 10043    │ Option   │ EUR/USD  │ 5,000,000│ 1.0700 Put     │  │
@@ -386,7 +386,7 @@ Key behaviours:
   validation error; the raw message can be inspected for manual re-keying.
 
 The F/O Details tab of the deal entry form shows STP-specific metadata:
-originating system name, broker ID, version in the OS, OS deal ID, OS
+originating system name, broker ID, version in the OS, OS trade identifier, OS
 counterparty, OS trader account, Cit code, message ID, STP status.
 
 * Dynamic Books and Filtering

@@ -112,6 +112,26 @@ void auth_event_repository::record_max_session_exceeded(
     insert("max_session_exceeded", event_time, tenant_id, account_id, username, session_id, "", "");
 }
 
+void auth_event_repository::record_tenant_entered(
+    const std::chrono::system_clock::time_point& event_time,
+    const std::string& tenant_id,
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& session_id,
+    const std::string& party_id) {
+    insert("tenant_entered", event_time, tenant_id, account_id, username, session_id, party_id, "");
+}
+
+void auth_event_repository::record_tenant_left(
+    const std::chrono::system_clock::time_point& event_time,
+    const std::string& tenant_id,
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& session_id,
+    const std::string& party_id) {
+    insert("tenant_left", event_time, tenant_id, account_id, username, session_id, party_id, "");
+}
+
 void auth_event_repository::record_signup_success(
     const std::chrono::system_clock::time_point& event_time,
     const std::string& tenant_id,

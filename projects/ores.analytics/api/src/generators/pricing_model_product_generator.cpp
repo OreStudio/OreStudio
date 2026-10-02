@@ -49,6 +49,7 @@ generate_synthetic_pricing_model_product(utility::generation::generation_context
     r.pricing_engine_type_code = std::string("Swap");
     r.model = std::string("DiscountedCashflows");
     r.engine = std::string("DiscountingSwapEngine");
+    r.position = 0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

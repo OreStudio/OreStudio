@@ -38,6 +38,7 @@ export interface PricingModelProductWrite {
     pricing_engine_type_code: string;
     model: string;
     engine: string;
+    position: number;
 }
 
 export interface PricingModelProductChange {

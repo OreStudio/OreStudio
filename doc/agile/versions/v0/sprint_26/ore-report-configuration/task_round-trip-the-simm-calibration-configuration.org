@@ -61,6 +61,71 @@ task and name that file in the Command column.
 
 * Notes
 
+**The kind is not in the ORE binding at all, which makes this a bigger unit
+than its four files suggest.** =domain.hpp= declares no =SIMMCalibrationData=
+type and no loader or saver for it, and no test of this kind exists anywhere in
+=ores.ore.core.tests=. The only "simm" matches in the generated binding are
+unrelated =PayBondCashFlowsImmediately= fields. So a document of this kind
+cannot even be parsed yet: the unit has to put =simmcalibration.xsd= into the
+binding generation before it can model entities or write a mapper.
+
+Anyone costing this unit from the corpus alone will be wrong by that step. It is
+the only kind in the remaining list with no binding, which is why the census
+singled it out.
+
+**The kind has two filename spellings, so a single prefix is not enough.**
+
+The corpus holds four =SIMMCalibrationData= documents under two names:
+
+| File | Root |
+|------+------|
+| =examples/InitialMargin/ExpectedOutput/SIMM2.5A_10D_calibration/simmcalibration.xml= | =SIMMCalibrationData= |
+| =examples/InitialMargin/ExpectedOutput/SIMM2.5A_1D_calibration/simmcalibration.xml= | =SIMMCalibrationData= |
+| =examples/InitialMargin/Input/Simm/simm_calibration.xml= | =SIMMCalibrationData= |
+| =examples/Legacy/Example_44/Input/simm_calibration.xml= | =SIMMCalibrationData= |
+
+=ores::ore::xml::files_of_kind= matches on a stem prefix, so no single prefix
+selects this kind. =simmcalibration= finds two of the four and misses
+=simm_calibration.xml=; =simm= finds all four and also
+=examples/InitialMargin/Input/Simm/simm_todaysmarket.xml=, which is a
+=todaysmarket= document and a different kind entirely.
+
+So this unit either extends the harness to take more than one prefix, or
+selects the corpus by root element rather than by name, or gives the kind a
+prefix and makes the case filter the strays. Whichever it does, the decision
+belongs in the harness rather than in this test, because the next kind with two
+spellings will need the same thing.
+
+**The open content model is used, not merely permitted.** =AdditionalFields= is
+an =xs:any= with =processContents="lax"=, and all four corpus files fill it with
+elements the schema never names:
+
+#+begin_src xml
+<AdditionalFields>
+  <SIMM_EffectiveDate>2023-07-15</SIMM_EffectiveDate>
+  <AdditionalStressPeriod_StartDate>2008-09-13</AdditionalStressPeriod_StartDate>
+  <AdditionalStressPeriod_EndDate>2009-06-12</AdditionalStressPeriod_EndDate>
+  <RecentStressQuarters_Count>1</RecentStressQuarters_Count>
+</AdditionalFields>
+#+end_src
+
+The binding will not hold them unless the schema names them, so the mapper has
+to decide what to do with them. This is the problem the stress mapper solved
+with an =extras= column, and the same trap applies: silently dropping them makes
+a round trip pass while losing data the corpus actually carries.
+
+**The set carries an attribute the schema does not declare.**
+=SIMMCalibration= is written as =<SIMMCalibration id="2.5A official">=. The
+=simmCalibration= complex type declares no =id= attribute, so this is a second
+piece of undeclared content, and it is the only thing distinguishing one
+calibration set from another. It has to survive for the same reason.
+
+**The corpus holds one set per file, but the schema allows many.**
+=simmCalibration= is =maxOccurs="unbounded"=, and each of the four files writes
+exactly one. So the mapping must key on the set rather than on the file even
+though the corpus would not catch it if it did not — the same shape of trap the
+stress work found with =ParConversion=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

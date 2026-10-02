@@ -44,6 +44,7 @@ render_pricing_model_product_parameter_fields(const domain::pricing_model_produc
     fields.push_back({.name = "Parameter Scope", .value = v.parameter_scope});
     fields.push_back({.name = "Parameter Name", .value = v.parameter_name});
     fields.push_back({.name = "Parameter Value", .value = v.parameter_value});
+    fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

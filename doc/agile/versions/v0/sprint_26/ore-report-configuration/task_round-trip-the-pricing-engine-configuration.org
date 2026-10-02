@@ -2,18 +2,18 @@
 :ID: 91F567D4-53F3-4ED7-AE70-452B1E816AE9
 :END:
 #+title: Task: Round trip the pricing engine configuration
-#+description: pricingengine*.xml end to end: the engine definitions a report's valuation selects, with the model and product each engine binds, the engine-to-currency and engine-to-product assignments, and the grid and script settings. Neither the entity model nor a mapper exists, and the corpus holds 125 files under the PricingEngines root, so nothing of this kind round trips. Model the entities in the component that owns the concept, write both mappers, and prove the round trip with the harness over every file in the corpus.
+#+description: pricingengine*.xml end to end: the engine definitions a report's valuation selects, each naming the model and engine it binds and the parameters it carries. The entities already exist in ores.analytics — pricing_model_config, pricing_model_product and pricing_model_product_parameter mirror the document one row per element, and parameter_scope separates the model, engine and global parameter lists — so the work is the mapper and the proof, not the model. The corpus holds 125 files under the PricingEngines root and nothing of this kind round trips. Write both mappers and prove the round trip with the harness over every file in the corpus.
 #+type: task
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-pricing-engine-configuration
-#+pr: 2489
+#+pr: 2499
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every pricingengine*.xml in the corpus round trips through the entities, both wa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The branch needs a PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -57,7 +57,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pricing engine corpus files | 125 | =find external/ore -iname 'pricingengine*.xml' \| wc -l= | =8f8789e0a3= |
+| Product elements across the corpus | 2131 | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
+| Files carrying GlobalParameters | 55, none of them empty | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
+| Files repeating a Product type | 34 | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
+| Files repeating a parameter name in one scope | 24 | =evidence/pricing_engine_corpus.md= | =8f8789e0a3= |
+| Pricing engine files that round trip through the mapper | 125 of 125, 0 failures | corpus driver linked against the built =libores.ore.core= | =c000c2add4= |
+| New and regenerated sources that compile under =-Werror= | 15 of 15 | each compiled with its own target's recorded =flags.make= | =c000c2add4= |
+| =compass build= (whole tree) | exit 0 | =compass build= | =1e92ca6200= |
+| =ores.ore.core.tests= | 600 cases, 478712 assertions, 0 failures | =compass test run -- -R ores.ore.core.tests= | =1e92ca6200= |
+| The database round trip case | passed, 0.761 s | same run, case =pricing_engines_roundtrip_through_the_database= | =1e92ca6200= |
+| Analytics and shell suites the change touches | 6 of 6 targets pass | =compass test run -- -R "ores.analytics\|ores.shell.analytics\|ores.ore.core"= | =1e92ca6200= |
+
+The five corpus facts above are recorded with their raw output in
+[[file:evidence/pricing_engine_corpus.md][evidence/pricing_engine_corpus.md]].
+The last two are the reason =position= exists: neither the engine type nor the
+parameter name identifies its row, so neither can be sorted back into the order
+the document wrote.
 
 * Notes
 
@@ -76,12 +92,99 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2499][#2499]] | [ore] Round trip the pricing engine configuration |
 | [[https://github.com/OreStudio/OreStudio/pull/2489][#2489]] | [agile] Scaffold the pricing engine round trip task |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Rebase on main, 177 commits behind: the generated ER diagram and the story's task table conflicted | =ores_schema.puml=, =story.org= | Resolved | Diagram regenerated from the rebased SQL; story rows merged, this task's row from the branch and the rest from main. Both entities regenerate with no change under current templates. |
+| 2 | CI: shell-script drift; the pricing model scripts lacked the new position argument | =projects/ores.shell/scripts/library/= | Accepted | Re-tangled. |
+| 3 | Re-tangling also produced the today's market scripts PR #2500 never tangled | =projects/ores.shell/scripts/library/todays_market_*= | Accepted | Committed here; the drift check compares tracked files only, so it could not see them missing. |
+| 4 | Review: the new =position= columns are =not null= with no default, and =create table if not exists= never adds them to an existing database | =analytics_pricing_model_*_create.sql= | Accepted | One-shot migration =analytics_pricing_model_rows_add_position_migration.sql=: add, backfill, set not null. The document order of existing rows is not recoverable, because rows from one import share =valid_from= and a UUIDv7 id is random within a millisecond, so they are numbered by first =valid_from= then id, and a re-import restores the true order. Tested in a rolled-back transaction on 264 product and 1272 parameter rows: every group numbered 0 to n-1, versions share a position, a second run changes nothing. |
+| 5 | Review: a parameter row with an unknown scope is dropped silently on reverse | =pricing_engine_mapper.cpp= | Accepted | =reverse= throws for an unknown scope, a global row naming a product, and a model or engine row whose product is absent. Test added. |
+| 6 | Review: equal positions export in unspecified order | =pricing_engine_mapper.cpp= | Accepted | Every sort breaks ties on id. That is stable, not creation order, since a UUIDv7 is random within a millisecond; the comment says so. The test asserts id order from either input order and passed 30 of 30 runs. |
+| 7 | Review: =reverse= is quadratic and copies rows | =pricing_engine_mapper.cpp= | Accepted | Parameters are grouped once by product and scope, and products and rows are sorted as pointers. |
+| 8 | Review: an empty =GlobalParameters= element comes back absent | =pricing_engine_mapper.cpp= | Comment only | Keeping it would need a column for a case no document uses. The limit is now stated at the code site. |
+| 9 | Review: other callers of the changed shell commands | shell | No change | The only callers are the generated recipes and scripts, already updated. |
+| 10 | Review: audit constants repeated across mappers | =pricing_engine_mapper.cpp= | Declined | Every mapper defines the same three; sharing them is a refactor across all mappers, not this kind's. |
+| 11 | Review: =config_variant = ""= versus null | =pricing_engine_mapper.cpp= | No change | The column is a nullable =std::string=, whose empty value is how the domain spells no variant; =todays_market_mapper= does the same. |
 
 * Result
+
+The mapper pair and both tests are written, and the corpus is proven.
+
+After review, a database created before this change gains the =position=
+columns through =analytics_pricing_model_rows_add_position_migration.sql=. The
+document order of rows written before then cannot be recovered, so the
+migration numbers them stably and a re-import restores the order. =reverse=
+now refuses a parameter row the document has no place for, rather than
+dropping it.
+
+** What round trips
+
+=125= of the =125= pricing engine files in the corpus round trip through
+=pricing_engine_mapper=, with no failure. The walk is the harness every other
+kind uses: each file is parsed, mapped to the entities, mapped back, and
+compared as a parsed document against the original, so a field the mapper drops
+makes the two disagree and the first difference is named.
+
+This was measured by linking a driver against the already-built
+=libores.ore.core= and running it over =external/ore/examples=. The output was:
+
+#+begin_src
+kind=pricing engines files=125 passed=125 failures=0
+#+end_src
+
+The driver is throwaway and lives outside the tree; the committed test runs the
+same walk inside Catch2.
+
+The mapper and the two new test files also compile clean under their own
+targets' recorded =flags.make= with =-Wall -Wextra -Werror=, as do the twelve
+regenerated sources in =ores.analytics= and =ores.shell=. Fifteen of fifteen.
+
+** Through the database
+
+=pricing_engine_database_roundtrip_tests.cpp= passes. It takes the largest
+document in the corpus — 80 products, 406 product parameters and 9 global
+parameters — maps it, writes the configuration and its rows to PostgreSQL,
+reads them back filtered to the configuration id, and compares the document
+that comes out against the one that went in.
+
+The database was rebuilt from scratch with =compass db recreate -y -k= first, so
+the case ran against the regenerated schema rather than a hand-patched one. Both
+=position= columns are present in the recreated database.
+
+** Reproving it after the build
+
+The corpus walk was first run through a hand-linked driver, because =compass
+build= could not start: it wraps =cmake --build= in =systemd-run --user
+--scope=, which fails with "Failed to connect to user scope bus via local
+transport" while the sandbox does not expose the user manager's private socket.
+That driver reported the same 125 of 125, and the committed Catch2 case now
+reports it inside the suite, so the driver is no longer needed.
+
+One trap is worth recording. Building only =ores.ore.core.tests= relinks the
+analytics *libraries* but leaves the analytics *test* executables compiled
+against the old struct, so =ores.analytics.core.tests= aborted with =free():
+invalid pointer=. That is a stale binary and not a defect in the change: a full
+=compass build= recompiles those dependents, and all six suites the change
+touches pass.
+
+** Why =position= had to be added
+
+=34= of the 125 files write the same =Product/@type= more than once and =24=
+write the same =Parameter/@name= twice within one scope, so neither field
+identifies its row and neither can be sorted back into the order the document
+wrote. The column follows =ores.reporting.configuration_parameter=, which
+documents the same reason for the same solution.
+
+** A corrected description
+
+The task description claimed that no entity model existed and that the document
+carried engine-to-currency and engine-to-product assignments and grid and script
+settings. Both claims were wrong: the three entities already mirrored the
+document element for element, and the schema has none of those settings. The
+description is corrected, and the three entities were left as they were apart
+from the two =position= columns.

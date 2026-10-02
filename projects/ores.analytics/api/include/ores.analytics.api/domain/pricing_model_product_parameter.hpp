@@ -95,6 +95,14 @@ struct pricing_model_product_parameter final {
     std::string parameter_value;
 
     /**
+     * @brief The order the document wrote the parameter in, within its scope.
+     *
+     * A scope may name the same parameter twice, so the name does not identify the row and the
+     * order cannot be recovered by sorting. It is carried here instead.
+     */
+    int position = 0;
+
+    /**
      * @brief Username of the person who last modified this pricing model product parameter.
      */
     std::string modified_by;

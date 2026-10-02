@@ -45,6 +45,7 @@ struct pricing_model_product_write {
     std::string pricing_engine_type_code;
     std::string model;
     std::string engine;
+    int position;
 };
 
 struct pricing_model_product_change {

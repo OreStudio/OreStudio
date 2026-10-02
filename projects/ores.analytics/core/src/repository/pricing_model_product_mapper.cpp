@@ -45,6 +45,7 @@ pricing_model_product_mapper::map(const pricing_model_product_entity& v) {
     r.pricing_engine_type_code = v.pricing_engine_type_code;
     r.model = v.model;
     r.engine = v.engine;
+    r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -67,6 +68,7 @@ pricing_model_product_mapper::map(const domain::pricing_model_product& v) {
     r.pricing_engine_type_code = v.pricing_engine_type_code;
     r.model = v.model;
     r.engine = v.engine;
+    r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

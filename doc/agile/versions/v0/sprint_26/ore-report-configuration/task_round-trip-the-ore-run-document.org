@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The run document is the one file the engine is handed, so it is the first file t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -57,7 +57,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Run documents in the corpus | 416 | =compass test run -- -R ores.ore.core.tests= | =e6f80a03bd= |
+| Setup parameters with no column | 0 | same, case =ore_run_document_setup_round_trips_over_the_corpus= | =e6f80a03bd= |
+| Analytic rows walked | 1874 | same, case =ore_run_document_analytics_round_trip_over_the_corpus= | =e6f80a03bd= |
+| Market bindings walked | 1915, across 413 documents | same, case =ore_run_document_market_bindings_round_trip_over_the_corpus= | =e6f80a03bd= |
+| Database round trip | passed | same, case =run_document_roundtrips_through_the_database= | =e6f80a03bd= |
 
 * Notes
 
@@ -85,3 +89,43 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The acceptance is met, and was already met when this task was closed: the run
+document work landed some time ago and the state was simply stale. This task
+therefore records a proof that exists rather than a change it made.
+
+**Every ore.xml round trips.** Three cases walk the same corpus and each asserts
+the population it walked rather than sampling it:
+
+| Case | Files | Asserted |
+|------+-------+----------|
+| =ore_run_document_setup_round_trips_over_the_corpus= | 416 | every Setup parameter survives, and none is dropped |
+| =ore_run_document_analytics_round_trip_over_the_corpus= | 416 | 1874 analytics, each keeping its =display_order= and its type |
+| =ore_run_document_market_bindings_round_trip_over_the_corpus= | 416 | 1915 bindings across 413 documents |
+
+Each case counts what the export lost and then asserts the count. That is what
+makes the first acceptance criterion more than a claim: a parameter the export
+dropped would make =exported.size()= differ, and the test says so.
+
+**The parameters are typed rows.** =report_run_setup= carries a column per Setup
+parameter — =base_currency=, =n_threads=, =log_mask= and the rest — not a name
+and a value pair. The walk counts the parameters that found no column and
+asserts the count is zero, so a new parameter in the corpus fails the test
+instead of being silently dropped. Analytic parameters are the other shape on
+purpose: they are name and value rows against a seeded definition, because their
+names are not known ahead of time.
+
+**Order and vocabulary.** The analytics case asserts =display_order == i + 1=,
+so the ordered list is stored ordered, and it asserts each row's
+=analytic_type_code=. A separate case asserts the seed carries a row for every
+type the corpus needs, so the type is a lookup rather than free text.
+
+**Through the database.** =run_document_roundtrips_through_the_database= writes
+the setup, the analytics and the bindings to PostgreSQL and reads them back
+before rebuilding the document, so this kind is proven through the store and not
+only in memory.
+
+**What is not claimed.** The corpus walk is in memory; only one document goes
+through the database. The in-memory walk proves the mapper over all 416 files,
+and the database case proves the tables hold what the mapper produces, which is
+the same split and the same limitation as every other kind in this story.

@@ -49,6 +49,7 @@ pricing_model_product_parameter_mapper::map(const pricing_model_product_paramete
     r.parameter_scope = v.parameter_scope;
     r.parameter_name = v.parameter_name;
     r.parameter_value = v.parameter_value;
+    r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -75,6 +76,7 @@ pricing_model_product_parameter_mapper::map(const domain::pricing_model_product_
     r.parameter_scope = v.parameter_scope;
     r.parameter_name = v.parameter_name;
     r.parameter_value = v.parameter_value;
+    r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

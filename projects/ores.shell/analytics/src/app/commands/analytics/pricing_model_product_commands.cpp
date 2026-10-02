@@ -141,16 +141,16 @@ void pricing_model_product_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <reason> "
-        "<commentary>");
+        "add <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <position> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <reason> "
-        "<commentary> [--version <n>]");
+        "set <id> <pricing_model_config_id> <pricing_engine_type_code> <model> <engine> <position> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +158,7 @@ void pricing_model_product_commands::register_commands(cli::Menu& root_menu, nat
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <pricing_model_config_id> <pricing_engine_type_code> <model> "
-        "<engine> <reason> <commentary>");
+        "<engine> <position> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -358,8 +358,8 @@ void pricing_model_product_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -372,6 +372,7 @@ void pricing_model_product_commands::process_add(std::ostream& out,
                    "pricing_engine_type_code");
         read_token(req.change.write.model, parsed->positionals[next++], "model");
         read_token(req.change.write.engine, parsed->positionals[next++], "engine");
+        read_token(req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -414,8 +415,8 @@ void pricing_model_product_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -428,6 +429,7 @@ void pricing_model_product_commands::process_set(std::ostream& out,
                    "pricing_engine_type_code");
         read_token(req.change.write.model, parsed->positionals[next++], "model");
         read_token(req.change.write.engine, parsed->positionals[next++], "engine");
+        read_token(req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -482,8 +484,8 @@ void pricing_model_product_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -498,6 +500,7 @@ void pricing_model_product_commands::process_put_many(std::ostream& out,
                        "pricing_engine_type_code");
             read_token(change.write.model, parsed->positionals[next++], "model");
             read_token(change.write.engine, parsed->positionals[next++], "engine");
+            read_token(change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

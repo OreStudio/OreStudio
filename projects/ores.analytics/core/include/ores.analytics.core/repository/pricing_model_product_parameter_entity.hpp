@@ -50,6 +50,7 @@ struct pricing_model_product_parameter_entity {
     std::string parameter_scope;
     std::string parameter_name;
     std::string parameter_value;
+    int position = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

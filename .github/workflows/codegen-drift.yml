@@ -110,6 +110,11 @@ jobs:
       # activates the local projects/ores.codegen/venv, which CI does not have;
       # this step uses the interpreter requirements.txt was installed into. No
       # plantuml render runs, so the diagram tool is not needed.
+      #
+      # The parser runs --strict, so any warning it reports fails the step: a
+      # schema file no root script includes (WIRE_001), a tenant table with no
+      # row-level security (RLS_001), and the rest of its rules. A deliberate
+      # exception goes in validation_ignore.txt with its reason.
       - name: Check the ER diagram matches the SQL schema
         run: |
           python3 projects/ores.codegen/src/plantuml_er_parse_sql.py \
@@ -117,7 +122,7 @@ jobs:
             --drop-dir projects/ores.sql/drop \
             --output build/output/codegen/plantuml_er_model.json \
             --ignore-file projects/ores.sql/utility/validation_ignore.txt \
-            --warn
+            --warn --strict
           python3 projects/ores.codegen/src/plantuml_er_generate.py \
             --model build/output/codegen/plantuml_er_model.json \
             --template projects/ores.codegen/library/templates/plantuml_er.mustache \

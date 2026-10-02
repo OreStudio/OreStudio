@@ -1004,14 +1004,19 @@ class SQLParser:
                     f"policy found in any *_create.sql file",
                     entity_name=table_name)
 
-    def validate_component_wiring(self, create_dir: Path, drop_dir: Path) -> None:
+    def validate_component_wiring(self, create_dir: Path, drop_dir: Path,
+                                  populate_dir: Optional[Path] = None) -> None:
         """Validate component-aggregator wiring completeness.
 
-        WIRE_001: every *_create.sql under create_dir must be reachable from
-        create/create.sql, and every *_drop.sql under drop_dir from drop/drop.sql,
-        through \\ir includes. An unreachable file means the schema flow never
-        executes it: the component builds (or tears down) a different object
-        set than its own SQL files define.
+        WIRE_001: every .sql file under create_dir must be reachable from
+        create/create.sql, every one under drop_dir from drop/drop.sql, and,
+        when populate_dir is given, every one under it from
+        populate/populate.sql, or from a bootstrap script beside the trees,
+        through \\ir includes. An unreachable file means the schema flow
+        never executes it: the component builds (or tears down, or seeds) a
+        different object set than its own SQL files define. Every suffix is in
+        scope, not only *_create.sql and *_drop.sql, because a file named
+        outside that convention is the one most likely to be a leftover.
 
         Encoded structural exceptions, instead of validation_ignore.txt entries:
         - *_rls_policies_create.sql files: RLS_003 already checks reachability
@@ -1029,16 +1034,28 @@ class SQLParser:
             Path('iam/service_users_create.sql'),
         }
 
-        for side_dir, root_name, pattern in (
-            (create_dir, 'create.sql', '*_create.sql'),
-            (drop_dir, 'drop.sql', '*_drop.sql'),
-        ):
+        sides = [(create_dir, 'create.sql'), (drop_dir, 'drop.sql')]
+        if populate_dir is not None and populate_dir.exists():
+            sides.append((populate_dir, 'populate.sql'))
+        roots = {(d / name).resolve() for d, name in sides}
+        for side_dir, root_name in sides:
             root = side_dir / root_name
             reachable_files: set[Path] = set()
             if root.exists():
                 self._collect_included_files(root, reachable_files)
+            # Every top-level script beside the trees counts as a bootstrap
+            # root, deliberately: setup_schema.sql and recreate_database.sql
+            # are what a recreate runs, and they include some files directly,
+            # such as the foundation seeds. The walk stops at another tree's
+            # root, so a file is wired only through its own tree or directly.
+            other_roots = frozenset(roots - {root.resolve()})
+            for bootstrap in sorted(side_dir.parent.glob('*.sql')):
+                self._collect_included_files(bootstrap, reachable_files,
+                                             other_roots)
 
-            for sql_file in sorted(side_dir.rglob(pattern)):
+            for sql_file in sorted(side_dir.rglob('*.sql')):
+                if sql_file.resolve() == root.resolve():
+                    continue
                 if sql_file.name.endswith('_rls_policies_create.sql'):
                     continue
                 if sql_file.relative_to(side_dir) in service_bundle_files:
@@ -1052,9 +1069,15 @@ class SQLParser:
                     f"component aggregator chain)",
                     entity_name=sql_file.name)
 
-    def _collect_included_files(self, sql_file: Path, visited: set) -> None:
-        """Recursively collect files reachable via \\ir includes from sql_file."""
-        ir_pattern = re.compile(r'\\ir\s+(\S+)', re.IGNORECASE)
+    def _collect_included_files(self, sql_file: Path, visited: set,
+                                stop: frozenset = frozenset()) -> None:
+        """Recursively collect files reachable via \\ir includes from sql_file.
+
+        Only an \\ir that starts its line counts, so a commented-out
+        include such as -- \\ir ./old.sql wires nothing. A file in stop is
+        recorded but not followed.
+        """
+        ir_pattern = re.compile(r'^[ \t]*\\ir\s+(\S+)', re.IGNORECASE | re.MULTILINE)
         try:
             content = sql_file.read_text(encoding='utf-8', errors='replace')
         except OSError:
@@ -1063,7 +1086,8 @@ class SQLParser:
             included = (sql_file.parent / match.group(1)).resolve()
             if included not in visited:
                 visited.add(included)
-                self._collect_included_files(included, visited)
+                if included not in stop:
+                    self._collect_included_files(included, visited, stop)
 
     def _add_warning(self, file_path: str, line: int, code: str, message: str,
                      entity_name: str = '') -> None:
@@ -1461,8 +1485,10 @@ def main():
     # Validate RLS coverage (tenant isolation, party isolation, orchestration completeness)
     sql_parser.validate_rls_policies(create_dir)
 
-    # Validate component-aggregator wiring completeness
-    sql_parser.validate_component_wiring(create_dir, drop_dir)
+    # Validate component-aggregator wiring completeness. The populate tree
+    # sits beside the create tree, so it needs no argument of its own.
+    sql_parser.validate_component_wiring(create_dir, drop_dir,
+                                         create_dir.parent / 'populate')
 
     # Print summary
     print(f"\n=== Validation Summary ===", file=sys.stderr)

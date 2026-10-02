@@ -29,6 +29,11 @@ The full template source. Edit here and re-tangle with
 {{! Template to generate SQL drop script for a domain entity table }}
 {{{sql_license}}}
 {{#domain_entity}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
 {{#sql.rls_tenant_isolation}}
 {{#sql.rls_party_isolation}}

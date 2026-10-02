@@ -26,6 +26,7 @@
 \ir ./iam_tenant_search_drop.sql
 \ir ./iam_tenant_activate_drop.sql
 \ir ./iam_tenant_purger_drop.sql
+\ir ./iam_tenant_terminator_drop.sql
 \ir ./iam_system_reset_drop.sql
 \ir ./iam_tenant_provisioner_drop.sql
 
@@ -44,6 +45,7 @@
 
 -- Sessions and login
 \ir ./iam_auth_events_drop.sql
+\ir ./iam_session_samples_drop.sql
 \ir ./iam_session_stats_drop.sql
 \ir ./iam_sessions_notify_trigger_drop.sql
 \ir ./iam_sessions_drop.sql

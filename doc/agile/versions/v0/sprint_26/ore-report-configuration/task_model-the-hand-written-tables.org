@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1
+:END:
+#+title: Task: Model the hand-written tables that have a codegen shape
+#+description: Twenty-five tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, DQ publication logs and seven DQ artefact staging tables. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every table a codegen shape covers has a model, so its schema, drop, notify
+trigger and C++ come from one source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- Each of the 25 tables with no model is either modelled, with generated SQL identical to the current file or the difference explained, or recorded as staying hand-written with its reason.
+- The census reports the modelled tables as codegen output.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+From the [[file:evidence/hand_written_sql_census.md][hand-written SQL census]] in [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+
+The 25 tables: 18 with no model (junctions such as =iam_account_roles=,
+=iam_role_permissions=, =reporting_risk_report_config_books= and
+=_portfolios=; time series such as =iam_auth_events=, =iam_session_samples= and
+the telemetry samples; DQ publication logs; =compute_batch_dependencies=,
+=scheduler_job_instances=, =workspace_trade_scope= and others) and 7 DQ artefact
+staging tables. =mq= and =telemetry= are infrastructure and likely stay
+hand-written; =mq_messages= holds the only hard =REFERENCES= in the tree.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

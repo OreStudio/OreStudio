@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 31745D7A-0C30-4E9B-A3D6-4C9829460D37
+:END:
+#+title: Two populate scripts were never wired into a recreate
+#+description: scheduler_populate.sql seeds an MQ statistics scrape job and trading_sample_data_populate.sql books demonstration trades, but no root script includes either, so no database has ever had them. Decide whether to wire each one or delete it.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.sql/populate/scheduler/scheduler_populate.sql= seeds a job
+that scrapes MQ queue statistics every minute, and
+=projects/ores.sql/populate/trading/trading_sample_data_populate.sql= books a
+swap and a novation as demonstration data. No root script includes either one,
+so no database has ever run them. The scheduler file arrived with the move from
+pgmq to the scheduler (=11168b35ba=).
+
+* Why
+
+Each file is either a feature someone expected and does not have, or dead
+code. Wiring the scheduler job changes what runs on every database; wiring the
+sample trades adds them to every database. The wiring check now names both as
+deliberate exceptions until this is decided.
+
+* References
+
+- =projects/ores.sql/utility/validation_ignore.txt=, the =WIRE_001= entries for both files.
+
+* See also
+
+- [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]]

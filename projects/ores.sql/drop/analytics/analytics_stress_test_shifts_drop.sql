@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
 drop policy if exists stress_test_shifts_tbl_tenant_isolation_policy on "ores_analytics_stress_test_shifts_tbl";
 drop rule if exists ores_analytics_stress_test_shifts_delete_rule on "ores_analytics_stress_test_shifts_tbl";

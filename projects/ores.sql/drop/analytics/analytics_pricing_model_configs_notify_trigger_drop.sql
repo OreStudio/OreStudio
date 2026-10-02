@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
 drop trigger if exists ores_analytics_pricing_model_configs_notify_trg on "ores_analytics_pricing_model_configs_tbl";
 drop function if exists ores_analytics_pricing_model_configs_notify_fn;

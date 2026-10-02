@@ -110,8 +110,8 @@ the legacy =party_entity.org= location.
 
 Adding an entity to an existing component passes =compass build=, the model
 drift check and every test, and can still miss the database. The schema parser
-reports both of the problems below, but CI runs it with =--warn= and not =--strict=,
-so its report only prints. Run it yourself and read its warnings:
+reports both of the problems below, and CI runs it with =--strict=, so either
+one fails the pull request. Run it yourself first to see them before CI does:
 
 #+begin_src sh
 python3 projects/ores.codegen/src/plantuml_er_parse_sql.py \
@@ -120,8 +120,8 @@ python3 projects/ores.codegen/src/plantuml_er_parse_sql.py \
   --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn
 #+end_src
 
-On a clean tree it prints =Warnings: 0=. Making these warnings fail CI is part of
-[[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+On a clean tree it prints =Warnings: 0=. A deliberate exception goes in
+=projects/ores.sql/utility/validation_ignore.txt= with its reason.
 
 **1. List the table in the component's create and drop aggregates (=WIRE_001=).**
 

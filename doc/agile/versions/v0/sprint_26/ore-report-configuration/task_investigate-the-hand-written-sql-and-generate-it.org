@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/investigate-the-hand-written-sql-and-generate-it
+#+pr: 2515
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ generates. What stays hand-written is checked by a gate that fails the build.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -47,13 +47,33 @@ generates. What stays hand-written is checked by a gate that fails the build.
 - The =WIRE_001= wiring check, and the other parser warnings, fail CI rather than
   print.
 - Generated drop files carry the same generated marker as the create files, so a
-  count of hand-written files is possible.
+  count of hand-written files is possible. /Both templates write it now, and
+  all 537 generated drop files carry it. A marker alone still cannot count
+  exactly, because 44 files keep one after their generator's input was deleted,
+  so the census script renders the generator's output as well./
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+No single method fits. The census is an investigation, the CI gate is a
+feature, and generating the aggregates would be a refactoring whose evidence is
+an unchanged recreate. This plan sequences them.
+
+| Phase | Produces | Check |
+|-------+----------+-------|
+| 1. Census | every SQL file under =create=, =drop= and =populate=, labelled entity codegen, other generator, or hand-written | the labels sum to the tree's file count; every file codegen renders exists in the tree |
+| 2. Reasons | for each hand-written file, why no generator produces it | every file lands in exactly one class; one file per class is read to confirm |
+| 3. Aggregates | whether a component's create and drop order can be derived from its models | a derived order for one component satisfies every dependency the hand order encodes, or the gap is named |
+| 4. Gates | the parser fails CI on a warning; generated drop files carry a marker | the parser passes =--strict= on main; drift is clean after the template change |
+| 5. Decisions | a decision per class, an evidence file, and follow-up tasks | each class has generate, keep with a reason, or delete |
+
+The census uses the drift checker's own rendering, not file markers: it
+renders every catalogue component into a scratch root, and a file is entity
+codegen output exactly when that root contains it.
+
+*Stop and ask before* generating any aggregate or moving a hand-written file
+to codegen. Phase 5 decides, and the operator approves, before that work
+starts. Stop phase 3 at a recommendation if the hand order encodes dependencies
+the models do not hold.
 
 * Measurements
 
@@ -67,12 +87,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| =*_create.sql= files without a generated marker | 144 of 754 | count of =find create -name "*_create.sql"= less those matching =GENERATED FILE\|DO NOT EDIT= | 73c00d0dfb |
-| =*_functions_create.sql= without a marker | 26 of 26 | as above, pattern =*_functions_create.sql= | 73c00d0dfb |
-| =*_rls_policies_create.sql= without a marker | 15 of 15 | as above, pattern =*_rls_policies_create.sql= | 73c00d0dfb |
-| =populate= files without a marker | 217 of 288 | as above, under =populate= | 73c00d0dfb |
-| Drop files without a marker | 741 of 741 | as above, under =drop= (no template writes a marker) | 73c00d0dfb |
-| Hand-written create files, by component | dq 24, refdata 24, iam 21, reporting 12, telemetry 7, mq 6, trading 6, utility 6, others 4 or fewer | per =create/<component>/= | 73c00d0dfb |
+| SQL files by origin: entity codegen, other generator, hand-written | 1119, 164, 517 of 1800 | =render_all.py= then =classify.py=, in the [[file:evidence/hand_written_sql_census.md][census]] | 8107e1f421 |
+| Create files that are not entity codegen, by reason class | 192 in 12 classes | =reasons.py= | 8107e1f421 |
+| Files no script includes, any suffix | create 16, drop 7, populate 5 | =reach.py= | 8107e1f421 |
+| Dead legacy notify triggers invisible to =WIRE_001= | 15 | =reach.py= plus a code search | 8107e1f421 |
+| Stale =WIRE_001= ignore entries | 4 of 9 | =reach.py= against =validation_ignore.txt= | 8107e1f421 |
+| Tables whose soft-FK parent is created later | 88 of 372 | =order.py= | 8107e1f421 |
+| Hand-written RLS policies on a table with a model but no flag, plain tenant isolation | about 129 of 251 | keyword scan, rough | 8107e1f421 |
+| Parser warnings with =--strict= after removing stale entries | 0 | =plantuml_er_parse_sql.py ... --strict= | working tree |
+| Files =WIRE_001= reports once widened to every suffix and the populate tree, before the fixes | 22 | =plantuml_er_parse_sql.py ... --warn= | working tree |
+| Parser warnings with =--strict= after the fixes | 0 | =plantuml_er_parse_sql.py ... --strict= | working tree |
+| Full =drop/drop.sql= against a recreated database | completes, no error; 0 tables and 115 functions left | =compass sql -- -v ON_ERROR_STOP=1 -f projects/ores.sql/drop/drop.sql= | working tree |
+| Database recreate after the deletions and the wiring | succeeds in 27 s, 372 tables | =compass db recreate -y -k= | working tree |
+| Generated drop files with the generated marker | 537 of 537, from 0 | =regenerate --all --address ores.sql.schema= then the census | working tree |
+| Census at the end of the task | 1119 codegen, 148 other generator, 517 hand-written of 1784 | =census_sql_origin.py= | working tree |
+
+The marker-based counts this task was scaffolded with (144 of 754 create
+scripts, 741 of 741 drop files) are superseded: a marker is missing from every
+generated drop file and present on 44 files whose generator input no longer
+exists.
 
 * Notes
 
@@ -121,12 +154,68 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2515][#2515]] | [sql] Census the hand-written SQL, gate the schema parser, and mark generated drops |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the =WIRE_001= docstring narrated history and wrapped a sentence badly | =plantuml_er_parse_sql.py= | Accepted | It now states the reason only. |
+| 2 | Local review: the CI comment narrated history | =codegen-drift.yml= | Accepted | It now states what fails the step and where an exception goes. |
+| 3 | PR checks: the =ores.analytics.service= source list missed the five today's market event registrars from PR #2500 | =component_files.cmake= | Accepted | Regenerated; the five sources now compile. Like the other analytics registrars, nothing calls them yet. |
+| 4 | PR checks: after the rebase, main's 36 commits added no generated SQL; the =ores.sql.schema= regeneration changed nothing and every generated drop file carries the marker | SQL tree | No change | Verified with the census. |
+| 5 | PR review: reachability is not scoped to a tree; a drop file included only from create.sql counts as wired | =plantuml_er_parse_sql.py= | Accepted | The walk from the bootstrap scripts stops at another tree's root. Test added. |
+| 6 | PR review: every top-level script counts as a bootstrap root | =plantuml_er_parse_sql.py= | Accepted, as a comment | Deliberate, because setup_schema.sql and recreate_database.sql include files directly; the comment now says so. |
+| 7 | PR review: a commented-out =\ir= counts as wiring | =plantuml_er_parse_sql.py= | Accepted | Only an =\ir= at the start of a line counts. Test added. The RLS reachability check shares the collector and gains the same fix. The strict parser still reports no warning. |
+| 8 | PR review: the census marker matches anywhere in the first 3000 bytes | =census_sql_origin.py= | Accepted | It matches on comment lines only. The census counts are unchanged. |
+| 9 | PR review: the 115 leftover functions and the two unwired populate scripts | captures | No change | Already filed. |
+| 10 | PR review: local clang-format mismatch on =trade_service.cpp= | — | No change | Local only; CI passes. |
 
 * Result
+
+The hand-written SQL is measured, every class has a decision, and the checks
+that let two defects reach main are now gates.
+
+**The census.** Of 1800 SQL files, 1119 are entity codegen output, 164 come
+from other generators and 517 are hand-written. The method renders the
+generator's own output rather than trusting markers. Every class, its reason
+and its decision are in the
+[[file:evidence/hand_written_sql_census.md][evidence file]], with the scripts.
+
+**Decisions.**
+
+| Class | Decision | Owner |
+|-------+----------+-------|
+| Component create and drop aggregates | Generate the entity part per component; hand-written files stay listed by hand | [[id:3460236B-747A-4081-B3E6-9CE98CCE709D][Generate the entity part of each component's SQL aggregates]] |
+| FpML coded-scheme tables, artefacts and triggers (44 + 15) | Model them so codegen owns them | [[id:08B98A2C-5123-45B0-B536-8421AB99EC0E][Model the FpML coded-scheme tables so codegen owns them]] |
+| Hand-written RLS policies (251) | Generate from model flags into a late per-component file | [[id:AE86A142-B734-44F1-9647-0F37A551DA83][Generate the hand-written RLS policies from model flags]] |
+| Tables with no model (25) | Model those a codegen shape covers | [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] |
+| Procedural code, views, =alter= scripts, uncatalogued components, populate seed data, data generators | Keep; each reason is in the evidence | — |
+| Dead legacy triggers (15), broken FpML populate (1) | Deleted | this task |
+
+**Why aggregates can be generated.** Soft foreign keys impose no creation
+order: 88 tables are already created before the parent their trigger checks,
+and every recreate succeeds. Only a table before its trigger, functions from
+earlier components and hand files that name tables at creation need order.
+
+**Gates.** The schema parser fails CI on any warning. =WIRE_001= now covers
+every =.sql= file in the three trees, reached from their roots and from the
+bootstrap scripts, which found fifteen dead files and two populate scripts that
+never ran. Both drop templates now write the generated marker the create
+templates write, so the 537 generated drop files no longer look hand-written. The five real drop gaps are wired and the full drop script runs
+clean. The census is committed as a tool.
+
+**Recorded, not fixed here.** Three captures: =ores_iam_auth_events_tbl= has a
+=tenant_id= and no RLS policy despite an ignore reason calling it tenant-scoped;
+two populate scripts were never wired, and wiring them changes what a recreate
+seeds; the drop script leaves 115 functions behind.
+
+**Component audit.** The task touched =ores.codegen= and =ores.sql=. The
+automated half, =validate_docs.sh=, passes for all 41 components. It added one
+script to =ores.codegen/scripts= beside its peers, deleted sixteen dead SQL
+files and changed no folder, type or component, so the shape, morphology,
+naming and registry checks have nothing new to judge.
+
+**One operational note.** The first recreate hung for minutes in =DROP
+DATABASE= on =ProcSignalBarrier=, with this environment's services still
+reconnecting. Stopping the services, cancelling the drop and retrying worked.

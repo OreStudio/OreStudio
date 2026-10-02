@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 161B71CF-5057-47CC-8D63-B22769E1E62B
+:END:
+#+title: The schema drop script leaves 115 functions behind
+#+description: Running drop/drop.sql removes every table but leaves 115 ores_ functions, 63 of them in refdata, because their drop files are missing, unwired or name a different signature.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Running =projects/ores.sql/drop/drop.sql= against a full database removes
+every =ores_= table and view but leaves 115 =ores_= functions: refdata 63, iam
+14, dq 11, synthetic 10, utility 7, and a few elsewhere. Examples are the
+refdata publish-from-DQ functions, =ores_refdata_parties_hierarchy_fn= and
+=ores_dq_badge_severities_upsert_fn=. Many drop files print "function ... does
+not exist, skipping" during the same run, which suggests drop files that name a
+different signature than the function they target.
+
+* Why
+
+A drop that leaves objects behind hides itself: a later create replaces the
+functions, so nothing fails. It matters for any teardown that does not drop the
+whole database, and it means the drop tree does not match the create tree.
+
+* References
+
+- Measured on =bright_faraday= while wiring the five missing drop files in [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+
+* See also
+
+- [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]]

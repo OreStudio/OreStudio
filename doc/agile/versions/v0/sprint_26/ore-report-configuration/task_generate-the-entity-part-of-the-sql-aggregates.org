@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 3460236B-747A-4081-B3E6-9CE98CCE709D
+:END:
+#+title: Task: Generate the entity part of each component's SQL aggregates
+#+description: Every component's create and drop aggregate lists its generated entity files by hand, so a new entity misses a recreate until someone adds two lines. The census showed creation order does not depend on soft foreign keys, so codegen can emit one fragment per component listing its entity tables and notify triggers, which the hand-written aggregate includes; hand-written files stay listed by hand.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new entity reaches the database with no hand-edited aggregate. Codegen owns
+the list of a component's entity files; people own only the hand-written files
+and the prose around them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- Codegen emits, per component, a create fragment listing each entity table then its notify trigger, and a drop fragment listing each notify trigger drop then its table drop.
+- Each component's hand-written create and drop aggregate includes its fragment once, and no longer lists a generated entity file itself.
+- A database recreate succeeds, and the set of tables, functions, triggers and policies it builds is identical to the set before the change.
+- Adding an entity to a component needs no aggregate edit, and the drift check fails when a fragment is stale.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+From the [[file:evidence/hand_written_sql_census.md][hand-written SQL census]] in [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+
+Order inside a component does not depend on soft foreign keys: 88 tables are
+already created before the parent their insert trigger checks, and every
+recreate succeeds. What does need order: a table before its notify trigger, the
+trigger drop before the table drop, functions from earlier components (the root
+=create.sql= already orders those), and hand-written files that name a table
+when they are created (SQL-language functions, views, =alter= scripts), which
+must come after the fragment.
+
+First check, before changing any aggregate: recreate a scratch database with one
+component's aggregate reordered to the planned shape, and compare its catalogue
+with the current one.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

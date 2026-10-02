@@ -18,7 +18,9 @@
  *
  */
 
--- Drop in reverse dependency order: messages before queues
+-- Drop in reverse dependency order: the scrape function before the tables it
+-- reads, messages before queues
+\ir ./mq_scrape_functions_drop.sql
 \ir ./mq_queue_stats_drop.sql
 \ir ./mq_message_archive_drop.sql
 \ir ./mq_messages_drop.sql

@@ -2,45 +2,52 @@
 :ID: DBF5FE8D-6B25-492E-8DEB-B6A0931F6835
 :END:
 #+title: Story: Teach the code generator the trade shape
-#+description: Add the generator capabilities the trade shape needs: immutable anchors with real foreign keys, pinned composite keys, catalogue-driven check lists and routing, nested groups, the derived authorisation status and the blotter view.
+#+description: Add the generator capabilities the first trade shape stories need: immutable entities, real foreign keys into them, composite keys that pin copied facts, and a guard on the nine-field reflection limit.
 #+type: story
 #+level: s2
 #+filetags: :sprint_26:v0:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-Give the code generator every capability the trade shape design (Investigation: the trade shape) relies on, so the trade, refdata and instrument stories generate their entities rather than hand-write them.
+Give the code generator the capabilities the netting-set and trade-split stories need first, so they generate their entities rather than hand-write them. Each later capability is built in the story that first consumes it.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Start with the immutable entities task. |
 | Last touched  | 2026-10-02                               |
 
 * Acceptance
 
 - An entity can be declared immutable (non-temporal), and other entities reference it with real foreign keys.
 - A model can pin a copied fact with a composite foreign key to its source.
-- Check lists of trade-type codes and the trade-type to table routing are generated from one catalogue.
-- Key and context field groups nest, and every generated struct stays within nine effective fields.
-- The derived authorisation status and the blotter's common-date view are generated.
+- Every generated reflected struct stays within nine effective fields, and a check enforces it.
+
+Moved on 2026-10-03, to the story that first consumes each: the
+catalogue-driven trade-type checks and routing to Split the trade into an
+anchor and its components; the derived authorisation status to Model
+operational authorisation and the client-facing agreement; the blotter's
+common-date view to the rates instrument story, the first family reworked.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:AC82A71D-8B50-4A8C-9B62-7FD5CAEBFDB9][Let a model declare an immutable entity]] | DONE | 2026-10-03 | 2026-10-03 | Add an immutable flag to current-state entities: the table rejects updates and deletes, and the generated service writes rows once and never changes them. |
+| [[id:764E3F6E-84E7-49CA-A661-0F263F92450B][Generate real foreign keys into immutable entities]] | BACKLOG | | | Let a foreign key whose target is an immutable entity be declared as a real REFERENCES constraint, single- or multi-column, instead of a trigger check. |
+| [[id:98EA1788-5614-4862-80CE-F568C5BFFABF][Pin copied facts with composite keys]] | BACKLOG | | | Let a model declare a unique key over several columns and a composite foreign key onto it, enforced as a constraint for an immutable target and as a trigger check for a temporal one. |
+| [[id:384B992A-59D7-43C4-95D4-83D3E831C898][Guard every reflected struct against the C1202 limit]] | BACKLOG | | | Count the effective fields of every generated reflected struct and fail the codegen checks when one exceeds nine. |
 
 * Decisions
 

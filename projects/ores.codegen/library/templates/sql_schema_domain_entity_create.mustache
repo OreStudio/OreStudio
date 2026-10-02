@@ -704,6 +704,24 @@ create or replace trigger {{domain_entity.sql_name_base}}_insert_trg
 before insert on "{{domain_entity.sql_name_base}}_tbl"
 for each row execute function {{domain_entity.sql_name_base}}_insert_fn();
 
+{{#domain_entity.immutable}}
+create or replace function {{domain_entity.sql_name_base}}_immutable_fn()
+returns trigger as $$
+begin
+    raise exception '{{domain_entity.sql_name_base}}_tbl rows are immutable: % is refused.', TG_OP
+        using errcode = '55000';
+end;
+$$ language plpgsql set search_path = public, pg_temp;
+
+create or replace trigger {{domain_entity.sql_name_base}}_immutable_trg
+before update or delete on "{{domain_entity.sql_name_base}}_tbl"
+for each row execute function {{domain_entity.sql_name_base}}_immutable_fn();
+
+create or replace trigger {{domain_entity.sql_name_base}}_immutable_truncate_trg
+before truncate on "{{domain_entity.sql_name_base}}_tbl"
+for each statement execute function {{domain_entity.sql_name_base}}_immutable_fn();
+
+{{/domain_entity.immutable}}
 {{^domain_entity.current_state}}
 {{#domain_entity.has_delete_cascade}}
 -- The rows this row owns, closed when it is deleted. A function and not a

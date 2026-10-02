@@ -34,6 +34,7 @@ Implement section 7 of the trade shape investigation and the external version of
 - Denied is final, enforced by the schema; auto-authorisation rules and their effect are reported.
 - agreement is the structure when its kind confirms as a whole, otherwise the trade; its external version moves only for a confirmable activity.
 - Operations authorises the same unit the customer confirms.
+- The authorised status is generated as a derived read over the decisions, not stored.
 
 * Tasks
 

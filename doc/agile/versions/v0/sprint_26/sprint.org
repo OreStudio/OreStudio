@@ -144,6 +144,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] | DONE | | 2026-09-30 | A DSH plugin that shows this checkout as a live environment: its name, when the database was last restored and how long ago, the schema drift, and the state of every service. It starts and stops services, and it restores the database behind a guard. It reads compass, so the readiness and drift rules have one home. |
 | [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] | DONE | | 2026-09-30 | Every service writes its log to the console, systemd captures it into the user journal, and nobody writes a log file. compass reads readiness and log tails from the journal, so one interface serves every service including nats-server. The environment plugin gains a log overview for one service. |
 | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] | BACKLOG | | | Rewrite the oresmd URI grammar so that no key's absence carries meaning and no coordinate is an untyped string, then move the stored series identity and coordinate onto it. |
+| [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] | BACKLOG | | | The tenant roster reads the tenants but cannot search, filter, page or act on one. Bring it to the design the See the tenants journey and the proposed layout describe: search and paging, type and status filters, a per-row actions menu, and a tenant detail screen. |
 
 * Achievements
 

@@ -399,6 +399,16 @@ file, and the reason for each not-applicable.
   hand-written unit can carry behaviour the model does not state, so
   deleting it needs the behaviour named and the replacement proved rather
   than assumed.
+  Two things are *not* restored and are recorded rather than glossed.
+  The bulk positional itself -- =CODE:weight,CODE:weight= on the
+  instrument's =add= -- is gone, and restoring it means modelling the
+  constituent list as a command argument rather than a child table, which
+  is a design change rather than a repair. And
+  =equity_position_option_underlying= lost its own =parse_entries=
+  convenience the same way: that entity was already a shell opt-in, so
+  its menu and its per-row =add= and =set= were never missing, and both
+  entities can now edit their rows through those. What neither has is the
+  one-line bulk form.
 - *One commit on this branch carries a wrong Task-ID trailer.* It states
   the story correctly but names a task id that does not exist; the real
   id is =F97FF3C0-EB21-4076-B23C-4AAA77F13BC3=. The commit is the one

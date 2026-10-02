@@ -21,8 +21,8 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/domain/oresmd_uri.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
@@ -226,14 +226,13 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
         throw vintage_data_missing_error("oresmd cannot read the vintage series URI '" +
                                          cfg.vintage_series_uri + "': " + e.what());
     }
-    const auto anchor_datum = ores::marketdata::core::oresmd_parser::with_point(
-        series_identifier, anchor->point_id);
+    const auto anchor_datum =
+        ores::marketdata::core::oresmd_parser::with_point(series_identifier, anchor->point_id);
     if (!anchor_datum)
         throw vintage_data_missing_error("oresmd names no datum for series '" +
                                          cfg.vintage_series_uri + "' at point '" +
                                          anchor->point_id + "'.");
-    const auto anchor_uri =
-        ores::marketdata::core::oresmd_parser::to_uri(*anchor_datum).value;
+    const auto anchor_uri = ores::marketdata::core::oresmd_parser::to_uri(*anchor_datum).value;
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);

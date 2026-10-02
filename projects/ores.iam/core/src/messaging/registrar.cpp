@@ -310,8 +310,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_account_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->by_account(std::move(msg));
         }));
-    subs.push_back(nats.queue_subscribe(
-        get_my_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
+    subs.push_back(
+        nats.queue_subscribe(get_my_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
             rh->mine(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(

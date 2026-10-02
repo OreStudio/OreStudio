@@ -57,15 +57,13 @@ inline get_account_roles_response to_response(service::account_access answer) {
     response.result = std::move(answer.result);
     response.roles.reserve(answer.roles.size());
     for (auto& entry : answer.roles) {
-        response.roles.push_back(account_role_access{.role = std::move(entry.role),
-                                                     .permission_codes =
-                                                         std::move(entry.permission_codes),
-                                                     .assigned_by = std::move(entry.assigned_by),
-                                                     .assigned_at = entry.assigned_at,
-                                                     .change_reason_code =
-                                                         std::move(entry.change_reason_code),
-                                                     .change_commentary =
-                                                         std::move(entry.change_commentary)});
+        response.roles.push_back(
+            account_role_access{.role = std::move(entry.role),
+                                .permission_codes = std::move(entry.permission_codes),
+                                .assigned_by = std::move(entry.assigned_by),
+                                .assigned_at = entry.assigned_at,
+                                .change_reason_code = std::move(entry.change_reason_code),
+                                .change_commentary = std::move(entry.change_commentary)});
     }
     return response;
 }
@@ -128,10 +126,8 @@ public:
             if (!caller_id) {
                 reply(nats_,
                       msg,
-                      assign_role_response{
-                          .success = false,
-                          .error_message =
-                              std::string{no_account_answer}});
+                      assign_role_response{.success = false,
+                                           .error_message = std::string{no_account_answer}});
                 return;
             }
             if (!svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
@@ -176,10 +172,8 @@ public:
             if (!caller_id) {
                 reply(nats_,
                       msg,
-                      revoke_role_response{
-                          .success = false,
-                          .error_message =
-                              std::string{no_account_answer}});
+                      revoke_role_response{.success = false,
+                                           .error_message = std::string{no_account_answer}});
                 return;
             }
             if (!svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {
@@ -225,8 +219,7 @@ public:
                 reply(nats_,
                       msg,
                       get_account_roles_response{
-                          .result = failed_result(
-                              std::string{no_account_answer})});
+                          .result = failed_result(std::string{no_account_answer})});
                 return;
             }
             auto answer = svc.read_account_access(*caller_id, sg(req->account_id));
@@ -256,8 +249,7 @@ public:
                 reply(nats_,
                       msg,
                       get_account_roles_response{
-                          .result = failed_result(
-                              std::string{no_account_answer})});
+                          .result = failed_result(std::string{no_account_answer})});
                 return;
             }
             auto answer = svc.read_own_access(*caller_id);
@@ -321,8 +313,7 @@ public:
                 reply(nats_,
                       msg,
                       get_role_permissions_response{
-                          .result = failed_result(
-                              std::string{no_account_answer})});
+                          .result = failed_result(std::string{no_account_answer})});
                 return;
             }
             auto answer = svc.replace_role_permissions(*caller_id,
@@ -365,9 +356,7 @@ public:
                 reply(nats_,
                       msg,
                       assign_role_by_name_response{
-                          .success = false,
-                          .error_message =
-                              std::string{no_account_answer}});
+                          .success = false, .error_message = std::string{no_account_answer}});
                 return;
             }
             if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_assign)) {
@@ -466,9 +455,7 @@ public:
                 reply(nats_,
                       msg,
                       revoke_role_by_name_response{
-                          .success = false,
-                          .error_message =
-                              std::string{no_account_answer}});
+                          .success = false, .error_message = std::string{no_account_answer}});
                 return;
             }
             if (!caller_svc.has_permission(*caller_id, domain::permissions::roles_revoke)) {

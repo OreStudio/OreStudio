@@ -227,7 +227,8 @@ TEST_CASE("caller_account_resolves_the_context_actor_to_their_account", tags) {
     authorization_service svc(h.context().with_tenant(h.tenant_id(), caller.username));
     const auto resolved = svc.caller_account();
 
-    BOOST_LOG_SEV(lg, debug) << "Actor '" << caller.username << "' resolved: " << resolved.has_value();
+    BOOST_LOG_SEV(lg, debug) << "Actor '" << caller.username
+                             << "' resolved: " << resolved.has_value();
 
     REQUIRE(resolved.has_value());
     CHECK(*resolved == caller.id);
@@ -238,8 +239,7 @@ TEST_CASE("caller_account_is_empty_when_no_account_carries_the_actor", tags) {
 
     database_helper h;
 
-    authorization_service svc(
-        h.context().with_tenant(h.tenant_id(), "no-such-actor@ores.invalid"));
+    authorization_service svc(h.context().with_tenant(h.tenant_id(), "no-such-actor@ores.invalid"));
     const auto resolved = svc.caller_account();
 
     CHECK_FALSE(resolved.has_value());
@@ -352,11 +352,8 @@ TEST_CASE("replace_role_permissions_refuses_a_role_that_does_not_exist", tags) {
     auto caller = caller_who_may_shape_roles(h, gen);
 
     authorization_service svc(h.context());
-    const auto answer = svc.replace_role_permissions(caller.id,
-                                                     generate_synthetic_role(gen).id,
-                                                     {std::string(permissions::roles_read)},
-                                                     "",
-                                                     "");
+    const auto answer = svc.replace_role_permissions(
+        caller.id, generate_synthetic_role(gen).id, {std::string(permissions::roles_read)}, "", "");
 
     CHECK(answer.result.outcome == outcome::missing);
     CHECK_FALSE(answer.result.message.empty());

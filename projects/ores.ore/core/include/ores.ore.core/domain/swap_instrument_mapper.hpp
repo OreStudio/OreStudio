@@ -93,9 +93,9 @@ public:
      * @brief Reverse-maps ORES domain types back to a KnockOutSwap ORE XSD
      * trade.
      */
-    static trade reverse_knock_out_swap(
-        const ores::trading::domain::knock_out_swap_instrument& instr,
-        const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade
+    reverse_knock_out_swap(const ores::trading::domain::knock_out_swap_instrument& instr,
+                           const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Forward-maps an InflationSwap trade (InflationSwapData) to ORES

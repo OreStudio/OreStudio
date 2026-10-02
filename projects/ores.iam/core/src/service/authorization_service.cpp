@@ -193,12 +193,12 @@ authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
     return codes;
 }
 
-role_permissions authorization_service::replace_role_permissions(
-    const boost::uuids::uuid& caller_id,
-    const boost::uuids::uuid& role_id,
-    const std::vector<std::string>& permission_codes,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
+role_permissions
+authorization_service::replace_role_permissions(const boost::uuids::uuid& caller_id,
+                                                const boost::uuids::uuid& role_id,
+                                                const std::vector<std::string>& permission_codes,
+                                                const std::string& change_reason_code,
+                                                const std::string& change_commentary) {
     using ores::utility::domain::outcome;
 
     role_permissions answer;
@@ -209,8 +209,7 @@ role_permissions authorization_service::replace_role_permissions(
      */
     if (!has_permission(caller_id, domain::permissions::roles_update)) {
         BOOST_LOG_SEV(lg(), warn) << "Bundle write for role " << role_id << " denied: caller "
-                                  << caller_id << " lacks "
-                                  << domain::permissions::roles_update;
+                                  << caller_id << " lacks " << domain::permissions::roles_update;
         answer.result.outcome = outcome::denied;
         answer.result.code = domain::permissions::roles_update;
         answer.result.message = std::string("Permission denied: ") +
@@ -236,8 +235,8 @@ role_permissions authorization_service::replace_role_permissions(
     for (const auto& code : permission_codes) {
         auto permission = find_permission_by_code(code);
         if (!permission) {
-            BOOST_LOG_SEV(lg(), warn) << "Bundle write names a code that is not a permission: "
-                                      << code;
+            BOOST_LOG_SEV(lg(), warn)
+                << "Bundle write names a code that is not a permission: " << code;
             answer.result.outcome = outcome::invalid;
             answer.result.code = code;
             answer.result.message = "Unknown permission code: " + code;
@@ -263,8 +262,8 @@ role_permissions authorization_service::replace_role_permissions(
         });
     };
 
-    const auto reason = change_reason_code.empty() ? std::string{reason::codes::new_record}
-                                                   : change_reason_code;
+    const auto reason =
+        change_reason_code.empty() ? std::string{reason::codes::new_record} : change_reason_code;
 
     for (const auto& permission : desired) {
         if (bundles_permission(current, permission.id)) {
@@ -281,9 +280,10 @@ role_permissions authorization_service::replace_role_permissions(
     }
 
     for (const auto& link : current) {
-        const auto wanted = std::any_of(desired.begin(), desired.end(), [&](const auto& permission) {
-            return permission.id == link.permission_id;
-        });
+        const auto wanted =
+            std::any_of(desired.begin(), desired.end(), [&](const auto& permission) {
+                return permission.id == link.permission_id;
+            });
         if (!wanted) {
             /*
              * The delete rule closes the row and leaves its tail as the grant
@@ -296,8 +296,8 @@ role_permissions authorization_service::replace_role_permissions(
 
     answer.permission_codes = get_role_permissions(role_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " bundles "
-                              << answer.permission_codes.size() << " permission(s).";
+    BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " bundles " << answer.permission_codes.size()
+                              << " permission(s).";
     return answer;
 }
 
@@ -385,7 +385,8 @@ std::optional<boost::uuids::uuid> authorization_service::caller_account() const 
     const auto found = accounts.read_latest_by_username(ctx_, ctx_.actor());
     if (found.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "The actor '" << ctx_.actor()
-                                  << "' names no account in tenant " << ctx_.tenant_id().to_string();
+                                  << "' names no account in tenant "
+                                  << ctx_.tenant_id().to_string();
         return std::nullopt;
     }
     return found.front().id;
@@ -397,8 +398,8 @@ account_access authorization_service::read_own_access(const boost::uuids::uuid& 
     return answer;
 }
 
-account_access authorization_service::read_account_access(
-    const boost::uuids::uuid& caller_id, const boost::uuids::uuid& account_id) {
+account_access authorization_service::read_account_access(const boost::uuids::uuid& caller_id,
+                                                          const boost::uuids::uuid& account_id) {
     account_access answer;
     if (!has_permission(caller_id, domain::permissions::roles_read)) {
         BOOST_LOG_SEV(lg(), warn) << "Access read for account " << account_id << " denied: caller "
@@ -438,8 +439,8 @@ authorization_service::compose_account_access(const boost::uuids::uuid& account_
              * notice the difference.
              */
             BOOST_LOG_SEV(lg(), warn)
-                << "Account " << account_id << " holds a role that cannot be read: "
-                << assignment.role_id;
+                << "Account " << account_id
+                << " holds a role that cannot be read: " << assignment.role_id;
             continue;
         }
         account_access_entry entry;

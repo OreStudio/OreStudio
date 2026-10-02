@@ -1026,17 +1026,18 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_r
 
 namespace {
 
-std::vector<ores::trading::domain::bond_leg> legs_of(ores::database::context ctx, const std::string& trade_id) {
+std::vector<ores::trading::domain::bond_leg> legs_of(ores::database::context ctx,
+                                                     const std::string& trade_id) {
     return ores::trading::repository::read_legs_by_trade_ids(ctx, {trade_id});
 }
 
-std::vector<ores::trading::domain::instrument_schedule>
-schedules_of(ores::database::context ctx, const std::string& trade_id) {
+std::vector<ores::trading::domain::instrument_schedule> schedules_of(ores::database::context ctx,
+                                                                     const std::string& trade_id) {
     return ores::trading::repository::read_schedules_by_trade_ids(ctx, {trade_id});
 }
 
-std::vector<ores::trading::domain::bond_forward>
-forwards_of(ores::database::context ctx, const std::string& trade_id) {
+std::vector<ores::trading::domain::bond_forward> forwards_of(ores::database::context ctx,
+                                                             const std::string& trade_id) {
     return ores::trading::repository::read_forwards_by_trade_ids(ctx, {trade_id});
 }
 
@@ -1080,9 +1081,8 @@ TEST_CASE("the_delete_closes_the_family_and_the_issue_it_owns", tags) {
     CHECK(schedules_of(ctx, text).empty());
     CHECK(forwards_of(ctx, text).empty());
     CHECK(issue_legs_of(ctx, issue.issue_id).empty());
-    CHECK(bond_issue_repository()
-              .read_latest(ctx, boost::uuids::to_string(issue.issue_id))
-              .empty());
+    CHECK(
+        bond_issue_repository().read_latest(ctx, boost::uuids::to_string(issue.issue_id)).empty());
 }
 
 TEST_CASE("the_issue_outlives_the_instrument_that_still_shares_it", tags) {

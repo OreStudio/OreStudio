@@ -71,8 +71,8 @@ ores::ore::domain::stresstesting load(const std::filesystem::path& path) {
 template <typename Container, typename Entry>
 ores::ore::domain::stresstesting
 one_entry_document(const Entry& entry,
-                   xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
-                   xsd::vector<Entry> Container::* vector_member) {
+                   xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
+                   xsd::vector<Entry> Container::*vector_member) {
     ores::ore::domain::stresstesting document;
     ores::ore::domain::stresstest scenario;
     scenario.id = "one";
@@ -89,15 +89,14 @@ one_entry_document(const Entry& entry,
  */
 template <typename Container, typename Entry>
 std::string entry_text(const Entry& entry,
-                       xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
-                       xsd::vector<Entry> Container::* vector_member) {
-    return ores::ore::domain::save_data(
-        one_entry_document(entry, container_member, vector_member));
+                       xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
+                       xsd::vector<Entry> Container::*vector_member) {
+    return ores::ore::domain::save_data(one_entry_document(entry, container_member, vector_member));
 }
 
 template <typename Container, typename Entry>
 const xsd::vector<Entry>& entries_of(const xsd::optional<Container>& container,
-                                     xsd::vector<Entry> Container::* vector_member) {
+                                     xsd::vector<Entry> Container::*vector_member) {
     static const Container empty{};
     if (!container)
         return empty.*vector_member;
@@ -111,8 +110,8 @@ const xsd::vector<Entry>& entries_of(const xsd::optional<Container>& container,
  */
 template <typename Container, typename Entry>
 Entry reverse_one_entry(const Entry& entry,
-                        xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
-                        xsd::vector<Entry> Container::* vector_member) {
+                        xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
+                        xsd::vector<Entry> Container::*vector_member) {
     const auto document = one_entry_document(entry, container_member, vector_member);
     const auto mapped = ores::ore::domain::stress_test_mapper::map(document);
     REQUIRE(mapped.scenarios.size() == 1);
@@ -142,8 +141,8 @@ void check_family(const std::string& path,
                   const std::vector<ores::analytics::domain::stress_test_shift>& rows,
                   const xsd::optional<Container>& original,
                   const xsd::optional<Container>& rebuilt,
-                  xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
-                  xsd::vector<Entry> Container::* vector_member) {
+                  xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
+                  xsd::vector<Entry> Container::*vector_member) {
     const auto& original_entries = entries_of(original, vector_member);
     const auto& rebuilt_entries = entries_of(rebuilt, vector_member);
 
@@ -157,8 +156,9 @@ void check_family(const std::string& path,
     REQUIRE(rebuilt_entries.size() == original_entries.size());
     for (std::size_t j = 0; j < original_entries.size(); ++j) {
         INFO("entry " + std::to_string(j));
-        CHECK(entry_text<Container, Entry>(original_entries.at(j), container_member, vector_member) ==
-              entry_text<Container, Entry>(rebuilt_entries.at(j), container_member, vector_member));
+        CHECK(
+            entry_text<Container, Entry>(original_entries.at(j), container_member, vector_member) ==
+            entry_text<Container, Entry>(rebuilt_entries.at(j), container_member, vector_member));
     }
 }
 
@@ -215,53 +215,124 @@ TEST_CASE("stress_test_library_and_scenarios_round_trip_over_the_corpus", tags) 
             if (in.ParShifts)
                 CHECK(par_shifts_text(in.ParShifts) == par_shifts_text(out.ParShifts));
 
-            check_family(path.string(), i, "DiscountCurves", row.shifts, in.DiscountCurves,
-                         out.DiscountCurves, &stresstest::DiscountCurves,
+            check_family(path.string(),
+                         i,
+                         "DiscountCurves",
+                         row.shifts,
+                         in.DiscountCurves,
+                         out.DiscountCurves,
+                         &stresstest::DiscountCurves,
                          &stressdiscountcurves::DiscountCurve);
-            check_family(path.string(), i, "IndexCurves", row.shifts, in.IndexCurves,
-                         out.IndexCurves, &stresstest::IndexCurves,
+            check_family(path.string(),
+                         i,
+                         "IndexCurves",
+                         row.shifts,
+                         in.IndexCurves,
+                         out.IndexCurves,
+                         &stresstest::IndexCurves,
                          &stressindexcurves::IndexCurve);
-            check_family(path.string(), i, "YieldCurves", row.shifts, in.YieldCurves,
-                         out.YieldCurves, &stresstest::YieldCurves,
+            check_family(path.string(),
+                         i,
+                         "YieldCurves",
+                         row.shifts,
+                         in.YieldCurves,
+                         out.YieldCurves,
+                         &stresstest::YieldCurves,
                          &stressyieldcurves::YieldCurve);
-            check_family(path.string(), i, "FxSpots", row.shifts, in.FxSpots, out.FxSpots,
-                         &stresstest::FxSpots, &fxspots::FxSpot);
-            check_family(path.string(), i, "FxVolatilities", row.shifts, in.FxVolatilities,
-                         out.FxVolatilities, &stresstest::FxVolatilities,
+            check_family(path.string(),
+                         i,
+                         "FxSpots",
+                         row.shifts,
+                         in.FxSpots,
+                         out.FxSpots,
+                         &stresstest::FxSpots,
+                         &fxspots::FxSpot);
+            check_family(path.string(),
+                         i,
+                         "FxVolatilities",
+                         row.shifts,
+                         in.FxVolatilities,
+                         out.FxVolatilities,
+                         &stresstest::FxVolatilities,
                          &stressfxvolatilities::FxVolatility);
-            check_family(path.string(), i, "SwaptionVolatilities", row.shifts,
-                         in.SwaptionVolatilities, out.SwaptionVolatilities,
+            check_family(path.string(),
+                         i,
+                         "SwaptionVolatilities",
+                         row.shifts,
+                         in.SwaptionVolatilities,
+                         out.SwaptionVolatilities,
                          &stresstest::SwaptionVolatilities,
                          &stressswaptionvolatilities::SwaptionVolatility);
-            check_family(path.string(), i, "CapFloorVolatilities", row.shifts,
-                         in.CapFloorVolatilities, out.CapFloorVolatilities,
+            check_family(path.string(),
+                         i,
+                         "CapFloorVolatilities",
+                         row.shifts,
+                         in.CapFloorVolatilities,
+                         out.CapFloorVolatilities,
                          &stresstest::CapFloorVolatilities,
                          &stresscapfloorvolatilities::CapFloorVolatility);
-            check_family(path.string(), i, "EquitySpots", row.shifts, in.EquitySpots,
-                         out.EquitySpots, &stresstest::EquitySpots, &equityspots::EquitySpot);
-            check_family(path.string(), i, "EquityVolatilities", row.shifts,
-                         in.EquityVolatilities, out.EquityVolatilities,
+            check_family(path.string(),
+                         i,
+                         "EquitySpots",
+                         row.shifts,
+                         in.EquitySpots,
+                         out.EquitySpots,
+                         &stresstest::EquitySpots,
+                         &equityspots::EquitySpot);
+            check_family(path.string(),
+                         i,
+                         "EquityVolatilities",
+                         row.shifts,
+                         in.EquityVolatilities,
+                         out.EquityVolatilities,
                          &stresstest::EquityVolatilities,
                          &equityvolatilities::EquityVolatility);
-            check_family(path.string(), i, "CommodityCurves", row.shifts, in.CommodityCurves,
-                         out.CommodityCurves, &stresstest::CommodityCurves,
+            check_family(path.string(),
+                         i,
+                         "CommodityCurves",
+                         row.shifts,
+                         in.CommodityCurves,
+                         out.CommodityCurves,
+                         &stresstest::CommodityCurves,
                          &stresscommoditycurves::CommodityCurve);
-            check_family(path.string(), i, "IntradayPowerCurves", row.shifts,
-                         in.IntradayPowerCurves, out.IntradayPowerCurves,
+            check_family(path.string(),
+                         i,
+                         "IntradayPowerCurves",
+                         row.shifts,
+                         in.IntradayPowerCurves,
+                         out.IntradayPowerCurves,
                          &stresstest::IntradayPowerCurves,
                          &stressintradaypowercurves::IntradayPowerCurve);
-            check_family(path.string(), i, "CommodityVolatilities", row.shifts,
-                         in.CommodityVolatilities, out.CommodityVolatilities,
+            check_family(path.string(),
+                         i,
+                         "CommodityVolatilities",
+                         row.shifts,
+                         in.CommodityVolatilities,
+                         out.CommodityVolatilities,
                          &stresstest::CommodityVolatilities,
                          &stresscommodityvolatilities::CommodityVolatility);
-            check_family(path.string(), i, "SecuritySpreads", row.shifts, in.SecuritySpreads,
-                         out.SecuritySpreads, &stresstest::SecuritySpreads,
+            check_family(path.string(),
+                         i,
+                         "SecuritySpreads",
+                         row.shifts,
+                         in.SecuritySpreads,
+                         out.SecuritySpreads,
+                         &stresstest::SecuritySpreads,
                          &securityspreads::SecuritySpread);
-            check_family(path.string(), i, "RecoveryRates", row.shifts, in.RecoveryRates,
-                         out.RecoveryRates, &stresstest::RecoveryRates,
+            check_family(path.string(),
+                         i,
+                         "RecoveryRates",
+                         row.shifts,
+                         in.RecoveryRates,
+                         out.RecoveryRates,
+                         &stresstest::RecoveryRates,
                          &recoveryrates::RecoverRate);
-            check_family(path.string(), i, "SurvivalProbabilities", row.shifts,
-                         in.SurvivalProbabilities, out.SurvivalProbabilities,
+            check_family(path.string(),
+                         i,
+                         "SurvivalProbabilities",
+                         row.shifts,
+                         in.SurvivalProbabilities,
+                         out.SurvivalProbabilities,
                          &stresstest::SurvivalProbabilities,
                          &survivalprobabilities::SurvivalProbability);
         }
@@ -454,7 +525,8 @@ TEST_CASE("stress_test_mapper_keeps_the_shapes_the_corpus_lacks", tags) {
 
         const auto rebuilt =
             reverse_one_entry<stresscapfloorvolatilities, stresscapfloorvolatility>(
-                entry, &stresstest::CapFloorVolatilities,
+                entry,
+                &stresstest::CapFloorVolatilities,
                 &stresscapfloorvolatilities::CapFloorVolatility);
 
         REQUIRE(static_cast<bool>(rebuilt.IsRelative));
@@ -468,7 +540,8 @@ TEST_CASE("stress_test_mapper_keeps_the_shapes_the_corpus_lacks", tags) {
 
         const auto rebuilt =
             reverse_one_entry<stresscapfloorvolatilities, stresscapfloorvolatility>(
-                entry, &stresstest::CapFloorVolatilities,
+                entry,
+                &stresstest::CapFloorVolatilities,
                 &stresscapfloorvolatilities::CapFloorVolatility);
 
         REQUIRE(static_cast<bool>(rebuilt.IsRelative));

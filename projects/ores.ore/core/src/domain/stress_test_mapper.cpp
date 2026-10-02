@@ -328,8 +328,7 @@ std::string encode_weighted_shifts(const domain::stressfxvolatility_WeightedShif
     return join(fields, '|');
 }
 
-domain::stressfxvolatility_WeightedShifts_t
-decode_weighted_shifts(const std::string& text) {
+domain::stressfxvolatility_WeightedShifts_t decode_weighted_shifts(const std::string& text) {
     domain::stressfxvolatility_WeightedShifts_t out;
     for (const auto& field : split(text, '|')) {
         const auto at = field.find('=');
@@ -374,8 +373,7 @@ std::string encode_swaption_shifts(const domain::stressswaptionvolatility_Shifts
     return join(items, ',');
 }
 
-domain::stressswaptionvolatility_Shifts_t
-decode_swaption_shifts(const std::string& text) {
+domain::stressswaptionvolatility_Shifts_t decode_swaption_shifts(const std::string& text) {
     domain::stressswaptionvolatility_Shifts_t out;
     for (const auto& item : split(text, ',')) {
         domain::stressswaptionvolatility_Shifts_t_Shift_t shift;
@@ -410,8 +408,7 @@ std::string encode_cap_floor_shifts(const domain::stresscapfloorvolatility_Shift
     return join(items, ',');
 }
 
-domain::stresscapfloorvolatility_Shifts_t
-decode_cap_floor_shifts(const std::string& text) {
+domain::stresscapfloorvolatility_Shifts_t decode_cap_floor_shifts(const std::string& text) {
     domain::stresscapfloorvolatility_Shifts_t out;
     for (const auto& item : split(text, ',')) {
         domain::stresscapfloorvolatility_Shifts_t_Shift_t shift;
@@ -485,8 +482,7 @@ void reverse_shift_size(const extras_map& extras, xsd::vector<domain::shiftSizeE
         values.push_back(decode_shift_size_entry(item));
 }
 
-void add_shift_scheme(const xsd::vector<domain::shiftSchemeEntry>& values,
-                      extras_builder& extras) {
+void add_shift_scheme(const xsd::vector<domain::shiftSchemeEntry>& values, extras_builder& extras) {
     std::vector<std::string> items;
     for (const auto& value : values)
         items.push_back(encode_shift_scheme_entry(value));
@@ -494,8 +490,7 @@ void add_shift_scheme(const xsd::vector<domain::shiftSchemeEntry>& values,
         extras.add("ShiftScheme", join(items, ','));
 }
 
-void reverse_shift_scheme(const extras_map& extras,
-                          xsd::vector<domain::shiftSchemeEntry>& values) {
+void reverse_shift_scheme(const extras_map& extras, xsd::vector<domain::shiftSchemeEntry>& values) {
     const auto it = extras.find("ShiftScheme");
     if (it == extras.end())
         return;
@@ -538,8 +533,8 @@ void decode_composite_key(const std::string& object_key,
     key = object_key.substr(at + 1);
 }
 
-analytics::domain::stress_test_shift
-map_discount_curve(const stressdiscountcurve& entry, int position) {
+analytics::domain::stress_test_shift map_discount_curve(const stressdiscountcurve& entry,
+                                                        int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "DiscountCurves";
     shift.object_key = to_string(entry.ccy);
@@ -559,8 +554,7 @@ map_discount_curve(const stressdiscountcurve& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_index_curve(const stressindexcurve& entry, int position) {
+analytics::domain::stress_test_shift map_index_curve(const stressindexcurve& entry, int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "IndexCurves";
     shift.object_key = std::string(entry.index);
@@ -580,8 +574,7 @@ map_index_curve(const stressindexcurve& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_yield_curve(const stressyieldcurve& entry, int position) {
+analytics::domain::stress_test_shift map_yield_curve(const stressyieldcurve& entry, int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "YieldCurves";
     shift.object_key = std::string(entry.name);
@@ -618,8 +611,8 @@ analytics::domain::stress_test_shift map_fx_spot(const fxspot& entry, int positi
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_fx_volatility(const stressfxvolatility& entry, int position) {
+analytics::domain::stress_test_shift map_fx_volatility(const stressfxvolatility& entry,
+                                                       int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "FxVolatilities";
     shift.object_key = std::string(entry.ccypair);
@@ -636,8 +629,8 @@ map_fx_volatility(const stressfxvolatility& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_swaption_volatility(const stressswaptionvolatility& entry, int position) {
+analytics::domain::stress_test_shift map_swaption_volatility(const stressswaptionvolatility& entry,
+                                                             int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "SwaptionVolatilities";
     std::optional<std::string> ccy;
@@ -660,8 +653,8 @@ map_swaption_volatility(const stressswaptionvolatility& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_cap_floor_volatility(const stresscapfloorvolatility& entry, int position) {
+analytics::domain::stress_test_shift map_cap_floor_volatility(const stresscapfloorvolatility& entry,
+                                                              int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "CapFloorVolatilities";
     std::optional<std::string> ccy;
@@ -701,8 +694,8 @@ analytics::domain::stress_test_shift map_equity_spot(const equityspot& entry, in
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_equity_volatility(const equityvolatility& entry, int position) {
+analytics::domain::stress_test_shift map_equity_volatility(const equityvolatility& entry,
+                                                           int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "EquityVolatilities";
     shift.object_key = std::string(entry.equity);
@@ -720,8 +713,8 @@ map_equity_volatility(const equityvolatility& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_commodity_curve(const stresscommoditycurve& entry, int position) {
+analytics::domain::stress_test_shift map_commodity_curve(const stresscommoditycurve& entry,
+                                                         int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "CommodityCurves";
     shift.object_key = std::string(entry.commodity);
@@ -735,8 +728,8 @@ map_commodity_curve(const stresscommoditycurve& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_intraday_power_curve(const stressintradaypowercurve& entry, int position) {
+analytics::domain::stress_test_shift map_intraday_power_curve(const stressintradaypowercurve& entry,
+                                                              int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "IntradayPowerCurves";
     shift.object_key = std::string(entry.name);
@@ -765,7 +758,8 @@ map_commodity_volatility(const stresscommodityvolatility& entry, int position) {
     return shift;
 }
 
-analytics::domain::stress_test_shift map_security_spread(const securityspread& entry, int position) {
+analytics::domain::stress_test_shift map_security_spread(const securityspread& entry,
+                                                         int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "SecuritySpreads";
     shift.object_key = std::string(entry.security);
@@ -795,8 +789,8 @@ analytics::domain::stress_test_shift map_recovery_rate(const recoveryrate& entry
     return shift;
 }
 
-analytics::domain::stress_test_shift
-map_survival_probability(const survivalprobability& entry, int position) {
+analytics::domain::stress_test_shift map_survival_probability(const survivalprobability& entry,
+                                                              int position) {
     analytics::domain::stress_test_shift shift;
     shift.family = "SurvivalProbabilities";
     shift.object_key = std::string(entry.name);
@@ -884,15 +878,13 @@ mapped_stress_test stress_test_mapper::map(const stresstesting& v) {
         if (scenario.SwaptionVolatilities) {
             int entry_position = 0;
             for (const auto& entry : scenario.SwaptionVolatilities->SwaptionVolatility)
-                mapped_scenario.shifts.push_back(
-                    map_swaption_volatility(entry, ++entry_position));
+                mapped_scenario.shifts.push_back(map_swaption_volatility(entry, ++entry_position));
         }
 
         if (scenario.CapFloorVolatilities) {
             int entry_position = 0;
             for (const auto& entry : scenario.CapFloorVolatilities->CapFloorVolatility)
-                mapped_scenario.shifts.push_back(
-                    map_cap_floor_volatility(entry, ++entry_position));
+                mapped_scenario.shifts.push_back(map_cap_floor_volatility(entry, ++entry_position));
         }
 
         if (scenario.EquitySpots) {
@@ -916,15 +908,13 @@ mapped_stress_test stress_test_mapper::map(const stresstesting& v) {
         if (scenario.IntradayPowerCurves) {
             int entry_position = 0;
             for (const auto& entry : scenario.IntradayPowerCurves->IntradayPowerCurve)
-                mapped_scenario.shifts.push_back(
-                    map_intraday_power_curve(entry, ++entry_position));
+                mapped_scenario.shifts.push_back(map_intraday_power_curve(entry, ++entry_position));
         }
 
         if (scenario.CommodityVolatilities) {
             int entry_position = 0;
             for (const auto& entry : scenario.CommodityVolatilities->CommodityVolatility)
-                mapped_scenario.shifts.push_back(
-                    map_commodity_volatility(entry, ++entry_position));
+                mapped_scenario.shifts.push_back(map_commodity_volatility(entry, ++entry_position));
         }
 
         if (scenario.SecuritySpreads) {
@@ -942,8 +932,7 @@ mapped_stress_test stress_test_mapper::map(const stresstesting& v) {
         if (scenario.SurvivalProbabilities) {
             int entry_position = 0;
             for (const auto& entry : scenario.SurvivalProbabilities->SurvivalProbability)
-                mapped_scenario.shifts.push_back(
-                    map_survival_probability(entry, ++entry_position));
+                mapped_scenario.shifts.push_back(map_survival_probability(entry, ++entry_position));
         }
 
         r.scenarios.push_back(std::move(mapped_scenario));
@@ -981,8 +970,7 @@ stresstesting stress_test_mapper::reverse(const mapped_stress_test& v) {
                 const auto survival = extras.find("SurvivalProbability");
                 if (survival != extras.end())
                     par.SurvivalProbability =
-                        parse_bool(survival->second) ? domain::bool_::true_
-                                                     : domain::bool_::false_;
+                        parse_bool(survival->second) ? domain::bool_::true_ : domain::bool_::false_;
                 scenario.ParShifts = par;
             } else if (shift.family == "DiscountCurves") {
                 stressdiscountcurve entry;
@@ -1113,8 +1101,7 @@ stresstesting stress_test_mapper::reverse(const mapped_stress_test& v) {
                         stresscapfloorvolatility_ShiftExpiries_t(*shift.shift_expiries);
                 const auto strikes = extras.find("ShiftStrikes");
                 if (strikes != extras.end())
-                    entry.ShiftStrikes =
-                        stresscapfloorvolatility_ShiftStrikes_t(strikes->second);
+                    entry.ShiftStrikes = stresscapfloorvolatility_ShiftStrikes_t(strikes->second);
                 const auto index = extras.find("Index");
                 if (index != extras.end())
                     entry.Index = index->second;
@@ -1172,8 +1159,7 @@ stresstesting stress_test_mapper::reverse(const mapped_stress_test& v) {
                 if (shift.shifts)
                     entry.Shifts = stressintradaypowercurve_Shifts_t(*shift.shifts);
                 if (shift.shift_tenors)
-                    entry.ShiftTenors =
-                        stressintradaypowercurve_ShiftTenors_t(*shift.shift_tenors);
+                    entry.ShiftTenors = stressintradaypowercurve_ShiftTenors_t(*shift.shift_tenors);
                 if (!scenario.IntradayPowerCurves)
                     scenario.IntradayPowerCurves = stressintradaypowercurves{};
                 scenario.IntradayPowerCurves->IntradayPowerCurve.push_back(std::move(entry));

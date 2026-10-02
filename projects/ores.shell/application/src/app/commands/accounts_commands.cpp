@@ -30,7 +30,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include <algorithm>
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/login_helpers.hpp"
@@ -40,6 +39,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cli/cli.h>
 #include <functional>
 #include <iomanip>

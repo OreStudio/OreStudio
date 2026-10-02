@@ -777,9 +777,8 @@ barrierType barrier_type_from_string(const std::string& code) {
 
 }
 
-trade swap_instrument_mapper::reverse_knock_out_swap(
-    const knock_out_swap_instrument& instr,
-    const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_knock_out_swap(const knock_out_swap_instrument& instr,
+                                                     const std::vector<swap_leg>& legs) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping KnockOutSwap";
 
     trade t;

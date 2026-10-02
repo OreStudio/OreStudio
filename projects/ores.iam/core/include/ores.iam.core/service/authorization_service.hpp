@@ -323,8 +323,7 @@ private:
      * The only place the joined shape is assembled; both access reads reach
      * the rows through it.
      */
-    std::vector<account_access_entry>
-    compose_account_access(const boost::uuids::uuid& account_id);
+    std::vector<account_access_entry> compose_account_access(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Publishes an account_permissions_changed_event for the given account.

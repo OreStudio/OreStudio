@@ -256,8 +256,7 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_knock_out_swap(
-        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument),
-        result.legs);
+        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument), result.legs);
 
     REQUIRE(reconstructed.TradeType == ores::ore::domain::oreTradeType::KnockOutSwap);
     REQUIRE(reconstructed.KnockOutSwapData.operator bool());

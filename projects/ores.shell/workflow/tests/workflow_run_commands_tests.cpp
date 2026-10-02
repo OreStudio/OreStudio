@@ -117,11 +117,11 @@ TEST_CASE("workflow_run_commands_start_refuses_the_nil_instance_id", tags) {
     // a placeholder id would collapse unrelated workflows into one.
     command_feedback::reset();
     workflow_run_commands::process_start(out,
-                                               session,
-                                               {"identity_workflow",
-                                                R"({"steps":[{"name":"one"}]})",
-                                                "--instance-id",
-                                                "00000000-0000-0000-0000-000000000000"});
+                                         session,
+                                         {"identity_workflow",
+                                          R"({"steps":[{"name":"one"}]})",
+                                          "--instance-id",
+                                          "00000000-0000-0000-0000-000000000000"});
 
     BOOST_LOG_SEV(lg, debug) << "Output for the nil instance id: " << out.str();
     CHECK(out.str().find("nil UUID") != std::string::npos);

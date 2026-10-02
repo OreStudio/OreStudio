@@ -7,30 +7,33 @@
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/search-and-page-the-tenant-roster
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A system administrator finds a tenant among many and acts on it from the roster: they search by code, name or hostname, filter by type and status, page through the list with its total, open a tenant's detail, and reach the operations a tenant offers from its row.
+A system administrator finds a tenant in a large deployment without reading
+every page: the roster searches over code, name and hostname, pages through the
+results, and says how many there are, as
+[[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] asks.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written. No code has changed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 1: the search function. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -43,9 +46,23 @@ A system administrator finds a tenant among many and acts on it from the roster:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Search function.* =ores_iam_tenants_search_fn(search, type, status,
+   limit, offset)= over the current tenant rows, excluding the system tenant,
+   matching code, name and hostname with =ilike=, ordered by code, with the
+   total from a window count.
+2. *Operation model.* =ores.iam.tenant_roster_messages=, entity singular
+   =tenant_roster= (the =tenants= shell menu belongs to the generated entity
+   unit): =search_tenants_request= and =search_tenants_response=. The filters
+   are in the request now, so the filters task adds a screen and no protocol.
+3. *Handler.* A hand-written =tenant_roster_handler= that checks
+   =iam::tenants:read= and calls the function, registered in iam's aggregate
+   registrar, with a test.
+4. *BFF.* =/api/tenants= reads through the search, passes =search=, =offset=
+   and =limit=, and stops filtering the system tenant itself.
+5. *Screen.* A search box that searches as the person types after a pause,
+   previous and next paging, and the "Showing a-b of n" footer.
+6. *Records.* A dated correction on
+   [[id:18E4CA0F-0668-46F2-97D3-A5EF58522928][Show the tenants a deployment holds]].
 
 * Measurements
 

@@ -1164,3 +1164,7 @@ tangled into the runnable script library
 * Commodity Basket Constituents
 
 - [[id:DF3915CF-6ABF-55C2-B57E-33605E444C29][How do I run the commodity_basket_constituents commands from the shell?]]
+
+* Tenant Roster
+
+- [[id:C580E7BE-D0A5-589E-9DBD-97E721D94E26][How do I run the tenant_roster commands from the shell?]]

@@ -41,6 +41,7 @@ set(files
     "app/commands/iam/session_samples_operations_commands.cpp"
     "app/commands/iam/signup_operations_commands.cpp"
     "app/commands/iam/tenant_commands.cpp"
+    "app/commands/iam/tenant_roster_operations_commands.cpp"
     "app/commands/iam/tenant_status_commands.cpp"
     "app/commands/iam/tenant_type_commands.cpp"
 )
@@ -68,6 +69,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/session_samples_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/signup_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_roster_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_status_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/iam/tenant_type_commands.hpp"
 )

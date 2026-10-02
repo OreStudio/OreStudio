@@ -1,0 +1,6 @@
+# =search=
+#
+# GENERATED from doc/recipes/shell/tenant_roster/tenant_roster.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+tenant_roster search

@@ -66,7 +66,7 @@ import {
     readTenantStatuses,
     readTenantTypes,
     readTenant,
-    readTenantParties,
+    readPartiesPage,
     readTenantSetups,
     searchTenantsPage,
     retryWorkflowInstanceResultSchema,
@@ -76,6 +76,7 @@ import {
     setAccountLocked,
     signupRequestSchema,
     signupResultSchema,
+    partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
@@ -85,7 +86,6 @@ import {
     OperationFailedError,
     type LoginOutcome,
     type PartySummary,
-    type TenantParty,
     type TenantSetup,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
@@ -133,6 +133,12 @@ const SESSION_COOKIE = 'ores_web_session';
  * the door must not spend the attempts they need to sign in with.
  */
 const POLICY_READS_PER_MINUTE = 120;
+
+/** One page of parties, as the browser asks for it. */
+const partyPageQuerySchema = z.object({
+    offset: z.int().nonnegative(),
+    limit: z.int().min(1).max(1000),
+});
 
 /** What the browser sends to enter a tenant. */
 const enterTenantBodySchema = z.object({ tenantId: z.string().min(1) });
@@ -1045,13 +1051,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * One tenant's screen: the tenant, the run that set it up, and its parties.
+     * One tenant's screen: the tenant and the run that set it up.
      *
      * The tenant is read by its code, which is how the registry's get keys it.
      * The system tenant is the deployment's own bookkeeping, so it is answered
-     * as no tenant, as the roster leaves it out. The run and the parties are
-     * read beside the tenant, and a failure to read either is not a failure to
-     * read the tenant: the answer says which is missing.
+     * as no tenant, as the roster leaves it out. The run is read beside the
+     * tenant, and a failure to read it is not a failure to read the tenant.
+     * The tenant's own data is read from inside the tenant, not from here.
      */
     server.get('/api/tenants/:code', async (request) => {
         const session = requireSession(request);
@@ -1074,25 +1080,35 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             setupUnavailable = true;
         }
 
-        let parties: readonly TenantParty[] = [];
-        let partyCount = 0;
-        let partiesUnavailable = false;
-        try {
-            const read = await readTenantParties(session.client, tenant.id);
-            parties = read.parties;
-            partyCount = read.total;
-        } catch (error) {
-            request.log.warn({ err: error }, 'The parties were not read.');
-            partiesUnavailable = true;
-        }
-
         return tenantDetailResponseSchema.parse({
             tenant: { ...tenant, setup },
             setupUnavailable,
-            parties,
-            partyCount,
-            partiesUnavailable,
         });
+    });
+
+    /**
+     * One page of the parties of the session's own tenant.
+     *
+     * Row-level security scopes the read from the session's token, so the
+     * route names no tenant. A system administrator's own tenant is the system
+     * tenant, which the party policy lets read every tenant's parties, so the
+     * route refuses system administration: a tenant's parties are read from
+     * inside it.
+     */
+    server.get('/api/parties', async (request) => {
+        const session = requireSession(request);
+        if (session.mode === 'system-administration') {
+            throw notPermitted("A tenant's parties are read from inside the tenant.");
+        }
+        const query = request.query as Record<string, string | undefined>;
+        const page = partyPageQuerySchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 20),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        return partyPageSchema.parse(await readPartiesPage(session.client, page.data));
     });
 
     /**

@@ -36,6 +36,7 @@ import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
+import { PartiesPage } from './pages/PartiesPage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
@@ -256,6 +257,18 @@ export function AppRoutes({
                 ))}
             />
             <Route
+                path="/parties"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PartiesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path="/parties/new"
                 element={signedIn(gate.version, session, shell, () => newPartyJourney)}
             />
@@ -324,7 +337,7 @@ export function ConnectedApp(): ReactNode {
             }}
             onEnterTenant={async (tenantId) => {
                 await enterTenant(tenantId);
-                navigate('/');
+                navigate('/parties');
             }}
             onLeaveTenant={() => {
                 /*

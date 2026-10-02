@@ -107,8 +107,6 @@ export const en: SourceCatalogue = {
         open: 'Open',
         resumeSetup: 'Resume setup',
         retireOrReset: 'Retire or reset',
-        previous: 'Previous',
-        next: 'Next',
         code: 'Code',
         name: 'Name',
         hostname: 'Hostname',
@@ -131,8 +129,10 @@ export const en: SourceCatalogue = {
             done: 'The run completed. The tenant is ready.',
         },
         detail: {
+            readInside:
+                'Its parties, accounts and sign-ins are read inside the tenant. Act in this tenant to read them.',
             enter: 'Act in this tenant',
-            lead: 'One tenant of this deployment: what it is, how its setup went, and the parties it holds.',
+            lead: 'One tenant of this deployment: what it is, and how its setup went.',
             back: 'Back to tenants',
             notFound: 'No tenant has this code.',
             failed: 'The tenant could not be read.',
@@ -151,17 +151,27 @@ export const en: SourceCatalogue = {
             setupUnavailable: 'The provisioning runs could not be read.',
             noRun: 'No setup run is on record for this tenant.',
             runCompleted: 'The setup run completed.',
-            parties: 'Parties',
-            partiesUnavailable: 'The parties could not be read.',
-            onlySystemParty:
-                'This tenant holds only its system party. No business party exists yet.',
-            category: 'Category',
-            parent: 'Parent',
-            partyCount: { one: '{count} party', other: '{count} parties' },
         },
         empty: {
             title: 'This deployment holds no tenant of its own yet.',
             body: 'The system administrator exists, so the deployment is set up. A tenant is the next step, and the first one is created the same way as any other.',
+        },
+    },
+
+    parties: {
+        title: 'Parties',
+        description: 'The parties of this tenant, a page at a time.',
+        failed: 'The parties could not be read.',
+        code: 'Code',
+        name: 'Name',
+        category: 'Category',
+        type: 'Type',
+        status: 'Status',
+        parent: 'Parent',
+        parentElsewhere: 'On another page',
+        showing: {
+            one: 'Showing {first}–{last} of {count} party',
+            other: 'Showing {first}–{last} of {count} parties',
         },
     },
 
@@ -405,6 +415,7 @@ export const en: SourceCatalogue = {
         email: 'Email',
         tenant: 'Tenant',
         party: 'Party',
+        parties: 'Parties',
         newParty: 'New party',
     },
 

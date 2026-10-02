@@ -29,12 +29,12 @@ import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
 /**
- * One tenant's screen: the tenant read by its code, its run and its parties.
+ * One tenant's screen: the tenant read by its code, and its run.
  *
  * The route makes three decisions, and these cases pin them: the system
  * tenant is answered as no tenant, a session outside system administration is
- * refused, and a failed run or party read empties that panel and says so
- * rather than failing the screen.
+ * refused, and a failed run read empties that panel and says so rather than
+ * failing the screen. The tenant's parties are read from inside the tenant.
  */
 
 const config: Config = {
@@ -60,8 +60,6 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 const SYSTEM_TENANT = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 const ACME_TENANT = '44444444-4444-4444-4444-444444444444';
 const RUN = '55555555-5555-5555-5555-555555555555';
-const SYSTEM_PARTY = '66666666-6666-6666-6666-666666666666';
-const GROUP = '77777777-7777-7777-7777-777777777777';
 
 function wireTenant(id: string, code: string): unknown {
     return {
@@ -100,31 +98,6 @@ const RUNS = {
             target_id: ACME_TENANT,
         },
     ],
-};
-
-const PARTIES = {
-    success: true,
-    parties: [
-        {
-            id: GROUP,
-            short_code: 'acme_group',
-            full_name: 'Acme Group',
-            party_category: 'Operational',
-            party_type: 'Corporate',
-            status: 'Active',
-            parent_party_id: SYSTEM_PARTY,
-        },
-        {
-            id: SYSTEM_PARTY,
-            short_code: 'system',
-            full_name: 'Acme System',
-            party_category: 'System',
-            party_type: 'Internal',
-            status: 'Active',
-            parent_party_id: null,
-        },
-    ],
-    total: 2,
 };
 
 type Answers = Record<string, unknown>;
@@ -193,7 +166,6 @@ function buildTestServer(
 const ALL = {
     'iam.v1.tenants.get': FOUND,
     'workflow.v1.instances.list': RUNS,
-    'refdata.v1.parties.list-of-tenant': PARTIES,
 };
 
 async function get(answers: Answers, code = 'acme', mode?: 'application') {
@@ -208,7 +180,7 @@ async function get(answers: Answers, code = 'acme', mode?: 'application') {
 }
 
 describe('GET /api/tenants/:code', () => {
-    it('answers the tenant with its provenance, its run and its parties', async () => {
+    it('answers the tenant with its provenance and its run, and reads no party', async () => {
         const { response, calls } = await get(ALL);
 
         expect(response.statusCode).toBe(200);
@@ -220,20 +192,15 @@ describe('GET /api/tenants/:code', () => {
             changeReasonCode: 'system.initial_load',
             setup: { instanceId: RUN, status: 'failed', error: 'Seeding failed.' },
         });
-        expect(body.parties.map((p: { code: string }) => p.code)).toEqual(['system', 'acme_group']);
-        expect(body.parties[1].parentName).toBe('Acme System');
-        expect(body.partyCount).toBe(2);
         expect(body.setupUnavailable).toBe(false);
-        expect(body.partiesUnavailable).toBe(false);
+        expect(body).not.toHaveProperty('parties');
         expect(calls.find((c) => c.subject === 'iam.v1.tenants.get')?.body).toEqual({
             key: { code: 'acme' },
         });
         expect(calls.find((c) => c.subject === 'workflow.v1.instances.list')?.body).toMatchObject({
             target_id_filter: ACME_TENANT,
         });
-        expect(
-            calls.find((c) => c.subject === 'refdata.v1.parties.list-of-tenant')?.body,
-        ).toMatchObject({ tenant_id: ACME_TENANT });
+        expect(calls.map((c) => c.subject)).not.toContain('refdata.v1.parties.list');
     });
 
     it('answers not found for a code no tenant holds', async () => {
@@ -269,18 +236,15 @@ describe('GET /api/tenants/:code', () => {
         expect(calls).toHaveLength(0);
     });
 
-    it('still answers the tenant when the runs and the parties cannot be read', async () => {
+    it('still answers the tenant when the runs cannot be read', async () => {
         const { response } = await get({
             'iam.v1.tenants.get': FOUND,
             'workflow.v1.instances.list': new Error('down'),
-            'refdata.v1.parties.list-of-tenant': new Error('down'),
         });
 
         expect(response.statusCode).toBe(200);
         const body = response.json();
         expect(body.tenant.setup).toBeNull();
         expect(body.setupUnavailable).toBe(true);
-        expect(body.parties).toEqual([]);
-        expect(body.partiesUnavailable).toBe(true);
     });
 });

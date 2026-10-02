@@ -109,8 +109,6 @@ const pt: SourceCatalogue = {
         open: 'Abrir',
         resumeSetup: 'Retomar a configuração',
         retireOrReset: 'Retirar ou repor',
-        previous: 'Anterior',
-        next: 'Seguinte',
         code: 'Código',
         name: 'Nome',
         hostname: 'Nome do anfitrião',
@@ -134,8 +132,10 @@ const pt: SourceCatalogue = {
             done: 'A execução terminou. O inquilino está pronto.',
         },
         detail: {
+            readInside:
+                'As suas partes, contas e inícios de sessão leem-se dentro do inquilino. Aja neste inquilino para os ler.',
             enter: 'Agir neste inquilino',
-            lead: 'Um inquilino deste ambiente: o que é, como correu a sua configuração, e as partes que contém.',
+            lead: 'Um inquilino deste ambiente: o que é, e como correu a sua configuração.',
             back: 'Voltar aos inquilinos',
             notFound: 'Nenhum inquilino tem este código.',
             failed: 'Não foi possível ler o inquilino.',
@@ -154,17 +154,27 @@ const pt: SourceCatalogue = {
             setupUnavailable: 'Não foi possível ler as execuções de aprovisionamento.',
             noRun: 'Não há registo de uma execução de aprovisionamento para este inquilino.',
             runCompleted: 'A execução de aprovisionamento terminou.',
-            parties: 'Partes',
-            partiesUnavailable: 'Não foi possível ler as partes.',
-            onlySystemParty:
-                'Este inquilino contém apenas a sua parte de sistema. Ainda não existe nenhuma parte de negócio.',
-            category: 'Categoria',
-            parent: 'Pai',
-            partyCount: { one: '{count} parte', other: '{count} partes' },
         },
         empty: {
             title: 'Esta instalação ainda não tem um inquilino próprio.',
             body: 'O administrador do sistema existe, portanto a instalação está configurada. Um inquilino é o passo seguinte, e o primeiro cria-se como qualquer outro.',
+        },
+    },
+
+    parties: {
+        title: 'Partes',
+        description: 'As partes deste inquilino, uma página de cada vez.',
+        failed: 'Não foi possível ler as partes.',
+        code: 'Código',
+        name: 'Nome',
+        category: 'Categoria',
+        type: 'Tipo',
+        status: 'Estado',
+        parent: 'Pai',
+        parentElsewhere: 'Noutra página',
+        showing: {
+            one: '{first}–{last} de {count} parte',
+            other: '{first}–{last} de {count} partes',
         },
     },
 
@@ -405,6 +415,7 @@ const pt: SourceCatalogue = {
         email: 'Email',
         tenant: 'Inquilino',
         party: 'Parte',
+        parties: 'Partes',
         newParty: 'Nova parte',
     },
 

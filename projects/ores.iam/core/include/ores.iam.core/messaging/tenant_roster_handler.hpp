@@ -64,8 +64,16 @@ private:
     /// The most tenants one page may ask for.
     static constexpr std::uint32_t max_limit = 1000;
 
-    /// The columns the search function returns, in order.
-    static constexpr std::size_t column_count = 15;
+    /*
+     * Where the search function puts the two columns read by position: the
+     * id, which is null on the one row a page past the last match returns,
+     * and the total every row carries. The others are read in to_tenant in
+     * the function's column order.
+     */
+    static constexpr std::size_t id_column = 0;
+    static constexpr std::size_t recorded_at_column = 13;
+    static constexpr std::size_t total_column = 14;
+    static constexpr std::size_t column_count = total_column + 1;
 
 public:
     tenant_roster_handler(ores::nats::service::client& nats,
@@ -106,7 +114,7 @@ public:
         search_tenants_response resp;
         try {
             using namespace ores::database::repository;
-            const auto limit = std::min(req.limit, max_limit);
+            const auto limit = std::clamp(req.limit, std::uint32_t{1}, max_limit);
             const auto rows = execute_parameterized_multi_column_query(
                 ctx,
                 "SELECT * FROM ores_iam_tenants_search_fn($1, $2, $3, $4, $5)",
@@ -120,8 +128,9 @@ public:
             for (const auto& row : rows) {
                 if (row.size() < column_count)
                     continue;
-                resp.tenants.push_back(to_tenant(row));
-                resp.total = std::stoull(row[14].value_or("0"));
+                resp.total = std::stoull(row[total_column].value_or("0"));
+                if (row[id_column])
+                    resp.tenants.push_back(to_tenant(row));
             }
             resp.success = true;
         } catch (const std::exception& e) {
@@ -143,7 +152,7 @@ private:
         using ores::database::repository::text_to_bool;
         using ores::database::repository::timestamp_to_timepoint;
         domain::tenant t;
-        t.id = boost::lexical_cast<boost::uuids::uuid>(row[0].value_or(""));
+        t.id = boost::lexical_cast<boost::uuids::uuid>(row[id_column].value_or(""));
         t.version = std::stoi(row[1].value_or("0"));
         t.code = row[2].value_or("");
         t.name = row[3].value_or("");
@@ -156,7 +165,8 @@ private:
         t.performed_by = row[10].value_or("");
         t.change_reason_code = row[11].value_or("");
         t.change_commentary = row[12].value_or("");
-        t.recorded_at = timestamp_to_timepoint(std::string_view(row[13].value_or("")));
+        t.recorded_at =
+            timestamp_to_timepoint(std::string_view(row[recorded_at_column].value_or("")));
         return t;
     }
 

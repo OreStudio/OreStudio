@@ -28,14 +28,18 @@
 -- tenant_id column of this system-scoped table names the registry's owner.
 --
 -- Parameters:
---   p_search: text matched, without regard to case, anywhere in the code, the
---             name or the hostname; empty matches every tenant
+--   p_search: text found, without regard to case, anywhere in the code, the
+--             name or the hostname; empty matches every tenant. It is plain
+--             text: % and _ are characters, not wildcards.
 --   p_type:   a tenant type code to keep, or empty for every type
 --   p_status: a tenant status code to keep, or empty for every status
 --   p_limit:  the most rows to return
 --   p_offset: how many matching rows to skip, in code order
 --
--- Returns the page's rows, each carrying the total number of matches.
+-- Returns the page's rows, each carrying the total number of matches. A page
+-- past the last match returns one row whose id is null, so the total still
+-- arrives: a reader on a page that emptied under them learns how many tenants
+-- there are, not that there are none.
 
 create or replace function ores_iam_tenants_search_fn(
     p_search text default '',
@@ -63,35 +67,47 @@ returns table (
 ) as $$
 begin
     return query
+    with matched as (
+        select t.*
+        from ores_iam_tenants_tbl t
+        where t.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id <> ores_utility_system_tenant_id_fn()
+          and (p_type = '' or t.type = p_type)
+          and (p_status = '' or t.status = p_status)
+          and (
+              p_search = ''
+              or strpos(lower(t.code), lower(p_search)) > 0
+              or strpos(lower(t.name), lower(p_search)) > 0
+              or strpos(lower(t.hostname), lower(p_search)) > 0
+          )
+    ),
+    counted as (
+        select count(*) as total from matched
+    )
     select
-        t.id,
-        t.version,
-        t.code,
-        t.name,
-        t.type,
-        t.description,
-        t.hostname,
-        t.status,
-        t.is_registration_default,
-        t.modified_by,
-        t.performed_by,
-        t.change_reason_code,
-        t.change_commentary,
-        t.valid_from,
-        count(*) over () as total
-    from ores_iam_tenants_tbl t
-    where t.valid_to = ores_utility_infinity_timestamp_fn()
-      and t.id <> ores_utility_system_tenant_id_fn()
-      and (p_type = '' or t.type = p_type)
-      and (p_status = '' or t.status = p_status)
-      and (
-          p_search = ''
-          or t.code ilike '%' || p_search || '%'
-          or t.name ilike '%' || p_search || '%'
-          or t.hostname ilike '%' || p_search || '%'
-      )
-    order by t.code
-    limit p_limit
-    offset p_offset;
+        m.id,
+        m.version,
+        m.code,
+        m.name,
+        m.type,
+        m.description,
+        m.hostname,
+        m.status,
+        m.is_registration_default,
+        m.modified_by,
+        m.performed_by,
+        m.change_reason_code,
+        m.change_commentary,
+        m.valid_from,
+        c.total
+    from counted c
+    left join lateral (
+        select *
+        from matched
+        order by matched.code
+        limit p_limit
+        offset p_offset
+    ) m on true
+    order by m.code;
 end;
 $$ language plpgsql stable;

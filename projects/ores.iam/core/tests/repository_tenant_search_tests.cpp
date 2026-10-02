@@ -89,10 +89,15 @@ std::vector<row_t> search(ores::testing::database_helper& h,
         "searching tenants");
 }
 
+/**
+ * @brief The codes of the tenants a search answered, leaving out the row a page
+ * past the last match carries only to bring the total.
+ */
 std::vector<std::string> codes(const std::vector<row_t>& rows) {
     std::vector<std::string> result;
     for (const auto& row : rows)
-        result.push_back(row[2].value_or(""));
+        if (row[0])
+            result.push_back(row[2].value_or(""));
     return result;
 }
 
@@ -156,6 +161,43 @@ TEST_CASE("tenant_search_pages_and_counts_every_match", tags) {
     for (const auto& row : page)
         CHECK(row[14].value_or("") == "5");
     BOOST_LOG_SEV(lg, debug) << "Paged " << marker;
+}
+
+/*
+ * A page that empties under a reader -- a tenant retired while they were on the
+ * last page, or a stale link -- must still say how many tenants match, or the
+ * roster reads as a deployment with none.
+ */
+TEST_CASE("tenant_search_past_the_last_page_still_counts_the_matches", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    const auto marker = unique_marker();
+    write_tenant(h, marker, "a", "automation", "active");
+    write_tenant(h, marker, "b", "automation", "active");
+
+    const auto rows = search(h, marker, "", "", 10, 50);
+    CHECK(codes(rows).empty());
+    REQUIRE(rows.size() == 1);
+    CHECK_FALSE(rows.front()[0].has_value());
+    CHECK(rows.front()[14].value_or("") == "2");
+    BOOST_LOG_SEV(lg, debug) << "Counted past the end for " << marker;
+}
+
+/*
+ * The search is text a person typed, so % and _ are characters. Tenant codes
+ * hold underscores, and a pattern match would read one as any character.
+ */
+TEST_CASE("tenant_search_treats_percent_and_underscore_as_characters", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    const auto marker = unique_marker();
+    write_tenant(h, marker, "a", "automation", "active");
+
+    // As a pattern, "_" would match the "_" in the code and "%" anything.
+    CHECK(codes(search(h, marker + "_a")) == std::vector<std::string>{marker + "_a"});
+    CHECK(codes(search(h, marker + "%a")).empty());
+    CHECK(codes(search(h, marker.substr(0, marker.size() - 1) + "_")).empty());
+    BOOST_LOG_SEV(lg, debug) << "Searched literally for " << marker;
 }
 
 TEST_CASE("tenant_search_never_answers_the_system_tenant", tags) {

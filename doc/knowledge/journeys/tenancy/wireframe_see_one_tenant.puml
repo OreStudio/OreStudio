@@ -50,14 +50,7 @@ salt
     Run | (Failed) | Step 4 of 7 | Seeding failed. | [ Resume setup ]
   }
   --
-  <b>PARTIES</b>
-  --
-  {#
-    Code | Name | Category | Type | Status | Parent
-    system | Acme Corporation System | System | | Active | -
-    acme_group | Acme Group | Operational | Legal entity | Active | -
-    acme_london | Acme London | Operational | Branch | Active | Acme Group
-  }
+  Its parties, accounts and sign-ins are read inside the tenant. | [ Act in this tenant ]
   --
   <b>NO SUCH TENANT</b>
   --

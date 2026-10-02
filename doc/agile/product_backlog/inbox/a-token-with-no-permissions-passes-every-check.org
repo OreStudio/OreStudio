@@ -13,15 +13,28 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Make a person's token carry the permissions they hold, and stop the token
+check from passing an empty list. Then a handler's =has_permission= means what
+it says for a person as well as for a service.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The gap is wider than an account with no roles. Login never fills the token's
+=roles= claim: =auth_handler::login= builds the claims without them, and only
+service login, internal impersonation and refresh copy a list. So every
+person's token carries an empty list, and =has_permission= passes it for every
+code. Every permission check a generated handler makes against the token passes
+for every signed-in person. The BFF's mode checks are what keep a member out of
+system administration routes today.
+
+Found while building [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]]:
+its entry checks =iam::tenants:impersonate= against the database for this
+reason, and the tenant session carries an explicit read-only list.
 
 * References
 
--
+- =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp= -- login builds claims without roles
+- =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp= -- the empty-list pass-through
 
 * See also
 

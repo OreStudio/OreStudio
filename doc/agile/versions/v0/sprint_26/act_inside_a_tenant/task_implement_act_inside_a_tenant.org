@@ -102,7 +102,9 @@ written, with its wireframe, and the tenancy hub lists it. Its decisions:
   in the tenant administration mode. Its token carries a claim naming the
   tenant the administrator acts from.
 - The session reads only: it carries the read permissions of the
-  administrator's roles. Writing inside a tenant is left as a decision.
+  administrator's roles, and the BFF refuses every change while inside. The
+  operator decided this: data is read only inside a tenant, and a system
+  administrator changes a tenant only by deleting all of it.
 - The session is not refreshed. On expiry, and on leaving, the browser returns
   to the administrator's own system session without a new sign-in.
 - The BFF routes are =POST= and =DELETE= on =/api/session/tenant=.

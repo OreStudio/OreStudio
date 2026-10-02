@@ -69,10 +69,12 @@ the ordinary reads do the rest.
    not in system administration, or the system tenant as the target is refused
    with a reason, and the browser stays where it was.
 
-Entering writes only the audit records. The session the administrator gets is
-for reading: it carries the read permissions of the administrator's roles and
-no write permission. Writing inside a tenant is a separate decision, recorded
-under *What is missing*.
+Entering writes only the audit records. Inside a tenant, data is read only. The
+session carries the read permissions of the administrator's roles and no write
+permission, and the BFF refuses every change while the session is in a tenant.
+A system administrator changes a tenant in one way only: by deleting the whole
+tenant, from system administration, in
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]].
 
 * Screens and wireframes
 
@@ -125,11 +127,7 @@ session while the tenant session is in use, so leaving needs no sign-in.
    one tenant. An administrator acting in Acme is not an Acme account, so the
    token needs a claim naming the tenant they act from, and the audit trail
    needs to show it.
-3. *Writing inside a tenant.* This journey reads. Whether an administrator may
-   change a tenant's data from inside it, and how such a change is marked, is a
-   separate decision. Until it is made, the tenant session carries read
-   permissions only.
-4. *Removing the cross-tenant party read.* =refdata.v1.parties.list-of-tenant=
+3. *Removing the cross-tenant party read.* =refdata.v1.parties.list-of-tenant=
    was added for the tenant's screen before this journey existed. It goes once
    the parties are read from inside the tenant.
 

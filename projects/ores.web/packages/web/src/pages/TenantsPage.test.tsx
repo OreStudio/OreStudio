@@ -385,6 +385,67 @@ describe('the tenant roster', () => {
         expect(html).not.toContain('no tenant of its own');
     });
 
+    /*
+     * Each row has one menu of what can be done to its tenant. Resuming setup
+     * is the one action the tree has built for a tenant whose run is not done.
+     */
+    it('offers to resume setup from the row of a tenant whose run is unfinished', () => {
+        const html = render(
+            [
+                {
+                    ...acme,
+                    setup: {
+                        instanceId: RUN,
+                        status: 'failed',
+                        currentStepIndex: 3,
+                        stepCount: 7,
+                        error: 'Seeding failed.',
+                    },
+                },
+            ],
+            1,
+        );
+
+        expect(html).toContain('aria-label="Actions for Acme Corporation"');
+        expect(html).toContain('Resume setup');
+        expect(html.match(new RegExp(`href="/tenants/runs/${RUN}"`, 'g'))?.length).toBe(2);
+    });
+
+    it('does not offer to resume a run that completed, or a tenant with none', () => {
+        const completed = render(
+            [
+                {
+                    ...acme,
+                    setup: {
+                        instanceId: RUN,
+                        status: 'completed',
+                        currentStepIndex: 6,
+                        stepCount: 7,
+                        error: '',
+                    },
+                },
+            ],
+            1,
+        );
+
+        expect(completed).not.toContain('Resume setup');
+        expect(render([acme], 1)).not.toContain('Resume setup');
+    });
+
+    /*
+     * Opening a tenant and retiring or resetting it are journeys the tree has
+     * not built. The menu names them and says so, as the shell's cards do,
+     * rather than hiding them or offering a link that goes nowhere.
+     */
+    it('names the actions the tree has not built, and marks them', () => {
+        const html = render([acme], 1);
+
+        expect(html).toContain('>Open<');
+        expect(html).toContain('>Retire or reset<');
+        expect(html.match(/aria-disabled="true"/g)).toHaveLength(2);
+        expect(html).toContain('Not built yet');
+    });
+
     it('says so when the deployment holds no tenant, without repeating the action', () => {
         const html = render([], 0);
 

@@ -271,7 +271,10 @@ function Roster({
                         <th className="py-2 pr-4 font-medium">{t('tenants.hostname')}</th>
                         <th className="py-2 pr-4 font-medium">{t('tenants.type')}</th>
                         <th className="py-2 pr-4 font-medium">{t('tenants.status')}</th>
-                        <th className="py-2 font-medium">{t('tenants.setup')}</th>
+                        <th className="py-2 pr-4 font-medium">{t('tenants.setup')}</th>
+                        <th className="py-2 font-medium">
+                            <span className="sr-only">{t('tenants.actions')}</span>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -292,8 +295,11 @@ function Roster({
                                     known={statusByCode.get(tenant.status)}
                                 />
                             </td>
-                            <td className="py-2.5">
+                            <td className="py-2.5 pr-4">
                                 <SetupCell setup={tenant.setup} />
+                            </td>
+                            <td className="py-2.5 text-right">
+                                <RowActions tenant={tenant} />
                             </td>
                         </tr>
                     ))}
@@ -418,6 +424,59 @@ function Pager({
                 </Button>
             </span>
         </div>
+    );
+}
+
+/**
+ * What a person can do to one tenant, from its row.
+ *
+ * A native disclosure holds the menu, so it opens without script and a
+ * keyboard reaches it as it reaches any other control. Resuming setup is
+ * offered when the tenant's provisioning run has not completed. Opening the
+ * tenant and retiring or resetting it are journeys the tree has not built, so
+ * they are shown and marked as such, the way the shell marks a card, rather
+ * than hidden: a person can see what the menu will hold.
+ */
+function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
+    const { t } = useTranslation();
+    const resumable = tenant.setup !== null && tenant.setup.status !== 'completed';
+    return (
+        <details className="relative inline-block text-left">
+            <summary
+                className="cursor-pointer list-none rounded px-2 text-ink-muted hover:bg-surface-hover"
+                aria-label={t('tenants.actionsFor', { name: tenant.name })}
+            >
+                …
+            </summary>
+            <ul className="absolute right-0 z-10 mt-1 w-56 rounded-md border border-line bg-surface-overlay py-1 text-sm shadow-lg">
+                {resumable && tenant.setup !== null && (
+                    <li>
+                        <Link
+                            to={`/tenants/runs/${encodeURIComponent(tenant.setup.instanceId)}`}
+                            className="block px-3 py-1.5 hover:bg-surface-hover"
+                        >
+                            {t('tenants.resumeSetup')}
+                        </Link>
+                    </li>
+                )}
+                <NotBuiltAction label={t('tenants.open')} />
+                <NotBuiltAction label={t('tenants.retireOrReset')} />
+            </ul>
+        </details>
+    );
+}
+
+/** A menu entry for a journey the tree has not built: named, and marked so. */
+function NotBuiltAction({ label }: { readonly label: string }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <li
+            aria-disabled="true"
+            className="flex items-center justify-between gap-2 px-3 py-1.5 text-ink-faint"
+        >
+            <span>{label}</span>
+            <span className="text-[11px]">{t('shell.notBuilt')}</span>
+        </li>
     );
 }
 

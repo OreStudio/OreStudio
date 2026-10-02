@@ -117,12 +117,13 @@ public:
             const auto limit = std::clamp(req.limit, std::uint32_t{1}, max_limit);
             const auto rows = execute_parameterized_multi_column_query(
                 ctx,
-                "SELECT * FROM ores_iam_tenants_search_fn($1, $2, $3, $4, $5)",
+                "SELECT * FROM ores_iam_tenants_search_fn($1, $2, $3, $4, $5, $6)",
                 {req.search,
                  req.type_filter,
                  req.status_filter,
                  std::to_string(limit),
-                 std::to_string(req.offset)},
+                 std::to_string(req.offset),
+                 req.exclude_type_filter},
                 lg(),
                 "searching tenants");
             for (const auto& row : rows) {

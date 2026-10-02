@@ -86,6 +86,7 @@ domain::tenant_type to_domain(const messaging::tenant_type_write& write) {
     v.name = write.name;
     v.description = write.description;
     v.display_order = write.display_order;
+    v.badge_code = write.badge_code;
     return v;
 }
 

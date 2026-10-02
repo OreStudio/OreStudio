@@ -37,6 +37,7 @@ render_tenant_type_fields(const domain::tenant_type& v) {
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
+    fields.push_back({.name = "Badge Code", .value = v.badge_code});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

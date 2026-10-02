@@ -20,7 +20,12 @@
  */
 
 import { z } from 'zod';
-import { activePartySchema, partySummarySchema, tenantStatusSchema } from './domain.js';
+import {
+    activePartySchema,
+    partySummarySchema,
+    tenantStatusSchema,
+    tenantTypeSchema,
+} from './domain.js';
 
 /**
  * The HTTP contract between the BFF and the browser.
@@ -64,6 +69,12 @@ export const tenantStatusesResponseSchema = z.object({
     statuses: z.array(tenantStatusSchema),
 });
 export type TenantStatusesResponse = z.infer<typeof tenantStatusesResponseSchema>;
+
+/** The tenant types, with the badge each one is painted with. */
+export const tenantTypesResponseSchema = z.object({
+    types: z.array(tenantTypeSchema),
+});
+export type TenantTypesResponse = z.infer<typeof tenantTypesResponseSchema>;
 
 /** The signed-in session as the browser sees it. */
 export const sessionViewSchema = z.object({

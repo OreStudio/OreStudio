@@ -63,6 +63,7 @@ import {
     readLoginInfoPage,
     readSessionsPage,
     readTenantStatuses,
+    readTenantTypes,
     readTenantSetups,
     searchTenantsPage,
     retryWorkflowInstanceResultSchema,
@@ -74,6 +75,7 @@ import {
     signupResultSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
+    tenantTypesResponseSchema,
     workflowProgressSchema,
     NotAuthenticatedError,
     type LoginOutcome,
@@ -844,9 +846,15 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /** What the roster may ask for: a search and one page of the matches. */
     const tenantRosterQuerySchema = z.object({
         search: z.string().max(200),
+        type: z.string().max(100),
+        status: z.string().max(100),
+        includeTest: z.boolean(),
         offset: z.int().nonnegative(),
         limit: z.int().positive().max(1000),
     });
+
+    /** The tenant type that marks test infrastructure, hidden unless asked for. */
+    const TEST_TENANT_TYPE = 'automation';
 
     /**
      * The tenants this deployment holds, one page of the ones that match.
@@ -873,13 +881,40 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const query = request.query as Record<string, string | undefined>;
         const page = tenantRosterQuerySchema.safeParse({
             search: query['search'] ?? '',
+            type: query['type'] ?? '',
+            status: query['status'] ?? '',
+            includeTest: query['includeTest'] === 'true',
             offset: Number(query['offset'] ?? 0),
             limit: Number(query['limit'] ?? 100),
         });
         if (!page.success) {
             throw invalidRequest('The page offset and limit must be whole numbers.');
         }
-        const read = await searchTenantsPage(session.client, page.data);
+        /*
+         * Test infrastructure is hidden unless the person asks for it or asks
+         * for that type by name. The server leaves it out, so the page and its
+         * total agree, and a second count says how many were hidden.
+         */
+        const hideTest = !page.data.includeTest && page.data.type !== TEST_TENANT_TYPE;
+        const read = await searchTenantsPage(session.client, {
+            search: page.data.search,
+            type: page.data.type,
+            status: page.data.status,
+            excludeType: hideTest ? TEST_TENANT_TYPE : '',
+            offset: page.data.offset,
+            limit: page.data.limit,
+        });
+        const hiddenTestCount =
+            hideTest && page.data.type === ''
+                ? (
+                      await searchTenantsPage(session.client, {
+                          search: page.data.search,
+                          type: TEST_TENANT_TYPE,
+                          status: page.data.status,
+                          limit: 1,
+                      })
+                  ).totalCount
+                : 0;
         /*
          * Each tenant is joined with the run that provisioned it, which is how a
          * person who left the journey finds the work again. The runs belong to
@@ -909,6 +944,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             })),
             totalCount: read.totalCount,
             setupUnavailable,
+            hiddenTestCount,
         });
     });
 
@@ -925,6 +961,19 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const session = requireSession(request);
         return tenantStatusesResponseSchema.parse({
             statuses: await readTenantStatuses(session.client),
+        });
+    });
+
+    /**
+     * The tenant types, and the badge each one is painted with.
+     *
+     * The roster filters by type and paints the type column, so it reads the
+     * deployment's own type rows rather than a list written into the screen.
+     */
+    server.get('/api/tenant-types', async (request) => {
+        const session = requireSession(request);
+        return tenantTypesResponseSchema.parse({
+            types: await readTenantTypes(session.client),
         });
     });
 

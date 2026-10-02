@@ -65,15 +65,58 @@ const activeStatus = {
     },
 };
 
+/** The types as the BFF answers them: their own words, each with its badge. */
+const tenantTypes = [
+    {
+        code: 'system',
+        name: 'System',
+        description: '',
+        badge: null,
+    },
+    {
+        code: 'operational',
+        name: 'Operational',
+        description: 'A tenant in use.',
+        badge: {
+            code: 'tenant_type_operational',
+            label: 'Operational',
+            description: '',
+            backgroundColour: '#2563eb',
+            textColour: '#ffffff',
+            severity: 'info',
+        },
+    },
+    {
+        code: 'automation',
+        name: 'Automation',
+        description: 'Automated test infrastructure.',
+        badge: {
+            code: 'tenant_type_automation',
+            label: 'Automation',
+            description: '',
+            backgroundColour: '#9ca3af',
+            textColour: '#ffffff',
+            severity: 'secondary',
+        },
+    },
+];
+
 function render(
     tenants: readonly TenantSummary[],
     totalCount: number,
     statuses: readonly unknown[] = [activeStatus],
     setupUnavailable = false,
+    hiddenTestCount = 0,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['tenants', '', 0], { tenants, totalCount, setupUnavailable });
+    client.setQueryData(['tenants', '', '', '', false, 0], {
+        tenants,
+        totalCount,
+        setupUnavailable,
+        hiddenTestCount,
+    });
     client.setQueryData(['tenant-statuses'], statuses);
+    client.setQueryData(['tenant-types'], tenantTypes);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -299,6 +342,47 @@ describe('the tenant roster', () => {
 
     it('offers no search to a deployment that holds no tenant', () => {
         expect(render([], 0)).not.toContain('type="search"');
+    });
+
+    /*
+     * The type is painted like the status: its own words, the badge's colours.
+     */
+    it('paints the type with its own name and its badge colours', () => {
+        const html = render([acme], 1);
+
+        expect(html).toContain('background-color:#2563eb');
+        expect(html).toContain('>Operational<');
+    });
+
+    it('offers a filter for each type the roster can show, and each status', () => {
+        const html = render([acme], 1);
+
+        expect(html).toContain('All types');
+        expect(html).toContain('<option value="operational">Operational</option>');
+        expect(html).toContain('<option value="automation">Automation</option>');
+        // The system type names only the deployment's own bookkeeping, which
+        // the roster never shows.
+        expect(html).not.toContain('<option value="system">');
+        expect(html).toContain('All statuses');
+        expect(html).toContain('<option value="active">Active</option>');
+    });
+
+    /*
+     * Test infrastructure is hidden by default, and the screen says how much
+     * it hid, so a person who wants it knows it is there.
+     */
+    it('says how many test tenants it hides, beside the toggle that shows them', () => {
+        const html = render([acme], 1, [activeStatus], false, 12);
+
+        expect(html).toContain('Show test tenants');
+        expect(html).toContain('12 test tenants hidden');
+    });
+
+    it('offers the toggle to a deployment that holds only test tenants', () => {
+        const html = render([], 0, [activeStatus], false, 3);
+
+        expect(html).toContain('Show test tenants');
+        expect(html).not.toContain('no tenant of its own');
     });
 
     it('says so when the deployment holds no tenant, without repeating the action', () => {

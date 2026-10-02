@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: F351845E-108A-47C4-A8F4-DC4A0C671A10
+:END:
+#+title: A badge's text is the value it represents
+#+description: A badge never shows a different word from the value it paints: the automation tenant type's badge reads Automation, not Test.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+A badge definition's name is the same word as the value it paints. A tenant type automation gets a badge named Automation, never a friendlier synonym such as Test.
+
+*Why:* The user stated it on 2026-10-02, when the automation tenant type's new badge was named Test: a badge whose words differ from the value makes the reader translate between two vocabularies for one thing.
+
+*How to apply:* When adding or editing a badge in dq_badge_definitions_artefact_populate.sql or dq_badge_system_populate.sql, name it with the value's own name, and give test fixtures the same label.

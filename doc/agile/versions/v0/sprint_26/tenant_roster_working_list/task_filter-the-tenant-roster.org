@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/filter-the-tenant-roster
+#+pr: 2514
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ and they hide the real tenants.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -57,9 +57,25 @@ and they hide the real tenants.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *Badges.* Four badge definitions, one per tenant type, in both the
+   artefact and the system badge populates; =automation= reads as test
+   infrastructure.
+2. *The type row names its badge.* =ores.iam.tenant_type= gains =badge_code=,
+   a soft reference to the badge catalogue, as =tenant_status= did. Regenerate
+   the entity, and seed the four types with their badges.
+3. *The type read.* A =readTenantTypes= beside =readTenantStatuses=, and
+   =GET /api/tenant-types= with each type's badge.
+4. *Leaving a type out.* The search request gains =exclude_type_filter=, and
+   =ores_iam_tenants_search_fn= a matching parameter, so the server answers
+   "every type but automation" with a total that counts the same rows. Test it.
+5. *The BFF.* =/api/tenants= takes =type=, =status= and =includeTest=. Without
+   =includeTest= it leaves =automation= out, and answers how many tenants that
+   hid.
+6. *The screen.* A type select and a status select from the deployment's own
+   rows, a *Show test tenants* toggle that states the hidden count, and the type
+   column painted with its badge.
+7. *Records.* The See the tenants journey and its wireframe gain the filters
+   and the toggle.
 
 * Measurements
 
@@ -92,12 +108,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2514][#2514]] | [web] Filter the tenant roster and hide test tenants |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | About 56 todays_market shell scripts in the diff. | =ores.shell/scripts/library= | Accept | They are analytics recipe output a broad =git add= carried in after a full tangle; removed from the branch. |
+| 2 | CI: the codegen test pinning the tenant type's TypeScript members failed. | =test_entity_typescript.py= | Accept | The member list gains =badge_code=; the codegen suite passes, 1075. |
+| 3 | CI: the ER diagram did not have =badge_code=. | =ores_schema.puml= | Accept | Regenerated. |
+| 4 | A second search per roster load counts the hidden tenants. | =server.ts= | No change | One small read; a hidden count from the same function is the way out if the roster gets slow. |
+| 5 | =automation= and =system= are literals. | =server.ts=, =TenantsPage.tsx= | No change | They match the seeded rows and are commented; a type flag is the longer-term answer. |
+| 6 | The types read has no error state. | =TenantsPage.tsx= | No change | It degrades to no options and raw codes, as the reviewer notes. |
 
 * Result
+
+- *The type is a badge.* =ores.iam.tenant_type= gains =badge_code=, as the
+  status row did, and the four seeded types name four new badges, each called by
+  its type's own word: System, Production, Evaluation, Automation. The roster
+  paints the type column with it.
+- *The filters.* =GET /api/tenant-types= serves the types with their badges; the
+  roster has a type select (without =system=, which names only the deployment's
+  own bookkeeping) and a status select, both from the deployment's own rows.
+- *Test tenants hidden.* The search request leaves a type out, so the server
+  answers "every type but automation" and its total counts the same rows. The
+  BFF hides =automation= unless =includeTest= is set or that type is asked for by
+  name, and answers how many it hid; the screen shows a *Show test tenants*
+  toggle with that count, and a deployment holding only test tenants still
+  offers it.
+- *Checked live.* With Acme provisioned and ctest's fixtures present: the
+  default roster answers 1 tenant with 31 test tenants hidden; the toggle shows
+  32; the automation type alone 31; evaluation alone 1; =/api/tenant-types=
+  answers each type with its badge colour.
+- *Tests.* One new iam test for leaving a type out; BFF 10 and web 213, with two
+  and four new; full ctest 89 of 89 on a fresh database.
+- *Recorded.* The See the tenants journey and its wireframe show the filters and
+  the toggle, and its gaps list closes the search and the system-tenant rule. A
+  memory records that a badge's text is the value it paints.
+- *Not done.* The junk =CD= tenant types the iam tests leave behind still show in
+  the type filter on a development database; that is the capture
+  [[id:41566F78-970A-4019-B6A1-F076D7D21C88][Tests leave synthetic rows in the tenant lookups]].

@@ -63,8 +63,8 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief search [--search <v>] [--type_filter <v>] [--status_filter <v>] [--offset <v>]
-     * [--limit <v>]
+     * @brief search [--search <v>] [--type_filter <v>] [--status_filter <v>] [--exclude_type_filter
+     * <v>] [--offset <v>] [--limit <v>]
      */
     static void process_search(std::ostream& out,
                                ores::nats::service::nats_client& session,

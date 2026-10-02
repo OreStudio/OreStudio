@@ -25,7 +25,7 @@
 import type { Tenant } from '../domain/tenant.js';
 
 /**
- * @brief One page of the tenants that match a search and two filters.
+ * @brief One page of the tenants that match a search and the filters.
  *
  * The system tenant is never in the answer. The page is in code order, and the
  * answer carries how many tenants match in all.
@@ -44,6 +44,13 @@ export interface SearchTenantsRequest {
      * @brief A tenant status code to keep. Empty keeps every status.
      */
     status_filter: string;
+    /**
+     * @brief A tenant type code to leave out. Empty leaves nothing out.
+     *
+     * The roster hides test infrastructure by leaving out the automation type,
+     * and the total counts the same tenants the page can show.
+     */
+    exclude_type_filter: string;
     /**
      * @brief How many matching tenants to skip.
      */

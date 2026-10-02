@@ -36,6 +36,7 @@ import {
     signupResultSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
+    tenantTypesResponseSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -60,6 +61,7 @@ import {
     type SignupResult,
     type TenantPage,
     type TenantStatus,
+    type TenantType,
     type WorkflowProgress,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
@@ -314,6 +316,14 @@ export const api = {
         return payload.statuses;
     },
 
+    /** The tenant types, each with the badge its row names. */
+    async tenantTypes(): Promise<readonly TenantType[]> {
+        const payload = tenantTypesResponseSchema.parse(
+            await request('/api/tenant-types', { method: 'GET' }),
+        );
+        return payload.types;
+    },
+
     /**
      * The tenants this deployment holds.
      *
@@ -322,11 +332,24 @@ export const api = {
      * already dropped it.
      */
     async tenants(
-        query: { readonly search?: string; readonly offset?: number; readonly limit?: number } = {},
+        query: {
+            readonly search?: string;
+            readonly type?: string;
+            readonly status?: string;
+            readonly includeTest?: boolean;
+            readonly offset?: number;
+            readonly limit?: number;
+        } = {},
     ): Promise<TenantPage> {
         const params = new URLSearchParams();
-        if (query.search !== undefined && query.search !== '') {
-            params.set('search', query.search);
+        for (const key of ['search', 'type', 'status'] as const) {
+            const value = query[key];
+            if (value !== undefined && value !== '') {
+                params.set(key, value);
+            }
+        }
+        if (query.includeTest === true) {
+            params.set('includeTest', 'true');
         }
         if (query.offset !== undefined) {
             params.set('offset', String(query.offset));

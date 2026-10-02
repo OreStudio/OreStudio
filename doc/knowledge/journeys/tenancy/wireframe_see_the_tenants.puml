@@ -23,20 +23,26 @@ salt
   --
   <b>SEE THE TENANTS</b>
   --
+  {
+    "Search code, name or hostname" | ^All types^ | ^All statuses^ | [ ] Show test tenants | 12 test tenants hidden
+  }
   {#
     Code | Name | Hostname | Type | Status
-    acme_corporation | Acme Corporation | acme_corporation | operational | active
-    northwind | Northwind Capital | northwind | operational | bootstrapping
-    legacy_bank | Legacy Bank | legacy.example.com | operational | suspended
-    old_demo | Old Demonstration | old.example.com | operational | terminated
+    acme_corporation | Acme Corporation | acme_corporation | (Evaluation) | (Active)
+    northwind | Northwind Capital | northwind | (Production) | (Bootstrapping)
+    legacy_bank | Legacy Bank | legacy.example.com | (Production) | (Suspended)
+    old_demo | Old Demonstration | old.example.com | (Evaluation) | (Terminated)
   }
   --
-  Read-only. The system tenant is not listed: it is the deployment's own
-  bookkeeping, not a tenant somebody set up.
+  Read-only. The type and the status are painted with their badges. Test
+  tenants (type Automation) are hidden until the toggle shows them. The system
+  tenant is never listed: it is the deployment's own bookkeeping.
   --
   <b>FIND ONE AMONG MANY</b>
   --
-  Search {code, name or hostname} | [ Previous ] [ Next ] | 4 tenants
+  {
+    Showing 1-4 of 4 tenants | [Previous] | [Next]
+  }
   --
   <b>NOTHING TO LIST YET</b>
   --

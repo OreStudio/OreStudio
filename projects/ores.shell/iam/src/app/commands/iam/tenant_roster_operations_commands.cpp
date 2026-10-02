@@ -55,8 +55,8 @@ void tenant_roster_operations_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_search(std::ref(out), std::ref(session), std::move(args));
         },
-        "search [--search <v>] [--type_filter <v>] [--status_filter <v>] [--offset <v>] [--limit "
-        "<v>]");
+        "search [--search <v>] [--type_filter <v>] [--status_filter <v>] [--exclude_type_filter "
+        "<v>] [--offset <v>] [--limit <v>]");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -81,6 +81,7 @@ void tenant_roster_operations_commands::process_search(std::ostream& out,
         {.name = "search", .requires_value = true, .default_value = ""},
         {.name = "type_filter", .requires_value = true, .default_value = ""},
         {.name = "status_filter", .requires_value = true, .default_value = ""},
+        {.name = "exclude_type_filter", .requires_value = true, .default_value = ""},
         {.name = "offset", .requires_value = true, .default_value = ""},
         {.name = "limit", .requires_value = true, .default_value = ""},
     };
@@ -108,6 +109,10 @@ void tenant_roster_operations_commands::process_search(std::ostream& out,
         if (const auto& raw_status_filter = parsed->flag("status_filter");
             !raw_status_filter.empty()) {
             req.status_filter = raw_status_filter;
+        }
+        if (const auto& raw_exclude_type_filter = parsed->flag("exclude_type_filter");
+            !raw_exclude_type_filter.empty()) {
+            req.exclude_type_filter = raw_exclude_type_filter;
         }
         if (const auto& raw_offset = parsed->flag("offset"); !raw_offset.empty()) {
             req.offset = ores::shell::app::from_token<std::uint32_t>(raw_offset, "offset");

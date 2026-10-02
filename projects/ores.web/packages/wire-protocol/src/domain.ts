@@ -166,6 +166,11 @@ export const tenantPageSchema = z.object({
      * and says so here rather than failing the page.
      */
     setupUnavailable: z.boolean().default(false),
+    /**
+     * How many tenants of the automation type matched and were left out,
+     * because the roster hides test infrastructure unless asked to show it.
+     */
+    hiddenTestCount: z.int().nonnegative().default(0),
 });
 
 export type TenantPage = z.infer<typeof tenantPageSchema>;
@@ -210,6 +215,16 @@ export const tenantStatusSchema = z.object({
 });
 
 export type TenantStatus = z.infer<typeof tenantStatusSchema>;
+
+/**
+ * A tenant type, painted by the badge its row names.
+ *
+ * The same shape as a status: the words are the type row's own and the colours
+ * the badge's. A type nobody has painted has no badge and is written plainly.
+ */
+export const tenantTypeSchema = tenantStatusSchema;
+
+export type TenantType = TenantStatus;
 
 /** A page of accounts. `totalCount` counts every account the caller can see. */
 export const accountPageSchema = z.object({

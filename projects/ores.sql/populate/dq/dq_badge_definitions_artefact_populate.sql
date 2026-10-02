@@ -146,4 +146,8 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor_none', 0, 'No Anchor', 'Tenor has no special anchor.', '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 107),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor_spot', 0, 'Spot', 'Tenor anchored to the spot date.', '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 108),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor_today', 0, 'Today', 'Tenor anchored to today''s date.', '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 109),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor_tomorrow', 0, 'Tomorrow', 'Tenor anchored to tomorrow''s date.', '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 110);
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor_tomorrow', 0, 'Tomorrow', 'Tenor anchored to tomorrow''s date.', '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 110),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenant_type_system', 0, 'System', 'The deployment''s own bookkeeping tenant.', '#475569', '#ffffff', 'secondary', 'badge bg-secondary', 111),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenant_type_production', 0, 'Production', 'A real customer organisation with strict operational controls.', '#2563eb', '#ffffff', 'info', 'badge bg-info', 112),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenant_type_evaluation', 0, 'Evaluation', 'A realistic environment for demos, QA and evaluation.', '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 113),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenant_type_automation', 0, 'Automation', 'Automated test infrastructure, not a real tenant.', '#9ca3af', '#ffffff', 'secondary', 'badge bg-secondary', 114);

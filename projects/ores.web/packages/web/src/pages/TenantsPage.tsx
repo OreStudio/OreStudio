@@ -22,10 +22,15 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import type { TenantSetup, TenantStatus, TenantSummary } from '@ores/wire-protocol/browser';
+import type {
+    TenantSetup,
+    TenantStatus,
+    TenantSummary,
+    TenantType,
+} from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { Button, Input, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Input, LinkButton, Notice, PageHeader, Select } from '../ui/Primitives.js';
 
 /** How many tenants one page of the roster shows. */
 export const TENANT_PAGE_SIZE = 25;
@@ -50,9 +55,12 @@ const SEARCH_PAUSE_MS = 300;
  * error: the empty roster says so and offers the journey that leaves it.
  */
 export function TenantsPage(): ReactNode {
-    const { t } = useTranslation();
+    const { t, plural } = useTranslation();
     const [typed, setTyped] = useState('');
     const [search, setSearch] = useState('');
+    const [type, setType] = useState('');
+    const [status, setStatus] = useState('');
+    const [includeTest, setIncludeTest] = useState(false);
     const [offset, setOffset] = useState(0);
 
     /*
@@ -73,10 +81,17 @@ export function TenantsPage(): ReactNode {
      * does not collapse to a loading line between pages.
      */
     const roster = useQuery({
-        queryKey: ['tenants', search, offset],
-        queryFn: () => api.tenants({ search, offset, limit: TENANT_PAGE_SIZE }),
+        queryKey: ['tenants', search, type, status, includeTest, offset],
+        queryFn: () =>
+            api.tenants({ search, type, status, includeTest, offset, limit: TENANT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
+
+    /** A filter that changes starts from the first page, as a search does. */
+    const refilter = (apply: () => void) => {
+        apply();
+        setOffset(0);
+    };
 
     /*
      * A page can empty under the person -- a tenant retired while they were on
@@ -98,6 +113,13 @@ export function TenantsPage(): ReactNode {
      * the code the server sent.
      */
     const statuses = useQuery({ queryKey: ['tenant-statuses'], queryFn: api.tenantStatuses });
+    /*
+     * The types paint the type column and fill its filter. The system type
+     * names only the deployment's own bookkeeping, which the roster never
+     * shows, so it is not offered as a filter.
+     */
+    const types = useQuery({ queryKey: ['tenant-types'], queryFn: api.tenantTypes });
+    const typeChoices = (types.data ?? []).filter((choice) => choice.code !== 'system');
 
     if (roster.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -113,7 +135,8 @@ export function TenantsPage(): ReactNode {
         );
     }
 
-    const { tenants, totalCount, setupUnavailable } = roster.data;
+    const { tenants, totalCount, setupUnavailable, hiddenTestCount } = roster.data;
+    const filtered = search !== '' || type !== '' || status !== '';
 
     /*
      * The page is the roster. A table inside a card that already carries the
@@ -142,25 +165,75 @@ export function TenantsPage(): ReactNode {
             )}
             {/*
              * A deployment with no tenant at all has nothing to search, so the
-             * box appears once there is something to find.
+             * controls appear once there is something to find. One holding only
+             * test tenants still offers the toggle that shows them.
              */}
-            {totalCount === 0 && search === '' ? (
+            {totalCount === 0 && !filtered && !includeTest && hiddenTestCount === 0 ? (
                 <EmptyRoster />
             ) : (
                 <>
-                    <div className="mb-4 max-w-sm">
-                        <Input
-                            type="search"
-                            aria-label={t('tenants.search')}
-                            placeholder={t('tenants.search')}
-                            value={typed}
-                            onChange={(event) => setTyped(event.target.value)}
-                        />
+                    <div className="mb-4 flex flex-wrap items-center gap-3">
+                        <div className="w-full max-w-sm">
+                            <Input
+                                type="search"
+                                aria-label={t('tenants.search')}
+                                placeholder={t('tenants.search')}
+                                value={typed}
+                                onChange={(event) => setTyped(event.target.value)}
+                            />
+                        </div>
+                        <Select
+                            aria-label={t('tenants.filterType')}
+                            value={type}
+                            onChange={(event) => refilter(() => setType(event.target.value))}
+                        >
+                            <option value="">{t('tenants.allTypes')}</option>
+                            {typeChoices.map((choice) => (
+                                <option key={choice.code} value={choice.code}>
+                                    {choice.name}
+                                </option>
+                            ))}
+                        </Select>
+                        <Select
+                            aria-label={t('tenants.filterStatus')}
+                            value={status}
+                            onChange={(event) => refilter(() => setStatus(event.target.value))}
+                        >
+                            <option value="">{t('tenants.allStatuses')}</option>
+                            {(statuses.data ?? []).map((choice) => (
+                                <option key={choice.code} value={choice.code}>
+                                    {choice.name}
+                                </option>
+                            ))}
+                        </Select>
+                        <label className="flex items-center gap-2 text-sm text-ink-muted">
+                            <input
+                                type="checkbox"
+                                checked={includeTest}
+                                onChange={(event) =>
+                                    refilter(() => setIncludeTest(event.target.checked))
+                                }
+                            />
+                            {t('tenants.showTest')}
+                        </label>
+                        {!includeTest && hiddenTestCount > 0 && (
+                            <span className="text-xs text-ink-faint">
+                                {plural('tenants.hiddenTest', hiddenTestCount)}
+                            </span>
+                        )}
                     </div>
                     {tenants.length === 0 ? (
-                        <p className="text-sm text-ink-muted">{t('tenants.noMatch', { search })}</p>
+                        <p className="text-sm text-ink-muted">
+                            {search === ''
+                                ? t('tenants.noneFiltered')
+                                : t('tenants.noMatch', { search })}
+                        </p>
                     ) : (
-                        <Roster tenants={tenants} statuses={statuses.data ?? []} />
+                        <Roster
+                            tenants={tenants}
+                            statuses={statuses.data ?? []}
+                            types={types.data ?? []}
+                        />
                     )}
                     <Pager
                         offset={offset}
@@ -177,11 +250,14 @@ export function TenantsPage(): ReactNode {
 function Roster({
     tenants,
     statuses,
+    types,
 }: {
     readonly tenants: readonly TenantSummary[];
     readonly statuses: readonly TenantStatus[];
+    readonly types: readonly TenantType[];
 }): ReactNode {
-    const byCode = new Map(statuses.map((status) => [status.code, status]));
+    const statusByCode = new Map(statuses.map((status) => [status.code, status]));
+    const typeByCode = new Map(types.map((type) => [type.code, type]));
 
     const { t } = useTranslation();
 
@@ -204,11 +280,16 @@ function Roster({
                             <td className="py-2.5 pr-4 font-mono text-xs">{tenant.code}</td>
                             <td className="py-2.5 pr-4">{tenant.name}</td>
                             <td className="py-2.5 pr-4 font-mono text-xs">{tenant.hostname}</td>
-                            <td className="py-2.5 pr-4 text-ink-muted">{tenant.type}</td>
                             <td className="py-2.5 pr-4">
-                                <StatusBadge
-                                    status={tenant.status}
-                                    known={byCode.get(tenant.status)}
+                                <PaintedValue
+                                    value={tenant.type}
+                                    known={typeByCode.get(tenant.type)}
+                                />
+                            </td>
+                            <td className="py-2.5 pr-4">
+                                <PaintedValue
+                                    value={tenant.status}
+                                    known={statusByCode.get(tenant.status)}
                                 />
                             </td>
                             <td className="py-2.5">
@@ -223,28 +304,28 @@ function Roster({
 }
 
 /**
- * The state a tenant is in, painted by the badge its status row names.
+ * A tenant's type or status, painted by the badge its row names.
  *
- * The words are the status row's own — `Suspended`, `Terminated` — and the
- * colours, the tooltip and the severity are the badge's. The screen decides
- * neither, so a status reads the same wherever it appears and a deployment's
- * vocabulary is not replaced by the badge catalogue's.
+ * The words are the row's own — `Suspended`, `Evaluation` — and the colours,
+ * the tooltip and the severity are the badge's. The screen decides neither, so
+ * a value reads the same wherever it appears and a deployment's vocabulary is
+ * not replaced by the badge catalogue's.
  *
- * A status the deployment does not hold is drawn as the server wrote it, and so
+ * A value the deployment does not hold is drawn as the server wrote it, and so
  * is one whose badge has left the catalogue. A tenant in a state nobody has
  * described is exactly the row somebody needs to see, and a screen that
  * swallowed it would be hiding the interesting case.
  */
-function StatusBadge({
-    status,
+function PaintedValue({
+    value,
     known,
 }: {
-    readonly status: string;
-    readonly known: TenantStatus | undefined;
+    readonly value: string;
+    readonly known: TenantStatus | TenantType | undefined;
 }): ReactNode {
     const badge = known?.badge ?? undefined;
     if (badge === undefined || badge.backgroundColour === '') {
-        return <span className="text-ink-muted">{known?.name ?? status}</span>;
+        return <span className="text-ink-muted">{known?.name ?? value}</span>;
     }
     return (
         <span
@@ -252,7 +333,7 @@ function StatusBadge({
             style={{ backgroundColor: badge.backgroundColour, color: badge.textColour }}
             title={known?.description === '' ? undefined : known?.description}
         >
-            {known?.name ?? status}
+            {known?.name ?? value}
         </span>
     );
 }

@@ -77,7 +77,7 @@ task and name that file in the Command column.
 | New binding cases failing before the fix | 5 of 5 | =ores.ore.core.tests "[file_io]"= against the old binding | 280b15590c |
 | Full test suite after the fix | 89 of 89 suites pass | =compass test run= | ea17fd2cd5 |
 | Today's market cases after the fix, harness cycle restored | 8 cases, 459 assertions pass | =ores.ore.core.tests "[todaysmarket]"= | ea17fd2cd5 |
-| xsdcpp suites with the fix | 9 of 10 pass; =Ecoa_test= fails the same way without the fix | =ctest= in a fresh clang build | xsdcpp working tree |
+| xsdcpp suites with the fix | 9 of 10 pass; =Ecoa_test= fails the same way without the fix | =ctest= in a fresh clang build | xsdcpp =09f0dec= |
 | Codegen tests | 1055 pass | =pytest projects/ores.codegen/tests= | ea17fd2cd5 |
 | Models with an apostrophe in an error message | 0 | =grep -rlE "^:(book_)?error_message:.*'" projects/*/modeling= | ea17fd2cd5 |
 | Corpus files with an entity in element text, by kind | todaysmarket 5, curveconfig 5, simulation 3, sensimarket 1 | =grep -rlE ">[^<]*&(amp\|lt\|gt\|quot\|apos);[^<]*<" external/ore/examples --include=*.xml= | 73c00d0dfb |
@@ -189,5 +189,6 @@ database test proves an ampersand is stored as the character.
 holds one today, so no generated file changed. The recipe no longer tells
 authors to avoid apostrophes.
 
-**Not done here.** The =xsdcpp= change is in the working tree of its checkout,
-beside the existing uncommitted =Reader.cpp= fix, and is not committed there.
+**In =xsdcpp=.** Committed on =fix-abstract-element-refs= as =09f0dec=, after
+=2f7dc07=, which commits the resolver fix in =Reader.cpp= that had been
+uncommitted since the 2026-09-26 regeneration.

@@ -46,11 +46,11 @@ The tool is a separate checkout, not a build dependency:
 | Path | =/home/marco/Vault/Development/xsdcpp= |
 | Binary | =build/src/xsdcpp= |
 | Version | =xsdcpp 1.0.3= |
-| Checkout commit | =51b1de5= (2026-04-09) |
+| Checkout commit | =09f0dec= (2026-10-02) |
 | Branch | =fix-abstract-element-refs= |
-| Local modifications | uncommitted: a two-pass group and substitution-group resolver fix in =src/Reader.cpp=; and, from 2026-10-02, entity decoding in element text in =src/XmlParser.cpp= with its tests in =test/XmlParser_test.cpp= |
+| Local modifications | none. =2f7dc07= holds the two-pass group and substitution-group resolver fix in =src/Reader.cpp=, which was uncommitted until 2026-10-02; =09f0dec= decodes entity references in element text in =src/XmlParser.cpp= |
 
-The =Reader.cpp= modification matters. Without it, =input.xsd= fails with
+The =Reader.cpp= fix matters. Without it, =input.xsd= fails with
 =could not find group 'oreTradeData'=, which is why regeneration was
 blocked for months. The backlog capture that says so is stale: the fix is
 present in the binary, and the bindings were regenerated with it on

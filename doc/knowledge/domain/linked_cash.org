@@ -98,6 +98,8 @@ in a currency is a
 
 * See also
 
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the link family this page belongs to.
 - [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the catalogue, where linked cash is an annotation.
 - [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash Flow]] — the flow itself: signed, dated, currency-denominated.

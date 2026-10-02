@@ -29,11 +29,11 @@ its credit simulation, stress test and today's market configurations: through a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -63,7 +63,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Per-report configuration roots that carry =configuration_id= | 4 of 4: credit simulation, stress test, today's market, pricing engines | =grep -l ores_reporting_configurations_tbl projects/ores.analytics/modeling/*.org= | 5064708fd9 |
+| Migration on a database created before the change | column added to 38 rows, trigger checks the link, second run harmless | rolled-back transaction, =compass sql -f= | 5064708fd9 |
+| Suites after a recreate | analytics 4 of 4, ores.ore.core, ores.shell.analytics pass | =compass test run -- -R ...= | 5064708fd9 |
 
 * Notes
 
@@ -91,3 +93,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The pricing model configuration carries a nullable =configuration_id= to the
+reporting configuration it is registered as, with the same insert-trigger check
+as credit simulation, stress test and today's market. All four per-report
+configuration roots now reach their report the same way.
+
+A database created before the change gains the column through
+=analytics_pricing_model_configs_add_configuration_id_migration.sql=. It also
+re-runs the generated create script, which creates nothing that exists and
+replaces the insert trigger, so an existing database checks the link too.
+Adding the column alone would have left the old trigger, which never checks it.
+
+**Component audit.** The task touched =ores.analytics= through one model and
+its regenerated surfaces. =validate_docs.sh= passes for all 41 components, and
+no folder, type or component changed.

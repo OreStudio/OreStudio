@@ -36,6 +36,7 @@ import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
+import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
@@ -238,6 +239,12 @@ export function AppRoutes({
                 path="/tenants/runs/:instanceId"
                 element={signedIn(gate.version, session, onSignOut, () => (
                     <TenantRunPage />
+                ))}
+            />
+            <Route
+                path="/tenants/:code"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <TenantPage />
                 ))}
             />
             <Route

@@ -22,14 +22,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import type {
-    TenantSetup,
-    TenantStatus,
-    TenantSummary,
-    TenantType,
-} from '@ores/wire-protocol/browser';
+import type { TenantStatus, TenantSummary, TenantType } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
+import { PaintedValue, SetupCell } from './TenantParts.js';
 import { Button, Input, LinkButton, Notice, PageHeader, Select } from '../ui/Primitives.js';
 
 /** How many tenants one page of the roster shows. */
@@ -281,7 +277,14 @@ function Roster({
                     {tenants.map((tenant) => (
                         <tr key={tenant.id} className="border-b border-line-subtle">
                             <td className="py-2.5 pr-4 font-mono text-xs">{tenant.code}</td>
-                            <td className="py-2.5 pr-4">{tenant.name}</td>
+                            <td className="py-2.5 pr-4">
+                                <Link
+                                    to={`/tenants/${encodeURIComponent(tenant.code)}`}
+                                    className="underline-offset-2 hover:underline"
+                                >
+                                    {tenant.name}
+                                </Link>
+                            </td>
                             <td className="py-2.5 pr-4 font-mono text-xs">{tenant.hostname}</td>
                             <td className="py-2.5 pr-4">
                                 <PaintedValue
@@ -306,81 +309,6 @@ function Roster({
                 </tbody>
             </table>
         </div>
-    );
-}
-
-/**
- * A tenant's type or status, painted by the badge its row names.
- *
- * The words are the row's own — `Suspended`, `Evaluation` — and the colours,
- * the tooltip and the severity are the badge's. The screen decides neither, so
- * a value reads the same wherever it appears and a deployment's vocabulary is
- * not replaced by the badge catalogue's.
- *
- * A value the deployment does not hold is drawn as the server wrote it, and so
- * is one whose badge has left the catalogue. A tenant in a state nobody has
- * described is exactly the row somebody needs to see, and a screen that
- * swallowed it would be hiding the interesting case.
- */
-function PaintedValue({
-    value,
-    known,
-}: {
-    readonly value: string;
-    readonly known: TenantStatus | TenantType | undefined;
-}): ReactNode {
-    const badge = known?.badge ?? undefined;
-    if (badge === undefined || badge.backgroundColour === '') {
-        return <span className="text-ink-muted">{known?.name ?? value}</span>;
-    }
-    return (
-        <span
-            className="inline-block rounded-full px-2 py-0.5 text-[11px] leading-tight"
-            style={{ backgroundColor: badge.backgroundColour, color: badge.textColour }}
-            title={known?.description === '' ? undefined : known?.description}
-        >
-            {known?.name ?? value}
-        </span>
-    );
-}
-
-/** The colour each unfinished run state is drawn in. */
-const SETUP_TONE: Record<string, string> = {
-    in_progress: 'text-accent-bright',
-    compensating: 'text-warn',
-    failed: 'text-down',
-    compensated: 'text-ink-faint',
-};
-
-/**
- * Where a tenant's provisioning run has got to, and the way back to it.
- *
- * A completed run says nothing, because the tenant's own status already says
- * the tenant is there. Every other run links to its rail, which is how a person
- * who left the journey returns to it: the run kept working on the server, and
- * a failed one is resumed from that page. A state this screen has no words for
- * is shown as the engine named it, and still links to the run.
- */
-function SetupCell({ setup }: { readonly setup: TenantSetup | null }): ReactNode {
-    const { t } = useTranslation();
-    if (setup === null || setup.status === 'completed') {
-        return null;
-    }
-    const known = setup.status in SETUP_TONE;
-    const label = known
-        ? t(`tenants.setupState.${setup.status}`, {
-              step: setup.currentStepIndex + 1,
-              count: setup.stepCount,
-          })
-        : setup.status;
-    return (
-        <Link
-            to={`/tenants/runs/${encodeURIComponent(setup.instanceId)}`}
-            className={`text-xs underline-offset-2 hover:underline ${SETUP_TONE[setup.status] ?? 'text-ink'}`}
-            title={setup.error === '' ? undefined : setup.error}
-        >
-            {label}
-        </Link>
     );
 }
 
@@ -431,11 +359,11 @@ function Pager({
  * What a person can do to one tenant, from its row.
  *
  * A native disclosure holds the menu, so it opens without script and a
- * keyboard reaches it as it reaches any other control. Resuming setup is
- * offered when the tenant's provisioning run has not completed. Opening the
- * tenant and retiring or resetting it are journeys the tree has not built, so
- * they are shown and marked as such, the way the shell marks a card, rather
- * than hidden: a person can see what the menu will hold.
+ * keyboard reaches it as it reaches any other control. Opening the tenant
+ * leads to its own screen. Resuming setup is offered when the tenant's
+ * provisioning run has not completed. Retiring or resetting it is a journey the
+ * tree has not built, so it is shown and marked as such, the way the shell
+ * marks a card, rather than hidden: a person can see what the menu will hold.
  */
 function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
     const { t } = useTranslation();
@@ -470,7 +398,14 @@ function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
                         </Link>
                     </li>
                 )}
-                <NotBuiltAction label={t('tenants.open')} />
+                <li>
+                    <Link
+                        to={`/tenants/${encodeURIComponent(tenant.code)}`}
+                        className="block px-3 py-1.5 hover:bg-surface-hover"
+                    >
+                        {t('tenants.open')}
+                    </Link>
+                </li>
                 <NotBuiltAction label={t('tenants.retireOrReset')} />
             </ul>
         </details>

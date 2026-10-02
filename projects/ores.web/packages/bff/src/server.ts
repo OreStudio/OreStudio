@@ -32,6 +32,7 @@ import {
     NatsTransport,
     OresClient,
     SUBJECTS,
+    SYSTEM_TENANT_ID,
     bootstrapStatusSchema,
     changeOwnPassword,
     changeOwnPasswordRequestSchema,
@@ -64,6 +65,8 @@ import {
     readSessionsPage,
     readTenantStatuses,
     readTenantTypes,
+    readTenant,
+    readTenantParties,
     readTenantSetups,
     searchTenantsPage,
     retryWorkflowInstanceResultSchema,
@@ -73,6 +76,7 @@ import {
     setAccountLocked,
     signupRequestSchema,
     signupResultSchema,
+    tenantDetailResponseSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
@@ -80,6 +84,7 @@ import {
     NotAuthenticatedError,
     type LoginOutcome,
     type PartySummary,
+    type TenantParty,
     type TenantSetup,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
@@ -95,6 +100,7 @@ import {
     invalidCredentials,
     invalidRequest,
     notAuthenticated,
+    notFound,
     notPermitted,
     signupRefused,
     toHttpFailure,
@@ -945,6 +951,57 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             totalCount: read.totalCount,
             setupUnavailable,
             hiddenTestCount,
+        });
+    });
+
+    /**
+     * One tenant's screen: the tenant, the run that set it up, and its parties.
+     *
+     * The tenant is read by its code, which is how the registry's get keys it.
+     * The system tenant is the deployment's own bookkeeping, so it is answered
+     * as no tenant, as the roster leaves it out. The run and the parties are
+     * read beside the tenant, and a failure to read either is not a failure to
+     * read the tenant: the answer says which is missing.
+     */
+    server.get('/api/tenants/:code', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('A tenant of the deployment is read in system administration.');
+        }
+        const { code } = request.params as { code: string };
+        const tenant = await readTenant(session.client, code);
+        if (tenant === null || tenant.id === SYSTEM_TENANT_ID) {
+            throw notFound('No tenant has this code.');
+        }
+
+        let setup: TenantSetup | null = null;
+        let setupUnavailable = false;
+        try {
+            setup =
+                (await readTenantSetups(session.client, tenant.id)).setups.get(tenant.id) ?? null;
+        } catch (error) {
+            request.log.warn({ err: error }, 'The provisioning runs were not read.');
+            setupUnavailable = true;
+        }
+
+        let parties: readonly TenantParty[] = [];
+        let partyCount = 0;
+        let partiesUnavailable = false;
+        try {
+            const read = await readTenantParties(session.client, tenant.id);
+            parties = read.parties;
+            partyCount = read.total;
+        } catch (error) {
+            request.log.warn({ err: error }, 'The parties were not read.');
+            partiesUnavailable = true;
+        }
+
+        return tenantDetailResponseSchema.parse({
+            tenant: { ...tenant, setup },
+            setupUnavailable,
+            parties,
+            partyCount,
+            partiesUnavailable,
         });
     });
 

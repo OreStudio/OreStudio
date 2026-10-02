@@ -176,6 +176,60 @@ export const tenantPageSchema = z.object({
 export type TenantPage = z.infer<typeof tenantPageSchema>;
 
 /**
+ * One tenant as its own screen reads it: the roster's summary and the row's
+ * provenance, which the roster leaves out because it is not about who last
+ * edited the row.
+ */
+export const tenantDetailSchema = tenantSummarySchema.extend({
+    version: z.int().nonnegative(),
+    modifiedBy: z.string(),
+    performedBy: z.string(),
+    changeReasonCode: z.string(),
+    changeCommentary: z.string(),
+    recordedAt: z.string(),
+});
+
+export type TenantDetail = z.infer<typeof tenantDetailSchema>;
+
+/**
+ * One party of a tenant, as the tenant's screen lists it.
+ *
+ * `category` is `System` for the party every tenant is given and `Operational`
+ * for a business party. `parentName` is resolved from the same answer, and is
+ * `null` for a root or when the parent was not on the page.
+ */
+export const tenantPartySchema = z.object({
+    id: uuidSchema,
+    code: z.string(),
+    name: z.string(),
+    category: z.string(),
+    type: z.string(),
+    status: z.string(),
+    parentId: z.string().nullable(),
+    parentName: z.string().nullable(),
+});
+
+export type TenantParty = z.infer<typeof tenantPartySchema>;
+
+/** One tenant's screen: the tenant, its setup run and its parties. */
+export const tenantDetailResponseSchema = z.object({
+    tenant: tenantDetailSchema,
+    /** Whether the runs could not be read; `tenant.setup` is then empty. */
+    setupUnavailable: z.boolean().default(false),
+    parties: z.array(tenantPartySchema),
+    /** How many current parties the tenant holds in all. */
+    partyCount: z.int().nonnegative(),
+    /**
+     * Whether the parties could not be read. The tenant is still the
+     * registry's answer, so a failed party read empties the list and says so
+     * here rather than failing the screen.
+     */
+    partiesUnavailable: z.boolean().default(false),
+});
+
+export type TenantDetailResponse = z.infer<typeof tenantDetailResponseSchema>;
+
+/**
  * How one value of a code domain is painted.
  *
  * It is a badge's visual metadata and nothing else: the label inside the pill,

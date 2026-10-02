@@ -34,6 +34,7 @@ import {
     seedProfilesResponseSchema,
     sessionViewSchema,
     signupResultSchema,
+    tenantDetailResponseSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
@@ -59,6 +60,7 @@ import {
     type SessionView,
     type SignupRequest,
     type SignupResult,
+    type TenantDetailResponse,
     type TenantPage,
     type TenantStatus,
     type TenantType,
@@ -359,6 +361,13 @@ export const api = {
         }
         const suffix = params.size === 0 ? '' : `?${params.toString()}`;
         return tenantPageSchema.parse(await request(`/api/tenants${suffix}`, { method: 'GET' }));
+    },
+
+    /** One tenant by its code: the tenant, its setup run and its parties. */
+    async tenant(code: string): Promise<TenantDetailResponse> {
+        return tenantDetailResponseSchema.parse(
+            await request(`/api/tenants/${encodeURIComponent(code)}`, { method: 'GET' }),
+        );
     },
 
     /**

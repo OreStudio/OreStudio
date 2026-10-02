@@ -21,8 +21,17 @@
 
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
-import { uuidSchema, wireTimestampSchema, type TenantSetup, type TenantSummary } from './domain.js';
-import { subjects as tenantSubjects } from './generated/iam/protocol/tenant_protocol.js';
+import {
+    uuidSchema,
+    wireTimestampSchema,
+    type TenantDetail,
+    type TenantSetup,
+    type TenantSummary,
+} from './domain.js';
+import {
+    subjects as tenantSubjects,
+    type GetTenantRequest,
+} from './generated/iam/protocol/tenant_protocol.js';
 import type { Tenant } from './generated/iam/domain/tenant.js';
 import {
     subjects as tenantRosterSubjects,
@@ -50,6 +59,7 @@ import { orderSchema } from './operations.js';
 /** Subjects for the tenant reads, kept beside the operations that use them. */
 export const TENANT_SUBJECTS = {
     list: tenantSubjects.list_tenants_request,
+    get: tenantSubjects.get_tenant_request,
 } as const;
 
 /** The row as the registry writes it. */
@@ -102,6 +112,54 @@ const wireTenantReadsEveryField: [
     ? true
     : false = true;
 void wireTenantReadsEveryField;
+
+/** One tenant with the row's provenance, for the tenant's own screen. */
+function detailOf(row: z.infer<typeof wireTenantSchema>): TenantDetail {
+    return {
+        ...summaryOf(row),
+        version: row.version,
+        modifiedBy: row.modified_by,
+        performedBy: row.performed_by,
+        changeReasonCode: row.change_reason_code,
+        changeCommentary: row.change_commentary,
+        recordedAt: row.recorded_at,
+    };
+}
+
+/** The get's answer: the outcome, and the tenant when it was found. */
+const wireTenantGetSchema = z.object({
+    result: z.object({
+        outcome: z.string(),
+        message: z.string().default(''),
+    }),
+    tenant: wireTenantSchema.nullable().default(null),
+});
+
+/**
+ * One tenant by its code, or `null` when no tenant holds the code.
+ *
+ * The get keys a tenant by its code, the tenant's stable name in a request.
+ */
+export async function readTenant(
+    caller: AuthenticatedCaller,
+    code: string,
+): Promise<TenantDetail | null> {
+    const request: GetTenantRequest = { key: { code } };
+    const answer = await caller.callAuthenticated(
+        TENANT_SUBJECTS.get,
+        request,
+        wireTenantGetSchema,
+    );
+    if (answer.result.outcome === 'missing') {
+        return null;
+    }
+    if (answer.result.outcome !== 'ok' || answer.tenant === null) {
+        throw new Error(
+            answer.result.message === '' ? 'The tenant was not read.' : answer.result.message,
+        );
+    }
+    return detailOf(answer.tenant);
+}
 
 /** What the roster asks the search for. */
 export interface TenantSearch {
@@ -244,12 +302,16 @@ export interface TenantSetups {
 
 /**
  * The latest provisioning run for each tenant it acts on, keyed by tenant id.
+ * Naming a tenant reads only the runs that act on it.
  *
  * A tenant may have more than one run, because nothing stops a second attempt.
  * The engine answers the run that changed last first, so the first run seen for
  * a tenant is the one that moved most recently, and that is the one reported.
  */
-export async function readTenantSetups(caller: AuthenticatedCaller): Promise<TenantSetups> {
+export async function readTenantSetups(
+    caller: AuthenticatedCaller,
+    tenantId = '',
+): Promise<TenantSetups> {
     /*
      * The request is the generated type, so every field the server's decoder
      * requires is present or the typecheck fails. An empty filter is no filter.
@@ -259,7 +321,7 @@ export async function readTenantSetups(caller: AuthenticatedCaller): Promise<Ten
         status_filter: '',
         type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
         target_kind_filter: PROVISION_TENANT_TARGET_KIND,
-        target_id_filter: '',
+        target_id_filter: tenantId,
     };
     const answer = await caller.callAuthenticated(
         workflowSubjects.list_workflow_instance_summaries_request,

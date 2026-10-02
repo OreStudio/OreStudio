@@ -81,6 +81,11 @@ export function notPermitted(message: string): HttpFailure {
     return new HttpFailure(403, { code: 'forbidden', message });
 }
 
+/** The thing the address names does not exist, or is not one this route serves. */
+export function notFound(message: string): HttpFailure {
+    return new HttpFailure(404, { code: 'not-found', message });
+}
+
 /**
  * The deployment has not been provisioned yet.
  *

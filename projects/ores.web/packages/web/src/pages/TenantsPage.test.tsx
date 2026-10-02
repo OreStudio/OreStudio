@@ -434,16 +434,26 @@ describe('the tenant roster', () => {
     });
 
     /*
-     * Opening a tenant and retiring or resetting it are journeys the tree has
-     * not built. The menu names them and says so, as the shell's cards do,
-     * rather than hiding them or offering a link that goes nowhere.
+     * The tenant's name and the menu's Open both lead to the tenant's own
+     * screen, addressed by its code.
      */
-    it('names the actions the tree has not built, and marks them', () => {
+    it('opens the tenant from its name and from the menu', () => {
         const html = render([acme], 1);
 
+        expect(html.match(/href="\/tenants\/acme_corporation"/g)).toHaveLength(2);
         expect(html).toContain('>Open<');
+    });
+
+    /*
+     * Retiring or resetting a tenant is a journey the tree has not built. The
+     * menu names it and says so, as the shell's cards do, rather than hiding it
+     * or offering a link that goes nowhere.
+     */
+    it('names the action the tree has not built, and marks it', () => {
+        const html = render([acme], 1);
+
         expect(html).toContain('>Retire or reset<');
-        expect(html.match(/Not built yet/g)).toHaveLength(2);
+        expect(html.match(/Not built yet/g)).toHaveLength(1);
     });
 
     it('says so when the deployment holds no tenant, without repeating the action', () => {

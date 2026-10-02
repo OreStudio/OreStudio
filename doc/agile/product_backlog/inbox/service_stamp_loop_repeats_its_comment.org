@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: EC0935EB-81B1-4301-BBFC-AB0C5B516D01
+:END:
+#+title: The service template repeats its stamp comment and reason expression once per member
+#+description: cpp_service.cpp.mustache emits the same three-line comment and the same reason-code expression for every stamped member, and leaves an orphaned comment above them.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+In =cpp_service.cpp.mustache=, the =stamp_members= section of
+=prepare_change= puts its comment inside the loop. A grouped entity gets
+the same three-line comment once for each stamped member, five times in
+=trade_service.cpp=. The loop also repeats the full reason-code expression
+for each member. The comment about the version above the loop
+("The version is the repository's to state") has no code below it. Move
+the comment above the loop, compute the reason once into a local, and
+delete or re-place the orphaned comment. Then regenerate every component
+with grouped entities, using the pinned =clang-format= that CI uses.
+
+* Why
+
+The G04 review of ores.trading found this. G04 asks that generated code
+reads like the component's best hand-written code, and that a finding is
+fixed in the template. The fix changes the output of every grouped entity
+in every component, so it needs a full regeneration with the pinned
+=clang-format=. A newer local =clang-format= changes the wrapping of
+unrelated lines, so a regeneration on such a machine is not safe.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_service.cpp.mustache=: the =stamp_members= section.
+- =projects/ores.trading/core/src/service/trade_service.cpp=: =prepare_change=, an example of the output.
+- =.github/workflows/codegen-drift.yml=: the =clang-format= that CI installs.
+
+* See also
+
+- [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]]

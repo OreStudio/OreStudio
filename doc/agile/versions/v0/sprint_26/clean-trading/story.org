@@ -29,12 +29,12 @@ that bound each one.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | PR 5 merged as =710bd22883= on 2026-09-30 with fifteen checks green, so PRs 1 to 5 are in. PR 6, the bond pilot, is next: the v17 bond future, the underlyings table D21 decides, the import path's empty audit name, the corpus round trip, and defects 14 and 16. PRs 1 to 4 are merged: PR 4 landed as =cd00344ddb= on 2026-09-29 with fifteen checks green, and the collapse closes defect 13. PR 5 is STARTED on =feature/split-bond-security-from-trade=, and PR 4 was raised as [[https://github.com/OreStudio/OreStudio/pull/2348][#2348]] from =feature/collapse-instrument-identity=, rebased onto =e2bda9e108=: the instrument's identity is the trade it belongs to, the relationship is declared and trigger-checked, and defect 13 closes. The bond security split moved to [[id:FF88C139-9C8B-4A59-9CCD-38066CA049DD][its own task]] by D17, and by the owner's ruling of 2026-09-28 defects 14 and 16 move to the bond pilot and defect 15 to the split |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Start the bond pilot, PR 6. |
-| Last touched  | 2026-09-28                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-02                               |
 
 * Acceptance
 
@@ -369,22 +369,22 @@ row is updated as each PR lands.
 | M03 | Entity | Met: no model drift, one known exception elsewhere | - |
 | M04 | Entity | Met: 80 entity models checked against =org_loader.py='s =_FEATURE_NAMESPACE=. Every stated feature sits in the drawer the loader reads (=has_tenant_id= and =has_workspace_id= at the entity root; =party_id_from_session=, =system_scope=, =nullable_tenant_id= and =extra_checks= under =* SQL=; =has_change_reason_cache=, =has_pagination= and =has_uuid_primary_key= in the Presentation drawer), and each bind is proven by the generated output. Zero inert assignments. =has_parent_id=, =read_only=, =client_read_only=, =party_id_is_target= and =current_state= are stated by no trading model. Task §5h | PR 3 |
 | M05 | Entity | Met: the 24 hand-written domain types with no model are classified -- 5 are field groups, 9 are models to author (8 authored here, =product_type= waits for PR 4), 10 are messages (the instrument variants, the polymorphic container and the three =*_data= shapes), and none is infrastructure. No joined or denormalised shape is left as an entity. The five equity tables that hold two products are defect 9 and stay with PR 4. Task §3 | PR 3 |
-| M06 | Protocol | Not met: 48 hand-written protocol headers, 0 TypeScript twins | PR 2, PR 6 |
+| M06 | Protocol | Met except two messages: all 85 protocol headers are generated and the twin gate reads 301 of 301 across 15 components. The two export verbs' request and response structs are a =cpp= block pasted into =trade_protocol.hpp=, which is P04's gap; capture [[id:3AFA8FA2-55B4-441A-BD35-69FA67CDB664][model the export operations]]. Measured 2026-10-02 | PR 7, capture |
 | M07 | Entity | Not applicable: no junction metatype exists | Recorded in PR 1 |
 | M08 | Entity | Met: defects 2, 3, 4 and 6 are closed -- every date column is typed, 57 money columns are decimals and 30 non-money columns stay double, every closed set has a reference entity (the last, =average_type=, trading-local by decision), and the day count and payment frequency now have one name each. SQL spellings are canonical and flags are booleans. Task §5g, §5i | PR 3 |
 | M09 | All | Met: the 25 singular =generator_facet_name= values are plural, so the second generator tree is deleted and its 50 files are replaced under =generators/=; and the 5 presentation drawers that named Qt-era properties are gone. =grep= over the modeling directory finds no retired keyword. Task §0, §4 | PR 3 |
 | M10 | All | Met: composite overview with three parts; validate_docs passes | - |
 | P01 | Protocol | Met in PR 2: every modelled family has its generated protocol, and the consolidated rates header is deleted | PR 2 |
-| P02 | Protocol | Partly in PR 2: the migrated consumers name =req.nats_subject=; 20 literals remain in the four shell units whose families have no model | PR 3 |
-| P03 | Protocol | Cannot tell until the B04 inventory is complete | PR 2 |
-| P04 | Protocol | Partly: no operation models; two hand-written operations | PR 2, PR 6 |
+| P02 | Protocol | Met: no hand-written file in the tree (C++, TypeScript or Python) names a =trading.v1= subject; every subject is a generated =nats_subject= constant. Measured 2026-10-02 | PR 2, PR 7 |
+| P03 | Protocol | Met: 536 subjects across the protocol headers, no duplicate, and every message that carries one is served in the core or service sources; =wire_trading_registrars.py --check= reports all 12 late registrars wired, and V04 replays 449 answering. Measured 2026-10-02 | PR 7 |
+| P04 | Protocol | Not met: =trading.v1.trades.portfolio.export= and =trading.v1.trades.export-to-storage= are not entity verbs and are not operation models. Their structs are pasted from =ores.trading.trade.org= and their handlers are hand-written. Capture [[id:3AFA8FA2-55B4-441A-BD35-69FA67CDB664][model the export operations]] | Capture |
 | P05 | Protocol | Met in PR 2: the shell and ORE consumers are migrated and nothing is carried for compatibility | PR 2 |
 | P06 | Protocol | Not applicable: no warmed event cache | Recorded in PR 1 |
 | G01 | Entity | Met in PR 2: the drift dry run reports nothing to change and nothing to create, on two runs | PR 2 |
-| G02 | All | Not met: 48 protocol headers and 732 hand-written sources remain | PR 2 |
-| G03 | All | Partly: 35 marked files; correctness follows G01 | PR 2 |
-| G04 | Entity | Not met: no review record | PR 2, PR 6 |
-| G05 | All | Not started: no generator defect found yet | Every PR |
+| G02 | All | Met: survey B03 re-run on 2026-10-02 finds 2365 of 2448 C++ files generated and 83 hand-written. No hand-written file has a model or a generated copy, so generation supersedes none of them. The survey's path rule calls 27 of them generatable: the composition-root registrars, the two readers, the instrument variants and payload, and =product_type=, whose model is defect 10, open with the product work | PR 2 to PR 7 |
+| G03 | All | Met: 2365 files carry the generated marker and 83 do not, and the 83 are exactly the hand-written set B03 lists; the drift gate regenerates the marked files with no drift. Measured 2026-10-02 | PR 2 to PR 7 |
+| G04 | Entity | Partly met: =evidence/g04_generated_code_review.txt= reads the generated =trade_service.cpp= against the hand-written bond reader. It reads like the baseline except one template defect: the stamp loop repeats its comment and reason expression once per member. Capture [[id:EC0935EB-81B1-4301-BBFC-AB0C5B516D01][stamp loop comment]]; the fix needs a full regeneration with the pinned clang-format | Capture |
+| G05 | All | Met: each generator defect this story found is fixed at source with a regression test. Field-group equality: =test_field_group_equality.py=. Group-prefixed members: =test_grouped_parent_seeding.py=. Per-member audit stamp: =test_service_write_stamps_audit.py=. Shell aggregator: =test_shell_command_aggregator.py=. The enum write arm, the decimal sentinel and the TypeScript field-group projection had none, and gained =test_enum_write_fields.py=, =test_shell_decimal_sentinel.py= and =test_field_group_typescript.py= on 2026-10-02; each fails when its defect is put back | PR 2 to PR 7, close-out |
 | G06 | All | Met in PR 2: the api, core and service source lists are up to date | PR 2 |
 | G07 | All | To honour: dry run first, never refresh while a defect is open | Policy |
 | G08 | All | Met: core and service namespace headers; no api header, as in iam | - |
@@ -672,6 +672,17 @@ row is updated as each PR lands.
   the twelve products that need an observation schedule are equity, fx and
   commodity. Moving those scalars into the shared table is those families'
   reshape work, not the bond pilot's.
+- *D30, the story closes with two accepted exceptions.* The owner ruled
+  on 2026-10-02 to close the story with P04 and G04 open, each with a
+  capture. P04: the two export verbs are not operation models
+  ([[id:3AFA8FA2-55B4-441A-BD35-69FA67CDB664][capture]]); the same two
+  messages are M06's only gap. G04: the stamp loop in the service template
+  repeats its comment and reason expression once per member
+  ([[id:EC0935EB-81B1-4301-BBFC-AB0C5B516D01][capture]]). Its fix
+  regenerates every grouped entity in every component and needs the
+  clang-format that CI pins. Reason: both are bounded, recorded and
+  owned by a capture, and neither changes behaviour. Every other
+  applicable row is met, measured on main on 2026-10-02.
 
 * Delivery plan
 
@@ -713,3 +724,22 @@ row is updated as each PR lands.
   models need.
 - The stale =ores_schema.puml= ER diagram, which is a repository-wide
   sweep and not a trading fix. PR 6 records it.
+
+* Result
+
+ores.trading meets the Component Clean Standard, with two accepted
+exceptions (D30). Seven PRs delivered it, #2496 the last of them.
+
+- The component is in =COMPONENTS_UNDER_TEST=, and the drift gate checks
+  it at every address with no drift. 2365 of its 2448 C++ files are
+  generated; the 83 hand-written ones are the composition root, the two
+  readers, the instrument variants, the service host and the tests.
+- All 85 protocol headers are generated and twinned in TypeScript. No
+  hand-written file names a subject.
+- The shell surface, its recipes and its inventory are generated. The
+  V04 replay answers 449 of 452 replayed recipes; the three that do not
+  are the enum sentinel capture.
+- Every generator defect the story found is fixed at source with a
+  regression test in the codegen suite.
+- Open: P04, the two export verbs as operation models, and G04, the
+  stamp-loop template defect. Each has a capture in the inbox.

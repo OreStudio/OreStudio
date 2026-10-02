@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 2AF58405-4F3D-4B74-AAD0-6A97E7DA215F
+:END:
+#+title: Trade sets, groups and links
+#+description: The three ways trades relate: a set shares an attribute, a group is tied to an operation and has an identity, a link joins trades with a reason. The test, the catalogue and what each implies for the model.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:trade_groups:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+Trades relate to each other in three ways, and the words for them are
+not synonyms.
+
+- A *set* is an assortment of trades that share an attribute: all the
+  trades in a book, for a counterparty, or in a netting set. No
+  operation attaches to the set itself.
+- A *group* is a set of trades associated with an operation: the
+  trades a compression run ended and created, the trades a structure
+  is authorised and cancelled as. A group has an identity of its own,
+  and it is not a product.
+- A *link* joins trades with a reason: a close-out answers a live
+  trade, a hedge answers the trade it hedges. A link holds nothing; it
+  exists only because the trades it joins exist.
+
+Where a collection is something the business names and describes,
+something with an identity is behind it, and that something is an
+entity with a key. For a set it is the thing the members share — the
+book, the netting set. For a group it is the group itself.
+
+* Detail
+
+** The vocabulary
+
+The internal analysis notes propose mathematical terms to keep these
+apart, and this page follows them.
+
+| Term | What it is | Has an identity | An operation attaches | Example |
+|------+------------+-----------------+-----------------------+---------|
+| Set | Trades that share an attribute | Through the attribute's entity | No | The trades in a book |
+| Group | Trades associated with an operation | Yes, its own | Yes | A compression run |
+| Structure | A product implemented as a group | Yes, its own | Yes | A straddle |
+| Link | A relation between trades | No | The link records one | A close-out |
+
+A structure is the case where the group is also a product: it is
+priced, authorised and confirmed as a whole. [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and
+Deal Composition]] covers it. Every other group is an operation's
+record rather than a product.
+
+** The test
+
+#+begin_quote
+Ask what the collection is for. If an operation attaches to the
+collection as a whole — authorise it, cancel it, run it, undo it — it
+is a group, and it gets an identity. If the members only share an
+attribute, it is a set, and the identity belongs to the attribute's
+entity. If it relates particular trades for a reason and contains
+nothing, it is a link.
+#+end_quote
+
+The test follows from the rule [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] states for
+persisted data: relationships are keys, not ownership. A collection
+the business names cannot be a by-product of the links between its
+members, because nothing would then carry its name, its attributes or
+the fact that it is empty. A structure with no legs yet is a structure
+being booked; a netting set with no trades still has an agreement
+behind it.
+
+The converse matters as much. A link is not a degenerate group.
+Recording a hedge as a group of two would give it an identity the
+business never refers to, and every reader would have to look through
+the group to reach the relation.
+
+** Sets
+
+A set's identity is the entity its members share. The set needs no
+table of its own: membership is a key on the trade.
+
+| Set | The entity behind it | A trade belongs to | Detail |
+|-----+----------------------+--------------------+--------|
+| Book | The book | Exactly one | [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] |
+| Counterparty | The counterparty | Exactly one | [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] |
+| Netting set | The netting set, under its agreement | Exactly one | [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] |
+| Portfolio | The portfolio | Through its book | [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] |
+
+A trade moves between sets by changing the attribute, and that change
+is versioned with the rest of the trade's booking.
+
+** Groups
+
+Groups come in two kinds.
+
+A *standing group* exists before, during and after any one trade's
+membership. Trades join and leave it over time, and the history of
+membership is part of the record. The structure is the main case: a
+trade sits in at most one structure at a time, and it can be linked to
+a structure and unlinked from it later.
+
+An *act* is a group that one operation creates at one moment. Its
+members do not join or leave: the act records which trades took part
+and in what role, and that record does not change afterwards.
+
+| Group | Kind | What the operation does | Roles of the trades | Detail |
+|-------+------+-------------------------+---------------------+--------|
+| Structure | Standing | Prices, authorises and confirms the deal as a whole | leg, by role in the structure | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+| Compression | Act | Replaces offsetting trades with fewer trades of the same net risk | terminated, partially terminated, replacement | [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] |
+| Merge | Act | Combines several trades into one | contributor, result, bridge | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
+| Allocation | Act | Splits a block trade across the accounts it was dealt for | block, allocation, bridge | [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] |
+| Funding roll | Act | Rolls a book's currency balances to the next day | generated | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
+| Sweep run | Act | Centralises residual balances | generated | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
+| Cleardown | Act | Resets book results at a period boundary | generated | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] |
+
+Every act has the same properties, whatever its kind:
+
+1. /Identity./ The act has a key, so a trade can say which act created
+   or ended it, and a report can list what one act did.
+2. /Provenance./ The act records when it ran, who or which process ran
+   it, and any notes. An act run by an outside provider also records
+   the reference the provider gave it, such as a compression cycle id.
+3. /Created together./ Every trade an act creates or ends, and the act
+   itself, are written in one transaction or not at all; the
+   [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]] invariant of the same name applies.
+4. /Explicit roles./ Each participating trade has a named role, and
+   the kind of act states which roles it allows and how many trades
+   may fill each.
+5. /Undone as a whole./ The analysis notes treat a funding run as a
+   /system event/: a unit of work that can be undone and redone as a
+   whole, where the undo is P&L-neutral. An act is undone by a second
+   act that reverses it, never by deleting the first.
+
+** Links
+
+With the groups taken out, the [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][link catalogue]] keeps the
+relations that have no container: close-out, novation, roll,
+misbooking correction, exercise, fixing, wash or back-to-back, book
+move, hedge, linked cash and user-defined links. Most join two trades,
+and each carries a type, a direction and named roles.
+
+The catalogue currently lists structure membership, merge,
+compression, allocation, funding roll, sweep run and cleardown as link
+types. Under this test each of them is a group, and its trades
+reference the group rather than each other.
+
+** What is neither
+
+A [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][position]] aggregates trades but has no identity: it is
+derived from the trades in scope and computed rather than recorded. A
+filter, a dynamic book or a blotter selection is a query over trades,
+not a collection anyone refers to by key. None of them is stored.
+
+** What follows for the model
+
+- The entity behind a set is a table with a key, and membership is a
+  key on the trade's booking.
+- A standing group is a table with a key, and membership is a table of
+  its own with its own history.
+- An act is a table with a key, plus a participation table that names
+  each trade and its role. The kinds share the participation shape and
+  differ in their attributes, so each kind states its own attributes
+  in a table of its own rather than in a list of optional columns.
+- A trade created or ended by an act references the act, so a reader
+  traces it back to its origin through the act. That satisfies the
+  /back to origin/ invariant of [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade links]].
+
+* Sources
+
+The set, group and structure vocabulary is taken from internal analysis
+notes on structures and deal composition, which propose it to keep the
+three apart. The treatment of a run as a unit of work comes from the
+notes on funding and sweeps. The test, the two kinds of group and the
+consequences for the model are this page's own synthesis.
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the relations between trades that are neither sets nor groups.
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the catalogue of link types.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the group that is also a product.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the set credit exposure is computed over.
+- [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]], [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] and [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] — the three acts with the most structure.
+- [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — an aggregate that is neither.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] — identity by key, and explicit variation.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

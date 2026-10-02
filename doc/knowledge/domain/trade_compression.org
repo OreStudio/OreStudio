@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 9BC498E0-91ED-4CA4-A7D7-7EF15684E799
+:END:
+#+title: Trade compression
+#+description: Replacing a portfolio of offsetting trades with fewer trades of the same net risk: the kinds, the cycle, what it ends and creates, and why each run has an identity.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:compression:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+*Compression* finds trades whose risks offset one another and replaces
+them with fewer trades, or none, that carry the same net risk. The
+position is unchanged; the gross notional and the number of trades
+fall. That lowers operational cost, counterparty exposure and the
+capital the gross figures drive.
+
+A compression ends trades in full, reduces others, and sometimes
+creates replacement trades to keep each participant's risk where it
+was. Every one of those changes happens because of one run, so the run
+is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity: it records when it ran,
+who ran it, the provider's own reference, and the role each trade
+played.
+
+Overall P&L is unchanged: compression realises value that the trades
+already carried. But it is an economic event for each trade it
+touches, so it is confirmed, settled and reported.
+
+* Detail
+
+** Kinds of compression
+
+| Kind | Who takes part | Who proposes the result |
+|------+----------------+-------------------------|
+| Bilateral | Two counterparties | The two parties, comparing their portfolios |
+| Multilateral | Many counterparties at once | A third-party service that runs compression cycles |
+| Cleared | The members of a central counterparty, for their cleared trades | The central counterparty |
+| Portfolio restructure (tear-up) | The firm and one counterparty, for trades on one value date | The firm's own process |
+
+The first three differ in scale; the mechanics are the same. A
+multilateral cycle finds offsets that no single pair of counterparties
+can see, which is why most volume runs through multilateral services.
+
+The /portfolio restructure/ is the firm's own form, described in the
+analysis notes for FX. Where a set of deals with the same value date
+nets to zero, or to an amount in one currency, the firm generates an
+equal-and-opposite deal with today's value date for each
+future-dated deal, and present-values any outstanding cash and pays it
+out. The equal-and-opposite deals are called /tear-ups/.
+
+"Tear-up" also names the cancellation of a trade with no net P&L
+effect, which happens in migrations and book moves. The two uses
+agree: a tear-up is a cancellation that leaves the firm's value where
+it was.
+
+** The cycle
+
+A multilateral run, the most structured kind, proceeds in steps:
+
+1. /Submission./ Each participant submits the trades it offers for
+   compression, with its tolerances: how far its risk, its exposure to
+   each counterparty and its cash flows may move.
+2. /Proposal./ The provider computes a set of terminations, reductions
+   and replacement trades that lowers gross notional while keeping
+   every participant inside its tolerances.
+3. /Acceptance./ Every participant reviews the proposal. It becomes
+   binding only when all of them accept it; a single rejection voids
+   the run.
+4. /Execution./ The terminations and replacements take effect together
+   at an agreed time, and each participant books them.
+
+Only the last step changes trades. The earlier steps are the provider's
+workflow, and a firm that records them records them against the run,
+not against the trades.
+
+** What a run does to a trade
+
+| Role | What happens to the trade |
+|------+---------------------------|
+| Terminated | Ends in full. Its state moves to terminated, with compression as the cause. |
+| Partially terminated | Stays live with a reduced notional. Its economics are amended, which cuts a version. |
+| Replacement | A new trade, created by the run to keep a participant inside its tolerances. |
+
+A partial termination is an amendment of the same trade, not a new
+trade, and the run records the notional before and after.
+
+** Effects
+
+The analysis notes record compression as one of the few activities
+that reaches every downstream area, with a P&L effect of zero.
+
+| Area | Effect |
+|------+--------|
+| P&L | Net zero. The run turns unrealised value into realised value; the P&L attribution notes file it under early termination, valued at the mark at the termination date. |
+| Risk | Unchanged in total, within the tolerances. |
+| Settlement | Termination payments settle. |
+| Confirmation | Terminations and replacements are confirmed. |
+| Credit | Exposure falls, which is the point. |
+| Regulatory reporting | Terminations are reported as compression events, and replacement trades are reported as new trades with identifiers of their own. |
+
+Compression is therefore a trade event in the sense of
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade links]]: it changes the trades it touches, cuts their
+versions and may require the counterparty to agree again.
+
+** Why a run has an identity
+
+A run is an operation that attaches to a set of trades as a whole, so
+under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]] it is a group. In
+practice the business refers to it in its own right:
+
+- /When and who./ The execution time, the person or process that
+  accepted it, and any notes the desk attaches.
+- /The provider's reference./ The cycle or run identifier the provider
+  assigned, which is what the provider's statements and the
+  counterparty's records quote.
+- /What it did./ The trades it ended, reduced and created, so a report
+  can answer "what did the March cycle do to this book".
+- /Traceability./ A terminated trade's history must say why it ended,
+  and a replacement trade's history must say where it came from. Both
+  answer by naming the run.
+
+Recording the run only as links between pairs of trades would lose all
+four: a multilateral run is many-to-many, and no pair carries the run's
+time, owner or reference.
+
+** What follows for the model
+
+This section is analysis rather than reported practice.
+
+- /The run./ One row per run: its kind, its provider and the provider's
+  reference, the execution time, who accepted it, and notes.
+- /Participation./ One row per trade the run touched: the trade, its
+  role, and for a partial termination the notional before and after.
+  A trade takes part in a given run at most once; it may take part in
+  several runs over its life.
+- /The trades./ A terminated trade moves to its terminated state with
+  compression as the activity, and the activity references the run. A
+  replacement trade records the run as its origin.
+- /Created together./ The run, its participation rows, the state
+  changes, the amendments and the new trades are written in one
+  transaction.
+- /Undo./ An executed run is legally binding and is not undone. A run
+  booked in error is reversed by a corrective act that references it.
+
+** Open questions
+
+- /Do we record proposals?/ Recording submitted and proposed runs
+  supports reconciliation against the provider; recording only executed
+  runs is enough for the trade history.
+- /Tolerances./ Whether the firm stores its submitted tolerances with
+  the run, or only the result.
+- /Cross-entity runs./ The analysis notes describe compression as
+  identifying offsetting positions across entities. Whether a run may
+  span the firm's own legal entities, and how each entity's books see
+  it, is not settled.
+
+* Sources
+
+The tear-up definition, the portfolio restructure process, the
+exclusion matrix and the P&L treatment are drawn from internal
+analysis notes on non-contributing trades, structures and deal
+composition, deal linkage and P&L attribution. The kinds of
+compression and the multilateral cycle describe general market
+practice. The model consequences are this page's own analysis.
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a run is a group with an identity.
+- [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] — combining trades into one, which compression is not.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the activity a terminated trade carries.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the credit exposure compression reduces.
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — where the realised value lands.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

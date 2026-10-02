@@ -44,14 +44,16 @@ are not synonyms:
 - A /structure/ binds its parts economically. The parts have roles, and
   the whole prices differently from the sum of the parts. A straddle is
   a structure.
-- A /group/ is a bundle a user assembles for convenience. The trades in
-  it keep their own economics. A hedge group is a group.
-- A /set/ is a collection with no relationship at all. A portfolio of
-  unrelated trades is a set.
+- A /group/ is a set of trades associated with an operation, such as
+  authorise, cancel or compress. It has an identity of its own, and it
+  is not a product. A compression run is a group.
+- A /set/ is an assortment of trades that share an attribute, with no
+  operation attached. The trades in a book are a set.
 
-Reserve "structure" for the first case. The other two are display and
-organisation concepts, and they belong to the blotter, not to the trade
-model.
+Reserve "structure" for the first case: a structure is a product
+implemented as a group. [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] states the
+test that separates the three, and why each group and the entity
+behind each set is modelled with an identity of its own.
 
 ** The composition ladder
 

@@ -42,8 +42,8 @@ the ordinary reads do the rest.
 
 * Steps
 
-1. *Enter the tenant.* On the tenant's screen, or from the roster row's menu,
-   the administrator chooses *Act in this tenant*. The system checks the
+1. *Enter the tenant.* On the tenant's screen, which the roster row's *Open*
+   leads to, the administrator chooses *Act in this tenant*. The system checks the
    permission, refuses the system tenant, and issues a session scoped to the
    tenant. The session acts as the tenant's system party, which sees every
    party of the tenant. The system records the entry in the tenant's audit
@@ -79,9 +79,8 @@ tenant, from system administration, in
 
 * Screens and wireframes
 
-No new screen. The journey adds a button on the tenant's screen, a menu item on
-the roster row, and a banner on every screen while the administrator is
-inside. The wireframe shows the tenant's screen before entry, and the same
+No new screen. The journey adds a button on the tenant's screen and a banner on
+every screen while the administrator is inside. The wireframe shows the tenant's screen before entry, and the same
 screen inside the tenant with the banner and the parties.
 
 #+caption: Act inside a tenant: the entry on the tenant's screen, and the banner and parties while inside.
@@ -135,7 +134,7 @@ session while the tenant session is in use, so leaving needs no sign-in.
 * Related journeys
 
 - [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]] — where the journey starts, and where leaving returns
-- [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] — the roster row's menu offers the entry too
+- [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] — the roster row's *Open* leads to the tenant's screen
 - [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — read inside the tenant
 - [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] — read inside the tenant
 - [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — where the entry and the exit are recorded

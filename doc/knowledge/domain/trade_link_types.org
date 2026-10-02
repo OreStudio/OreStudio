@@ -49,7 +49,7 @@ recorded, displayed and reported, and they change no term.
 | Fixing | A non-deliverable forward and its fixing trade or cash flow | The rate fixes | [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]; [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] |
 | Funding roll | The trades of one Tom/Next run | The desk funds a currency position overnight | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
 | Sweep run | The trades of one sweep run | The desk centralises residual balances | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
-| Cleardown | The synthetic reset legs and the book result they reset | The period closes | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] |
+| Cleardown | The synthetic reset legs and the book result they reset | The period closes | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] — see its cleardown section |
 | Wash or back-to-back | The client-facing trade and the risk-bearing trade | Risk is routed to the book that owns it | [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] |
 | Book move | The back-out trade and the trade in the destination book | The trade changes book | [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] |
 | Allocation | A block trade and its child trades | The block is distributed across clients or accounts | [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]]; [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
@@ -88,7 +88,7 @@ produces a settlement, the resulting cash is
 - ISDA, Novation Protocol:
   https://www.isda.org/traditional-protocol/isda-novation-protocol/
 
-** See also
+* See also
 
 - [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the principle, the invariants, and the prior art behind the term.
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.

@@ -147,10 +147,10 @@ what each source we follow calls it.
 We chose *link* over *linkage* for three reasons. FpML standardises
 =linkedTrade=, so the word has a standards precedent. The blotter verbs
 are already Link and Unlink, so the noun matches our own vocabulary.
-And "linkage" is a nominalisation, which the house documentation rules
-discourage; in market usage it more often names settlement netting than
-the general relation. "Deal" is rejected for the same reason "trade" is
-preferred throughout: one word per concept.
+And in market usage "linkage" more often names settlement netting than
+the relation between two trades, so reusing it would blur both senses.
+"Deal" is rejected for the same reason "trade" is preferred throughout:
+one word per concept.
 
 The material analysed, in full:
 

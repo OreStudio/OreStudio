@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-oresmd-uri-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,19 +27,20 @@ with no code per family.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Review.                                |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
 
 - The codec walks the datum's fields in schema order; it has no per-family branch.
-- The writer writes every field. The reader refuses a missing, unknown or repeated key.
-- The path segment is percent-encoded and keeps its case.
-- A =type=quote= URI follows the strict contract: every field of its schema row present, nothing else, no default, no partial form, one to one with the canonical ORE key. The reader refuses any =type=quote= URI that breaks it.
+- The writer leaves out a field that holds none. The reader reads a missing key as none only where the schema row allows none, and refuses a missing required key, an unknown key or a repeated key.
+- The path is the row's subject field, percent-encoded with its case kept, and the query does not repeat it.
+- A =type=quote= URI follows the strict contract: every required field of its schema row present, an optional field present only when it holds a value, nothing else, no default, no partial form, one to one with the canonical ORE key. The reader refuses any =type=quote= URI that breaks it.
+- A =type=series= URI holds the identity fields only; the reader refuses a coordinate field in it.
 - For every datum in the reference catalogue: =read(write(d)) == d=, =write(read(u)) == u=, and the series URI parses.
 - Property tests generate datums from each schema row and each field's domain and round-trip them.
 
@@ -60,12 +61,71 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Documented forms round-tripped | 121 datums and their series; 119 distinct URIs for 119 distinct canonical keys (two forms are aliases) | =ores.marketdata.core.tests "[oresmd_uri_codec]"= | 21a0f0124d |
+| Corpus keys round-tripped | 108,057 datums and their series; 108,057 distinct URIs for 108,057 distinct keys | =ores.marketdata.core.tests "[oresmd_uri_codec]"= | 21a0f0124d |
+| Free-text property test | 4,540 of 4,560 generated variants exercised (20 have no ORE key), all round trip | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =-s= | 21a0f0124d |
+| Code vocabulary property test | 259 variants, all round trip | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =-s= | 21a0f0124d |
+| Corpus check time | 32.9 s (debug build) | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =--durations yes= | 21a0f0124d |
+| URI codec test cases | 10 cases, 64 assertions, all passed | =ores.marketdata.core.tests "[oresmd_uri_codec]"= | 21a0f0124d |
 
 * Notes
 
 Through today's URI, 7,254 corpus keys do not read back and 4,269 produce a URI
 the parser rejects. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 2.
+
+** The agreed shape
+
+Agreed with the product owner on 2026-10-02:
+
+#+begin_example
+CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y
+oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=5Y
+oresmd://credit/ACME?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14
+#+end_example
+
+- The query keys are the schema's field names, so the codec needs no table
+  from fields to URI names. The instrument and quote values are ORE's names in
+  lower case (=fx_spot=, =zc_inflationswap=), which needs no table either.
+- A field that holds none is left out. The first proposal wrote every field,
+  with an empty value for none. That rule came from the old grammar, where a
+  missing key meant a default. In the typed model none has no default and the
+  schema says which fields may be none, so the reader can tell a missing
+  required key from none. Only one risk remains: a writer that forgets an
+  optional field it meant to set. The codec is the only writer.
+- A series URI has =type=series= and holds the identity fields only.
+
+** What the schema gained
+
+Each schema row now names its asset class and its subject field. Both are data
+that the URI needs and that classification will need when the consumers move
+over. A =static_assert= checks that every subject is an identity field of its
+row that is never none. The asset class names are the oresmd authorities
+=ores.refdata='s catalogue already maps: =ir=, =fx=, =credit=, =equity=,
+=commodity=, =inflation=, =security=, =correlation=, =rating= and
+=shape_profile=.
+
+The subject is the currency for the rates rows, the reference entity or index
+for credit, the unit currency for FX, the index for inflation, the name for
+equity and commodity, and the security or contract for securities. Two rows
+needed a choice: a cross-currency basis swap uses =ccy=, the curve being
+built, not =flat_ccy=; a cross-currency fix-float swap uses =fixed_ccy=, the
+curve being built.
+
+** Strictness by the ORE key
+
+A quote URI could name a datum that the schema admits but that no ORE key
+can write, such as a CDS with a doc clause and no seniority. The reader and the
+writer both call =ore_key_codec::write=, which reads its key back, so a quote
+URI is one to one with the canonical ORE key by construction. The cost is the
+corpus time above.
+
+** Encoding
+
+Boost.URL writes the URI. The query uses =space_as_plus = false=, because a
+=+= is data in a strike or a free-text name, not an encoded space. Boost leaves
+~=~ unencoded in a value; RFC 3986 allows it, and only the first ~=~ splits a
+key from its value. The test =reserved_characters_are_percent_encoded_and_case_is_kept=
+pins the exact text.
 
 * Test Scenarios
 
@@ -88,6 +148,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review (minor): the corpus round trip takes about 33 s, which adds to a suite that CI once timed out at 600 s. | =datum_oresmd_uri_codec_tests.cpp= | Declined | The suite ran in 370 s before; it stays well inside the limit. Most of the time is the ORE key read-back that gives the one-to-one guarantee. |
+| 2 | Local review (minor): =market_data_urn.org= still describes the old grammar. | =doc/knowledge/domain/market_data_urn.org= | Deferred | The task "Rewrite the oresmd design record" owns it; the story's decision 6 states the new shape until then. |
+| 3 | Local review: a value with reserved characters had no exact-text test, only round trips. | =datum_oresmd_uri_codec_tests.cpp= | Accepted | Added =reserved_characters_are_percent_encoded_and_case_is_kept=. |
+| 4 | Local review: a field could be named like a reserved query key and shadow it. | =datum_oresmd_uri_codec_tests.cpp= | Accepted | Added =no_field_is_named_like_a_reserved_query_key=. |
 
 * Result
+
+=oresmd_uri_codec= in =ores.marketdata.core= writes a datum or a series as an
+oresmd URI and reads it back by walking the schema row. Every documented form
+and every corpus key round trips as a datum and as a series, and gives back its
+canonical ORE key. The reader refuses each break of the contract that the
+refusal test lists. The old =market_data_urn.org= still describes the old
+grammar; the design record task rewrites it.

@@ -62,7 +62,7 @@ stores. The same story closes the clean-standard findings that
 | [[id:97C38DD7-2955-43A1-ABA0-EF6D771C9189][Define the typed market datum model]] | DONE | 2026-10-02 | 2026-10-02 | One hand-written value type with typed fields and a constexpr schema table per ORE instrument type that states each field, its order and its role; free-text names kept verbatim. |
 | [[id:7E29ABC0-A571-4B16-9651-EBAEDE530100][Write the ORE key codec]] | DONE | 2026-10-02 | 2026-10-02 | A hand-written reader and writer between ORE key text and the typed datum, choosing fields by token value the way ORE does, proved against the reference catalogue and the corpus. |
 | [[id:0D8B6810-8A58-4E89-BF07-CA0E6B937EEE][Model the ORE types, aliases and metrics oresmd lacks]] | BACKLOG | | | Add ASSUMED_RECOVERY_RATE, BOND_FUTURE, BOND_FUTURE_OPTION and COMMODITY_CALENDAR_SPREAD_OPTION, accept FX_SPOT, FX_FWD and RATE_GVOL, and complete the metric set, so every ORE instrument and quote type is modelled. |
-| [[id:C6BE9E13-4126-4F70-B7B2-3215AF7BE674][Write the oresmd URI codec]] | BACKLOG | | | One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the schema. |
+| [[id:C6BE9E13-4126-4F70-B7B2-3215AF7BE674][Write the oresmd URI codec]] | DONE | 2026-10-02 | 2026-10-03 | One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the schema. |
 | [[id:3140F0B6-FA7C-4ED2-85FE-074FE0DEC00B][Cut the consumers over to the new codec]] | BACKLOG | | | Move import, export, feed ingest, curve republish and classification onto the new codec, export keys from the stored URI, drop the raw key column, and make the corpus tests compare by key. |
 | [[id:DE953E1E-9E1C-41E6-8D54-91FA85704EBE][Retire the generated grammar and the key shape registry]] | BACKLOG | | | Delete the oresmd grammar templates and model tables, the dead resolver and requirement types, and the SQL key shape table with series_key_registry, so the key grammar exists in one place. |
 | [[id:40BC9458-38CE-4A54-9385-C1BAC3D7FBEB][Rewrite the oresmd design record]] | BACKLOG | | | Make market_data_urn.org describe the grammar that ships, and settle the captures the old grammar left behind. |
@@ -120,11 +120,16 @@ stores. The same story closes the clean-standard findings that
      cites the ORE form it reads. An alias is read and then written in its
      canonical spelling, and the import reports the change.
   6. *The URI codec is generic.* It walks the datum's fields in schema
-     order. The authority is the asset class. The path is the primary
-     subject, percent-encoded with its case kept. The query holds every field
-     by name in schema order. The writer writes every field.
-     The reader refuses a missing, unknown or repeated key. No per-family URI
-     code exists, so the URI cannot drift from the schema.
+     order. The authority is the asset class. The path is the row's subject
+     field, percent-encoded with its case kept, and the query does not repeat
+     it. The query starts with =type= (=quote= or =series=), =instrument=
+     and =quote=, then holds each other field under its schema name, in
+     schema order, with the case of its value kept. The writer leaves out a
+     field that holds none. The reader takes a missing key as none only where
+     the schema row says the field may be none; it refuses a missing required
+     key, an unknown key and a repeated key. No per-family URI code exists,
+     so the URI cannot drift from the schema. Agreed on 2026-10-02:
+     =oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=5Y=.
   7. *One grammar.* =ores.ore= keeps only the file reader, which yields date,
      key text and value. The SQL key shape table and =series_key_registry= go.
      Classification reads the asset class and the instrument type from the
@@ -134,9 +139,10 @@ stores. The same story closes the clean-standard findings that
      column goes. The export writes =write(read_uri(datum_uri))=. The
      database is recreated and the corpus re-imported, so no migration exists.
   9. *A quote URI has a strict contract.* =type=quote= names exactly one ORE
-     datum, so its URI is always fully specified: every field of the type's
-     schema row is present and nothing else is, no default applies, no
-     partial or requirement form exists, and the URI maps one to one onto the
+     datum, so its URI is always fully specified: every required field of
+     the type's schema row is present, a field that may be none is present
+     only when it holds a value, and nothing else is present; no default
+     applies, no partial or requirement form exists, and the URI maps one to one onto the
      canonical ORE key with case kept. "Canonical" means the spelling after
      an alias is resolved: =FX_SPOT/RATE/EUR/USD= reads as =FX/RATE/EUR/USD=,
      and a round trip of an alias returns the canonical spelling, not a

@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/define-the-typed-datum-model
-#+pr:
+#+pr: 2511
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2511][#2511]] | [marketdata] Define the typed market datum model |
 
 * Review
 

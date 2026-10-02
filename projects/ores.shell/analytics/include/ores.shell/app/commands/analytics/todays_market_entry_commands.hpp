@@ -73,14 +73,14 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <key_value>
+     * @brief get <id>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <key_value>
+     * @brief get-many <id>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -113,14 +113,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <key_value> <reason> <commentary> [--version <n>]
+     * @brief delete <id> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <key_value> <reason> <commentary>
+     * @brief delete-many <id> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
@@ -143,14 +143,14 @@ public:
                                                        const std::vector<std::string>& args);
 
     /**
-     * @brief versions <key_value> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <key_value> --version <n>
+     * @brief version <id> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

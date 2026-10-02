@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface TodaysMarketConfigKey {
     name: string;
@@ -37,6 +38,7 @@ export interface TodaysMarketConfigWrite {
     name: string;
     description: string;
     config_variant: string;
+    configuration_id: string;
 }
 
 export interface TodaysMarketConfigChange {
@@ -52,6 +54,10 @@ export interface TodaysMarketConfigRemoval {
 export interface TodaysMarketConfigLookup {
     key: TodaysMarketConfigKey;
     todays_market_config: TodaysMarketConfig | null;
+}
+
+export interface TodaysMarketConfigsFilter {
+    configuration_id: string | null;
 }
 
 export interface TodaysMarketConfigEvent {
@@ -78,6 +84,7 @@ export interface ListTodaysMarketConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TodaysMarketConfigsFilter | null;
 }
 
 export interface ListTodaysMarketConfigsResponse {
@@ -142,6 +149,21 @@ export interface DeleteManyTodaysMarketConfigsResponse {
     result: Result;
 }
 
+export interface ListByConfigurationIdTodaysMarketConfigsRequest {
+    configuration_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TodaysMarketConfigsFilter | null;
+}
+
+export interface ListByConfigurationIdTodaysMarketConfigsResponse {
+    result: Result;
+    configs: TodaysMarketConfig[];
+    total: number;
+}
+
 export interface ListTodaysMarketConfigVersionsRequest {
     key: TodaysMarketConfigKey;
     offset: number;
@@ -173,6 +195,8 @@ export const subjects = {
     put_many_todays_market_configs_request: 'analytics.v1.todays_market_configs.put_many',
     delete_todays_market_config_request: 'analytics.v1.todays_market_configs.delete',
     delete_many_todays_market_configs_request: 'analytics.v1.todays_market_configs.delete_many',
+    list_by_configuration_id_todays_market_configs_request:
+        'analytics.v1.todays_market_configs.list_by_configuration_id',
     list_todays_market_config_versions_request: 'analytics.v1.todays_market_configs_versions.list',
     get_todays_market_config_version_request: 'analytics.v1.todays_market_configs_versions.get',
 } as const;
@@ -189,6 +213,7 @@ export const requiresSession = {
     put_many_todays_market_configs_request: true,
     delete_todays_market_config_request: true,
     delete_many_todays_market_configs_request: true,
+    list_by_configuration_id_todays_market_configs_request: true,
     list_todays_market_config_versions_request: true,
     get_todays_market_config_version_request: true,
 } as const;

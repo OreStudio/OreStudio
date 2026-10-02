@@ -48,7 +48,7 @@ struct todays_market_entry_entity {
     std::string todays_market_config_id;
     std::string todays_market_collection_id;
     std::string key_attribute;
-    std::string key_value;
+    std::optional<std::string> key_value;
     std::optional<std::string> key_value_2;
     std::string target;
     std::optional<std::string> discounting;

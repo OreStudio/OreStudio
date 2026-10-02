@@ -49,9 +49,9 @@ generate_synthetic_todays_market_entry(utility::generation::generation_context& 
     r.todays_market_collection_id = ctx.generate_uuid();
     r.key_attribute = std::string("currency");
     r.key_value = std::string("EUR");
-    r.key_value_2 = std::string("");
+    r.key_value_2 = std::nullopt;
     r.target = std::string("Yield/EUR/EUR1D");
-    r.discounting = std::string("");
+    r.discounting = std::nullopt;
     r.position = 0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

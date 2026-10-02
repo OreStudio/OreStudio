@@ -38,7 +38,7 @@ render_todays_market_collection_fields(const domain::todays_market_collection& v
     fields.push_back({.name = "Todays Market Config ID",
                       .value = boost::uuids::to_string(v.todays_market_config_id)});
     fields.push_back({.name = "Collection", .value = v.collection});
-    fields.push_back({.name = "Collection ID", .value = v.collection_id});
+    fields.push_back({.name = "Collection ID", .value = v.collection_id.value_or(std::string{})});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

@@ -187,18 +187,6 @@ public:
     std::optional<domain::todays_market_entry> get_entry(const boost::uuids::uuid& id);
 
     /**
-     * @brief Retrieves a single today's market entry by the key the model
-     * declares -- the human-readable key a caller holds.
-     *
-     * This is the counterpart of the uuid overload above: the two keys an
-     * entity holds are different keys, and a call site has to say which one it
-     * means.
-     *
-     * @return The today's market entry if found, std::nullopt otherwise.
-     */
-    std::optional<domain::todays_market_entry> get_entry_by_key_value(const std::string& key_value);
-
-    /**
      * @brief Retrieves a single today's market entry by its uuid primary key.
      *
      * @return The today's market entry if found, std::nullopt otherwise.
@@ -248,11 +236,9 @@ public:
     /**
      * @brief Retrieves all historical versions of a today's market entry.
      *
-     * Addressed by the key the model declares, which is the one a caller
-     * holds; the storage key is resolved from it here, the same step every
-     * other read makes.
+     * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::todays_market_entry> get_entry_history(const std::string& key);
+    std::vector<domain::todays_market_entry> get_entry_history(const std::string& id);
 
     /**
      * @brief Retrieves all historical versions of a today's market entry

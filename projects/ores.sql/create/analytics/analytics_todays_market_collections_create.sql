@@ -28,14 +28,13 @@
  * rest. A document writes up to twenty-four of them, each optional, each holding
  * its own ordered list of entries.
  *
- * This table exists for one attribute. Every collection *wrapper* in the generated
- * binding declares its own optional id, separate from the id each entry
- * declares, and the entry table has no place to put it because a collection is not
- * one entry. No corpus file writes it, so dropping it would round trip the whole
- * corpus and lose data on a document that wrote one.
+ * A document may write the same kind more than once under different ids, for
+ * example a DiscountingCurves with id default and another with id inccy. A
+ * Configuration selects one of them by that id. So the collection is a thing
+ * with an identity, an order and its own entries, and it has a table. Almost every
+ * corpus file writes the id.
  *
- * It is also where the collection's identity belongs. An entry names its
- * collection; with this table it points at one.
+ * An entry points at its collection rather than repeating the collection's name.
  */
 
 create table if not exists "ores_analytics_todays_market_collections_tbl" (
@@ -157,4 +156,21 @@ on delete to "ores_analytics_todays_market_collections_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Todays Market Collection
+-- =============================================================================
+alter table ores_analytics_todays_market_collections_tbl enable row level security;
+
+drop policy if exists todays_market_collections_tbl_tenant_isolation_policy
+    on ores_analytics_todays_market_collections_tbl;
+
+create policy todays_market_collections_tbl_tenant_isolation_policy
+on ores_analytics_todays_market_collections_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

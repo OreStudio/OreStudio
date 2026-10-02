@@ -239,6 +239,54 @@ std::optional<domain::todays_market_config> todays_market_config_repository::rea
     return entities.front();
 }
 
+std::vector<domain::todays_market_config>
+todays_market_config_repository::read_latest_by_configuration_id(
+    context ctx, const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configurations. configuration_id: "
+                               << configuration_id << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<todays_market_config_entity>> |
+                       where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<todays_market_config_entity, domain::todays_market_config>(
+        ctx,
+        query,
+        [](const auto& entities) { return todays_market_config_mapper::map(entities); },
+        lg(),
+        "Reading latest today's market configurations by configuration_id.");
+}
+
+std::uint32_t todays_market_config_repository::get_total_config_count_by_configuration_id(
+    context ctx, const std::string& configuration_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Retrieving total active today's market configurations count. configuration_id: "
+        << configuration_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<todays_market_config_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "configuration_id"_c == configuration_id &&
+              "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug)
+        << "Total active today's market configurations count by configuration_id: " << count;
+    return count;
+}
+
+
 todays_market_config_repository::remove_status todays_market_config_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing today's market configuration. " << "id: " << id;

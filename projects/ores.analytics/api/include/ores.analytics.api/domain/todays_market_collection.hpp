@@ -40,14 +40,13 @@ namespace ores::analytics::domain {
  * rest. A document writes up to twenty-four of them, each optional, each holding
  * its own ordered list of entries.
  *
- * This table exists for one attribute. Every collection *wrapper* in the generated
- * binding declares its own optional id, separate from the id each entry
- * declares, and the entry table has no place to put it because a collection is not
- * one entry. No corpus file writes it, so dropping it would round trip the whole
- * corpus and lose data on a document that wrote one.
+ * A document may write the same kind more than once under different ids, for
+ * example a DiscountingCurves with id default and another with id inccy. A
+ * Configuration selects one of them by that id. So the collection is a thing
+ * with an identity, an order and its own entries, and it has a table. Almost every
+ * corpus file writes the id.
  *
- * It is also where the collection's identity belongs. An entry names its
- * collection; with this table it points at one.
+ * An entry points at its collection rather than repeating the collection's name.
  */
 struct todays_market_collection final {
     /**
@@ -82,10 +81,11 @@ struct todays_market_collection final {
     /**
      * @brief The id attribute the document wrote on the collection element itself.
      *
-     * Distinct from the id an entry declares. No corpus file writes it, which is why this column
-     * exists rather than being noticed in testing.
+     * This is the name a Configuration refers to: a DiscountingCurvesId of inccy selects the
+     * DiscountingCurves collection whose id is inccy. Almost every corpus file writes it. The
+     * attribute is optional in the schema, so it is null when the document wrote none.
      */
-    std::string collection_id;
+    std::optional<std::string> collection_id;
 
     /**
      * @brief The order the document wrote the collection in.

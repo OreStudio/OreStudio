@@ -47,7 +47,7 @@ generate_synthetic_todays_market_collection(utility::generation::generation_cont
     r.id = ctx.generate_uuid();
     r.todays_market_config_id = ctx.generate_uuid();
     r.collection = std::string("DiscountingCurves");
-    r.collection_id = std::string("");
+    r.collection_id = std::nullopt;
     r.position = 0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

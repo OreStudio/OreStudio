@@ -36,7 +36,7 @@
 namespace ores::analytics::messaging {
 
 struct todays_market_entry_key {
-    std::string key_value;
+    boost::uuids::uuid id;
 };
 
 struct todays_market_entry_write {
@@ -44,10 +44,10 @@ struct todays_market_entry_write {
     boost::uuids::uuid todays_market_config_id;
     boost::uuids::uuid todays_market_collection_id;
     std::string key_attribute;
-    std::string key_value;
-    std::string key_value_2;
+    std::optional<std::string> key_value;
+    std::optional<std::string> key_value_2;
     std::string target;
-    std::string discounting;
+    std::optional<std::string> discounting;
     int position;
 };
 

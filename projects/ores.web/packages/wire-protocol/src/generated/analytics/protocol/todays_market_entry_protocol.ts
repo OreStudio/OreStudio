@@ -30,7 +30,7 @@ import type { Result } from '../../../utility/protocol.js';
 import type { Scope } from '../../../utility/protocol.js';
 
 export interface TodaysMarketEntryKey {
-    key_value: string;
+    id: string;
 }
 
 export interface TodaysMarketEntryWrite {
@@ -38,10 +38,10 @@ export interface TodaysMarketEntryWrite {
     todays_market_config_id: string;
     todays_market_collection_id: string;
     key_attribute: string;
-    key_value: string;
-    key_value_2: string;
+    key_value: string | null;
+    key_value_2: string | null;
     target: string;
-    discounting: string;
+    discounting: string | null;
     position: number;
 }
 

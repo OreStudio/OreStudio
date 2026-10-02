@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_API_DOMAIN_TODAYS_MARKET_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
@@ -41,7 +42,7 @@ namespace ores::analytics::domain {
  * One ORE todaysmarket.xml document, held as the thing the collections and the
  * configurations hang off. The document itself carries no market data: it is an
  * ordered set of collections, each entry naming a curve by reference, plus named
- * configurations that select one entry from each collection.
+ * configurations that select one collection of each kind by the collection's id.
  *
  * The entries live on todays_market_entry, the configurations on
  * todays_market_configuration, and the references a configuration makes on
@@ -85,6 +86,14 @@ struct todays_market_config final {
      * Examples: 'flat', 'sabr', 'heston', 'inflation'.
      */
     std::string config_variant;
+
+    /**
+     * @brief The reporting configuration this document is registered as. A run names its today's
+     * market file in its setup; the reporting configuration is what joins that name to these rows.
+     * Nullable because a document can be imported before it is registered: the mapper reads and
+     * writes content and does not invent a header, the caller supplies one.
+     */
+    boost::uuids::uuid configuration_id;
 
     /**
      * @brief Username of the person who last modified this today's market configuration.

@@ -91,6 +91,7 @@ The order the document wrote the configuration in.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_todays_market_configurations_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

@@ -45,9 +45,9 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
         boost::lexical_cast<boost::uuids::uuid>(v.todays_market_collection_id);
     r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
-    r.key_value_2 = v.key_value_2.value_or("");
+    r.key_value_2 = v.key_value_2;
     r.target = v.target;
-    r.discounting = v.discounting.value_or("");
+    r.discounting = v.discounting;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -70,9 +70,9 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     r.todays_market_collection_id = boost::uuids::to_string(v.todays_market_collection_id);
     r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
-    r.key_value_2 = v.key_value_2.empty() ? std::nullopt : std::optional(v.key_value_2);
+    r.key_value_2 = v.key_value_2;
     r.target = v.target;
-    r.discounting = v.discounting.empty() ? std::nullopt : std::optional(v.discounting);
+    r.discounting = v.discounting;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

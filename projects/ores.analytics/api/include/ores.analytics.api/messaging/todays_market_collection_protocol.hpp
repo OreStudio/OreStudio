@@ -43,7 +43,7 @@ struct todays_market_collection_write {
     boost::uuids::uuid id;
     boost::uuids::uuid todays_market_config_id;
     std::string collection;
-    std::string collection_id;
+    std::optional<std::string> collection_id;
     int position;
 };
 

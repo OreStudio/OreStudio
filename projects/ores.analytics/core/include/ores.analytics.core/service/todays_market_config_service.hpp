@@ -91,6 +91,9 @@ public:
     delete_todays_market_config(const messaging::delete_todays_market_config_request& request);
     messaging::delete_many_todays_market_configs_response delete_many_todays_market_configs(
         const messaging::delete_many_todays_market_configs_request& request);
+    messaging::list_by_configuration_id_todays_market_configs_response
+    list_by_configuration_id_todays_market_configs(
+        const messaging::list_by_configuration_id_todays_market_configs_request& request);
     messaging::list_todays_market_config_versions_response list_todays_market_config_versions(
         const messaging::list_todays_market_config_versions_request& request);
     messaging::get_todays_market_config_version_response get_todays_market_config_version(
@@ -113,6 +116,27 @@ public:
      * @return Total number of active today's market configurations.
      */
     std::uint32_t count_configs();
+
+
+    /**
+     * @brief Lists today's market configurations filtered by configuration_id, with pagination.
+     *
+     * @param configuration_id The configuration_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching today's market configurations for the requested page.
+     */
+    std::vector<domain::todays_market_config> list_configs_by_configuration_id(
+        const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active today's market configurations filtered by
+     * configuration_id.
+     *
+     * @param configuration_id The configuration_id to filter by.
+     * @return Total number of matching today's market configurations.
+     */
+    std::uint32_t count_configs_by_configuration_id(const std::string& configuration_id);
 
 
     /**

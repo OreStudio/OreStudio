@@ -90,17 +90,19 @@ struct todays_market_entry final {
     /**
      * @brief The value of that attribute.
      *
-     * Examples: 'EUR', 'EUR-EURIBOR-3M', 'EUR/USD'.
+     * Examples: 'EUR', 'EUR-EURIBOR-3M', 'EUR/USD'. Absent only for SwaptionVolatilities and
+     * CapFloorVolatilities, whose key attribute is optional. Absent is null and an attribute
+     * written empty is the empty string, so the export can tell them apart.
      */
-    std::string key_value;
+    std::optional<std::string> key_value;
 
     /**
      * @brief The value of the second key attribute, where a collection has two.
      *
      * Set only for SwaptionVolatilities and CapFloorVolatilities, which identify by key and
-     * currency together.
+     * currency together. Null when the document wrote no currency.
      */
-    std::string key_value_2;
+    std::optional<std::string> key_value_2;
 
     /**
      * @brief The reference the entry resolves to, which is the element's text.
@@ -113,9 +115,9 @@ struct todays_market_entry final {
      * @brief The nested Discounting child, for the one collection that has one.
      *
      * Only SwapIndexCurves nests, and the census measured the nesting as exactly one level deep and
-     * never more, so it is a column rather than a table.
+     * never more, so it is a column rather than a table. Null for every other collection.
      */
-    std::string discounting;
+    std::optional<std::string> discounting;
 
     /**
      * @brief The order the document wrote the entry in.

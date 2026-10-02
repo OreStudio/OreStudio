@@ -141,21 +141,23 @@ void todays_market_config_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <name> <description> <config_variant> <reason> <commentary>");
+        "add <name> <description> <config_variant> <configuration_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <name> <description> <config_variant> <reason> <commentary> [--version <n>]");
+        "set <id> <name> <description> <config_variant> <configuration_id> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <name> <description> <config_variant> <reason> <commentary>");
+        "put-many --count <n> <id> <name> <description> <config_variant> <configuration_id> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -170,6 +172,14 @@ void todays_market_config_commands::register_commands(cli::Menu& root_menu, nats
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
         "delete-many <name> <reason> <commentary>");
+
+    menu->Insert(
+        "by-configuration-id",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_configuration_id(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-configuration-id <configuration_id> [--offset <n>] [--limit <n>] [--order <field>] "
+        "[--desc]");
 
     menu->Insert(
         "versions",
@@ -350,8 +360,8 @@ void todays_market_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -359,6 +369,8 @@ void todays_market_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.config_variant, parsed->positionals[next++], "config_variant");
+        read_token(
+            req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -401,8 +413,8 @@ void todays_market_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -410,6 +422,8 @@ void todays_market_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.config_variant, parsed->positionals[next++], "config_variant");
+        read_token(
+            req.change.write.configuration_id, parsed->positionals[next++], "configuration_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -464,8 +478,8 @@ void todays_market_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -475,6 +489,8 @@ void todays_market_config_commands::process_put_many(std::ostream& out,
             read_token(change.write.name, parsed->positionals[next++], "name");
             read_token(change.write.description, parsed->positionals[next++], "description");
             read_token(change.write.config_variant, parsed->positionals[next++], "config_variant");
+            read_token(
+                change.write.configuration_id, parsed->positionals[next++], "configuration_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -590,6 +606,61 @@ void todays_market_config_commands::process_delete_many(std::ostream& out,
 
     auto result = do_auth_request<messaging::delete_many_todays_market_configs_response>(
         out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void todays_market_config_commands::process_by_configuration_id(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-configuration-id request.";
+
+    using request_type = messaging::list_by_configuration_id_todays_market_configs_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-configuration-id." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.configuration_id = ores::shell::app::from_token<boost::uuids::uuid>(
+            parsed->positionals[next++], "configuration_id");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result =
+        do_auth_request<messaging::list_by_configuration_id_todays_market_configs_response>(
+            out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

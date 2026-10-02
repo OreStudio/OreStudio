@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists todays_market_configuration_binding_tbl_tenant_isolation_policy on "ores_analytics_todays_market_configuration_bindings_tbl";
 drop rule if exists ores_analytics_todays_market_configuration_bindings_delete_rule on "ores_analytics_todays_market_configuration_bindings_tbl";
 drop trigger if exists ores_analytics_todays_market_configuration_bindings_insert_trg on "ores_analytics_todays_market_configuration_bindings_tbl";
 drop function if exists ores_analytics_todays_market_configuration_bindings_insert_fn;

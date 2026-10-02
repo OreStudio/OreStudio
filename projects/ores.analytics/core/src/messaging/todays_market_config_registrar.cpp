@@ -68,6 +68,12 @@ std::vector<ores::nats::service::subscription> register_todays_market_config_han
         delete_many_todays_market_configs_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_todays_market_configs(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_configuration_id_todays_market_configs_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_configuration_id_todays_market_configs(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
         list_todays_market_config_versions_request::nats_subject,
         queue_group,

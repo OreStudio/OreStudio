@@ -46,7 +46,7 @@ create table if not exists "ores_analytics_todays_market_entries_tbl" (
     "todays_market_config_id" uuid not null,
     "todays_market_collection_id" uuid not null,
     "key_attribute" text not null,
-    "key_value" text not null,
+    "key_value" text null,
     "key_value_2" text null,
     "target" text not null,
     "discounting" text null,
@@ -173,4 +173,21 @@ on delete to "ores_analytics_todays_market_entries_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Todays Market Entry
+-- =============================================================================
+alter table ores_analytics_todays_market_entries_tbl enable row level security;
+
+drop policy if exists todays_market_entries_tbl_tenant_isolation_policy
+    on ores_analytics_todays_market_entries_tbl;
+
+create policy todays_market_entries_tbl_tenant_isolation_policy
+on ores_analytics_todays_market_entries_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

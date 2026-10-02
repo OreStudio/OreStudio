@@ -37,6 +37,7 @@ export interface TodaysMarketConfig {
     name: string;
     description: string;
     config_variant: string;
+    configuration_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

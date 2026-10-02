@@ -147,40 +147,6 @@ todays_market_entry_repository::read_latest(context ctx, const std::string& id) 
         "Reading latest today's market entry by id.");
 }
 
-std::vector<domain::todays_market_entry>
-todays_market_entry_repository::read_latest_by_key_value(context ctx,
-                                                         const std::string& key_value) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market entry by key_value: " << key_value;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<todays_market_entry_entity>> |
-        where("tenant_id"_c == tid && "key_value"_c == key_value && "valid_to"_c == max.value());
-
-    return execute_read_query<todays_market_entry_entity, domain::todays_market_entry>(
-        ctx,
-        query,
-        [](const auto& entities) { return todays_market_entry_mapper::map(entities); },
-        lg(),
-        "Reading latest today's market entry by key_value.");
-}
-
-std::vector<domain::todays_market_entry>
-todays_market_entry_repository::read_any_by_key_value(context ctx, const std::string& key_value) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any today's market entry by key_value: " << key_value;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<todays_market_entry_entity>> |
-                       where("tenant_id"_c == tid && "key_value"_c == key_value) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
-
-    return execute_read_query<todays_market_entry_entity, domain::todays_market_entry>(
-        ctx,
-        query,
-        [](const auto& entities) { return todays_market_entry_mapper::map(entities); },
-        lg(),
-        "Reading any today's market entry by key_value.");
-}
-
 
 std::vector<domain::todays_market_entry>
 todays_market_entry_repository::read_all(context ctx, const std::string& id) {

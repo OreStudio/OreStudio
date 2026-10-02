@@ -37,7 +37,7 @@ export interface TodaysMarketCollectionWrite {
     id: string;
     todays_market_config_id: string;
     collection: string;
-    collection_id: string;
+    collection_id: string | null;
     position: number;
 }
 

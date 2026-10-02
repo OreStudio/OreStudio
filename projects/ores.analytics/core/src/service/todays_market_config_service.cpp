@@ -88,6 +88,7 @@ domain::todays_market_config to_domain(const messaging::todays_market_config_wri
     v.name = write.name;
     v.description = write.description;
     v.config_variant = write.config_variant;
+    v.configuration_id = write.configuration_id;
     return v;
 }
 
@@ -104,8 +105,44 @@ todays_market_config_service::list_todays_market_configs(
             "This store pages in key order and cannot order by a stated field.";
         return response;
     }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
     response.configs = repo_.read_latest(ctx_, request.offset, request.limit);
     response.total = repo_.get_total_config_count(ctx_);
+    return response;
+}
+
+messaging::list_by_configuration_id_todays_market_configs_response
+todays_market_config_service::list_by_configuration_id_todays_market_configs(
+    const messaging::list_by_configuration_id_todays_market_configs_request& request) {
+    messaging::list_by_configuration_id_todays_market_configs_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(request.configuration_id);
+    response.configs =
+        repo_.read_latest_by_configuration_id(ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_config_count_by_configuration_id(ctx_, relation);
     return response;
 }
 
@@ -398,6 +435,24 @@ todays_market_config_service::list_configs(std::uint32_t offset, std::uint32_t l
 std::uint32_t todays_market_config_service::count_configs() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total today's market configurations count";
     return repo_.get_total_config_count(ctx_);
+}
+
+
+std::vector<domain::todays_market_config>
+todays_market_config_service::list_configs_by_configuration_id(const std::string& configuration_id,
+                                                               std::uint32_t offset,
+                                                               std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing today's market configurations by configuration_id: "
+                               << configuration_id;
+    return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
+}
+
+std::uint32_t todays_market_config_service::count_configs_by_configuration_id(
+    const std::string& configuration_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting total today's market configurations count by configuration_id: "
+        << configuration_id;
+    return repo_.get_total_config_count_by_configuration_id(ctx_, configuration_id);
 }
 
 

@@ -16,7 +16,7 @@
 One ORE =todaysmarket.xml= document, held as the thing the collections and the
 configurations hang off. The document itself carries no market data: it is an
 ordered set of collections, each entry naming a curve by reference, plus named
-configurations that select one entry from each collection.
+configurations that select one collection of each kind by the collection's id.
 
 The entries live on =todays_market_entry=, the configurations on
 =todays_market_configuration=, and the references a configuration makes on
@@ -88,11 +88,41 @@ Examples: 'flat', 'sabr', 'heston', 'inflation'.
 std::string("flat")
 #+end_src
 
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The reporting configuration this document is registered as. A run names its
+today's market file in its setup; the reporting configuration is what joins
+that name to these rows. Nullable because a document can be imported before it
+is registered: the mapper reads and writes content and does not invent a
+header, the caller supplies one.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_todays_market_configs_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      true
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
+:list_by:       true
 :END:
 
 * C++
@@ -118,6 +148,7 @@ std::string("flat")
 #include <chrono>
 #include <optional>
 #include <string>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

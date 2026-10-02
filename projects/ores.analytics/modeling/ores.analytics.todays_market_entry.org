@@ -93,13 +93,16 @@ std::string("currency")
 ** key_value
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
-:nullable: false
+:cpp_type: std::optional<std::string>
+:nullable: true
 :END:
 
 The value of that attribute.
 
-Examples: 'EUR', 'EUR-EURIBOR-3M', 'EUR/USD'.
+Examples: 'EUR', 'EUR-EURIBOR-3M', 'EUR/USD'. Absent only for
+=SwaptionVolatilities= and =CapFloorVolatilities=, whose =key= attribute is
+optional. Absent is null and an attribute written empty is the empty string, so
+the export can tell them apart.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -108,17 +111,17 @@ std::string("EUR")
 ** key_value_2
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
 The value of the second key attribute, where a collection has two.
 
 Set only for =SwaptionVolatilities= and =CapFloorVolatilities=, which identify
-by =key= and =currency= together.
+by =key= and =currency= together. Null when the document wrote no =currency=.
 
 #+begin_src cpp :name generator
-std::string("")
+std::nullopt
 #+end_src
 
 ** target
@@ -139,17 +142,18 @@ std::string("Yield/EUR/EUR1D")
 ** discounting
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
 The nested =Discounting= child, for the one collection that has one.
 
 Only =SwapIndexCurves= nests, and the census measured the nesting as exactly one
-level deep and never more, so it is a column rather than a table.
+level deep and never more, so it is a column rather than a table. Null for every
+other collection.
 
 #+begin_src cpp :name generator
-std::string("")
+std::nullopt
 #+end_src
 
 ** position
@@ -173,6 +177,7 @@ sorting.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_todays_market_entries_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys
@@ -249,7 +254,7 @@ sorting.
 ** Presentation
 :PROPERTIES:
 :collection_name:  entries
-:key_field:        key_value
+:key_field:        id
 :END:
 
 *** Detail fields
@@ -257,7 +262,7 @@ sorting.
 | field         | label       | widget               | type      | is_key | is_required | placeholder                 |
 |---------------+-------------+----------------------+-----------+--------+-------------+-----------------------------|
 | key_attribute | Attribute   | keyAttributeEdit     | line_edit | true   | true        | Enter the key attribute     |
-| key_value     | Key         | keyValueEdit         | line_edit | true   | true        | Enter the key value         |
+| key_value     | Key         | keyValueEdit         | line_edit |        |             | Enter the key value         |
 | key_value_2   | Key 2       | keyValue2Edit        | line_edit |        |             | Enter the second key value  |
 | target        | Reference   | entryTargetEdit      | line_edit |        | true        | Enter the reference         |
 | discounting   | Discounting | entryDiscountingEdit | line_edit |        |             | Enter the discounting curve |

@@ -36,7 +36,7 @@ export interface TodaysMarketCollection {
     id: string;
     todays_market_config_id: string;
     collection: string;
-    collection_id: string;
+    collection_id: string | null;
     position: number;
     modified_by: string;
     performed_by: string;

@@ -27,7 +27,7 @@
  * One ORE todaysmarket.xml document, held as the thing the collections and the
  * configurations hang off. The document itself carries no market data: it is an
  * ordered set of collections, each entry naming a curve by reference, plus named
- * configurations that select one entry from each collection.
+ * configurations that select one collection of each kind by the collection's id.
  *
  * The entries live on todays_market_entry, the configurations on
  * todays_market_configuration, and the references a configuration makes on
@@ -43,6 +43,7 @@ create table if not exists "ores_analytics_todays_market_configs_tbl" (
     "name" text not null,
     "description" text null,
     "config_variant" text null,
+    "configuration_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -84,6 +85,19 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate configuration_id (optional soft FK to ores_reporting_configurations_tbl)
+    if NEW.configuration_id is not null then
+        if not exists (
+            select 1 from ores_reporting_configurations_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.configuration_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid configuration_id: %. No active configuration found with this id.', NEW.configuration_id
+                using errcode = '23503';
+        end if;
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -148,4 +162,21 @@ on delete to "ores_analytics_todays_market_configs_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Todays Market Config
+-- =============================================================================
+alter table ores_analytics_todays_market_configs_tbl enable row level security;
+
+drop policy if exists todays_market_configs_tbl_tenant_isolation_policy
+    on ores_analytics_todays_market_configs_tbl;
+
+create policy todays_market_configs_tbl_tenant_isolation_policy
+on ores_analytics_todays_market_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

@@ -25,15 +25,14 @@
  * Todays Market Configuration Binding Table
  *
  * One reference a configuration makes. A Configuration block writes up to
- * twenty-three of these, each naming the collection it selects from and the entry
- * it selects within that collection.
+ * twenty-four of these. Each names a collection kind and the id of one collection
+ * of that kind: DiscountingCurvesId inccy selects the DiscountingCurves
+ * collection whose id is inccy.
  *
- * The reference is a name, not a foreign key to todays_market_entry. A
- * configuration may name an entry that the same document also defines, and the
- * corpus does that, but the reference is what the document holds and the two are
- * not required to agree; tying them together would refuse a document that ORE
- * accepts. Whether that should become a real key is a modelling question this
- * table leaves open on purpose.
+ * The reference is text, not a foreign key to todays_market_collection. ORE
+ * resolves it by name when it builds the market, and the export only has to write
+ * it back. Whether it should become a real key is left to the work that first
+ * resolves it, which is producing the engine input from the entities.
  */
 
 create table if not exists "ores_analytics_todays_market_configuration_bindings_tbl" (
@@ -155,4 +154,21 @@ on delete to "ores_analytics_todays_market_configuration_bindings_tbl" do instea
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Todays Market Configuration Binding
+-- =============================================================================
+alter table ores_analytics_todays_market_configuration_bindings_tbl enable row level security;
+
+drop policy if exists todays_market_configuration_binding_tbl_tenant_isolation_policy
+    on ores_analytics_todays_market_configuration_bindings_tbl;
+
+create policy todays_market_configuration_binding_tbl_tenant_isolation_policy
+on ores_analytics_todays_market_configuration_bindings_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

@@ -50,6 +50,7 @@ struct todays_market_config_entity {
 
     std::optional<std::string> description;
     std::optional<std::string> config_variant;
+    std::optional<std::string> configuration_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

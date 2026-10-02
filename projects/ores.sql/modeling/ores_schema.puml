@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-02T02:19:02.474360Z
+' Generated: 2026-10-02T10:31:55.460611Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11361,13 +11361,12 @@ package "analytics" #E8F5E9 {
     One collection — DiscountingCurves, FxSpots, SwaptionVolatilities and the
     rest. A document writes up to twenty-four of them, each optional, each holding
     its own ordered list of entries.
-    This table exists for one attribute. Every collection *wrapper* in the generated
-    binding declares its own optional id, separate from the id each entry
-    declares, and the entry table has no place to put it because a collection is not
-    one entry. No corpus file writes it, so dropping it would round trip the whole
-    corpus and lose data on a document that wrote one.
-    It is also where the collection's identity belongs. An entry names its
-    collection; with this table it points at one.
+    A document may write the same kind more than once under different ids, for
+    example a DiscountingCurves with id default and another with id inccy. A
+    Configuration selects one of them by that id. So the collection is a thing
+    with an identity, an order and its own entries, and it has a table. Almost every
+    corpus file writes the id.
+    An entry points at its collection rather than repeating the collection's name.
     end note
 
     entity ores_analytics_todays_market_configs_tbl <<temporal>> #C6F0D8 {
@@ -11378,6 +11377,7 @@ package "analytics" #E8F5E9 {
         * name : text
           description : text
           config_variant : text
+          configuration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11394,7 +11394,7 @@ package "analytics" #E8F5E9 {
     One ORE todaysmarket.xml document, held as the thing the collections and the
     configurations hang off. The document itself carries no market data: it is an
     ordered set of collections, each entry naming a curve by reference, plus named
-    configurations that select one entry from each collection.
+    configurations that select one collection of each kind by the collection's id.
     The entries live on todays_market_entry, the configurations on
     todays_market_configuration, and the references a configuration makes on
     todays_market_configuration_binding. This row is only the identity of the
@@ -11425,14 +11425,13 @@ package "analytics" #E8F5E9 {
     To modify, update the template and regenerate.
     Todays Market Configuration Binding Table
     One reference a configuration makes. A Configuration block writes up to
-    twenty-three of these, each naming the collection it selects from and the entry
-    it selects within that collection.
-    The reference is a name, not a foreign key to todays_market_entry. A
-    configuration may name an entry that the same document also defines, and the
-    corpus does that, but the reference is what the document holds and the two are
-    not required to agree; tying them together would refuse a document that ORE
-    accepts. Whether that should become a real key is a modelling question this
-    table leaves open on purpose.
+    twenty-four of these. Each names a collection kind and the id of one collection
+    of that kind: DiscountingCurvesId inccy selects the DiscountingCurves
+    collection whose id is inccy.
+    The reference is text, not a foreign key to todays_market_collection. ORE
+    resolves it by name when it builds the market, and the export only has to write
+    it back. Whether it should become a real key is left to the work that first
+    resolves it, which is producing the engine input from the entities.
     end note
 
     entity ores_analytics_todays_market_configurations_tbl <<temporal>> #C6F0D8 {
@@ -11472,7 +11471,7 @@ package "analytics" #E8F5E9 {
         * todays_market_config_id : uuid <<FK>>
         * todays_market_collection_id : uuid <<FK>>
         * key_attribute : text
-        * key_value : text
+          key_value : text
           key_value_2 : text
         * target : text
           discounting : text

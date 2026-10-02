@@ -43,7 +43,7 @@ todays_market_collection_mapper::map(const todays_market_collection_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
     r.collection = v.collection;
-    r.collection_id = v.collection_id.value_or("");
+    r.collection_id = v.collection_id;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -65,7 +65,7 @@ todays_market_collection_mapper::map(const domain::todays_market_collection& v) 
     r.version = v.version;
     r.todays_market_config_id = boost::uuids::to_string(v.todays_market_config_id);
     r.collection = v.collection;
-    r.collection_id = v.collection_id.empty() ? std::nullopt : std::optional(v.collection_id);
+    r.collection_id = v.collection_id;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

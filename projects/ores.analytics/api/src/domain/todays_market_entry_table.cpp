@@ -25,9 +25,22 @@
 #include "ores.analytics.api/domain/todays_market_entry_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::analytics::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<todays_market_entry>& v) {
     fort::char_table table;
@@ -37,8 +50,8 @@ std::string convert_to_table(const std::vector<todays_market_entry>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& tme : v) {
-        table << tme.key_attribute << tme.key_value << tme.key_value_2 << tme.target
-              << tme.modified_by << tme.version << fort::endr;
+        table << tme.key_attribute << opt_str(tme.key_value) << opt_str(tme.key_value_2)
+              << tme.target << tme.modified_by << tme.version << fort::endr;
     }
     return table.to_string();
 }

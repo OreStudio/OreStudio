@@ -127,14 +127,14 @@ void todays_market_entry_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <key_value>");
+        "get <id>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <key_value>");
+        "get-many <id>");
 
     menu->Insert(
         "add",
@@ -167,14 +167,14 @@ void todays_market_entry_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <key_value> <reason> <commentary> [--version <n>]");
+        "delete <id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <key_value> <reason> <commentary>");
+        "delete-many <id> <reason> <commentary>");
 
     menu->Insert(
         "by-todays-market-config-id",
@@ -198,14 +198,14 @@ void todays_market_entry_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <key_value> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <key_value> --version <n>");
+        "version <id> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -287,7 +287,6 @@ void todays_market_entry_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.key_value, parsed->positionals[next++], "key_value");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -332,7 +331,7 @@ void todays_market_entry_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::todays_market_entry_key key;
-            read_token(key.key_value, parsed->positionals[i + 0], "key_value");
+            read_token(key.id, parsed->positionals[i + 0], "id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -573,7 +572,6 @@ void todays_market_entry_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.key_value, parsed->positionals[next++], "key_value");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -627,7 +625,7 @@ void todays_market_entry_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::todays_market_entry_key key;
-            read_token(key.key_value, parsed->positionals[i * 1 + 0], "key_value");
+            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
             req.removals.push_back(messaging::todays_market_entry_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -791,7 +789,6 @@ void todays_market_entry_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.key_value, parsed->positionals[next++], "key_value");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -837,7 +834,6 @@ void todays_market_entry_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.todays_market_entry.key_value, parsed->positionals[next++], "key_value");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

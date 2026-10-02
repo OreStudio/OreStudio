@@ -187,7 +187,7 @@ TEST_CASE("write_todays_market_entry_publishes_an_event", tags) {
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.key_value == v.key_value)
+                if (decoded && decoded->key.id == v.id)
                     received.push_back(msg);
             }
         }
@@ -224,7 +224,7 @@ TEST_CASE("write_todays_market_entry_publishes_an_event", tags) {
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_entry_history(v.key_value);
+        auto versions = svc.get_entry_history(id_str);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
@@ -233,6 +233,6 @@ TEST_CASE("write_todays_market_entry_publishes_an_event", tags) {
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
         REQUIRE_FALSE(svc.get_entry(v.id).has_value());
-        REQUIRE(svc.get_entry_history(v.key_value).size() == versions.size());
+        REQUIRE(svc.get_entry_history(id_str).size() == versions.size());
     }
 }

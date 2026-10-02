@@ -106,23 +106,6 @@ public:
                                                          const std::vector<std::string>& ids);
     /**@}*/
 
-    /**
-     * @brief Reads latest today's market entries filtered by key_value.
-     */
-    std::vector<domain::todays_market_entry> read_latest_by_key_value(context ctx,
-                                                                      const std::string& key_value);
-
-    /**
-     * @brief Reads the newest today's market entries filtered by key_value, current or not.
-     *
-     * History is addressed by the key the model declares and must stay readable
-     * after a delete, which closes the transaction-time window rather than
-     * removing the row. A latest read cannot resolve a closed row, so this one
-     * ignores the window and takes the newest match.
-     */
-    std::vector<domain::todays_market_entry> read_any_by_key_value(context ctx,
-                                                                   const std::string& key_value);
-
 
     /**
      * @brief Reads all today's market entries, possibly filtered by primary key.

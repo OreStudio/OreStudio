@@ -14,15 +14,14 @@
 #+updated: 2026-10-01
 
 One reference a configuration makes. A =Configuration= block writes up to
-twenty-three of these, each naming the collection it selects from and the entry
-it selects within that collection.
+twenty-four of these. Each names a collection kind and the id of one collection
+of that kind: =DiscountingCurvesId= =inccy= selects the =DiscountingCurves=
+collection whose id is =inccy=.
 
-The reference is a name, not a foreign key to =todays_market_entry=. A
-configuration may name an entry that the same document also defines, and the
-corpus does that, but the reference is what the document holds and the two are
-not required to agree; tying them together would refuse a document that ORE
-accepts. Whether that should become a real key is a modelling question this
-table leaves open on purpose.
+The reference is text, not a foreign key to =todays_market_collection=. ORE
+resolves it by name when it builds the market, and the export only has to write
+it back. Whether it should become a real key is left to the work that first
+resolves it, which is producing the engine input from the entities.
 
 * Flags
 :PROPERTIES:
@@ -81,7 +80,7 @@ std::string("DiscountingCurves")
 :nullable: false
 :END:
 
-The entry the configuration selects, as the element's text.
+The id of the collection the configuration selects, as the element's text.
 
 Examples: 'xois_eur', 'ois', 'default'.
 
@@ -107,6 +106,7 @@ The order the document wrote the reference in.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_todays_market_configuration_bindings_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

@@ -22,12 +22,13 @@
 namespace ores::scheduler::domain {
 
 /**
- * @brief Execution status of a job instance as reported by pg_cron.
+ * @brief Execution status of a job instance.
  *
- * Maps directly to the string values stored in cron.job_run_details.status.
+ * Maps directly to the string values stored in
+ * ores_scheduler_job_instances_tbl.status.
  */
 enum class job_status {
-    starting,  ///< pg_cron has started the job but it has not yet completed.
+    starting,  ///< The scheduler has started the job but it has not yet completed.
     succeeded, ///< The job ran to completion without error.
     failed     ///< The job encountered an error during execution.
 };

@@ -29,11 +29,11 @@ written first and the screen follows it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -114,6 +114,33 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | The screen reads at most 1000 parties | =tenant-parties.ts= | Decline | The count still states the total. A tenant with more parties than that needs paging, which no tenant here comes near. |
+| L2 | An unfinished run has two links to the same page | =TenantPage.tsx= | Decline | The step label is the roster's setup cell, reused; *Resume setup* names the action. Both go to the run. |
+| L3 | A stub proof of the service's refusals was not run | =tenant_party_service.cpp= | Decline | The auto-mode classifier refused the edit that deletes the checks. Each refusal has its own test that asserts it directly. |
 
 * Result
+
+A system administrator opens a tenant from the roster, by its name or the row
+menu's *Open*, and reads =/tenants/:code=: the details with the row's
+provenance, the setup run, and the parties with each parent by name. An
+unfinished run links to its page. An unknown code, or the system tenant's,
+answers that no tenant has the code. The journey
+[[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]] was written first,
+with its wireframe, and the tenancy hub lists it.
+
+=iam.v1.tenants.get= keys a tenant by its code, so the address names the code
+and not the id. The parties come from a new generated read,
+=refdata.v1.parties.list-of-tenant=, with a generated shell command. Its service
+refuses a caller outside the system tenant and the system tenant as a target,
+and reads with a context scoped to the named tenant. =GET /api/tenants/:code=
+joins the three reads; a failed run or party read empties that panel and says
+so.
+
+Tests: four C++ service tests and four shell tests; 5 BFF route tests, with a
+stub proof of the system tenant check; 7 web screen tests and 2 roster tests;
+5 wire read tests. The full build is clean. ctest passed 87 of 89 first; the 2
+failures were a database built before main added a column, and both suites
+pass on a recreated database. The live read of a provisioned Acme tenant
+answered its run and its 5 parties, all its own, and the system and unknown
+codes answered 404.
+

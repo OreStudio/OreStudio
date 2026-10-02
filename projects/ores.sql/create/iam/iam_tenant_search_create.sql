@@ -33,6 +33,7 @@
 --             text: % and _ are characters, not wildcards.
 --   p_type:   a tenant type code to keep, or empty for every type
 --   p_status: a tenant status code to keep, or empty for every status
+--   p_exclude_type: a tenant type code to leave out, or empty to leave none out
 --   p_limit:  the most rows to return
 --   p_offset: how many matching rows to skip, in code order
 --
@@ -41,12 +42,16 @@
 -- arrives: a reader on a page that emptied under them learns how many tenants
 -- there are, not that there are none.
 
+-- The function gained a parameter; the old signature would make a call ambiguous.
+drop function if exists ores_iam_tenants_search_fn(text, text, text, integer, integer);
+
 create or replace function ores_iam_tenants_search_fn(
     p_search text default '',
     p_type   text default '',
     p_status text default '',
     p_limit  integer default 100,
-    p_offset integer default 0
+    p_offset integer default 0,
+    p_exclude_type text default ''
 )
 returns table (
     id                      uuid,
@@ -74,6 +79,7 @@ begin
           and t.id <> ores_utility_system_tenant_id_fn()
           and (p_type = '' or t.type = p_type)
           and (p_status = '' or t.status = p_status)
+          and (p_exclude_type = '' or t.type <> p_exclude_type)
           and (
               p_search = ''
               or strpos(lower(t.code), lower(p_search)) > 0

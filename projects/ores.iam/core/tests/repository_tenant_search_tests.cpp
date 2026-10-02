@@ -78,13 +78,14 @@ std::vector<row_t> search(ores::testing::database_helper& h,
                           const std::string& type = "",
                           const std::string& status = "",
                           int limit = 100,
-                          int offset = 0) {
+                          int offset = 0,
+                          const std::string& exclude_type = "") {
     static auto lg(ores::logging::make_logger(test_suite));
     const auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     return ores::database::repository::execute_parameterized_multi_column_query(
         sys_ctx,
-        "SELECT * FROM ores_iam_tenants_search_fn($1, $2, $3, $4, $5)",
-        {text, type, status, std::to_string(limit), std::to_string(offset)},
+        "SELECT * FROM ores_iam_tenants_search_fn($1, $2, $3, $4, $5, $6)",
+        {text, type, status, std::to_string(limit), std::to_string(offset), exclude_type},
         lg,
         "searching tenants");
 }
@@ -146,6 +147,29 @@ TEST_CASE("tenant_search_keeps_the_type_and_status_asked_for", tags) {
     CHECK(codes(search(h, marker, "automation", "suspended")) ==
           std::vector<std::string>{marker + "_b"});
     BOOST_LOG_SEV(lg, debug) << "Filtered " << marker;
+}
+
+/*
+ * The roster hides test infrastructure by leaving the automation type out, and
+ * its total must count only what the page can show. The marker's tenants are
+ * all automation, so leaving that type out leaves none of them, and leaving
+ * out a type none of them has leaves them all.
+ */
+TEST_CASE("tenant_search_leaves_out_the_type_asked_for", tags) {
+    auto lg(make_logger(test_suite));
+    database_helper h;
+    const auto marker = unique_marker();
+    write_tenant(h, marker, "a", "automation", "active");
+    write_tenant(h, marker, "b", "automation", "suspended");
+
+    const auto hidden = search(h, marker, "", "", 100, 0, "automation");
+    CHECK(codes(hidden).empty());
+    REQUIRE(hidden.size() == 1);
+    CHECK(hidden.front()[14].value_or("") == "0");
+
+    CHECK(codes(search(h, marker, "", "", 100, 0, "production")) ==
+          std::vector<std::string>{marker + "_a", marker + "_b"});
+    BOOST_LOG_SEV(lg, debug) << "Left out automation for " << marker;
 }
 
 TEST_CASE("tenant_search_pages_and_counts_every_match", tags) {

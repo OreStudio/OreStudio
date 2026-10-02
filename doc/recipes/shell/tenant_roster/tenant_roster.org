@@ -23,7 +23,7 @@ Sends =search_tenants_request= and prints =search_tenants_response=, so the shap
 The command is shaped like this:
 
 #+begin_example
-tenant_roster search [--search <v>] [--type_filter <v>] [--status_filter <v>] [--offset <v>] [--limit <v>]
+tenant_roster search [--search <v>] [--type_filter <v>] [--status_filter <v>] [--exclude_type_filter <v>] [--offset <v>] [--limit <v>]
 #+end_example
 
 It is addressed at =iam.v1.tenants.search=.

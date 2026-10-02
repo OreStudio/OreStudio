@@ -17,4 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+drop function if exists ores_iam_tenants_search_fn(text, text, text, integer, integer, text);
 drop function if exists ores_iam_tenants_search_fn(text, text, text, integer, integer);

@@ -403,6 +403,26 @@ export const api = {
     },
 
     /**
+     * Enters one tenant from system administration, reading only.
+     *
+     * The answer is the session as it now reads: the tenant's, in tenant
+     * administration, with the tenant named in `actingIn`.
+     */
+    async enterTenant(tenantId: string): Promise<SessionView> {
+        const payload = await request('/api/session/tenant', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ tenantId }),
+        });
+        return sessionViewSchema.parse(payload);
+    },
+
+    /** Leaves the tenant; the answer is the session back in its own tenant. */
+    async leaveTenant(): Promise<SessionView> {
+        return sessionViewSchema.parse(await request('/api/session/tenant', { method: 'DELETE' }));
+    },
+
+    /**
      * Adds a party to the tenant the person works in.
      *
      * The party exists when this answers, and the run that publishes its data,

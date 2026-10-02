@@ -47,6 +47,7 @@ const session: SessionView = {
     availableParties: [party],
     accessLifetimeSeconds: 3600,
     passwordResetRequired: false,
+    actingIn: null,
 };
 
 const inBootstrap: BootstrapState = {
@@ -98,6 +99,8 @@ function render(
                     onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
                     onChooseParty={async () => undefined}
                     onSignOut={() => undefined}
+                    onEnterTenant={async () => undefined}
+                    onLeaveTenant={() => undefined}
                     onRetryBootstrap={() => undefined}
                     {...overrides}
                 />

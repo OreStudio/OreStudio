@@ -94,6 +94,10 @@ export interface AppRoutesProps {
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
+    /** Enters a tenant from its screen in system administration. */
+    readonly onEnterTenant: (tenantId: string) => Promise<void>;
+    /** Leaves the tenant the session is inside. */
+    readonly onLeaveTenant: () => void;
     readonly onRetryBootstrap: () => void;
 }
 
@@ -108,8 +112,11 @@ export function AppRoutes({
     onSignIn,
     onChooseParty,
     onSignOut,
+    onEnterTenant,
+    onLeaveTenant,
     onRetryBootstrap,
 }: AppRoutesProps): ReactNode {
+    const shell: ShellActions = { onSignOut, onLeaveTenant };
     const { t } = useTranslation();
 
     if (gate.status === 'loading' || session.status === 'loading') {
@@ -174,13 +181,14 @@ export function AppRoutes({
             />
             <Route
                 path="/"
-                element={signedIn(gate.version, session, onSignOut, (view) => (
+                element={signedIn(gate.version, session, shell, (view) => (
                     <HomePage
                         username={view.username}
                         email={view.email}
                         tenantName={view.tenantName}
                         partyName={view.party.name}
                         mode={view.mode}
+                        readOnly={view.actingIn !== null}
                     />
                 ))}
             />
@@ -194,7 +202,7 @@ export function AppRoutes({
                 element={signedIn(
                     gate.version,
                     session,
-                    onSignOut,
+                    shell,
                     () => (
                         <TenantsPage />
                     ),
@@ -203,7 +211,7 @@ export function AppRoutes({
             />
             <Route
                 path="/security"
-                element={signedIn(gate.version, session, onSignOut, (view) => (
+                element={signedIn(gate.version, session, shell, (view) => (
                     <SecurityPage session={view} />
                 ))}
             />
@@ -215,7 +223,7 @@ export function AppRoutes({
              */}
             <Route
                 path="/rescue"
-                element={signedIn(gate.version, session, onSignOut, () => (
+                element={signedIn(gate.version, session, shell, () => (
                     <RescuePage />
                 ))}
             />
@@ -227,29 +235,29 @@ export function AppRoutes({
              */}
             <Route
                 path="/audit"
-                element={signedIn(gate.version, session, onSignOut, () => (
+                element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
                 ))}
             />
             <Route
                 path="/tenants/new"
-                element={signedIn(gate.version, session, onSignOut, () => newTenantJourney)}
+                element={signedIn(gate.version, session, shell, () => newTenantJourney)}
             />
             <Route
                 path="/tenants/runs/:instanceId"
-                element={signedIn(gate.version, session, onSignOut, () => (
+                element={signedIn(gate.version, session, shell, () => (
                     <TenantRunPage />
                 ))}
             />
             <Route
                 path="/tenants/:code"
-                element={signedIn(gate.version, session, onSignOut, () => (
-                    <TenantPage />
+                element={signedIn(gate.version, session, shell, () => (
+                    <TenantPage onEnterTenant={onEnterTenant} />
                 ))}
             />
             <Route
                 path="/parties/new"
-                element={signedIn(gate.version, session, onSignOut, () => newPartyJourney)}
+                element={signedIn(gate.version, session, shell, () => newPartyJourney)}
             />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -259,7 +267,7 @@ export function AppRoutes({
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck } = useBootstrap();
-    const { state: session, signIn, chooseParty, signOut } = useSession();
+    const { state: session, signIn, chooseParty, signOut, enterTenant, leaveTenant } = useSession();
     const server = useJourneyServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
@@ -314,6 +322,25 @@ export function ConnectedApp(): ReactNode {
             onSignOut={() => {
                 void signOut();
             }}
+            onEnterTenant={async (tenantId) => {
+                await enterTenant(tenantId);
+                navigate('/');
+            }}
+            onLeaveTenant={() => {
+                /*
+                 * Leaving returns to the tenant's own screen, where the
+                 * administrator entered from.
+                 */
+                const code =
+                    session.status === 'authenticated'
+                        ? session.session.actingIn?.tenantCode
+                        : undefined;
+                void leaveTenant().then(() =>
+                    navigate(
+                        code === undefined ? '/tenants' : `/tenants/${encodeURIComponent(code)}`,
+                    ),
+                );
+            }}
             onRetryBootstrap={() => {
                 void recheck();
             }}
@@ -327,10 +354,16 @@ export function ConnectedApp(): ReactNode {
  * An unauthenticated visitor is sent to the sign-in screen rather than told
  * they may not look: they may, once they have signed in.
  */
+/** What the shell around every signed-in screen can do. */
+interface ShellActions {
+    readonly onSignOut: () => void;
+    readonly onLeaveTenant: () => void;
+}
+
 function signedIn(
     serverVersion: string,
     session: SessionState,
-    onSignOut: () => void,
+    shell: ShellActions,
     screen: (session: SessionView) => ReactNode,
     width: ShellWidth = 'column',
 ): ReactNode {
@@ -352,7 +385,9 @@ function signedIn(
             mode={view.mode}
             width={width}
             serverVersion={version}
-            onSignOut={onSignOut}
+            onSignOut={shell.onSignOut}
+            actingIn={view.actingIn}
+            onLeaveTenant={shell.onLeaveTenant}
         >
             {screen(view)}
         </AppShell>

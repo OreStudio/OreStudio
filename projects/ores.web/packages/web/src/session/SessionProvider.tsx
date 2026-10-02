@@ -19,7 +19,13 @@
  *
  */
 
-import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+    useQuery,
+    useQueryClient,
+} from '@tanstack/react-query';
 import {
     createContext,
     use,
@@ -80,6 +86,10 @@ interface SessionContextValue {
      */
     readonly switchParty: (partyId: string) => Promise<void>;
     readonly signOut: () => Promise<void>;
+    /** Enters a tenant from system administration, reading only. */
+    readonly enterTenant: (tenantId: string) => Promise<void>;
+    /** Leaves the tenant the session is inside. */
+    readonly leaveTenant: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
@@ -95,7 +105,19 @@ export function useSession(): SessionContextValue {
 export const SESSION_QUERY_KEY = ['session'] as const;
 
 export function createQueryClient(): QueryClient {
-    return new QueryClient({
+    /*
+     * A session inside a tenant lapses on its own, and the server is already
+     * back in the session's own tenant when it says so. Reading the session
+     * again moves every screen back with it.
+     */
+    const client: QueryClient = new QueryClient({
+        queryCache: new QueryCache({
+            onError: (error) => {
+                if (error instanceof ApiFailure && error.code === 'tenant-session-ended') {
+                    void client.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+                }
+            },
+        }),
         defaultOptions: {
             queries: {
                 // A 4xx is an expected answer, not a transient fault, so retrying it
@@ -107,6 +129,7 @@ export function createQueryClient(): QueryClient {
             },
         },
     });
+    return client;
 }
 
 export function AppProviders({
@@ -193,6 +216,32 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
         [queryClient],
     );
 
+    /*
+     * Entering or leaving a tenant changes whose data every cached read holds,
+     * so the cache is emptied apart from the session itself.
+     */
+    const rescope = useCallback(
+        (session: SessionView) => {
+            queryClient.removeQueries({
+                predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
+            });
+            queryClient.setQueryData(SESSION_QUERY_KEY, session);
+            setState({ status: 'authenticated', session });
+        },
+        [queryClient],
+    );
+
+    const enterTenant = useCallback<SessionContextValue['enterTenant']>(
+        async (tenantId) => {
+            rescope(await api.enterTenant(tenantId));
+        },
+        [rescope],
+    );
+
+    const leaveTenant = useCallback<SessionContextValue['leaveTenant']>(async () => {
+        rescope(await api.leaveTenant());
+    }, [rescope]);
+
     const signOut = useCallback<SessionContextValue['signOut']>(async () => {
         await api.logout();
         queryClient.setQueryData(SESSION_QUERY_KEY, null);
@@ -201,8 +250,16 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
     }, [queryClient]);
 
     const value = useMemo<SessionContextValue>(
-        () => ({ state, signIn, chooseParty, switchParty, signOut }),
-        [state, signIn, chooseParty, switchParty, signOut],
+        () => ({
+            state,
+            signIn,
+            chooseParty,
+            switchParty,
+            signOut,
+            enterTenant,
+            leaveTenant,
+        }),
+        [state, signIn, chooseParty, switchParty, signOut, enterTenant, leaveTenant],
     );
 
     return <SessionContext value={value}>{children}</SessionContext>;

@@ -96,7 +96,10 @@ function render(seed: (client: QueryClient) => void, code = 'acme_corporation'):
             <TranslationProvider>
                 <MemoryRouter initialEntries={[`/tenants/${code}`]}>
                     <Routes>
-                        <Route path="/tenants/:code" element={<TenantPage />} />
+                        <Route
+                            path="/tenants/:code"
+                            element={<TenantPage onEnterTenant={async () => undefined} />}
+                        />
                     </Routes>
                 </MemoryRouter>
             </TranslationProvider>
@@ -119,6 +122,10 @@ describe('TenantPage', () => {
         expect(html).toContain('system.initial_load');
         expect(html).toContain('ores.iam.service');
         expect(html).toContain('href="/tenants"');
+    });
+
+    it('offers to act in the tenant', () => {
+        expect(renderLoaded(loaded)).toContain('Act in this tenant');
     });
 
     it('lists the parties with each parent by name', () => {

@@ -20,14 +20,14 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import type { TenantDetailResponse, TenantParty } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
-import { Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 
 /**
  * One tenant, opened from the roster: what it is, how its setup went, and the
@@ -38,8 +38,18 @@ import { Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
  * the server could not read empties its own panel and says so; the tenant is
  * still the registry's answer.
  */
-export function TenantPage(): ReactNode {
+export interface TenantPageProps {
+    /**
+     * Enters the tenant, reading only. The wiring owns the session, so the
+     * screen asks for the entry rather than making it.
+     */
+    readonly onEnterTenant: (tenantId: string) => Promise<void>;
+}
+
+export function TenantPage({ onEnterTenant }: TenantPageProps): ReactNode {
     const { t } = useTranslation();
+    const [entering, setEntering] = useState(false);
+    const [entryRefused, setEntryRefused] = useState<string | null>(null);
     const { code = '' } = useParams();
     const read = useQuery({
         queryKey: ['tenant', code],
@@ -79,7 +89,31 @@ export function TenantPage(): ReactNode {
 
     return (
         <div>
-            <PageHeader title={tenant.name} description={t('tenants.detail.lead')} actions={back} />
+            <PageHeader
+                title={tenant.name}
+                description={t('tenants.detail.lead')}
+                actions={
+                    <>
+                        <Button
+                            disabled={entering}
+                            onClick={() => {
+                                setEntering(true);
+                                setEntryRefused(null);
+                                onEnterTenant(tenant.id).catch((error: unknown) => {
+                                    setEntering(false);
+                                    setEntryRefused(
+                                        error instanceof Error ? error.message : String(error),
+                                    );
+                                });
+                            }}
+                        >
+                            {t('tenants.detail.enter')}
+                        </Button>
+                        {back}
+                    </>
+                }
+            />
+            {entryRefused !== null && <Notice tone="error">{entryRefused}</Notice>}
 
             <section className="card mb-6 p-6">
                 <h2 className="mb-4 text-sm font-semibold">{t('tenants.detail.details')}</h2>

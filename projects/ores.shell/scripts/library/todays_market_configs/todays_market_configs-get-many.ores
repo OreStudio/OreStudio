@@ -1,6 +1,0 @@
-# =get-many=
-#
-# GENERATED from doc/recipes/shell/todays_market_configs/todays_market_config.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-todays_market_configs get-many __none__

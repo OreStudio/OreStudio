@@ -1,6 +1,0 @@
-# =by-todays-market-configuration-id=
-#
-# GENERATED from doc/recipes/shell/todays_market_configuration_bindings/todays_market_configuration_binding.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-todays_market_configuration_bindings by-todays-market-configuration-id 00000000-0000-0000-0000-000000000000 --limit 1

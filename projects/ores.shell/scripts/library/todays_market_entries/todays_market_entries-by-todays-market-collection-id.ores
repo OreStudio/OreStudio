@@ -1,6 +1,0 @@
-# =by-todays-market-collection-id=
-#
-# GENERATED from doc/recipes/shell/todays_market_entries/todays_market_entry.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-todays_market_entries by-todays-market-collection-id 00000000-0000-0000-0000-000000000000 --limit 1

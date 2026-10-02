@@ -25,12 +25,13 @@ A report definition's configuration is a set of strongly typed entities rather t
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Seven of the seventeen document kinds round trip through entities: the run document, credit simulation, stress test, today's market, pricing engines, and the conventions, currencies and calendar adjustments in refdata. Credit simulation, stress test, today's market and pricing engines reach their reporting configuration by =configuration_id=. |
 | Waiting on    | Nothing.                               |
-| Next          | Seed the configuration lookups and bind the report types, so a report can point at its configuration. Then finish the curve configuration, which needs its binding generated first, before simulation, sensitivity, SIMM calibration, historical return and Basel traffic light. |
+| Next          | Bind the report types, so a report type names the configuration types a run of it needs. Then finish the curve configuration, which needs its binding generated first, before simulation, sensitivity, SIMM calibration, historical return and Basel traffic light. |
 | Last touched  | 2026-10-02                               |
 
-What a report still cannot do: =reporting.configurations= is unseeded, so no
-definition points at any configuration yet, and no run is built from the
-entities. Counterparty, netting set, reference data and IBOR fallback
+The seventeen configuration types are seeded, so a configuration can be
+registered. What a report still cannot do: no definition points at a
+configuration yet, report types do not name the configuration types they need,
+and no run is built from the entities. Counterparty, netting set, reference data and IBOR fallback
 documents are not modelled as entities.
 
 * Acceptance

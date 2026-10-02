@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: D745C35C-B206-4585-A112-01B16B10063D
+:END:
+#+title: Story: Hotfix: a service listener falls behind a burst of notifications
+#+description: postgres_listener_service sleeps 100 ms after every poll even with notifications waiting, so a bulk import's per-row notifications back up for hours, its backend sits in ClientWrite, and every DROP DATABASE on the shared server stalls.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:database:sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A service's PostgreSQL listener keeps up with a burst of notifications. Before
+this, =postgres_listener_service= paused 100 ms after every poll, even with
+notifications waiting, so it read at most one socket's worth per pause: about
+460 notifications a second. A bulk import fires one notification per row, so
+prime_origin's corpus imports left the marketdata service's listener hours
+behind. PostgreSQL held its backend in =ClientWrite= the whole time, and on the
+shared server that backend stalled every other environment's =DROP DATABASE=,
+twice in one day.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- A burst of 20,000 notifications drains in seconds, proved by a test that
+  fails on the old loop.
+- The listener still sleeps when there is nothing to read, and every existing
+  listener test passes.
+- A corpus import with the marketdata service running leaves no listener
+  backend in =ClientWrite=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6CC63A51-AF75-4ADF-80D5-08CB5BF464D1][Scaffold story: Hotfix: a service listener falls behind a burst of notifications]] | DONE | 2026-10-02 | 2026-10-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5EC3425B-7D7B-44B6-93B8-26BB313DBF24][Implement Hotfix: a service listener falls behind a burst of notifications]] | DONE | | 2026-10-02 | Initial task for: Hotfix: a service listener falls behind a burst of notifications |
+
+* Decisions
+
+* Out of scope
+
+- One notification per row for bulk tables. The notify triggers are generated
+  per row for all 298 tables; a bulk import of 100,000 observations still
+  sends 100,000 notifications and 100,000 NATS events. Captured separately.
+- The event bus logging every event at INFO, which wrote 566,867 log lines in
+  this incident. Captured separately.
+
+* Result
+
+The listener paused 100 ms after every poll, so it read at most one socket's
+worth of notifications per pause. It now pauses only when a poll finds
+nothing. The reproduction drains 135 times faster, and a corpus import with the
+service running leaves no backend in =ClientWrite=. The per-row triggers and
+the per-event logging that made the burst so large are captured.

@@ -27,7 +27,7 @@ How do I rebuild the ORE market datum catalogue?
 
 2. /Regenerate./ The script writes the inspector dump from ORE's
    =marketdatum.hpp=, builds the harness in a temporary directory, and writes
-   the three catalogue files:
+   the catalogue files:
 
    #+begin_src sh :results verbatim
    external/ore/tools/datum_catalogue/regenerate.sh \
@@ -38,10 +38,13 @@ How do I rebuild the ORE market datum catalogue?
    |------+---------------|
    | =external/ore/catalogue/forms.jsonl= | One line per key in =forms.txt=: every form ORE's parser documents, and the keys it refuses |
    | =external/ore/catalogue/corpus.jsonl.gz= | One line per distinct key in the example corpus |
-   | =external/ore/catalogue/ore_version.txt= | The ORE tag and commit the catalogue came from |
+   | =external/ore/catalogue/instrument_types.txt= | ORE's instrument types, each with the key tokens its parser reads as it |
+   | =external/ore/catalogue/ore_version.txt= | The ORE tag and commit, and the gzip version |
 
-3. /Check the result./ A rebuild from the same ORE commit is byte-identical,
-   so a diff that is not empty means ORE's parser changed:
+3. /Check the result./ A rebuild from the same ORE commit gives the same
+   records, so a content diff means ORE's parser or the corpus changed. The
+   compressed file's bytes also depend on the gzip version, which
+   =ore_version.txt= records:
 
    #+begin_src sh :results verbatim
    git status --short external/ore/catalogue external/ore/tools/datum_catalogue
@@ -54,7 +57,8 @@ How do I rebuild the ORE market datum catalogue?
 * Script
 
 =external/ore/tools/datum_catalogue/regenerate.sh= drives
-=generate_dump.py= (the inspector dump), the =datum_catalogue= harness and
+=generate_dump.py= (the inspector dump), the =datum_catalogue= harness,
+=extract_instrument_types.py= (ORE's instrument types and their tokens) and
 =extract_corpus_keys.py= (the corpus key list). The harness reads one key per
 line on standard input and writes one JSON object per key: the datum class,
 the instrument type, the quote type and every inspector the class declares, or

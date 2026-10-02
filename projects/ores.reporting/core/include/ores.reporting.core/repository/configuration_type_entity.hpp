@@ -47,6 +47,9 @@ struct configuration_type_entity {
     int version = 0;
     std::string name;
     int display_order = 0;
+    std::string ore_root_element;
+    std::string owning_component;
+    std::optional<std::string> run_parameter;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

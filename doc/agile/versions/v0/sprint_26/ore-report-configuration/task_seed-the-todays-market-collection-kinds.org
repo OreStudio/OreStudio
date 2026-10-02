@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: D84EB1E6-0D62-47A1-BAED-6B5444310726
+:END:
+#+title: Task: Seed the today's market collection kinds
+#+description: Today's market collections and configuration bindings hold their collection kind as free text, and every entry row repeats the kind's key attribute. Seed a lookup of the twenty-four kinds with their ORE element and key attributes, make both collection columns refer to it, and take key_attribute off the entry table.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The database refuses a today's market collection kind ORE does not have, and
+each kind's key attributes live in one row rather than on every entry.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- A seeded lookup holds the twenty-four collection kinds, each with its ORE
+  element name and its key attribute or attributes, derived from
+  =todaysmarket.xsd= with the command recorded.
+- =todays_market_collection.collection= and
+  =todays_market_configuration_binding.collection= refer to it, and an unknown
+  kind is refused on insert.
+- =todays_market_entry.key_attribute= is gone, and the today's market corpus and
+  database round trips still pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+**Moved from [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]].** Decided in the PR #2500
+review. A today's market document has twenty-four collection kinds
+(=YieldCurves=, =DiscountingCurves= and the rest). Today
+=todays_market_collection.collection= and
+=todays_market_configuration_binding.collection= hold the kind as free text,
+and every =todays_market_entry= row repeats the kind's key attribute in
+=key_attribute=. A seeded kind lookup would hold the kind code, its ORE element
+name and its key attribute, or attributes for the two kinds keyed twice. Both
+=collection= columns would then refer to it, and the database would refuse an
+unknown kind. =key_attribute= could then leave the entry table.
+
+One limit for this document: the binding gives each kind its own typed member,
+so the mapper keeps one branch per kind whatever the lookup holds. The
+acceptance line "no lookup value appears as a literal in mapper code" cannot be
+met for today's market. The mapper can check its branches against the lookup
+instead.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

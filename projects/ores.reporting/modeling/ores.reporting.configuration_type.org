@@ -42,7 +42,7 @@ row here plus a workflow, never a column on the report definition.
 :primary_key: true
 :END:
 
-The stable code for the kind, for example ore_run or stress_testing.
+The stable code for the kind, for example pricing_engines or todays_market.
 
 ** name
 :PROPERTIES:
@@ -61,6 +61,52 @@ The human-readable name of the kind.
 :END:
 
 The order the kind appears in a list.
+
+** ore_root_element
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The root element of the ORE document this kind serialises to.
+
+Examples: 'PricingEngines', 'TodaysMarket', 'CurveConfiguration'.
+
+#+begin_src cpp :name generator
+std::string("PricingEngines")
+#+end_src
+
+** owning_component
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The component whose entities hold a document of this kind.
+
+Examples: 'ores.analytics', 'ores.refdata', 'ores.trading'.
+
+#+begin_src cpp :name generator
+std::string("ores.analytics")
+#+end_src
+
+** run_parameter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The parameter an ORE run document uses to name a file of this kind.
+
+Examples: 'pricingEnginesFile', 'marketConfigFile'. Null where no shipped run
+document names one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
 
 * SQL
 
@@ -87,6 +133,7 @@ The order the kind appears in a list.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 
@@ -137,6 +184,9 @@ The order the kind appears in a list.
 | code          | Code  | line_edit | true   | true        | Enter configuration type code |
 | name          | Name  | line_edit |        | true        | Enter display name |
 | display_order | Order | spin_edit |        | true        | Enter order |
+| ore_root_element | Root element | line_edit |   | true        | Enter the ORE root element |
+| owning_component | Owner | line_edit |        | true        | Enter the owning component |
+| run_parameter | Run parameter | line_edit |     |             | Enter the run document parameter |
 
 *** Columns
 

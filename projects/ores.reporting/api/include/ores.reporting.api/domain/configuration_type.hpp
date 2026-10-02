@@ -26,6 +26,7 @@
 #define ORES_REPORTING_API_DOMAIN_CONFIGURATION_TYPE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -56,7 +57,7 @@ struct configuration_type final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief The stable code for the kind, for example ore_run or stress_testing.
+     * @brief The stable code for the kind, for example pricing_engines or todays_market.
      */
     std::string code;
 
@@ -69,6 +70,28 @@ struct configuration_type final {
      * @brief The order the kind appears in a list.
      */
     int display_order = 0;
+
+    /**
+     * @brief The root element of the ORE document this kind serialises to.
+     *
+     * Examples: 'PricingEngines', 'TodaysMarket', 'CurveConfiguration'.
+     */
+    std::string ore_root_element;
+
+    /**
+     * @brief The component whose entities hold a document of this kind.
+     *
+     * Examples: 'ores.analytics', 'ores.refdata', 'ores.trading'.
+     */
+    std::string owning_component;
+
+    /**
+     * @brief The parameter an ORE run document uses to name a file of this kind.
+     *
+     * Examples: 'pricingEnginesFile', 'marketConfigFile'. Null where no shipped run document names
+     * one.
+     */
+    std::optional<std::string> run_parameter;
 
     /**
      * @brief Username of the person who last modified this configuration type.

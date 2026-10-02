@@ -43,6 +43,9 @@ struct configuration_type_write {
     std::string code;
     std::string name;
     int display_order;
+    std::string ore_root_element;
+    std::string owning_component;
+    std::optional<std::string> run_parameter;
 };
 
 struct configuration_type_change {

@@ -85,6 +85,9 @@ domain::configuration_type to_domain(const messaging::configuration_type_write& 
     v.code = write.code;
     v.name = write.name;
     v.display_order = write.display_order;
+    v.ore_root_element = write.ore_root_element;
+    v.owning_component = write.owning_component;
+    v.run_parameter = write.run_parameter;
     return v;
 }
 

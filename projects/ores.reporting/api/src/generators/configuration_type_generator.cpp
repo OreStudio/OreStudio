@@ -48,6 +48,9 @@ generate_synthetic_configuration_type(utility::generation::generation_context& c
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.name = std::string(faker::word::noun());
+    r.ore_root_element = std::string("PricingEngines");
+    r.owning_component = std::string("ores.analytics");
+    r.run_parameter = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

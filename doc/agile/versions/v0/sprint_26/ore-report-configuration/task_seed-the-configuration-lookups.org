@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/ore-report-configuration
-#+pr:
+#+branch: feature/seed-the-configuration-lookups
+#+pr: 2520
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A discriminator is data, so adding a kind is a seeded row and never a column or 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -41,9 +41,30 @@ A discriminator is data, so adding a kind is a seeded row and never a column or 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measured on 2026-10-02 before any change:
+
+| Lookup | State | Needs |
+|--------+-------+-------|
+| =configuration_types= | table exists, 0 rows | the seventeen ORE configuration kinds; this blocks every report from pointing at a configuration |
+| today's market collection kinds | no table; =collection= is free text | a lookup of the 24 kinds with their key attributes, and a foreign key from both =collection= columns |
+| stress shift families and shift types | no table; =family= and =shift_type= are free text | a lookup and a foreign key |
+| =analytic_types=, =parameter_value_domains=, =pricing_engine_types= | seeded: 38, 6, 58 | nothing |
+| risk classes | nothing refers to them | wait for SIMM calibration |
+| report types | 2 sample rows | its own task, [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] |
+
+This task seeds the configuration types. The today's market collection kinds
+and the stress shift kinds are tasks of their own, because a pull request can
+only merge once its task is closed.
+
+*Configuration types.* The kinds come from ORE's own schemas: every global
+element of a configuration schema in =external/ore/xsd=, excluding the run
+document (=ORE=, which a report owns directly through =report_definition_id=,
+not through a configuration), trades and portfolios, instrument and shared-type
+fragments, collateral balances (data, not configuration) and the script
+library. Each kind records the root element it serialises to, the component
+that owns its entities, and the run-document parameter that names its file.
+A test ties the seed to the binding: for every kind the binding can save, an
+empty document must start with the seeded root element.
 
 * Measurements
 
@@ -57,26 +78,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Configuration types seeded | 17 | recreate output, =Configuration Types \| 17= | 14ec81e5b8 |
+| Kinds the binding can save, checked against the seeded root | 12 of 17; 5 listed as unbound | =ores.ore.core.tests "[configuration_types]"= | 14ec81e5b8 |
+| Seed test against a prefix-broken root | fails, then passes on restore | update one row, run, restore | 14ec81e5b8 |
+| Migration on a database created before the change | 17 rows, required columns not null, second run harmless | rolled-back transaction | 14ec81e5b8 |
 
 * Notes
 
-**Today's market collection kinds belong here.** Decided in the PR #2500
-review. A today's market document has twenty-four collection kinds
-(=YieldCurves=, =DiscountingCurves= and the rest). Today
-=todays_market_collection.collection= and
-=todays_market_configuration_binding.collection= hold the kind as free text,
-and every =todays_market_entry= row repeats the kind's key attribute in
-=key_attribute=. A seeded kind lookup would hold the kind code, its ORE element
-name and its key attribute, or attributes for the two kinds keyed twice. Both
-=collection= columns would then refer to it, and the database would refuse an
-unknown kind. =key_attribute= could then leave the entry table.
-
-One limit for this document: the binding gives each kind its own typed member,
-so the mapper keeps one branch per kind whatever the lookup holds. The
-acceptance line "no lookup value appears as a literal in mapper code" cannot be
-met for today's market. The mapper can check its branches against the lookup
-instead.
+The today's market collection kinds and the stress shift kinds moved to their
+own tasks when the plan split, so that each can close with its own pull
+request: [[id:D84EB1E6-0D62-47A1-BAED-6B5444310726][Seed the today's market collection kinds]] and
+[[id:0166CCF3-B25E-4BEC-8759-19C2C4AB34E5][Seed the stress shift families and shift types]].
 
 * Test Scenarios
 
@@ -93,12 +105,49 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2520][#2520]] | [reporting] Seed the configuration types with their ORE mapping |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review: a seeded code that already exists with empty mapping columns would make the migration fail | seed, migration | Accepted | The seed fills the empty mapping columns of every version of a seeded code, current or closed, in place. Tested: 16 closed versions and 1 current row without a mapping all filled, not null set. Rows under test tenants with generated codes still stop the migration, by design; the comment says to recreate such a database. |
+| 2 | Review: could the triggers rewrite the new columns | seed | No change | The migration test showed every value stored as seeded. |
+| 3 | Review: the root check found the name anywhere, not the first element | seed test | Accepted | It now skips the declaration and comments and checks the first element. |
+| 4 | Review: run_parameter is not checked | seed test | Accepted | Each non-null run_parameter must appear in a shipped run document. Seeding simmCalibrationFile for simmCalibration makes the test fail. |
+| 5 | Review: how to pass null to the shell's optional run_parameter | shell | No change | The generated recipe uses -, as for every optional on the generated commands. |
+| 6 | Review: a new seeded kind forces a test update | seed test | No change | Intended. |
 
 * Result
+
+The configuration types are seeded, so a reporting configuration can now be
+registered, and through it a report can point at its configuration.
+
+**What a configuration type holds.** Its code, name and order, and now the root
+element of the ORE document it serialises to, the component that owns its
+entities, and the run-document parameter that names its file. The mapping from
+a kind to its document is data, not code.
+
+**The seventeen kinds** are the global elements of ORE's configuration schemas,
+derived as recorded in
+[[file:evidence/configuration_types_derivation.md][the derivation]]. The run
+document is not one: a report owns its run setup directly through
+=report_definition_id=. Historical return and Basel traffic light have no
+run-document parameter, because no shipped run document names one.
+
+**How it is proven.** For each of the twelve kinds the binding can save, an
+empty document must open with exactly the seeded root element; breaking one row
+to a prefix of the real name makes the test fail. The five kinds without a
+binding are listed, so one that gains a binding without joining the check fails.
+A migration adds the columns and the rows to a database created before the
+change.
+
+**Moved out.** The today's market collection kinds and the stress shift kinds
+became tasks of their own, so that each can close with its own pull request.
+The other lookups the task named were already seeded (analytic types, value
+domains, pricing engine types) or wait for work that does not exist yet (risk
+classes, for SIMM calibration).
+
+**Component audit.** The task touched =ores.reporting= through one model, and
+added a seed, a migration and a test. =validate_docs.sh= passes for all 41
+components, and no folder, type or component changed.

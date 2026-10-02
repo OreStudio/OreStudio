@@ -129,4 +129,5 @@ executed, timed, and reconciled independently.
 - [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] — why the Central Remittance Book and Central Sweep Book
   are distinct, non-combinable roles.
 - [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]] — another book-scoped periodic process with its
-  own system-generated trades and their links for audit.
+  own system-generated trades and their
+  [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][links]] for audit.

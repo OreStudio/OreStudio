@@ -24,7 +24,7 @@ a special case in code.
 
 [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] states the
 principle: a link with an economic effect is a trade event, and a link
-with no economic effect is an annotation. The two tables follow that
+with no economic effect is an annotation. The tables below follow that
 split. The first table's links cut a version of the trades they join,
 and some of them need a confirmation. The second table's links are
 recorded, displayed and reported, and they change no term.

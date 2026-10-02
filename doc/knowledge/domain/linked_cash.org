@@ -56,8 +56,8 @@ fees and rebates are linked because a trade explains them; margin, CVA
 and sales credits are orphan because no single trade does. A new
 sub-type goes on the correct side by answering the same question.
 
-One row stays *open*: uncollateralised funding is neither explained by
-a trade's terms nor cleanly orphan, so the table records the question
+Uncollateralised funding stays *open*: it is neither explained by a
+trade's terms nor cleanly orphan, so the table records the question
 rather than forcing a side.
 
 Compensation is the case worth spelling out: a novation payout arises

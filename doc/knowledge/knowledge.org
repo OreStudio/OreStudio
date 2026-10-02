@@ -52,7 +52,7 @@ Finance concepts the codebase relies on.
 
 | Hub | What it gathers |
 |-----+-----------------|
-| [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] | Identity, classification, lifecycle, versioning, confirmations, operational authorisation, links between trades |
+| [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] | Identity, classification, lifecycle, versioning, confirmations, operational authorisation, [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][links between trades]] |
 | [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] | Every ORE product type, by asset class and product family, each with its own page |
 | [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] | Every documented report, each with its own page: what decision it feeds, who reads it, how often it runs, and the ORE XML that configures it |
 | [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] | The money and cash foundation, ISO 4217, and the currency roles a book or trade carries |

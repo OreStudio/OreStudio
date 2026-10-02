@@ -198,7 +198,8 @@ itself, and they travel to the customer as a confirmation.
 
 ** Structures and the wider family of links
 
-Structures are the strongest link between trades, but not the only one.
+Structures are the strongest
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][link]] between trades, but not the only one.
 The wider family — close-outs, novations, rolls, fixings, allocations,
 book moves and the rest — is catalogued on
 [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]]. The

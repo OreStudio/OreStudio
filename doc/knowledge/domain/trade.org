@@ -11,8 +11,8 @@
 
 * Summary
 
-A trade is the record of an agreement. Describing one fully takes five
-questions, and each has its own answer and its own document.
+A trade is the record of an agreement. Describing one fully takes
+several questions, and each has its own answer and its own document.
 
 *What is it made of?* Four entities, not one: the product type, the
 security issue where one exists, the trade itself, and the instrument
@@ -30,8 +30,8 @@ every change.
 be valued, and a position once aggregated with its neighbours.
 
 *What does it link to?* Other trades. A structure binds its legs
-economically; a trade link records every other relation, with a type
-that names the reason.
+economically; a [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]]
+records every other relation, with a type that names the reason.
 
 Each question is independent of the others. A trade's
 classification does not change over its life, its lifecycle does not

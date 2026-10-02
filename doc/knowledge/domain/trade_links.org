@@ -23,8 +23,8 @@ effect. A link with an economic effect is a trade event; it changes the
 trade and may need a confirmation. A link with no economic effect is an
 annotation; the system records and reports it, and it changes no term.
 
-This page fixes the vocabulary, describes the three ways links come
-into being, and states the invariants they must satisfy. The catalogue
+This page fixes the vocabulary, describes how links come into
+being, and states the invariants they must satisfy. The catalogue
 of types is on [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]];
 the prior art behind the term is at the end of this page.
 
@@ -44,7 +44,7 @@ alone — a cancelled trade and a live one are the ends of a close-out, a
 misbooking and a compression alike — so the system stores the link as
 data.
 
-Most links join two trades. Two families do not: a trade's cash flows
+Most links join two trades. Not all do: a trade's cash flows
 (see [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]]), and the
 trades a single process run generates, which the run's own page owns.
 Pre-trade objects — orders, quotes, RFQ records — sit outside the trade
@@ -75,7 +75,7 @@ downstream.
 
 ** How links come into being
 
-Three routes carry every link.
+Several routes carry every link.
 
 - /At booking./ Assembling a structure links the legs to it. A
   back-to-back pair is generated with the client-facing trade, so the
@@ -144,7 +144,7 @@ what each source we follow calls it.
 | Order relationships | FIX /parent/ and /child/ orders |
 | The user's action in a blotter | /link/ and /unlink/ |
 
-We chose *link* over *linkage* for three reasons. FpML standardises
+We chose *link* over *linkage* for several reasons. FpML standardises
 =linkedTrade=, so the word has a standards precedent. The blotter verbs
 are already Link and Unlink, so the noun matches our own vocabulary.
 And in market usage "linkage" more often names settlement netting than

@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 3AFA8FA2-55B4-441A-BD35-69FA67CDB664
+:END:
+#+title: Model the two trading export verbs as operation models
+#+description: trading.v1.trades.portfolio.export and export-to-storage are declared in a pasted cpp block in the trade model with hand-written handlers; P04 and M06 want operation models.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:trading:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two trading verbs are not entity verbs: =trading.v1.trades.portfolio.export=
+and =trading.v1.trades.export-to-storage=. Their request and response structs
+are declared in a =cpp= block in =ores.trading.trade.org=, and codegen pastes
+that block into the generated =trade_protocol.hpp=. Their handlers are
+hand-written in =registrar_trades.cpp=. Write one operation model per verb,
+in the shape that =ores.dq.publish_bundle= uses. The protocol and its
+TypeScript twin then generate, and the handlers stay hand-written.
+
+* Why
+
+Items P04 and M06 of the Component Clean Standard want every operation
+that is not an entity verb as an operation model, and no hand-written wire
+type. These two verbs are the only gap for both items in ores.trading. The
+PR 7 task recorded the fix as the next unit and did not take it.
+
+* References
+
+- =projects/ores.trading/modeling/ores.trading.trade.org=: the pasted =cpp= block.
+- =projects/ores.trading/core/src/messaging/registrar_trades.cpp=: the two handlers.
+- =ores.dq.publish_bundle=: the operation model shape to copy.
+
+* See also
+
+- [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]]
+- [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]]

@@ -27,6 +27,14 @@ group that imports =ores.dq.audit_record= covers the cross-component case.
 No codegen test covers it, so the failure shows late and far from its
 cause.
 
+* Status
+
+=projects/ores.codegen/tests/test_field_group_typescript.py= now renders
+=ores.trading.bond_instrument= and checks both import paths: its own
+component's group (dotted name) and =ores.dq='s audit record (=::= name).
+It fails when the cross-component path is broken. This capture can be
+discarded at triage.
+
 * References
 
 - =projects/ores.codegen/src/codegen/core.py=: =_group_import=.

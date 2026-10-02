@@ -1,0 +1,59 @@
+G04, generated-code review for ores.trading
+Read 2026-10-02 on main 1d1dde7ca6.
+
+Item G04 asks that the generated code reads like the component's best
+hand-written code, and that a finding is a template defect fixed in the
+template.
+
+What was read
+-------------
+- projects/ores.trading/core/src/service/trade_service.cpp (563 lines),
+  the generated service of the most grouped entity: five field-group
+  members, a declared key that is not the storage key, an enum write field
+  and three date write fields. It exercises every arm of the service
+  template.
+- The baseline is projects/ores.trading/core/src/service/bond_instrument_reader.cpp,
+  the largest hand-written service in the component.
+
+What reads well
+---------------
+- Each helper (read_one, key_from, to_domain) has a doc comment that
+  states why it exists, not what it does.
+- Refusals are explicit and named: order_not_supported,
+  filter_not_supported, precondition_not_supported,
+  batch_removal_is_unconditional. Each states its reason in the message.
+- The batch write checks every element before it writes any of them, and
+  says so above the code.
+- The enum and date write arms (fixed in PR 2 and PR 6) read as the
+  hand-written baseline does: one conversion at the boundary, with a
+  stated fallback.
+
+Findings
+--------
+1. Template defect, open. In prepare_change, the stamp_members section of
+   cpp_service.cpp.mustache puts its three-line comment inside the loop.
+   trade_service.cpp carries the same comment five times, once per
+   member, and repeats the full reason-code expression five times. The
+   comment above the loop, "The version is the repository's to state",
+   has no code below it. The baseline states a comment once and computes
+   a value once. Filed as capture EC0935EB-81B1-4301-BBFC-AB0C5B516D01.
+   It is not fixed here: the fix changes the output of every grouped
+   entity in every component, and the regeneration needs the
+   clang-format that CI pins. This machine has clang-format 21, which
+   re-wraps lines that version 18 leaves alone.
+2. Formatting, part of finding 1's regeneration. The template leaves no
+   blank line between the constructor and the anonymous namespace, two
+   blank lines before the legacy overloads, and a closing brace without
+   "// namespace". The project's .clang-format keeps up to two empty lines
+   (MaxEmptyLinesToKeep: 2) and does not insert one, so formatting does
+   not hide these.
+3. Not a defect, recorded. put_many and delete_many resolve each element
+   with its own read. The comments state why: the declared key is not
+   the storage key. The hand-written reader batches its reads instead.
+   This matters only at batch sizes the shell and the import do not send.
+
+Verdict
+-------
+The generated service reads like the baseline except for finding 1,
+which is a template defect with a capture and is not yet fixed in the
+template. G04 is therefore partly met.

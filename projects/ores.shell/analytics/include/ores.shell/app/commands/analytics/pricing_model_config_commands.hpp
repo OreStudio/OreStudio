@@ -87,21 +87,23 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <description> <config_variant> <reason> <commentary>
+     * @brief add <name> <description> <config_variant> <configuration_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <description> <config_variant> <reason> <commentary> [--version <n>]
+     * @brief set <id> <name> <description> <config_variant> <configuration_id> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <description> <config_variant> <reason> <commentary>
+     * @brief put-many --count <n> <id> <name> <description> <config_variant> <configuration_id>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -120,6 +122,14 @@ public:
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief by-configuration-id <configuration_id> [--offset <n>] [--limit <n>] [--order <field>]
+     * [--desc]
+     */
+    static void process_by_configuration_id(std::ostream& out,
+                                            ores::nats::service::nats_client& session,
+                                            const std::vector<std::string>& args);
 
     /**
      * @brief versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

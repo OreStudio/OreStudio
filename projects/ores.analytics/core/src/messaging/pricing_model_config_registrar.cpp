@@ -68,6 +68,12 @@ std::vector<ores::nats::service::subscription> register_pricing_model_config_han
         delete_many_pricing_model_configs_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_pricing_model_configs(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_configuration_id_pricing_model_configs_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_configuration_id_pricing_model_configs(std::move(msg));
+                             }));
     subs.push_back(nats.queue_subscribe(
         list_pricing_model_config_versions_request::nats_subject,
         queue_group,

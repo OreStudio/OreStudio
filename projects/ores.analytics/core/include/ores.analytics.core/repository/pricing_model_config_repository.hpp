@@ -148,6 +148,28 @@ public:
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
+     * @brief Reads latest pricing model configurations filtered by configuration_id, with
+     * pagination.
+     * @param ctx Repository context with database connection
+     * @param configuration_id The configuration_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::pricing_model_config>
+    read_latest_by_configuration_id(context ctx,
+                                    const std::string& configuration_id,
+                                    std::uint32_t offset,
+                                    std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active pricing model configurations filtered by
+     * configuration_id.
+     */
+    std::uint32_t get_total_config_count_by_configuration_id(context ctx,
+                                                             const std::string& configuration_id);
+
+
+    /**
      * @brief Reads latest pricing model configurations with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

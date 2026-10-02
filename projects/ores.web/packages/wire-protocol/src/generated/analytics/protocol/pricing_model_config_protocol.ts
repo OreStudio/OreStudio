@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface PricingModelConfigKey {
     name: string;
@@ -37,6 +38,7 @@ export interface PricingModelConfigWrite {
     name: string;
     description: string;
     config_variant: string;
+    configuration_id: string;
 }
 
 export interface PricingModelConfigChange {
@@ -52,6 +54,10 @@ export interface PricingModelConfigRemoval {
 export interface PricingModelConfigLookup {
     key: PricingModelConfigKey;
     pricing_model_config: PricingModelConfig | null;
+}
+
+export interface PricingModelConfigsFilter {
+    configuration_id: string | null;
 }
 
 export interface PricingModelConfigEvent {
@@ -78,6 +84,7 @@ export interface ListPricingModelConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PricingModelConfigsFilter | null;
 }
 
 export interface ListPricingModelConfigsResponse {
@@ -142,6 +149,21 @@ export interface DeleteManyPricingModelConfigsResponse {
     result: Result;
 }
 
+export interface ListByConfigurationIdPricingModelConfigsRequest {
+    configuration_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: PricingModelConfigsFilter | null;
+}
+
+export interface ListByConfigurationIdPricingModelConfigsResponse {
+    result: Result;
+    configs: PricingModelConfig[];
+    total: number;
+}
+
 export interface ListPricingModelConfigVersionsRequest {
     key: PricingModelConfigKey;
     offset: number;
@@ -173,6 +195,8 @@ export const subjects = {
     put_many_pricing_model_configs_request: 'analytics.v1.pricing_model_configs.put_many',
     delete_pricing_model_config_request: 'analytics.v1.pricing_model_configs.delete',
     delete_many_pricing_model_configs_request: 'analytics.v1.pricing_model_configs.delete_many',
+    list_by_configuration_id_pricing_model_configs_request:
+        'analytics.v1.pricing_model_configs.list_by_configuration_id',
     list_pricing_model_config_versions_request: 'analytics.v1.pricing_model_configs_versions.list',
     get_pricing_model_config_version_request: 'analytics.v1.pricing_model_configs_versions.get',
 } as const;
@@ -189,6 +213,7 @@ export const requiresSession = {
     put_many_pricing_model_configs_request: true,
     delete_pricing_model_config_request: true,
     delete_many_pricing_model_configs_request: true,
+    list_by_configuration_id_pricing_model_configs_request: true,
     list_pricing_model_config_versions_request: true,
     get_pricing_model_config_version_request: true,
 } as const;

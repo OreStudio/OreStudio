@@ -91,6 +91,9 @@ public:
     delete_pricing_model_config(const messaging::delete_pricing_model_config_request& request);
     messaging::delete_many_pricing_model_configs_response delete_many_pricing_model_configs(
         const messaging::delete_many_pricing_model_configs_request& request);
+    messaging::list_by_configuration_id_pricing_model_configs_response
+    list_by_configuration_id_pricing_model_configs(
+        const messaging::list_by_configuration_id_pricing_model_configs_request& request);
     messaging::list_pricing_model_config_versions_response list_pricing_model_config_versions(
         const messaging::list_pricing_model_config_versions_request& request);
     messaging::get_pricing_model_config_version_response get_pricing_model_config_version(
@@ -113,6 +116,27 @@ public:
      * @return Total number of active pricing model configurations.
      */
     std::uint32_t count_configs();
+
+
+    /**
+     * @brief Lists pricing model configurations filtered by configuration_id, with pagination.
+     *
+     * @param configuration_id The configuration_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching pricing model configurations for the requested page.
+     */
+    std::vector<domain::pricing_model_config> list_configs_by_configuration_id(
+        const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active pricing model configurations filtered by
+     * configuration_id.
+     *
+     * @param configuration_id The configuration_id to filter by.
+     * @return Total number of matching pricing model configurations.
+     */
+    std::uint32_t count_configs_by_configuration_id(const std::string& configuration_id);
 
 
     /**

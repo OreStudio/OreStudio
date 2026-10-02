@@ -37,12 +37,12 @@ check is the one that already fails and is therefore honest.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
-| Now          | Re-baselined against main =3c522bd219=. The shell aggregator archetype and the permission seeds are in flight. |
-| Waiting on   | Nothing. PR 6 merged as =3c522bd219=. |
-| Next         | Generate the aggregator, decide the 33 facet-less entities, then the audits and the registry entry. |
-| Last touched | 2026-10-01                               |
+| Now          | Nothing. |
+| Waiting on   | The merge of #2496. |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
 
 * Re-baseline (2026-10-01, main 3c522bd219)
 
@@ -72,16 +72,20 @@ and the recipes for any entity newly opted in.
 
 * S01 entity decisions
 
-Two of the 33 entities without the facet are headers a caller must be able
-to create, and they are opted in:
+Three of the 33 entities without the facet are opted in. Two are headers a
+caller must be able to create, and one replaces a hand-written unit. A
+fourth, =commodity_basket_constituent=, was opted in after review, because
+the deletion of the hand-written instrument unit left no shell path to its
+rows:
 
 | Entity | Why |
 |--------+-----|
 | =bond_issue= | The shared ISIN row every instrument of the family references. =bond_instrument add= takes an =issue_id=, and nothing over the shell creates one, so a bond cannot be booked from scratch today. |
 | =commodity_instrument= | The commodity family's header. It has no shell surface at all, so the family is unreachable over the shell. |
 | =equity_position_option_underlying= | A hand-written application-local unit exposes it today. The standard prefers the generated unit, so opting the entity in replaces it rather than keeping a hand-written duplicate. |
+| =commodity_basket_constituent= | Added after review. The hand-written =commodity_instrument= unit wrote the constituents through its =[basket]= positional. The generated unit has no such argument, so the constituent needs a menu of its own. |
 
-The other 30 are rows their parent owns, written with it, so a standalone
+The other 29 are rows their parent owns, written with it, so a standalone
 verb would let a caller mint an orphan. They get no commands, and this is
 the recorded reason:
 
@@ -98,8 +102,7 @@ the recorded reason:
   =instrument_option_exercise_fee=, =instrument_option_payment_date=,
   =instrument_option_premium=, =instrument_schedule=,
   =instrument_schedule_date=, =instrument_strike=;
-- the per-family children: =callable_swap_call_date=,
-  =commodity_basket_constituent=;
+- the per-family child: =callable_swap_call_date=;
 - the trade's envelope: =trade_envelope=,
   =trade_envelope_additional_field=, =trade_envelope_portfolio_id=.
 
@@ -512,12 +515,16 @@ file, and the reason for each not-applicable.
   recipes aborted at their own client and checked nothing. Both are
   fixed and the sweep was re-run: 439 of 444 replay clean.
   The ten recipes the basket fix below added bring it to 449 of 454.
-  Two findings are recorded rather than fixed. =composite_legs
-  by-instrument-id= and =swap_legs by-instrument-id= are stale scripts:
-  both recipe orgs and both shell units declare =by-trade-id=, so a
-  rename left the tangled output behind and tangling does not sweep. They
-  are the same class as the =curve_sections= residue, and deleting them
-  is a one-line change the operator has not authorised. And =trade_types=
+  =composite_legs by-instrument-id= and =swap_legs by-instrument-id= were
+  stale scripts: both recipe orgs and both shell units declare
+  =by-trade-id=, so a rename left the tangled output behind and tangling
+  does not sweep. They are the same class as the =curve_sections=
+  residue. The operator authorised their deletion on 2026-10-02, and both
+  are deleted. The evidence file keeps their two =NOT_WIRED= rows,
+  because it records the run as it was. Without them the sweep is 562
+  recipes, 452 replayed and 449 answering; this is derived from the
+  evidence file, not from a new run. One finding is recorded rather than
+  fixed. =trade_types=
   =add=, =set= and =put-many= still abort on =Invalid value for
   product_type: __none__=, because the sentinel table knows the C++
   primitives and not a component's own enumeration types; the model
@@ -526,7 +533,8 @@ file, and the reason for each not-applicable.
   metadata does not reach the shell projection. Filed as capture
   =A06D2B03-4275-4624-8574-2ACB32C580D6= with the root cause and the
   two-line plumbing it needs. Nothing is left unexplained: every
-  non-answer in the evidence file is one of those five.
+  non-answer in the evidence file is one of those five, and the two
+  stale scripts are now gone.
 
 * Test Scenarios
 
@@ -543,17 +551,25 @@ file, and the reason for each not-applicable.
 
 * Review
 
+Round 1 is the =claude[bot]= review of 2026-10-01 and its reply on the PR.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The generated commodity unit lost the basket parser | =commodity_instrument_commands.cpp= | Fixed | The constituent enables the shell facet, commit =8727749250=. The bulk positional is not restored: capture [[id:40CE8453-28E8-4B6B-B666-46ABF109BBB4][lost bulk child-row input]] |
+| 2 | Every required decimal samples =1= | =org_loader.py= | Deferred | Measured safe today over 24 models. Capture [[id:2A4BD03A-702F-4AC1-BD36-C20544BDC184][decimal sentinel guard]] |
+| 3 | The aggregator opt-out is silent | =core.py= | Deferred | Capture [[id:88641984-63DE-4E1A-9BFA-9750A3BA0456][silent opt-out]] |
+| 4 | Lookup depth is unchecked and the cache never refreshes | =core.py= | Deferred | Capture [[id:8C08AFDE-3AF2-425E-9231-2B9D892D81D7][lookup depth]] |
+| 5 | =_group_import= has no cross-component test | =core.py= | Deferred | The web typecheck covers it. Capture [[id:B5C1F70B-6AF7-4F17-8726-616376595A1B][group import test]] |
+| 6 | Generated aggregator, =*.cmapx= ignore, census method | various | No change | Drift exits 0; one tracked =.cmapx= is intentional; the census command is in the reply |
+| - | Fix the enum sentinel before merge | =org_loader.py= | Deferred | Capture [[id:A06D2B03-4275-4624-8574-2ACB32C580D6][enum sentinel]] |
 
 * Result
 
 The shell, wiring, hygiene and verification items are closed and
 ores.trading is in =COMPONENTS_UNDER_TEST=. The shell facet was enabled
-on 55 of the component's 85 entity models and its units, the component
+on 56 of the component's 85 entity models and its units, the component
 aggregator, the recipes and the recipe inventory are generated rather
-than hand-written. The thirty that do not enable it are the fact and
+than hand-written. The 29 that do not enable it are the fact and
 child rows a parent security or trade owns, so they are addressed
 through the parent's menu; the strict reading of S01, a menu per entity,
 is therefore not met and the story row says so. The component drift
@@ -561,10 +577,11 @@ check exits 0 with the component listed, at all eight addresses and with
 no drift at all; the protocol twin gate is 293 of 293 across 14
 components; the registry gate is 16 components and 5 exceptions; =validate_docs.sh= is OK for all 41 components; and
 =check_shell_recipes.py= replays 454 of the component's 564 recipes
-against the live fleet with 449 answering.
+against the live fleet with 449 answering. The two stale scripts were
+deleted after that run, which leaves 452 replayed and 449 answering.
 
 Three items were not clerical and each found something the gates could
-not see. V04 found that twelve of the 55 opt-ins published to subjects no
+not see. V04 found that twelve of the opt-ins published to subjects no
 service owned, because the composition root is hand-written while
 everything it composes is generated, and that a required decimal had no
 sentinel the shell could parse, which aborted 33 write recipes at their
@@ -576,9 +593,13 @@ image shows. V07 found that 71 of 1175 test cases could not tell a
 working subject from one that did nothing, and the census is now 0 with
 no case deleted and none weakened.
 
-Two V04 findings are recorded rather than fixed: two stale
-=by-instrument-id= scripts a rename left behind, and a required enum
-whose sentinel the table does not know, filed as capture =A06D2B03-4275-4624-8574-2ACB32C580D6=.
+One V04 finding is recorded rather than fixed: a required enum whose
+sentinel the table does not know, filed as capture
+=A06D2B03-4275-4624-8574-2ACB32C580D6=. The two stale =by-instrument-id=
+scripts a rename left behind are deleted. The review found that the
+generated commodity unit had lost the basket editor; the constituent now
+has its own menu, and the lost one-line bulk form is a capture with the
+other review follow-ups.
 V08's survey is recorded with a reason per untouched file, 593 of the 606
 being generated and 13 being the fleet's own wiring. One commit on the
 branch carries a task id that does not exist; the correction is carried

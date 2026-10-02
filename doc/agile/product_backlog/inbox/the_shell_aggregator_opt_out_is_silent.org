@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 88641984-63DE-4E1A-9BFA-9750A3BA0456
+:END:
+#+title: The shell aggregator opts out silently on a missing overview or a misspelt flag
+#+description: shell_command_surface finds the overview by a fixed directory depth and returns no surface when it is absent or its flag value is not recognised.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=core.py='s =shell_command_surface= reads a component's shell opt-in from
+the shell part's =modeling/component_overview.org=. The caller finds the
+projects directory as =Path(templates_dir).resolve().parents[2]=, so it
+depends on the depth of the templates directory. When the overview is
+absent, the function returns =(False, ())=. The flag
+=#+shell_command_aggregator:= accepts only =true=, =t=, =yes= and =1=, and
+any other value also opts out. Make both cases fail loudly: a component
+with opted-in entities and no overview is an error, and an unknown flag
+value is an error.
+
+* Why
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/2496][PR #2496]] found this. When the opt-out is silent, the
+component-scoped registrar does not generate, and the shell has no menu for
+that component. The cause is not visible from the generator output.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py=: =shell_command_surface=, and the caller that computes =projects_dir=.
+
+* See also
+
+- [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]]

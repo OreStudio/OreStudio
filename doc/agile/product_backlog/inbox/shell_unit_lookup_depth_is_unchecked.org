@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 8C08AFDE-3AF2-425E-9231-2B9D892D81D7
+:END:
+#+title: The shell unit lookup and model discovery can disagree on depth, and the cache never refreshes
+#+description: _shell_command_units globs to a depth that must match discover_models, nothing checks they agree, and its lru_cache can serve stale models to a long-lived process.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=core.py='s =_shell_command_units= globs =*.org= and =*/*.org=. A comment
+says that this depth must match =discover_models()=, but no test checks it.
+Add a test that both functions find the same model files. The function also
+has an =lru_cache= keyed on the directory string, and nothing clears it. A
+long-lived pytest session that edits models can read stale data. Clear the
+cache in the test fixtures, or key it on something that changes when the
+models change.
+
+* Why
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/2496][PR #2496]] found this. If the two depths drift, an opted-in
+entity can have a unit that the aggregator does not register, and the
+drift gate does not see it.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py=: =_shell_command_units=.
+- =projects/ores.codegen/src/codegen/org_loader.py=: =discover_models=.
+
+* See also
+
+- [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]]

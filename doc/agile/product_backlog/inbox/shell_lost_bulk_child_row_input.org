@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 40CE8453-28E8-4B6B-B666-46ABF109BBB4
+:END:
+#+title: The generated shell lost the one-line bulk input for basket constituents and option underlyings
+#+description: The deleted hand-written units took CODE:weight lists in one positional; the generated per-row commands work but need one call per row.
+#+type: capture
+#+level: cross
+#+filetags: :shell:trading:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two hand-written shell units took a list of child rows in one positional
+argument. =commodity_instrument add= took =CODE:weight,CODE:weight= and
+wrote the =commodity_basket_constituent= rows. The
+=equity_position_option_underlying= unit took =parse_entries= rows. The
+generated units replaced both. Each child entity now has its own generated
+menu with per-row =add= and =set=, so all rows can be written, but each row
+needs one command. To restore the one-line form, model the child list as a
+command argument of the parent. That is a design change to the shell
+command generation, not a repair.
+
+* Why
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/2496][PR #2496]] found that the basket editor was lost when the
+hand-written unit was deleted. The fix enabled the shell facet on the
+constituent, which restores the capability but not the convenience. A user
+who books a basket with many constituents now types one command per
+constituent.
+
+* References
+
+- =ores.trading.commodity_basket_constituent.org=, =ores.trading.equity_position_option_underlying.org=.
+- Commit =8727749250=, which restored the per-row editor.
+
+* See also
+
+- [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]]

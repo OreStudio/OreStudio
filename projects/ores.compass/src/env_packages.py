@@ -50,6 +50,9 @@ _FULL = [
     "python3",
     "python3-pip",
     "python3-venv",
+    # Node.js and npm (build and serve ores.web)
+    "nodejs",
+    "npm",
     # OpenSSL
     "openssl",
     "libssl-dev",

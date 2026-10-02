@@ -8,7 +8,7 @@
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
 #+branch: feature/act-on-a-tenant-from-its-row
-#+pr:
+#+pr: 2516
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2516][#2516]] | [web] Act on a tenant from its row |
 
 * Review
 

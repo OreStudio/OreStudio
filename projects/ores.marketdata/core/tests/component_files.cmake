@@ -24,6 +24,7 @@ set(files
     "main.cpp"
     "oresmd_fixing_coverage_tests.cpp"
     "oresmd_identity_round_trip_tests.cpp"
+    "oresmd_ore_catalogue_tests.cpp"
     "oresmd_ore_coverage_tests.cpp"
     "oresmd_oresmd_parser_tests.cpp"
     "oresmd_oresmd_projections_tests.cpp"

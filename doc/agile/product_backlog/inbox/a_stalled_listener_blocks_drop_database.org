@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 49099A9D-8F40-4A96-802B-13A8694DA542
+:END:
+#+title: A stalled service listener blocks every DROP DATABASE on the shared server
+#+description: prime_origin's marketdata service stopped reading its LISTEN connection at 02:53 and held the backend in ClientWrite for about 16 hours, which blocked every other environment's database recreate until another session killed it.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A service's =postgres_listener_service= holds one dedicated connection that
+LISTENs on its notify channels. In prime_origin, the marketdata service's
+listener stopped reading that socket at about 02:53 on 2026-10-02 while the
+service kept running and reporting healthy. PostgreSQL kept the backend (pid
+2299136, user =ores_prime_origin_marketdata_service=, LISTEN on
+=ores_refdata_crm_...=) in =ClientWrite=, waiting to deliver notifications
+nobody read. Because the server is shared by every worktree, that one backend
+blocked every =DROP DATABASE=, so another environment's =compass db recreate=
+could not finish until a session terminated the backend by hand. A restart of
+the service restored the listener.
+
+* Why
+
+Two defects, both worth finding: the listener thread stalls without the
+service noticing (the heartbeat and readiness kept reporting fine for about 16
+hours), and one environment's stalled connection can block every other
+environment on the shared server. Neither the cause of the stall nor whether
+the backlog came from the large corpus imports run that day is known yet.
+
+* References
+
+- =projects/ores.database/src/service/postgres_listener_service.cpp=
+- Reported by the eager_maxwell session, which terminated the backend with its user's approval.
+
+* See also
+
+-

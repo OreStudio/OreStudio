@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-ore-reference-catalogue
+#+pr: 2510
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ in the wrong field passes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -65,9 +65,38 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ORE build the catalogue came from | v1.8.17.0, =3d75a6908= | =external/ore/catalogue/ore_version.txt= | =96a0a9ec8a= plus this change |
+| Documented forms | 141 keys: 122 ORE accepts, 19 it refuses, all as =forms.txt= expects; the accepted forms cover all 45 instrument types | =regenerate.sh=, then the catalogue tests | =96a0a9ec8a= plus this change |
+| Corpus keys | 108,057 distinct keys from 99 files, all accepted by ORE; 0.69 MB gzipped | =extract_corpus_keys.py=, =regenerate.sh= | =96a0a9ec8a= plus this change |
+| Reproducibility | a second regeneration is byte-identical (sha256 of all three files) | =sha256sum -c= after =regenerate.sh= | =96a0a9ec8a= plus this change |
+| Generated grammar through the stored URI | 108,057 named; 4,269 URIs refused; 7,254 not reading back; 3,007 series URIs refused | =ores.marketdata.core.tests "[catalogue]"= | =96a0a9ec8a= plus this change |
+| Documented forms the generated grammar names | 89 of the 122 ORE accepts | same | =96a0a9ec8a= plus this change |
 
 * Notes
+
+Why not boost serialization: ORE gives every datum class a boost =serialize=
+member, but instantiates it for binary archives only, writes no field names, and
+skips fields (=CdsQuote= omits its doc clause and running spread). The harness
+calls the inspectors instead; =generate_dump.py= reads them from
+=marketdatum.hpp=, so a class ORE adds is dumped without editing the harness.
+
+The as-of date matters: ORE refuses a dated forward or option whose expiry falls
+before it, so a 2025 as-of refused 39,251 corpus keys. The harness uses
+QuantLib's earliest date. ORE still turns an equity forward or dividend given as
+a tenor into a date relative to it.
+
+Corrections to the review this catalogue makes possible:
+
+- Five of the 40 hand-written sample keys in the review are keys ORE refuses
+  (=PAYER= is not a protection side, in two keys; =UNIT= is not a time unit; an IR swap
+  cannot mix a period start with a date end, and the calendar spread option
+  takes =RATE_NVOL= only). The figure "oresmd names 17 of 40 documented forms"
+  is superseded by this catalogue's 89 of 122.
+- ORE's names for the segments oresmd calls =settle= (IR swap and MM) and
+  =shift= / =strip= (cap/floor) are =fwdStart=, and =atm= / =relative=. The
+  extra swaption segment oresmd reads as an index is ORE's free-text
+  =quoteTag=, and the seventh basis swap segment is an identifier ORE ignores.
+  The typed model should take ORE's meanings.
 
 Evidence for the need: [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 1, "Key forms inside a type". The ORE
 build is at =/home/marco/Vault/Development/ORE/Engine/build/linux-clang-ninja-release=.
@@ -87,12 +116,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2510][#2510]] | [ore] Build the market datum catalogue from ORE's own parser |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Byte-for-byte holds only for one gzip | =regenerate.sh= | Accept | The claim is now the =.jsonl= content; =ore_version.txt= records the gzip version. |
+| 2 | =json_escape= leaves control bytes raw | =datum_catalogue.cpp= | Accept | Bytes below 0x20 are written as =\u00XX=; the catalogue content is unchanged. |
+| 3 | =walk()= merges an unwritable URI with a refused one | =oresmd_ore_catalogue_tests.cpp= | Accept | Two counts now; all 4,269 are refused by the parser, none unwritable. |
+| 4 | Series URI counts cover named keys only | =oresmd_ore_catalogue_tests.cpp= | Accept | Stated on =stored_path=. |
+| 5 | The extractor skips short lines in silence | =extract_corpus_keys.py= | Accept | It reports the skipped count; 0 today. |
+| 6 | Pinned counts should say how to re-pin | =oresmd_ore_catalogue_tests.cpp= | Accept | Each pin carries the regenerate hint. |
+| 7 | The 45-type list is a hand copy of ORE's enum | =oresmd_ore_catalogue_tests.cpp= | Accept | =extract_instrument_types.py= writes ORE's enum and parser tokens to =instrument_types.txt=, and the test reads it. |
 
 * Result
+
+The catalogue is in the tree: =forms.txt= lists all 141 documented and refused
+forms, the harness reproduces ORE's fields for each and for every corpus key,
+and =oresmd_ore_catalogue_tests.cpp= checks the coverage and pins the generated
+grammar's baseline. The review's two headline figures now come from a test.

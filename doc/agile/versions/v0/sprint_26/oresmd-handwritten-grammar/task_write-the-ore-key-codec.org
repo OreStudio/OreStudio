@@ -63,11 +63,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Documented forms checked | 141: 121 read as ORE reads them, 19 refused as ORE refuses them, 1 refused on purpose | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
-| Corpus keys checked | 108,057, all read, written back and matched field by field | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
-| Corpus check time | 6.3 s (debug build; =write= reads each key back) | =ores.marketdata.core.tests "[ore_key_codec]"= =--durations yes= | 7275f56751 |
-| Codec test cases | 10 cases, 45 assertions, all passed | =ores.marketdata.core.tests "[ore_key_codec]"= | 7275f56751 |
-| Missing dispatch case | build fails: "enumeration value 'shape_profile' not handled in switch [-Werror,-Wswitch]" | =compass build ores.marketdata.core.lib= with the case removed | 725b4271f7 |
+| Documented forms checked | 141: 121 read as ORE reads them, 19 refused as ORE refuses them, 1 refused on purpose | =ores.marketdata.core.tests "[ore_key_codec]"= | 864cef9c5a |
+| Corpus keys checked | 108,057, all read, written back and matched field by field | =ores.marketdata.core.tests "[ore_key_codec]"= | 864cef9c5a |
+| Corpus check time | 6.3 s (debug build; =write= reads each key back) | =ores.marketdata.core.tests "[ore_key_codec]"= =--durations yes= | ceaa39bb91 |
+| Codec test cases | 10 cases, 45 assertions, all passed | =ores.marketdata.core.tests "[ore_key_codec]"= | ceaa39bb91 |
+| Missing dispatch case | build fails: "enumeration value 'shape_profile' not handled in switch [-Werror,-Wswitch]" | =compass build ores.marketdata.core.lib= with the case removed | 864cef9c5a |
 
 * Notes
 

@@ -65,7 +65,7 @@ task and name that file in the Command column.
 | Corpus keys round-tripped | 108,057 datums and their series; 108,057 distinct URIs for 108,057 distinct keys | =ores.marketdata.core.tests "[oresmd_uri_codec]"= | 21a0f0124d |
 | Free-text property test | 4,540 of 4,560 generated variants exercised (20 have no ORE key), all round trip | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =-s= | 21a0f0124d |
 | Code vocabulary property test | 259 variants, all round trip | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =-s= | 21a0f0124d |
-| Corpus check time | 32.9 s (debug build) | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =--durations yes= | 21a0f0124d |
+| Corpus check time | 37.1 s (debug build; the reader also checks the spelling) | =ores.marketdata.core.tests "[oresmd_uri_codec]"= =--durations yes= | 21a0f0124d |
 | URI codec test cases | 10 cases, 64 assertions, all passed | =ores.marketdata.core.tests "[oresmd_uri_codec]"= | 21a0f0124d |
 
 * Notes
@@ -148,10 +148,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Local review (minor): the corpus round trip takes about 33 s, which adds to a suite that CI once timed out at 600 s. | =datum_oresmd_uri_codec_tests.cpp= | Declined | The suite ran in 370 s before; it stays well inside the limit. Most of the time is the ORE key read-back that gives the one-to-one guarantee. |
+| 1 | Local review (minor): the corpus round trip takes about 33 s, which adds to a suite that CI once timed out at 600 s. | =datum_oresmd_uri_codec_tests.cpp= | Declined | The suite ran in 370 s before and 412 s after review round 1, inside the 600 s limit. Most of the time is the ORE key read-back that gives the one-to-one guarantee. |
 | 2 | Local review (minor): =market_data_urn.org= still describes the old grammar. | =doc/knowledge/domain/market_data_urn.org= | Deferred | The task "Rewrite the oresmd design record" owns it; the story's decision 6 states the new shape until then. |
 | 3 | Local review: a value with reserved characters had no exact-text test, only round trips. | =datum_oresmd_uri_codec_tests.cpp= | Accepted | Added =reserved_characters_are_percent_encoded_and_case_is_kept=. |
 | 4 | Local review: a field could be named like a reserved query key and shadow it. | =datum_oresmd_uri_codec_tests.cpp= | Accepted | Added =no_field_is_named_like_a_reserved_query_key=. |
+| 5 | PR 2522 round 1: the reader accepts any query order, so several URIs name one datum. | =oresmd_uri_codec.cpp= | Accepted | The reader now refuses any text but the writer's own spelling and names that spelling in the error, so stored URIs compare as text. This covers order and encoding variants such as =%41=. Story decision 6 says so. |
+| 6 | PR 2522 round 1: a series with an empty subject writes a URI that does not read back. | =market_datum.cpp= | Accepted | The datum model refuses empty free text in any field, so no datum can hold one. Tests =free_text_cannot_be_empty= and =a_series_with_empty_text_has_no_uri=. |
+| 7 | PR 2522 round 1: =lower= and =upper= may duplicate a shared helper. | =oresmd_uri_codec.cpp= | Declined | No shared helper exists. Eighteen files convert case on their own; captured as "ASCII case conversion is written out in eighteen files". |
+| 8 | PR 2522 round 1: the return after the exhaustive switch in =value_of= may warn on some compilers. | =oresmd_uri_codec.cpp= | Declined | Clang builds it clean under =-Werror=; the GCC and MSVC legs will show any warning. |
 
 * Result
 

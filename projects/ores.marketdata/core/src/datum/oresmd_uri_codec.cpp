@@ -81,6 +81,31 @@ struct query_entry {
     std::string text;
 };
 
+/// The URI text of a datum the schema and, for a quote, ORE admit.
+std::string spelling_of(const market_datum& datum) {
+    const auto& row = schema_of(datum.type());
+
+    boost::urls::url u;
+    u.set_scheme(scheme);
+    u.set_host_name(name_of(row.asset));
+    u.set_path_absolute(true);
+    for (const auto& fv : datum.fields()) {
+        if (fv.name == row.subject)
+            u.segments().push_back(text_of(fv.held));
+    }
+
+    auto params = u.params(query_encoding());
+    params.append({"type", datum.is_series() ? series_type_value : quote_type_value});
+    params.append({"instrument", lower(ore_name(datum.type()))});
+    params.append({"quote", lower(ore_name(datum.quote()))});
+    for (const auto& fv : datum.fields()) {
+        if (fv.name == row.subject || std::holds_alternative<none_t>(fv.held))
+            continue;
+        params.append({name_of(fv.name), text_of(fv.held)});
+    }
+    return std::string(u.buffer());
+}
+
 }
 
 std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view uri) {
@@ -187,6 +212,10 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
         if (const auto key = ore_key_codec::write(*datum); !key)
             return refuse(uri, std::format("no ORE key names this datum: {}", key.error()));
     }
+    // One datum has one spelling, so a stored URI can be compared as text: a
+    // reordered query or an encoding the writer would not use is refused.
+    if (const auto spelling = spelling_of(*datum); spelling != uri)
+        return refuse(uri, std::format("the datum is written {}", spelling));
     return std::move(*datum);
 }
 
@@ -195,27 +224,7 @@ std::expected<std::string, std::string> oresmd_uri_codec::write(const market_dat
         if (const auto key = ore_key_codec::write(datum); !key)
             return std::unexpected(std::format("no ORE key names this datum: {}", key.error()));
     }
-    const auto& row = schema_of(datum.type());
-
-    boost::urls::url u;
-    u.set_scheme(scheme);
-    u.set_host_name(name_of(row.asset));
-    u.set_path_absolute(true);
-    for (const auto& fv : datum.fields()) {
-        if (fv.name == row.subject)
-            u.segments().push_back(text_of(fv.held));
-    }
-
-    auto params = u.params(query_encoding());
-    params.append({"type", datum.is_series() ? series_type_value : quote_type_value});
-    params.append({"instrument", lower(ore_name(datum.type()))});
-    params.append({"quote", lower(ore_name(datum.quote()))});
-    for (const auto& fv : datum.fields()) {
-        if (fv.name == row.subject || std::holds_alternative<none_t>(fv.held))
-            continue;
-        params.append({name_of(fv.name), text_of(fv.held)});
-    }
-    return std::string(u.buffer());
+    return spelling_of(datum);
 }
 
 }

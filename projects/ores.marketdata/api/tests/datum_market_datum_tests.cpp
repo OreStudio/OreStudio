@@ -162,6 +162,21 @@ TEST_CASE("free_text_keeps_its_case", tags) {
     CHECK(*datum.get<field::eq_name>() == "Lufthansa");
 }
 
+TEST_CASE("free_text_cannot_be_empty", tags) {
+    const auto datum = market_datum::make(
+        instrument_type::equity_spot,
+        quote_type::price,
+        {{field::eq_name, std::string()}, {field::ccy, std::string("EUR")}});
+    REQUIRE_FALSE(datum);
+    CHECK(datum.error().contains("eq_name"));
+
+    const auto series = market_datum::make_series(
+        instrument_type::equity_spot,
+        quote_type::price,
+        {{field::eq_name, std::string()}, {field::ccy, std::string("EUR")}});
+    CHECK_FALSE(series);
+}
+
 TEST_CASE("two_datums_are_equal_when_every_part_is", tags) {
     CHECK(cds() == cds());
     auto fields = without(cds_fields(), field::term);

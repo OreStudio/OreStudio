@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 1C4685FC-4061-4E85-9408-84DB9E9A13A7
+:END:
+#+title: ASCII case conversion is written out in eighteen files
+#+description: Eighteen non-test source files convert ASCII case with their own loop or with std::toupper and std::tolower; one helper in ores.utility would replace them.
+#+type: capture
+#+level: cross
+#+filetags: :utility:cleanup:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Eighteen source files outside the tests convert ASCII case themselves, with a
+loop such as =c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c= or with
+=std::toupper= and =std::tolower=. The new oresmd URI codec adds two more
+copies (=lower= and =upper=). Add one pair of ASCII helpers to =ores.utility=,
+for example =to_upper_ascii= and =to_lower_ascii=, and replace the copies.
+
+* Why
+
+Each copy is a few lines, but the copies differ: some use the C locale
+functions, which depend on the process locale and take an =int= that must be
+cast from =unsigned char= first, and some use explicit ASCII ranges. Market
+codes, ORE tokens and URI keys are ASCII by contract, so one locale-free helper
+states that once. The PR 2522 review raised it.
+
+* References
+
+- =grep -rln "c - 'a' + 'A'\|c - 'A' + 'a'\|toupper\|tolower" projects --include=*.cpp --include=*.hpp=, excluding =tests/=: 18 files on 2026-10-03.
+- =projects/ores.marketdata/core/src/datum/oresmd_uri_codec.cpp=: =lower= and =upper=.
+- =projects/ores.marketdata/api/src/datum/market_datum.cpp=: =upper=.
+
+* See also
+
+- [[id:C6BE9E13-4126-4F70-B7B2-3215AF7BE674][Write the oresmd URI codec]]

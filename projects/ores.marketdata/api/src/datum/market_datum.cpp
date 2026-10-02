@@ -103,6 +103,8 @@ std::expected<market_datum, std::string> market_datum::checked(instrument_type t
         } else if (!holds_kind(kind_of(spec.name), held)) {
             return refuse(type,
                           std::format("{} holds a value of the wrong type", name_of(spec.name)));
+        } else if (const auto* t = std::get_if<std::string>(&held); t && t->empty()) {
+            return refuse(type, std::format("{} cannot be empty text", name_of(spec.name)));
         } else if (const auto* c = std::get_if<code>(&held); c && !in_vocabulary(spec.name, *c)) {
             return refuse(
                 type, std::format("'{}' is not a value {} takes", c->text(), name_of(spec.name)));

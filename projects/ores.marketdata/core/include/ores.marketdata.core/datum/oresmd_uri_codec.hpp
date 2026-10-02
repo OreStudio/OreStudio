@@ -48,7 +48,9 @@ namespace ores::marketdata::datum {
  * The reader is strict. It refuses a missing key for a field that may not be
  * none, an unknown key, a repeated key, an empty value, a coordinate field in a
  * series, and a quote URI whose datum has no ORE key, so a quote URI maps one
- * to one onto the canonical ORE key.
+ * to one onto the canonical ORE key. It also refuses any text other than the
+ * writer's own spelling, such as a reordered query, so one datum has one URI
+ * and stored URIs compare as text.
  */
 class ORES_MARKETDATA_CORE_EXPORT oresmd_uri_codec final {
 public:

@@ -127,7 +127,9 @@ stores. The same story closes the clean-standard findings that
      schema order, with the case of its value kept. The writer leaves out a
      field that holds none. The reader takes a missing key as none only where
      the schema row says the field may be none; it refuses a missing required
-     key, an unknown key and a repeated key. No per-family URI code exists,
+     key, an unknown key and a repeated key. It also refuses any text but
+     the writer's own spelling, so one datum has one URI and stored URIs
+     compare as text. No per-family URI code exists,
      so the URI cannot drift from the schema. Agreed on 2026-10-02:
      =oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=5Y=.
   7. *One grammar.* =ores.ore= keeps only the file reader, which yields date,

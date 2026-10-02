@@ -189,12 +189,27 @@ TEST_CASE("a_series_uri_holds_the_identity_fields_only", tags) {
           "&seniority=SNRFOR&ccy=USD&doc_clause=XR14");
 }
 
-TEST_CASE("the_reader_accepts_the_query_keys_in_any_order", tags) {
-    const auto d = oresmd_uri_codec::read(
-        "oresmd://credit/ACME?term=5Y&quote=credit_spread&doc_clause=XR14&type=quote"
-        "&ccy=USD&instrument=cds&seniority=SNRFOR");
-    REQUIRE(d);
-    CHECK(ore_key_codec::write(*d) == "CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");
+TEST_CASE("the_reader_refuses_any_spelling_but_the_writers", tags) {
+    for (const auto* uri :
+         {"oresmd://credit/ACME?term=5Y&quote=credit_spread&doc_clause=XR14&type=quote"
+          "&ccy=USD&instrument=cds&seniority=SNRFOR",
+          "oresmd://credit/%41CME?type=quote&instrument=cds&quote=credit_spread"
+          "&seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=5Y"}) {
+        INFO("uri: " << uri);
+        const auto d = oresmd_uri_codec::read(uri);
+        REQUIRE_FALSE(d);
+        CHECK(d.error().contains("oresmd://credit/ACME?type=quote&instrument=cds"
+                                 "&quote=credit_spread&seniority=SNRFOR&ccy=USD"
+                                 "&doc_clause=XR14&term=5Y"));
+    }
+}
+
+TEST_CASE("a_series_with_empty_text_has_no_uri", tags) {
+    const auto series = market_datum::make_series(
+        instrument_type::equity_spot,
+        quote_type::price,
+        {{field::eq_name, std::string()}, {field::ccy, std::string("USD")}});
+    CHECK_FALSE(series);
 }
 
 TEST_CASE("the_reader_refuses_a_uri_that_breaks_the_contract", tags) {

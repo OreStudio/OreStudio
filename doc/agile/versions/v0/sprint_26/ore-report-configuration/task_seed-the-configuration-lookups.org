@@ -111,7 +111,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review: a seeded code that already exists with empty mapping columns would make the migration fail | seed, migration | Accepted | The seed fills the empty mapping columns of every version of a seeded code, current or closed, in place. Tested: 16 closed versions and 1 current row without a mapping all filled, not null set. Rows under test tenants with generated codes still stop the migration, by design; the comment says to recreate such a database. |
+| 2 | Review: could the triggers rewrite the new columns | seed | No change | The migration test showed every value stored as seeded. |
+| 3 | Review: the root check found the name anywhere, not the first element | seed test | Accepted | It now skips the declaration and comments and checks the first element. |
+| 4 | Review: run_parameter is not checked | seed test | Accepted | Each non-null run_parameter must appear in a shipped run document. Seeding simmCalibrationFile for simmCalibration makes the test fail. |
+| 5 | Review: how to pass null to the shell's optional run_parameter | shell | No change | The generated recipe uses -, as for every optional on the generated commands. |
+| 6 | Review: a new seeded kind forces a test update | seed test | No change | Intended. |
 
 * Result
 

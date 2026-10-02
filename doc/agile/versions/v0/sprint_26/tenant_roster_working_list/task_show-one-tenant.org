@@ -8,7 +8,7 @@
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
 #+branch: feature/show-one-tenant
-#+pr:
+#+pr: 2519
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2519][#2519]] | [web] Show one tenant |
 
 * Review
 

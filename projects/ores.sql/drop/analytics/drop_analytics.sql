@@ -54,3 +54,15 @@
 \ir ./analytics_credit_simulation_netting_set_configs_drop.sql
 
 \ir ./analytics_credit_simulation_configs_drop.sql
+
+-- Today's market, children first so nothing is dropped while a reference holds.
+\ir ./analytics_todays_market_configuration_bindings_notify_trigger_drop.sql
+\ir ./analytics_todays_market_configuration_bindings_drop.sql
+\ir ./analytics_todays_market_configurations_notify_trigger_drop.sql
+\ir ./analytics_todays_market_configurations_drop.sql
+\ir ./analytics_todays_market_entries_notify_trigger_drop.sql
+\ir ./analytics_todays_market_entries_drop.sql
+\ir ./analytics_todays_market_collections_notify_trigger_drop.sql
+\ir ./analytics_todays_market_collections_drop.sql
+\ir ./analytics_todays_market_configs_notify_trigger_drop.sql
+\ir ./analytics_todays_market_configs_drop.sql

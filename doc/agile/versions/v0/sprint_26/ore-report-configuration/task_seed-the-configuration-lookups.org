@@ -61,6 +61,23 @@ task and name that file in the Command column.
 
 * Notes
 
+**Today's market collection kinds belong here.** Decided in the PR #2500
+review. A today's market document has twenty-four collection kinds
+(=YieldCurves=, =DiscountingCurves= and the rest). Today
+=todays_market_collection.collection= and
+=todays_market_configuration_binding.collection= hold the kind as free text,
+and every =todays_market_entry= row repeats the kind's key attribute in
+=key_attribute=. A seeded kind lookup would hold the kind code, its ORE element
+name and its key attribute, or attributes for the two kinds keyed twice. Both
+=collection= columns would then refer to it, and the database would refuse an
+unknown kind. =key_attribute= could then leave the entry table.
+
+One limit for this document: the binding gives each kind its own typed member,
+so the mapper keeps one branch per kind whatever the lookup holds. The
+acceptance line "no lookup value appears as a literal in mapper code" cannot be
+met for today's market. The mapper can check its branches against the lookup
+instead.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

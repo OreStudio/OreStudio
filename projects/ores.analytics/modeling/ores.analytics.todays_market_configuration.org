@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 481E7A43-B93B-4522-8A06-E69BFBCEC68F
+:END:
+#+title: ores.analytics.todays_market_configuration
+#+description: Codegen entity model for the analytics =todays_market_configuration= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One named configuration in a today's market document.
+#+entity_singular: todays_market_configuration
+#+entity_plural: todays_market_configurations
+#+entity_title: Todays Market Configuration
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+One =Configuration= block. It is not a collection of entries: it is a bundle of
+references, each naming one entry of one collection, so that a report can select
+a coherent set of curves and volatilities by name instead of restating them.
+
+It identifies itself by a required =id= attribute, which is unique within a
+document. The references it makes live on
+=todays_market_configuration_binding=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID uniquely identifying this configuration block.
+
+Surrogate key for the configuration.
+
+** todays_market_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The document this configuration belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** configuration_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The =id= attribute the document wrote on the =Configuration= element.
+
+Unique within a document, not within a tenant: two documents may each have a
+configuration called 'default'. So it is not a natural key, and uniqueness is
+held by the pair of the document and this value rather than by this value alone.
+Examples: 'default', 'collateral_inccy', 'ois'.
+
+#+begin_src cpp :name generator
+std::string("default")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the configuration in.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_todays_market_configurations_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** todays_market_config_id
+:PROPERTIES:
+:table:         ores_analytics_todays_market_configs_tbl
+:target_column: id
+:parent_entity: todays_market_config
+:nullable:      false
+:error_message: Invalid todays_market_config_id: %. No active today market configuration found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: configuration
+:entity_plural_short:   configurations
+:entity_singular_words: today's market configuration block
+:entity_plural_words:   today's market configuration blocks
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tmn
+:END:
+
+** Table display
+
+| column           | header      |
+|------------------+-------------|
+| configuration_id | Name        |
+| position         | Position    |
+| modified_by      | Modified By |
+| version          | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  configurations
+:key_field:        configuration_id
+:END:
+
+*** Detail fields
+
+| field            | label    | widget            | type      | is_key | is_required | placeholder                    |
+|------------------+----------+-------------------+-----------+--------+-------------+--------------------------------|
+| configuration_id | Name     | configurationEdit | line_edit | true   | true        | Enter the configuration name   |
+| position         | Position | positionSpin      | spin_edit |        | true        | Enter the position             |
+
+*** Columns
+
+| enum_name     | field            | header      | type   | width |
+|---------------+------------------+-------------+--------+-------|
+| Name          | configuration_id | Name        | string | 200   |
+| Position      | position         | Position    | int    | 70    |
+| Version       | version          | Version     | int    | 70    |
+| ModifiedBy    | modified_by      | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

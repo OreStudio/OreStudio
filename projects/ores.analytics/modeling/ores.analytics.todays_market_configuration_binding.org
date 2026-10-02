@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: D4C3A135-0155-4E56-99EA-096BC7CBE231
+:END:
+#+title: ores.analytics.todays_market_configuration_binding
+#+description: Codegen entity model for the analytics =todays_market_configuration_binding= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One collection reference a today's market configuration makes.
+#+entity_singular: todays_market_configuration_binding
+#+entity_plural: todays_market_configuration_bindings
+#+entity_title: Todays Market Configuration Binding
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+One reference a configuration makes. A =Configuration= block writes up to
+twenty-four of these. Each names a collection kind and the id of one collection
+of that kind: =DiscountingCurvesId= =inccy= selects the =DiscountingCurves=
+collection whose id is =inccy=.
+
+The reference is text, not a foreign key to =todays_market_collection=. ORE
+resolves it by name when it builds the market, and the export only has to write
+it back. Whether it should become a real key is left to the work that first
+resolves it, which is producing the engine input from the entities.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID uniquely identifying this binding.
+
+Surrogate key for the binding.
+
+** todays_market_configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The configuration block that makes the reference.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** collection
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which collection the reference selects from.
+
+One of the twenty-four, taken from the field name the document wrote, for
+example 'DiscountingCurves' for =DiscountingCurvesId=.
+
+#+begin_src cpp :name generator
+std::string("DiscountingCurves")
+#+end_src
+
+** reference
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The id of the collection the configuration selects, as the element's text.
+
+Examples: 'xois_eur', 'ois', 'default'.
+
+#+begin_src cpp :name generator
+std::string("default")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the reference in.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_todays_market_configuration_bindings_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** todays_market_configuration_id
+:PROPERTIES:
+:table:         ores_analytics_todays_market_configurations_tbl
+:target_column: id
+:parent_entity: todays_market_configuration
+:nullable:      false
+:error_message: Invalid todays_market_configuration_id: %. No active today market configuration found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: binding
+:entity_plural_short:   bindings
+:entity_singular_words: today's market configuration binding
+:entity_plural_words:   today's market configuration bindings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tmb
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| collection  | Collection  |
+| reference   | Reference   |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  bindings
+:key_field:        reference
+:END:
+
+*** Detail fields
+
+| field      | label      | widget              | type      | is_key | is_required | placeholder               |
+|------------+------------+---------------------+-----------+--------+-------------+---------------------------|
+| collection | Collection | collectionEdit      | line_edit | true   | true        | Enter the collection      |
+| reference  | Reference  | bindingReferenceEdit| line_edit | true   | true        | Enter the reference       |
+| position   | Position   | positionSpin        | spin_edit |        | true        | Enter the position        |
+
+*** Columns
+
+| enum_name  | field       | header      | type   | width |
+|------------+-------------+-------------+--------+-------|
+| Collection | collection  | Collection  | string | 180   |
+| Reference  | reference   | Reference   | string | 220   |
+| Position   | position    | Position    | int    | 70    |
+| Version    | version     | Version     | int    | 70    |
+| ModifiedBy | modified_by | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

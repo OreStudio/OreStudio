@@ -1,0 +1,201 @@
+:PROPERTIES:
+:ID: 61701770-B119-4673-BDAD-DCBEC3BAEB1D
+:END:
+#+title: ores.analytics.todays_market_collection
+#+description: Codegen entity model for the analytics =todays_market_collection= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One collection in a today's market document.
+#+entity_singular: todays_market_collection
+#+entity_plural: todays_market_collections
+#+entity_title: Todays Market Collection
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+One collection — =DiscountingCurves=, =FxSpots=, =SwaptionVolatilities= and the
+rest. A document writes up to twenty-four of them, each optional, each holding
+its own ordered list of entries.
+
+A document may write the same kind more than once under different ids, for
+example a =DiscountingCurves= with id =default= and another with id =inccy=. A
+=Configuration= selects one of them by that id. So the collection is a thing
+with an identity, an order and its own entries, and it has a table. Almost every
+corpus file writes the id.
+
+An entry points at its collection rather than repeating the collection's name.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID uniquely identifying this collection.
+
+Surrogate key for the collection.
+
+** todays_market_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The document this collection belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** collection
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which collection this is.
+
+One of the twenty-four, for example 'DiscountingCurves' or 'FxSpots'.
+
+#+begin_src cpp :name generator
+std::string("DiscountingCurves")
+#+end_src
+
+** collection_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The =id= attribute the document wrote on the collection element itself.
+
+This is the name a =Configuration= refers to: a =DiscountingCurvesId= of =inccy=
+selects the =DiscountingCurves= collection whose id is =inccy=. Almost every
+corpus file writes it. The attribute is optional in the schema, so it is null
+when the document wrote none.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the collection in.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_todays_market_collections_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** todays_market_config_id
+:PROPERTIES:
+:table:         ores_analytics_todays_market_configs_tbl
+:target_column: id
+:parent_entity: todays_market_config
+:nullable:      false
+:error_message: Invalid todays_market_config_id: %. No active today market configuration found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: collection
+:entity_plural_short:   collections
+:entity_singular_words: today's market collection
+:entity_plural_words:   today's market collections
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tml
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| collection  | Collection  |
+| position    | Position    |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  collections
+:key_field:        collection
+:END:
+
+*** Detail fields
+
+| field           | label      | widget            | type      | is_key | is_required | placeholder              |
+|-----------------+------------+-------------------+-----------+--------+-------------+--------------------------|
+| collection      | Collection | collectionEdit    | line_edit | true   | true        | Enter the collection     |
+| collection_id   | Element Id | collectionIdEdit  | line_edit |        |             | Enter the element id     |
+| position        | Position   | positionSpin      | spin_edit |        | true        | Enter the position       |
+
+*** Columns
+
+| enum_name  | field       | header      | type   | width |
+|------------+-------------+-------------+--------+-------|
+| Collection | collection  | Collection  | string | 200   |
+| Position   | position    | Position    | int    | 70    |
+| Version    | version     | Version     | int    | 70    |
+| ModifiedBy | modified_by | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

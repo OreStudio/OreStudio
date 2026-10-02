@@ -1,0 +1,285 @@
+:PROPERTIES:
+:ID: A095CC79-4E90-4D8B-90FF-58BB82539668
+:END:
+#+title: ores.analytics.todays_market_entry
+#+description: Codegen entity model for the analytics =todays_market_entry= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One entry of one collection in a today's market document.
+#+entity_singular: todays_market_entry
+#+entity_plural: todays_market_entries
+#+entity_title: Todays Market Entry
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+One entry of one collection. Twenty-three of the document's twenty-four
+collections are this shape: an entry identifying itself by one attribute and
+carrying a reference as its text, in a position.
+
+The attribute is not one name. It is =name= for nineteen collections,
+=currency= for =DiscountingCurves=, =pair= for the two FX collections and the
+literal string =key= for =SwaptionVolatilities= and =CapFloorVolatilities=.
+=key_attribute= records which one this row used, so a column named =key_value=
+does not have to pretend the attribute is always the same word.
+
+=SwaptionVolatilities= and =CapFloorVolatilities= identify by two attributes at
+once, so =key_value_2= carries the second. =SwapIndexCurves= is the only
+collection whose entry nests, and =discounting= carries its one child.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     analytics
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID uniquely identifying this entry.
+
+Surrogate key for the entry.
+
+** todays_market_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The document this entry belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** todays_market_collection_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The collection this entry belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** key_attribute
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The attribute the entry identified itself by.
+
+One of 'name', 'currency', 'pair' or 'key'. Recorded rather than assumed,
+because one document uses more than one of them.
+
+#+begin_src cpp :name generator
+std::string("currency")
+#+end_src
+
+** key_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The value of that attribute.
+
+Examples: 'EUR', 'EUR-EURIBOR-3M', 'EUR/USD'. Absent only for
+=SwaptionVolatilities= and =CapFloorVolatilities=, whose =key= attribute is
+optional. Absent is null and an attribute written empty is the empty string, so
+the export can tell them apart.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** key_value_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The value of the second key attribute, where a collection has two.
+
+Set only for =SwaptionVolatilities= and =CapFloorVolatilities=, which identify
+by =key= and =currency= together. Null when the document wrote no =currency=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** target
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The reference the entry resolves to, which is the element's text.
+
+Examples: 'Yield/EUR/EUR1D', 'SwaptionVolatility/EUR/EUR_SW_ATM'.
+
+#+begin_src cpp :name generator
+std::string("Yield/EUR/EUR1D")
+#+end_src
+
+** discounting
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The nested =Discounting= child, for the one collection that has one.
+
+Only =SwapIndexCurves= nests, and the census measured the nesting as exactly one
+level deep and never more, so it is a column rather than a table. Null for every
+other collection.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the document wrote the entry in.
+
+A collection may write the same key twice, so the order cannot be recovered by
+sorting.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_todays_market_entries_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** todays_market_config_id
+:PROPERTIES:
+:table:         ores_analytics_todays_market_configs_tbl
+:target_column: id
+:parent_entity: todays_market_config
+:nullable:      false
+:error_message: Invalid todays_market_config_id: %. No active today market configuration found with this id.
+:list_by:       true
+:END:
+
+** todays_market_collection_id
+:PROPERTIES:
+:table:         ores_analytics_todays_market_collections_tbl
+:target_column: id
+:parent_entity: todays_market_collection
+:nullable:      false
+:error_message: Invalid todays_market_collection_id: %. No active today market collection found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: entry
+:entity_plural_short:   entries
+:entity_singular_words: today's market entry
+:entity_plural_words:   today's market entries
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tme
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| key_attribute | Attribute   |
+| key_value     | Key         |
+| key_value_2   | Key 2       |
+| target        | Reference   |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  entries
+:key_field:        id
+:END:
+
+*** Detail fields
+
+| field         | label       | widget               | type      | is_key | is_required | placeholder                 |
+|---------------+-------------+----------------------+-----------+--------+-------------+-----------------------------|
+| key_attribute | Attribute   | keyAttributeEdit     | line_edit | true   | true        | Enter the key attribute     |
+| key_value     | Key         | keyValueEdit         | line_edit |        |             | Enter the key value         |
+| key_value_2   | Key 2       | keyValue2Edit        | line_edit |        |             | Enter the second key value  |
+| target        | Reference   | entryTargetEdit      | line_edit |        | true        | Enter the reference         |
+| discounting   | Discounting | entryDiscountingEdit | line_edit |        |             | Enter the discounting curve |
+| position      | Position    | positionSpin         | spin_edit |        | true        | Enter the position          |
+
+*** Columns
+
+| enum_name  | field       | header      | type   | width |
+|------------+-------------+-------------+--------+-------|
+| KeyValue   | key_value   | Key         | string | 160   |
+| Target     | target      | Reference   | string | 220   |
+| Position   | position    | Position    | int    | 70    |
+| Version    | version     | Version     | int    | 70    |
+| ModifiedBy | modified_by | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

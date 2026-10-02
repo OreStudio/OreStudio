@@ -69,3 +69,18 @@
 \ir ./analytics_stress_test_scenarios_notify_trigger_create.sql
 \ir ./analytics_stress_test_shifts_create.sql
 \ir ./analytics_stress_test_shifts_notify_trigger_create.sql
+
+-- Today's market (an ORE TodaysMarket document, its collections and entries,
+-- and the configurations that bind one entry from each). Ordered by dependency:
+-- the collections and entries both reference the document, and a binding
+-- references a configuration.
+\ir ./analytics_todays_market_configs_create.sql
+\ir ./analytics_todays_market_configs_notify_trigger_create.sql
+\ir ./analytics_todays_market_collections_create.sql
+\ir ./analytics_todays_market_collections_notify_trigger_create.sql
+\ir ./analytics_todays_market_entries_create.sql
+\ir ./analytics_todays_market_entries_notify_trigger_create.sql
+\ir ./analytics_todays_market_configurations_create.sql
+\ir ./analytics_todays_market_configurations_notify_trigger_create.sql
+\ir ./analytics_todays_market_configuration_bindings_create.sql
+\ir ./analytics_todays_market_configuration_bindings_notify_trigger_create.sql

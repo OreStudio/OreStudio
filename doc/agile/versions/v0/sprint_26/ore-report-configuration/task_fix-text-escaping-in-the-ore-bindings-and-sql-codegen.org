@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 5C637F0C-6266-4774-8E11-6721E6F59B13
+:END:
+#+title: Task: Fix text escaping in the ORE bindings and the SQL codegen
+#+description: The ORE XML binding decodes entities in attributes but not in element text, so an imported ampersand is stored as &amp; and the export double-escapes it; the round-trip harness was changed to stop seeing this rather than fixed. The SQL codegen emits a foreign key error_message into a string literal unescaped, so an apostrophe aborts a database recreate. Fix both at their generators and restore the harness check.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Text survives import, storage and export unchanged. An ampersand, an apostrophe,
+a quote or an angle bracket in an ORE document is stored in the database as the
+character itself, and the export writes it back escaped exactly once. A string
+the SQL codegen writes into a literal cannot break the script it is written into.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- The ORE binding decodes entity and character references in element text, as it
+  already does in attribute values, and leaves CDATA content untouched.
+- An entity name is matched exactly: =&a;= is not decoded as an apostrophe.
+- The fix is made in the =xsdcpp= generator and the bindings are regenerated, so
+  the next regeneration does not undo it.
+- The round-trip harness compares after a full =save_data= / =load_data= cycle
+  again, as it did before PR #2500, and every kind passes.
+- After a recreate and an import of the corpus, no today's market, curve
+  configuration, simulation or sensitivity market row holds the text =&amp;=.
+- The SQL codegen escapes every value it writes into a SQL string literal. A
+  foreign key =error_message= with an apostrophe regenerates into valid SQL, and
+  a codegen test proves it.
+- Every existing model regenerates byte-identical after the codegen change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Corpus files with an entity in element text, by kind | todaysmarket 5, curveconfig 5, simulation 3, sensimarket 1 | =grep -rlE ">[^<]*&(amp\|lt\|gt\|quot\|apos);[^<]*<" external/ore/examples --include=*.xml= | 73c00d0dfb |
+
+* Notes
+
+Found while reviewing PR #2500 (today's market round trip).
+
+**The binding decodes attributes and not element text.** In
+=projects/ores.ore/core/src/domain/domain.cpp=, the tokenizer passes an
+attribute value through =unescapeString= (line 429). Element text goes through
+=stripComments= only (line 635), which removes comments and unwraps CDATA but
+decodes nothing. The writer's =escape_xml= escapes all five characters on the
+way out. So a text value with =&amp;= loads as the literal =&amp;=, and saves as
+=&amp;amp;=: it gains one level each cycle.
+
+The database already holds the wrong value. After the today's market database
+test ran in =bright_faraday=, the entry for one correlation held the decoded
+text in its attribute column and the escaped text in its element-text column:
+
+#+begin_src
+ key_value                    | target
+------------------------------+---------------------------------------------
+ EQ-RIC:.STOXX50E&EQ-RIC:.SPX | Correlation/EQ-RIC:.STOXX50E&amp;EQ-RIC:.SPX
+#+end_src
+
+**The harness change hid it.** PR #2500 removed the save/load cycle from
+=make_roundtrip_kind= in =roundtrip_harness.hpp=, because the cycle reported a
+difference in five today's market files. The diagnosis was correct and the
+remedy was not: the difference was this defect. The in-memory and database round
+trips still pass, because the original and the rebuilt document both carry the
+same undecoded value. Restore the cycle once the binding is fixed.
+
+**Other kinds are exposed too.** Corpus files with an entity in element text, by
+kind: =todaysmarket= 5, =curveconfig= 5, =simulation= 3, =sensimarket= 1.
+
+**=unescapeString= matches by prefix.** It compares the entity name with
+=strncmp(i, *j, sequenceLen)=, where =sequenceLen= is the length of the text in
+the document. =&a;= therefore matches =apos=. No corpus file is affected; fix it
+in the same change.
+
+**The generator is out of band.** =xsdcpp= is a sibling checkout, not on
+=PATH=, and regeneration overwrites its output wholesale. See
+[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] for the checkout, the pin
+and the regeneration steps.
+
+**The SQL codegen writes =error_message= into a literal unescaped.**
+=_soft_fk_validation_node_to_dict= in
+=projects/ores.codegen/src/codegen/org_loader.py= copies the property as is,
+and the templates emit it as =raise exception '{{error_message}}'= (domain
+entity and junction create templates). The apostrophe in "today's market"
+aborted a recreate with two of five tables built. Every consumer is a SQL
+literal and no model holds an apostrophe today, so doubling each apostrophe in the loader
+changes no current output. Check =book_error_message= on the trade model, which
+reaches the template by another path, and any other model property emitted
+into a literal.
+
+Once fixed, remove the "keep an apostrophe out of error_message" step from
+=doc/recipes/codegen/how_do_i_add_a_new_codegen_entity_model.org=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

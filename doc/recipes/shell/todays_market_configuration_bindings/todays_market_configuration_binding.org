@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 00E94708-6AE9-51AD-AE77-F6C18C15706D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the todays_market_configuration_bindings commands from the shell?
+#+description: Every command the todays_market_configuration_bindings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:todays_market_configuration_bindings:
+
+This file documents the todays_market_configuration_bindings resource at the shell, one section per command. Every command is a subcommand of =todays_market_configuration_bindings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DBEBC1F5-5F72-5321-A871-48C8021CC6DC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.list=.
+
+#+name: todays_market_configuration_bindings-list
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-list.ores :exports none
+todays_market_configuration_bindings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A0008467-F581-5694-9157-AABE3C651FC6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings get <reference>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.get=.
+
+#+name: todays_market_configuration_bindings-get
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-get.ores :exports none
+todays_market_configuration_bindings get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 24470738-53FE-54BD-8BC3-872DA6353D74
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings get-many <reference>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.get_many=.
+
+#+name: todays_market_configuration_bindings-get-many
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-get-many.ores :exports none
+todays_market_configuration_bindings get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1D4EC4A3-7BC5-5508-8804-486592BE82F0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings add <todays_market_configuration_id> <collection> <reference> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.put=.
+
+#+name: todays_market_configuration_bindings-add
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-add.ores :exports none
+todays_market_configuration_bindings add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: C1D83BC1-5059-5994-AA9E-2BFC42F9803B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings set <id> <todays_market_configuration_id> <collection> <reference> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.put=.
+
+#+name: todays_market_configuration_bindings-set
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-set.ores :exports none
+todays_market_configuration_bindings set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 10B362D0-F25E-5309-B126-03967C957E35
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings put-many --count <n> <id> <todays_market_configuration_id> <collection> <reference> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.put_many=.
+
+#+name: todays_market_configuration_bindings-put-many
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-put-many.ores :exports none
+todays_market_configuration_bindings put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: AAB547C9-D7BF-53D6-BEEE-7633BE216D69
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings delete <reference> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.delete=.
+
+#+name: todays_market_configuration_bindings-delete
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-delete.ores :exports none
+todays_market_configuration_bindings delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1A97793A-4464-5084-B9DD-F9454CA1622F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings delete-many <reference> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.delete_many=.
+
+#+name: todays_market_configuration_bindings-delete-many
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-delete-many.ores :exports none
+todays_market_configuration_bindings delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-todays-market-configuration-id=
+:PROPERTIES:
+:ID: A4A80037-0A81-5C06-93B2-DF9BA1D59089
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings by-todays-market-configuration-id <todays_market_configuration_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings.list_by_todays_market_configuration_id=.
+
+#+name: todays_market_configuration_bindings-by-todays-market-configuration-id
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-by-todays-market-configuration-id.ores :exports none
+todays_market_configuration_bindings by-todays-market-configuration-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 938BE1CC-C4CE-58DC-A9D6-517CA829447A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings versions <reference> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings_versions.list=.
+
+#+name: todays_market_configuration_bindings-versions
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-versions.ores :exports none
+todays_market_configuration_bindings versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C187EB40-14A9-5382-B6C3-46D757187045
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+todays_market_configuration_bindings version <reference> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.todays_market_configuration_bindings_versions.get=.
+
+#+name: todays_market_configuration_bindings-version
+#+begin_src ores-shell :tangle todays_market_configuration_bindings-version.ores :exports none
+todays_market_configuration_bindings version __none__ --version 1
+#+end_src
+

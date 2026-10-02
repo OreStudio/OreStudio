@@ -61,6 +61,22 @@ task and name that file in the Command column.
 
 * Notes
 
+**Today's market: how a run reaches its document, and an open question.**
+Recorded in the PR #2500 review. A run names its today's market file in
+=report_run_setup.market_config_file= (from =marketConfigFile= in =ore.xml=),
+and binds each analytic stage to a configuration id in =report_market_binding=
+(from the =Markets= block). =todays_market_config.configuration_id= links the
+document to its =reporting.configurations= header, which is what joins the run to
+the rows.
+
+Inside the document, every reference is text. A
+=todays_market_configuration_binding.reference= of =inccy= for
+=DiscountingCurves= means the =DiscountingCurves= collection whose
+=collection_id= is =inccy=. Nothing checks it. This task is the first code
+that resolves the chain, so it decides whether the binding should carry a
+=todays_market_collection_id= foreign key, or whether name resolution at
+export time is enough.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

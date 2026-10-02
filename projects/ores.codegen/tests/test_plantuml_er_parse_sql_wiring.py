@@ -133,12 +133,76 @@ def test_ignore_file_suppresses_wire_001(tmp_path):
 
 
 def test_root_aggregators_are_not_in_scope(tmp_path):
-    """create.sql / drop.sql end without the *_create.sql / *_drop.sql suffix,
-    so the roots themselves can never warn."""
+    """Every .sql file is in scope, so the roots are excluded by identity: a
+    root is what reachability starts from and can never be reached."""
     create_dir = tmp_path / "create"
     drop_dir = tmp_path / "drop"
     _write(create_dir, "create.sql")
     _write(drop_dir, "drop.sql")
+
+    parser = SQLParser(warn=True)
+    parser.validate_component_wiring(create_dir, drop_dir)
+    assert _wire_warnings(parser) == []
+
+
+def test_unwired_file_with_any_suffix_warns(tmp_path):
+    """A leftover named outside the *_create.sql convention, such as an old
+    *_notify_trigger.sql copy, is the file most likely to be dead."""
+    create_dir = tmp_path / "create"
+    drop_dir = tmp_path / "drop"
+    _write(create_dir, "create.sql", "\\ir ./comp/comp_create.sql\n")
+    _write(create_dir, "comp/comp_create.sql")
+    _write(create_dir, "comp/entity_notify_trigger.sql")
+    _write(drop_dir, "drop.sql")
+
+    parser = SQLParser(warn=True)
+    parser.validate_component_wiring(create_dir, drop_dir)
+    warnings = _wire_warnings(parser)
+    assert len(warnings) == 1
+    assert "entity_notify_trigger.sql" in warnings[0].message
+
+
+def test_unwired_populate_file_warns(tmp_path):
+    create_dir = tmp_path / "create"
+    drop_dir = tmp_path / "drop"
+    populate_dir = tmp_path / "populate"
+    _write(create_dir, "create.sql")
+    _write(drop_dir, "drop.sql")
+    _write(populate_dir, "populate.sql", "\\ir ./comp/wired_populate.sql\n")
+    _write(populate_dir, "comp/wired_populate.sql")
+    _write(populate_dir, "comp/dangling_populate.sql")
+
+    parser = SQLParser(warn=True)
+    parser.validate_component_wiring(create_dir, drop_dir, populate_dir)
+    warnings = _wire_warnings(parser)
+    assert len(warnings) == 1
+    assert "dangling_populate.sql" in warnings[0].message
+
+
+def test_a_bootstrap_script_beside_the_trees_counts_as_a_root(tmp_path):
+    """setup_schema.sql includes the foundation seeds directly, not through
+    populate.sql, and a recreate runs it."""
+    create_dir = tmp_path / "create"
+    drop_dir = tmp_path / "drop"
+    populate_dir = tmp_path / "populate"
+    _write(create_dir, "create.sql")
+    _write(drop_dir, "drop.sql")
+    _write(populate_dir, "populate.sql")
+    _write(populate_dir, "foundation/foundation_populate.sql")
+    _write(tmp_path, "setup_schema.sql",
+           "\\ir ./populate/foundation/foundation_populate.sql\n")
+
+    parser = SQLParser(warn=True)
+    parser.validate_component_wiring(create_dir, drop_dir, populate_dir)
+    assert _wire_warnings(parser) == []
+
+
+def test_populate_tree_is_skipped_when_not_given(tmp_path):
+    create_dir = tmp_path / "create"
+    drop_dir = tmp_path / "drop"
+    _write(create_dir, "create.sql")
+    _write(drop_dir, "drop.sql")
+    _write(tmp_path, "populate/comp/dangling_populate.sql")
 
     parser = SQLParser(warn=True)
     parser.validate_component_wiring(create_dir, drop_dir)

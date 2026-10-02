@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -83,3 +83,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its four tasks and its sprint row are in place. The first task
+writes the journey; the next builds the tenant-scoped session. Two memories
+record the rules the story follows, and a capture files the generated list
+contract's missing order and filter.

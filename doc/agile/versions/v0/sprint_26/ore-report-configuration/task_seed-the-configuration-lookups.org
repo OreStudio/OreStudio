@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/ore-report-configuration
+#+branch: feature/seed-the-configuration-lookups
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A discriminator is data, so adding a kind is a seeded row and never a column or 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,29 @@ A discriminator is data, so adding a kind is a seeded row and never a column or 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measured on 2026-10-02 before any change:
+
+| Lookup | State | Needs |
+|--------+-------+-------|
+| =configuration_types= | table exists, 0 rows | the seventeen ORE configuration kinds; this blocks every report from pointing at a configuration |
+| today's market collection kinds | no table; =collection= is free text | a lookup of the 24 kinds with their key attributes, and a foreign key from both =collection= columns |
+| stress shift families and shift types | no table; =family= and =shift_type= are free text | a lookup and a foreign key |
+| =analytic_types=, =parameter_value_domains=, =pricing_engine_types= | seeded: 38, 6, 58 | nothing |
+| risk classes | nothing refers to them | wait for SIMM calibration |
+| report types | 2 sample rows | its own task, [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] |
+
+Three pull requests, most important first: configuration types, then today's
+market collection kinds, then stress shift kinds.
+
+*Configuration types.* The kinds come from ORE's own schemas: every global
+element of a configuration schema in =external/ore/xsd=, excluding the run
+document (=ORE=, which a report owns directly through =report_definition_id=,
+not through a configuration), trades and portfolios, instrument and shared-type
+fragments, collateral balances (data, not configuration) and the script
+library. Each kind records the root element it serialises to, the component
+that owns its entities, and the run-document parameter that names its file.
+A test ties the seed to the binding: for every kind the binding can save, an
+empty document must start with the seeded root element.
 
 * Measurements
 

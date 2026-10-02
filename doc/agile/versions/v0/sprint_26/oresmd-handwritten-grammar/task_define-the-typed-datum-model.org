@@ -132,7 +132,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Say that equality compares text, not value | =market_datum.hpp= | Accept | Documented on =operator==== and =series_of=: 1.0 and 1.00 are different datums and series. |
+| 2 | =get= throws where the datum does not hold the field | =market_datum.hpp= | Accept | Documented, pointing at =holds()=. |
+| 3 | =std::toupper= depends on the locale | =market_datum.cpp= | Accept | ASCII-only upper-casing. |
+| 4 | A hand-built ATM shorthand with another ATM type prints wrongly | =value.hpp= | Decline | A =strike= is built only by =parse=, its constructor being private, and =parse= sets the shorthand for ATM and ATMF alone. |
+| 5 | Check the period grammar against ORE's | =value.cpp= | Decline here | QuantLib's =PeriodParser= splits on =DdWwMmYy= and reads either case and combined units, as the model does; it also takes a sign, which the model does not. The codec task's catalogue check decides whether that matters. |
+| 6 | =series_of= ends in =.value()= | =market_datum.cpp= | Decline | Unreachable for a checked datum, as the reviewer notes. |
+| 7 | The constructor is quadratic in fields | =market_datum.cpp= | Decline | Rows have at most eight fields. |
 
 * Result
 

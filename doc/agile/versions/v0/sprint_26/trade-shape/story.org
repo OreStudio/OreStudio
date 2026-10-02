@@ -23,9 +23,9 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Workspaces are replaced by the sandbox; the trade shape design resumes with the instrument family tables. |
+| Now           | The design is settled through section 16, and the implementation stories are scaffolded. |
 | Waiting on    | Nothing. |
-| Next          | Detail the instrument family tables, then check every table against the C1202 limit. |
+| Next          | Rename deal id to trade id in the knowledge notes, then start the code generator story. |
 | Last touched  | 2026-10-02                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Settle the target shape of the trade and everything joined to it — anchor, com
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:C71DC2F8-5438-4FE4-BB92-B095AA104539][Call the firm's own id the trade id throughout the knowledge notes]] | BACKLOG | | | Replace deal id and Deal ID with trade id in the knowledge notes, so one concept has one word. |
 
 * Decisions
 
@@ -46,6 +46,29 @@ The decisions so far, each with the alternatives it set aside, are in
 [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sections 1 to 13. Section 13
 records why workspaces are removed from the trade model and the
 [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] replaces them.
+
+* Implementation stories
+
+In sprint 26, in dependency order:
+
+1. [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]]
+2. [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]]
+3. [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]]
+4. [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]]
+5. [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]]
+6. [[id:0A473EFE-3E52-461D-8035-18247C9A853A][Model operational authorisation and the client-facing agreement]]
+7. [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]]
+
+In the backlog, one per instrument family, each following section 14 of
+the investigation:
+
+- [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]]
+- [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]]
+- [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]]
+- [[id:327E3D27-0DDD-48FB-B2BE-686B6A7F1CD0][Rework the credit instruments to the instrument table rule]]
+- [[id:D85F256A-FBFF-4AA7-9C4F-0AEF66CD5F1F][Rework the commodity instruments to the instrument table rule]]
+- [[id:1FA77D2E-B8C4-40F4-AE59-D332AE85A1A9][Rework the composite instruments to the instrument table rule]]
+- [[id:FF94E5A9-7156-4923-A107-07D34CB4EDA9][Rework the scripted instruments to the instrument table rule]]
 
 * Out of scope
 

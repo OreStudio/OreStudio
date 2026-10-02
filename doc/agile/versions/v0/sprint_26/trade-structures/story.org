@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 08ACC414-983E-46ED-AF7E-6F96474DA696
+:END:
+#+title: Story: Model trade structures
+#+description: Add the structure anchor, its kind and template, temporal membership with one structure per trade at a time, and one level of nesting.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement section 11 of the trade shape investigation, so a structure is a group with an identity whose legs reference it, as Trade Structures and Deal Composition requires.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- structure is an immutable anchor with party, counterparty, kind and template; its legs share its party and counterparty.
+- structure_member is keyed by the trade and temporal, so a trade sits in at most one structure at a time and can be linked and unlinked.
+- A template's roles and leg counts are checked when a leg is linked; structures nest one level at most.
+- The structure's internal version is read from its legs; its external version lives on the agreement.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

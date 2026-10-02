@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 3724EAAA-A905-4D1E-AF24-42A047CD7276
+:END:
+#+title: Story: Add sandboxes and virtual books
+#+description: Add the sandbox entity and virtual books to ores.refdata: anchored to the official portfolio tree, opened only where the right is held, private or shared through the anchor, and holding only trades that are never live.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let users import and experiment without disturbing official data, as the Sandbox note describes, and within the regulatory boundary it checks.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- A sandbox is an entity with purpose, anchor, owner, visibility, status and review date, and its own portfolio tree that no official portfolio contains.
+- Opening a sandbox needs the right at its anchor; visibility follows the anchor's permissions or named members.
+- A virtual book belongs to exactly one sandbox, has no ledger book, and a booking names it only for a pre-agreement draft, a test or a hypothetical.
+- Official reports cannot select a sandbox.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

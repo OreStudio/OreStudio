@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9
+:END:
+#+title: Story: Rework the FX instruments to the instrument table rule
+#+description: Apply the bond pattern to the FX family: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and variance products to the instrument table rule of the trade shape investigation (section 14), as the bonds were reworked, with the data-oriented review deciding the tables.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- The family header's trade_type check lists exactly the family's codes, and each product fact table checks its own.
+- Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
+- The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
+- The ORE round trip stays lossless across the family's corpus.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

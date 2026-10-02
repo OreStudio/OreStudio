@@ -328,6 +328,76 @@ workspace into every key, query and foreign key.
 The anchor's key returns to (tenant, id), and the real foreign keys need
 no workspace.
 
+** 14. The instrument tables
+
+The instrument refactor began with the bonds, and the clean-trading
+story's decisions record its outcome (D10, D18, D19, D21, D28, D29). It
+is not one table per trade type, nor one wide table per family, but a
+factoring of the shape:
+
+| Level | Table | Holds |
+|-------+-------+-------|
+| Family header | One per family | The fields every product in the family shares; a =trade_type= check listing exactly the family's codes; keyed by the trade and pinned to the anchor |
+| Product facts | One per product with fields of its own, zero or one per trade | Only those fields; keyed by the trade, with a foreign key to the header and a check on its own codes |
+| Shared children | Legs, schedules, option block, strikes, premiums | Keyed by the trade, an ordinal and a role code; the role is data, not a table |
+| Security | Issue or contract | The terms the issuer fixes, keyed by the reference datum id and shared by every trade on it |
+
+/Decided/: every instrument family is reworked to this rule, as the
+bonds were. How far a family can be cleaned is a function of how clean
+its data model becomes under the data-oriented review; the rule is the
+target, and the review decides each family's tables. The rates, FX,
+equity, credit and commodity families are still to do: ten of their
+tables share one list of all 121 codes, five equity tables hold two
+products each (defect 9), and the risk participation table has no
+constraint.
+
+The routing from trade type to instrument table becomes data: each
+trade type names the table that holds it, and the generator produces
+the dispatch the export handler hand-codes today.
+
+/Set aside/: one table per distinct full shape, which repeats the
+header's columns in every product table, and one table per ORE trade
+type.
+
+** 15. Where each entity lives
+
+/Decided/: trading owns what describes trades; reference data owns
+what exists independently of any trade.
+
+| Entity | Component |
+|--------+-----------|
+| Trade anchor, components, instruments, links, activities, structures, agreement | ores.trading |
+| =authorisation_decision=, =auto_authorisation_rule= | ores.trading |
+| =trade_link_type=, =trade_activity_type=, =structure_kind=, =structure_template= | ores.trading |
+| =netting_agreement=, =netting_set=, =csa= | ores.refdata |
+| =sandbox=, the virtual flag on a book | ores.refdata |
+
+Every foreign key between the two runs from trading into reference data:
+a trade names a book, a counterparty, a netting set; reference data
+never names a trade. A netting set exists before its first trade and
+outlives its last.
+
+/Set aside/: a credit component created now for agreements, netting sets
+and CSAs, before anything in it computes; and placing them in trading.
+
+** 16. The C1202 check
+
+Every reflected struct keeps nine effective fields or fewer, a nested
+group counting as one.
+
+| Table | Count | Outcome |
+|-------+-------+---------|
+| =trade= | 9 | At the limit; the tenant and id nest as a key group, leaving 8 |
+| =trade_booking= | 7 | Fits |
+| =trade_state= | 4 | Fits |
+| =trade_identifier=, =trade_party_role=, =trade_additional_field=, =trade_link= | 7-8 | Fit |
+| =trade_activity=, =trade_activity_participant= | 7-8, 4 | Fit |
+| =authorisation_decision= | about 14 | The decision's context — hold reason, amendment reason, department, operational-error flag, escalation — nests as one group, leaving 9 |
+| =agreement=, =structure=, =structure_member= | 7-8 | Fit |
+| =netting_set= | 9 | At the limit; the ORE details (call type, initial margin type) nest, leaving 8 |
+| =sandbox= | about 11 | Its lifecycle (status, review date) and its visibility (mode, members) nest, leaving 9 |
+| Instrument tables | per family | Checked in each family's rework; the header and facts split keeps headers narrow |
+
 * Conclusions
 
 ** The target model so far
@@ -386,18 +456,15 @@ other entities that carry them, and from report definitions, is a
 separate piece of work this design depends on only in that trades no
 longer carry one.
 
-** Then finish the trade shape
+** Build it
 
-- Detail the instrument family tables: the shared key group, the pinned
-  composite key, and the trade-type to table routing as data the code
-  generator reads.
-- Check each table against the nine-field C1202 limit.
-- Decide which component owns netting agreements and CSAs.
-- List the code-generator support the shape needs: an immutable
-  anchor, composite and real foreign keys, the derived authorisation
-  status, the generated blotter view.
-- Rename "deal id" to "trade id" in the knowledge notes.
-- Scaffold the implementation stories.
+The implementation is scaffolded as stories, listed on the
+[[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][trade shape story]]: the code generator support first, then
+netting agreements and sandboxes in reference data, then the split of
+the trade, activities and links, authorisation and the agreement, and
+structures. Each instrument family is a story of its own in the backlog,
+reworked to the rule of section 14. The knowledge notes still say "deal
+id" in places, and a task on the story renames it to trade id.
 
 * See also
 

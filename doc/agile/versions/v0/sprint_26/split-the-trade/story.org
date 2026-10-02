@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: AA3E4655-8E80-4F69-845C-9D77B3985835
+:END:
+#+title: Story: Split the trade into an anchor and its components
+#+description: Replace the wide trade row and its five field groups with an immutable anchor and component tables per access pattern, move identifiers and the envelope to entities, and take workspaces out of trading.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the anchor, the booking, the state, identifiers, party roles and additional fields, with ORE import resolving to entities and export regenerating them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- trade is an immutable anchor keyed by tenant and id, carrying party, counterparty, trade type, the two classification values and origin.
+- trade_booking and trade_state are temporal components keyed by the trade; every identifier scheme, ORE's Trade/@id included, is a trade_identifier row.
+- external_id, product_type, the five field groups and the trade envelope tables are gone; trade_additional_field holds AdditionalFields.
+- ORE import resolves the envelope to entities and rejects what does not resolve; export regenerates it; the round trip stays lossless.
+- No trading entity carries a workspace.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

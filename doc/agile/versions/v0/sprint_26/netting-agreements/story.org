@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 09DE4B5B-A87D-48C1-B8B5-03761D966D0F
+:END:
+#+title: Story: Model netting agreements, netting sets and CSAs
+#+description: Add the netting agreement, the netting set and the CSA to ores.refdata as three entities, with the integrity rules that tie a trade to a set of its own counterparty and legal entity.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Model the legal and credit grouping trades net under, as the Netting sets note analyses it: agreement, netting set and CSA as separate entities in ores.refdata.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- netting_agreement, netting_set and csa exist in ores.refdata, generated.
+- A netting set's counterparty and legal entity are those of its agreement, and a CSA references exactly one set with at most one active at a time.
+- A netting set carries the ORE details (call type, initial margin type) and round-trips through nettingsetdefinitions.xml.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

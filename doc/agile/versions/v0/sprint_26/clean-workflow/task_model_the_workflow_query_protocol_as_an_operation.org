@@ -8,7 +8,7 @@
 #+filetags: :clean-workflow:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-the-workflow-query-protocol-as-an-operation
-#+pr:
+#+pr: 2498
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -191,7 +191,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2498][#2498]] | [workflow] Generate the workflow protocol, shell and web contract from one model |
 
 * Review
 

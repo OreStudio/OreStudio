@@ -147,6 +147,8 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
         if (e.target.find('&') != std::string::npos)
             holds_an_ampersand = true;
     }
+    INFO("expected a correlation entry containing '&' in "
+         << f.string() << "; if the fixture changed, pick one that has one");
     CHECK(holds_an_ampersand);
 
     // Export from what the database returned, not from what was written.

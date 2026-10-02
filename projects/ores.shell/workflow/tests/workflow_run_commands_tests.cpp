@@ -20,7 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -31,7 +31,7 @@
 
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
-using ores::shell::app::commands::workflow_operation_commands;
+using ores::shell::app::commands::workflow_run_commands;
 using namespace ores::logging;
 
 namespace {
@@ -41,13 +41,13 @@ const std::string tags("[commands]");
 
 }
 
-TEST_CASE("workflow_operation_commands_registers_the_wait_verb", tags) {
+TEST_CASE("workflow_run_commands_registers_the_wait_verb", tags) {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
     nats_client session;
 
-    workflow_operation_commands::register_commands(root_menu, session);
+    workflow_run_commands::register_commands(root_menu, session);
 
     // A publish that declines to block tells the operator to follow progress
     // with this verb, so a wait that is no longer registered turns a shipped
@@ -57,14 +57,14 @@ TEST_CASE("workflow_operation_commands_registers_the_wait_verb", tags) {
           completions.end());
 }
 
-TEST_CASE("workflow_operation_commands_start_requires_a_session", tags) {
+TEST_CASE("workflow_run_commands_start_requires_a_session", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    workflow_operation_commands::process_start(
+    workflow_run_commands::process_start(
         out, session, {"identity_workflow", R"({"steps":[{"name":"one"}]})"});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
@@ -72,21 +72,21 @@ TEST_CASE("workflow_operation_commands_start_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operation_commands_start_usage_names_the_instance_id_flag", tags) {
+TEST_CASE("workflow_run_commands_start_usage_names_the_instance_id_flag", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
     std::ostringstream out;
 
     command_feedback::reset();
-    workflow_operation_commands::process_start(out, session, {"identity_workflow"});
+    workflow_run_commands::process_start(out, session, {"identity_workflow"});
 
     BOOST_LOG_SEV(lg, debug) << "Usage output: " << out.str();
     CHECK(out.str().find("--instance-id") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operation_commands_start_refuses_an_instance_id_that_is_not_a_uuid", tags) {
+TEST_CASE("workflow_run_commands_start_refuses_an_instance_id_that_is_not_a_uuid", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -96,7 +96,7 @@ TEST_CASE("workflow_operation_commands_start_refuses_an_instance_id_that_is_not_
     // only address a run that will never exist, whatever the caller is signed
     // in as.
     command_feedback::reset();
-    workflow_operation_commands::process_start(
+    workflow_run_commands::process_start(
         out,
         session,
         {"identity_workflow", R"({"steps":[{"name":"one"}]})", "--instance-id", "one"});
@@ -106,7 +106,7 @@ TEST_CASE("workflow_operation_commands_start_refuses_an_instance_id_that_is_not_
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_operation_commands_start_refuses_the_nil_instance_id", tags) {
+TEST_CASE("workflow_run_commands_start_refuses_the_nil_instance_id", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -116,7 +116,7 @@ TEST_CASE("workflow_operation_commands_start_refuses_the_nil_instance_id", tags)
     // text is a UUID. It is refused because every nil run would be the same run:
     // a placeholder id would collapse unrelated workflows into one.
     command_feedback::reset();
-    workflow_operation_commands::process_start(out,
+    workflow_run_commands::process_start(out,
                                                session,
                                                {"identity_workflow",
                                                 R"({"steps":[{"name":"one"}]})",

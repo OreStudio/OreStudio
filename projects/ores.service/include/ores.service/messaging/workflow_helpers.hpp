@@ -23,8 +23,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
 #include <optional>
 #include <span>

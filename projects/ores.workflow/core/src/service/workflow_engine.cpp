@@ -21,7 +21,7 @@
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/service/workflow_actor.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>

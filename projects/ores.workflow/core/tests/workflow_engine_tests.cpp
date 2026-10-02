@@ -26,8 +26,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
@@ -42,6 +41,7 @@
 #include <chrono>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -947,6 +947,74 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names", tags)
     REQUIRE(unnamed.has_value());
     CHECK_FALSE(unnamed->found);
     BOOST_LOG_SEV(lg, debug) << "Step result confined to the requested tenant.";
+}
+
+TEST_CASE("workflow_query_handler lists a definition that builds its steps from its request",
+          tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::workflow::messaging::list_workflow_definitions_request;
+    using ores::workflow::messaging::list_workflow_definitions_response;
+    using ores::workflow::messaging::workflow_query_handler;
+
+    fixture f(engine_tenant::service);
+    f.register_steps("test_listed_fixed_workflow", {"one", "two"});
+
+    // Tenant provisioning builds one step per kind its request orders, so it
+    // refuses the empty request the definitions read describes it with. One
+    // such definition used to fail the whole read for every caller.
+    workflow_definition request_built;
+    request_built.type_name = "test_listed_request_built_workflow";
+    request_built.description = "steps come from the request";
+    request_built.steps_depend_on_request = true;
+    request_built.build_steps = [](const std::string&, const std::string&, const std::string&)
+        -> std::vector<workflow_step_def> {
+        throw std::runtime_error("This definition cannot read an empty request.");
+    };
+    f.registry->register_definition(std::move(request_built));
+
+    // A builder that throws without saying its steps come from the request is
+    // a defect. It is listed with no steps and logged, and the read answers.
+    workflow_definition broken;
+    broken.type_name = "test_listed_broken_workflow";
+    broken.description = "a builder with a defect";
+    broken.build_steps = [](const std::string&, const std::string&, const std::string&)
+        -> std::vector<workflow_step_def> { throw std::runtime_error("A defect in the builder."); };
+    f.registry->register_definition(std::move(broken));
+
+    auto handler = std::make_shared<workflow_query_handler>(
+        f.nats,
+        f.service_context(),
+        ores::security::jwt::jwt_authenticator::create_hs256(""),
+        f.instance_states,
+        f.step_states,
+        f.registry);
+
+    auto replies = f.nats.subscribe_buffered(reply_subject, 10);
+    const auto before = replies.size();
+    ores::nats::message msg;
+    msg.data = ores::nats::default_wire_codec().encode(list_workflow_definitions_request{});
+    msg.reply_subject = reply_subject;
+    handler->list_definitions(std::move(msg));
+    const auto answer =
+        await_reply<list_workflow_definitions_response>(replies, before, std::chrono::seconds(5));
+
+    REQUIRE(answer.has_value());
+    CHECK(answer->success);
+    const auto find = [&](const std::string& type) {
+        return std::ranges::find_if(answer->definitions,
+                                    [&](const auto& d) { return d.type_name == type; });
+    };
+    const auto fixed = find("test_listed_fixed_workflow");
+    REQUIRE(fixed != answer->definitions.end());
+    CHECK(fixed->step_count == 2);
+    const auto built = find("test_listed_request_built_workflow");
+    REQUIRE(built != answer->definitions.end());
+    CHECK(built->step_count == 0);
+    const auto defective = find("test_listed_broken_workflow");
+    REQUIRE(defective != answer->definitions.end());
+    CHECK(defective->step_count == 0);
+    BOOST_LOG_SEV(lg, debug) << "Definitions listed: " << answer->definitions.size();
 }
 
 TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for the service",

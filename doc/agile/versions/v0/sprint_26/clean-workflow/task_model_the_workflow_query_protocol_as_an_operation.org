@@ -1,0 +1,268 @@
+:PROPERTIES:
+:ID: 5C04D943-1792-43C5-883E-A0938DE2B00F
+:END:
+#+title: Task: Model the workflow query protocol as an operation
+#+description: ores.workflow's query, steps and retry protocols are hand-written C++, and ores.web mirrors them by hand. A missing optional field silently broke the tenant roster's run read. Model them as one ores.codegen.operation, generate C++ and TypeScript, delete the hand mirrors, and commit the workflow entity TypeScript.
+#+type: task
+#+level: s1
+#+filetags: :clean-workflow:sprint_26:v0:
+#+owner: marco
+#+branch: feature/model-the-workflow-query-protocol-as-an-operation
+#+pr: 2498
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every message =ores.workflow= puts on the wire is declared in one operation
+model, and codegen renders it to C++, TypeScript and the shell. No protocol of
+the component is written by hand, and no client mirrors one. This closes the
+Protocol section (P01, P03, P04) that
+[[id:9C3B1C5F-C0AB-44A5-84CB-CAFDE5FF3BF8][Bring ores.workflow to the clean standard]]
+left pending, and it does the payload move that task planned.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Why this task exists
+
+The clean-up task found this work and closed without it. Its M06 and P04 rows
+say the workflow's operation messages need an operation model; P01 and P03 are
+"pending the operation model"; and its P04 detail records a decision (option 2:
+each commissioner owns its workflow's payload) and a change set "awaiting the
+go-ahead". Its Result lists none of these under what did not land, and no
+follow-up was filed. A hand-written TypeScript mirror of the instances list then
+broke the tenant roster on =feature/return-to-a-journey-in-progress=.
+
+* Acceptance
+
+- One operation model declares every message of the workflow conversation, with
+  today's subjects and field names. The six hand-written headers
+  (=step_log_types=, =steps_query_protocol=, =workflow_events=,
+  =workflow_protocol=, =workflow_query_protocol=, =workflow_retry_protocol=) are
+  gone, and every consumer includes the generated header.
+- What a model cannot state stays hand-written in one place: the two enums
+  with their reflectors, and the NATS header names. The enums are registered as
+  custom types, so they cross to TypeScript as =string=.
+- The =provision_parties= payload and its handler live in =ores.refdata=, and
+  =ores.workflow= declares no domain payload.
+- The shell's workflow verbs are generated from the model. Only =workflow wait=,
+  which polls and is no message, stays hand-written.
+- =ores.web= uses the generated types and subjects for every workflow call, and
+  a test proves that a request the client encodes decodes in C++.
+- The Protocol rows of the clean-up task and the false P04 statement in
+  =ores.service='s clean-up task are corrected.
+- Build, ctest, codegen drift, the sweep, shell-script drift and the web suites
+  pass, and the roster and run page work against the running deployment.
+
+* Plan
+
+** Inventory (2026-10-01, at =f7f8916c5f=)
+
+| Header | Messages | Subjects | Includers |
+|--------+----------+----------+-----------|
+| =step_log_types.hpp= | =step_log_entry=, enum =step_log_level= | -- | 2 |
+| =steps_query_protocol.hpp= | =get_step_result_request= / =_response= | =workflow.v1.steps.get-result= | 4 |
+| =workflow_events.hpp= | =step_completed_event=, =start_workflow_message=, enum =step_outcome=, three NATS header names | =workflow.v1.events.step-completed=, =workflow.v1.start= | 14 |
+| =workflow_protocol.hpp= | =provision_party_input=, =provision_parties_request= / =_response=, =provision_party_workflow_request= | =workflow.v1.parties.provision= | 3 |
+| =workflow_query_protocol.hpp= | instance, step, step-definition and definition summaries; list instances, get steps, list definitions | =workflow.v1.instances.list=, =workflow.v1.instances.steps=, =workflow.v1.definitions.list= | 4 |
+| =workflow_retry_protocol.hpp= | =retry_workflow_instance_request= / =_response= | =workflow.v1.instances.retry= | 2 |
+
+The shell's =workflow_operation_commands= is hand-written and holds =wait=,
+=definitions= and =start=. iam's operation models generate shell units from
+=ores.cpp.shell-command.enabled: true= and a =:shell_command:= per message.
+
+** Steps
+
+1. *Vocabulary.* Move the two enums, their string conversions, their
+   reflectors and the three NATS header names into one hand-written
+   =ores.workflow.api/messaging/workflow_vocabulary.hpp=. Register
+   =step_outcome= and =step_log_level= in =projects/modeling/cpp_custom_types.org=.
+2. *Model.* Add =ores.workflow.workflow_messages.org=, one operation model with
+   every message above except refdata's, so no message references a sibling
+   model (capture C80EC09A). Subjects and fields stay byte-for-byte. Enable the
+   shell and name a verb for each request a person sends.
+3. *Generate and switch.* Delete the five hand-written headers it replaces,
+   point every includer at the generated header, and build.
+4. *Payload move.* Model =provision_parties= in =ores.refdata= as an operation,
+   move =workflow_handler= into refdata's aggregate registrar, and delete
+   =workflow_protocol.hpp= and =workflow_handler.{hpp,cpp}= from the engine.
+5. *Shell.* Register the generated workflow operations unit. Reduce the
+   hand-written unit to =wait= and the =wait_for_instance= helper its callers
+   share.
+6. *ores.web.* Replace the mirrors in =tenants.ts= and =operations.ts= with
+   mappers typed against the generated interfaces, take the subjects from the
+   generated =subjects=, and add the boundary test.
+7. *Records.* Correct the clean-up task's Protocol rows and Result, the false
+   P04 row in =ores.service='s clean-up task, and the story's Status.
+8. *Verify.* The checks named in the acceptance, then a live run.
+
+The dependency inversion the clean-up task also found -- the engine's registrar
+calls dq, ore, refdata and reporting to register their definitions -- is out of
+scope. It needs workflow definitions as data, and it gets its own capture.
+
+* Result
+
+- *The conversation is one model.* =ores.workflow.workflow_messages= declares
+  all 17 messages with today's subjects, and renders the C++ protocol, its
+  TypeScript twin and a shell unit. The five hand-written headers are deleted
+  and 15 includers moved to the generated one. The enumerations and NATS header
+  names are in =workflow_vocabulary.hpp=, registered as custom types.
+- *The dead payload is deleted, not moved.* Nothing sent
+  =workflow.v1.parties.provision=; the shell and the web use
+  =iam.v1.parties.provision=. The payload, the handler method, refdata's
+  definition, its registration, its permission and the engine's link to
+  =ores.refdata.api= are gone. The product owner chose this over the planned
+  move.
+- *The filters are strings.* The four =std::optional<std::string>= filters are
+  plain strings with an empty default, which the handler already read as "no
+  filter", and which the shell can fill as flags.
+- *The shell is generated.* =definitions=, =instances=, =steps=, =retry= and
+  =step-result= come from the model. =wait= and =start= stay hand-written in
+  =workflow_run_commands=, because neither is a message with a reply, and join
+  the generated menu through =extend_menu=.
+- *The web uses the generated protocol.* The roster, progress and retry calls
+  send generated request types and take generated subjects, and each reply
+  schema is held to its generated interface with =satisfies=. Removing a field
+  from a schema fails =tsc= (checked). The two entities' TypeScript modules are
+  committed too.
+- *The boundary is tested.* ores.web writes the encoded roster request to a
+  fixture, and the workflow api's C++ test decodes it. With the request the
+  hand-written client used to send, the C++ test fails as the service did
+  (checked).
+- *A defect found on the way.* =workflow.v1.definitions.list= threw on tenant
+  provisioning, which builds its steps from its request, and never replied, so
+  =workflow definitions= and =workflow start= timed out for everyone. Such a
+  definition is now listed with no steps; a test covers it.
+- *Records corrected.* The clean-up task's M06, P01, P03, P04 and P05 rows and
+  its Result carry a dated correction, the false P04 row in =ores.service='s
+  clean-up task is corrected, and the engine's dependency on its commissioners
+  is a capture.
+- *Not done.* The provisioning type and target-kind constants in
+  =wire-protocol/src/tenants.ts= still mirror iam's C++ constants, because they
+  are values and not protocol, and no model declares them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Messages in the model | 17 | =grep -c '^\*\* ' projects/ores.workflow/modeling/ores.workflow.workflow_messages.org= | =848165c4c0= |
+| Hand-written messaging headers left in =ores.workflow.api= | 0 of 6 (=workflow_vocabulary.hpp= holds no message) | =grep -L AUTO-GENERATED projects/ores.workflow/api/include/ores.workflow.api/messaging/*.hpp= | =848165c4c0= |
+| Includers moved to the generated header | 15 | the include rewrite in =612258c114= | =612258c114= |
+| Workflow shell recipes answering on the live fleet | 11 of 11 | =check_shell_recipes.py workflow= | =848165c4c0= |
+| Codegen drift, registry components | none | =check_component_drift.py --all= | =848165c4c0= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2498][#2498]] | [workflow] Generate the workflow protocol, shell and web contract from one model |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Minor: the provisioning type and target-kind constants still mirror iam's C++ constants by hand. | =wire-protocol/src/tenants.ts= | Decline | Values, not protocol; no model declares them. Recorded under Result. |
+| 2 | Minor: a definition that builds its steps from its request is listed with zero steps, which a reader could take for an empty workflow. | =workflow_query_handler.cpp= | Decline | The read used to fail for every caller; a flag on the summary is a protocol change for another task. |
+| 3 | Minor: the TypeScript module now carries the start message and the step event, which no web caller sends. | =generated/workflow/protocol/workflow_protocol.ts= | No change | One model is the price of a TypeScript projection that cannot reference a sibling model. |
+| 4 | Checked: no end-of-line comment in the diff and no misspelling in a changed file. | -- | -- | =misspell-fixer= over the changed files is clean. |
+
+Verdict: ready to merge.
+
+Round 2 (PR #2498, @claude review):
+
+| #  | Comment summary | File | Decision | Notes |
+|----+-----------------+------+----------+-------|
+| 5  | The api diagram still declares the provision_parties messages and the hand-written query protocol. | =ores.workflow.api.puml= | Accept | The automated passes of the api, core and shell workflow diagrams are regenerated and their manual passes rewritten. |
+| 6  | The definitions fix catches every exception and logs at debug, so a builder defect is hidden. | =workflow_query_handler.cpp= | Accept | =workflow_definition::steps_depend_on_request= states the case; tenant, party and identity set it and are not asked for steps. Any other throw is a defect, logged at warn, and the read still answers. The test now fails against the unguarded handler (checked). |
+| 7  | Existing databases keep the deleted permission row. | =iam_permissions_populate.sql= | No change | The project recreates its database from the create scripts. |
+| 8  | A client that sends null for a filter no longer decodes. | =workflow_protocol.hpp= | No change | The in-tree callers are the shell and ores.web, both generated or typed against the model; there is no external caller. |
+| 9  | The provisioning constants are still copied by hand. | =workflow-boundary.test.ts= | Accept | A test reads iam's header and fails if either constant changes on one side. |
+| 10 | Nit: a missing timestamp now reads as null, not undefined. | =operations.ts= | No change | No consumer compares with undefined. |
+| 11 | Nit: an unknown enum string throws in the reflector. | =workflow_vocabulary.hpp= | No change | reflect-cpp's parser catches a reflector's exception and returns a decode error, which the decode helper logs. |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-10-01 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Bring =ores.workflow='s protocols under codegen, as
+[[id:5E4C1A90-3B27-4E6D-9F01-7A2C8D4B6E15][Protocol types are generated from the C++ codegen model]]
+requires:
+
+1. Add =projects/ores.workflow/modeling/ores.workflow.workflow_query_messages.org=
+   as an =ores.codegen.operation= model. It holds the instances list
+   (=list_workflow_instance_summaries_request= / =_response=,
+   =workflow_instance_summary=), the steps read (=get_workflow_steps_request= /
+   =_response=, =workflow_step_summary=, =step_log_entry=) and the retry
+   request and response. Field names and subjects stay exactly as they are.
+   =step_log_entry= goes in the same model, because an operation model cannot
+   reference a sibling model's message in TypeScript (capture C80EC09A).
+2. Generate. The output replaces the hand-written =workflow_query_protocol.hpp=,
+   =steps_query_protocol.hpp= and =workflow_retry_protocol.hpp=.
+3. In =ores.web=, delete the hand mirrors: =listWorkflowInstancesRequestSchema=
+   and the summary schema in =wire-protocol/src/tenants.ts=, and the
+   =workflowInstanceSteps= and =retryWorkflowInstance= subjects and schemas in
+   =operations.ts=. Add mappers typed against the generated interfaces, and take
+   the subjects from the generated =subjects=.
+4. Commit the =workflow_instance= entity's generated TypeScript, which
+   =codegen entity show workflow_instance= reports as missing.
+5. Add a boundary test: a request the client encodes is decoded by the C++
+   handler.
+
+Do this as part of the work to bring =ores.workflow= to the component clean
+standard.
+
+** Why
+
+The roster's run read was written by hand on
+=feature/return-to-a-journey-in-progress=. It left out the unused optional
+filters. The C++ decoder requires every field, so every request failed with
+"Invalid request payload", and the Setup column stayed empty. The BFF tests use
+a fake client, so they did not see it. A generated interface renders a
+=std::optional= field as a required =T | null=, and tsc then refuses a request
+that leaves it out.
+
+** References
+
+- [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]]
+- [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]]
+- [[id:C80EC09A-9F01-495D-B60A-BEA11CC33E50][An operation model cannot reference a sibling model's message in TypeScript]]

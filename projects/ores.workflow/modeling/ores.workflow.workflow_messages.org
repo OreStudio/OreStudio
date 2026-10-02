@@ -1,0 +1,954 @@
+:PROPERTIES:
+:ID: A3F4C617-3AC5-4FE9-AC9F-3C4FBEE8A122
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.workflow.workflow_messages
+#+description: Codegen operation model for the workflow engine's own conversation: starting a run, reporting a step, and reading runs, steps and definitions.
+#+type: ores.codegen.operation
+#+component: workflow
+#+subcomponent: api
+#+entity_singular: workflow
+#+namespace: ores::workflow::messaging
+#+brief: The workflow engine's operation messages.
+#+filetags: :model:operation:workflow:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+These are the messages of the workflow engine that are not entity verbs. A
+component that commissions a workflow starts a run with
+=start_workflow_message=, and the service that executes a step reports it with
+=step_completed_event=. A person or a client reads runs, their steps and the
+registered definitions, asks for one step's result, and retries a stopped run.
+The two entities' own verbs are generated from their entity models.
+
+They were hand-written headers until this model, and the TypeScript client
+mirrored some of them by hand. They are one model so that no message refers to
+a message in a sibling model, which the TypeScript projection cannot resolve.
+
+What a model cannot state stays in =workflow_vocabulary.hpp=: the step outcome
+and log level enumerations with their reflectors, and the names of the NATS
+headers a step command carries. Both enumerations are registered custom types,
+so they cross to TypeScript as strings.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/messaging/workflow_vocabulary.hpp"
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** step_log_entry
+
+#+begin_src cpp :name comment
+/**
+ * @brief A single structured log entry emitted by a step handler.
+ *
+ * Entries are stored as a JSON array in workflow_step.step_log_json and
+ * surfaced in the workflow instance detail dialog.  The context field
+ * carries item-level identifiers (trade ID, filename, etc.) so the user
+ * can locate the source of each message.
+ */
+#+end_src
+
+*** level
+:PROPERTIES:
+:cpp_type: ores::workflow::messaging::step_log_level
+:default: ores::workflow::messaging::step_log_level::info
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** context
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** step_completed_event
+:PROPERTIES:
+:subject: workflow.v1.events.step-completed
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Fire-and-forget event published by domain services on step completion.
+ *
+ * Published to workflow.v1.events.step-completed by any domain service that
+ * participates in a workflow. The workflow engine subscribes to this subject
+ * (queue-group) and advances or compensates the workflow accordingly.
+ *
+ * The step_id must echo the X-Workflow-Step-Id header from the command that
+ * triggered this step. It is used as the idempotency key: the engine checks
+ * that the referenced workflow_step is still in_progress before acting.
+ */
+#+end_src
+
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief UUID of the parent workflow instance.
+ */
+#+end_src
+
+*** step_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief UUID of the workflow step being completed.
+ *
+ * Echoed from the X-Workflow-Step-Id header of the originating command.
+ */
+#+end_src
+
+*** outcome
+:PROPERTIES:
+:cpp_type: ores::workflow::messaging::step_outcome
+:default: ores::workflow::messaging::step_outcome::completed
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Terminal outcome of this step.
+ */
+#+end_src
+
+*** result_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Serialised JSON result payload from the domain service.
+ *
+ * Stored in workflow_step.response_json and passed as input to
+ * subsequent step command builders.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Human-readable error message on fatal failure.
+ *
+ * Stored in workflow_step.error and workflow_instance.error.
+ * Non-empty only when outcome == failed.
+ */
+#+end_src
+
+*** log
+:PROPERTIES:
+:cpp_type: std::vector<step_log_entry>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Ordered list of log entries emitted by this step.
+ *
+ * Serialised to step_log_json in the workflow step record.  Empty for
+ * steps that produce no user-visible diagnostic output.
+ */
+#+end_src
+
+** start_workflow_message
+:PROPERTIES:
+:subject: workflow.v1.start
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Fire-and-forget message to start a new workflow instance.
+ *
+ * Published by client services (e.g. ores.reporting.service) to request
+ * that the workflow engine create and drive a new workflow_instance.
+ */
+#+end_src
+
+*** type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Workflow type name to look up in the registry.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Tenant the workflow runs on behalf of.
+ */
+#+end_src
+
+*** target_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the run acts on, named by the caller, or empty.
+ *
+ * The engine stores it on the instance and never interprets it, so a caller
+ * states its own kind without the engine learning the caller's vocabulary.
+ */
+#+end_src
+
+*** target_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Identity of the entity the run acts on, or empty.
+ *
+ * A start that names a target the engine cannot read is refused rather than
+ * run without one, because a run that cannot be found by what it acts on is
+ * a run the caller cannot follow.
+ */
+#+end_src
+
+*** request_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Serialised JSON payload for the initial step's command builder.
+ */
+#+end_src
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Optional distributed tracing correlation ID.
+ */
+#+end_src
+
+*** instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Optional pre-generated workflow instance UUID.
+ *
+ * When non-empty the engine uses this UUID for the new workflow_instance
+ * record instead of generating one. Callers that need to return the
+ * instance ID before the engine has processed the message (e.g. the
+ * ore_import handler) pre-generate a UUID here so they can include it
+ * in the synchronous response to the client.
+ *
+ * Empty string (default) means the engine generates a fresh UUID.
+ */
+#+end_src
+
+** get_step_result_request
+:PROPERTIES:
+:subject: workflow.v1.steps.get-result
+:response: get_step_result_response
+:shell_command: step-result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Queries the workflow engine for a previously-completed step result.
+ *
+ * Domain service handlers send this before executing a workflow step command.
+ * If the step already completed (e.g. the command was re-dispatched after a
+ * restart), the handler can replay the cached result without re-executing.
+ *
+ * No authentication required: the step ID is an opaque idempotency key and the
+ * reply is confined to the tenant the request names. The engine hands the
+ * caller that tenant in the X-Tenant-Id header of the command it dispatched,
+ * and the caller echoes it back, so the query stays inside the tenant the step
+ * belongs to. A request that names no tenant is answered with found = false,
+ * because there is no tenant whose data it could be entitled to.
+ */
+#+end_src
+
+*** step_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief UUID of the workflow step to look up, echoed from X-Workflow-Step-Id.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant the step belongs to, echoed from X-Tenant-Id.
+ *
+ * The lookup is scoped to it, so a step in another tenant reads as not
+ * found rather than being returned.
+ */
+#+end_src
+
+** get_step_result_response
+
+*** found
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief true if the step exists and has reached a terminal state.
+ *
+ * false if the step is not found, is pending, or is still in_progress.
+ * Callers should proceed with normal execution when found == false.
+ */
+#+end_src
+
+*** outcome
+:PROPERTIES:
+:cpp_type: ores::workflow::messaging::step_outcome
+:default: ores::workflow::messaging::step_outcome::completed
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Terminal outcome of the step.
+ *
+ * Valid only when found == true.
+ */
+#+end_src
+
+*** result_json
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Serialised JSON result from the original execution.
+ *
+ * Non-empty when found == true && outcome != failed.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Human-readable error from the original execution.
+ *
+ * Non-empty when found == true && outcome == failed.
+ */
+#+end_src
+
+*** log
+:PROPERTIES:
+:cpp_type: std::vector<step_log_entry>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Log entries emitted during the original execution.
+ *
+ * Non-empty when the step produced user-visible diagnostics.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** workflow_instance_summary
+
+#+begin_src cpp :name comment
+/**
+ * @brief Summary of a single workflow instance returned by list_instances.
+ *
+ * All timestamps are UTC ISO-8601 strings (e.g. "2026-04-10T14:30:00Z").
+ * status is a human-readable state name: in_progress, completed, failed,
+ * compensating, or compensated.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** status
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** current_step_index
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** step_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** created_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** created_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** completed_at
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+*** error
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** target_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the run acts on, and its identity, as the start message named
+ * them. Both are empty when the run acts on no entity.
+ */
+#+end_src
+
+*** target_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** list_workflow_instance_summaries_request
+:PROPERTIES:
+:subject: workflow.v1.instances.list
+:response: list_workflow_instance_summaries_response
+:shell_command: instances
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request to list workflow instances for the authenticated tenant.
+ *
+ * Results are ordered by created_at descending (most recent first).
+ * Requires a valid Bearer JWT in the Authorization NATS header.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default: 200
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Maximum number of instances to return (default 200, max 1000).
+ */
+#+end_src
+
+*** status_filter
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Status filter. Empty means every status.
+ *
+ * Valid values: "in_progress", "completed", "failed",
+ *               "compensating", "compensated"
+ */
+#+end_src
+
+*** type_filter
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Type filter. Empty means every type.
+ */
+#+end_src
+
+*** target_kind_filter
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Kind of the entity the run acts on. Empty means any kind.
+ *
+ * Matched exactly and on its own, so a caller that names the kind alone gets
+ * every run that acts on that kind of entity. A run with no target matches no
+ * kind.
+ */
+#+end_src
+
+*** target_id_filter
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Identity of the entity the run acts on. Empty means any entity.
+ *
+ * A run with no target matches no identity.
+ */
+#+end_src
+
+** list_workflow_instance_summaries_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instances
+:PROPERTIES:
+:cpp_type: std::vector<workflow_instance_summary>
+:END:
+
+** workflow_step_summary
+
+#+begin_src cpp :name comment
+/**
+ * @brief Summary of a single step within a workflow instance.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The step's name and description in a person's words, as its definition
+ * declared them, and empty when it declared none.
+ */
+#+end_src
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** status
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** step_index
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** created_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** started_at
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+*** completed_at
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+*** error
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** log
+:PROPERTIES:
+:cpp_type: std::vector<step_log_entry>
+:END:
+
+** get_workflow_steps_request
+:PROPERTIES:
+:subject: workflow.v1.instances.steps
+:response: get_workflow_steps_response
+:shell_command: steps
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request to retrieve all steps for a specific workflow instance.
+ *
+ * The instance must belong to the authenticated tenant; the handler returns
+ * an error if the instance is owned by a different tenant.
+ * Requires a valid Bearer JWT in the Authorization NATS header.
+ */
+#+end_src
+
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_workflow_steps_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** status
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Instance-level status: in_progress, completed, failed,
+ * compensating, or compensated.
+ *
+ * A failed instance may have zero steps (e.g. a start that died before
+ * persisting its first step), so callers must consult status/error rather
+ * than inferring failure from the step list alone.
+ */
+#+end_src
+
+*** error
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Instance-level error message, populated when status is failed
+ * (or during compensation).
+ */
+#+end_src
+
+*** step_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Total step count of the instance (may exceed steps.size() when
+ * not all steps have been created yet).
+ */
+#+end_src
+
+*** current_step_index
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Zero-based index of the step currently being executed.
+ */
+#+end_src
+
+*** steps
+:PROPERTIES:
+:cpp_type: std::vector<workflow_step_summary>
+:END:
+
+** workflow_step_definition_summary
+
+#+begin_src cpp :name comment
+/**
+ * @brief Summary of a single step within a workflow definition.
+ */
+#+end_src
+
+*** step_index
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** command_subject
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** has_compensation
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+** workflow_definition_summary
+
+#+begin_src cpp :name comment
+/**
+ * @brief Summary of a workflow definition registered in the engine.
+ */
+#+end_src
+
+*** type_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** step_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** steps
+:PROPERTIES:
+:cpp_type: std::vector<workflow_step_definition_summary>
+:END:
+
+** list_workflow_definitions_request
+:PROPERTIES:
+:subject: workflow.v1.definitions.list
+:response: list_workflow_definitions_response
+:shell_command: definitions
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request to list all registered workflow definitions.
+ *
+ * Returns the type name, description, and step metadata for every
+ * workflow type known to the engine. No authentication required — the
+ * definitions are public metadata.
+ */
+#+end_src
+
+** list_workflow_definitions_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definitions
+:PROPERTIES:
+:cpp_type: std::vector<workflow_definition_summary>
+:END:
+
+** retry_workflow_instance_request
+:PROPERTIES:
+:subject: workflow.v1.instances.retry
+:response: retry_workflow_instance_response
+:shell_command: retry
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks the engine to resume a stopped run from the step that failed.
+ *
+ * A retry is the second half of the failure policy the workflow definition
+ * declares: a failure stops the run and keeps every completed step, and a
+ * retry re-dispatches the step that failed so the run can finish.
+ */
+#+end_src
+
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run to resume.
+ */
+#+end_src
+
+*** step_name
+:PROPERTIES:
+:cpp_type: std::string
+:default: {}
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The step to resume from, by the name the definition gave it.
+ *
+ * Empty means the step that failed, which is what a page that has just
+ * rendered a stopped run asks for: it holds the whole step list from the
+ * progress read and names one only when a person chooses to resume from
+ * somewhere other than where the run stopped.
+ */
+#+end_src
+
+** retry_workflow_instance_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the run was not resumed, or empty when it was.
+ *
+ * A refusal names what it refused: a run that is not stopped, a step the
+ * run does not hold, or a step whose predecessors have not all completed.
+ */
+#+end_src
+
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run the answer is about, echoed from the request.
+ */
+#+end_src
+
+*** step_index
+:PROPERTIES:
+:cpp_type: int
+:default: -1
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The index of the step the engine re-dispatched, or -1 on refusal.
+ */
+#+end_src
+
+*** step_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name of the step the engine re-dispatched, or empty on refusal.
+ */
+#+end_src

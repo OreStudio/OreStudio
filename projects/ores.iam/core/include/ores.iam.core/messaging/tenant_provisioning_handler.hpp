@@ -67,7 +67,7 @@
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>

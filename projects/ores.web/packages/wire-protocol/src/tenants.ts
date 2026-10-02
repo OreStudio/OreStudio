@@ -23,6 +23,12 @@ import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import { uuidSchema, wireTimestampSchema, type TenantSetup, type TenantSummary } from './domain.js';
 import { subjects as tenantSubjects } from './generated/iam/protocol/tenant_protocol.js';
+import {
+    subjects as workflowSubjects,
+    type ListWorkflowInstanceSummariesRequest,
+    type ListWorkflowInstanceSummariesResponse,
+    type WorkflowInstanceSummary,
+} from './generated/workflow/protocol/workflow_protocol.js';
 import { orderSchema } from './operations.js';
 
 /**
@@ -121,40 +127,34 @@ export async function readTenantsPage(
 export const PROVISION_TENANT_WORKFLOW_TYPE = 'provision_tenant_workflow';
 export const PROVISION_TENANT_TARGET_KIND = 'tenant';
 
-/** `list_workflow_instance_summaries_request`, sent on `workflow.v1.instances.list`. */
-export const listWorkflowInstancesRequestSchema = z.object({
-    limit: z.int().positive().max(1000).default(200),
-    /*
-     * The server's decoder needs every field present, even the optional ones:
-     * a missing key fails the whole request. An empty string is what the
-     * handler reads as "no filter", so an unused filter is sent as one.
-     */
-    status_filter: z.string().default(''),
-    type_filter: z.string().default(''),
-    target_kind_filter: z.string().default(''),
-    target_id_filter: z.string().default(''),
-});
-export type ListWorkflowInstancesRequest = z.input<typeof listWorkflowInstancesRequestSchema>;
-
-/** One run, as the instances list answers it. */
+/**
+ * One run, as the instances list answers it.
+ *
+ * The shape is the generated `WorkflowInstanceSummary`, and `satisfies` holds
+ * the schema to it: a field the C++ protocol renames or adds fails the
+ * typecheck here instead of decoding to a default at run time.
+ */
 const wireWorkflowInstanceSummarySchema = z.object({
     id: z.string(),
     type: z.string().default(''),
     status: z.string().default(''),
     current_step_index: z.int().nonnegative().default(0),
     step_count: z.int().nonnegative().default(0),
+    correlation_id: z.string().default(''),
+    created_by: z.string().default(''),
     created_at: z.string().default(''),
+    completed_at: z.string().nullable().default(null),
     error: z.string().default(''),
     target_kind: z.string().default(''),
     target_id: z.string().default(''),
-});
+}) satisfies z.ZodType<WorkflowInstanceSummary>;
 
 /** The list's answer. `success` defaults to false, so a bare answer reads as a failure. */
 export const wireWorkflowInstancesSchema = z.object({
     success: z.boolean().default(false),
     message: z.string().default(''),
     instances: z.array(wireWorkflowInstanceSummarySchema).default([]),
-});
+}) satisfies z.ZodType<ListWorkflowInstanceSummariesResponse>;
 
 /** The most provisioning runs one roster read asks for. */
 export const TENANT_SETUP_READ_LIMIT = 1000;
@@ -179,13 +179,20 @@ export interface TenantSetups {
  * a tenant is the one that moved most recently, and that is the one reported.
  */
 export async function readTenantSetups(caller: AuthenticatedCaller): Promise<TenantSetups> {
+    /*
+     * The request is the generated type, so every field the server's decoder
+     * requires is present or the typecheck fails. An empty filter is no filter.
+     */
+    const request: ListWorkflowInstanceSummariesRequest = {
+        limit: TENANT_SETUP_READ_LIMIT,
+        status_filter: '',
+        type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
+        target_kind_filter: PROVISION_TENANT_TARGET_KIND,
+        target_id_filter: '',
+    };
     const answer = await caller.callAuthenticated(
-        'workflow.v1.instances.list',
-        listWorkflowInstancesRequestSchema.parse({
-            limit: TENANT_SETUP_READ_LIMIT,
-            type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
-            target_kind_filter: PROVISION_TENANT_TARGET_KIND,
-        }),
+        workflowSubjects.list_workflow_instance_summaries_request,
+        request,
         wireWorkflowInstancesSchema,
     );
     if (!answer.success) {

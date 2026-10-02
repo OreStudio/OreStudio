@@ -38,7 +38,7 @@ namespace ores::shell::app::commands {
  *
  * Publishes a bundle, mirroring what the provisioning wizards do behind
  * their bundle pages. Publication dispatches a workflow; --wait blocks on
- * it via workflow_operation_commands::wait_for_instance. The listing is a
+ * it via workflow_run_commands::wait_for_instance. The listing is a
  * generated unit of its own, under the dataset_bundles menu.
  */
 class bundles_commands {

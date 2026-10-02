@@ -59,7 +59,7 @@ struct workflow_instance final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Workflow type name, e.g. 'provision_parties_workflow'.
+     * @brief Workflow type name, e.g. 'provision_tenant_workflow'.
      */
     std::string type;
 

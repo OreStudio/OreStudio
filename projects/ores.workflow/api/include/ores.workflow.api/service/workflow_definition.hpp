@@ -252,7 +252,7 @@ struct workflow_definition {
     /**
      * @brief Unique type name matching workflow_instance.type.
      *
-     * E.g. "provision_parties_workflow"
+     * E.g. "provision_tenant_workflow"
      */
     std::string type_name;
 
@@ -265,6 +265,16 @@ struct workflow_definition {
      * @brief What the engine does when one of this definition's steps fails.
      */
     failure_policy on_failure = failure_policy::compensate;
+
+    /**
+     * @brief Whether the steps come from the request rather than the definition.
+     *
+     * A definition such as tenant provisioning builds one step per kind its
+     * request orders, so it has no step list until a request arrives and
+     * refuses an empty one. The definitions read lists it with no steps
+     * instead of asking build_steps for a list it cannot give.
+     */
+    bool steps_depend_on_request = false;
 
     /**
      * @brief Builds the full step list for a specific workflow instance.

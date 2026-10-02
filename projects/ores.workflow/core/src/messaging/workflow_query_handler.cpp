@@ -23,15 +23,16 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
+#include <exception>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace ores::workflow::messaging {
 
@@ -110,21 +111,21 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     // stays one method. The rows in flight bound the work, and a filter that
     // named a column the repository does not index as a set would cost more
     // there than the scan it saves here.
-    if (req->status_filter && !req->status_filter->empty()) {
-        const std::string& filter = *req->status_filter;
+    if (!req->status_filter.empty()) {
+        const std::string& filter = req->status_filter;
         std::erase_if(instances,
                       [&](const auto& inst) { return state_name(inst.state_id) != filter; });
     }
-    if (req->type_filter && !req->type_filter->empty()) {
-        const std::string& filter = *req->type_filter;
+    if (!req->type_filter.empty()) {
+        const std::string& filter = req->type_filter;
         std::erase_if(instances, [&](const auto& inst) { return inst.type != filter; });
     }
-    if (req->target_kind_filter && !req->target_kind_filter->empty()) {
-        const std::string& filter = *req->target_kind_filter;
+    if (!req->target_kind_filter.empty()) {
+        const std::string& filter = req->target_kind_filter;
         std::erase_if(instances, [&](const auto& inst) { return inst.target_kind != filter; });
     }
-    if (req->target_id_filter && !req->target_id_filter->empty()) {
-        const std::string& filter = *req->target_id_filter;
+    if (!req->target_id_filter.empty()) {
+        const std::string& filter = req->target_id_filter;
         std::erase_if(instances, [&](const auto& inst) {
             // A run with no target does not act on the one that was asked for.
             return inst.target_id == boost::uuids::uuid{} ||
@@ -306,10 +307,20 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
             ds.type_name = def.type_name;
             ds.description = def.description;
 
-            // Call build_steps with empty inputs to get a representative step
-            // list for display. All currently registered workflows are
-            // deterministic so this produces the canonical step sequence.
-            const auto steps = def.build_steps("", "", "");
+            // A definition whose steps the request decides has no list to show
+            // and says so, so it is not asked for one. Any other definition
+            // yields its canonical sequence from an empty request. One that
+            // throws anyway is a defect in its builder: it is listed with no
+            // steps and logged, so one bad builder cannot fail the whole read.
+            std::vector<service::workflow_step_def> steps;
+            if (!def.steps_depend_on_request) {
+                try {
+                    steps = def.build_steps("", "", "");
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn) << "Definition " << def.type_name
+                                              << " failed to build its steps: " << e.what();
+                }
+            }
             ds.step_count = static_cast<int>(steps.size());
 
             for (int i = 0; i < static_cast<int>(steps.size()); ++i) {

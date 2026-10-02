@@ -22,7 +22,7 @@
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>

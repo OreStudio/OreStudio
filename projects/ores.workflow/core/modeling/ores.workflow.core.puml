@@ -23,62 +23,62 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace workflow #F2F2F2 {
-        namespace domain #F2F2F2 {
-            class workflow_instance <<struct>> {
-                +id : boost::uuids::uuid
-                +tenant_id : boost::uuids::uuid
-                +type : string
-                +state_id : boost::uuids::uuid
-                +request_json : string
-                +result_json : string
-                +error : string
-                +correlation_id : string
-                +created_by : string
-                +current_step_index : int
-                +step_count : int
-                +materialised_steps_json : string
-                +completed_at : optional<chrono::system_clock::time_point>
-                +last_event_at : optional<chrono::system_clock::time_point>
-                +created_at : chrono::system_clock::time_point
-            }
-            class workflow_step <<struct>> {
-                +id : boost::uuids::uuid
-                +workflow_id : boost::uuids::uuid
-                +step_index : int
-                +name : string
-                +state_id : boost::uuids::uuid
-                +request_json : string
-                +response_json : string
-                +error : string
-                +command_subject : string
-                +command_json : string
-                +command_published_at : optional<chrono::system_clock::time_point>
-                +idempotency_key : string
-                +compensation_subject : string
-                +compensation_json : string
-                +started_at : optional<chrono::system_clock::time_point>
-                +completed_at : optional<chrono::system_clock::time_point>
-                +step_log_json : string
-                +created_at : chrono::system_clock::time_point
-            }
-        }
         namespace messaging #F2F2F2 {
             class registrar {
+                +register_handlers(ores::nats::service::client& nats, ores::database::context ctx, ores::security::jwt::jwt_authenticator signer) : vector<ores::nats::service::subscription>
             }
             class workflow_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
+                -engine_ : shared_ptr<service::workflow_engine>
+                -lg() : [[nodiscard]] static auto&
+                +workflow_handler(ores::nats::service::client& nats, ores::database::context ctx, ores::security::jwt::jwt_authenticator signer, shared_ptr<service::workflow_engine> engine)
+                +retry_instance(ores::nats::message msg) : void
+            }
+            class workflow_instance_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_workflow_instances(ores::nats::message msg) : void
+                +get_workflow_instance(ores::nats::message msg) : void
+                +get_many_workflow_instances(ores::nats::message msg) : void
+                +put_workflow_instance(ores::nats::message msg) : void
+                +put_many_workflow_instances(ores::nats::message msg) : void
+                +delete_workflow_instance(ores::nats::message msg) : void
+                +delete_many_workflow_instances(ores::nats::message msg) : void
+                +list_workflow_instance_versions(ores::nats::message msg) : void
+                +get_workflow_instance_version(ores::nats::message msg) : void
             }
             class workflow_query_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -signer_ : ores::security::jwt::jwt_authenticator
-                -instance_state_names_ : hash<boost::uuids::uuid>>
-                -step_state_names_ : hash<boost::uuids::uuid>>
                 -registry_ : shared_ptr<const service::workflow_registry>
                 -instance_repo_ : repository::workflow_instance_repository
                 -step_repo_ : repository::workflow_step_repository
+                -lg() : [[nodiscard]] static auto&
+                +workflow_query_handler(ores::nats::service::client& nats, ores::database::context ctx, ores::security::jwt::jwt_authenticator signer, const service::fsm_state_map& instance_states, const service::fsm_state_map& step_states, shared_ptr<const service::workflow_registry> registry)
+                +list_instances(ores::nats::message msg) : void
+                +get_steps(ores::nats::message msg) : void
+                +list_definitions(ores::nats::message msg) : void
+                +get_step_result(ores::nats::message msg) : void
+                -state_name(const boost::uuids::uuid& id) : string
+            }
+            class workflow_step_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_workflow_steps(ores::nats::message msg) : void
+                +get_workflow_step(ores::nats::message msg) : void
+                +get_many_workflow_steps(ores::nats::message msg) : void
+                +put_workflow_step(ores::nats::message msg) : void
+                +put_many_workflow_steps(ores::nats::message msg) : void
+                +delete_workflow_step(ores::nats::message msg) : void
+                +delete_many_workflow_steps(ores::nats::message msg) : void
+                +list_by_workflow_id_workflow_steps(ores::nats::message msg) : void
+                +list_workflow_step_versions(ores::nats::message msg) : void
+                +get_workflow_step_version(ores::nats::message msg) : void
             }
         }
         namespace repository #F2F2F2 {
@@ -87,7 +87,10 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +version : int
                 +type : string
+                +target_kind : optional<string>
+                +target_id : optional<string>
                 +state_id : string
                 +request_json : string
                 +result_json : optional<string>
@@ -97,18 +100,47 @@ namespace ores #F2F2F2 {
                 +current_step_index : int
                 +step_count : int
                 +materialised_steps_json : string
-                +completed_at : optional<db_timestamp>
-                +last_event_at : optional<db_timestamp>
-                +created_at : optional<db_timestamp>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class workflow_instance_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const workflow_instance_entity& v) : domain::workflow_instance
+                +map(const domain::workflow_instance& v) : workflow_instance_entity
+                +map(const vector<workflow_instance_entity>& v) : vector<domain::workflow_instance>
+                +map(const vector<domain::workflow_instance>& v) : vector<workflow_instance_entity>
             }
             class workflow_instance_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::workflow_instance& v) : void
+                +write(context ctx, const vector<domain::workflow_instance>& v) : void
+                +write(context ctx, const domain::workflow_instance& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::workflow_instance>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::workflow_instance>
+                +read_latest(context ctx, const string& id) : vector<domain::workflow_instance>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::workflow_instance>
+                +read_all(context ctx, const string& id) : vector<domain::workflow_instance>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::workflow_instance>
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::workflow_instance>
+                +get_total_instance_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::workflow_instance& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::workflow_instance& v, const ores::utility::domain::precondition& claim) : domain::workflow_instance
             }
             class workflow_step_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
                 +workflow_id : string
                 +step_index : int
                 +name : string
@@ -116,34 +148,145 @@ namespace ores #F2F2F2 {
                 +request_json : string
                 +response_json : optional<string>
                 +error : optional<string>
+                +step_log_json : optional<string>
                 +command_subject : string
                 +command_json : string
-                +command_published_at : optional<db_timestamp>
                 +idempotency_key : string
                 +compensation_subject : string
                 +compensation_json : string
-                +started_at : optional<db_timestamp>
-                +completed_at : optional<db_timestamp>
-                +created_at : optional<db_timestamp>
-                +step_log_json : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class workflow_step_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const workflow_step_entity& v) : domain::workflow_step
+                +map(const domain::workflow_step& v) : workflow_step_entity
+                +map(const vector<workflow_step_entity>& v) : vector<domain::workflow_step>
+                +map(const vector<domain::workflow_step>& v) : vector<workflow_step_entity>
             }
             class workflow_step_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::workflow_step& v) : void
+                +write(context ctx, const vector<domain::workflow_step>& v) : void
+                +write(context ctx, const domain::workflow_step& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::workflow_step>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::workflow_step>
+                +read_latest(context ctx, const string& id) : vector<domain::workflow_step>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::workflow_step>
+                +read_all(context ctx, const string& id) : vector<domain::workflow_step>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::workflow_step>
+                +read_latest_by_workflow_id(context ctx, const string& workflow_id, uint32_t offset, uint32_t limit) : vector<domain::workflow_step>
+                +get_total_step_count_by_workflow_id(context ctx, const string& workflow_id) : uint32_t
+                +read_latest(context ctx, uint32_t offset, uint32_t limit) : vector<domain::workflow_step>
+                +get_total_step_count(context ctx) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::workflow_step& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::workflow_step& v, const ores::utility::domain::precondition& claim) : domain::workflow_step
             }
         }
         namespace service #F2F2F2 {
             class fsm_state_map <<struct>> {
                 +states : unordered_map<string, boost::uuids::uuid>
+                +require(string_view name) : [[nodiscard]] boost::uuids::uuid
             }
             class workflow_engine {
+                +expiry_pass_interval : static constexpr chrono::seconds
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -registry_ : shared_ptr<const workflow_registry>
                 -instance_states_ : fsm_state_map
                 -step_states_ : fsm_state_map
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
                 -instance_repo_ : repository::workflow_instance_repository
                 -step_repo_ : repository::workflow_step_repository
+                -service_last_seen_ : unordered_map<string, chrono::system_clock::time_point>
+                -service_last_seen_mutex_ : mutex
+                -deadline_watch_ : ores::platform::concurrency::stoppable_thread
+                -awaiting_ : unordered_map<string, awaiting_step>
+                -mutex_ : mutex
+                -lg() : [[nodiscard]] static auto&
+                +workflow_engine(ores::nats::service::client& nats, ores::database::context ctx, shared_ptr<const workflow_registry> registry, fsm_state_map instance_states, fsm_state_map step_states, optional<ores::security::jwt::jwt_authenticator> verifier)
+                +on_step_completed(ores::nats::message msg) : void
+                +on_start_workflow(ores::nats::message msg) : void
+                +recover_in_progress() : void
+                +expire_overdue_steps() : size_t
+                +start_deadline_watch() : void
+                +note_service_seen(const string& service_name, chrono::system_clock::time_point seen_at) : void
+                +retry_instance(const boost::uuids::uuid& instance_id, const string& step_name, const utility::uuid::tenant_id& caller_tenant) : [[nodiscard]] retry_outcome
+                -set_instance_state(const boost::uuids::uuid& instance_id, const boost::uuids::uuid& state_id, const string& result_json, const string& error) : void
+                -set_step_progress(const boost::uuids::uuid& instance_id, int step_index) : void
+                -stamp_command_published(const boost::uuids::uuid& step_id) : void
+                -note_awaiting(const domain::workflow_step& step, const boost::uuids::uuid& instance_id, const boost::uuids::uuid& tenant_id) : void
+                -deadline_failure_text(const domain::workflow_step& step, chrono::seconds budget, chrono::seconds silent_for) : string
+                -publish_command(const domain::workflow_step& step, const boost::uuids::uuid& instance_id, const boost::uuids::uuid& tenant_id) : void
+                -publish_status_event(const boost::uuids::uuid& instance_id, const boost::uuids::uuid& tenant_id) : void
+                -dispatch_next_step(domain::workflow_instance& instance, const string& last_result_json) : void
+                -begin_compensation(const domain::workflow_instance& instance, const string& failure_msg) : void
+                -stop_on_failure(const domain::workflow_instance& instance, const string& failure_msg) : void
+                -check_compensation_complete(const domain::workflow_instance& instance) : void
+            }
+            class workflow_instance_service {
+                -ctx_ : context
+                -repo_ : repository::workflow_instance_repository
+                -lg() : [[nodiscard]] static auto&
+                +workflow_instance_service(context ctx)
+                +list_workflow_instances(const messaging::list_workflow_instances_request& request) : messaging::list_workflow_instances_response
+                +get_workflow_instance(const messaging::get_workflow_instance_request& request) : messaging::get_workflow_instance_response
+                +get_many_workflow_instances(const messaging::get_many_workflow_instances_request& request) : messaging::get_many_workflow_instances_response
+                +put_workflow_instance(const messaging::put_workflow_instance_request& request) : messaging::put_workflow_instance_response
+                +put_many_workflow_instances(const messaging::put_many_workflow_instances_request& request) : messaging::put_many_workflow_instances_response
+                +delete_workflow_instance(const messaging::delete_workflow_instance_request& request) : messaging::delete_workflow_instance_response
+                +delete_many_workflow_instances(const messaging::delete_many_workflow_instances_request& request) : messaging::delete_many_workflow_instances_response
+                +list_workflow_instance_versions(const messaging::list_workflow_instance_versions_request& request) : messaging::list_workflow_instance_versions_response
+                +get_workflow_instance_version(const messaging::get_workflow_instance_version_request& request) : messaging::get_workflow_instance_version_response
+                +list_instances(uint32_t offset, uint32_t limit) : vector<domain::workflow_instance>
+                +count_instances() : uint32_t
+                +get_instance_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::workflow_instance>
+                +get_instance(const boost::uuids::uuid& id) : optional<domain::workflow_instance>
+                +get_instances(const vector<string>& ids) : vector<domain::workflow_instance>
+                +save_instance(const domain::workflow_instance& instance) : void
+                +save_instances(const vector<domain::workflow_instance>& instances) : void
+                +delete_instance(const boost::uuids::uuid& id) : void
+                +delete_instances(const vector<string>& ids) : void
+                +get_instance_history(const string& id) : vector<domain::workflow_instance>
+                -prepare_change(const messaging::workflow_instance_change& change, const ores::utility::domain::change_intent& intent, domain::workflow_instance& out) : ores::utility::domain::result
+            }
+            class workflow_step_service {
+                -ctx_ : context
+                -repo_ : repository::workflow_step_repository
+                -lg() : [[nodiscard]] static auto&
+                +workflow_step_service(context ctx)
+                +list_workflow_steps(const messaging::list_workflow_steps_request& request) : messaging::list_workflow_steps_response
+                +get_workflow_step(const messaging::get_workflow_step_request& request) : messaging::get_workflow_step_response
+                +get_many_workflow_steps(const messaging::get_many_workflow_steps_request& request) : messaging::get_many_workflow_steps_response
+                +put_workflow_step(const messaging::put_workflow_step_request& request) : messaging::put_workflow_step_response
+                +put_many_workflow_steps(const messaging::put_many_workflow_steps_request& request) : messaging::put_many_workflow_steps_response
+                +delete_workflow_step(const messaging::delete_workflow_step_request& request) : messaging::delete_workflow_step_response
+                +delete_many_workflow_steps(const messaging::delete_many_workflow_steps_request& request) : messaging::delete_many_workflow_steps_response
+                +list_by_workflow_id_workflow_steps(const messaging::list_by_workflow_id_workflow_steps_request& request) : messaging::list_by_workflow_id_workflow_steps_response
+                +list_workflow_step_versions(const messaging::list_workflow_step_versions_request& request) : messaging::list_workflow_step_versions_response
+                +get_workflow_step_version(const messaging::get_workflow_step_version_request& request) : messaging::get_workflow_step_version_response
+                +list_steps(uint32_t offset, uint32_t limit) : vector<domain::workflow_step>
+                +count_steps() : uint32_t
+                +list_steps_by_workflow_id(const string& workflow_id, uint32_t offset, uint32_t limit) : vector<domain::workflow_step>
+                +count_steps_by_workflow_id(const string& workflow_id) : uint32_t
+                +get_step_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::workflow_step>
+                +get_step(const boost::uuids::uuid& id) : optional<domain::workflow_step>
+                +get_steps(const vector<string>& ids) : vector<domain::workflow_step>
+                +save_step(const domain::workflow_step& step) : void
+                +save_steps(const vector<domain::workflow_step>& steps) : void
+                +delete_step(const boost::uuids::uuid& id) : void
+                +delete_steps(const vector<string>& ids) : void
+                +get_step_history(const string& id) : vector<domain::workflow_step>
+                -prepare_change(const messaging::workflow_step_change& change, const ores::utility::domain::change_intent& intent, domain::workflow_step& out) : ores::utility::domain::result
             }
         }
     }
@@ -170,7 +313,7 @@ class ores::workflow::messaging::registrar <<hand-written>> {
 }
 
 class ores::workflow::messaging::workflow_handler <<hand-written>> {
-    +provision_parties(msg) : void
+    +retry_instance(msg) : void
 }
 
 class ores::workflow::messaging::workflow_query_handler <<hand-written>> {
@@ -282,7 +425,7 @@ class ores::workflow::service::workflow_engine <<hand-written>> {
 "ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::register_workflow_step_history_provider" : folds
 "ores::workflow::messaging::registrar" ..> "ores::workflow::service::workflow_engine" : builds, starts recovery
 "ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_query_handler" : subscribes four queries
-"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_handler" : subscribes the provision request
+"ores::workflow::messaging::registrar" ..> "ores::workflow::messaging::workflow_handler" : subscribes the retry request
 "ores::workflow::messaging::registrar" ..> "ores::workflow::service::load_fsm_states" : loads once at startup
 
 note bottom of "ores::workflow::messaging::registrar"

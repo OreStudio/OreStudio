@@ -23,54 +23,188 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace workflow #F2F2F2 {
-        namespace eventing #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class workflow_instance <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +type : string
+                +target_kind : string
+                +target_id : boost::uuids::uuid
+                +state_id : boost::uuids::uuid
+                +request_json : string
+                +result_json : string
+                +error : string
+                +correlation_id : string
+                +created_by : string
+                +current_step_index : int
+                +step_count : int
+                +materialised_steps_json : string
+                +completed_at : optional<chrono::system_clock::time_point>
+                +last_event_at : optional<chrono::system_clock::time_point>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class workflow_step <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +workflow_id : boost::uuids::uuid
+                +step_index : int
+                +name : string
+                +state_id : boost::uuids::uuid
+                +request_json : string
+                +response_json : string
+                +error : string
+                +step_log_json : string
+                +command_subject : string
+                +command_json : string
+                +command_published_at : optional<chrono::system_clock::time_point>
+                +idempotency_key : string
+                +compensation_subject : string
+                +compensation_json : string
+                +started_at : optional<chrono::system_clock::time_point>
+                +completed_at : optional<chrono::system_clock::time_point>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class workflow_instance_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class workflow_instance_write <<struct>> {
+                +id : boost::uuids::uuid
+                +type : string
+                +target_kind : string
+                +target_id : boost::uuids::uuid
+                +state_id : boost::uuids::uuid
+                +request_json : string
+                +result_json : string
+                +error : string
+                +correlation_id : string
+                +created_by : string
+                +current_step_index : int
+                +step_count : int
+                +materialised_steps_json : string
+                +completed_at : optional<chrono::system_clock::time_point>
+                +last_event_at : optional<chrono::system_clock::time_point>
+            }
+            class workflow_instance_change <<struct>> {
+                +write : workflow_instance_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class workflow_instance_removal <<struct>> {
+                +key : workflow_instance_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class workflow_instance_lookup <<struct>> {
+                +key : workflow_instance_key
+                +workflow_instance : optional<ores::workflow::domain::workflow_instance>
+            }
             class workflow_instance_event <<struct>> {
-                +event_id : uuid
+                +event_id : boost::uuids::uuid
                 +key : workflow_instance_key
                 +action : string
                 +version : uint32_t
                 +occurred_at : chrono::system_clock::time_point
                 +correlation_id : optional<string>
             }
-            class workflow_step_event <<struct>> {
-                +event_id : uuid
-                +key : workflow_step_key
-                +action : string
+            class workflow_instance_version_key <<struct>> {
+                +workflow_instance : workflow_instance_key
                 +version : uint32_t
-                +occurred_at : chrono::system_clock::time_point
-                +correlation_id : optional<string>
             }
-        }
-        namespace messaging #F2F2F2 {
-            enum step_log_level {
-                info
-                warn
-                error
+            class workflow_instance_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_workflow_instances_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+            }
+            class list_workflow_instances_response <<struct>> {
+                +result : ores::utility::domain::result
+                +instances : vector<ores::workflow::domain::workflow_instance>
+                +total : uint64_t
+            }
+            class get_workflow_instance_request <<struct>> {
+                +key : workflow_instance_key
+            }
+            class get_workflow_instance_response <<struct>> {
+                +result : ores::utility::domain::result
+                +workflow_instance : optional<ores::workflow::domain::workflow_instance>
+            }
+            class get_many_workflow_instances_request <<struct>> {
+                +keys : vector<workflow_instance_key>
+            }
+            class get_many_workflow_instances_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<workflow_instance_lookup>
+            }
+            class put_workflow_instance_request <<struct>> {
+                +change : workflow_instance_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_workflow_instance_response <<struct>> {
+                +result : ores::utility::domain::result
+                +workflow_instance : optional<ores::workflow::domain::workflow_instance>
+            }
+            class put_many_workflow_instances_request <<struct>> {
+                +changes : vector<workflow_instance_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_workflow_instances_response <<struct>> {
+                +result : ores::utility::domain::result
+                +instances : vector<ores::workflow::domain::workflow_instance>
+            }
+            class delete_workflow_instance_request <<struct>> {
+                +removal : workflow_instance_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_workflow_instance_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_workflow_instances_request <<struct>> {
+                +removals : vector<workflow_instance_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_workflow_instances_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_workflow_instance_versions_request <<struct>> {
+                +key : workflow_instance_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<workflow_instance_versions_filter>
+            }
+            class list_workflow_instance_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::workflow::domain::workflow_instance>
+                +total : uint64_t
+            }
+            class get_workflow_instance_version_request <<struct>> {
+                +key : workflow_instance_version_key
+            }
+            class get_workflow_instance_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::workflow::domain::workflow_instance>
             }
             class step_log_entry <<struct>> {
-                +level : step_log_level
                 +message : string
                 +context : string
-            }
-            class get_step_result_request <<struct>> {
-                +step_id : string
-            }
-            class get_step_result_response <<struct>> {
-                +found : bool
-                +outcome : step_outcome
-                +result_json : string
-                +error_message : string
-                +log : vector<step_log_entry>
-            }
-            enum step_outcome {
-                completed
-                completed_with_warnings
-                failed
             }
             class step_completed_event <<struct>> {
                 +workflow_instance_id : string
                 +step_id : string
-                +outcome : step_outcome
                 +result_json : string
                 +error_message : string
                 +log : vector<step_log_entry>
@@ -78,45 +212,23 @@ namespace ores #F2F2F2 {
             class start_workflow_message <<struct>> {
                 +type : string
                 +tenant_id : string
+                +target_kind : string
+                +target_id : string
                 +request_json : string
                 +correlation_id : string
                 +instance_id : string
             }
-            class provision_party_input <<struct>> {
-                +full_name : string
-                +short_code : string
-                +party_category : string
-                +party_type : string
-                +business_center_code : string
-                +parent_party_id : optional<string>
-                +principal : string
-                +password : string
-                +totp_secret : string
-                +email : string
-                +account_type : string
+            class get_step_result_request <<struct>> {
+                +step_id : string
+                +tenant_id : string
             }
-            class provision_parties_request <<struct>> {
-                +parties : vector<provision_party_input>
-            }
-            class provision_parties_response <<struct>> {
+            class get_step_result_response <<struct>> {
+                +found : bool
+                +result_json : string
+                +error_message : string
+                +log : vector<step_log_entry>
                 +success : bool
                 +message : string
-                +party_ids : vector<string>
-                +workflow_instance_ids : vector<string>
-                +correlation_id : string
-            }
-            class provision_party_workflow_request <<struct>> {
-                +party_id : string
-                +full_name : string
-                +short_code : string
-                +party_category : string
-                +party_type : string
-                +business_center_code : string
-                +parent_party_id : optional<string>
-                +password : string
-                +totp_secret : string
-                +email : string
-                +account_type : string
             }
             class workflow_instance_summary <<struct>> {
                 +id : string
@@ -129,12 +241,17 @@ namespace ores #F2F2F2 {
                 +created_at : string
                 +completed_at : optional<string>
                 +error : string
+                +target_kind : string
+                +target_id : string
             }
-            class list_workflow_instances_request <<struct>> {
+            class list_workflow_instance_summaries_request <<struct>> {
                 +limit : int
-                +status_filter : optional<string>
+                +status_filter : string
+                +type_filter : string
+                +target_kind_filter : string
+                +target_id_filter : string
             }
-            class list_workflow_instances_response <<struct>> {
+            class list_workflow_instance_summaries_response <<struct>> {
                 +success : bool
                 +message : string
                 +instances : vector<workflow_instance_summary>
@@ -142,6 +259,8 @@ namespace ores #F2F2F2 {
             class workflow_step_summary <<struct>> {
                 +id : string
                 +name : string
+                +label : string
+                +description : string
                 +status : string
                 +step_index : int
                 +created_at : string
@@ -156,6 +275,10 @@ namespace ores #F2F2F2 {
             class get_workflow_steps_response <<struct>> {
                 +success : bool
                 +message : string
+                +status : string
+                +error : string
+                +step_count : int
+                +current_step_index : int
                 +steps : vector<workflow_step_summary>
             }
             class workflow_step_definition_summary <<struct>> {
@@ -178,25 +301,218 @@ namespace ores #F2F2F2 {
                 +message : string
                 +definitions : vector<workflow_definition_summary>
             }
+            class retry_workflow_instance_request <<struct>> {
+                +workflow_instance_id : string
+                +step_name : string
+            }
+            class retry_workflow_instance_response <<struct>> {
+                +success : bool
+                +message : string
+                +workflow_instance_id : string
+                +step_index : int
+                +step_name : string
+            }
+            class workflow_step_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class workflow_step_write <<struct>> {
+                +id : boost::uuids::uuid
+                +workflow_id : boost::uuids::uuid
+                +step_index : int
+                +name : string
+                +state_id : boost::uuids::uuid
+                +request_json : string
+                +response_json : string
+                +error : string
+                +step_log_json : string
+                +command_subject : string
+                +command_json : string
+                +command_published_at : optional<chrono::system_clock::time_point>
+                +idempotency_key : string
+                +compensation_subject : string
+                +compensation_json : string
+                +started_at : optional<chrono::system_clock::time_point>
+                +completed_at : optional<chrono::system_clock::time_point>
+            }
+            class workflow_step_change <<struct>> {
+                +write : workflow_step_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class workflow_step_removal <<struct>> {
+                +key : workflow_step_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class workflow_step_lookup <<struct>> {
+                +key : workflow_step_key
+                +workflow_step : optional<ores::workflow::domain::workflow_step>
+            }
+            class workflow_steps_filter <<struct>> {
+                +workflow_id : optional<boost::uuids::uuid>
+            }
+            class workflow_step_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : workflow_step_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class workflow_step_version_key <<struct>> {
+                +workflow_step : workflow_step_key
+                +version : uint32_t
+            }
+            class workflow_step_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_workflow_steps_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<workflow_steps_filter>
+            }
+            class list_workflow_steps_response <<struct>> {
+                +result : ores::utility::domain::result
+                +steps : vector<ores::workflow::domain::workflow_step>
+                +total : uint64_t
+            }
+            class get_workflow_step_request <<struct>> {
+                +key : workflow_step_key
+            }
+            class get_workflow_step_response <<struct>> {
+                +result : ores::utility::domain::result
+                +workflow_step : optional<ores::workflow::domain::workflow_step>
+            }
+            class get_many_workflow_steps_request <<struct>> {
+                +keys : vector<workflow_step_key>
+            }
+            class get_many_workflow_steps_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<workflow_step_lookup>
+            }
+            class put_workflow_step_request <<struct>> {
+                +change : workflow_step_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_workflow_step_response <<struct>> {
+                +result : ores::utility::domain::result
+                +workflow_step : optional<ores::workflow::domain::workflow_step>
+            }
+            class put_many_workflow_steps_request <<struct>> {
+                +changes : vector<workflow_step_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_workflow_steps_response <<struct>> {
+                +result : ores::utility::domain::result
+                +steps : vector<ores::workflow::domain::workflow_step>
+            }
+            class delete_workflow_step_request <<struct>> {
+                +removal : workflow_step_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_workflow_step_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_workflow_steps_request <<struct>> {
+                +removals : vector<workflow_step_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_workflow_steps_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_workflow_id_workflow_steps_request <<struct>> {
+                +workflow_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<workflow_steps_filter>
+            }
+            class list_by_workflow_id_workflow_steps_response <<struct>> {
+                +result : ores::utility::domain::result
+                +steps : vector<ores::workflow::domain::workflow_step>
+                +total : uint64_t
+            }
+            class list_workflow_step_versions_request <<struct>> {
+                +key : workflow_step_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<workflow_step_versions_filter>
+            }
+            class list_workflow_step_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::workflow::domain::workflow_step>
+                +total : uint64_t
+            }
+            class get_workflow_step_version_request <<struct>> {
+                +key : workflow_step_version_key
+            }
+            class get_workflow_step_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::workflow::domain::workflow_step>
+            }
+            enum step_log_level {
+                info
+                warn
+                error
+            }
+            enum step_outcome {
+                completed
+                completed_with_warnings
+                failed
+            }
         }
         namespace service #F2F2F2 {
+            class workflow_step_result <<struct>> {
+                +name : string
+                +response_json : string
+            }
             class workflow_step_def <<struct>> {
                 +name : string
+                +label : string
                 +description : string
                 +command_subject : string
                 +compensation_subject : string
+                +timeout : chrono::seconds
             }
             class materialised_step <<struct>> {
                 +name : string
+                +label : string
+                +description : string
                 +command_subject : string
                 +compensation_subject : string
+                +timeout_seconds : uint32_t
+            }
+            enum failure_policy {
+                compensate
+                stop
             }
             class workflow_definition <<struct>> {
                 +type_name : string
                 +description : string
+                +on_failure : failure_policy
             }
             class workflow_registry {
                 -definitions_ : unordered_map<string, workflow_definition>
+                +register_definition(workflow_definition def) : void
+                +find(const string& type_name) : [[nodiscard]] const workflow_definition*
+                +all() : [[nodiscard]] const unordered_map<string, workflow_definition>&
+            }
+        }
+        namespace workflow #F2F2F2 {
+            class identity_step_request <<struct>> {
+                +name : string
+                +behaviour : optional<string>
+                +compensate : optional<bool>
+                +delay_seconds : optional<int>
+                +outcome() : [[nodiscard]] string
+                +compensates() : [[nodiscard]] bool
+                +delay() : [[nodiscard]] int
+            }
+            class identity_workflow_request <<struct>> {
+                +steps : vector<identity_step_request>
             }
         }
     }
@@ -274,27 +590,24 @@ class ores::workflow::messaging::workflow_step_protocol <<generated protocol uni
     +versions.get : workflow.v1.workflow_steps_versions.get
 }
 
-' The five operation messages, which no entity model can express because they are
-' the engine's own conversation rather than an entity verb. P04 records the
-' operation model that would generate them.
+' The operation messages, which no entity model can express because they are the
+' engine's own conversation rather than an entity verb. They are generated from
+' the operation model ores.workflow.workflow_messages; what that model cannot
+' state is hand-written in workflow_vocabulary.hpp.
 
-class ores::workflow::messaging::provision_parties_request <<hand-written>> {
-    +subject : workflow.v1.parties.provision
-}
-
-class ores::workflow::messaging::start_workflow_message <<hand-written>> {
+class ores::workflow::messaging::start_workflow_message <<generated>> {
     +subject : workflow.v1.start
 }
 
-class ores::workflow::messaging::step_completed_event <<hand-written>> {
+class ores::workflow::messaging::step_completed_event <<generated>> {
     +subject : workflow.v1.events.step-completed
 }
 
-class ores::workflow::messaging::list_workflow_definitions_request <<hand-written>> {
+class ores::workflow::messaging::list_workflow_definitions_request <<generated>> {
     +subject : workflow.v1.definitions.list
 }
 
-class ores::workflow::messaging::get_step_result_request <<hand-written>> {
+class ores::workflow::messaging::get_step_result_request <<generated>> {
     +subject : workflow.v1.steps.get-result
 }
 
@@ -307,15 +620,12 @@ only the outcome cannot tell a clean run from a lossy one.
 end note
 
 note bottom of "ores::workflow::messaging::workflow_instance_protocol"
-These two units collide by name with the operation
-conversation and not by subject. The hand-written
-workflow_query_protocol.hpp declares its own
+The entity protocols and the operation protocol share a
+namespace and differ by name: the entity list is
 list_workflow_instances_request on
-workflow.v1.instances.list, while this generated unit declares
-one on workflow.v1.workflow_instances.list: two different
-messages under one name in one namespace. Nothing includes
-both today, which is the only reason it compiles. P03's
-duplicate inventory and P04's operation model both land here.
+workflow.v1.workflow_instances.list, and the operation read
+is list_workflow_instance_summaries_request on
+workflow.v1.instances.list.
 end note
 
 ' Local Variables:

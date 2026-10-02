@@ -24,7 +24,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
-#include "ores.shell/app/commands/workflow/workflow_operation_commands.hpp"
+#include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/http_base_url.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
@@ -275,7 +275,7 @@ void ore_commands::process_import(std::ostream& out,
     BOOST_LOG_SEV(lg(), info) << "ORE import workflow dispatched: " << result->workflow_instance_id;
     out << "workflow_instance_id: " << result->workflow_instance_id << std::endl;
 
-    if (!workflow_operation_commands::wait_for_instance(
+    if (!workflow_run_commands::wait_for_instance(
             out, session, result->workflow_instance_id, timeout, 1))
         fail(out) << "ORE import did not complete: see the steps above." << std::endl;
 }

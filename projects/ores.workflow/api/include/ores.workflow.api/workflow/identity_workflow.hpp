@@ -111,6 +111,7 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
     def.description = "Runs the steps its request declares and reports the outcome each one "
                       "asks for. A fixture for exercising the engine: no domain work, no other "
                       "component, one step per declared entry.";
+    def.steps_depend_on_request = true;
 
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,

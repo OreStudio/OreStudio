@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: CBA0C183-8745-4A7E-9381-26270BBFBE97
+:END:
+#+title: The workflow engine depends on the components that commission it
+#+description: ores.workflow's registrar includes dq, ore, refdata and reporting and calls their registration functions, so the engine cannot build without four components that should depend on it. The definitions are C++ lambdas, so they compile into the engine's process. Removing the inversion needs workflow definitions as data, which modelling the workflows would produce. Found by the ores.workflow clean-up (P04 detail) and never filed.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:architecture:dependencies:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.workflow/core/src/messaging/registrar.cpp= includes the APIs of
+=ores.dq=, =ores.ore=, =ores.refdata= and =ores.reporting= and calls their
+=register_*_workflow(registry)= functions. The engine therefore cannot build
+without four components that should depend on it, not the other way round.
+
+Moving payloads to their owners does not fix this. The engine owns the
+=workflow_registry=, so a commissioner registers only when the engine calls it,
+and the definitions are C++ lambdas that must compile into the engine's process.
+The fix is to make a workflow definition data -- its steps, subjects and
+compensations -- which a model of the workflows would produce, so the engine
+loads definitions instead of linking them.
+
+* Why
+
+The ores.workflow clean-up recorded this in its P04 detail ("A second problem
+the first one hides") as "a finding for its own work item", and closed without
+filing one.
+
+* References
+
+- [[id:9C3B1C5F-C0AB-44A5-84CB-CAFDE5FF3BF8][Bring ores.workflow to the clean standard]]
+- [[id:5C04D943-1792-43C5-883E-A0938DE2B00F][Model the workflow query protocol as an operation]]
+
+* See also
+
+-

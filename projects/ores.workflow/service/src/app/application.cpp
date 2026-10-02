@@ -25,7 +25,7 @@
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/messaging/registrar.hpp"
 #include "ores.workflow.service/messaging/workflow_instance_event_registrar.hpp"
 #include "ores.workflow.service/messaging/workflow_step_event_registrar.hpp"

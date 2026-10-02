@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SHELL_APP_COMMANDS_WORKFLOW_WORKFLOW_WAIT_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_WORKFLOW_WORKFLOW_WAIT_COMMANDS_HPP
+#ifndef ORES_SHELL_APP_COMMANDS_WORKFLOW_WORKFLOW_RUN_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_WORKFLOW_WORKFLOW_RUN_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -37,28 +37,23 @@ class Menu;
 namespace ores::shell::app::commands {
 
 /**
- * @brief Blocking on a dispatched instance, which is not an entity verb.
+ * @brief The workflow verbs that are not messages: wait for a run, and start one.
  *
- * The two generated units beside this one answer the entities' own
- * derivation: they read and write workflow_instances and workflow_steps
- * rows. Waiting for a run to finish is not one of those verbs -- it polls
- * the engine's step query until the instance reaches a terminal state --
- * so generation has no unit for it and this one stays hand-written.
+ * Every other workflow verb is generated from ores.workflow.workflow_messages
+ * into workflow_operations_commands, which owns the workflow menu. These two
+ * stay hand-written because each does work around its message. Waiting polls
+ * the steps read until the run reaches a terminal state. Starting checks the
+ * type against the registered definitions, generates the instance id the
+ * caller follows, and publishes on the stream, where no reply comes back.
  *
- * It is registered because callers outside the REPL reach for it: bundle
- * publication, ORE import and party provisioning each dispatch a workflow
- * and then block on it, and a run that chooses not to block tells the
- * operator to follow progress with `workflow wait`. wait_for_instance is
- * public beside the command so those callers block by the same rules
- * rather than a second copy of them.
- *
- * P04 records the operation model that would let generation take this
- * over, as it does for iam's generated *_operations_commands units.
+ * Bundle publication, ORE import and tenant provisioning dispatch a workflow
+ * and then block on it, so wait_for_instance is public beside the verb and
+ * they block by the same rules.
  */
-class workflow_operation_commands {
+class workflow_run_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.shell.app.commands.workflow.workflow_operation_commands";
+        "ores.shell.app.commands.workflow.workflow_run_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -68,7 +63,7 @@ private:
 
 public:
     /**
-     * @brief Register the workflow submenu, which holds the wait verb.
+     * @brief Add the wait and start verbs to the generated workflow menu.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
@@ -101,18 +96,6 @@ public:
                                   std::chrono::seconds timeout,
                                   std::size_t expected_steps = 0,
                                   const std::string& expected_state = {});
-
-    /**
-     * @brief List the workflow types the service has registered.
-     *
-     * Usage: workflow definitions
-     *
-     * A workflow cannot be started without knowing its type name, and until this
-     * command existed nothing in the shell could tell you one.
-     */
-    static void process_definitions(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    const std::vector<std::string>& args);
 
     /**
      * @brief Start a workflow by type and print the instance id to follow.

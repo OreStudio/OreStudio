@@ -642,6 +642,7 @@ tangled into the runnable script library
 - [[id:AA39B1E4-DE76-433E-9DE3-D16C0BD40241][How do I run a workflow to completion?]]
 - [[id:719CBDCA-3DAE-46C5-BB89-D5401FBE7B5A][How do I run a workflow where a step reports warnings?]]
 - [[id:BC01755C-69FC-48C1-96D6-2EFD8E1BEF1D][How do I run a workflow with many steps?]]
+- [[id:7189B63B-E93F-5C59-B8FA-9327D70B806E][How do I run the workflow commands from the shell?]]
 - [[id:5D5AFECE-2061-44FF-A851-F62BFDE758DF][How do I watch a workflow that takes its time?]]
 
 * Concurrency Policies

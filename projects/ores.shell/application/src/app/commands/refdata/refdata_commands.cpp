@@ -67,6 +67,7 @@
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenant_party_operations_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_convention_commands.hpp"
@@ -149,6 +150,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     rounding_type_commands::register_commands(root_menu, session);
     series_subclass_code_commands::register_commands(root_menu, session);
     swap_convention_commands::register_commands(root_menu, session);
+    tenant_party_operations_commands::register_commands(root_menu, session);
     tenor_anchor_commands::register_commands(root_menu, session);
     tenor_commands::register_commands(root_menu, session);
     tenor_convention_commands::register_commands(root_menu, session);

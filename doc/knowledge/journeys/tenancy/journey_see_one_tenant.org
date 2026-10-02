@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 9A77690B-8190-4237-94F1-D8111F3FB0B9
+:END:
+#+title: User Journey: See one tenant
+#+description: A system administrator opens one tenant from the roster and reads its details, its setup run and its parties.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator opens one tenant from the roster and reads its details, its setup run and its parties.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see everything about this one tenant in one place." The system
+administrator opens a tenant from the roster and reads one screen. The journey
+is done when the screen answers three questions: what the tenant is, how its
+setup went, and which parties it holds.
+
+* Actor and trigger
+
+The system administrator, in system administration mode: the same actor as
+[[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]]. A tenant
+administrator reads their own tenant in
+[[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] and cannot reach
+this screen.
+
+The trigger is a question about one tenant. The administrator picks *Open* from
+the tenant's row menu on the roster, or opens a link to the tenant. The journey
+ends when the administrator goes back to the roster or goes on to an action on
+the tenant.
+
+This journey writes nothing.
+
+* Steps
+
+1. *Open the tenant.* The administrator picks *Open* in the roster row's menu.
+   The system shows the tenant's screen at =/tenants/:code=. The address names
+   the tenant's code, its stable name in a request, so a link opens the same
+   tenant again.
+2. *Read the details.* The system reads the tenant and shows its code, name,
+   hostname, type, status and description. The type and the status are painted
+   with their badges, as on the roster. The system also shows whether the
+   tenant is the registration default.
+3. *Read the provenance.* The system shows the version, who last changed the
+   row, which service wrote it, the change reason and commentary, and when the
+   change was recorded. The roster leaves these out; this screen is where a
+   person reads them.
+4. *Read the setup run.* The system shows the run that provisioned the tenant:
+   its status, the step it reached of how many, and the error when it failed.
+   When the run did not complete, the screen links to the run's page, where
+   the administrator can watch it or retry it. A tenant with no run, such as a
+   tenant created before runs were recorded, says so.
+5. *Read the parties.* The system lists the tenant's parties: the code, the
+   name, the category, the type, the status and the parent. The system party
+   is listed and marked, because every tenant has one. A tenant with only its
+   system party says that no business party exists yet.
+6. *A tenant that does not exist.* The address names a code that no tenant
+   holds, or the system tenant. The screen says that no such tenant exists and
+   links back to the roster. It does not show the system tenant, for the same
+   reason the roster does not.
+7. *Leave, or go on.* The administrator goes back to the roster, or picks an
+   action on the tenant. The actions are the roster's: resume setup, and
+   retire or reset when that journey exists.
+
+* Screens and wireframes
+
+One screen with three panels: the details, the setup run and the parties. The
+panels are one answer about one tenant, so they sit together on one page.
+
+#+caption: See one tenant: the details with provenance, the setup run, and the parties.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/tenancy/wireframe_see_one_tenant.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenant= | Every field of the row, read-only, with its provenance | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| =tenant_type= | The type badge | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
+| =tenant_status= | The status badge | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
+| =workflow_instance= | The setup run's status, step and error | [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] |
+| =party= | Code, name, category, type, status and parent of each party | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the details | Read one tenant by its code | =iam.v1.tenants.get= | exists |
+| Read the provenance | Carried by the tenant row | =iam.v1.tenants.get= | exists |
+| Read the setup run | Read the runs that target the tenant | =workflow.v1.instances.list=, filtered on the tenant as target | exists |
+| Read the parties | List the parties of one named tenant | =refdata.v1.parties.list-of-tenant= | exists |
+| A tenant that does not exist | Answer an empty read | =iam.v1.tenants.get= | exists |
+
+The browser reads the screen through one BFF route, =GET /api/tenants/:code=.
+It refuses a session outside system administration, as =/api/tenants= does.
+It joins the tenant, its setup run and its parties into one answer.
+
+* What is missing
+
+1. *Closed: a party read for one named tenant.* Every other party read
+   answers the caller's own tenant, and a system administrator's tenant is the
+   system tenant. =refdata.v1.parties.list-of-tenant=, declared in the
+   operation model =ores.refdata.tenant_party_messages=, names the tenant. The
+   service refuses a caller outside the system tenant and refuses the system
+   tenant as a target. It checks =refdata::parties:read= and reads with a
+   context scoped to the named tenant, so the party table's policy admits that
+   tenant's rows and no others.
+2. *The tenant read checks no permission.* =iam.v1.tenants.get= checks none,
+   like =iam.v1.tenants.list=. The BFF's refusal of a session outside system
+   administration is the boundary, as on the roster.
+3. *The tenant's administrators are not shown.* No read joins a tenant to the
+   accounts that run it. This is the gap the roster names too.
+
+* Related journeys
+
+- [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] — the roster this screen is opened from, and the way back
+- [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] — the destructive action on the tenant read here
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — adds a business party to a tenant that holds only its system party
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the same tenant row, read by its own administrator
+
+* Related knowledge
+
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]]
+- [[id:E8393440-D821-4A24-AE27-DD0917F125EB][Parties]]
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]
+- [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:45E4EB0A-73ED-4361-920F-8928AAE2D9AB][Task: Show one tenant]]

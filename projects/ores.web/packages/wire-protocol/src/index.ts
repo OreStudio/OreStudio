@@ -48,7 +48,10 @@ export {
     activePartySchema,
     badgePresentationSchema,
     partySummarySchema,
+    tenantDetailResponseSchema,
+    tenantDetailSchema,
     tenantPageSchema,
+    tenantPartySchema,
     tenantSetupSchema,
     tenantStatusSchema,
     tenantTypeSchema,
@@ -61,7 +64,10 @@ export type {
     ActiveParty,
     BadgePresentation,
     PartySummary,
+    TenantDetail,
+    TenantDetailResponse,
     TenantPage,
+    TenantParty,
     TenantSetup,
     TenantStatus,
     TenantType,
@@ -89,6 +95,7 @@ export {
     TENANT_SUBJECTS,
     listTenantsRequestSchema,
     TENANT_SETUP_READ_LIMIT,
+    readTenant,
     readTenantSetups,
     searchTenantsPage,
     readTenantsPage,
@@ -96,6 +103,8 @@ export {
     wireWorkflowInstancesSchema,
 } from './tenants.js';
 export type { ListTenantsRequest, TenantSearch, WireTenantPage } from './tenants.js';
+export { readTenantParties, TENANT_PARTY_READ_LIMIT } from './tenant-parties.js';
+export type { TenantParties } from './tenant-parties.js';
 
 export {
     ProtocolError,

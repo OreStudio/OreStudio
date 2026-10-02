@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 2F6C97DD-4F60-5936-870C-ACA6B4DD4811
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the tenant_party commands from the shell?
+#+description: Every command the tenant_party submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:tenant_party:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> tenant_party list=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 584D0E74-3D56-5A90-AEFC-0C4E5AC5BC0E
+:END:
+
+Sends =list_tenant_parties_request= and prints =list_tenant_parties_response=, so the shape is the protocol's and the meaning is the service's. It reads =tenant_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+tenant_party list <tenant_id> [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =refdata.v1.parties.list-of-tenant=.
+
+#+name: tenant_party-list
+#+begin_src ores-shell :tangle tenant_party-list.ores :exports none
+tenant_party list __none__
+#+end_src
+

@@ -21,6 +21,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <functional>
 #include <map>
@@ -70,6 +71,19 @@ const std::map<std::string, std::function<std::string()>>& savers() {
     return table;
 }
 
+// The first element of the saved document must be exactly the seeded root, so
+// a seeded name that is only a prefix of the real one does not pass.
+bool opens_with_element(const std::string& xml, const std::string& name) {
+    const auto start = xml.find('<' + name);
+    if (start == std::string::npos)
+        return false;
+    const auto after = start + 1 + name.size();
+    if (after >= xml.size())
+        return false;
+    const char next = xml[after];
+    return next == '>' || next == '/' || next == ' ' || next == '\n' || next == '\t';
+}
+
 const std::set<std::string> unbound = {"simm_calibration",
                                        "historical_return",
                                        "basel_traffic_light",
@@ -82,8 +96,10 @@ TEST_CASE("every seeded configuration type the binding can save names its root e
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 
+    // The kinds are seeded once for the system tenant and shared by every tenant.
+    const auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     ores::reporting::repository::configuration_type_repository repo;
-    const auto types = repo.read_latest(h.context());
+    const auto types = repo.read_latest(sys_ctx);
     REQUIRE(types.size() == savers().size() + unbound.size());
 
     std::set<std::string> roots;
@@ -99,7 +115,7 @@ TEST_CASE("every seeded configuration type the binding can save names its root e
         }
         const auto xml = saver->second();
         INFO(xml.substr(0, 200));
-        CHECK(xml.find("<" + type.ore_root_element) != std::string::npos);
+        CHECK(opens_with_element(xml, type.ore_root_element));
     }
     BOOST_LOG_SEV(lg, info) << "Checked " << types.size() << " configuration types";
 }

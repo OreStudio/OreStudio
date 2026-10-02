@@ -8,7 +8,7 @@
 #+filetags: :marketdata-corpus-walk-timeout:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/marketdata-corpus-walk-timeout
-#+pr:
+#+pr: 2507
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2507][#2507]] | [marketdata] Check each corpus file with one query |
 
 * Review
 

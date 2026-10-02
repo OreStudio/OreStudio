@@ -86,7 +86,8 @@ constexpr std::array<std::string_view, quote_type_count> quote_type_names{"BASIS
                                                                           "SHIFT",
                                                                           "TRANSITION_PROBABILITY",
                                                                           "CONVERSION_FACTOR",
-                                                                          "SHAPE_FACTOR"};
+                                                                          "SHAPE_FACTOR",
+                                                                          "NULL"};
 
 template <class E, std::size_t N>
 std::optional<E> named(const std::array<std::string_view, N>& names, std::string_view name) {

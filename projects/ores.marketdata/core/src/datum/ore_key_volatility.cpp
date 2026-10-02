@@ -77,6 +77,7 @@ market_datum read_swaption(quote_type q, tokens rest) {
     // keep what it would not write back, so that is refused.
     if (n != 4 + off)
         refuse("a swaption shift is ccy, an optional tag and a term");
+    require_quote(q, {quote_type::shift});
     return b.set(f::term, period(rest[1 + off])).build();
 }
 
@@ -110,6 +111,7 @@ market_datum read_capfloor(quote_type q, tokens rest) {
     // would read other counts and ignore tokens; they are refused.
     if (cf || (n != 4 && n != 5))
         refuse("a cap/floor is a volatility of eight to ten tokens or a shift of four or five");
+    require_quote(q, {quote_type::shift});
     return b.set(f::index_tenor, period(rest[1 + off])).build();
 }
 
@@ -119,8 +121,10 @@ market_datum read_bond_option(quote_type q, tokens rest) {
     require_size(rest, {2, 4});
     datum_builder b(it::bond_option, q);
     b.set(f::qualifier, text(rest[0]));
-    if (rest.size() == 2)
+    if (rest.size() == 2) {
+        require_quote(q, {quote_type::shift});
         return b.set(f::term, period(rest[1])).build();
+    }
     if (rest[3] != "ATM")
         refuse("a bond option volatility is ATM only");
     return b.set(f::expiry, period(rest[1]))

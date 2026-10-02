@@ -50,6 +50,7 @@ using ores::marketdata::test::canonical_key;
 using ores::marketdata::test::catalogue_corpus;
 using ores::marketdata::test::catalogue_forms;
 using ores::marketdata::test::catalogue_line;
+using ores::marketdata::test::catalogue_quote_matrix;
 
 struct tally {
     std::size_t datums = 0;
@@ -165,6 +166,17 @@ TEST_CASE("every_corpus_key_round_trips_through_its_uri", tags) {
     const auto accepted = std::ranges::count_if(catalogue_corpus(), accepted_by_ore);
     CHECK(t.datums == static_cast<std::size_t>(accepted));
     report(t);
+}
+
+TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri", tags) {
+    const auto t = check(catalogue_quote_matrix());
+    CHECK(t.datums > 0);
+    report(t);
+
+    const auto none = ore_key_codec::read("FX/NULL/EUR/USD");
+    REQUIRE(none);
+    CHECK(oresmd_uri_codec::write(*none) ==
+          "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=null&ccy=USD");
 }
 
 TEST_CASE("a_quote_uri_has_the_agreed_shape", tags) {

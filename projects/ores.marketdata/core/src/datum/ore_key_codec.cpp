@@ -183,10 +183,14 @@ std::optional<instrument_type> type_from_token(std::string_view t) {
 }
 
 std::optional<quote_type> quote_from_token(std::string_view t) {
-    // ORE's parseQuoteType reads the deprecated RATE_GVOL as RATE_LNVOL.
+    // ORE's parseQuoteType reads the deprecated RATE_GVOL as RATE_LNVOL, and
+    // has no token for its enum's HAZARD_RATE.
     if (t == "RATE_GVOL")
         return quote_type::rate_lnvol;
-    return quote_type_named(t);
+    const auto quote = quote_type_named(t);
+    if (quote == quote_type::hazard_rate)
+        return std::nullopt;
+    return quote;
 }
 
 std::vector<std::string_view> split(std::string_view key) {

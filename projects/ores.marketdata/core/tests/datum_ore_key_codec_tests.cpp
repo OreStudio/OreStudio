@@ -25,6 +25,7 @@
 #include <cmath>
 #include <format>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -54,7 +55,9 @@ using ores::marketdata::test::accepted_by_ore;
 using ores::marketdata::test::canonical_key;
 using ores::marketdata::test::catalogue_corpus;
 using ores::marketdata::test::catalogue_forms;
+using ores::marketdata::test::catalogue_enum;
 using ores::marketdata::test::catalogue_line;
+using ores::marketdata::test::catalogue_quote_matrix;
 
 // --- What ORE prints ------------------------------------------------------
 
@@ -630,7 +633,18 @@ struct tally {
 /// a token and drops the rest, so no datum could write the key back.
 const std::map<std::string, std::string> deliberately_refused{
     {"INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/5Y/1Y",
-     "ORE reads 1Y as a strike of 1, not as the expiry after an index term"}};
+     "ORE reads 1Y as a strike of 1, not as the expiry after an index term"},
+    {"BOND_FUTURE/PRICE/ISIN0001/TYM26",
+     "ORE ignores every token after the security of a bond future price"},
+    {"INDEX_CDS_TRANCHE/BASE_CORRELATION/CDXIG/5Y/0.03/0.07",
+     "ORE reads 0.03 as the detachment point and drops 0.07"}};
+
+/// The quote token of @p key, with an alias in its canonical spelling.
+std::string quote_token_of(const std::string& key) {
+    const auto canonical = canonical_key(key);
+    const auto first = canonical.find('/');
+    return canonical.substr(first + 1, canonical.find('/', first + 1) - first - 1);
+}
 
 /// Checks every catalogue line: refusals, write-back and ORE's fields.
 tally check(const std::vector<catalogue_line>& lines) {
@@ -639,9 +653,16 @@ tally check(const std::vector<catalogue_line>& lines) {
         ++t.lines;
         const auto& key = line.at("key");
         const auto datum = ore_key_codec::read(key);
-        if (deliberately_refused.contains(key)) {
+        if (const auto it = deliberately_refused.find(canonical_key(key));
+            it != deliberately_refused.end()) {
             if (datum)
-                t.fail(key, "the codec should refuse it: " + deliberately_refused.at(key));
+                t.fail(key, "the codec should refuse it: " + it->second);
+            continue;
+        }
+        if (accepted_by_ore(line) && line.at("quoteType") != quote_token_of(key)) {
+            if (datum)
+                t.fail(key, "ORE ignores its quote token and records " + line.at("quoteType") +
+                                ", so the codec should refuse it");
             continue;
         }
         if (!accepted_by_ore(line)) {
@@ -680,6 +701,56 @@ TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", tags) {
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
     CHECK(t.failures.empty());
+}
+
+TEST_CASE("the_codec_admits_the_quote_types_ore_admits_for_each_form", tags) {
+    const auto t = check(catalogue_quote_matrix());
+    CHECK(t.lines == catalogue_quote_matrix().size());
+    for (const auto& f : t.failures)
+        UNSCOPED_INFO(f);
+    CHECK(t.failures.empty());
+}
+
+TEST_CASE("every_ore_instrument_and_quote_type_is_modelled_and_read", tags) {
+    // Each token ORE's parser reads must open a key that both ORE and the
+    // codec accept, so an alias or a type with no documented form fails here.
+    std::set<std::string> instrument_tokens;
+    std::set<std::string> quote_tokens;
+    for (const auto* lines : {&catalogue_forms(), &catalogue_quote_matrix()}) {
+        for (const auto& line : *lines) {
+            const auto& key = line.at("key");
+            if (!accepted_by_ore(line) || !ore_key_codec::read(key))
+                continue;
+            const auto first = key.find('/');
+            const auto second = key.find('/', first + 1);
+            instrument_tokens.insert(key.substr(0, first));
+            quote_tokens.insert(key.substr(first + 1, second - first - 1));
+        }
+    }
+
+    const auto instruments = catalogue_enum("instrument_types.txt");
+    CHECK(instruments.size() == instrument_type_count);
+    for (const auto& m : instruments) {
+        INFO("ORE instrument type: " << m.name);
+        CHECK(instrument_type_named(m.name));
+        CHECK_FALSE(m.tokens.empty());
+        for (const auto& token : m.tokens) {
+            INFO("token: " << token);
+            CHECK(instrument_tokens.contains(token));
+        }
+    }
+
+    const auto quotes = catalogue_enum("quote_types.txt");
+    CHECK(quotes.size() == quote_type_count);
+    for (const auto& m : quotes) {
+        INFO("ORE quote type: " << m.name);
+        const auto named = m.name == "NONE" ? quote_type_named("NULL") : quote_type_named(m.name);
+        CHECK(named);
+        for (const auto& token : m.tokens) {
+            INFO("token: " << token);
+            CHECK(quote_tokens.contains(token));
+        }
+    }
 }
 
 TEST_CASE("an_alias_reads_as_its_type_and_writes_canonically", tags) {

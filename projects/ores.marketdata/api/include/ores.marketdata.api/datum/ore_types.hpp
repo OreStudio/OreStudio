@@ -86,8 +86,11 @@ enum class instrument_type : std::uint8_t {
 inline constexpr std::size_t instrument_type_count = 45;
 
 /**
- * @brief ORE's market datum quote types: MarketDatum::QuoteType in OREData,
- * without NONE.
+ * @brief ORE's market datum quote types: MarketDatum::QuoteType in OREData.
+ *
+ * none is ORE's NONE, which a key spells NULL and which most of ORE's parser
+ * cases accept, because they never check the quote type. ORE's parser has no
+ * key token for hazard_rate.
  */
 enum class quote_type : std::uint8_t {
     basis_spread,
@@ -105,10 +108,11 @@ enum class quote_type : std::uint8_t {
     shift,
     transition_probability,
     conversion_factor,
-    shape_factor
+    shape_factor,
+    none
 };
 
-inline constexpr std::size_t quote_type_count = 16;
+inline constexpr std::size_t quote_type_count = 17;
 
 /**
  * @brief The name ORE's enum gives the type, such as FX_SPOT or
@@ -119,7 +123,8 @@ inline constexpr std::size_t quote_type_count = 16;
  */
 ORES_MARKETDATA_API_EXPORT std::string_view ore_name(instrument_type t);
 
-/// The name ORE's enum gives the quote type, such as RATE_LNVOL.
+/// The name ORE gives the quote type, such as RATE_LNVOL; NULL for none, as
+/// ORE's parser and printer spell it.
 ORES_MARKETDATA_API_EXPORT std::string_view ore_name(quote_type t);
 
 /// The instrument type ORE's enum names @p name, or nothing.

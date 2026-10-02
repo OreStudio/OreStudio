@@ -61,7 +61,9 @@ market_datum read_cds(quote_type q, tokens rest) {
 }
 
 market_datum read_hazard_rate(quote_type q, tokens rest) {
-    // HAZARD_RATE/RATE/name/seniority/ccy[/doc]/term
+    // HAZARD_RATE/RATE/name/seniority/ccy[/doc]/term. ORE reads any quote
+    // token here and records RATE, so another token could not be written back.
+    require_quote(q, {quote_type::rate});
     require_size(rest, {4, 5});
     datum_builder b(it::hazard_rate, q);
     b.set(f::underlying_name, text(rest[0])).set(f::seniority, text(rest[1])).set(f::ccy, text(rest[2]));
@@ -71,7 +73,9 @@ market_datum read_hazard_rate(quote_type q, tokens rest) {
 }
 
 market_datum read_recovery_rate(instrument_type t, quote_type q, tokens rest) {
-    // RECOVERY_RATE|ASSUMED_RECOVERY_RATE/RATE/name[/seniority/ccy[/doc]]
+    // RECOVERY_RATE|ASSUMED_RECOVERY_RATE/RATE/name[/seniority/ccy[/doc]]. ORE
+    // reads any quote token here and records RATE.
+    require_quote(q, {quote_type::rate});
     require_size(rest, {1, 3, 4});
     datum_builder b(t, q);
     b.set(f::underlying_name, text(rest[0]));

@@ -706,8 +706,10 @@ tally check(const std::vector<catalogue_line>& lines) {
             continue;
         }
         const auto written = ore_key_codec::write(*datum);
-        if (written != canonical(key))
-            t.fail(key, "writes back as " + written);
+        if (!written)
+            t.fail(key, "does not write back: " + written.error());
+        else if (*written != canonical(key))
+            t.fail(key, "writes back as " + *written);
         for (const auto& d : differences(*datum, line))
             t.fail(key, d);
     }
@@ -809,4 +811,22 @@ TEST_CASE("an_unknown_type_or_quote_is_refused_with_a_reason", tags) {
 
     CHECK_FALSE(ore_key_codec::read(""));
     CHECK_FALSE(ore_key_codec::read("ZERO"));
+}
+
+TEST_CASE("a_datum_whose_key_reads_as_another_form_has_no_key", tags) {
+    // With no seniority, the doc clause XR14 takes the seniority's place, so
+    // the key would read back with XR14 as the seniority.
+    const auto read = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");
+    REQUIRE(read);
+    std::vector<field_value> fields(read->fields().begin(), read->fields().end());
+    for (auto& fv : fields) {
+        if (fv.name == field::seniority)
+            fv.held = none_t{};
+    }
+    const auto datum = market_datum::make(read->type(), read->quote(), std::move(fields));
+    REQUIRE(datum);
+
+    const auto written = ore_key_codec::write(*datum);
+    REQUIRE_FALSE(written);
+    CHECK_FALSE(written.error().empty());
 }

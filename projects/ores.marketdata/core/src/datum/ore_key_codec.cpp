@@ -168,63 +168,16 @@ bool is_number(std::string_view t) { return decimal::parse(t).has_value(); }
 
 namespace {
 
-/// The first token of each type's key, as its writer spells it.
-constexpr std::array<std::string_view, instrument_type_count> type_tokens{
-    "ZERO",
-    "DISCOUNT",
-    "MM",
-    "MM_FUTURE",
-    "OI_FUTURE",
-    "FRA",
-    "IMM_FRA",
-    "IR_SWAP",
-    "BASIS_SWAP",
-    "BMA_SWAP",
-    "CC_BASIS_SWAP",
-    "CC_FIX_FLOAT_SWAP",
-    "CDS",
-    "CDS_INDEX",
-    "FX",
-    "FXFWD",
-    "HAZARD_RATE",
-    "RECOVERY_RATE",
-    "ASSUMED_RECOVERY_RATE",
-    "SWAPTION",
-    "CAPFLOOR",
-    "FX_OPTION",
-    "ZC_INFLATIONSWAP",
-    "ZC_INFLATIONCAPFLOOR",
-    "YY_INFLATIONSWAP",
-    "YY_INFLATIONCAPFLOOR",
-    "SEASONALITY",
-    "EQUITY",
-    "EQUITY_FWD",
-    "EQUITY_DIVIDEND",
-    "EQUITY_OPTION",
-    "BOND",
-    "BOND_FUTURE",
-    "BOND_OPTION",
-    "BOND_FUTURE_OPTION",
-    "INDEX_CDS_OPTION",
-    "INDEX_CDS_TRANCHE",
-    "COMMODITY",
-    "COMMODITY_FWD",
-    "CORRELATION",
-    "COMMODITY_OPTION",
-    "COMMODITY_CALENDAR_SPREAD_OPTION",
-    "SHAPE_PROFILE",
-    "CPR",
-    "RATING"};
-
 std::optional<instrument_type> type_from_token(std::string_view t) {
     // The spellings ORE's parseInstrumentType also reads.
     if (t == "FX_SPOT")
         return instrument_type::fx_spot;
     if (t == "FX_FWD")
         return instrument_type::fx_fwd;
-    for (std::size_t i = 0; i < type_tokens.size(); ++i) {
-        if (type_tokens[i] == t)
-            return static_cast<instrument_type>(i);
+    for (std::size_t i = 0; i < instrument_type_count; ++i) {
+        const auto type = static_cast<instrument_type>(i);
+        if (ore_key_codec::token_of(type) == t)
+            return type;
     }
     return std::nullopt;
 }
@@ -314,7 +267,8 @@ market_datum dispatch(instrument_type t, quote_type q, detail::tokens rest) {
 std::expected<market_datum, std::string> ore_key_codec::read(std::string_view key) {
     const auto parts = split(key);
     if (parts.size() < 3)
-        return std::unexpected(std::format("'{}' has fewer than three tokens", key));
+        return std::unexpected(std::format(
+            "'{}' needs at least an instrument type, a quote type and one field", key));
     const auto type = type_from_token(parts[0]);
     if (!type)
         return std::unexpected(std::format("'{}' is not an ORE instrument type", parts[0]));
@@ -328,7 +282,9 @@ std::expected<market_datum, std::string> ore_key_codec::read(std::string_view ke
     }
 }
 
-std::string ore_key_codec::write(const market_datum& datum) {
+std::expected<std::string, std::string> ore_key_codec::write(const market_datum& datum) {
+    if (datum.is_series())
+        return std::unexpected(std::string("a series has no ORE key"));
     std::string key(token_of(datum.type()));
     key += '/';
     key += ore_name(datum.quote());
@@ -338,11 +294,30 @@ std::string ore_key_codec::write(const market_datum& datum) {
         key += '/';
         key += text_of(fv.held);
     }
+    // Leaving out a none field can make the key read as another form, such as
+    // a CDS with a doc clause and no seniority, so a key that does not read
+    // back to the same datum has no ORE spelling.
+    const auto back = read(key);
+    if (!back || *back != datum)
+        return std::unexpected(std::format("'{}' does not read back as the datum written", key));
     return key;
 }
 
 std::string_view ore_key_codec::token_of(instrument_type t) {
-    return type_tokens[static_cast<std::size_t>(t)];
+    // ORE's parseInstrumentType spells these four differently from the enum's
+    // name; every other key starts with the name.
+    switch (t) {
+    case instrument_type::fx_spot:
+        return "FX";
+    case instrument_type::fx_fwd:
+        return "FXFWD";
+    case instrument_type::equity_spot:
+        return "EQUITY";
+    case instrument_type::commodity_spot:
+        return "COMMODITY";
+    default:
+        return ore_name(t);
+    }
 }
 
 }

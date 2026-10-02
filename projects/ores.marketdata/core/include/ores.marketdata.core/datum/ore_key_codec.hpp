@@ -51,8 +51,9 @@ public:
     /// The datum @p key names, or why ORE's grammar does not admit it.
     [[nodiscard]] static std::expected<market_datum, std::string> read(std::string_view key);
 
-    /// The key for @p datum; @p datum must not be a series.
-    [[nodiscard]] static std::string write(const market_datum& datum);
+    /// The key for @p datum, or why it has none: a series has no key, and
+    /// neither has a datum whose key would read back as a different datum.
+    [[nodiscard]] static std::expected<std::string, std::string> write(const market_datum& datum);
 
     /// The first token of a key of type @p t: FX for fx_spot, EQUITY for
     /// equity_spot, ZC_INFLATIONSWAP for zc_inflation_swap.

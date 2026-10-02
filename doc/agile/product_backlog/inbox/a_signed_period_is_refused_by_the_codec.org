@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 0351618B-470B-4A5B-BE94-FFB132C9A396
+:END:
+#+title: The ORE key codec refuses a signed period
+#+description: QuantLib reads a period with a sign, such as -1Y, and the typed datum model does not, so the ORE key codec refuses a key ORE would accept.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:oresmd:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+QuantLib's period parser reads an optional sign, so ORE accepts a key such as
+=MM/RATE/EUR/-1D/1D=. The typed datum model's =term= reads only an unsigned
+period, so =ore_key_codec= refuses that key. Decide whether a signed period is
+a form the model should hold. If it is, =term= gains a sign that survives the
+round trip. If it is not, record the refusal as deliberate, beside the other
+keys the codec refuses on purpose.
+
+* Why
+
+The codec's contract is to accept what ORE accepts. No key in the reference
+catalogue or the example corpus has a signed period, so the catalogue test
+cannot see this gap. A feed that sends a negative forward start would fail on
+import with no test that predicted it.
+
+* References
+
+- QuantLib =PeriodParser::parseOnePeriod= in =ql/utilities/dataparsers.cpp=: finds the number with =find_first_of("-+0123456789")=, so it reads an
+  optional leading sign.
+- =term::parse= in =projects/ores.marketdata/api/src/datum/value.cpp=.
+- The task's open point: [[id:7E29ABC0-A571-4B16-9651-EBAEDE530100][Write the ORE key codec]].
+
+* See also
+
+- [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]

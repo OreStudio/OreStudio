@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 9E730BE5-C774-4FD2-8F12-7D4B1E9815D7
+:END:
+#+title: The IAM auth events table has a tenant_id and no row-level security
+#+description: ores_iam_auth_events_tbl carries tenant_id but has no RLS policy; validation_ignore.txt suppresses RLS_001 for it with a reason that calls the log tenant-scoped, which a table without a policy is not.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_iam_auth_events_tbl= has a =tenant_id= column and no row-level security
+policy, so a session in one tenant can read another tenant's authentication
+events. =validation_ignore.txt= suppresses =RLS_001= for it with the reason
+"the entire log is accessible to tenant admins", and suppresses =RLS_002= saying
+"the whole log is tenant-scoped". Without a policy the log is not
+tenant-scoped at all.
+
+* Why
+
+Authentication events name accounts, sessions and source addresses. Either the
+table needs a tenant isolation policy, or the reason in the ignore file must
+say why every tenant may read every other tenant's events. The current reason
+contradicts the table.
+
+* References
+
+- =projects/ores.sql/utility/validation_ignore.txt=, the "IAM auth events" entries for =RLS_001= and =RLS_002=.
+- =projects/ores.sql/create/iam/iam_auth_events_create.sql=.
+
+* See also
+
+- [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]]

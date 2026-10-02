@@ -77,7 +77,7 @@ never the populate tree.
 
 | File | Status |
 |------+--------|
-| =create/refdata/refdata_*_notify_trigger.sql= (14) | Dead. An older copy of the wired =_notify_trigger_create.sql=, without =tenant_id= in its payload; no code references it. Invisible to =WIRE_001= because of its suffix. |
+| =create/refdata/refdata_*_notify_trigger.sql= (15) | Dead. An older copy of the wired =_notify_trigger_create.sql=, without =tenant_id= in its payload; no code references it. Invisible to =WIRE_001= because of its suffix. |
 | =create/iam/service_users_create.sql= | Run from =recreate_database.sql=. Exempt in =WIRE_001=. |
 | =drop/drop_database.sql=, =drop/drop_test_databases.sql= | Manual =psql= entry points, documented in their headers. |
 | =drop/refdata/refdata_curve_roles_drop.sql= and its trigger drop, =drop/iam/iam_session_samples_drop.sql=, =drop/iam/iam_tenant_terminator_drop.sql=, =drop/mq/mq_scrape_functions_drop.sql= | Real wiring gaps, held in =validation_ignore.txt=. |
@@ -123,6 +123,25 @@ created before =iam= (=dq=, =workspace=, =refdata=, =trading=) cannot carry an
 inline policy, which is why none of their models sets the flag and why
 =rls/rls_create.sql= runs last. Codegen taking these over needs a late,
 per-component policy file, not the inline output.
+
+* After this task
+
+- The fifteen dead =refdata_*_notify_trigger.sql= files and the broken
+  =populate/fpml/fpml_coding_schemes_populate.sql= (21 calls to
+  =metadata.upsert_dq_coding_schemes=, a schema and function that no longer
+  exist) are deleted.
+- The five real drop gaps are wired. Running =drop/drop.sql= against a full
+  database completes with no error; it removes every =ores_= table and leaves
+  115 functions, recorded as a capture.
+- =WIRE_001= covers every =.sql= file under =create=, =drop= and =populate=,
+  reached from the tree roots and from the bootstrap scripts beside them. Six
+  files are named exceptions in =validation_ignore.txt=, each with what runs
+  it.
+- CI runs the parser with =--strict=, and it reports no warning.
+- The origin census is committed as
+  =projects/ores.codegen/scripts/census_sql_origin.py=. At the end of the task
+  it reports 1119 codegen, 148 other generator and 517 hand-written of 1784
+  files.
 
 * Scripts
 

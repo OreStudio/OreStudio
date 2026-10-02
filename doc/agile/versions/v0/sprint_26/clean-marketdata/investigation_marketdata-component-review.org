@@ -1,0 +1,453 @@
+:PROPERTIES:
+:ID: 6D60C52C-26B9-416B-A453-478EE5CA33C5
+:END:
+#+title: Investigation: Review of ores.marketdata after the grammar story
+#+description: A full review of ores.marketdata after PR 2497: how much of ORE market data oresmd models, what the round-trip tests prove, how clean the implementation and the code generation are, and how the clean-standard checklist really closed.
+#+type: investigation
+#+level: s1
+#+filetags: :clean-marketdata:sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+A point-in-time record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]], written on 2026-10-02 at =origin/main= =ee63ba0aa3=, after PR 2497 closed [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]].
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+Two stories brought =ores.marketdata= to where it is now:
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]]
+  closed on 2026-10-01 with 28 items Pass, 4 Fail and 1 Partial.
+- [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]]
+  closed on 2026-10-02 with all five tasks DONE.
+
+The close-out summary of the second story said that the grammar is typed,
+that the corpus walk runs by default, and that both goals are closed. This
+review asks four wider questions:
+
+1. How much of ORE's market data can oresmd model today?
+2. What do the round-trip tests prove, and what do they not prove?
+3. How clean is the implementation, and how far has code generation got?
+4. Did the clean-standard story address every checklist item? Where it did
+   not, why not?
+
+* Methodology
+
+Read:
+
+- The two story folders, the clean-standard task's item table and its
+  =* Result=, and the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] (49 items).
+- The design record [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][market_data_urn.org]],
+  the 13 oresmd models under =projects/ores.marketdata/modeling/oresmd/=, and
+  the six oresmd templates under =projects/ores.codegen/library/templates/=.
+- =import_service.cpp=, =ore_export_service.cpp=, the generated
+  =oresmd_parser.cpp= and =oresmd_projections.cpp=, and every test under
+  =projects/ores.marketdata/*/tests/=.
+- ORE's own key grammar, in the engine checkout at
+  =/home/marco/Vault/Development/ORE/Engine=:
+  =OREData/ored/marketdata/marketdatum.hpp= (the =InstrumentType= and
+  =QuoteType= enums) and =marketdatumparser.cpp= (every key form ORE accepts).
+
+Ran, on this tree:
+
+- =check_component_drift.py --component marketdata --dry-run=, =check_model_drift.py=,
+  =check_handler_permissions.py=, =check_populate_references.py=,
+  =check_protocol_twin_coverage.py=, =check_registry_exceptions.py=,
+  =check_oresmd_ore_coverage.py= and =check_test_case_reachability.py=. All exit 0.
+- Three throwaway probes, compiled in the session scratchpad against the
+  built =libores.marketdata.core= (built at =bb602755aa=; no oresmd source
+  changed between that commit and =ee63ba0aa3=). Nothing was added to the tree.
+  - *Probe 1* takes every distinct key in the corpus market payloads (108,057
+    keys from 96 files, with the selection rule of =corpus_files.hpp=). For
+    each key it runs the path that production stores:
+    =from_ore_key= → =to_uri= → =parse= → =to_quote_key=. It also checks that
+    =to_uri(parse(u)) == u=.
+  - *Probe 2* runs =to_series_uri= for every corpus key and parses the result.
+  - *Probe 3* runs every corpus fixing index name (158 names from 66 files)
+    through =from_index_name= → =to_uri= → =parse= → =to_index_name=.
+  - A fourth run feeds 40 key forms that ORE's parser documents but the corpus
+    does not carry. I wrote this list from the comments in
+    =marketdatumparser.cpp=. It is a sample, not a complete catalogue.
+
+* Paths taken
+
+** 1. How much of ORE market data oresmd models
+
+*** Instrument types
+
+ORE defines 45 instrument types (=MarketDatum::InstrumentType=, without =NONE=).
+oresmd names 41 of them. These four have no quote type:
+
+| ORE type | What it is |
+|----------+------------|
+| =ASSUMED_RECOVERY_RATE= | Same shapes as =RECOVERY_RATE= |
+| =BOND_FUTURE= | Price and conversion factor of a bond future |
+| =BOND_FUTURE_OPTION= | Vol or price of an option on a bond future |
+| =COMMODITY_CALENDAR_SPREAD_OPTION= | Vol of a commodity calendar spread option |
+
+None of the four is in the corpus, so the coverage gate, which reads only the
+corpus and the shape table, cannot see that they are missing.
+
+ORE also accepts three aliases: =FX_SPOT= for =FX=, =FX_FWD= for =FXFWD=, and
+the deprecated =RATE_GVOL= for =RATE_LNVOL=. oresmd rejects all three. An
+import drops such a line with a warning. It does not normalise it.
+
+*** Quote types (metrics)
+
+ORE defines 16 quote types. The oresmd =metric= enum holds 8 of them.
+=CREDIT_SPREAD=, =CONV_CREDIT_SPREAD=, =HAZARD_RATE= and =BASE_CORRELATION=
+are not members, so =metric= is not set for credit quotes. The vol models
+(=RATE_LNVOL=, =RATE_NVOL=, =RATE_SLNVOL=, =SHIFT=, =PRICE=) are in the
+separate =volatility_model_subtype= enum. This is the gap the previous close-out
+summary recorded for =BASE_CORRELATION=. It is wider than that one member.
+
+*** Key forms inside a type
+
+This is where the real distance is. ORE accepts many forms for most types. For
+example, CDS has nine documented forms, and =CAPFLOOR=, =SWAPTION=,
+=EQUITY_OPTION=, =COMMODITY_OPTION= and =INDEX_CDS_OPTION= each have between
+four and eight. oresmd was shaped by the example corpus, so it reads the forms
+the corpus uses and few others.
+
+Of the 40 documented forms that are not in the corpus, oresmd names 17. At
+least four of those 17 are named *wrongly*: the reader puts a token in the
+wrong field.
+The text round-trips, so no current test sees the fault.
+
+| ORE key | What ORE means | What oresmd stores |
+|---------+----------------+--------------------|
+| =CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/5Y/0.01= | term 5Y, running spread 0.01 | =restructuring=5y=, =tenor=0.01= |
+| =SWAPTION/RATE_NVOL/EUR/5Y/2Y/ATM/R= | ATM receiver | =smile=ATM=, =strike=R= |
+| =COMMODITY_OPTION/RATE_LNVOL/GOLD/USD/1Y/DEL/Spot/Call/0.25= | 25 delta spot call | =delta=DEL=, =premium=Spot=, =call_put=Call=, =strike=0.25= |
+| =INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/1Y= | expiry 1Y, no index term | =tenor=1y= |
+
+The corpus has the same kind of fault. =EQUITY_OPTION/.../ATM/AtmFwd= and
+=COMMODITY_OPTION/.../ATM/AtmFwd= store =AtmFwd= as =call_put=. The 9-segment
+=ATM/AtmDeltaNeutral/DEL/Spot= form stores =DEL= as =call_put= and =Spot= as
+=strike=. The readers choose a field by segment count alone. ORE chooses it by
+the token values.
+
+Forms that oresmd rejects outright include: the CDS =PRICE=,
+=CONV_CREDIT_SPREAD=, 8-segment and 4-segment (MDX) forms; =CAPFLOOR= with an
+index token or a =C=/=F= flag; the =CAPFLOOR=, =SWAPTION= and =BOND_OPTION=
+shift forms with no surface; the equity =MNY/Spot/1.2= moneyness strike; and
+=COMMODITY_OPTION/SHIFT/<name>=.
+
+*** Other ORE market inputs
+
+- *Fixings* are in good shape. All 158 corpus index names except the two that
+  the corpus misfiles as fixings round-trip through the stored URI (probe 3).
+- *Dividends* (ORE's =dividendDataFile=) have no reader and no entity. The
+  corpus has no input dividends file, so nothing has asked for one yet.
+- *Curve and market configuration* (=curveconfig.xml=, =todaysmarket.xml=) are
+  out of scope by decision, and [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]]
+  holds the curve question.
+
+** 2. What the round-trip tests prove
+
+There are four round trips in the suite. Each one checks less than its name
+suggests.
+
+*** The coverage gate checks the in-memory path, not the stored path
+
+=oresmd_ore_coverage_tests.cpp= checks =to_quote_key(from_ore_key(k)) == k=.
+That never builds a URI string. Production stores the URI string:
+=import_service= writes =to_series_uri= to =market_series.oresmd_uri= and
+=to_uri= to =market_observations.oresmd_uri=. Probe 1 runs the stored path:
+
+| Measure | Keys | Share |
+|---------+------+-------|
+| Distinct corpus keys | 108,057 | 100% |
+| Named by oresmd | 108,057 | 100% |
+| Round trip in memory (what the gate checks) | 108,057 | 100% |
+| Round trip through the URI | 100,803 | 93.3% |
+| URI the parser rejects | 4,269 | 4.0% |
+| URI that parses but changes when written again | 2,944 | 2.7% |
+
+The 4,269 rejected URIs come from five types. The writer makes a URI that its
+own parser refuses:
+
+| Type | Keys | Parser error |
+|------+------+--------------|
+| =INDEX_CDS_OPTION= | 2,993 | =oresmd://credit/... requires a ccy query key= |
+| =ZC_INFLATIONCAPFLOOR= | 964 | =oresmd://inflation/... does not support the 'maturity' query key= |
+| =YY_INFLATIONCAPFLOOR= | 298 | same as above |
+| =INDEX_CDS_TRANCHE= | 8 | =requires a ccy query key= |
+| =CDS_INDEX= | 6 | =requires a ccy query key= |
+
+Probe 2 shows that the *series* identity fails too for the three credit index
+families: 3,007 corpus keys import under a series URI that does not parse. The
+rows are in the database. Nothing reads them back through the parser yet, so
+nothing fails.
+
+The other losses are case changes. The writer lower-cases the entity path
+segment, and the parser upper-cases it and most coordinates. So
+=EQUITY/PRICE/Lufthansa/EUR= comes back as =EQUITY/PRICE/LUFTHANSA/EUR=, and
+=.../ATM/AtmFwd= comes back as =.../ATM/ATMFWD=. ORE names are case
+sensitive. 1,845 of 1,866 =COMMODITY_OPTION= keys and 1,118 =EQUITY_OPTION=
+keys lose their case this way. The capture
+[[id:67A49A94-2588-4D17-BFCA-54813F3193B3][The forward projection uppercases free-text identifiers]]
+recorded this fault in the in-memory path. That path is fixed. The URI path
+still has it, and the capture still sits in the inbox as if nothing changed.
+
+*** The ORE export echoes the input text
+
+=import_service.cpp:358= stores the file's raw key in =market_observations.key=.
+=ore_export_service.cpp:54= writes that column back out. So
+=export_reproduces_the_market_data_file_it_imported= proves that a text column
+survives a database round trip. It does not prove that the grammar can produce
+the key.
+
+The same column makes one row hold two identities that can disagree. When the
+FX convention checker reverses a pair, the series and the datum URI take the
+corrected pair, and =key= keeps the reversed one. Other writers
+(=curve_republish_service.cpp:344=, =feed_ingest_loop.cpp:491=) store the
+projected key instead. So the meaning of the column depends on which writer
+wrote the row.
+
+*** The corpus import compares values without their keys
+
+=service_corpus_import_tests.cpp= compares the sorted multiset of values in the
+file with the sorted multiset of values in the rows. Two values that change
+places between keys pass. The test does not check that a value arrives under
+its own key.
+
+*** The model round-trip cases are text-only
+
+The =* Round-trip= tables in the quote-type models check URI → identifier →
+URI. That proves that the parser and the writer agree. It cannot prove that a
+token is in the correct field, which is the fault in section 1.
+
+*** Smaller defects in the tests
+
+- =oresmd_ore_coverage_tests.cpp= has its own =key_of= tokeniser. It needs two
+  commas on a CSV line, which is the fault that PR 2 fixed in the production
+  parser. Lines with one comma drop out of the coverage count without notice.
+- The comment above =expected_fully_round_tripped= says that four types still
+  lose keys. The gap list is empty, and the four types (=COMMODITY_FWD=,
+  =EQUITY=, =EQUITY_FWD=, =CORRELATION=) are missing from the expected set.
+- =corpus_files.hpp= excludes =MD_*= files, but the rule is dead: those files do
+  not contain "market" in their name, so the earlier rule already excludes
+  them. Its comment also names =todaysmarketcalibration.csv=, which the code
+  does not test for. The three =MD_*.csv= files are real market data in
+  =DD.MM.YY= comma form, and the three =FD_*.csv= files are fixings in
+  semicolon form. Neither reaches any corpus walk.
+- I count 96 market payload files with the selection rule. The clean task's V08
+  row says 118.
+
+** 3. How clean the implementation and the code generation are
+
+*** The grammar is generated in name only
+
+The oresmd quote-type models declare the enums, the fields, the coordinates,
+the reject keys and the test tables. Those parts are generated. The key
+grammar itself is not:
+
+- =oresmd_projections.cpp.mustache= has 2,585 lines and 187 template tags.
+  =oresmd_parser.cpp.mustache= has 1,074 lines and 200 tags. Almost every
+  =from_*= reader and =to_quote_key= branch is hand-written C++ inside the
+  template.
+- The model's =qualifier_shape= column only selects one of those hand-written
+  functions. The segment layout is in the =notes= column as prose
+  (="6-segment: ZERO/RATE/CCY/CURVE_ID/DAY_COUNT/POINT"=), and no code reads it.
+- =model.org= carries =variant_order= and =parse_order= columns, and the IR
+  model has a =URI order= table. Their only job is to reproduce the order of
+  the hand-crafted files that the generator replaced.
+
+So to add an ORE key form, you edit a 2,585-line template, not a model row.
+That is the main obstacle to the code-generation goal.
+
+*** Three descriptions of one key grammar
+
+The same ORE key shapes are written down three times:
+
+1. =ores_series_key_shapes_populate.sql= (203 lines), read by
+   =ores.ore='s =series_key_registry= and used by =parse_market_data= and by
+   =import_service= to split a key into =(series_type, metric, qualifier)=.
+2. The oresmd models' =qualifier_shape= and =notes= columns.
+3. The hand-written C++ in the two templates.
+
+The import uses (1) to parse and classify, and (3) to name. A change to one is
+not checked against the others except through the corpus.
+
+*** The grammar story's acceptance, read against the code
+
+| Acceptance | State |
+|------------+-------|
+| No key's absence carries meaning | *Not met.* The parser materialises =quote= and =model= defaults, and the writer emits them. But =from_ir_swap= drops a =2D= settlement (=oresmd_projections.cpp:1536=), and =to_quote_key= restores =2D= when =settle= is absent (=:531=). The design record still says that an absent =quote=, =metric= or =model= takes a default. |
+| No coordinate is a comma-joined bag; each dimension is a named, typed key | *Partly met.* Each dimension is a named key. Every coordinate is =std::optional<std::string>=; =value_kind enum= is an annotation that nothing enforces, and =strike= is a string the parser upper-cases. Case handling differs by key: =maturity= and =tenor= are lower-cased, =expiry=, =delta= and =strike= upper-cased, =contract_month= kept. |
+| Every key is declared identity or coordinate | Met in the models. |
+| One canonical coordinate; =point_id= derived | Met. |
+| The full corpus import runs by default | Met. The =[corpus-full]= tag is not hidden. |
+| =market_data_urn.org= describes the shipped grammar | *Not met.* Its summary still calls oresmd "proposed", says "without per-asset-class variants", and describes the defaults above. |
+| =todaysmarket.xml= ownership recorded | Met. |
+
+The story's own =* Status= table still says "No implementation unit has
+started".
+
+*** Dead and duplicated code
+
+- =oresmd_resolver= (306 generated lines) and =market_data_requirement= have no
+  production caller. Under B06 that is dead code. The clean task's B06 row says
+  the oresmd test-only symbols were closed.
+- =to_curve_key= and =instrument_type::curve= have no production caller. The
+  curves story already records this.
+- Each of =market_observations= and =market_fixings= has two repositories: a
+  generated singular one and a hand-written plural one. The record keeps the
+  plural ones for =read_as_of=. H02 asks for one survivor.
+- The =market_series= table comment (generated from the model prose) says that
+  "those three columns carry the registry's decomposition". The columns are
+  gone.
+
+*** Comments
+
+The hand-written code and the oresmd templates have a very high comment
+density. Some functions have more comment than code. 14 comments narrate edit
+history ("The silence the old grammar read as a default", "used to arrive
+inside the point", "no longer"). Some of them come from the templates, so every
+regeneration writes them again. Two hand-written end-of-line comments remain
+(=crm_ingest_bridge.hpp:176=, =curve_republish_resolver.hpp:47=). The project
+comment rules forbid all three patterns.
+
+*** Test coverage
+
+A name match finds no test for 73 of the 102 source files outside =main.cpp=.
+Some of them are covered through other tests. But no repository test exists for
+=feed_binding=, =observation_lineage= or =series_classification_rule=. No test
+exists for any generated message handler, for =publish_from_dq_handler=, for
+=curve_republish_service=, or for =market_data_client=. Only
+=series_classification_rule= has an eventing integration test.
+
+** 4. The clean-standard checklist
+
+The standard has 49 items. The clean task records 33 of them. It does not
+record 16.
+
+*** Recorded items whose record is wrong
+
+| Item | Recorded | Actual | Evidence |
+|------+----------+--------+----------|
+| M06 | Fail | *Pass* | All seven protocol headers in =ores.marketdata.api/messaging= are generated. =operations_protocol.hpp= comes from =ores.marketdata.operations=. The six hand-written headers the row names no longer exist. The task's own V06 row says so. |
+| P04 | Fail | *Pass* | Same evidence as M06. |
+| V06 | Pass | *Rule broken* | =marketdata= is in =COMPONENTS_UNDER_TEST=, but =ACCEPTED_EXCEPTIONS= has no entry for it. The standard requires one for each item the component does not pass: here W02, P01 and H01. |
+| V08 | Pass | *Not done* | The row measures the corpus walk. V08 asks for a per-file survey of =src/=. See the coverage figure above. |
+| B06 | Pass | *Partial* | The resolver and requirement types are test-only. |
+| Oresmd coverage | Pass | *Overstated* | "No key projects without reading back" is true only in memory. Through the URI, 7,254 keys do not read back. |
+
+The capture for M06 and P04,
+[[id:386360B3-4A14-47AC-82A9-AA4417953032][Six ores.marketdata protocol headers carry wire types no model covers]],
+describes work that is done. Its body is still the empty scaffold.
+
+*** Recorded items that are still open
+
+| Item | State | Why it is open | Tracked by |
+|------+-------+----------------+------------|
+| W02 | Fail | =check_handler_permissions.py= still leaves =marketdata= out of =REGISTRY=. 16 of the 17 codes the handlers check are not seeded. =marketdata::*= on =MarketdataService= (and the admin wildcard) hides this. =SyntheticService= holds =marketdata::series:write=, which no handler checks. | Capture =CCB1D9D1= |
+| P01 | Fail | No list request has =as_of=; no model sets =:has_as_of_lookup:=. | Backlog story =F15A8480= |
+| H01 | Partial | The root diagram has no sentinel. The reason (a hand-drawn data-model diagram with no code under it) is sound. | Task record only |
+
+*** Items the record leaves out
+
+| Item | State found | Evidence |
+|------+-------------+----------|
+| P02 | *Fail* | The tick subject prefix =marketdata.v1.tick.= is a hand-written constant in =tick_subjects.hpp=, not a model. =client/detail/subject_helpers.hpp:45= builds the same literal again instead of using it. |
+| P05 | Pass (implied) | V06 records a whole-tree build. |
+| P06 | Not applicable | No event cache in the component. |
+| G01 | Pass | =check_component_drift.py --component marketdata --dry-run=: no drift. Run once here; the item asks for two runs. |
+| G02 | Disputed | The two plural repositories (see above). |
+| G04 | *Not done* | No review record of the generated code. The oresmd templates are the main subject for it. |
+| G07 | Not recorded | No evidence either way. |
+| G08 | *Fail* | Only =ores.marketdata.service= has its namespace header. =api=, =client= and =core= have none. |
+| W03 | Pass | =check_populate_references.py= exits 0. V05 mentions it. |
+| W04 | Pass (implied) | V02 ran on a database recreated from the tree. |
+| S01 | *Partial* | Shell units exist for =market_series=, =observation_lineage= and =series_classification_rule=. None exist for =feed_binding=, =market_observation=, =market_fixing= or the asset-class junction. |
+| S02 | *Partial* | Recipes match S01: three entities only. |
+| H03 | *Fail* | See "Comments" above. |
+| H04 | Not recorded | Probably not applicable; nobody checked. |
+| V03 | Pass (implied) | V02 recreated the database and started the fleet. |
+| V04 | *Not done* | No recipe run log against the live fleet. |
+
+* Conclusions
+
+1. *Modelling.* oresmd names 41 of ORE's 45 instrument types and every key the
+   example corpus carries. It does not yet model ORE's market data in general.
+   It models the forms the corpus uses. Outside the corpus, oresmd names 17 of
+   the 40 documented forms I sampled, and at least four of those 17 wrongly. The readers choose fields by segment count. ORE chooses them by
+   token value. That difference is the root of the wrong labels.
+
+2. *Round tripping.* The suite proves that the in-memory projection is
+   self-consistent on the corpus. It does not prove the stored path: 6.7% of
+   corpus keys fail through the URI, and 4,269 keys produce URIs that the
+   parser rejects. The suite cannot detect a wrong label, because every round trip
+   compares text with text. The ORE export echoes a stored column, so it does
+   not test the grammar.
+
+3. *Implementation.* The component builds clean, its gates are green, its
+   regeneration is byte-identical, and the fixing path is sound. But the key
+   grammar is hand-written C++ inside templates, the same grammar lives in
+   three places, the resolver is dead, and the comment volume breaks the
+   project's rules.
+
+4. *Checklist.* The story closed with its acceptance not met, and said so.
+   That honesty is right. But the record is not reliable: two Fails are now
+   Passes, 16 items are missing, V08 measured a different thing, and the
+   registry lists the component with no accepted exceptions. Six of the 16
+   missing items fail or are not done when checked.
+
+* Recommendations
+
+In order of value:
+
+1. *Test the stored path.* Change the coverage gate to run
+   =from_ore_key= → =to_uri= → =parse= → =to_quote_key= and to assert
+   =to_uri(parse(u)) == u=. The same for =to_series_uri=. Fix the 4,269
+   rejected URIs and the case loss. Keep the case of free-text names (entity,
+   ticker, curve id, ATM type) exactly as ORE wrote it.
+
+2. *Add a semantic oracle.* A text round trip cannot see a wrong field. Check
+   the field assignment against ORE's own =parseMarketDatum= output, either by
+   linking =OREData= in a test-only target or by a checked-in fixture that ORE
+   produces. Feed it a catalogue of every form in =marketdatumparser.cpp=, not
+   only the corpus.
+
+3. *Make the segment grammar declarative.* Replace the =notes= prose and
+   =qualifier_shape= with a machine-readable segment list per form (for
+   example =IR_SWAP/RATE/{ccy}/{index?}/{settle}/{tenor}/{maturity}=, with the
+   discriminating token values). Generate =from_ore_key=, =to_quote_key= and
+   the SQL shape table from it, and retire the hand-written template code and
+   the ordering columns. This is the step that makes "add an ORE form" a
+   model edit.
+
+4. *Make the export use the grammar.* Project the key from the datum URI and
+   drop =market_observations.key=, or keep it only as an audit copy of the
+   input, never as the export source. Then the export round trip tests the
+   grammar, and a row cannot hold two identities.
+
+5. *Close the type gaps.* Add the four missing types, accept the three aliases,
+   and complete the =metric= enum.
+
+6. *Correct the record.* Mark M06 and P04 Pass and close capture =386360B3=.
+   Add =ACCEPTED_EXCEPTIONS= entries for W02, P01 and H01, or take
+   =marketdata= out of the registry until they pass. Record the 16 missing
+   items. Redo V08 as a per-file survey. Update =market_data_urn.org= and the
+   grammar story's =* Status=. Move capture =67A49A94= to the URI path.
+
+7. *Clean the code.* Put =marketdata= in the permission gate's =REGISTRY= and
+   seed the codes. Add the three namespace headers. Remove or wire the
+   resolver. Collapse the plural repositories. Cut the history narration from
+   the templates and the hand-written code.
+
+Recommendations 1, 2 and 3 are one story: they make the round trip prove
+meaning, and they make the grammar a model. Recommendations 6 and 7 are a
+clean-up task under the existing story.
+
+* See also
+
+- [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Story: Clean ores.marketdata to the component clean standard]]
+- [[id:F9E8C6BE-9606-48E5-AEE3-431642C0EB28][Task: Bring ores.marketdata to the clean standard]]
+- [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Story: Make the oresmd URI grammar explicit and typed]]
+- [[id:1C9EE1D4-651E-49D9-927C-F4891FF1ACEB][Investigation: The oresmd URI grammar: silent defaults and the untyped coordinate]]
+- [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Story: Add proper curve support to ores.marketdata]]
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]]
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][market_data_urn.org]]

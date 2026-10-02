@@ -41,5 +41,8 @@ alter table ores_analytics_pricing_model_configs_tbl
 -- The insert trigger checks the new column against the reporting
 -- configurations. The create script is safe to run on an existing table: it
 -- creates nothing that exists and replaces the trigger function, so including
--- it installs the check without copying the generated function here.
+-- it installs the check without copying the generated function here. This
+-- depends on every statement in that script being safe to repeat. If the
+-- template ever emits one that is not, copy the trigger function in here
+-- instead of including the script.
 \ir ../create/analytics/analytics_pricing_model_configs_create.sql

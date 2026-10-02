@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 0669523D-075C-4A7E-921E-83B76E24979C
+:END:
+#+title: The marketdata import looks up each series with its own query
+#+description: import_service runs one read_latest_by_uri per distinct series per file, at about 18 ms each, so the corpus walk spends about 280 of its 330 seconds in 15,047 queries.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=import_service::import= finds each series by its oresmd URI with one
+=read_latest_by_uri= query per distinct series in the file. The series cache
+lives for one call, so every file looks its series up again. Each query costs
+about 18 ms here, most of it fixed overhead: the pool sets the service and
+tenant context on every call and logs "there is no transaction in progress".
+Fetch the file's series in one query (the URIs =IN= a list), and create only
+the ones that query does not return.
+
+* Why
+
+Measured on 2026-10-02 with debug test logging over the whole-corpus walk,
+after its verification was fixed: 15,047 queries take 278 of the walk's 327
+seconds, and 10,365 of them are the by-URI series lookup. The walk is the
+default regression check for the import, and it shares the 600-second ctest
+limit with the rest of =ores.marketdata.core.tests=. A real import of a large
+file pays the same cost: a file with 1,000 series spends about 18 seconds on
+lookups.
+
+* References
+
+- =projects/ores.marketdata/core/src/service/import_service.cpp=, =find_or_create_series=.
+- =market_series_repository::read_latest_by_uri=, generated; a batch read needs the generator or a hand-written query.
+
+* See also
+
+- [[id:BFC0B81D-9DAB-421F-B199-68188E1BD64C][Hotfix: the marketdata core suite times out in CI]]

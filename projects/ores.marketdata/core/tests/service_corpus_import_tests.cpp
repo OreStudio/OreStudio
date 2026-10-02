@@ -18,10 +18,9 @@
  *
  */
 #include "corpus_files.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
-#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -36,9 +35,11 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <rfl/json.hpp>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 // The oresmd coverage test walks the ORE corpus and asserts that every key can
@@ -139,16 +140,6 @@ std::string source_tag_for(const std::filesystem::path& path) {
            std::to_string(std::hash<std::string>{}(path.string()) % 100000);
 }
 
-/// Imports @p path and asserts the rows it wrote match the file.
-///
-/// The check is on the multiset of values rather than on a key-by-key walk: a
-/// corpus key splits into the stored (type, metric, qualifier) columns by rules
-/// that differ per asset class, so rebuilding the key to look a series up would
-/// test the split as much as the import. Comparing the values the file carried
-/// against the values the rows hold proves the same thing without that.
-///
-/// Returns the number of observations the file carried, so a caller can total
-/// them across files.
 /// A tenant of this test's own.
 ///
 /// The test tenant is provisioned per test *binary*, not per case, so every
@@ -169,11 +160,45 @@ struct corpus_tenant {
     }
 };
 
+/// The (key, value) pairs the rows stamped with @p tag hold, sorted.
+///
+/// One query, filtered on the source tag the import stamped, so the check
+/// costs the same for every file however many rows the tenant already holds.
+std::vector<std::pair<std::string, std::string>> stored_pairs(ores::database::context ctx,
+                                                              const std::string& tag) {
+    auto lg(ores::logging::make_logger(test_suite));
+    const auto rows = ores::database::repository::execute_parameterized_string_query(
+        ctx,
+        "SELECT json_build_array(key, value)::text"
+        " FROM ores_marketdata_market_observations_tbl"
+        " WHERE source = $1 AND valid_to = ores_utility_infinity_timestamp_fn()",
+        {tag},
+        lg,
+        "Reading one corpus file's observations");
+
+    std::vector<std::pair<std::string, std::string>> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        const auto pair = rfl::json::read<std::vector<std::string>>(row);
+        if (!pair || pair->size() != 2)
+            FAIL("unreadable observation row: " << row);
+        result.emplace_back((*pair)[0], (*pair)[1]);
+    }
+    std::sort(result.begin(), result.end());
+    return result;
+}
+
+/// Imports @p path and asserts the rows it wrote match the file.
+///
+/// The check compares (key, value) pairs, so a value that reached the database
+/// under another key fails it. The key is the one the file carried, which the
+/// import keeps beside the canonical identity.
+///
+/// Returns the number of observations the file carried, so a caller can total
+/// them across files.
 std::size_t import_and_verify(const std::filesystem::path& path,
                               ores::marketdata::service::import_service& svc,
                               ores::database::context ctx) {
-
-
     using namespace ores::marketdata;
     const auto content = ores::platform::filesystem::file::read_content(path);
     const auto expected = lines_of(content);
@@ -212,22 +237,13 @@ std::size_t import_and_verify(const std::filesystem::path& path,
     CHECK(resp.warnings.size() == expected.size() - distinct.size());
     CHECK(resp.errors.empty());
 
-    std::vector<std::string> wanted;
+    std::vector<std::pair<std::string, std::string>> wanted;
     wanted.reserve(distinct.size());
-    for (const auto& [key, line] : distinct)
-        wanted.push_back(line.value);
-
-    repository::market_series_repository series_repo;
-    repository::market_observations_repository obs_repo;
-    std::vector<std::string> stored;
-    for (const auto& s : series_repo.read_latest(ctx))
-        for (const auto& o : obs_repo.read_latest(ctx, s.id))
-            if (o.source == tag)
-                stored.push_back(o.value);
-
+    for (const auto& [date_and_key, line] : distinct)
+        wanted.emplace_back(line.key, line.value);
     std::sort(wanted.begin(), wanted.end());
-    std::sort(stored.begin(), stored.end());
-    CHECK(stored == wanted);
+
+    CHECK(stored_pairs(ctx, tag) == wanted);
 
     return expected.size();
 }

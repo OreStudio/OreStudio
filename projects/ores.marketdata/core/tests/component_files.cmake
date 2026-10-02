@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "classification_series_classifier_tests.cpp"
+    "datum_ore_key_codec_tests.cpp"
     "main.cpp"
     "oresmd_fixing_coverage_tests.cpp"
     "oresmd_identity_round_trip_tests.cpp"

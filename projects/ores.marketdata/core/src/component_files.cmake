@@ -21,6 +21,15 @@
 # To modify, update the template and regenerate.
 set(files
     "classification/series_classifier.cpp"
+    "datum/ore_key_codec.cpp"
+    "datum/ore_key_commodity.cpp"
+    "datum/ore_key_credit.cpp"
+    "datum/ore_key_equity.cpp"
+    "datum/ore_key_fx.cpp"
+    "datum/ore_key_inflation.cpp"
+    "datum/ore_key_rates.cpp"
+    "datum/ore_key_securities.cpp"
+    "datum/ore_key_volatility.cpp"
     "messaging/feed_binding_history_provider_registrar.cpp"
     "messaging/feed_binding_registrar.cpp"
     "messaging/market_fixing_registrar.cpp"
@@ -79,6 +88,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/classification/series_classifier.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/datum/ore_key_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/feed_binding_handler.hpp"

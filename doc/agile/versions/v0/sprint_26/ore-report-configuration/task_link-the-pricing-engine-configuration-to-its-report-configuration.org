@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 029066C2-C9FE-4A69-BCB1-9AB84E73AFE4
+:END:
+#+title: Task: Link the pricing engine configuration to its report configuration
+#+description: The credit simulation, stress test and today's market configurations each carry a configuration_id to the reporting configuration they are registered as, which is how a report reaches them. The pricing engine configuration does not, so a report cannot reach the engines it prices with. Add the nullable link, as the other three have it, with a migration for existing databases.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/link-the-pricing-engine-configuration-to-its-report-configuration
+#+pr: 2518
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report can reach the pricing engines it prices with, the same way it reaches
+its credit simulation, stress test and today's market configurations: through a
+=configuration_id= on the document's root row that names its
+=reporting.configurations= header.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- =ores_analytics_pricing_model_configs_tbl= carries a nullable =configuration_id=
+  whose insert trigger refuses an id with no active reporting configuration, as
+  the other three per-report configurations do.
+- A database created before the change gains the column through a one-shot
+  migration.
+- The pricing engine corpus and database round trips still pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Per-report configuration roots that carry =configuration_id= | 4 of 4: credit simulation, stress test, today's market, pricing engines | =grep -l ores_reporting_configurations_tbl projects/ores.analytics/modeling/*.org= | 5064708fd9 |
+| Migration on a database created before the change | column added to 38 rows, trigger checks the link, second run harmless | rolled-back transaction, =compass sql -f= | 5064708fd9 |
+| Suites after a recreate | analytics 4 of 4, ores.ore.core, ores.shell.analytics pass | =compass test run -- -R ...= | 5064708fd9 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2518][#2518]] | [analytics] Link the pricing engine configuration to its report |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Review: the migration relies on the generated create script staying safe to repeat | migration | Accepted | The migration's comment states the dependency and what to do if it ever fails. |
+| 2 | Review: two consecutive blank lines in the generated repository and service | generated =.cpp= | Captured | Identical in the sibling =credit_simulation_config=, so it is a template matter. Recorded with point 3 as a backlog capture. |
+| 3 | Review: the =by-configuration-id= usage omits =--scope=, which the parser accepts | generated shell command | Captured | Same as point 2. |
+| 4 | Review: the shell passes the nil UUID for no link | shell | No change | The same convention as the sibling verbs; the mapper treats it as null. |
+| 5 | Review: the generated count test is weak | generated test | No change | Generated, and accepted by the reviewer. |
+
+* Result
+
+The pricing model configuration carries a nullable =configuration_id= to the
+reporting configuration it is registered as, with the same insert-trigger check
+as credit simulation, stress test and today's market. All four per-report
+configuration roots now reach their report the same way.
+
+A database created before the change gains the column through
+=analytics_pricing_model_configs_add_configuration_id_migration.sql=. It also
+re-runs the generated create script, which creates nothing that exists and
+replaces the insert trigger, so an existing database checks the link too.
+Adding the column alone would have left the old trigger, which never checks it.
+
+**Component audit.** The task touched =ores.analytics= through one model and
+its regenerated surfaces. =validate_docs.sh= passes for all 41 components, and
+no folder, type or component changed.

@@ -46,6 +46,9 @@ pricing_model_config_mapper::map(const pricing_model_config_entity& v) {
 
     r.description = v.description.value_or("");
     r.config_variant = v.config_variant.value_or("");
+    r.configuration_id = v.configuration_id.has_value() ?
+                             boost::lexical_cast<boost::uuids::uuid>(*v.configuration_id) :
+                             boost::uuids::uuid{};
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,6 +72,9 @@ pricing_model_config_mapper::map(const domain::pricing_model_config& v) {
 
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.config_variant = v.config_variant.empty() ? std::nullopt : std::optional(v.config_variant);
+    r.configuration_id = v.configuration_id == boost::uuids::uuid{} ?
+                             std::nullopt :
+                             std::optional(boost::uuids::to_string(v.configuration_id));
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

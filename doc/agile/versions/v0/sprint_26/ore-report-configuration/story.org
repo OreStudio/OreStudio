@@ -23,10 +23,15 @@ A report definition's configuration is a set of strongly typed entities rather t
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The harness exists, and credit simulation, calendar adjustments and currencies round trip through it. Conventions are scoped: fourteen categories the mapper does not model, and two field gaps on the ones it does. |
+| Now           | Seven of the seventeen document kinds round trip through entities: the run document, credit simulation, stress test, today's market, pricing engines, and the conventions, currencies and calendar adjustments in refdata. Credit simulation, stress test, today's market and pricing engines reach their reporting configuration by =configuration_id=. |
 | Waiting on    | Nothing.                               |
-| Next          | Map the convention fields the modelled categories already have, then model the fourteen categories the corpus uses, most used first. |
-| Last touched  | 2026-09-28                               |
+| Next          | Seed the configuration lookups and bind the report types, so a report can point at its configuration. Then finish the curve configuration, which needs its binding generated first, before simulation, sensitivity, SIMM calibration, historical return and Basel traffic light. |
+| Last touched  | 2026-10-02                               |
+
+What a report still cannot do: =reporting.configurations= is unseeded, so no
+definition points at any configuration yet, and no run is built from the
+entities. Counterparty, netting set, reference data and IBOR fallback
+documents are not modelled as entities.
 
 * Acceptance
 
@@ -74,6 +79,7 @@ A report definition's configuration is a set of strongly typed entities rather t
 | [[id:08B98A2C-5123-45B0-B536-8421AB99EC0E][Model the FpML coded-scheme tables so codegen owns them]] | BACKLOG | | | Fifteen refdata coded-scheme tables (account types, asset classes, business centres and the rest), their DQ artefact tables and their notify triggers say do not edit, but the legacy JSON models that generated them no longer exist, so nothing can regenerate them and they have been edited by hand since. Write entity models for them so codegen produces the same SQL. |
 | [[id:AE86A142-B734-44F1-9647-0F37A551DA83][Generate the hand-written RLS policies from model flags]] | BACKLOG | | | Fourteen hand-written policy files hold 251 row-level security policies, about 129 of them plain tenant isolation on tables whose model exists but does not set the flag. A policy calls a function defined in iam, and dq, workspace, refdata and trading are created before iam, so codegen must write these policies to a late per-component file rather than inline. Prove each generated policy is identical to the hand-written one it replaces. |
 | [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] | BACKLOG | | | Twenty-five tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, DQ publication logs and seven DQ artefact staging tables. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written. |
+| [[id:029066C2-C9FE-4A69-BCB1-9AB84E73AFE4][Link the pricing engine configuration to its report configuration]] | DONE | 2026-10-02 | 2026-10-02 | The credit simulation, stress test and today's market configurations each carry a configuration_id to the reporting configuration they are registered as, which is how a report reaches them. The pricing engine configuration does not, so a report cannot reach the engines it prices with. Add the nullable link, as the other three have it, with a migration for existing databases. |
 
 * Decisions
 

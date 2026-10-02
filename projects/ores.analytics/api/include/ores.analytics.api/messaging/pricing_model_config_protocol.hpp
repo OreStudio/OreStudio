@@ -44,6 +44,7 @@ struct pricing_model_config_write {
     std::string name;
     std::string description;
     std::string config_variant;
+    boost::uuids::uuid configuration_id;
 };
 
 struct pricing_model_config_change {
@@ -59,6 +60,10 @@ struct pricing_model_config_removal {
 struct pricing_model_config_lookup {
     pricing_model_config_key key;
     std::optional<ores::analytics::domain::pricing_model_config> pricing_model_config;
+};
+
+struct pricing_model_configs_filter {
+    std::optional<boost::uuids::uuid> configuration_id;
 };
 
 struct pricing_model_config_event {
@@ -94,6 +99,7 @@ struct list_pricing_model_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<pricing_model_configs_filter> filter;
 };
 
 struct list_pricing_model_configs_response {
@@ -211,6 +217,31 @@ struct delete_many_pricing_model_configs_request {
 
 struct delete_many_pricing_model_configs_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_configuration_id_pricing_model_configs_request {
+    using response_type = struct list_by_configuration_id_pricing_model_configs_response;
+    static constexpr std::string_view nats_subject =
+        "analytics.v1.pricing_model_configs.list_by_configuration_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid configuration_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<pricing_model_configs_filter> filter;
+};
+
+struct list_by_configuration_id_pricing_model_configs_response {
+    ores::utility::domain::result result;
+    std::vector<ores::analytics::domain::pricing_model_config> configs;
+    std::uint64_t total;
 };
 
 struct list_pricing_model_config_versions_request {

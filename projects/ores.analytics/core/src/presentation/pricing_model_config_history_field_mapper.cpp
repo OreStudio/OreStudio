@@ -38,6 +38,8 @@ render_pricing_model_config_fields(const domain::pricing_model_config& v) {
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Config Variant", .value = v.config_variant});
+    fields.push_back(
+        {.name = "Configuration ID", .value = boost::uuids::to_string(v.configuration_id)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

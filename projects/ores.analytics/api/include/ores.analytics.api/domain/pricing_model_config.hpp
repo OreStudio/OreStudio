@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
@@ -77,6 +78,14 @@ struct pricing_model_config final {
      * Examples: 'standard', 'amc', 'amccg', 'dg', 'sabr', 'ad'.
      */
     std::string config_variant;
+
+    /**
+     * @brief The reporting configuration this document is registered as, which is how a report
+     * reaches the engines it prices with. Nullable because a document can be imported before it is
+     * registered: the mapper reads and writes content and does not invent a header, the caller
+     * supplies one.
+     */
+    boost::uuids::uuid configuration_id;
 
     /**
      * @brief Username of the person who last modified this pricing model configuration.

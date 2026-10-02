@@ -50,6 +50,7 @@ generate_synthetic_pricing_model_config(utility::generation::generation_context&
     r.name = std::string("config") + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.config_variant = std::string("standard");
+    r.configuration_id = boost::uuids::nil_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

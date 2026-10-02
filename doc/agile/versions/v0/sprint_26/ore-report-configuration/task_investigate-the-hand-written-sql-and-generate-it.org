@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: B9FE1B6D-08B1-4B06-BD76-5CDD12123568
+:END:
+#+title: Task: Find why so much SQL is hand-written and generate what codegen can
+#+description: Every component's create and drop aggregate is hand-curated, and 144 of the 754 create scripts carry no generated marker, so a new entity silently misses a recreate until someone lists it by hand. Measure what is hand-written and why, decide what codegen can own, and turn the wiring check that exists today into a gate.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new entity reaches the database without a hand-edited file. Every hand-written
+SQL file has a recorded reason to be hand-written. What codegen can own, it
+generates. What stays hand-written is checked by a gate that fails the build.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- Every hand-written file under =projects/ores.sql/create=, =drop= and
+  =populate= is classified by why it is hand-written, and the classification and
+  the command that produced it are in an =evidence/= file.
+- Each class has a decision: generate it, keep it hand-written with a reason, or
+  delete it.
+- The component create and drop aggregates are generated from the models, or the
+  task records why they cannot be.
+- The =WIRE_001= wiring check, and the other parser warnings, fail CI rather than
+  print.
+- Generated drop files carry the same generated marker as the create files, so a
+  count of hand-written files is possible.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =*_create.sql= files without a generated marker | 144 of 754 | count of =find create -name "*_create.sql"= less those matching =GENERATED FILE\|DO NOT EDIT= | 73c00d0dfb |
+| =*_functions_create.sql= without a marker | 26 of 26 | as above, pattern =*_functions_create.sql= | 73c00d0dfb |
+| =*_rls_policies_create.sql= without a marker | 15 of 15 | as above, pattern =*_rls_policies_create.sql= | 73c00d0dfb |
+| =populate= files without a marker | 217 of 288 | as above, under =populate= | 73c00d0dfb |
+| Drop files without a marker | 741 of 741 | as above, under =drop= (no template writes a marker) | 73c00d0dfb |
+| Hand-written create files, by component | dq 24, refdata 24, iam 21, reporting 12, telemetry 7, mq 6, trading 6, utility 6, others 4 or fewer | per =create/<component>/= | 73c00d0dfb |
+
+* Notes
+
+Found while reviewing PR #2500 (today's market round trip). Adding five
+entities passed the build, the model drift check and every test, and the
+entities still did not reach the database until two aggregate files were edited
+by hand.
+
+**The aggregates are hand-written in every component.** All 22
+=create/<component>/<component>_create.sql= files and their drop twins are
+written by hand. They hold the =\ir= includes in dependency order, with prose
+per block. This is a project-wide convention, not something PR #2500 started.
+
+**A check exists and does not fail.** =validate_component_wiring= in
+=projects/ores.codegen/src/plantuml_er_parse_sql.py= reports rule =WIRE_001= for
+any create or drop file the root script does not reach. The
+=codegen-drift.yml= step runs the parser with =--warn= and without =--strict=,
+so the report only prints. With the five today's market =RLS_001= warnings
+fixed, the tree has zero warnings, so =--strict= costs nothing today.
+
+**Generation looks possible for the aggregates.** The models already hold the
+foreign keys, so a dependency order can be computed by a topological sort. The
+open questions:
+- where the prose per block goes;
+- how hand-written files (functions, RLS, service bundles) sit in the same order;
+- whether one generated fragment per component is better than generating the
+  whole aggregate.
+
+**Generated drop files carry no marker.** For example,
+=drop/analytics/analytics_todays_market_configs_drop.sql= is generated but has
+no "generated" line. So the drop count below cannot tell generated from
+hand-written.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

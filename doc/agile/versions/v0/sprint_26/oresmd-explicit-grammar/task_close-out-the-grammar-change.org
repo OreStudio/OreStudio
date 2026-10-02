@@ -71,8 +71,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Corpus walk in the default set | Runs; suite 1,785s | =ctest -R 'ores.marketdata.core.tests'= | 081b9e146c |
-| Reporting suites | 3 of 3 green | =ctest -R 'ores.reporting'= | a1e7ab9abb |
+| Whole tree, final | 89 of 89 suites green, 1,945s | =ctest -j 4= | b0117e781c |
+| Corpus walk in the default set | Runs; suite about 1,800s | =ctest -R 'ores.marketdata.core.tests'= | b0117e781c |
 
 * Notes
 
@@ -108,6 +108,14 @@ rather than a thing nobody ran.
   about thirty minutes, which is why it was hidden; hiding it also hid the
   acceptance, so a change that broke the walk could merge green. The scheduled
   =continuous-linux= job carries the cost.
+- Its suite runs alone (=RUN_SERIAL=). Promotion put a half-hour,
+  database-heavy suite beside every other suite in a parallel run, and that was
+  enough to lose a race in =report_definition_eventing_integration_tests=: the
+  test asserts its version history is unchanged immediately after a delete,
+  while the service's notification re-drive can still be writing. The check is
+  green in the serialized set and red in the parallel one, which is a defect in
+  that generated test rather than in the walk; the serialization keeps the
+  default set honest until the assertion is fixed.
 - The record describes the grammar that ships: =market_data_urn.org= was rewritten
   in the generation unit, and the codegen coordinate gate checks the new spelling
   rather than the retired =point= bag.

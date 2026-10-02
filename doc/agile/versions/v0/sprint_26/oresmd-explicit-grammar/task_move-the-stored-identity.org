@@ -101,7 +101,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Whole-corpus import walk | Green: 482 assertions in 1 case | =ores.marketdata.core.tests "[corpus-full]"= | 61f544d091 |
 | Marketdata suites | 4 of 4 green | =ctest -R 'ores.marketdata'= | 61f544d091 |
-| Whole tree | 89 of 89 ctest suites green | =ctest -j 4= | 61f544d091 |
+| Whole tree | 89 of 89 ctest suites green, 1,945s | =ctest -j 4= | b0117e781c |
 | Database rebuilt from this tree | Schema 0.0.25, built at the branch head | =compass db recreate -y -k= | 61f544d091 |
 | Observations the walk stored | 1,119,661 rows, 2,977 series | =select count(*)= on the two tables | 61f544d091 |
 

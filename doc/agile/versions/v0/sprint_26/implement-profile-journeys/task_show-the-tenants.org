@@ -118,6 +118,21 @@ via its "Verifies task" field.
 
 * Result
 
+** Correction (2026-10-02)
+
+The journey this task built,
+[[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]], asks for a search
+over code, name and hostname, for paging with a total, and for picking a row to
+go on to another operation. This task's acceptance carried none of them, so it
+closed DONE with the journey only partly built, and nothing recorded the gap.
+Search and paging are
+[[id:4A15EFC1-447A-4573-9BF1-5B9E69A9C7D7][Search and page the tenant roster]];
+the row actions are
+[[id:6768638B-7471-4CFA-9F81-83DDB4E36CC9][Act on a tenant from its row]].
+The system tenant is now left out by the server's search rather than by the BFF,
+which was the way out this task recorded.
+
+
 The system administrator can read what tenants the deployment holds, without
 opening a journey that destroys one.
 

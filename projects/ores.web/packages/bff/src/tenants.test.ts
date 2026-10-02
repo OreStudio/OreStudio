@@ -175,13 +175,11 @@ function buildTestServer(
 }
 
 describe('GET /api/tenants', () => {
-    it('lists the tenants the deployment holds, and not the deployment itself', async () => {
+    it('lists one page of the tenants the search answers', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            tenants: [
-                wireTenant(SYSTEM_TENANT, 'system', 'Root Tenant', 'active'),
-                wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
-            ],
-            total: 2,
+            success: true,
+            tenants: [wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active')],
+            total: 1,
         });
 
         const response = await server.inject({
@@ -209,17 +207,64 @@ describe('GET /api/tenants', () => {
             setupUnavailable: false,
         });
         expect(calls).toHaveLength(2);
-        expect(calls[0]?.subject).toBe('iam.v1.tenants.list');
-        expect(calls[0]?.body).toMatchObject({ offset: 0, limit: 100 });
+        expect(calls[0]?.subject).toBe('iam.v1.tenants.search');
+        expect(calls[0]?.body).toEqual({
+            search: '',
+            type_filter: '',
+            status_filter: '',
+            offset: 0,
+            limit: 100,
+        });
+
+        await server.close();
+    });
+
+    /*
+     * The search, the page and the total are the server's, which leaves the
+     * system tenant out beside the registry; the route passes the person's
+     * search and page through and corrects nothing.
+     */
+    it('passes the search and the page to the server and its total back', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            success: true,
+            tenants: [wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active')],
+            total: 37,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants?search=acme&offset=20&limit=10',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ totalCount: 37 });
+        expect(calls[0]?.body).toMatchObject({ search: 'acme', offset: 20, limit: 10 });
+
+        await server.close();
+    });
+
+    it('refuses a page that is not a whole number', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            success: true,
+            tenants: [],
+            total: 0,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants?offset=ten',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
 
         await server.close();
     });
 
     it('answers an empty roster for a deployment that holds no tenant of its own', async () => {
-        const { server, sessionId } = buildTestServer({
-            tenants: [wireTenant(SYSTEM_TENANT, 'system', 'Root Tenant', 'active')],
-            total: 1,
-        });
+        const { server, sessionId } = buildTestServer({ success: true, tenants: [], total: 0 });
 
         const response = await server.inject({
             method: 'GET',
@@ -241,6 +286,7 @@ describe('GET /api/tenants', () => {
     it('joins each tenant with the latest run that provisions it', async () => {
         const { server, sessionId, calls } = buildTestServer(
             {
+                success: true,
                 tenants: [
                     wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
                 ],
@@ -290,6 +336,7 @@ describe('GET /api/tenants', () => {
     it('answers the roster and says so when the runs cannot be read', async () => {
         const { server, sessionId } = buildTestServer(
             {
+                success: true,
                 tenants: [
                     wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
                 ],
@@ -315,7 +362,7 @@ describe('GET /api/tenants', () => {
     });
 
     it('refuses a request with no session', async () => {
-        const { server } = buildTestServer({ tenants: [], total: 0 });
+        const { server } = buildTestServer({ success: true, tenants: [], total: 0 });
 
         const response = await server.inject({ method: 'GET', url: '/api/tenants' });
 
@@ -332,6 +379,7 @@ describe('GET /api/tenants', () => {
     it('refuses a session that is acting inside a tenant', async () => {
         const { server, sessionId, calls } = buildTestServer(
             {
+                success: true,
                 tenants: [
                     wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
                 ],

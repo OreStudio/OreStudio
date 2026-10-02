@@ -321,8 +321,21 @@ export const api = {
      * bookkeeping rather than a tenant somebody set up, and the answer has
      * already dropped it.
      */
-    async tenants(): Promise<TenantPage> {
-        return tenantPageSchema.parse(await request('/api/tenants', { method: 'GET' }));
+    async tenants(
+        query: { readonly search?: string; readonly offset?: number; readonly limit?: number } = {},
+    ): Promise<TenantPage> {
+        const params = new URLSearchParams();
+        if (query.search !== undefined && query.search !== '') {
+            params.set('search', query.search);
+        }
+        if (query.offset !== undefined) {
+            params.set('offset', String(query.offset));
+        }
+        if (query.limit !== undefined) {
+            params.set('limit', String(query.limit));
+        }
+        const suffix = params.size === 0 ? '' : `?${params.toString()}`;
+        return tenantPageSchema.parse(await request(`/api/tenants${suffix}`, { method: 'GET' }));
     },
 
     /**

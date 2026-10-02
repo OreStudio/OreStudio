@@ -79,7 +79,15 @@ const fr: SourceCatalogue = {
 
     tenants: {
         title: 'Locataires',
-        count: { one: '{count} locataire', other: '{count} locataires' },
+        description: 'Les locataires de ce déploiement, et l’état de chacun.',
+        search: 'Rechercher par code, nom ou nom d’hôte',
+        noMatch: 'Aucun locataire ne correspond à « {search} ».',
+        showing: {
+            one: '{first}–{last} sur {count} locataire',
+            other: '{first}–{last} sur {count} locataires',
+        },
+        previous: 'Précédent',
+        next: 'Suivant',
         code: 'Code',
         name: 'Nom',
         hostname: 'Nom d’hôte',

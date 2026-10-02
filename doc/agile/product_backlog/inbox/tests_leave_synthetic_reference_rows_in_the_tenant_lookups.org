@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 41566F78-970A-4019-B6A1-F076D7D21C88
+:END:
+#+title: Tests leave synthetic rows in the tenant lookups
+#+description: The iam repository tests for tenant types and tenant statuses, and the seed profile tests, write synthetic rows into shared lookup tables and never remove them. After one ctest run a deployment holds 8 junk tenant types (CD 1 to CD 8), 8 junk tenant statuses and 2 junk seed profiles (CD_profile-...), which clutter the roster's filters and the New tenant journey's starting points.
+#+type: capture
+#+level: cross
+#+filetags: :iam:tests:data:web:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Three iam test families write synthetic rows into lookup tables that every
+screen reads, and nothing removes them:
+
+| Writer | Table | Rows after one ctest run (2026-10-02) |
+|--------+-------+---------------------------------------|
+| =repository_tenant_type_repository_tests.cpp= | =ores_iam_tenant_types_tbl= | 8 of 12, named =CD 1= to =CD 8= |
+| =repository_tenant_status_repository_tests.cpp= | =ores_iam_tenant_statuses_tbl= | 8 of 12 |
+| =seed_profile_generator= through the seed profile tests | =ores_iam_seed_profiles_tbl= | 2 of 5, coded =CD_profile-...= |
+
+Every name starts with "CD" because the tests seed faker the same way on every
+run, so =faker::word::noun()= answers "CD" each time. The rows carry
+=change_reason_code = system.test=.
+
+The tenants these tests write are already marked: the tenant generator sets the
+type =automation=, which the type table describes as "automated test
+infrastructure", so a roster can hide them. Reference rows have no such marker,
+so the junk types and statuses appear in the roster's filters, and the junk seed
+profiles appear as starting points on the *New tenant* screen.
+
+The fix is any of:
+
+- The tests remove what they write, or write inside a transaction they roll
+  back.
+- The tests reuse the seeded types and statuses rather than inventing new ones.
+- The reads that serve screens leave out rows whose change reason is
+  =system.test=.
+
+* Why
+
+Found while asking how to tell real tenants from test ones on a development
+deployment. The tenant type answers that for tenants; nothing answers it for the
+lookups those tenants are filtered by.
+
+* References
+
+- [[id:49E680DA-EC29-42A7-89BD-0D40481539A5][Filter the tenant roster by type and status]]
+
+* See also
+
+-

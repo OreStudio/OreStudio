@@ -2,7 +2,7 @@
 :ID: 49E680DA-EC29-42A7-89BD-0D40481539A5
 :END:
 #+title: Task: Filter the tenant roster by type and status
-#+description: Add type and status filters to the tenant roster, and record them in the See the tenants journey and its wireframe.
+#+description: Add type and status filters to the tenant roster, hide automation tenants by default behind a Show test tenants toggle, and record both in the See the tenants journey and its wireframe.
 #+type: task
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A system administrator narrows the roster to a type and a status, and sees only
+real tenants unless they ask for the test ones. Tenants of type =automation= are
+test infrastructure: the type table describes them so, and the tenant generator
+and the test fixtures write them. A development deployment holds many of them,
+and they hide the real tenants.
 
 * Status
 
@@ -35,7 +39,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The roster filters by tenant type and by status, from the deployment's own
+  type and status rows.
+- =automation= tenants are hidden by default. A *Show test tenants* toggle shows
+  them, and the count says how many are hidden.
+- The type column renders as a badge from the badge catalogue, the way the
+  status column does since
+  [[id:0DD8A141-2D77-47A0-A0EC-B4662767CCF6][Paint the tenant status with the badge catalogue]].
+  The tenant type row has no badge reference yet, so it gains one, as the
+  status row did, and the words stay the type row's own.
+- The search request can leave a type out, so the server answers "every type but
+  automation" and its total counts the same rows the page shows.
+- The See the tenants journey and its wireframe record the filters and the
+  toggle.
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
 
 * Plan
 

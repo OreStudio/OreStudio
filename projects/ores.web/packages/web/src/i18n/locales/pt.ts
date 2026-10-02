@@ -84,7 +84,15 @@ const pt: SourceCatalogue = {
 
     tenants: {
         title: 'Inquilinos',
-        count: { one: '{count} inquilino', other: '{count} inquilinos' },
+        description: 'Os inquilinos deste ambiente e o estado de cada um.',
+        search: 'Pesquisar por código, nome ou nome do anfitrião',
+        noMatch: 'Nenhum inquilino corresponde a "{search}".',
+        showing: {
+            one: '{first}–{last} de {count} inquilino',
+            other: '{first}–{last} de {count} inquilinos',
+        },
+        previous: 'Anterior',
+        next: 'Seguinte',
         code: 'Código',
         name: 'Nome',
         hostname: 'Nome do anfitrião',

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0
+:END:
+#+title: Linked cash
+#+description: Cash that hangs off a parent trade: linked versus orphan cash, inclusion in the parent's mark-to-market until settlement, and drill-down from a balance to the trades behind it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:cash:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+Some cash explains a trade. A premium, a coupon, a rebate and a
+close-out fee all fall due because a trade says they do. *Linked cash*
+is the cash a trade explains. The rest — variation margin, CVA, sales
+credits — is *orphan cash*: it stands on its own.
+
+The distinction governs reporting. Linked cash is carried with its
+parent trade, included in the trade's value until it settles, and
+reported against the trade even after the trade has ended. Orphan cash
+reports where it arises.
+
+The link must also work in the other direction. A settled balance is
+audited through the trades behind it, so a user can drill from a cash
+balance down to trade level. A balance that cannot explain itself is an
+orphan by accident.
+
+* Detail
+
+** A flow arrives because something created it
+
+[[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash Flow]] defines the
+flow itself: a signed, dated, currency-denominated movement of money.
+The first question about any flow is whether a trade explains it. The
+answer splits cash into two families.
+
+| Sub-type | Link to a trade |
+|----------+-----------------|
+| Coupon (payment) | Linked |
+| Close-out fee, partial or complete | Linked |
+| Rebate | Linked |
+| Uncollateralised funding | Open |
+| Variation margin | Orphan |
+| CVA | Orphan |
+| Wrong way risk | Orphan |
+| Transfer pricing | Orphan |
+| Sales credits | Orphan |
+| Default claim | Orphan |
+| Compensation (for example, novation payouts) | Orphan |
+| Billing fee | Orphan |
+| Agency commission | Orphan |
+
+The list is a consequence of the rule, not the rule itself. Coupons,
+fees and rebates are linked because a trade explains them; margin, CVA
+and sales credits are orphan because no single trade does. A new
+sub-type goes on the correct side by answering the same question.
+
+Uncollateralised funding stays *open*: it is neither explained by a
+trade's terms nor cleanly orphan, so the table records the question
+rather than forcing a side.
+
+Compensation is the case worth spelling out: a novation payout arises
+from the transfer itself, not from the terms of either linked trade, so
+it stays orphan even though the novation creates a
+[[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][trade link]].
+
+** Carrying an unsettled flow
+
+Until a linked flow settles, it belongs to its parent trade. The
+trade's value carries the discounted amount of the flow, so a trade
+that owes a coupon is worth less than one that has paid it. For
+principal the same rule spans the trade's life: the initial principal
+stays with the trade until the final principal settles.
+
+This is where linked cash meets
+[[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]]. Position
+management adds up cash, discounts it, and gives an accurate view of
+settled and future cash. The future half is the linked half: without
+the link, an unsettled flow has no home in the valuation.
+
+** After the parent trade ends
+
+A flow can outlive its trade. The close-out fee settles after the
+close-out; the final coupon settles after maturity; the rebate settles
+after the trigger date. The cash keeps reporting against the parent
+trade, and settlement and P&L reports read it there. Tearing the link
+at expiry would strand the flow — this is why the link outlives the
+trade, not just the booking.
+
+** Drilling down
+
+[[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] states the
+audit principle for positions: a position cannot be audited directly,
+the deals beneath it are audited and the aggregation is trusted. The
+same principle reaches cash. A settled balance must connect to the
+trades that contributed to it, so that a user can move from a balance
+to a monthly, then daily, then trade-level breakdown of what produced
+it. Without the connective tissue the balance is unexplainable, and
+unexplainable balances are a control finding.
+
+The concept of the cash itself — notes and coins, and
+currency-equivalent assets — is on
+[[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]]; an amount of cash
+in a currency is a
+[[id:940CB31A-BD50-45D6-98AC-4B0D53973825][Cash Position]].
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the link family this page belongs to.
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the catalogue, where linked cash is an annotation.
+- [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash Flow]] — the flow itself: signed, dated, currency-denominated.
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] — cash as the most liquid form of a currency.
+- [[id:940CB31A-BD50-45D6-98AC-4B0D53973825][Cash Position]] — an amount of cash in a currency.
+- [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregation of deals, and why drill-down carries the audit.
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — where the settled flow lands.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: 2AAC92EB-2320-4385-999E-947E9E8FE5C5
+:END:
+#+title: Trade links
+#+description: What a link between trades is: the typed, directed relation, the roles its ends take, how links come into being, and the prior art behind the term.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:trade_links:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+* Summary
+
+Trades rarely stand alone. A close-out answers a live trade, a
+back-to-back routes a client trade's risk, a fixing belongs to the
+forward it fixes. A *trade link* is the typed, directed relation that
+records this. The type names the reason, and each end plays a role:
+original and closing trade, parent and generated trade, hedged and
+hedging trade.
+
+The link type decides behaviour through one property: its economic
+effect. A link with an economic effect is a trade event; it changes the
+trade and may need a confirmation. A link with no economic effect is an
+annotation; the system records and reports it, and it changes no term.
+
+This page fixes the vocabulary, describes how links come into
+being, and states the invariants they must satisfy. The catalogue
+of types is on [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]];
+the prior art behind the term is at the end of this page.
+
+* Detail
+
+** What a link is
+
+A link joins two trades and says why. It is directed: the close-out
+link runs from the original trade to the closing trade, and the
+misbooking link runs from the correction trade back to the erroneous
+original. Each end plays a role, and the role is part of the record,
+not something a reader infers.
+
+A link is typed. The type is the reason: close-out, novation, roll,
+fixing, allocation. The reason cannot be recovered from the two trades
+alone — a cancelled trade and a live one are the ends of a close-out, a
+misbooking and a compression alike — so the system stores the link as
+data.
+
+Most links join two trades. Not all do: a trade's cash flows
+(see [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]]), and the
+trades a single process run generates, which the run's own page owns.
+Pre-trade objects — orders, quotes, RFQ records — sit outside the trade
+model, and their links are out of scope here.
+
+** The property that decides behaviour
+
+A link with an economic effect is a *trade event*. The two linked
+trades are the before and after of an economic change: the trade
+changes, a version is cut, and the customer may have to agree again.
+Close-out, novation, roll, merge and compression are trade events.
+
+A link with no economic effect is an *annotation*. The trades stand on
+their own; the link records how they came about, why they sit together,
+or who asked for them to be joined. Fixings, funding rolls, sweeps,
+allocations, hedge marks and user links are annotations.
+
+Annotations are not second-class. They carry the audit trail. A
+risk-routing chain can be traced back to the client trade, and a fixing
+back to its forward, only because the process records the link even
+where it could price the new trade without it.
+
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal
+Composition]] states the rule as one of its four ground rules for
+development on structures. It governs every decision about link
+behaviour: whether to version, whether to confirm, whether to notify
+downstream.
+
+** How links come into being
+
+Several routes carry every link.
+
+- /At booking./ Assembling a structure links the legs to it. A
+  back-to-back pair is generated with the client-facing trade, so the
+  two sides of the risk route exist together (see
+  [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk
+  routing]]). A book move pairs a back-out trade with the trade in the
+  destination book in a single transaction; where ownership differs,
+  the move goes through a novation-like close-out and rebook, linked
+  both times (see [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book
+  lifecycle]]). A correction trade references the erroneous original
+  through =successor_trade_id= (see
+  [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]).
+
+- /From a process./ Funding rolls, sweeps, fixings, expiry runs and
+  cleardown generate trades, and each generated trade is linked to its
+  origin as the run proceeds. The run then reads as a unit, and it
+  audits as one: the requirement is to trace a trade back through the
+  split, route or move to the trade that caused it (the audit section
+  of [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk
+  routing]] states the principle for the risk-routing case).
+
+- /By hand./ The blotter's Link / Unlink actions join trades a user
+  chooses: an ECN block to its allocations, a hedge forward to the
+  option it hedges, legs of a structure booked separately. The linked
+  forms carry the work — Link Amend carries a change from the primary
+  trade to its counterpart, Link Net nets eligible trades, and Link
+  Split breaks a link. See
+  [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
+
+** Invariants
+
+1. /Traceability over convenience./ The system records a link even
+   where a process could produce the correct numbers without it. A
+   back-to-back could be valued knowing only its own terms; the link
+   exists because audit must trace it back to the client trade.
+
+2. /Back to origin./ Every generated trade keeps a path to the trade
+   that caused it. The path survives the operation that created it — a
+   split, a route, a move, a correction.
+
+3. /Created together./ Trades a single act generates — a back-to-back
+   pair, a book move's two sides — are written in one transaction, or
+   not at all. No reader sees half of the act.
+
+4. /Propagation./ Where two sides of a link must stay aligned, a
+   change to the primary trade carries to the counterpart. Link Amend
+   is the blotter's form of this rule.
+
+5. /Explicit roles./ A link is directed, and its ends are named. The
+   record says which trade is the original and which is the outcome,
+   as =successor_trade_id= does for a correction trade.
+
+** Naming and prior art: why "trade links"
+
+The concept is industry-wide and the names differ. The table records
+what each source we follow calls it.
+
+| Concept | Name in the source we follow |
+|---------+------------------------------|
+| Generic typed link between trades | FpML =linkedTrade= — a =linkId= and a =linkType=, where the type carries the reason |
+| Lifecycle traceability | ISDA CDM /lineage/ — each business event ties an =after= trade state to the =before= state it replaces |
+| Identifier continuity across a lifecycle event | =prior UTI= — the report of a replacement trade names the identifier it supersedes |
+| Allocation between a block and its children | FpML =blockTradeId= and =allocationTradeId=, now folded into =linkedTrade= |
+| A group of trades under one agreement | the netting set of the ISDA documentation |
+| Clearing relationships | /give-up/ and /take-up/; the beta and gamma trades of a clearing chain |
+| Order relationships | FIX /parent/ and /child/ orders |
+| The user's action in a blotter | /link/ and /unlink/ |
+
+We chose *link* over *linkage* for several reasons. FpML standardises
+=linkedTrade=, so the word has a standards precedent. The blotter verbs
+are already Link and Unlink, so the noun matches our own vocabulary.
+And in market usage "linkage" more often names settlement netting than
+the relation between two trades, so reusing it would blur both senses.
+"Deal" is rejected for the same reason "trade" is preferred throughout:
+one word per concept.
+
+The material analysed, in full:
+
+- the FpML 5.12 schema — the =LinkedTrade= complex type, and
+  =PartyTradeIdentifier= with =linkId=, =linkType=, =blockTradeId=,
+  =allocationTradeId=, =originatingTradeId= and =resultingTradeId=;
+- the FpML 5.10 messaging framework, which carries =tradePackage= as a
+  payload type;
+- the ISDA Common Domain Model event model, where lineage ties each
+  trade state to the one before it;
+- the CPMI-IOSCO UTI guidance, which fixes when an identifier continues
+  and when a replacement trade needs a new one;
+- published vendor material on the same subject. Vendor portals are not
+  public, so the vendor picture rests on published course catalogues
+  and product pages — Calypso's training catalogue names the operations
+  (allocation, rollover, termination, netting) and Murex markets
+  life-cycle management at both trade and bulk level — not on internal
+  documentation. The analogous vocabulary for composition concepts is
+  on [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and
+  Deal Composition]].
+
+** Sources
+
+- FpML 5.12, =LinkedTrade= complex type:
+  https://cdn.fpml.org/spec/fpml-5-12-4-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-doc-5-12_xsd/complexTypes/LinkedTrade.html
+- FpML 5.11, =PartyTradeIdentifier= (=linkId=, =blockTradeId=,
+  =allocationTradeId=, =originatingTradeId=, =resultingTradeId=):
+  https://cdn.fpml.org/spec/fpml-5-11-7-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-doc-5-11_xsd/complexTypes/PartyTradeIdentifier.html
+- FpML 5.10, Messaging Framework (=tradePackage=):
+  https://www.fpml.org/docs/FpML5-messaging-framework-2.pdf
+- ISDA Common Domain Model, Event Model (lineage):
+  https://cdm.finos.org/docs/6.0.0/event-model/
+- CPMI-IOSCO, Harmonisation of the Unique Transaction Identifier:
+  Technical Guidance: https://www.bis.org/cpmi/publ/d158.htm
+- Nasdaq Calypso, Netting Transfers (courseware):
+  https://calypsoeducation.nasdaq.com/courses/netting-transfers
+- Murex, treasury management (MX.3 structuring and life cycle
+  management): https://www.murex.com/en/solutions/business-solutions/treasury-management
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the catalogue this page introduces.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — structure membership, the strongest link, and the operations that create and reshape a structure.
+- [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] — the links between a trade and its cash.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — Link / Unlink, and the linked forms.
+- [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] — back-to-back generation and its audit requirement.
+- [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the book move, its single transaction, and the novation-like move between owners.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events, and which of them cut a version.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

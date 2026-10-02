@@ -2,12 +2,12 @@
 :ID: FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160
 :END:
 #+title: Trade Structures and Deal Composition
-#+description: How a deal is built from its parts: the composition ladder, deal topology, structure operations, and the linkages between trades.
+#+description: How a deal is built from its parts: the composition ladder, deal topology, structure operations, and the place of structures among the wider family of trade links.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:structures:deal_composition:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-10-02
 
 * Summary
 
@@ -196,42 +196,17 @@ Split, link, unstructure and lock change only what the system records
 about the deal. Merge, roll and any change to a term change the deal
 itself, and they travel to the customer as a confirmation.
 
-** Linkages between trades
+** Structures and the wider family of links
 
-Structures are the strongest form of linkage between trades, but not
-the only one. Trading systems record a family of links. Each link has a
-cause and an economic effect, and the two are not the same thing.
-
-| Linkage | Cause | Economic effect |
-|---------+-------+-----------------|
-| Close-out, full or partial | The parties agree to end a trade early | Yes; the trade terminates or downsizes |
-| Novation or assignment | One party transfers its position to a third party | Yes; the counterparty changes |
-| Roll or restructure | The parties replace the deal with a new one | Yes; a new version supersedes the old |
-| Partial exercise | The holder exercises part of a deal | Yes; the exercised part settles and the rest continues |
-| Expiry and exercise | The contract reaches a date in its terms | Yes |
-| Netting | The parties agree to settle amounts net | No; settlement mechanics only |
-| Tom/Next funding | The desk funds a currency position overnight | No; funding mechanics only |
-| Spot sweep | The desk sweeps residual currency balances | No; cash management only |
-| End-of-month and start-of-year cleardown | The desk resets positions at a period boundary | No |
-| NDF fixing | The rate for a non-deliverable forward is fixed | No; the trade already provides for it |
-| Wash or back-to-back | The desk offsets a position with a matching trade | No; risk routing only |
-| Hedge link | The desk marks a trade as the hedge of another trade | No |
-| User-defined link | A user records an arbitrary association | No |
-
-The right-hand column is the one that decides behaviour. A link with an
-economic effect is a trade event: it changes the deal, it carries a
-version, and it may need a confirmation. A link with no economic effect
-is an annotation: it is recorded, displayed and reported, and it changes
-no term.
-
-Novation deserves one further note, because it changes the parties
-rather than the terms. Under the ISDA Master Agreement a party may not
-transfer its interest without the prior written consent of the other
-party, and the 2005 ISDA Novation Protocol sets a same-day consent
-process between the transferor, the transferee and the remaining party.
-The substance is that a novation is a new legal relationship, not an
-edit to an existing one, and a system that models it as an edit loses
-the audit trail.
+Structures are the strongest
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][link]] between trades, but not the only one.
+The wider family — close-outs, novations, rolls, fixings, allocations,
+book moves and the rest — is catalogued on
+[[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]]. The
+principle that sorts the family is stated on
+[[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]]: a link with
+an economic effect is a trade event; a link with no economic effect is
+an annotation.
 
 [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] describes these operations as the front office sees
 them: Link / Unlink, Allocate (Split), Aggregate / Net, and Roll
@@ -369,7 +344,6 @@ Development on structures should ground on four rules:
   https://www.bis.org/cpmi/publ/d158.htm
 - Eurex Clearing, change of unique transaction identifier (clearing
   circular): https://www.eurex.com/ec-en/find/circulars/clearing-circular-3237254
-- ISDA, Novation Protocol: https://www.isda.org/traditional-protocol/isda-novation-protocol/
 - Murex, treasury management (MX.3 structuring and life cycle
   management): https://www.murex.com/en/solutions/business-solutions/treasury-management
 - Nasdaq Calypso, learning catalogue (trade capture and structured
@@ -377,9 +351,15 @@ Development on structures should ground on four rules:
 
 * See also
 
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the confirmation model
   that a structure version drives.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the
+  principle that sorts the family, and the invariants every link
+  satisfies.
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the
+  catalogue of links, of which structure membership is one.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the structure view, and the deal actions that
   operate on a structure.
 - [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional

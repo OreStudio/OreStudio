@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08
-#+updated: 2026-07-09
+#+updated: 2026-10-02
 
 * Summary
 
@@ -117,8 +117,8 @@ tightly governed operation:
 - If the target book has different ownership (e.g. a different
   branch), a direct move is not allowed; instead the deal must go
   through a novation-like activity: close out the original deal and
-  rebook it in the new book, generating an explicit linkage between
-  the two.
+  rebook it in the new book, generating an explicit
+  [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][link]] between the two.
 - Operationally, a book move should result in a single transaction
   pairing a deal that backs out the original trade with the new trade
   in the destination book.
@@ -140,7 +140,8 @@ tightly governed operation:
   moved, and an offsetting deal with inverse direction is booked in
   the destination book, both against an internal counterparty to
   denote the intra-desk hedge. The broader term for moving risk
-  (rather than deals) across books is *Risk Routing*, governed by
+  (rather than deals) across books is
+  *[[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Risk Routing]]*, governed by
   routing rules that determine how trades are split and aggregated to
   reach the right desk (e.g. spot vs forward desk).
 
@@ -154,8 +155,9 @@ tightly governed operation:
   remains in the system rather than being physically removed, mirroring
   the Root Book / Recycle Bin model described in
   [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]]. Closure must be actioned through accounting.
-- A related year-end process, *Year End Clear Down*, flattens a book's
-  currency balances by booking an FX deal that converts the year's
+- A related year-end process,
+  *[[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Year End Clear Down]]*,
+  flattens a book's currency balances by booking an FX deal that converts the year's
   life-to-date P&L into a base currency (e.g. GBP) plus an
   equal-and-opposite cash deal, zeroing the book out for the new year.
 

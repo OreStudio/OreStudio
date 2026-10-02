@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:confirmations:versioning:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-10-02
 
 * Summary
 
@@ -184,9 +184,8 @@ deal itself requires the customer to acknowledge in writing.
 Events that are not on the list are not confirmed: authorisation states,
 internal book moves, netting and settlement mechanics, market fixings
 the contract already provides for, and annotations such as hedge links
-and user-defined links. [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] carries
-the full table of linkages and marks which ones have an economic
-effect.
+and user-defined links. [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] catalogues the links and
+marks which ones have an economic effect.
 
 ** Confirming a deal and confirming a structure
 

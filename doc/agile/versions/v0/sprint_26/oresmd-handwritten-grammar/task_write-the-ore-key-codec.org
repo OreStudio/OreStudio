@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-ore-key-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ the token's value, so it assigns fields the way ORE does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Review.                                |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -63,12 +63,59 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Documented forms checked | 141: 121 read as ORE reads them, 19 refused as ORE refuses them, 1 refused on purpose | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
+| Corpus keys checked | 108,057, all read, written back and matched field by field | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
+| Corpus check time | 4.9 s (debug build) | =ores.marketdata.core.tests "[ore_key_codec]"= =--durations yes= | 725b4271f7 |
+| Codec test cases | 9 cases, 41 assertions, all passed | =ores.marketdata.core.tests "[ore_key_codec]"= | 725b4271f7 |
+| Missing dispatch case | build fails: "enumeration value 'shape_profile' not handled in switch [-Werror,-Wswitch]" | =compass build ores.marketdata.core.lib= with the case removed | 725b4271f7 |
 
 * Notes
 
 The current readers choose fields by segment count. [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]] lists the mislabelled
 forms in section 1.
+
+** How the test compares fields
+
+The catalogue prints ORE's datum through ORE's own inspectors. The test
+translates each datum into the same text: ORE's field names, ORE's defaults for
+a token the key leaves out, and ORE's printing of periods (=12M= prints as
+=1Y=, =14D= as =2W=), reals (six significant digits) and derived dates (the
+as-of date plus the period, moved off a weekend). Each field ORE prints must
+have a translation. A field without one fails the test, so no field goes
+unchecked.
+
+** Keys ORE accepts that the codec refuses
+
+ORE reads part of these keys and drops the rest. No datum can write such a key
+back, so the codec refuses it.
+
+- =INDEX_CDS_OPTION= with five tokens, where the last token starts with a
+  number but is not a number, such as =CDXIG/5Y/1Y=. ORE's =tryParseReal= uses
+  =std::stod=, which reads the =1= of =1Y=, so ORE takes =1Y= as a strike of 1.
+  The documented "index term then expiry" form therefore works in ORE only for
+  an expiry that does not start with a digit. The catalogue form is listed in
+  the test's =deliberately_refused= table with this reason.
+- The forms in the unit test =the_codec_refuses_tokens_it_could_not_write_back=:
+  a cap/floor or swaption shift with a trailing flag, a base correlation tranche
+  with an attachment point, and a shape profile with a sixth token other than
+  =DST=.
+
+** Missing switch cases
+
+The project builds with =-Wall -Werror= on GCC and Clang. =-Wall= turns on
+=-Wswitch=, which reports a switch on an enum that has no =default= and misses
+an enumerator. The dispatch switch has no =default=, so a new
+=instrument_type= without a case fails the build. The task acceptance named
+=-Werror=switch-enum=; that flag also reports switches that have a =default=,
+and the family readers keep a =default= that throws, so =-Wswitch= is the flag
+that fits. MSVC's equivalent, C4062, is off by default; =ore_key_codec.cpp=
+turns it into an error with a =#pragma warning= so it applies to that file
+only. No MSVC build ran on this branch, so the MSVC side is unverified.
+
+** Open point
+
+QuantLib reads a signed period such as =-1Y=. The model's period does not. No
+catalogue key has a signed period, so the codec refuses one.
 
 * Test Scenarios
 
@@ -91,6 +138,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review (minor): the readers throw =refusal= instead of returning =std::expected=. | =ore_key_codec.cpp= | Declined | The exception never leaves the translation unit: =read= catches it and returns =std::expected=. Throwing keeps each reader a straight line of checks. |
+| 2 | Local review (minor): the test cases do not log the system under test. | =datum_ore_key_codec_tests.cpp= | Declined | The sibling catalogue tests do not log either, and a log line per corpus key adds 108,057 lines with no use. |
+| 3 | Local review (minor): =_MSC_VER= appears outside =ores.platform=. | =ore_key_codec.cpp= | Declined | It is a compiler check for one warning pragma, not a platform switch; =ores.ore/core/src/domain/domain.cpp= sets the same precedent. |
+| 4 | Local review: a flag token outside its vocabulary had no test, because the catalogue has no such key. | =datum_ore_key_codec_tests.cpp= | Accepted | Added =a_flag_outside_its_vocabulary_is_refused=. |
+| 5 | Local review: the acceptance claimed MSVC catches a missing case, but nothing turned C4062 on. | =ore_key_codec.cpp= | Accepted | A =#pragma warning(error : 4062)= under =_MSC_VER=. Not built on MSVC here. |
 
 * Result
+
+=ore_key_codec= in =ores.marketdata.core= reads ORE key text into
+=market_datum= and writes it back. It reads every documented form and every
+corpus key as ORE's parser does, except one form where ORE drops part of a
+token (see the notes). It writes every key it reads back to the same text,
+with aliases in their canonical spelling. A missing dispatch case fails the
+build on GCC and Clang. The MSVC side is set up but not built on this branch.

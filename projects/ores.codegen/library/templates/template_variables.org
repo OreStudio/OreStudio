@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:templates:reference:
 #+created: 2026-06-08
-#+updated: 2026-09-18
+#+updated: 2026-10-01
 
 Variables are injected by =generator.py= from the Stencil context, which is
 assembled from the model metadata (=modeling/*.org= entity files) and the
@@ -333,6 +333,19 @@ entity onto one shell REPL command unit and its tests.
 | =member_access=             | Per column: the member path on the domain struct, prefixed with =identity.= when the column is in the identity group. | =identity.tenant_id= |
 | =positional_index=          | Per user-supplied column: its zero-based position in the add verb's token vector. | =2=   |
 | =sample_token=              | Per user-supplied column: a token its own parse accepts, for the generated test's valid vector. | =swap=   |
+
+The component registrar archetypes read one more object, =shell_aggregator=,
+injected at render time from the modeling directory and the component's
+shell surface rather than from the model being rendered.
+
+| Variable              | Description                                                        | Example      |
+|-----------------------+--------------------------------------------------------------------+--------------|
+| =component=           | Short component name, the unit directory and the registrar's own class stem. | =trading= |
+| =component_upper=     | The component name upper-cased and dot-free, for the include guard. | =TRADING=    |
+| =units=               | The generated units plus the component's declared local units (loop), sorted by unit name. | (list) |
+| =unit=                | Per unit: its header stem and class name.                          | =trade_commands= |
+| =local=               | Per unit: true for a unit no model generates, so the call also passes the pagination state. | =true= |
+
 
 * CMake specifics
 

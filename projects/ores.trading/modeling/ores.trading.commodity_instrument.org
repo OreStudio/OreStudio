@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 4E1B0C6A-7D2F-4B18-9E3A-5C6D8F0A1B27
 :ores.cpp.eventing-integration-test.enabled: true
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.commodity_instrument
 #+description: Codegen entity model for the trading =commodity_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

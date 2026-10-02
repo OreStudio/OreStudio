@@ -99,6 +99,14 @@ build/nats/
 # Scratch the codegen tests render into (shell command and recipe coverage)
 /.runtime/
 
+# PlantUML clickable-map side artefacts. A render emits <name>.cmapx beside
+# the .puml whenever a signature contains something PlantUML reads as a
+# creole link, such as [[nodiscard]]. The .puml and the .png are the
+# artefacts; this is neither. One is tracked, the stale ores_schema ER
+# diagram, and it is part of the repository-wide ER sweep rather than a
+# reason to keep the extension.
+*.cmapx
+
 .bash_profile
 .bashrc
 .claude/

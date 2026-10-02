@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: A06D2B03-4275-4624-8574-2ACB32C580D6
+:END:
+#+title: A generated recipe sends __none__ for a required enum, so the command aborts
+#+description: The shell sentinel table knows the C++ primitives but not a component's own enum types, so trade_types add, set and put-many abort at the client.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=core.py='s =_SENTINEL_VALUES= maps the C++ primitives to the token a
+generated recipe sends for a field. It has no entry for a component's own
+enumeration types, which are declared as =:is_enum: true= with a
+=:cpp_type:= naming the domain type. Those fall through to the
+unknown-type fallback =__none__=, and the shell refuses it:
+
+#+begin_example
+✗ Invalid value for product_type: __none__
+✗ Script aborted at line 2: trade_types add __none__ __none__ __none__ false false system.new_record generated_script
+#+end_example
+
+Found by the V04 replay of ores.trading: =trade_types= =add=, =set= and
+=put-many= are the three recipes that abort.
+
+* Why
+
+The decimal case was fixed in the same table and in the same pass, so the
+shape is already understood: an unmapped type that the shell cannot parse
+aborts the command at its own client, and a script that never reaches the
+service checks nothing. The interesting part is that the token the field
+needs is already in the model. =ores.trading.trade_type.org= states
+
+#+begin_example
+:cpp_type: ores::trading::domain::product_type
+:is_enum:  true
+:default_value: ores::trading::domain::product_type::swap
+#+end_example
+
+and =product_type_from_string= accepts the enumerator's lowercase name, so
+the last =::= segment of the declared default is exactly the sample the
+recipe needs. The value is not reaching the sentinel: =_shell_field= takes
+the request field dict and does not carry =default_value=, so
+=_sentinel_for_field= has only the name and the type to work from.
+
+The fix is to carry =default_value= through =_shell_field= and have the
+sentinel fall back to the last =::= segment when the type is unmapped and
+the field declares one. It was written and then reverted, because with the
+metadata unavailable it changed no generated output: the honest change is
+the two-line plumbing, not a lookup that quietly finds nothing. Settle
+where the derived CRUD messages take their field dicts from — the declared
+messages read =:default:= and not =:default_value:=, while the derived ones
+come from the columns, which do carry it — and then wire it.
+
+* References
+
+- =projects/ores.codegen/src/codegen/org_loader.py=: =_SENTINEL_VALUES=,
+  =_sentinel_for_field=, =_shell_field=.
+- =projects/ores.shell/api/include/ores.shell/app/command_token.hpp=: the
+  =has_parse_token= branch an enum goes through.
+
+* See also
+
+- The decimal entry beside it, fixed on the same branch.

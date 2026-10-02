@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_aggregator_impl.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/trading/activity_category_commands.hpp"
 #include "ores.shell/app/commands/trading/activity_type_commands.hpp"
@@ -25,8 +30,10 @@
 #include "ores.shell/app/commands/trading/balance_guaranteed_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/barrier_type_commands.hpp"
 #include "ores.shell/app/commands/trading/bond_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/bond_issue_commands.hpp"
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/cap_floor_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/commodity_basket_constituent_commands.hpp"
 #include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/composite_leg_commands.hpp"
@@ -79,19 +86,20 @@ namespace ores::shell::app::commands {
 using namespace logging;
 
 void trading_commands::register_commands(cli::Menu& root_menu,
-                                         ores::nats::service::nats_client& session,
-                                         pagination_context& pagination) {
+                                         ores::nats::service::nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
     activity_category_commands::register_commands(root_menu, session);
     activity_type_commands::register_commands(root_menu, session);
     amortization_type_commands::register_commands(root_menu, session);
     average_type_commands::register_commands(root_menu, session);
-    barrier_type_commands::register_commands(root_menu, session);
     balance_guaranteed_swap_instrument_commands::register_commands(root_menu, session);
+    barrier_type_commands::register_commands(root_menu, session);
     bond_instrument_commands::register_commands(root_menu, session);
+    bond_issue_commands::register_commands(root_menu, session);
     callable_swap_instrument_commands::register_commands(root_menu, session);
     cap_floor_instrument_commands::register_commands(root_menu, session);
-    commodity_instrument_commands::register_commands(root_menu, session, pagination);
+    commodity_basket_constituent_commands::register_commands(root_menu, session);
+    commodity_instrument_commands::register_commands(root_menu, session);
     composite_instrument_commands::register_commands(root_menu, session);
     composite_leg_commands::register_commands(root_menu, session);
     credit_instrument_commands::register_commands(root_menu, session);
@@ -107,6 +115,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     equity_variance_swap_instrument_commands::register_commands(root_menu, session);
     exercise_type_commands::register_commands(root_menu, session);
     fpml_event_type_commands::register_commands(root_menu, session);
+    fra_instrument_commands::register_commands(root_menu, session);
     fx_accumulator_instrument_commands::register_commands(root_menu, session);
     fx_asian_forward_instrument_commands::register_commands(root_menu, session);
     fx_barrier_option_instrument_commands::register_commands(root_menu, session);
@@ -114,7 +123,6 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     fx_forward_instrument_commands::register_commands(root_menu, session);
     fx_vanilla_option_instrument_commands::register_commands(root_menu, session);
     fx_variance_swap_instrument_commands::register_commands(root_menu, session);
-    fra_instrument_commands::register_commands(root_menu, session);
     inflation_swap_instrument_commands::register_commands(root_menu, session);
     knock_out_swap_instrument_commands::register_commands(root_menu, session);
     lifecycle_event_commands::register_commands(root_menu, session);

@@ -1,0 +1,22 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_aggregator_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#shell_aggregator}}
+#include "ores.shell/app/commands/{{component}}/{{component}}_commands.hpp"
+{{#units}}
+#include "ores.shell/app/commands/{{component}}/{{unit}}.hpp"
+{{/units}}
+
+namespace ores::shell::app::commands {
+
+using namespace logging;
+
+void {{component}}_commands::register_commands(cli::Menu& root_menu,
+                                               ores::nats::service::nats_client& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering {{component}} command surface.";
+{{#units}}
+    {{unit}}::register_commands(root_menu, session);
+{{/units}}
+}
+
+}
+{{/shell_aggregator}}

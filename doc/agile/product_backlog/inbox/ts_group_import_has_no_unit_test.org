@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: B5C1F70B-6AF7-4F17-8726-616376595A1B
+:END:
+#+title: The TypeScript field-group import has no unit test for a cross-component group
+#+description: _group_import derives the owner and the relative path from the qualified name, and only the web typecheck catches a wrong path.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:web:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=core.py='s =_group_import= in the TypeScript domain projection takes the
+second segment of a qualified name as the owning component, and for another
+component it writes the import path =../../<owner>/domain/=. Add a unit test
+with a field group from another component, in both the dotted and the =::=
+form, and check the import path.
+
+* Why
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/2496][PR #2496]] found this. Today the only check is the
+=ores.web= typecheck in CI, which fails on a wrong path. The trading audit
+group that imports =ores.dq.audit_record= covers the cross-component case.
+No codegen test covers it, so the failure shows late and far from its
+cause.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py=: =_group_import=.
+
+* See also
+
+- [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]]

@@ -1,0 +1,47 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.shell-command.command_aggregator_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#shell_aggregator}}
+#ifndef ORES_SHELL_APP_COMMANDS_{{component_upper}}_{{component_upper}}_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_{{component_upper}}_{{component_upper}}_COMMANDS_HPP
+
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+
+namespace cli {
+
+class Menu;
+
+}
+
+namespace ores::shell::app::commands {
+
+/**
+ * @brief Registers every {{component}} command unit.
+ *
+ * The units are generated, one per {{component}} model that opts in to the
+ * shell-command facet through its properties drawer, plus the local units the
+ * component's shell overview declares. Each owns a submenu. This aggregator is
+ * the one entry the host calls, and its list is rendered from the component's
+ * declaration, so a unit that joins or leaves the surface changes the
+ * registration without an edit here.
+ */
+class {{component}}_commands {
+private:
+    inline static std::string_view logger_name =
+        "ores.shell.app.commands.{{component}}.{{component}}_commands";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    static void register_commands(cli::Menu& root_menu,
+                                  ores::nats::service::nats_client& session);
+};
+
+}
+
+#endif
+{{/shell_aggregator}}

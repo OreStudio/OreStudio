@@ -145,7 +145,7 @@ TEST_CASE("trade_party_role_convert_single_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    CHECK(table.find("Counterparty") != std::string::npos);
 }
 
 TEST_CASE("trade_party_role_convert_multiple_to_table", tags) {
@@ -159,7 +159,9 @@ TEST_CASE("trade_party_role_convert_multiple_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
-    CHECK(!table.empty());
+    CHECK(table.find("Role0") != std::string::npos);
+    CHECK(table.find("Role1") != std::string::npos);
+    CHECK(table.find("Role2") != std::string::npos);
 }
 
 TEST_CASE("trade_party_role_convert_empty_vector_to_table", tags) {
@@ -170,7 +172,7 @@ TEST_CASE("trade_party_role_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    CHECK(table.find("Counterparty ID") != std::string::npos);
 }
 
 TEST_CASE("trade_party_role_table_with_faker_data", tags) {
@@ -197,4 +199,6 @@ TEST_CASE("trade_party_role_table_with_faker_data", tags) {
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
+    for (const auto& item : items)
+        CHECK(table.find(item.role) != std::string::npos);
 }

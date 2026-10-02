@@ -106,7 +106,7 @@ TEST_CASE("create_multiple_random_trade_id_types", tags) {
     for (const auto& code : codes) {
         auto sut = make_trade_id_type(code);
         BOOST_LOG_SEV(lg, info) << "Trade ID type: " << sut;
-        CHECK(!sut.code.empty());
+        CHECK(sut.code == code);
     }
 }
 
@@ -147,7 +147,7 @@ TEST_CASE("trade_id_type_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(!table.empty()); // Table should still have headers
+    CHECK(table.find("Version") != std::string::npos);
 }
 
 TEST_CASE("trade_id_type_table_with_faker_data", tags) {

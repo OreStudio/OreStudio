@@ -51,6 +51,11 @@ TEST_CASE("write_single_activity_type", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "Activity type: " << at;
     CHECK_NOTHROW(repo.write(h.context(), at));
+
+    const auto read = repo.read_latest(h.context(), at.code);
+    REQUIRE(read.size() == 1);
+    CHECK(read[0].code == at.code);
+    CHECK(read[0].description == at.description);
 }
 
 TEST_CASE("write_multiple_activity_types", tags) {
@@ -64,6 +69,15 @@ TEST_CASE("write_multiple_activity_types", tags) {
     BOOST_LOG_SEV(lg, debug) << "Activity types: " << activity_types;
 
     CHECK_NOTHROW(repo.write(h.context(), activity_types));
+
+    const auto read = repo.read_latest(h.context());
+    for (const auto& written : activity_types) {
+        bool found = false;
+        for (const auto& r : read)
+            if (r.code == written.code)
+                found = true;
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_activity_types", tags) {
@@ -80,8 +94,13 @@ TEST_CASE("read_latest_activity_types", tags) {
     auto read = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read activity types: " << read;
 
-    CHECK(!read.empty());
-    CHECK(read.size() >= written.size());
+    for (const auto& written : written) {
+        bool found = false;
+        for (const auto& r : read)
+            if (r.code == written.code)
+                found = true;
+        CHECK(found);
+    }
 }
 
 TEST_CASE("read_latest_activity_type_by_code", tags) {
@@ -121,6 +140,13 @@ TEST_CASE("read_all_versions_of_activity_type", tags) {
     auto all = repo.read_all(h.context(), at.code);
     BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
 
+    bool found_update = false;
+    for (const auto& r : all) {
+        CHECK(r.code == at.code);
+        if (r.description == "updated description")
+            found_update = true;
+    }
+    CHECK(found_update);
     CHECK(all.size() >= 2);
 }
 
@@ -135,21 +161,30 @@ TEST_CASE("remove_activity_type", tags) {
     repo.write(h.context(), at);
 
     auto before = repo.read_latest(h.context(), at.code);
-    REQUIRE(!before.empty());
+    REQUIRE(before.size() == 1);
+    CHECK(before[0].code == at.code);
 
     CHECK_NOTHROW(repo.remove(h.context(), at.code));
 
     auto after = repo.read_latest(h.context(), at.code);
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
-    CHECK(after.empty());
+    CHECK(after.size() == before.size() - 1);
 }
 
 TEST_CASE("read_nonexistent_activity_type", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
 
     activity_type_repository repo;
+    auto at = generate_synthetic_activity_type(ctx);
+    repo.write(h.context(), at);
+
+    const auto control = repo.read_latest(h.context(), at.code);
+    REQUIRE(control.size() == 1);
+    CHECK(control[0].code == at.code);
+
     const std::string nonexistent = "NONEXISTENT_ACTIVITY_TYPE_XYZ_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent;
 

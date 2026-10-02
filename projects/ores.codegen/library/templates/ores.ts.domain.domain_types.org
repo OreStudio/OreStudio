@@ -42,10 +42,12 @@ a junction with a member that has no projection, so a member never
 vanishes from the interface silently.
 
 A composed struct (=domain_groups=, =has_identity_group=,
-=has_audit_group=) names its group member's own interface. That
-field-group TypeScript domain layer is not emitted yet, so a grouped
-entity's module references a type no module declares; the drift-free
-components in this slice contain no grouped entity.
+=has_audit_group=) names its group member's own interface, so the module
+imports each group it composes. The =ores.ts.domain= facet admits
+=field_group= models, so the group's own interface is emitted beside the
+entity's; a group the entity's own component declares imports from
+=./<group>.js=, and one from another component from
+=../../<component>/domain/<group>.js=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -60,6 +62,18 @@ The full template source. Edit here and re-tangle with
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.domain.domain_types.org. Edit the org source. }}
 {{{ts_license}}}
 {{#domain_entity}}
+{{#has_domain_groups}}
+{{#domain_groups}}
+import type { {{ts_type}} } from '{{ts_import}}';
+{{/domain_groups}}
+
+{{/has_domain_groups}}
+{{#has_identity_group}}
+import type { {{identity_group_pascal}} } from '{{identity_group_import}}';
+{{/has_identity_group}}
+{{#has_audit_group}}
+import type { {{audit_group_pascal}} } from '{{audit_group_import}}';
+{{/has_audit_group}}
 /**
  * The {{entity_singular_words}} wire shape.
  *
@@ -124,6 +138,19 @@ export interface {{entity_pascal}} {
 {{/has_domain_groups}}
 }
 {{/domain_entity}}
+{{#field_group}}
+/**
+ * The {{entity_pascal}} wire shape.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Renaming them breaks the wire silently, so they are not renamed.
+ */
+export interface {{entity_pascal}} {
+{{#fields}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+{{/field_group}}
 {{#junction}}
 /**
  * The {{name_singular_words}} wire shape.

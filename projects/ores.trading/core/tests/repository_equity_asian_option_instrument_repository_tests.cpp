@@ -108,6 +108,14 @@ TEST_CASE("equity_asian_option_instrument_read_nonexistent", tags) {
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     equity_asian_option_instrument_repository repo;
+    auto instr = make_instrument(h);
+    const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
+    repo.write(ctx, instr);
+
+    const auto control = repo.read_latest(ctx, id_str);
+    REQUIRE(control.size() == 1);
+    CHECK(control[0].identity.trade_type_code == "EquityAsianOption");
+
     const std::string nonexistent = "00000000-0000-0000-0000-000000000001";
     const auto read = repo.read_latest(ctx, nonexistent);
     CHECK(read.empty());
@@ -127,11 +135,12 @@ TEST_CASE("equity_asian_option_instrument_remove", tags) {
     repo.write(ctx, instr);
 
     const auto before = repo.read_latest(ctx, id_str);
-    REQUIRE(!before.empty());
+    REQUIRE(before.size() == 1);
+    CHECK(before[0].identity.trade_type_code == "EquityAsianOption");
 
     CHECK_NOTHROW(repo.remove(ctx, id_str));
 
     const auto after = repo.read_latest(ctx, id_str);
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
-    CHECK(after.empty());
+    CHECK(after.size() == before.size() - 1);
 }

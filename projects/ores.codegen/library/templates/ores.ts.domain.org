@@ -4,7 +4,7 @@
 #+title: ores.ts.domain
 #+description: Per-entity and per-junction domain interfaces: the TypeScript shape of the object the C++ domain class declares.
 #+type: facet
-#+model_types: domain_entity junction
+#+model_types: domain_entity junction field_group
 #+level: cross
 #+facet_group: ores.ts
 #+filetags: :codegen:physical-space:typescript:

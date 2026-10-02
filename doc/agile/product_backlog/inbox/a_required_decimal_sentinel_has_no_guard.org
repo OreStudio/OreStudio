@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 2A4BD03A-702F-4AC1-BD36-C20544BDC184
+:END:
+#+title: A required decimal always samples 1, and no test checks it parses
+#+description: The shell sentinel table gives every required decimal the token 1, and nothing fails when a model's own constraint rejects it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=org_loader.py='s =_SENTINEL_VALUES= maps =ores::utility::decimal::decimal=
+to the token =1=. Every generated recipe for a required decimal sends that
+value, in every component. Nothing checks that a model's own constraint
+accepts it. Add a guard: a test that renders the recipe for every required
+decimal and checks the token against the field's declared constraints, or a
+per-field sentinel override that the model can state.
+
+* Why
+
+The review of [[https://github.com/OreStudio/OreStudio/pull/2496][PR #2496]] found this. Today the value is safe: 24 models
+enable the shell facet and declare a required decimal, and none of them has
+an upper bound below 1 or a lower bound above 1. A future rate or
+percentage field with a constraint such as =< 1= gets a recipe that aborts
+at the service and checks nothing. The V04 replay finds it only in a
+component that runs V04. This is the same class of defect as the enum
+sentinel.
+
+* References
+
+- =projects/ores.codegen/src/codegen/org_loader.py=: =_SENTINEL_VALUES=, =_sentinel_for_field=.
+
+* See also
+
+- [[id:A06D2B03-4275-4624-8574-2ACB32C580D6][A generated recipe sends __none__ for a required enum]]
+- [[id:F97FF3C0-EB21-4076-B23C-4AAA77F13BC3][Shell, wiring, hygiene and verification for ores.trading]]

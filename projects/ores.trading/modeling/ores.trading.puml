@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.trading Component
+
+set namespaceSeparator ::
+
+package "ores.trading" #F2F2F2 {
+    component "ores.trading.api" as api
+    component "ores.trading.core" as core
+    component "ores.trading.service" as service
+}
+
+package "ores.shell.trading" #F2F2F2 {
+    component "shell trading command units" as shell_trading
+}
+
+component "ores.ore" as ore
+component "ores.refdata" as refdata
+component "ores.dq" as dq
+component "ores.database" as database
+component "ores.eventing" as eventing
+component "ores.storage" as storage
+
+core --> api
+service --> core
+shell_trading ..> api : requests
+ore ..> api : instrument and trade writes
+
+core ..> refdata : currencies, calendars, conventions
+core ..> dq : change reasons
+core ..> database : tenant-scoped schema
+service ..> eventing : entity change events
+service ..> storage : attachments
+
+@enduml

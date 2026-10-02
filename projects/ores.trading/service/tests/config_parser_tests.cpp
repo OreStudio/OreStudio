@@ -133,7 +133,7 @@ TEST_CASE("parse_help_returns_empty", tags) {
     const auto result = parser{}.parse(args, info, err);
 
     CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    CHECK(info.str().find("Usage: ores.trading.service [options]") != std::string::npos);
 }
 
 TEST_CASE("parse_version_returns_empty", tags) {
@@ -144,7 +144,7 @@ TEST_CASE("parse_version_returns_empty", tags) {
     const auto result = parser{}.parse(args, info, err);
 
     CHECK_FALSE(result.has_value());
-    CHECK_FALSE(info.str().empty());
+    CHECK(info.str().find("ores.trading.service v") != std::string::npos);
 }
 
 TEST_CASE("parse_unknown_option_throws", tags) {

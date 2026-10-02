@@ -93,7 +93,7 @@ It is addressed at =trading.v1.equity_barrier_option_instruments.put=.
 
 #+name: equity_barrier_option_instruments-add
 #+begin_src ores-shell :tangle equity_barrier_option_instruments-add.ores :exports none
-equity_barrier_option_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ 1970-01-01 __none__ __none__ __none__ __none__ - __none__ - __none__ system.new_record generated_script
+equity_barrier_option_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 __none__ 1 1970-01-01 __none__ __none__ 1 __none__ - __none__ - __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -114,7 +114,7 @@ It is addressed at =trading.v1.equity_barrier_option_instruments.put=.
 
 #+name: equity_barrier_option_instruments-set
 #+begin_src ores-shell :tangle equity_barrier_option_instruments-set.ores :exports none
-equity_barrier_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ 1970-01-01 __none__ __none__ __none__ __none__ - __none__ - __none__ system.new_record generated_script
+equity_barrier_option_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 __none__ 1 1970-01-01 __none__ __none__ 1 __none__ - __none__ - __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -135,7 +135,7 @@ It is addressed at =trading.v1.equity_barrier_option_instruments.put_many=.
 
 #+name: equity_barrier_option_instruments-put-many
 #+begin_src ores-shell :tangle equity_barrier_option_instruments-put-many.ores :exports none
-equity_barrier_option_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ 1970-01-01 __none__ __none__ __none__ __none__ - __none__ - __none__ system.new_record generated_script
+equity_barrier_option_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 1 __none__ 1 1970-01-01 __none__ __none__ 1 __none__ - __none__ - __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

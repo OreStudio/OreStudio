@@ -1148,3 +1148,19 @@ tangled into the runnable script library
 * Todays Market Entries
 
 - [[id:5DA8DEBE-22BE-57C0-BF62-2E5DAAD1BA5D][How do I run the todays_market_entries commands from the shell?]]
+
+* Bond Issues
+
+- [[id:0E62441F-39BC-59A1-8D6D-337F7CC43A2A][How do I run the bond_issues commands from the shell?]]
+
+* Commodity Instruments
+
+- [[id:D47CA10F-CDBC-545A-A229-463E2C4226D0][How do I run the commodity_instruments commands from the shell?]]
+
+* Equity Position Option Underlyings
+
+- [[id:D5F5870B-5A38-59F9-920C-39F33F4F6F4A][How do I run the equity_position_option_underlyings commands from the shell?]]
+
+* Commodity Basket Constituents
+
+- [[id:DF3915CF-6ABF-55C2-B57E-33605E444C29][How do I run the commodity_basket_constituents commands from the shell?]]

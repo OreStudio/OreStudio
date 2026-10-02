@@ -93,7 +93,7 @@ It is addressed at =trading.v1.swap_legs.put=.
 
 #+name: swap_legs-add
 #+begin_src ores-shell :tangle swap_legs-add.ores :exports none
-swap_legs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ __none__ system.new_record generated_script
+swap_legs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ __none__ __none__ 0 0 1 __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -114,7 +114,7 @@ It is addressed at =trading.v1.swap_legs.put=.
 
 #+name: swap_legs-set
 #+begin_src ores-shell :tangle swap_legs-set.ores :exports none
-swap_legs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ __none__ system.new_record generated_script
+swap_legs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ __none__ __none__ 0 0 1 __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -135,7 +135,7 @@ It is addressed at =trading.v1.swap_legs.put_many=.
 
 #+name: swap_legs-put-many
 #+begin_src ores-shell :tangle swap_legs-put-many.ores :exports none
-swap_legs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ __none__ system.new_record generated_script
+swap_legs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ __none__ __none__ __none__ __none__ 0 0 1 __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

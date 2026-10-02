@@ -7,10 +7,12 @@ from pathlib import Path
 from typing import Any
 
 from .core import (
+    _SHELL_AGGREGATOR_TEMPLATES,
     generate_from_model,
     get_model_type,
     load_model,
     resolve_output_path,
+    shell_command_surface,
 )
 from .physical_space import (
     _enabled_overrides,
@@ -668,6 +670,17 @@ def resolve_targets(
             pass  # not under projects/ — falls back to dotted full_name
     units: list[dict] = []
     seen: set[str] = set()
+    # The shell registrar is one component-scoped file, not one per entity, so
+    # it renders only where the component's shell part opts in through its
+    # overview. A component that has not adopted it keeps its hand-authored
+    # registrar, and a per-entity facet opt-in must not rewrite that.
+    registrar_enabled = False
+    registrar_component = ""
+    if model_type in ("domain_entity", "junction"):
+        registrar_component = (model_data.get(model_type) or {}).get(
+            "component", "")
+        registrar_enabled, _ = shell_command_surface(
+            Path(base_dir).resolve().parent, registrar_component)
     # A facet whose output is a view of another facet's output states that
     # dependency rather than repeating its opt-in: a recipe documents the
     # commands a generated unit registers, so it exists exactly where that unit
@@ -692,6 +705,12 @@ def resolve_targets(
             if not template_name or not pattern:
                 log.debug("skipping archetype %s — empty template/output",
                           arch.get("address", "?"))
+                continue
+            if (template_name in _SHELL_AGGREGATOR_TEMPLATES
+                    and not registrar_enabled):
+                log.debug("skipping archetype %s — component %r has not opted "
+                          "into the shell registrar",
+                          arch.get("address", "?"), registrar_component)
                 continue
             try:
                 resolved = resolve_output_path(pattern, model_data, model_type)

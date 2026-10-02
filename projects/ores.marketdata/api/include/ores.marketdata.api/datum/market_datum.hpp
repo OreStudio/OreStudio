@@ -89,12 +89,26 @@ public:
     /// hold it.
     [[nodiscard]] const value& at(field f) const;
 
-    /// The typed value of @p F, or null when the field holds none.
+    /**
+     * @brief The typed value of @p F, or null when the field holds none.
+     *
+     * Throws std::out_of_range, like at(), when the datum does not hold @p F:
+     * a field its row does not list, or a coordinate of a series. Ask holds()
+     * first where either can happen.
+     */
     template <field F>
     [[nodiscard]] const field_value_t<F>* get() const {
         return std::get_if<field_value_t<F>>(&at(F));
     }
 
+    /**
+     * @brief Equal when the types, the quote types and every field's text are
+     * equal.
+     *
+     * Values compare by the text the key carried, not by what it denotes: a
+     * strike of 1.0 and one of 1.00 are different datums and different
+     * series, because they are different keys.
+     */
     friend bool operator==(const market_datum&, const market_datum&) = default;
 
 private:
@@ -112,7 +126,12 @@ private:
     std::vector<field_value> fields_;
 };
 
-/// The series @p d belongs to: @p d without its coordinate fields.
+/**
+ * @brief The series @p d belongs to: @p d without its coordinate fields.
+ *
+ * Two datums share a series when their identity fields have the same text; see
+ * operator==.
+ */
 ORES_MARKETDATA_API_EXPORT market_datum series_of(const market_datum& d);
 
 }

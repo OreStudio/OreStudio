@@ -19,7 +19,6 @@
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include <algorithm>
-#include <cctype>
 #include <format>
 #include <optional>
 #include <stdexcept>
@@ -44,9 +43,11 @@ bool holds_kind(value_kind kind, const value& v) {
     return false;
 }
 
+// ASCII only, so the result does not depend on the program's locale.
 std::string upper(std::string_view s) {
     std::string out(s);
-    std::ranges::transform(out, out.begin(), [](unsigned char c) { return std::toupper(c); });
+    std::ranges::transform(
+        out, out.begin(), [](char c) { return c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c; });
     return out;
 }
 

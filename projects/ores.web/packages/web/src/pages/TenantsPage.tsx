@@ -439,20 +439,31 @@ function Pager({
  */
 function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
     const { t } = useTranslation();
-    const resumable = tenant.setup !== null && tenant.setup.status !== 'completed';
+    const setup = tenant.setup;
+    const resumable = setup !== null && setup.status !== 'completed';
+    /*
+     * The menu sits in the cell's flow, not over the next row: the table's
+     * wrapper scrolls sideways, which clips anything positioned outside it,
+     * and a roster of one row has no room below for a floating menu.
+     */
     return (
-        <details className="relative inline-block text-left">
+        <details
+            className="text-left"
+            onKeyDown={(event) => {
+                if (event.key === 'Escape') event.currentTarget.open = false;
+            }}
+        >
             <summary
-                className="cursor-pointer list-none rounded px-2 text-ink-muted hover:bg-surface-hover"
+                className="ml-auto w-fit cursor-pointer list-none rounded px-2 text-ink-muted hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                 aria-label={t('tenants.actionsFor', { name: tenant.name })}
             >
                 …
             </summary>
-            <ul className="absolute right-0 z-10 mt-1 w-56 rounded-md border border-line bg-surface-overlay py-1 text-sm shadow-lg">
-                {resumable && tenant.setup !== null && (
+            <ul className="mt-1 w-56 rounded-md border border-line bg-surface-overlay py-1 text-sm shadow-lg">
+                {resumable && (
                     <li>
                         <Link
-                            to={`/tenants/runs/${encodeURIComponent(tenant.setup.instanceId)}`}
+                            to={`/tenants/runs/${encodeURIComponent(setup.instanceId)}`}
                             className="block px-3 py-1.5 hover:bg-surface-hover"
                         >
                             {t('tenants.resumeSetup')}
@@ -470,10 +481,7 @@ function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
 function NotBuiltAction({ label }: { readonly label: string }): ReactNode {
     const { t } = useTranslation();
     return (
-        <li
-            aria-disabled="true"
-            className="flex items-center justify-between gap-2 px-3 py-1.5 text-ink-faint"
-        >
+        <li className="flex items-center justify-between gap-2 px-3 py-1.5 text-ink-faint">
             <span>{label}</span>
             <span className="text-[11px]">{t('shell.notBuilt')}</span>
         </li>

@@ -408,6 +408,7 @@ describe('the tenant roster', () => {
 
         expect(html).toContain('aria-label="Actions for Acme Corporation"');
         expect(html).toContain('Resume setup');
+        // One link from the Setup column and one from the menu.
         expect(html.match(new RegExp(`href="/tenants/runs/${RUN}"`, 'g'))?.length).toBe(2);
     });
 
@@ -442,8 +443,7 @@ describe('the tenant roster', () => {
 
         expect(html).toContain('>Open<');
         expect(html).toContain('>Retire or reset<');
-        expect(html.match(/aria-disabled="true"/g)).toHaveLength(2);
-        expect(html).toContain('Not built yet');
+        expect(html.match(/Not built yet/g)).toHaveLength(2);
     });
 
     it('says so when the deployment holds no tenant, without repeating the action', () => {

@@ -102,19 +102,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | L1 | The menu stays open when the person clicks elsewhere | =TenantsPage.tsx= | Decline | A =details= element opens and closes without script, which is the plan's choice. Closing on an outside click needs an effect and adds nothing the static tests can read. |
 | L2 | *Resume setup* repeats the Setup column's link | =TenantsPage.tsx= | Decline | The Setup column reports the run; the menu is the one place a person looks for what to do. Both name the same run, and the test counts both links. |
-
-* Result
-
-Each roster row ends in an actions menu, built from a =details= element.
-*Resume setup* links to =/tenants/runs/:id= when the tenant's run is not
-completed, and is absent for a completed run or a tenant with none. *Open* and
-*Retire or reset* show with =aria-disabled= and the shell's "Not built yet"
-words. The summary carries the label "Actions for /name/" for screen readers.
-The words are in English, French and Portuguese, and the journey
-[[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] names the menu.
-
-Three new web tests prove the item states: 216 of 216 web tests pass and the
-typecheck is clean. The rebuilt bundle served by the running deployment
-carries the menu. The live roster holds no tenant with an unfinished run, so
-the live read shows only the two not-built items; the *Resume setup* branch is
-proved by the tests alone.
+| R1.1 | The menu does not close on outside click or Escape | =TenantsPage.tsx= | Accept in part | Escape closes it. An outside click does not: the menu now sits in the row's flow, so open menus no longer overlap. |
+| R1.2 | =aria-disabled= has no meaning on a list item | =TenantsPage.tsx= | Accept | Dropped; the visible "Not built yet" words carry the meaning, and the test counts them. |
+| R1.3 | The resume guard repeats the null check | =TenantsPage.tsx= | Accept | A local =setup= narrows the type once. |
+| R1.4 | The summary shows no keyboard focus | =TenantsPage.tsx= | Accept | A =focus-visible= outline in the accent colour. |
+| R1.5 | The scrolling table wrapper clips a floating menu | =TenantsPage.tsx= | Accept | Real defect: a roster of one row clipped the menu. The menu now renders in the cell's flow. |
+| R1.6 | The test's count of two run links needs a reason | =TenantsPage.test.tsx= | Accept | A comment names both links. |
+| R1.7 | Resume covers in-progress and cancelled runs too | =TenantRunPage.tsx= | Decline | The run page draws the shared progress rail for any status and offers retry on failure. |

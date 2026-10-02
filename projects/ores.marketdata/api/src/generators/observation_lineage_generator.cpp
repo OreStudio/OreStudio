@@ -50,7 +50,7 @@ generate_synthetic_observation_lineage(utility::generation::generation_context& 
     r.party_id = ctx.generate_uuid();
     r.series_id = ctx.generate_uuid();
     r.observation_datetime = ctx.past_timepoint();
-    r.point_id = std::string("") + "-" + std::to_string(idx);
+    r.oresmd_uri = std::string("") + "-" + std::to_string(idx);
     r.derivation_config_id = ctx.generate_uuid();
     r.derivation_config_version = faker::number::integer(1, 10);
     r.source_as_of = ctx.past_timepoint();

@@ -7,30 +7,36 @@
 #+level: s1
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
-#+branch: feature/oresmd-explicit-grammar
+#+branch: feature/move-the-stored-identity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
 #+updated: 2026-10-01
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The three loose ends the grammar change left are tied: the corpus walk runs by
+default rather than behind a hidden tag, the record describes the grammar that
+ships, and =todaysmarket.xml= is settled as reference data beside the other ORE
+configuration documents.
+
+The work rides the previous unit's branch, because promoting the walk is only
+meaningful once the walk passes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -41,9 +47,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The acceptance is three edits, not a design:
+
+- =service_corpus_import_tests.cpp=: drop the leading =.= from the walk's tag, so
+  Catch2 runs it, and say in the file header why it was hidden and why that was
+  the wrong call.
+- =market_data_urn.org= and the codegen coordinate gate: already rewritten by the
+  generation unit, so this unit only checks them against the shipped grammar.
+- =ores.reporting.report_market_binding.org=: its comment called
+  =todaysmarket.xml= market data belonging to another component; the story's
+  Decisions record says =ores.refdata= owns it, so the comment follows.
+  =ores.reporting= is regenerated for the one comment.
 
 * Measurements
 
@@ -57,7 +71,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Whole tree, final | 89 of 89 suites green, 1,945s | =ctest -j 4= | b0117e781c |
+| Corpus walk in the default set | Runs; suite about 1,800s | =ctest -R 'ores.marketdata.core.tests'= | b0117e781c |
 
 * Notes
 
@@ -76,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2497][#2497]] | [marketdata] Store the datum's oresmd URI as the observation's coordinate |
 
 * Review
 
@@ -85,3 +100,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story's three loose ends are tied, and the corpus walk is the acceptance
+rather than a thing nobody ran.
+
+- The walk is promoted out of =[.corpus-full]= and runs by default. It takes
+  about thirty minutes, which is why it was hidden; hiding it also hid the
+  acceptance, so a change that broke the walk could merge green. The scheduled
+  =continuous-linux= job carries the cost.
+- Its suite runs alone (=RUN_SERIAL=). Promotion put a half-hour,
+  database-heavy suite beside every other suite in a parallel run, and that was
+  enough to lose a race in =report_definition_eventing_integration_tests=: the
+  test asserts its version history is unchanged immediately after a delete,
+  while the service's notification re-drive can still be writing. The check is
+  green in the serialized set and red in the parallel one, which is a defect in
+  that generated test rather than in the walk; the serialization keeps the
+  default set honest until the assertion is fixed.
+- The record describes the grammar that ships: =market_data_urn.org= was rewritten
+  in the generation unit, and the codegen coordinate gate checks the new spelling
+  rather than the retired =point= bag.
+- =todaysmarket.xml= is recorded as =ores.refdata='s beside =curveconfig.xml=, with
+  the rule that decides it (a document that names curves is reference data; a
+  document that configures an analytic's market is =ores.analytics=; a run
+  document is =ores.reporting=). The story's Decisions section carries it, and
+  =report_market_binding='s comment no longer calls the file market data that
+  belongs to another component.
+
+Verified by the previous unit's run: the walk green, all 89 ctest suites green,
+and the database rebuilt from the branch.

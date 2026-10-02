@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cctype>
 #include <sstream>
 
 namespace {
@@ -31,7 +32,18 @@ using ores::marketdata::domain::market_observation;
 const std::string_view test_suite("ores.marketdata.api.tests");
 const std::string tags("[domain]");
 
-market_observation make_curve_observation(const std::string& point_id = "1Y",
+// The observation's own URI: the series' identity plus this row's coordinate
+// keys. The helper spells a USD par-swap series and varies only the maturity.
+std::string curve_datum_uri(const std::string& maturity) {
+    // The grammar lower-cases a URI's coordinate values, so the helper does too:
+    // a caller may spell the maturity either way and get the canonical string.
+    std::string lower = maturity;
+    for (auto& c : lower)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return "oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=" + lower;
+}
+
+market_observation make_curve_observation(const std::string& maturity = "1y",
                                           const std::string& value = "0.034567") {
 
     static boost::uuids::random_generator gen;
@@ -40,7 +52,7 @@ market_observation make_curve_observation(const std::string& point_id = "1Y",
     o.series_id = gen();
     o.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} / std::chrono::month{3} /
                                                    std::chrono::day{20}};
-    o.point_id = point_id;
+    o.oresmd_uri = curve_datum_uri(maturity);
     o.value = value;
     o.source = "BLOOMBERG";
     return o;
@@ -61,14 +73,15 @@ TEST_CASE("create_curve_observation_with_tenor", tags) {
     CHECK(sut.observation_datetime ==
           std::chrono::system_clock::time_point{std::chrono::sys_days{
               std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20}}});
-    CHECK(!sut.point_id.empty());
-    CHECK(sut.point_id == "1Y");
+    CHECK(!sut.oresmd_uri.empty());
+    CHECK(sut.oresmd_uri == curve_datum_uri("1y"));
+    CHECK(sut.oresmd_uri.find("maturity=1y") != std::string::npos);
     CHECK(sut.value == "0.034567");
     CHECK(!sut.source.empty());
     CHECK(sut.source == "BLOOMBERG");
 }
 
-TEST_CASE("create_observation_without_point_id", tags) {
+TEST_CASE("create_observation_without_a_coordinate", tags) {
     auto lg(make_logger(test_suite));
 
     static boost::uuids::random_generator gen;
@@ -78,27 +91,31 @@ TEST_CASE("create_observation_without_point_id", tags) {
     sut.observation_datetime = std::chrono::sys_days{std::chrono::year{2024} /
                                                      std::chrono::month{6} / std::chrono::day{1}};
     sut.value = "1.08450";
-    BOOST_LOG_SEV(lg, info) << "Observation without a point: " << sut;
+    BOOST_LOG_SEV(lg, info) << "Observation without a coordinate: " << sut;
 
-    CHECK(sut.point_id.empty());
+    CHECK(sut.oresmd_uri.empty());
     CHECK(sut.value == "1.08450");
     CHECK(sut.source.empty());
 }
 
-TEST_CASE("create_surface_observation_with_compound_point_id", tags) {
+TEST_CASE("create_surface_observation_with_a_compound_coordinate", tags) {
     auto lg(make_logger(test_suite));
 
-    auto sut = make_curve_observation("1Y/ATM", "0.1234");
+    // A surface's coordinate is several keys, and the row keeps them the way the
+    // URI spells them: expiry and the value slot, which is a delta here.
+    auto sut = make_curve_observation("1y", "0.1234");
+    sut.oresmd_uri = "oresmd://ir/eur?tenor=2y&type=vol&quote=swaption&expiry=1y&delta=ATM&"
+                     "model=rate_lnvol";
     BOOST_LOG_SEV(lg, info) << "Surface observation: " << sut;
 
-    CHECK(!sut.point_id.empty());
-    CHECK(sut.point_id == "1Y/ATM");
+    CHECK(sut.oresmd_uri.find("expiry=1y") != std::string::npos);
+    CHECK(sut.oresmd_uri.find("delta=ATM") != std::string::npos);
 }
 
 TEST_CASE("market_observation_json_serialisation", tags) {
     auto lg(make_logger(test_suite));
 
-    auto sut = make_curve_observation("5Y", "0.041200");
+    auto sut = make_curve_observation("5y", "0.041200");
 
     std::ostringstream os;
     os << sut;
@@ -107,14 +124,14 @@ TEST_CASE("market_observation_json_serialisation", tags) {
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("0.041200") != std::string::npos);
-    CHECK(json_output.find("5Y") != std::string::npos);
+    CHECK(json_output.find("maturity=5y") != std::string::npos);
     CHECK(json_output.find("2024-03-20 00:00:00Z") != std::string::npos);
 }
 
 TEST_CASE("create_multiple_observations_for_curve", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> tenors = {"1M", "3M", "6M", "1Y", "2Y", "5Y", "10Y"};
+    const std::vector<std::string> tenors = {"1m", "3m", "6m", "1y", "2y", "5y", "10y"};
     std::vector<market_observation> observations;
     observations.reserve(tenors.size());
 
@@ -125,7 +142,7 @@ TEST_CASE("create_multiple_observations_for_curve", tags) {
 
     CHECK(observations.size() == tenors.size());
     for (std::size_t i = 0; i < tenors.size(); ++i) {
-        REQUIRE(!observations[i].point_id.empty());
-        CHECK(observations[i].point_id == tenors[i]);
+        REQUIRE(!observations[i].oresmd_uri.empty());
+        CHECK(observations[i].oresmd_uri == curve_datum_uri(tenors[i]));
     }
 }

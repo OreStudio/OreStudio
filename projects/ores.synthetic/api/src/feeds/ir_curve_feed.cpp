@@ -22,7 +22,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/domain/oresmd_uri.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -191,9 +193,9 @@ std::string date_part(std::chrono::system_clock::time_point tp) {
 
 // Resolves initial_rate from a real market_observation when cfg.price_source is "vintage",
 // mirroring feed_controller::vintage_data_available() -- but keyed on the resolved entries'
-// shortest-tenor DEPOSIT entry's point_id rather than a hardcoded "SPOT", since an IR curve feed
-// has no single scalar equivalent to FX spot (see make_ir_curve_feed's own doc comment for why
-// DEPOSIT is the anchor).
+// shortest-tenor DEPOSIT entry rather than any one coordinate, since an IR curve feed has no
+// single scalar equivalent to FX spot (see make_ir_curve_feed's own doc comment for why DEPOSIT
+// is the anchor).
 //
 // @throws vintage_data_missing_error if there is no DEPOSIT entry to anchor on, or no matching
 // observation is found.
@@ -209,8 +211,29 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
 
     const auto missing_message = [&] {
         return "No vintage data found for source=" + cfg.vintage_source +
-               ", date=" + cfg.vintage_date + ", point_id=" + anchor->point_id + ".";
+               ", date=" + cfg.vintage_date + ", point=" + anchor->point_id + ".";
     };
+
+    // The row the vintage is read from is the anchor pillar's own datum: the series
+    // the config names, with the pillar's point put back as the coordinate key the
+    // writer stored. The grammar composes both, so the read and the write agree
+    // without either side decomposing the key by hand.
+    ores::marketdata::domain::market_data_identifier series_identifier;
+    try {
+        series_identifier = ores::marketdata::core::oresmd_parser::parse(
+            ores::marketdata::domain::oresmd_uri{cfg.vintage_series_uri});
+    } catch (const std::exception& e) {
+        throw vintage_data_missing_error("oresmd cannot read the vintage series URI '" +
+                                         cfg.vintage_series_uri + "': " + e.what());
+    }
+    const auto anchor_datum = ores::marketdata::core::oresmd_parser::with_point(
+        series_identifier, anchor->point_id);
+    if (!anchor_datum)
+        throw vintage_data_missing_error("oresmd names no datum for series '" +
+                                         cfg.vintage_series_uri + "' at point '" +
+                                         anchor->point_id + "'.");
+    const auto anchor_uri =
+        ores::marketdata::core::oresmd_parser::to_uri(*anchor_datum).value;
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -239,7 +262,7 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                              cfg.vintage_series_uri + "': " + observations.error());
         }
         for (const auto& obs : *observations) {
-            if (obs.source == cfg.vintage_source && obs.point_id == anchor->point_id &&
+            if (obs.source == cfg.vintage_source && obs.oresmd_uri == anchor_uri &&
                 date_part(obs.observation_datetime) == cfg.vintage_date) {
                 try {
                     return std::stod(obs.value);

@@ -133,6 +133,10 @@ struct named_key final {
     /// to be read by; the canonical spelling beside it is what the file's key
     /// becomes, which a consumer of ORE keys still needs.
     std::string uri;
+    /// The datum's own URI: the same identity with the observation's coordinate
+    /// keys left in. The row stores this, so the row and the URI name the same
+    /// coordinate in the same syntax and nothing has to translate between them.
+    std::string datum;
     bool fx_pair_reversed = false;
 };
 
@@ -174,6 +178,7 @@ canonical_key(const std::string& key,
     // its point dropped: the series is what the row above holds, and its points are
     // the observations beneath it.
     result.uri = core::oresmd_parser::to_series_uri(*identifier).value;
+    result.datum = core::oresmd_parser::to_uri(*identifier).value;
     // Only asked when there is a difference to explain, so the second projection
     // costs nothing on the keys that already read back as they arrived.
     result.fx_pair_reversed =
@@ -326,8 +331,6 @@ import_service::import(const messaging::import_market_data_request& req) {
                 const auto series_type = named->decomposition.series_type;
                 const auto metric = named->decomposition.metric;
                 const auto qualifier = named->decomposition.qualifier;
-                const auto point =
-                    named->decomposition.point_id ? named->decomposition.point_id : d.point_id;
 
                 if (named->canonical != d.key)
                     resp.warnings.push_back(
@@ -346,9 +349,10 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
                 obs.series_id = series;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
-                // A key that carries no point of its own takes the series
-                // type's answer for its single point.
-                obs.point_id = point.value_or(registry.default_point_for(series_type));
+                // The datum's URI, not the registry's ORE-form point: the row and
+                // the URI name the coordinate the same way, and a key a consumer
+                // needs is projected from this rather than read off it.
+                obs.oresmd_uri = named->datum;
                 // The file's own text, kept because the rows above hold the
                 // canonical spelling rather than it.
                 obs.key = d.key;

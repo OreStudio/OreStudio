@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-01T22:28:12.217963Z
+' Generated: 2026-10-02T01:04:40.795700Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -4943,7 +4943,7 @@ package "dq_staging" #F3E5F5 {
         * version : integer
         * oresmd_uri : text
         * key : text
-        * point_id : text <<FK>>
+        * datum_uri : text
         * observation_date : date
         * value : numeric
         * source : text
@@ -9923,9 +9923,12 @@ package "reporting" #E0F7FA {
     simulation, sensitivity, lgmcalibration, fxcalibration,
     eqcalibration, infcalibration and bondpricing.
     The role is a free string in ORE's schema and the value names a configuration
-    set built in todaysmarket.xml, which is market data and belongs to another
-    component. This table holds the binding, not the configuration it names: what
-    the run asks the market for, by role, in the order the document wrote it.
+    set built in todaysmarket.xml, which ores.refdata owns: the story that
+    settled the ownership found that todaysmarket.xml names sets of curves the way
+    curveconfig.xml names curves, so the configuration is reference data and this
+    run document merely refers to it. This table holds the binding, not the
+    configuration it names: what the run asks the market for, by role, in the order
+    the document wrote it.
     Each row belongs to exactly one report_definition and a definition has many
     bindings.
     end note
@@ -10704,7 +10707,7 @@ package "marketdata" #E3F2FD {
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * series_id : uuid <<FK>>
-        * point_id : text <<FK>>
+        * oresmd_uri : text
           key : text
         * value : text
           source : text
@@ -10718,7 +10721,7 @@ package "marketdata" #E3F2FD {
     To modify, update the template and regenerate.
     Market Observation Table
     A single market data observation: the value of a series at a given
-    observation_datetime and point_id (tenor/surface coordinate).
+    observation_datetime and oresmd_uri (the datum's coordinate).
     observation_datetime is the financial valid-time (UTC); valid_from/valid_to
     is the transaction time. Corrections replace the previous value via the
     soft-update trigger.
@@ -10810,7 +10813,7 @@ package "marketdata" #E3F2FD {
         * party_id : uuid <<FK>>
         * series_id : uuid <<FK>>
         * observation_datetime : timestamptz
-        * point_id : text <<FK>>
+        * oresmd_uri : text
         * derivation_config_id : uuid <<FK>>
         * derivation_config_version : integer
         * source_as_of : timestamptz

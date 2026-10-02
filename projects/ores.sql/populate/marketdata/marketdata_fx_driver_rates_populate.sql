@@ -182,7 +182,7 @@ begin
 
     insert into ores_dq_market_data_observations_artefact_tbl (
         dataset_id, tenant_id, version,
-        oresmd_uri, key, point_id, observation_date, value, source,
+        oresmd_uri, key, datum_uri, observation_date, value, source,
         source_url, retrieved_at
     )
     select
@@ -196,7 +196,9 @@ begin
         -- grammar's and SQL has no way back to it.
         'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
         'FX/RATE/' || r.qualifier,
-        'SPOT',
+        -- An FX spot carries no coordinate of its own, so the datum names the same
+        -- URI the series does.
+        'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
         r.observation_date,
         r.value,
         'fed.h10.' || r.observation_date::text,

@@ -51,7 +51,7 @@ struct market_observation_entity {
     std::string observation_datetime;
 
 
-    std::string point_id;
+    std::string oresmd_uri;
 
     std::optional<std::string> key;
     std::string value;

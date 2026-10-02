@@ -103,7 +103,7 @@ row describes.
 ctx.past_timepoint()
 #+end_src
 
-** point_id
+** oresmd_uri
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -112,9 +112,9 @@ ctx.past_timepoint()
 :natural_key: true
 :END:
 
-Tenor or compound surface identifier, matching the =market_observation=
-row's own =point_id=. Both are =not null=; the empty string is this
-column's default, and the only writer in the tree sets a real pillar.
+The datum's canonical oresmd URI, matching the =market_observation= row's own
+=oresmd_uri=. Both are =not null=; the empty string is this column's default,
+and the only writer in the tree sets a real pillar.
 
 #+begin_src cpp :name generator
 std::string("")
@@ -189,12 +189,12 @@ std::string("[]")
 :END:
 
 The top-level =* Flags= drawer's =natural_keys_composite_name:
-party_series_obs_point= overrides the default auto-concatenated
-natural-key index name
-(=party_id_series_id_observation_datetime_point_id=, 62 characters
-before the =observation_lineages_=/=_uniq_idx= prefix/suffix), which
-exceeds PostgreSQL's 63-byte =NAMEDATALEN= identifier limit and would
-otherwise be silently truncated.
+party_series_obs_point= overrides the default auto-concatenated natural-key
+index name. It was added when that default spelled the coordinate =point_id=
+and came to 62 characters before the =observation_lineages_=/=_uniq_idx=
+prefix and suffix, over PostgreSQL's 63-byte =NAMEDATALEN= limit. The column is
+now =oresmd_uri= and the default would fit, but the override stays so the index
+name does not change under a database that already carries it.
 
 ** Checks
 
@@ -223,7 +223,7 @@ otherwise be silently truncated.
 :END:
 
 Reads the current lineage row for one observation, identified by
-=series_id=, =observation_datetime=, and =point_id= -- the "which
+=series_id=, =observation_datetime=, and =oresmd_uri= -- the "which
 config/version/source produced this" lookup the shared derivation-lineage
 design calls for, in one round trip.
 
@@ -231,7 +231,7 @@ design calls for, in one round trip.
 std::optional<domain::observation_lineage> read_latest_by_observation(context ctx,
     const boost::uuids::uuid& series_id,
     std::chrono::system_clock::time_point observation_datetime,
-    const std::string& point_id);
+    const std::string& oresmd_uri);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -245,7 +245,7 @@ std::optional<domain::observation_lineage>
 observation_lineage_repository::read_latest_by_observation(context ctx,
     const boost::uuids::uuid& series_id,
     std::chrono::system_clock::time_point observation_datetime,
-    const std::string& point_id) {
+    const std::string& oresmd_uri) {
     using ores::platform::time::datetime;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
@@ -255,7 +255,7 @@ observation_lineage_repository::read_latest_by_observation(context ctx,
     const auto query = sqlgen::read<std::vector<observation_lineage_entity>> |
                        where("tenant_id"_c == tid && "series_id"_c == sid &&
                              "observation_datetime"_c == odt_str &&
-                             "point_id"_c == point_id &&
+                             "oresmd_uri"_c == oresmd_uri &&
                              "valid_to"_c == max.value()) |
                        order_by("id"_c);
     const auto results = execute_read_query<observation_lineage_entity, domain::observation_lineage>(

@@ -176,7 +176,7 @@ public:
     read_latest_by_observation(context ctx,
                                const boost::uuids::uuid& series_id,
                                std::chrono::system_clock::time_point observation_datetime,
-                               const std::string& point_id);
+                               const std::string& oresmd_uri);
 
 private:
     /**

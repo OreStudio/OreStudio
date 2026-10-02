@@ -51,7 +51,7 @@ domain::observation_lineage observation_lineage_mapper::map(const observation_li
     r.observation_datetime = timestamp_to_timepoint(std::string_view{v.observation_datetime});
 
 
-    r.point_id = v.point_id;
+    r.oresmd_uri = v.oresmd_uri;
 
     r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
     r.derivation_config_version = v.derivation_config_version;
@@ -81,7 +81,7 @@ observation_lineage_entity observation_lineage_mapper::map(const domain::observa
     r.observation_datetime = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime);
 
 
-    r.point_id = v.point_id;
+    r.oresmd_uri = v.oresmd_uri;
 
     r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
     r.derivation_config_version = v.derivation_config_version;

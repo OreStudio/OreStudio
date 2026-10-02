@@ -2072,7 +2072,7 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                 // silently wrong key is worse than no key, so the default refuses.
                 switch (id.quote_type.value_or(ir_quote_type::ir_swap)) {
                     case ir_quote_type::discount:
-                        id.tenor = point;
+                        id.tenor = to_lower(point);
                         return true;
                     case ir_quote_type::mm_future:
                     case ir_quote_type::oi_future: {
@@ -2087,11 +2087,11 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                         if (is_overnight) {
                             id.contract_month = parts[0];
                             id.contract_code = parts[1];
-                            id.tenor = parts[2];
+                            id.tenor = to_lower(parts[2]);
                             return true;
                         }
                         id.contract_code = parts[0];
-                        id.tenor = parts[1];
+                        id.tenor = to_lower(parts[1]);
                         return true;
                     }
                     case ir_quote_type::mm:
@@ -2103,7 +2103,7 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                     case ir_quote_type::cc_basis_swap:
                     case ir_quote_type::cc_fix_float_swap:
                     case ir_quote_type::zero:
-                        id.maturity = point;
+                        id.maturity = to_lower(point);
                         return true;
                     default:
                         // A capfloor, a swaption and a bond option keep their
@@ -2114,7 +2114,7 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
             }
             if constexpr (std::is_same_v<T, fx_market_data_identifier>) {
                 if (id.quote_type.value_or(fx_quote_type::spot) == fx_quote_type::fwd) {
-                    id.maturity = point;
+                    id.maturity = to_lower(point);
                     return true;
                 }
                 return false;
@@ -2122,7 +2122,7 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
             if constexpr (std::is_same_v<T, equity_market_data_identifier>) {
                 const auto qt = id.quote_type.value_or(equity_quote_type::spot);
                 if (qt == equity_quote_type::dividend || qt == equity_quote_type::fwd) {
-                    id.maturity = point;
+                    id.maturity = to_lower(point);
                     return true;
                 }
                 return false;
@@ -2130,7 +2130,7 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
             if constexpr (std::is_same_v<T, commodity_market_data_identifier>) {
                 if (id.quote_type.value_or(commodity_quote_type::spot) ==
                     commodity_quote_type::fwd) {
-                    id.maturity = point;
+                    id.maturity = to_lower(point);
                     return true;
                 }
                 return false;
@@ -2138,11 +2138,11 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
             if constexpr (std::is_same_v<T, inflation_market_data_identifier>) {
                 const auto qt = id.quote_type.value_or(inflation_quote_type::zc_swap);
                 if (qt == inflation_quote_type::seasonality) {
-                    id.month = point;
+                    id.month = to_lower(point);
                     return true;
                 }
                 if (qt == inflation_quote_type::zc_swap || qt == inflation_quote_type::yy_swap) {
-                    id.maturity = point;
+                    id.maturity = to_lower(point);
                     return true;
                 }
                 return false;
@@ -2154,32 +2154,32 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                     case credit_quote_type::index_cds_tranche:
                         if (parts.size() != 2)
                             return false;
-                        id.tenor = parts[0];
+                        id.tenor = to_lower(parts[0]);
                         if (!id.vol)
                             id.vol.emplace();
-                        id.vol->strike = parts[1];
+                        id.vol->strike = to_lower(parts[1]);
                         return true;
                     case credit_quote_type::cds:
                     case credit_quote_type::hazard_rate:
                         // seniority/tenor, or seniority/restructuring/tenor.
                         if (parts.size() == 2) {
-                            id.seniority = parts[0];
-                            id.tenor = parts[1];
+                            id.seniority = to_lower(parts[0]);
+                            id.tenor = to_lower(parts[1]);
                             return true;
                         }
                         if (parts.size() == 3) {
-                            id.seniority = parts[0];
-                            id.restructuring = parts[1];
-                            id.tenor = parts[2];
+                            id.seniority = to_lower(parts[0]);
+                            id.restructuring = to_lower(parts[1]);
+                            id.tenor = to_lower(parts[2]);
                             return true;
                         }
                         return false;
                     case credit_quote_type::recovery_rate:
                         if (parts.empty())
                             return false;
-                        id.seniority = parts[0];
+                        id.seniority = to_lower(parts[0]);
                         if (parts.size() == 2)
-                            id.restructuring = parts[1];
+                            id.restructuring = to_lower(parts[1]);
                         return parts.size() <= 2;
                     case credit_quote_type::index_cds_option:
                         return false;
@@ -2189,19 +2189,19 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                 const auto parts = split_on_slash(point);
                 if (parts.size() != 2)
                     return false;
-                id.expiry = parts[0];
-                id.delta = parts[1];
+                id.expiry = to_lower(parts[0]);
+                id.delta = to_lower(parts[1]);
                 return true;
             }
             if constexpr (std::is_same_v<T, shape_profile_market_data_identifier>) {
                 const auto parts = split_on_slash(point);
                 if (parts.size() != 3 && parts.size() != 4)
                     return false;
-                id.date = parts[0];
-                id.second = parts[1];
-                id.period = parts[2];
+                id.date = to_lower(parts[0]);
+                id.second = to_lower(parts[1]);
+                id.period = to_lower(parts[2]);
                 if (parts.size() == 4)
-                    id.dst = parts[3];
+                    id.dst = to_lower(parts[3]);
                 return true;
             }
             if constexpr (std::is_same_v<T, rating_market_data_identifier>) {
@@ -2212,8 +2212,8 @@ oresmd_parser::with_point(const domain::market_data_identifier& identifier,
                 const auto parts = split_on_slash(point);
                 if (parts.size() != 2)
                     return false;
-                id.from = parts[0];
-                id.to = parts[1];
+                id.from = to_lower(parts[0]);
+                id.to = to_lower(parts[1]);
                 return true;
             }
             return false;

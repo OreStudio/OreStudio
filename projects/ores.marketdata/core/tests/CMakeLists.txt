@@ -53,8 +53,16 @@ add_test(NAME ${tests_target_name}
     COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+# This suite carries the whole-corpus import walk: it writes every market
+# payload under external/ore/examples, which takes about half an hour and keeps
+# the database busy throughout. Running it beside another suite slows that
+# suite's database reads enough to expose a race of its own -- a reporting
+# test asserts its version history is unchanged immediately after a delete,
+# while the service's notification re-drive can still be writing -- so the
+# suite runs alone rather than beside anything.
 set_tests_properties(${tests_target_name} PROPERTIES
     PROCESSORS 1
+    RUN_SERIAL TRUE
     ENVIRONMENT "${ORES_TEST_ENV}"
     ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
 )

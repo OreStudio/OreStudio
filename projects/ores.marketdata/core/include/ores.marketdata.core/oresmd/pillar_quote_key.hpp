@@ -70,6 +70,16 @@ make_pillar_quote_key(const std::string& ccy,
  */
 ORES_MARKETDATA_CORE_EXPORT std::string pillar_series_uri(const pillar_quote_key& key);
 
+/**
+ * @brief The datum identity the key above projects to: the series URI with the
+ * pillar's coordinate left in.
+ *
+ * The observations table stores this, so a reader that holds the pillar's key can
+ * find the row by the same string the row carries rather than by decomposing the
+ * key into qualifier and point and rebuilding both.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::string pillar_datum_uri(const pillar_quote_key& key);
+
 }
 
 #endif

@@ -40,7 +40,7 @@ render_observation_lineage_fields(const domain::observation_lineage& v) {
     fields.push_back(
         {.name = "Observation Datetime",
          .value = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime)});
-    fields.push_back({.name = "Point ID", .value = v.point_id});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back(
         {.name = "Derivation Config ID", .value = boost::uuids::to_string(v.derivation_config_id)});
     fields.push_back({.name = "Derivation Config Version",

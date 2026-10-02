@@ -86,7 +86,7 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-observation_lineages add <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>
+observation_lineages add <party_id> <series_id> <observation_datetime> <oresmd_uri> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.observation_lineages.put=.
@@ -107,7 +107,7 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-observation_lineages set <id> <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary> [--version <n>]
+observation_lineages set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.observation_lineages.put=.
@@ -128,7 +128,7 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-observation_lineages put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <point_id> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>
+observation_lineages put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.observation_lineages.put_many=.

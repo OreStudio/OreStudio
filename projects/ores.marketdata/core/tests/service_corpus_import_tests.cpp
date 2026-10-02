@@ -47,9 +47,12 @@
 // reads the rows out again, so that "every sample file reads into the database"
 // is a measurement rather than an assumption.
 //
-// The default case imports a bounded, deterministic sample; a corpus-wide run
-// is available under the [.corpus-full] hidden tag, which Catch2 does not run
-// unless it is named.
+// Both cases run by default. The sampled case is the quick signal a developer
+// wants while iterating; the corpus-wide case is the acceptance the story was
+// written for, and it takes long enough that a full suite run is a meal rather
+// than a pause. Hiding it was the older arrangement, and it hid the acceptance
+// with it: a change that broke the corpus walk merged green because no run
+// looked at it.
 
 namespace {
 
@@ -254,7 +257,7 @@ TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", tags) {
     CHECK(total > 0);
 }
 
-TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[.][corpus-full]") {
+TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]") {
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;

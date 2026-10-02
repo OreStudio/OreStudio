@@ -111,10 +111,6 @@ ores::marketdata::core::pillar_quote_key pillar_key(const curve_republish_refdat
         "USD", start, resolve_tenor_date(ctx, start), resolve_tenor_date(ctx, end));
 }
 
-std::string pillar_point(const curve_republish_refdata_context& ctx, const std::string& end) {
-    return std::format("{:%Y%m%d}", resolve_tenor_date(ctx, end));
-}
-
 struct fixture {
     database_helper h;
     boost::uuids::uuid party_id = boost::uuids::random_generator{}();
@@ -155,7 +151,7 @@ struct fixture {
     }
 
     void write_quote(const boost::uuids::uuid& series_id,
-                     const std::string& point_id,
+                     const ores::marketdata::core::pillar_quote_key& key,
                      const std::string& value) {
         market_observation o;
         o.id = uuid_gen();
@@ -163,7 +159,9 @@ struct fixture {
         o.party_id = party_id;
         o.series_id = series_id;
         o.observation_datetime = quote_time;
-        o.point_id = point_id;
+        // The datum's URI, the same projection the feed writes and the reader
+        // derives, so the test pins the agreement rather than a point string.
+        o.oresmd_uri = ores::marketdata::core::pillar_datum_uri(key);
         o.value = value;
         o.source = "curve_pillar_reader test";
         market_observations_repository repo;
@@ -180,7 +178,7 @@ TEST_CASE("a_pillar_is_read_from_the_series_its_own_key_names", tags) {
     const auto series_id = f.uuid_gen();
 
     f.write_pillar_series(series_id, ctx, "SPOT", spot_first);
-    f.write_quote(series_id, pillar_point(ctx, spot_first), "0.0432");
+    f.write_quote(series_id, pillar_key(ctx, "SPOT", spot_first), "0.0432");
 
     const auto read = read_pillar_rates(
         f.h.context(), config, {make_pillar(0, "SPOT", spot_first)}, ctx, read_as_of);
@@ -209,10 +207,11 @@ TEST_CASE("a_pillar_whose_series_has_no_quote_at_its_point_gets_no_rate", tags) 
     const auto config = f.make_config();
     const auto series_id = f.uuid_gen();
 
-    // The series is published, but not at the point this read derived, which a
-    // horizon the feed did not publish under produces.
+    // The series is published, but not at the datum this read derived: the row
+    // carries the second pillar's key, which a horizon the feed did not publish
+    // under produces.
     f.write_pillar_series(series_id, ctx, "SPOT", spot_first);
-    f.write_quote(series_id, "19991231", "0.9999");
+    f.write_quote(series_id, pillar_key(ctx, "SPOT", first_second), "0.9999");
 
     const auto read = read_pillar_rates(
         f.h.context(), config, {make_pillar(0, "SPOT", spot_first)}, ctx, read_as_of);
@@ -230,7 +229,7 @@ TEST_CASE("the_lineage_names_only_the_series_a_rate_was_read_from", tags) {
     // The first pillar is published under its own identity; the second one's
     // series does not exist at all.
     f.write_pillar_series(spot_id, ctx, "SPOT", spot_first);
-    f.write_quote(spot_id, pillar_point(ctx, spot_first), "0.0432");
+    f.write_quote(spot_id, pillar_key(ctx, "SPOT", spot_first), "0.0432");
 
     const auto read = read_pillar_rates(f.h.context(), config, make_pillars(), ctx, read_as_of);
 

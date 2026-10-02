@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 435FAD72-5E8A-4253-8178-91A618E1CFC2
+:END:
+#+title: The generated eventing history test races its own async re-drive
+#+description: report_definition_eventing_integration_tests asserts get_definition_history(name).size() == versions.size() immediately after delete_definition, while the service's notification re-drive can still be writing. The assertion is red under database load and green otherwise. The template cpp_nats_integration_test.cpp.mustache carries it for every entity, so the fix is one template line and a regeneration across the components that have the case.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

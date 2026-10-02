@@ -50,9 +50,12 @@ read_pillar_rates(ores::database::context ctx,
         if (series.empty())
             continue;
 
+        // The row stores the datum's URI, so the pillar is found by the same
+        // string the writer wrote rather than by a point column it no longer has.
+        const auto datum_uri = core::pillar_datum_uri(key);
         bool found = false;
         for (const auto& obs : obs_repo.read_as_of(ctx, series.front().id, as_of))
-            if (obs.point_id == key.point) {
+            if (obs.oresmd_uri == datum_uri) {
                 out.rates_by_point_id.emplace(p.end_tenor_code, std::stod(obs.value));
                 found = true;
             }

@@ -300,7 +300,7 @@ observation_lineage_repository::read_latest_by_observation(
     context ctx,
     const boost::uuids::uuid& series_id,
     std::chrono::system_clock::time_point observation_datetime,
-    const std::string& point_id) {
+    const std::string& oresmd_uri) {
     using ores::platform::time::datetime;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
@@ -310,7 +310,7 @@ observation_lineage_repository::read_latest_by_observation(
     const auto query =
         sqlgen::read<std::vector<observation_lineage_entity>> |
         where("tenant_id"_c == tid && "series_id"_c == sid && "observation_datetime"_c == odt_str &&
-              "point_id"_c == point_id && "valid_to"_c == max.value()) |
+              "oresmd_uri"_c == oresmd_uri && "valid_to"_c == max.value()) |
         order_by("id"_c);
     const auto results =
         execute_read_query<observation_lineage_entity, domain::observation_lineage>(

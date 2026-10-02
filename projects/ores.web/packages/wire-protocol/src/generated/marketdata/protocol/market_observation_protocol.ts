@@ -38,7 +38,7 @@ export interface MarketObservationWrite {
     party_id: string;
     series_id: string;
     observation_datetime: string;
-    point_id: string;
+    oresmd_uri: string;
     key: string;
     value: string;
     source: string;

@@ -107,7 +107,7 @@ TEST_CASE("tenant_search_matches_code_name_and_hostname_in_code_order", tags) {
     const auto marker = unique_marker();
     write_tenant(h, marker, "c", "automation", "active");
     write_tenant(h, marker, "a", "automation", "active");
-    write_tenant(h, marker, "b", "evaluation", "suspended");
+    write_tenant(h, marker, "b", "automation", "suspended");
 
     const auto rows = search(h, marker);
     CHECK(codes(rows) == std::vector<std::string>{marker + "_a", marker + "_b", marker + "_c"});
@@ -126,16 +126,20 @@ TEST_CASE("tenant_search_keeps_the_type_and_status_asked_for", tags) {
     auto lg(make_logger(test_suite));
     database_helper h;
     const auto marker = unique_marker();
+    // Every fixture is an automation tenant, the type that marks test
+    // infrastructure, so no test tenant reads as a real one. The type filter
+    // is proved by keeping that type and by asking for one no fixture has.
     write_tenant(h, marker, "a", "automation", "active");
-    write_tenant(h, marker, "b", "evaluation", "suspended");
-    write_tenant(h, marker, "c", "evaluation", "active");
+    write_tenant(h, marker, "b", "automation", "suspended");
+    write_tenant(h, marker, "c", "automation", "active");
 
-    CHECK(codes(search(h, marker, "evaluation")) ==
-          std::vector<std::string>{marker + "_b", marker + "_c"});
+    CHECK(codes(search(h, marker, "automation")) ==
+          std::vector<std::string>{marker + "_a", marker + "_b", marker + "_c"});
+    CHECK(codes(search(h, marker, "production")).empty());
     CHECK(codes(search(h, marker, "", "active")) ==
           std::vector<std::string>{marker + "_a", marker + "_c"});
-    CHECK(codes(search(h, marker, "evaluation", "active")) ==
-          std::vector<std::string>{marker + "_c"});
+    CHECK(codes(search(h, marker, "automation", "suspended")) ==
+          std::vector<std::string>{marker + "_b"});
     BOOST_LOG_SEV(lg, debug) << "Filtered " << marker;
 }
 

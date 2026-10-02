@@ -18,9 +18,12 @@
  *
  */
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
+#include "ores.ore.core/domain/ore_code_tables.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -59,20 +62,37 @@ std::string base_text(const T& e) {
 }
 
 // The second key of the collections that have one, and nothing for the rest.
-const auto no_second_key = [](const auto&) { return std::string{}; };
+const auto no_second_key = [](const auto&) { return std::optional<std::string>{}; };
 
-// There is a to_string for the currency enum and no inverse, so the inverse is
-// a scan over the enumerators, the way the instrument mappers do it. The count
-// has to track the enum: it is 191, AED through ZUG.
-constexpr int currency_code_count = 191;
+std::optional<std::string> collection_id_of(const auto& wrapper) {
+    if (!wrapper.id)
+        return std::nullopt;
+    return std::string(static_cast<const xsd::string&>(*wrapper.id));
+}
 
-domain::currencyCode parse_currency_code(const std::string& text, domain::currencyCode fallback) {
-    for (int i = 0; i < currency_code_count; ++i) {
-        const auto candidate = static_cast<domain::currencyCode>(i);
-        if (to_string(candidate) == text)
-            return candidate;
-    }
-    return fallback;
+// The key is absent only where the schema makes it optional. Anywhere else a
+// row without one cannot be written back as a valid document.
+const std::string& required_key(const todays_market_entry& r) {
+    if (!r.key_value)
+        throw std::runtime_error("todays_market_mapper: entry " + r.target +
+                                 " has no key value, which its collection requires");
+    return *r.key_value;
+}
+
+boost::uuids::uuid add_collection(mapped_todays_market& out,
+                                  const boost::uuids::uuid& config_id,
+                                  const char* name,
+                                  std::optional<std::string> collection_id,
+                                  int& collection_position) {
+    todays_market_collection c;
+    c.id = new_uuid();
+    c.todays_market_config_id = config_id;
+    c.collection = name;
+    c.collection_id = std::move(collection_id);
+    c.position = collection_position++;
+    set_audit(c);
+    out.collections.push_back(c);
+    return c.id;
 }
 
 // One collection element becomes a collection row and one entry row per entry.
@@ -88,26 +108,19 @@ void map_collection(mapped_todays_market& out,
                     K2 key2,
                     Tg target) {
     for (const auto& w : wrappers) {
-        todays_market_collection c;
-        c.id = new_uuid();
-        c.todays_market_config_id = config_id;
-        c.collection = name;
-        c.collection_id = w.id ? static_cast<const xsd::string&>(*w.id) : std::string{};
-        c.position = collection_position++;
-        set_audit(c);
-        out.collections.push_back(c);
+        const auto collection_id =
+            add_collection(out, config_id, name, collection_id_of(w), collection_position);
 
         int position = 0;
         for (const auto& e : w.*entries) {
             todays_market_entry row;
             row.id = new_uuid();
             row.todays_market_config_id = config_id;
-            row.todays_market_collection_id = c.id;
+            row.todays_market_collection_id = collection_id;
             row.key_attribute = key_attribute;
             row.key_value = key1(e);
             row.key_value_2 = key2(e);
             row.target = target(e);
-            row.discounting = "";
             row.position = position++;
             set_audit(row);
             out.entries.push_back(std::move(row));
@@ -124,8 +137,8 @@ void build_collection(todaysmarket& doc,
                       const std::vector<const todays_market_entry*>& rows,
                       Build build) {
     Wrapper w;
-    if (!c.collection_id.empty())
-        w.id = c.collection_id;
+    if (c.collection_id)
+        w.id = *c.collection_id;
     for (const auto* r : rows)
         (w.*entries).push_back(build(*r));
     (doc.*member).push_back(std::move(w));
@@ -261,13 +274,23 @@ mapped_todays_market todays_market_mapper::map(const todaysmarket& v) {
                    base_text<fxVolatilitiesType_FxVolatility_t>);
     map_collection(mapped, config.id, "SwaptionVolatilities", "key", cp,
                    v.SwaptionVolatilities, &swaptionVolatilitiesType::SwaptionVolatility,
-                   [](const auto& e) { return e.key ? std::string(*e.key) : std::string{}; },
-                   [](const auto& e) { return e.currency ? to_string(*e.currency) : std::string{}; },
+                   [](const auto& e) {
+                       return e.key ? std::optional<std::string>(std::string(*e.key)) : std::nullopt;
+                   },
+                   [](const auto& e) {
+                       return e.currency ? std::optional<std::string>(to_string(*e.currency))
+                                         : std::nullopt;
+                   },
                    base_text<swaptionVolatilitiesType_SwaptionVolatility_t>);
     map_collection(mapped, config.id, "CapFloorVolatilities", "key", cp,
                    v.CapFloorVolatilities, &capFloorVolatilitiesType::CapFloorVolatility,
-                   [](const auto& e) { return e.key ? std::string(*e.key) : std::string{}; },
-                   [](const auto& e) { return e.currency ? to_string(*e.currency) : std::string{}; },
+                   [](const auto& e) {
+                       return e.key ? std::optional<std::string>(std::string(*e.key)) : std::nullopt;
+                   },
+                   [](const auto& e) {
+                       return e.currency ? std::optional<std::string>(to_string(*e.currency))
+                                         : std::nullopt;
+                   },
                    base_text<capFloorVolatilitiesType_CapFloorVolatility_t>);
     map_collection(mapped, config.id, "ZeroInflationCapFloorVolatilities", "name", cp,
                    v.ZeroInflationCapFloorVolatilities,
@@ -283,24 +306,17 @@ mapped_todays_market todays_market_mapper::map(const todaysmarket& v) {
     // SwapIndexCurves is the exception: its entry has no reference text, and its
     // value is the nested Discounting child.
     for (const auto& w : v.SwapIndexCurves) {
-        todays_market_collection c;
-        c.id = new_uuid();
-        c.todays_market_config_id = config.id;
-        c.collection = "SwapIndexCurves";
-        c.collection_id = w.id ? static_cast<const xsd::string&>(*w.id) : std::string{};
-        c.position = cp++;
-        set_audit(c);
-        mapped.collections.push_back(c);
+        const auto collection_id =
+            add_collection(mapped, config.id, "SwapIndexCurves", collection_id_of(w), cp);
 
         int position = 0;
         for (const auto& e : w.SwapIndex) {
             todays_market_entry row;
             row.id = new_uuid();
             row.todays_market_config_id = config.id;
-            row.todays_market_collection_id = c.id;
+            row.todays_market_collection_id = collection_id;
             row.key_attribute = "name";
             row.key_value = e.name;
-            row.key_value_2 = "";
             row.target = "";
             row.discounting = e.Discounting;
             row.position = position++;
@@ -330,11 +346,6 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
         return rows;
     };
 
-    const auto entries_of = [](const auto& rows) {
-        return rows;
-    };
-    (void)entries_of;
-
     for (const auto& c : collections) {
         const auto rows = rows_for(c.id);
 
@@ -342,7 +353,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
             build_collection(doc, &todaysmarket::YieldCurves, &yieldCurvesType::YieldCurve, c, rows,
                 [](const todays_market_entry& r) {
                     yieldCurvesType_YieldCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -351,7 +362,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &indexForwardingCurvesType::Index, c, rows,
                 [](const todays_market_entry& r) {
                     indexForwardingCurvesType_Index_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -360,7 +371,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &discountCurvesType::DiscountingCurve, c, rows,
                 [](const todays_market_entry& r) {
                     discountCurvesType_DiscountingCurve_t e;
-                    e.currency = r.key_value;
+                    e.currency = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -369,8 +380,8 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 rows,
                 [](const todays_market_entry& r) {
                     swapIndexCurvesType_SwapIndex_t e;
-                    e.name = r.key_value;
-                    e.Discounting = r.discounting;
+                    e.name = required_key(r);
+                    e.Discounting = r.discounting.value_or("");
                     return e;
                 });
         } else if (c.collection == "ZeroInflationIndexCurves") {
@@ -378,7 +389,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &zeroInflationIndexCurvesType::ZeroInflationIndexCurve, c, rows,
                 [](const todays_market_entry& r) {
                     zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -387,7 +398,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &yyInflationIndexCurvesType::YYInflationIndexCurve, c, rows,
                 [](const todays_market_entry& r) {
                     yyInflationIndexCurvesType_YYInflationIndexCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -395,7 +406,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
             build_collection(doc, &todaysmarket::FxSpots, &fxSpotsType::FxSpot, c, rows,
                 [](const todays_market_entry& r) {
                     fxSpotsType_FxSpot_t e;
-                    e.pair = r.key_value;
+                    e.pair = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -404,7 +415,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 rows,
                 [](const todays_market_entry& r) {
                     fxVolatilitiesType_FxVolatility_t e;
-                    e.pair = r.key_value;
+                    e.pair = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -413,10 +424,10 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &swaptionVolatilitiesType::SwaptionVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     swaptionVolatilitiesType_SwaptionVolatility_t e;
-                    if (!r.key_value.empty())
-                        e.key = r.key_value;
-                    if (!r.key_value_2.empty())
-                        e.currency = parse_currency_code(r.key_value_2, domain::currencyCode::USD);
+                    if (r.key_value)
+                        e.key = *r.key_value;
+                    if (r.key_value_2)
+                        e.currency = parse_currency_code(*r.key_value_2);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -425,10 +436,10 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &capFloorVolatilitiesType::CapFloorVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     capFloorVolatilitiesType_CapFloorVolatility_t e;
-                    if (!r.key_value.empty())
-                        e.key = r.key_value;
-                    if (!r.key_value_2.empty())
-                        e.currency = parse_currency_code(r.key_value_2, domain::currencyCode::USD);
+                    if (r.key_value)
+                        e.key = *r.key_value;
+                    if (r.key_value_2)
+                        e.currency = parse_currency_code(*r.key_value_2);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -437,7 +448,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &yieldVolatilitiesType::YieldVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     yieldVolatilitiesType_YieldVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -446,7 +457,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 c, rows,
                 [](const todays_market_entry& r) {
                     cdsVolatilitiesType_CDSVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -455,7 +466,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 rows,
                 [](const todays_market_entry& r) {
                     defaultCurvesType_DefaultCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -464,7 +475,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &yyInflationCapFloorVolatilitiesType::YYInflationCapFloorVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -473,7 +484,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -482,7 +493,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 rows,
                 [](const todays_market_entry& r) {
                     equityCurvesType_EquityCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -491,7 +502,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &equityVolatilitiesType::EquityVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     equityVolatilitiesType_EquityVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -499,7 +510,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
             build_collection(doc, &todaysmarket::Securities, &securitiesType::Security, c, rows,
                 [](const todays_market_entry& r) {
                     securitiesType_Security_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -508,7 +519,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &baseCorrelationsType::BaseCorrelation, c, rows,
                 [](const todays_market_entry& r) {
                     baseCorrelationsType_BaseCorrelation_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -517,7 +528,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 c, rows,
                 [](const todays_market_entry& r) {
                     commodityCurvesType_CommodityCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -526,7 +537,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &commodityVolatilitiesType::CommodityVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     commodityVolatilitiesType_CommodityVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -535,7 +546,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 rows,
                 [](const todays_market_entry& r) {
                     correlationsType_Correlation_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -544,7 +555,7 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &bondFutureVolatilitiesType::BondFutureVolatility, c, rows,
                 [](const todays_market_entry& r) {
                     bondFutureVolatilitiesType_BondFutureVolatility_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
@@ -553,10 +564,13 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 &intradayPowerPriceCurvesType::IntradayPowerPriceCurve, c, rows,
                 [](const todays_market_entry& r) {
                     intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t e;
-                    e.name = r.key_value;
+                    e.name = required_key(r);
                     static_cast<xsd::string&>(e) = r.target;
                     return e;
                 });
+        } else {
+            throw std::runtime_error("todays_market_mapper: unknown collection '" + c.collection +
+                                     "'");
         }
     }
 
@@ -636,6 +650,9 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
             else if (name == "IntradayPowerPriceCurves")
                 el.IntradayPowerPriceCurvesId =
                     configurationType_IntradayPowerPriceCurvesId_t(b->reference);
+            else
+                throw std::runtime_error("todays_market_mapper: configuration " + c.configuration_id +
+                                         " binds unknown collection '" + name + "'");
         }
 
         doc.Configuration.push_back(std::move(el));

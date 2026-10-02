@@ -34,11 +34,13 @@ namespace ores::ore::domain {
 /**
  * @brief One ORE TodaysMarket document, mapped to the analytics entities.
  *
- * Five tables, not one per collection. A collection is a thing with its own
- * optional id and a position, so it has a table; the twenty-four collections
- * are the same shape, so they share it. An entry belongs to one collection.
- * A configuration is a bundle of references rather than a list of entries, so
- * it and its bindings have tables of their own.
+ * Five tables, not one per collection. A collection is a thing with its own id
+ * and a position, so it has a table; the twenty-four collections are the same
+ * shape, so they share it. An entry belongs to one collection. A configuration
+ * is a bundle of references rather than a list of entries, so it and its
+ * bindings have tables of their own. A binding refers to a collection by that
+ * collection's id: =DiscountingCurvesId= =inccy= selects the
+ * =DiscountingCurves= collection whose id is =inccy=.
  */
 struct mapped_todays_market {
     analytics::domain::todays_market_config config;
@@ -53,10 +55,14 @@ struct mapped_todays_market {
  * today's market entities.
  *
  * The binding is regular enough that the twenty-four collections are four
- * shapes rather than twenty-four: nineteen entries keyed by a plain =name=,
- * four keyed by an attribute with another name, two keyed twice by an optional
- * key and an enum currency, and =SwapIndexCurves=, whose entry has no reference
- * text because its value is its nested =Discounting= child.
+ * shapes rather than twenty-four: eighteen entries keyed by a plain =name=,
+ * three keyed by another attribute (=currency= or =pair=), two keyed twice by
+ * an optional =key= and an optional enum =currency=, and =SwapIndexCurves=,
+ * keyed by =name= but with no reference text because its value is its nested
+ * =Discounting= child.
+ *
+ * A collection name or a binding name that is not one of the twenty-four is an
+ * error on the way back, not a skip, so a bad row cannot pass as a round trip.
  */
 class ORES_ORE_CORE_EXPORT todays_market_mapper {
 public:

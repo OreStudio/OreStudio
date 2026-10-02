@@ -35,6 +35,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 - external_id, product_type, the five field groups and the trade envelope tables are gone; trade_additional_field holds AdditionalFields.
 - ORE import resolves the envelope to entities and rejects what does not resolve; export regenerates it; the round trip stays lossless.
 - No trading entity carries a workspace.
+- The trade-type check lists and the routing from trade type to instrument table are generated from the trade-type catalogue, not written by hand in each model.
 
 * Tasks
 

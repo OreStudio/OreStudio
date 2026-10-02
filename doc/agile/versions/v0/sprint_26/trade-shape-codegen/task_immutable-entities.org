@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: AC82A71D-8B50-4A8C-9B62-7FD5CAEBFDB9
+:END:
+#+title: Task: Let a model declare an immutable entity
+#+description: Add an immutable flag to current-state entities: the table rejects updates and deletes, and the generated service writes rows once and never changes them.
+#+type: task
+#+level: s1
+#+filetags: :trade-shape-codegen:sprint_26:v0:
+#+owner: marco
+#+branch: feature/immutable-entities
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the trade and structure anchors a generated shape: one row per key, written once, never updated or deleted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- A model with :immutable: true in its SQL flags generates a table whose trigger rejects update and delete.
+- The generated C++ write path offers insert only.
+- No existing model changes: the drift check reports no drift.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A model declares =:immutable: true= in its =* SQL ** Flags= drawer. The
+generator refuses it unless the drawer also says =:current_state: true= and
+the =* Flags= drawer =:read_only: true=: only a current-state table has one
+row per key, and only a read-only entity has no derived write verb that
+would ask the store to change a row.
+
+The table gets a =_immutable_trg= trigger that refuses every update and
+delete with SQLSTATE 55000, and the drop script removes it. The repository
+writes with =sqlgen::insert= instead of =insert_or_replace=, so a second
+write of the same key fails on the primary key instead of overwriting.
+
+The generated C++ still has its =remove= methods. The store refuses them
+and =:read_only:= keeps every delete verb off the wire, so no client
+reaches them; removing them would touch the repository, the service and the
+generated tests for no behaviour gained.
+
+Evidence: =test_immutable_entity.py=, seven cases, including the two
+refused flag combinations and the mutable control. The rendered DDL was
+run against the development Postgres in a rolled-back transaction: the
+first insert succeeded, a duplicate key, an =UPDATE= and a =DELETE= were
+each refused, and the row was unchanged. The codegen suite is 1088
+passed; the drift dry run changes no generated file apart from the
+known =clang-format= wrapping in =trade_service.cpp=.

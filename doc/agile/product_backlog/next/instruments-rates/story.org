@@ -34,6 +34,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 - Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
 - The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
 - The ORE round trip stays lossless across the family's corpus.
+- The blotter's common-date view is generated, mapping each family's dates to common names; this first family creates it and each later family adds to it.
 
 * Tasks
 

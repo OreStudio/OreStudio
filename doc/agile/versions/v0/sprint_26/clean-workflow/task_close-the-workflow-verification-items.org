@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 0A693959-69DF-4DDB-B6FC-49EC7CBB93C7
+:END:
+#+title: Task: Close the workflow verification items
+#+description: Survey V07 and V08 for ores.workflow, fix the vacuous half-target test, add tests for the retry handler, the instance-list filters and the service config parser, record each untested file's reason, and close the story.
+#+type: task
+#+level: s1
+#+filetags: :clean-workflow:sprint_26:v0:
+#+owner: marco
+#+branch: feature/close-the-workflow-verification-items
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.workflow= passes V07 and V08 of the
+[[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]], the two
+items the first clean-up task left unsurveyed, so the story can close.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- V07: no test passes while its subject does nothing. The census finds none,
+  and each test this task adds or repairs fails against a stub of its subject.
+- V08: every source file is reached by a test, or recorded with the reason it
+  is not.
+- The story's acceptance holds, and the story and its sprint row are DONE.
+
+* Plan
+
+1. Survey: =survey_vacuous_tests.py= and =survey_test_reachability.py= for
+   =workflow=, then the stub proof on the engine's start.
+2. Repair what the proof finds, and add tests for the hand-written logic no
+   test reaches: the retry handler, the instance-list filters and the service
+   config parser.
+3. Prove each new test against a stub of its subject, record the rest of the
+   unreached files with their reasons, and close the story.
+
+* Result
+
+| Item | Result | Evidence |
+|------+--------+----------|
+| V07 | Pass, after one fix. The census finds 103 cases in 15 sources and none without a strong assertion. The stub proof found a vacuous case the census could not: with =workflow_engine::on_start_workflow= a no-op, /refuses a start that names half a target/ still passed, because it asserted only that no run exists. It now also starts the same run with a whole target and requires it to exist, and fails under the stub. Under that stub 22 of 32 core cases fail; the 10 that pass do not start a run (token attribution, the two eventing cases and the definitions read). With the three list filters and the retry permission check stubbed, exactly the two new handler tests fail. | =survey_vacuous_tests.py --component workflow=; the stub runs recorded here |
+| V08 | Pass, with every unreached file given its reason. 23 of 40 source files are reached, up from 20: =workflow_handler.cpp= by the new retry test, and the service's =config/options.cpp= and =config/parser.cpp= by the new parser test. The 17 left: *messaging wiring*, 8 -- the aggregate =registrar.cpp=, four generated per-entity and history-provider registrars, two generated event registrars, which subscribe NATS subjects and are exercised by the live recipe replay (V04), and =identity_step_handler.cpp=, the identity workflow's step executor, which six =identity_*= shell scripts drive end to end on the live fleet. *domain*, 4 -- the generated =*_table= and =*_table_io= files, which nothing in the tree includes; the B06 finding other components recorded for the same family. *presentation*, 2 -- the generated history field mappers, exercised through the shell's history commands. *app and main*, 3 -- =application.cpp=, =host.cpp= and =main.cpp=, the process entry point, which the database recreate and fleet start exercise (V03). | =survey_test_reachability.py --component workflow --list= |
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Test cases, sources | 103, 15 | =survey_vacuous_tests.py --component workflow= | =fd375eb1d5= |
+| Cases with no strong assertion | 0 | same | =fd375eb1d5= |
+| Source files reached by a test | 23 of 40 | =survey_test_reachability.py --component workflow= | =fd375eb1d5= |
+| Core cases failing with the start stubbed | 22 of 32 | =compass build test_ores.workflow.core.tests= with =on_start_workflow= returning at once | =fd375eb1d5= |
+| Core cases failing with the filters and the retry permission stubbed | 2 of 32, the two new handler tests | same, with the three filters and the =has_permission= check disabled | =fd375eb1d5= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

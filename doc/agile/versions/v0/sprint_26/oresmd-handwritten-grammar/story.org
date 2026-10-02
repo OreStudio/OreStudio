@@ -120,9 +120,9 @@ stores. The same story closes the clean-standard findings that
      cites the ORE form it reads. An alias is read and then written in its
      canonical spelling, and the import reports the change.
   6. *The URI codec is generic.* It walks the datum's fields in schema
-     order. The authority is the asset class, the path
-     is the primary subject (percent-encoded, case kept), and the query holds
-     every field by name in schema order. The writer writes every field.
+     order. The authority is the asset class. The path is the primary
+     subject, percent-encoded with its case kept. The query holds every field
+     by name in schema order. The writer writes every field.
      The reader refuses a missing, unknown or repeated key. No per-family URI
      code exists, so the URI cannot drift from the schema.
   7. *One grammar.* =ores.ore= keeps only the file reader, which yields date,
@@ -137,7 +137,10 @@ stores. The same story closes the clean-standard findings that
      datum, so its URI is always fully specified: every field of the type's
      schema row is present and nothing else is, no default applies, no
      partial or requirement form exists, and the URI maps one to one onto the
-     canonical ORE key with case kept. =role= and the requirement reading of
+     canonical ORE key with case kept. "Canonical" means the spelling after
+     an alias is resolved: =FX_SPOT/RATE/EUR/USD= reads as =FX/RATE/EUR/USD=,
+     and a round trip of an alias returns the canonical spelling, not a
+     failure. =role= and the requirement reading of
      =index= and =tenor= belong to fixings and curves, which keep the richer
      contract. =market_data_urn.org= states this as a rule of the grammar.
   10. *Tests, in order of authority.* (a) A catalogue that ORE produced: an

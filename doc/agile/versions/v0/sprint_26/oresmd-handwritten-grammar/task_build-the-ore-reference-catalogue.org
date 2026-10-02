@@ -43,6 +43,7 @@ in the wrong field passes.
 - The input also holds keys that ORE rejects, each with ORE's error.
 - The fixture, the input list and the harness source are checked in. A recipe states how to rebuild the fixture against a new ORE release.
 - The ORE version the fixture came from is recorded in the fixture.
+- Before the old grammar is retired, a test over the catalogue measures it through the stored URI path and records the baseline the review reported: 4,269 corpus keys whose URI the parser rejects and 7,254 that do not read back. The review's figures then come from a test in the tree, not from a throwaway probe.
 
 * Plan
 

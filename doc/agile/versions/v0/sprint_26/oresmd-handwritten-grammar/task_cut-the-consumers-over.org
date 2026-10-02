@@ -42,6 +42,7 @@ tests prove values by key.
 - The corpus import test compares each value with the value under the same key.
 - The corpus selection includes the =MD_*= and =FD_*= files, and the tests share one tokeniser with production.
 - The database recreates, the whole corpus imports, and an export of the import equals the input after canonical spellings.
+- Every developer knows to recreate their database: the PR body names the step (=compass db recreate -y -k=, then re-import), and the sprint journal records the date the cut-over merged.
 
 * Plan
 

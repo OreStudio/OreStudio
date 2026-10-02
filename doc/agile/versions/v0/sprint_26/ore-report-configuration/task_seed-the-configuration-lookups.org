@@ -52,8 +52,9 @@ Measured on 2026-10-02 before any change:
 | risk classes | nothing refers to them | wait for SIMM calibration |
 | report types | 2 sample rows | its own task, [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] |
 
-Three pull requests, most important first: configuration types, then today's
-market collection kinds, then stress shift kinds.
+This task seeds the configuration types. The today's market collection kinds
+and the stress shift kinds are tasks of their own, because a pull request can
+only merge once its task is closed.
 
 *Configuration types.* The kinds come from ORE's own schemas: every global
 element of a configuration schema in =external/ore/xsd=, excluding the run
@@ -81,22 +82,10 @@ task and name that file in the Command column.
 
 * Notes
 
-**Today's market collection kinds belong here.** Decided in the PR #2500
-review. A today's market document has twenty-four collection kinds
-(=YieldCurves=, =DiscountingCurves= and the rest). Today
-=todays_market_collection.collection= and
-=todays_market_configuration_binding.collection= hold the kind as free text,
-and every =todays_market_entry= row repeats the kind's key attribute in
-=key_attribute=. A seeded kind lookup would hold the kind code, its ORE element
-name and its key attribute, or attributes for the two kinds keyed twice. Both
-=collection= columns would then refer to it, and the database would refuse an
-unknown kind. =key_attribute= could then leave the entry table.
-
-One limit for this document: the binding gives each kind its own typed member,
-so the mapper keeps one branch per kind whatever the lookup holds. The
-acceptance line "no lookup value appears as a literal in mapper code" cannot be
-met for today's market. The mapper can check its branches against the lookup
-instead.
+The today's market collection kinds and the stress shift kinds moved to their
+own tasks when the plan split, so that each can close with its own pull
+request: [[id:D84EB1E6-0D62-47A1-BAED-6B5444310726][Seed the today's market collection kinds]] and
+[[id:0166CCF3-B25E-4BEC-8759-19C2C4AB34E5][Seed the stress shift families and shift types]].
 
 * Test Scenarios
 

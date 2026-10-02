@@ -90,7 +90,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review: the migration relies on the generated create script staying safe to repeat | migration | Accepted | The migration's comment states the dependency and what to do if it ever fails. |
+| 2 | Review: two consecutive blank lines in the generated repository and service | generated =.cpp= | Captured | Identical in the sibling =credit_simulation_config=, so it is a template matter. Recorded with point 3 as a backlog capture. |
+| 3 | Review: the =by-configuration-id= usage omits =--scope=, which the parser accepts | generated shell command | Captured | Same as point 2. |
+| 4 | Review: the shell passes the nil UUID for no link | shell | No change | The same convention as the sibling verbs; the mapper treats it as null. |
+| 5 | Review: the generated count test is weak | generated test | No change | Generated, and accepted by the reviewer. |
 
 * Result
 

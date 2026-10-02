@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-03
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Use trade id, never deal id, for the firm's own identifier of a trade, as the tr
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-02                               |
+| Last touched | 2026-10-03                               |
 
 * Acceptance
 
@@ -69,7 +69,7 @@ Known scope, measured on main when the task was scaffolded:
 Not in scope, and not to be renamed to trade id: "OS deal ID" in
 =trade_blotter.org=, lines 276 and 389. That is the originating system's
 identifier for the trade, which is a scheme in =trade_identifier=, not
-the firm's own trade id. Rename it to the originating system's trade
+the firm's own trade id. Rename it to the originating-system
 identifier, so the two are not confused.
 
 * Test Scenarios
@@ -102,7 +102,7 @@ uses changed: the blotter's column and the mini-blotter header in
 =trade_blotter.org=, the identity row of =positions.org=, the filter
 example and the property list in =dynamic_books.org=, and the property
 list in =books_and_portfolios.org=. The originating system's deal ID in
-=trade_blotter.org= is now the OS trade identifier: it is a scheme in
+=trade_blotter.org= is now the originating-system identifier: it is a scheme in
 =trade_identifier=, not the trade id. No durable document outside the
 agile records still says deal id; the agile records are history and
 keep their words.

@@ -273,7 +273,7 @@ is product-aware: the fields shown depend on the product type.
 ** Tabs
 
 - *Overview*: All primary economic fields. Default view on open.
-- *F/O Details*: Front-office metadata — broker, STP origin system, OS trade identifier,
+- *F/O Details*: Front-office metadata — broker, STP origin system, originating-system identifier,
   OS counterparty, OS trader account, message ID, Cit code, deal notes.
 - *Confos / Settlements*: Confirmation and settlement status (sent, received,
   matched), SWIFT details, netting group assignment.
@@ -386,7 +386,7 @@ Key behaviours:
   validation error; the raw message can be inspected for manual re-keying.
 
 The F/O Details tab of the deal entry form shows STP-specific metadata:
-originating system name, broker ID, version in the OS, OS trade identifier, OS
+originating system name, broker ID, version in the OS, originating-system identifier, OS
 counterparty, OS trader account, Cit code, message ID, STP status.
 
 * Dynamic Books and Filtering

@@ -28,7 +28,7 @@ Operator / Value/ — e.g. =Trade ID Equals X=, =Book Not Y= — chained
 together with comparison operators (=GT=, =LT=, =GTE=, and similar)
 and all AND-ed together. Any deal property can be used: instrument
 type, counterparty, maturity, trade date, delivery date,
-entity/business/centre, EOD, trader, asset, trade ID, or brokerage
+entity/business/centre, EOD, trader, asset, trade id, or brokerage
 properties.
 
 ** Live membership

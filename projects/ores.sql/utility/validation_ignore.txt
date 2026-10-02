@@ -427,28 +427,6 @@ TENANT_003 ores_synthetic_market_data_generation_configs_tbl
 # the files into its aggregator and removes the entries.
 # =============================================================================
 
-# Create side -- compute app_version_platform. The checked-in, wired file is
-# the stale plural compute_app_version_platforms_create.sql (see the
-# TEMPORAL_004 entry above for the junction-template mismatch). This singular
-# file is that template's current output, left behind untracked by full
-# regenerations. It does not exist on clean checkouts, so this entry is inert
-# until the regen (and filename migration) the TEMPORAL_004 entry calls for
-# lands, which must also wire this file.
-WIRE_001 compute_app_version_platform_create.sql
-
-# =============================================================================
-# Trading equity instruments -- trading_create.sql wires all nine equity
-# instrument creates and their notify triggers, but drop_trading.sql has no
-# equity include at all. The whole family is unwired, so the two patterns
-# cover it; remove them when the drop side of the equity family is wired.
-# =============================================================================
-WIRE_001 trading_equity_*_instruments_drop.sql
-WIRE_001 trading_equity_*_instruments_notify_trigger_drop.sql
-
-# RPA instruments notify trigger -- drop_trading.sql wires
-# trading_rpa_instruments_drop.sql; this trigger drop was not added.
-WIRE_001 trading_rpa_instruments_notify_trigger_drop.sql
-
 # =============================================================================
 # Curve roles -- creates are wired; refdata_drop.sql has no include for the
 # table drop or its notify-trigger drop.

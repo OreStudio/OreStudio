@@ -1,0 +1,387 @@
+:PROPERTIES:
+:ID: FDC35F65-CBF0-40A0-96D0-EA180F2237EE
+:END:
+#+title: Investigation: the trade shape
+#+description: The target shape of the trade on data-oriented principles: the anchor, the components by access pattern, links, sets and groups, activities, authorisation, the client-facing version, structures, netting sets, and the open dependency on workspaces.
+#+type: investigation
+#+level: s1
+#+filetags: :trade-shape:sprint_26:v0:analysis:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the target shape of the trade on data-oriented principles.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The question came out of the review of PR 2496, which closed the
+[[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading]] story. =trade.hpp= defines =trade= as a struct of
+five sub-structs (identity, parties, classification, lifecycle, audit),
+which reads as the aggregate entity that data-oriented design argues
+against ("there is no entity",
+https://www.dataorienteddesign.com/dodmain/node5.html). The owner asked
+why the type exists, what =trade_envelope= and =trade_identifier= add,
+and whether the trade and its join to the instruments hold together.
+
+** What the current model is
+
+Read on main at =1786aa23cd= (2026-10-02).
+
+- =trade= maps one-to-one to =ores_trading_trades_tbl=, 19 columns plus
+  the temporal and audit columns. It holds no instrument, envelope,
+  identifier or party role; those are separate tables keyed by the
+  trade. At the top level the model already follows "there is no
+  entity".
+- The five sub-structs are not tables, are never loaded separately, and
+  are used by no other model. The trade model states their reason: to
+  keep each reflected struct under MSVC's C1202 limit in reflect-cpp's
+  reflection. They also fix the wire as nested JSON. =trade_audit= is a
+  field-for-field copy of =ores.dq.audit_record=, which every
+  instrument uses. The split is driven by a serialiser limit, not by
+  any access pattern.
+- The real aggregates are the export carriers: =trade_instrument= (a
+  variant over eight families), the =*_data= carriers,
+  =trade_export_item= and =instrument_payload=, built for the ORE
+  import and export journey.
+
+** What does not hold together
+
+1. The family routing lives in three places: =trade_types.product_type=,
+   a string =switch= in the hand-written export handler that maps
+   trade-type codes to 30 instrument tables, and a check constraint on
+   each instrument table's =trade_type_code=. Nothing checks that they
+   agree.
+2. =trades.product_type= is a nullable copy of
+   =trade_types.product_type=, kept in step by nothing, and the
+   dispatch reads the copy.
+3. All 30 instrument tables copy =trade_type_code= with no check
+   against the trade, and their trigger takes =party_id= from the
+   session (=app.current_party_id=) while the trade derives its own
+   from the book. The two can disagree, and row-level security filters
+   on =party_id=.
+4. Nothing stops one trade having rows in two instrument tables.
+5. The counterparty is stated three times: =trades.counterparty_id=,
+   =trade_party_role= and =trade_envelope.counter_party= (document
+   text). The netting set twice.
+6. Identifiers have two homes: =external_id= is the trade's key, and
+   =trade_identifier= holds UTI, USI and the rest.
+7. =trade_envelope=, its two children and =trade_identifier= never
+   check that their trade exists; =trade_party_role= does.
+8. Smaller: =trade_party_role= writes to =ores_trading_party_roles_tbl=;
+   =trade_types= keeps two columns that only drove Qt forms; the
+   instrument rebuild is a third hand-written operation besides the two
+   exports P04 names.
+
+* Methodology
+
+- Read the trade models, the generated SQL and the domain headers at
+  =1786aa23cd=. From the owner's instruction mid-way, the design was
+  then done from the documents only, as a model from scratch.
+- Read the knowledge cluster under [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]]: Trade Modeling, Trade
+  Identifiers, Trade Structures and Deal Composition, Confirmations,
+  Trade Versioning, Trade Lifecycle, Trade Classification, Operational
+  Authorisation and its queue, Trade Activity, Positions, the Trade
+  Blotter, and the trade-entry prototype. Read the architecture notes
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] and Temporal Composite Entity
+  Versioning.
+- Read the owner's internal analysis notes on structures and deal
+  composition, deal linkage, netting sets, internal trades, funding and
+  sweeps, non-contributing trades, confirmations and versioning, books,
+  P&L attribution and the trade blotter.
+- Read the ORE schema for netting sets (=nettingsetdefinitions.xsd=,
+  the =nettingSetDetails= type).
+- Researched prior art on book moves: Basel RBC25 and MAR12, IFRS 9
+  paragraph 4.4.1, the EBA no-action letter, and press coverage.
+  Vendor manuals are not public.
+- Ran the design as a brainstorm with the owner, one decision at a
+  time, recording the alternatives each decision rejected.
+
+* Paths taken
+
+The design moved in sections. Each records the decision and what it
+set aside.
+
+** 1. Anchor and components
+
+/Decided/: the trade becomes an immutable anchor row plus component
+tables keyed by the trade, one per access pattern, each versioning on
+its own timeline.
+
+- The anchor holds only facts fixed for the trade's life. Because it
+  never changes, other tables reference it with real foreign keys
+  instead of trigger-checked soft keys against temporal rows.
+- A copy is allowed only of an immutable fact, and is pinned by a
+  composite foreign key, so it cannot drift. Instruments may carry
+  =trade_type= and =party_id= (row-level security needs the party on
+  every row) only through a key to the anchor. Each instrument table
+  checks that =trade_type= is one of its own types, and the lists are
+  disjoint, so a trade's instrument can sit in exactly one table. That
+  closes findings 1 to 4.
+- The five field groups go: each table is narrow enough to stay under
+  the C1202 limit unaided. =trade_audit= becomes =ores.dq.audit_record=;
+  =instrument_identity= loses its unpinned copies and becomes the one
+  shared key group.
+
+/Set aside/: keeping =trade= as one wide temporal row, which versions
+booking, lifecycle and classification together on every change.
+
+** 2. Identity and the trade id
+
+- =external_id= leaves the anchor. Every identifier scheme — UTI, USI,
+  a legacy system's id, ORE's =Trade/@id= — is a row of
+  =trade_identifier= (scheme, value, issuer), with a real foreign key
+  to the anchor. That closes finding 6.
+- The firm's own id is the anchor's UUID, called the *trade id*
+  throughout; "deal id" is not used.
+- /Set aside/: a human-readable deal number on the anchor, and the
+  firm's number as one more scheme.
+
+** 3. Party, counterparty and cancel-and-rebook
+
+- The firm's legal entity (party) and the counterparty are fixed for a
+  trade's life and sit on the anchor. A change of either is a cancel
+  and rebook: the old trade is cancelled, a new trade is booked, and a
+  typed link joins them (novation for the counterparty).
+- =successor_trade_id= goes; the link carries the relation. The
+  knowledge notes described the field two contradictory ways, and that
+  is now resolved in Trade Versioning.
+
+** 4. Links, sets and groups
+
+The trade-links documentation merged on main during the design. Its
+catalogue filed structures, merges, compressions, allocations and
+process runs as links. The owner's principle: where a collection of
+trades is named and an operation attaches to it, it is an entity with
+an identity, not a by-product of links.
+
+- The vocabulary of the analysis notes was adopted: a /set/ is trades
+  sharing an attribute (book, counterparty, netting set), with the
+  identity on the attribute's entity; a /group/ is trades tied to an
+  operation, with an identity of its own (a structure, a compression);
+  a /link/ joins particular trades for a reason and holds nothing.
+- With the groups taken out, a link joins two trades, so the pairwise
+  =trade_link= (from trade, to trade, type) is enough. Each link type
+  names its two roles and states whether it has an economic effect.
+- Exercise joined the catalogue: exercised option to resulting trade.
+- Restructure is an amendment of the same trade; a roll that books a
+  replacement is a link.
+- /Set aside/: one link record with several ends, and links plus a
+  separate run table.
+
+Recorded in [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]],
+[[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]], [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]],
+[[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] and [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]], with the link
+catalogue, Trade Links, Trade Versioning and Trade Activity brought
+into line.
+
+** 5. Book moves
+
+Researched before deciding. No rule forbids moving a trade between two
+books that share a legal entity, a branch, a regulatory book and an
+accounting classification; the restrictions apply when a move crosses
+one of them (RBC25.14-16 for the trading and banking book, IFRS 9 4.4.1
+for classification). The accounting constraint people remember governs
+the ledger postings, not the trade.
+
+/Decided/: a move within those four lines amends the trade's booking,
+cuts an internal version with /book move/ as the reason, and carries its
+fair value and whether historic cash flows move. Any other change of
+book is a close-out and rebooking, linked, or internal risk transfer
+trades. The temporal booking keeps the book history, which removes the
+P&L break the analysis notes describe.
+
+Recorded in [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]].
+
+** 6. Dates
+
+/Decided/: the dates are economic terms and live on the instrument;
+each family states them in its own words. The blotter maps them to
+common names (start, end, expiry, settlement) through one generated
+view.
+
+/Set aside/: dates copied onto the booking, and a separate dates table.
+
+** 7. The operations queue
+
+Authorisation is stored as decisions, not as a status column.
+
+- =authorisation_decision=: the unit, the internal version decided on,
+  the decision (authorise, deny, hold over, return to unseen,
+  un-authorise), hold reason, a required comment, amendment reason,
+  department, operational-error flag, escalation, who or which rule
+  decided, and when. =auto_authorisation_rule= holds Operations'
+  rules.
+- The status is derived: a unit is authorised when its latest decision
+  is authorise and covers the current version, so an amendment
+  withdraws the release without anything resetting it.
+- Denied is final, enforced in the schema. Decisions are append-only
+  metadata and cut no version.
+- /Decided/: the unit Operations authorises is the unit the customer
+  confirms — a structure that confirms as a whole, or each trade.
+
+** 8. One activity per version
+
+/Decided/: =trade_activity= records each business event — type, actor,
+time, comment, operational-error flag — and every component version
+carries a foreign key to the activity that caused it. The activity
+type is reference data stating the economic, confirmable and real axes
+and the priority order. The external version moves only for a
+confirmable activity; a null amend is recorded and versions nothing.
+
+/Set aside/: a reason code per row grouped by transaction time, and an
+activity table for confirmable events only.
+
+** 9. Counterparty and netting set
+
+- The anchor gains =counterparty_id=, immutable like =party_id=.
+- =trade_booking= keeps =netting_set_id=, versioned, because
+  re-papering can move a trade to another set.
+- A composite key from the booking to =netting_set= (set, counterparty,
+  party), pinned to the anchor, stops a trade being filed in another
+  counterparty's or another entity's set.
+- =trade_party_role= keeps only the other roles: broker, sales person,
+  agent, calculation agent.
+
+** 10. The ORE envelope
+
+/Decided/: import resolves the envelope's counterparty name and
+portfolio ids to entities and rejects a document that does not
+resolve; export regenerates them. =AdditionalFields= becomes
+=trade_additional_field= (name, value, order). That closes finding 5.
+
+/Set aside/: a provenance copy of the document's text, and keeping
+today's envelope tables.
+
+** 11. Structures
+
+- =structure= is an immutable anchor: tenant, party, counterparty,
+  kind, template.
+- =structure_kind= states whether the kind confirms as a whole
+  (strategy, typed, dynamic) or trade by trade (package).
+- =structure_template= states the roles and leg counts a strategy or
+  typed product allows, checked when a leg is linked.
+- =structure_member=, keyed by =trade_id=, is temporal: a trade sits in
+  at most one structure at a time and can be linked and unlinked.
+- A structure's legs share its party and counterparty.
+- /Decided/: one level of nesting, two levels in total, through a
+  nullable =parent_structure_id= and a check that a structure with a
+  parent has no children.
+
+** 12. Acts
+
+/Decided/: an act is an activity. =trade_activity_participant=
+(activity, trade, role) replaces the activity's single unit, and each
+kind of act adds a detail table keyed by the activity: compression
+(provider, cycle reference), allocation (block, source, template),
+merge (policy, expiry-netting style), runs (process, run date), bulk
+book move (books, cash flows moved). Links keep the activity that
+created them.
+
+/Set aside/: groups as separate entities pointing at an activity, and a
+table pair per kind.
+
+** 13. Workspace
+
+- A copy of a trade into another workspace keeps its trade id; the
+  workspace becomes part of every trade key, so the anchor's key is
+  (tenant, workspace, id), and no link, structure or act can cross a
+  workspace.
+- Paused there. The existing workspace design layers workspaces over
+  their parents, copy-on-write, so a workspace's rows override the
+  parent's; it was designed before the trade was split into
+  components. The next question — what copying a changed trade back to
+  Live does — depends on that design.
+
+* Conclusions
+
+** The target model so far
+
+| Table | Key | Content | Changes |
+|-------+-----+---------+---------|
+| =trade= (anchor) | tenant, workspace, id | party, counterparty, trade type, counterparty scope, booking nature, origin, audit | Never |
+| =trade_booking= | trade | book, netting set, trade date, execution time | Temporal: moves, re-papering |
+| =trade_state= | trade | trade status | Temporal: lifecycle events |
+| =trade_identifier= | trade, scheme | value, issuer | When a scheme is added |
+| =trade_party_role= | trade, role | the other parties | When a role is added |
+| =trade_additional_field= | trade, order | name, value | With the trade |
+| Instrument family tables | trade | the economics, including the dates | Temporal: economic amendments |
+| =trade_link=, =trade_link_type= | from, to, type | roles, economic effect | When a link is made or removed |
+| =trade_activity=, =trade_activity_type= | id | type, actor, time, comment; per-type axes and priority | Append only |
+| =trade_activity_participant= | activity, trade | role | With the activity |
+| Act detail tables | activity | per kind | With the activity |
+| =authorisation_decision=, =auto_authorisation_rule= | id | the decision and its context | Append only |
+| =agreement= | structure or trade | external version, confirmation status | On a confirmable activity |
+| =structure=, =structure_kind=, =structure_template= | id | kind, template, parent | Never; reference data |
+| =structure_member= | trade | structure, role, sequence | Temporal: link and unlink |
+| =netting_set= | id | agreement, counterparty, legal entity, limit, call type, initial margin type | Reference data |
+
+** The integrity the schema carries
+
+- Real foreign keys to the immutable anchors, from every component,
+  link end, participant, member, identifier, decision and agreement.
+- Composite keys pin every copied fact: an instrument's trade type and
+  party, a booking's netting set to the trade's counterparty and party,
+  a structure's legs to its party and counterparty.
+- Disjoint trade-type checks put each trade's instrument in exactly one
+  table.
+- A book move within the four-attribute boundary is the only change of
+  book; anything else is rejected as a move.
+- Denied authorisation is final; the authorised status is derived.
+- Structures nest one level at most.
+
+** Documentation produced on the way
+
+Trade sets, groups and links; Netting sets; Trade compression; Trade
+merge; Trade allocation; Book moves; and consistency passes over the
+link catalogue, Trade Links, Trade Versioning, Trade Activity, Trade
+Structures, the Trade hub, the book cluster and the funding and sweep
+notes. On branch =feature/document-trade-groups=.
+
+* Recommendations
+
+** Settle workspaces first
+
+The trade shape cannot be finished until the workspace design is. Five
+questions the split trade raises against the existing layered design:
+
+1. /The unit of override./ Does a workspace override a whole trade or
+   each component? Per-component resolution can show a workspace's
+   instrument with Live's booking — the intended what-if, or an
+   inconsistent mix.
+2. /Real foreign keys under inheritance./ A component row overriding a
+   Live trade points at an anchor. Either the anchor is copied too, or
+   the key ignores the workspace and the real foreign keys are lost.
+3. /Links, structures and acts across inherited trades./ With the
+   workspace in every key, joining inherited Live trades in a workspace
+   needs a copy first.
+4. /Copy back to Live./ Whether a copied-back trade amends the Live
+   trade or is refused; the pending state and approval (Track 2) were
+   never built.
+5. /Scenarios./ The analysis notes treat perturbed data as new items
+   with their own identity, a sibling of reality; the workspace design
+   treats a shock as an override in a child workspace. The two need
+   reconciling.
+
+** Then finish the trade shape
+
+- Resume at the copy-back question.
+- Detail the instrument family tables: the shared key group, the pinned
+  composite key, and the trade-type to table routing as data the code
+  generator reads.
+- Check each table against the nine-field C1202 limit.
+- Decide which component owns netting agreements and CSAs.
+- List the code-generator support the shape needs: an immutable
+  anchor, composite and real foreign keys, the derived authorisation
+  status, the generated blotter view.
+- Rename "deal id" to "trade id" in the knowledge notes.
+- Scaffold the implementation stories.
+
+* See also
+
+- [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Story: Design the trade shape on data-oriented principles]] — the story this investigation serves.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — the vocabulary the design follows.
+- [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] — the book move rule and its sources.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] — the four entities a trade is built from.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the review criteria and the C1202 rule.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the hub of the trade knowledge cluster.

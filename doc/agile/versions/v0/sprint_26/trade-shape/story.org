@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2
+:END:
+#+title: Story: Design the trade shape on data-oriented principles
+#+description: Split the trade into an immutable anchor and component tables keyed by the trade, one per access pattern, with sets, groups, links, activities and the client-facing version modelled as entities, so the schema is normalised and the code is data-oriented.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Settle the target shape of the trade and everything joined to it — anchor, components, instruments, links, groups, activities, authorisation, agreement, structures, netting sets — before the instrument families are reworked, and record every decision with its reason.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Trade shape design recorded through section 8 in the analysis; paused on workspaces. |
+| Waiting on    | The workspace design, which decides how a trade is overridden and copied across workspaces. |
+| Next          | Design workspaces, then resume the trade shape at the copy-back question. |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- The design is recorded in the story's analysis, section by section, with each decision and the alternatives it rejected.
+- The workspace design the trade shape depends on is settled and recorded.
+- Implementation stories are scaffolded from the design.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+The decisions so far, each with the alternatives it set aside, are in
+[[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], sections 1 to 13. The design is
+paused at the workspace dependency that investigation names.
+
+* Out of scope
+
+-

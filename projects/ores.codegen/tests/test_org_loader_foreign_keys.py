@@ -171,3 +171,23 @@ def test_error_message_without_an_apostrophe_is_unchanged():
 """
     )
     assert fk["error_message"] == "Invalid owner_id: %."
+
+
+def test_book_error_message_apostrophe_is_escaped_for_the_sql_literal():
+    """The party-from-book check raises its message inside a literal too."""
+    doc = parse_org(
+        REQUIRED_FLAGS
+        + """
+* SQL
+
+** Party id from book id
+:PROPERTIES:
+:book_table:         ores_refdata_books_tbl
+:book_error_message: Invalid book_id: %. The book's party is unknown.
+:END:
+"""
+    )
+    de = org_document_to_model(doc)["domain_entity"]
+    book = de["sql"]["party_id_from_book_id"]
+    assert book["book_error_message"] == "Invalid book_id: %. The book''s party is unknown."
+    assert book["book_table"] == "ores_refdata_books_tbl"

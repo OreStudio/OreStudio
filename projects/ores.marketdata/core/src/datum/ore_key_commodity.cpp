@@ -64,40 +64,40 @@ market_datum read_commodity_option(quote_type q, tokens rest) {
 
 market_datum read_commodity(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::commodity_spot:
-        // COMMODITY/PRICE/name/ccy
-        require_quote(q, {quote_type::price});
-        require_size(rest, {2});
-        return datum_builder(t, q)
-            .set(f::commodity_name, text(rest[0]))
-            .set(f::ccy, text(rest[1]))
-            .build();
-    case it::commodity_fwd:
-        // COMMODITY_FWD/PRICE/name/ccy/expiry, the expiry ON, TN, SN, a period
-        // or a date.
-        require_quote(q, {quote_type::price});
-        require_size(rest, {3});
-        return datum_builder(t, q)
-            .set(f::commodity_name, text(rest[0]))
-            .set(f::ccy, text(rest[1]))
-            .set(f::expiry,
-                 term_of(rest[2], {term::kind::period, term::kind::date, term::kind::fx_tenor}))
-            .build();
-    case it::commodity_option:
-        return read_commodity_option(q, rest);
-    case it::commodity_calendar_spread_option:
-        // COMMODITY_CALENDAR_SPREAD_OPTION/RATE_NVOL/name/offset/ccy/expiry/strike
-        require_quote(q, {quote_type::rate_nvol});
-        require_size(rest, {5});
-        return datum_builder(t, q)
-            .set(f::commodity_name, text(rest[0]))
-            .set(f::offset, integer(rest[1]))
-            .set(f::ccy, text(rest[2]))
-            .set(f::expiry, expiry(rest[3]))
-            .set(f::strike, base_strike(rest[4]))
-            .build();
-    default:
-        throw std::logic_error("read_commodity called for a type it does not read");
+        case it::commodity_spot:
+            // COMMODITY/PRICE/name/ccy
+            require_quote(q, {quote_type::price});
+            require_size(rest, {2});
+            return datum_builder(t, q)
+                .set(f::commodity_name, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .build();
+        case it::commodity_fwd:
+            // COMMODITY_FWD/PRICE/name/ccy/expiry, the expiry ON, TN, SN, a period
+            // or a date.
+            require_quote(q, {quote_type::price});
+            require_size(rest, {3});
+            return datum_builder(t, q)
+                .set(f::commodity_name, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .set(f::expiry,
+                     term_of(rest[2], {term::kind::period, term::kind::date, term::kind::fx_tenor}))
+                .build();
+        case it::commodity_option:
+            return read_commodity_option(q, rest);
+        case it::commodity_calendar_spread_option:
+            // COMMODITY_CALENDAR_SPREAD_OPTION/RATE_NVOL/name/offset/ccy/expiry/strike
+            require_quote(q, {quote_type::rate_nvol});
+            require_size(rest, {5});
+            return datum_builder(t, q)
+                .set(f::commodity_name, text(rest[0]))
+                .set(f::offset, integer(rest[1]))
+                .set(f::ccy, text(rest[2]))
+                .set(f::expiry, expiry(rest[3]))
+                .set(f::strike, base_strike(rest[4]))
+                .build();
+        default:
+            throw std::logic_error("read_commodity called for a type it does not read");
     }
 }
 

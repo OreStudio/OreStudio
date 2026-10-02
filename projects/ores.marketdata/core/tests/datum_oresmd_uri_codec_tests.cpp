@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "datum_catalogue.hpp"
-#include <catch2/catch_test_macros.hpp>
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <random>
 #include <set>
@@ -118,8 +118,7 @@ void report(const tally& t) {
 
 /// Free text with the characters a URI must encode, in both cases.
 std::string random_text(std::mt19937& rng) {
-    static constexpr std::string_view alphabet =
-        "AaBbZz09 :.-_~&=?#%+!$'()*,;@[]";
+    static constexpr std::string_view alphabet = "AaBbZz09 :.-_~&=?#%+!$'()*,;@[]";
     std::uniform_int_distribution<std::size_t> length(1, 12);
     std::uniform_int_distribution<std::size_t> pick(0, alphabet.size() - 1);
     std::string out;
@@ -242,7 +241,8 @@ TEST_CASE("the_reader_refuses_a_uri_that_breaks_the_contract", tags) {
              "http://credit/ACME?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y",
              "oresmd://credit/ACME/X?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y",
              "oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y#x",
-             "oresmd://credit:80/ACME?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y",
+             "oresmd://credit:80/"
+             "ACME?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y",
              "oresmd://credit/?type=quote&instrument=cds&quote=credit_spread&ccy=USD&term=5Y"}) {
         INFO("uri: " << uri);
         const auto d = oresmd_uri_codec::read(uri);
@@ -314,9 +314,8 @@ TEST_CASE("reserved_characters_are_percent_encoded_and_case_is_kept", tags) {
     REQUIRE(odd);
     const auto uri = oresmd_uri_codec::write(*odd);
     REQUIRE(uri);
-    CHECK(*uri ==
-          "oresmd://equity/A&B%20C%25%23%3F?type=quote&instrument=equity_spot&quote=price"
-          "&ccy=x%26y=z+w");
+    CHECK(*uri == "oresmd://equity/A&B%20C%25%23%3F?type=quote&instrument=equity_spot&quote=price"
+                  "&ccy=x%26y=z+w");
     const auto back = oresmd_uri_codec::read(*uri);
     REQUIRE(back);
     CHECK(*back == *odd);

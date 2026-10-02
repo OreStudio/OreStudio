@@ -37,34 +37,34 @@ using it = instrument_type;
 
 market_datum read_fx(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::fx_spot:
-        // FX/RATE/unitCcy/ccy
-        require_size(rest, {2});
-        return datum_builder(t, q)
-            .set(f::unit_ccy, text(rest[0]))
-            .set(f::ccy, text(rest[1]))
-            .build();
-    case it::fx_fwd:
-        // FXFWD/RATE/unitCcy/ccy/term, the term a period, a date, ON, TN or SN.
-        require_size(rest, {3});
-        return datum_builder(t, q)
-            .set(f::unit_ccy, text(rest[0]))
-            .set(f::ccy, text(rest[1]))
-            .set(f::term,
-                 term_of(rest[2], {term::kind::period, term::kind::date, term::kind::fx_tenor}))
-            .build();
-    case it::fx_option:
-        // FX_OPTION/qt/unitCcy/ccy/expiry/strike, the strike a label ORE keeps
-        // as text: ATM, 25RR, 25BF.
-        require_size(rest, {4});
-        return datum_builder(t, q)
-            .set(f::unit_ccy, text(rest[0]))
-            .set(f::ccy, text(rest[1]))
-            .set(f::expiry, period(rest[2]))
-            .set(f::strike_label, text(rest[3]))
-            .build();
-    default:
-        throw std::logic_error("read_fx called for a type it does not read");
+        case it::fx_spot:
+            // FX/RATE/unitCcy/ccy
+            require_size(rest, {2});
+            return datum_builder(t, q)
+                .set(f::unit_ccy, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .build();
+        case it::fx_fwd:
+            // FXFWD/RATE/unitCcy/ccy/term, the term a period, a date, ON, TN or SN.
+            require_size(rest, {3});
+            return datum_builder(t, q)
+                .set(f::unit_ccy, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .set(f::term,
+                     term_of(rest[2], {term::kind::period, term::kind::date, term::kind::fx_tenor}))
+                .build();
+        case it::fx_option:
+            // FX_OPTION/qt/unitCcy/ccy/expiry/strike, the strike a label ORE keeps
+            // as text: ATM, 25RR, 25BF.
+            require_size(rest, {4});
+            return datum_builder(t, q)
+                .set(f::unit_ccy, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .set(f::expiry, period(rest[2]))
+                .set(f::strike_label, text(rest[3]))
+                .build();
+        default:
+            throw std::logic_error("read_fx called for a type it does not read");
     }
 }
 

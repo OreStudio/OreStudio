@@ -137,14 +137,14 @@ market_datum read_bond_option(quote_type q, tokens rest) {
 
 market_datum read_volatility(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::swaption:
-        return read_swaption(q, rest);
-    case it::capfloor:
-        return read_capfloor(q, rest);
-    case it::bond_option:
-        return read_bond_option(q, rest);
-    default:
-        throw std::logic_error("read_volatility called for a type it does not read");
+        case it::swaption:
+            return read_swaption(q, rest);
+        case it::capfloor:
+            return read_capfloor(q, rest);
+        case it::bond_option:
+            return read_bond_option(q, rest);
+        default:
+            throw std::logic_error("read_volatility called for a type it does not read");
     }
 }
 

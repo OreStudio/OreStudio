@@ -19,8 +19,8 @@
  */
 #include "ore_key_reading.hpp"
 #include <cctype>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 /**
  * @file ore_key_credit.cpp
@@ -66,7 +66,9 @@ market_datum read_hazard_rate(quote_type q, tokens rest) {
     require_quote(q, {quote_type::rate});
     require_size(rest, {4, 5});
     datum_builder b(it::hazard_rate, q);
-    b.set(f::underlying_name, text(rest[0])).set(f::seniority, text(rest[1])).set(f::ccy, text(rest[2]));
+    b.set(f::underlying_name, text(rest[0]))
+        .set(f::seniority, text(rest[1]))
+        .set(f::ccy, text(rest[2]));
     if (rest.size() == 5)
         b.set(f::doc_clause, text(rest[3]));
     return b.set(f::term, period(rest.back())).build();
@@ -166,21 +168,21 @@ market_datum read_index_cds_option(quote_type q, tokens rest) {
 
 market_datum read_credit(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::cds:
-        return read_cds(q, rest);
-    case it::hazard_rate:
-        return read_hazard_rate(q, rest);
-    case it::recovery_rate:
-    case it::assumed_recovery_rate:
-        return read_recovery_rate(t, q, rest);
-    case it::cds_index:
-        return read_cds_index(q, rest);
-    case it::index_cds_tranche:
-        return read_index_cds_tranche(q, rest);
-    case it::index_cds_option:
-        return read_index_cds_option(q, rest);
-    default:
-        throw std::logic_error("read_credit called for a type it does not read");
+        case it::cds:
+            return read_cds(q, rest);
+        case it::hazard_rate:
+            return read_hazard_rate(q, rest);
+        case it::recovery_rate:
+        case it::assumed_recovery_rate:
+            return read_recovery_rate(t, q, rest);
+        case it::cds_index:
+            return read_cds_index(q, rest);
+        case it::index_cds_tranche:
+            return read_index_cds_tranche(q, rest);
+        case it::index_cds_option:
+            return read_index_cds_option(q, rest);
+        default:
+            throw std::logic_error("read_credit called for a type it does not read");
     }
 }
 

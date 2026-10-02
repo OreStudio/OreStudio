@@ -102,26 +102,26 @@ constexpr std::array<std::string_view, 1> dst{"DST"};
 
 std::string_view name_of(asset_class a) {
     switch (a) {
-    case asset_class::ir:
-        return "ir";
-    case asset_class::fx:
-        return "fx";
-    case asset_class::credit:
-        return "credit";
-    case asset_class::equity:
-        return "equity";
-    case asset_class::commodity:
-        return "commodity";
-    case asset_class::inflation:
-        return "inflation";
-    case asset_class::security:
-        return "security";
-    case asset_class::correlation:
-        return "correlation";
-    case asset_class::rating:
-        return "rating";
-    case asset_class::shape_profile:
-        return "shape_profile";
+        case asset_class::ir:
+            return "ir";
+        case asset_class::fx:
+            return "fx";
+        case asset_class::credit:
+            return "credit";
+        case asset_class::equity:
+            return "equity";
+        case asset_class::commodity:
+            return "commodity";
+        case asset_class::inflation:
+            return "inflation";
+        case asset_class::security:
+            return "security";
+        case asset_class::correlation:
+            return "correlation";
+        case asset_class::rating:
+            return "rating";
+        case asset_class::shape_profile:
+            return "shape_profile";
     }
     return {};
 }

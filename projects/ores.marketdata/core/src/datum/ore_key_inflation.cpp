@@ -37,35 +37,38 @@ using it = instrument_type;
 
 market_datum read_inflation(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::zc_inflation_swap:
-    case it::yy_inflation_swap:
-        // ZC_INFLATIONSWAP|YY_INFLATIONSWAP/RATE/index/term. ORE reads any quote
-        // token here and records RATE, so another token could not be written back.
-        require_quote(q, {quote_type::rate});
-        require_size(rest, {2});
-        return datum_builder(t, q).set(f::index, text(rest[0])).set(f::term, period(rest[1])).build();
-    case it::zc_inflation_capfloor:
-    case it::yy_inflation_capfloor:
-        // ZC_INFLATIONCAPFLOOR|YY_INFLATIONCAPFLOOR/qt/index/term/C|F/strike
-        require_size(rest, {4});
-        return datum_builder(t, q)
-            .set(f::index, text(rest[0]))
-            .set(f::term, period(rest[1]))
-            .set(f::cap_floor, token(rest[2]))
-            .set(f::strike_level, number(rest[3]))
-            .build();
-    case it::seasonality:
-        // SEASONALITY/RATE/type/index/month. ORE reads any quote token here and
-        // records RATE.
-        require_quote(q, {quote_type::rate});
-        require_size(rest, {3});
-        return datum_builder(t, q)
-            .set(f::seasonality_type, text(rest[0]))
-            .set(f::index, text(rest[1]))
-            .set(f::month, text(rest[2]))
-            .build();
-    default:
-        throw std::logic_error("read_inflation called for a type it does not read");
+        case it::zc_inflation_swap:
+        case it::yy_inflation_swap:
+            // ZC_INFLATIONSWAP|YY_INFLATIONSWAP/RATE/index/term. ORE reads any quote
+            // token here and records RATE, so another token could not be written back.
+            require_quote(q, {quote_type::rate});
+            require_size(rest, {2});
+            return datum_builder(t, q)
+                .set(f::index, text(rest[0]))
+                .set(f::term, period(rest[1]))
+                .build();
+        case it::zc_inflation_capfloor:
+        case it::yy_inflation_capfloor:
+            // ZC_INFLATIONCAPFLOOR|YY_INFLATIONCAPFLOOR/qt/index/term/C|F/strike
+            require_size(rest, {4});
+            return datum_builder(t, q)
+                .set(f::index, text(rest[0]))
+                .set(f::term, period(rest[1]))
+                .set(f::cap_floor, token(rest[2]))
+                .set(f::strike_level, number(rest[3]))
+                .build();
+        case it::seasonality:
+            // SEASONALITY/RATE/type/index/month. ORE reads any quote token here and
+            // records RATE.
+            require_quote(q, {quote_type::rate});
+            require_size(rest, {3});
+            return datum_builder(t, q)
+                .set(f::seasonality_type, text(rest[0]))
+                .set(f::index, text(rest[1]))
+                .set(f::month, text(rest[2]))
+                .build();
+        default:
+            throw std::logic_error("read_inflation called for a type it does not read");
     }
 }
 

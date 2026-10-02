@@ -87,6 +87,7 @@ TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", t
     CHECK(claims->acting_from_tenant_id == tenant_id::system().to_string());
     CHECK(claims->subject == boost::uuids::to_string(caller.account_id));
     CHECK(claims->party_id == entered.party_id);
+    CHECK_FALSE(entered.party_name.empty());
     CHECK(std::ranges::find(claims->visible_party_ids, entered.party_id) !=
           claims->visible_party_ids.end());
     REQUIRE_FALSE(claims->roles.empty());

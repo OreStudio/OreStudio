@@ -121,6 +121,17 @@ command that printed a bearer token would hand it to the terminal.
  */
 #+end_src
 
+*** party_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The system party's name, which the screens show while inside.
+ */
+#+end_src
+
 *** access_lifetime_s
 :PROPERTIES:
 :cpp_type: int

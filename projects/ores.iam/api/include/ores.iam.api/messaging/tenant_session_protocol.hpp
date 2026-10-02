@@ -73,6 +73,10 @@ struct enter_tenant_response {
      */
     std::string party_id;
     /**
+     * @brief The system party's name, which the screens show while inside.
+     */
+    std::string party_name;
+    /**
      * @brief How long the session lasts. It is not refreshed.
      */
     int access_lifetime_s = 1800;

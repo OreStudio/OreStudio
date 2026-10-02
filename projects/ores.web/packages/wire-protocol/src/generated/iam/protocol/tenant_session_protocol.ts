@@ -57,6 +57,10 @@ export interface EnterTenantResponse {
      */
     party_id: string;
     /**
+     * @brief The system party's name, which the screens show while inside.
+     */
+    party_name: string;
+    /**
      * @brief How long the session lasts. It is not refreshed.
      */
     access_lifetime_s: number;

@@ -124,15 +124,17 @@ tenant_session_service::enter(const tenant_session_caller& caller,
     const auto target_id = target->to_string();
     const auto target_ctx = ctx_.with_tenant(*target, caller.username);
     using ores::database::repository::execute_parameterized_string_query;
-    const auto system_party = execute_parameterized_string_query(
+    using ores::database::repository::execute_parameterized_multi_column_query;
+    const auto system_party = execute_parameterized_multi_column_query(
         target_ctx,
-        "SELECT id::text FROM ores_refdata_read_system_party_fn($1::uuid)",
+        "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
         {target_id},
         lg(),
         "Reading the system party of the tenant entered");
-    if (system_party.empty())
+    if (system_party.empty() || system_party.front().size() < 2 || !system_party.front()[0])
         return refused_entry(tenant_session_refusal::no_system_party);
-    const auto& party_id = system_party.front();
+    const auto party_id = *system_party.front()[0];
+    const auto party_name = system_party.front()[1].value_or("");
     const auto visible = execute_parameterized_string_query(
         target_ctx,
         "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
@@ -174,6 +176,7 @@ tenant_session_service::enter(const tenant_session_caller& caller,
             .tenant_code = tenant.code,
             .tenant_name = tenant.name,
             .party_id = party_id,
+            .party_name = party_name,
             .access_lifetime_s = static_cast<int>(lifetime_.count())};
 }
 

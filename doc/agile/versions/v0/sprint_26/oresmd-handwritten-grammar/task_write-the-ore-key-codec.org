@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/write-the-ore-key-codec
-#+pr:
+#+pr: 2517
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -132,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2517][#2517]] | [marketdata] Write the ORE key codec against ORE's own parser |
 
 * Review
 

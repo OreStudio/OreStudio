@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: C34E1985-B327-494E-B814-8586DDFF8EDE
+:END:
+#+title: Task: Scaffold story: Rewrite the oresmd grammar as a hand-written codec checked against ORE
+#+description: The review, the story, its thirteen tasks and the agreed design ride this task and its PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch: feature/review-marketdata-component
+#+pr: 2504
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The review of =ores.marketdata=, this story, its thirteen tasks and the agreed
+grammar design are in the tree, so the work can start from a recorded plan.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- The review is an investigation under the clean-marketdata story, and the story links it.
+- The story and its thirteen tasks have every section filled, and the sprint table lists the story.
+- The story's Decisions record the agreed design and the two rejected designs.
+- The curve story waits on this story.
+
+* Plan
+
+Documents only. Write the review from measurements, then the story and tasks,
+then settle the design with the user before recording it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2504][#2504]] | [agile] Review ores.marketdata and plan the hand-written oresmd grammar |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Decision 6 joins two clauses with no "and" | =story.org= | Accept | Split into three sentences. |
+| 2 | Name who must recreate their database at the cut-over | =task_cut-the-consumers-over.org= | Accept | Added an acceptance line: the PR body names the step and the journal records the date. |
+| 3 | Say that "canonical" in Decision 9 means the post-alias spelling | =story.org= | Accept | Decision 9 now says so, with the =FX_SPOT= example. |
+| 4 | Publish the scaffold task page before merging | =task_scaffold_oresmd-handwritten-grammar.org= | Accept | =compass site page= re-run after this round. |
+| 5 | Make the review's 4,269 and 7,254 figures reproducible | =task_build-the-ore-reference-catalogue.org= | Accept | The catalogue task now measures the old grammar's baseline in a test before it is retired. |
+
+* Result
+
+Done. The review, the story, its thirteen tasks and the agreed design are
+written and committed. The design changed twice during planning: from a
+variant of 45 instrument structs, to a schema table, and then to the schema
+table with an exhaustive =switch= on the instrument type; the story's
+Decisions record why.

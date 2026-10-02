@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: C6BE9E13-4126-4F70-B7B2-3215AF7BE674
+:END:
+#+title: Task: Write the oresmd URI codec
+#+description: One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the schema.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=oresmd_uri_codec= writes a =market_datum= as an oresmd URI and reads it back,
+with no code per family.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- The codec walks the datum's fields in schema order; it has no per-family branch.
+- The writer writes every field. The reader refuses a missing, unknown or repeated key.
+- The path segment is percent-encoded and keeps its case.
+- A =type=quote= URI follows the strict contract: every field of its schema row present, nothing else, no default, no partial form, one to one with the canonical ORE key. The reader refuses any =type=quote= URI that breaks it.
+- For every datum in the reference catalogue: =read(write(d)) == d=, =write(read(u)) == u=, and the series URI parses.
+- Property tests generate datums from each schema row and each field's domain and round-trip them.
+
+* Plan
+
+The value types' text forms come from the datum model task; this task writes
+the walk, the strict reader and the series URI.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Through today's URI, 7,254 corpus keys do not read back and 4,269 produce a URI
+the parser rejects. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 2.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -29,12 +29,12 @@ that bound each one.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | PR 5 merged as =710bd22883= on 2026-09-30 with fifteen checks green, so PRs 1 to 5 are in. PR 6, the bond pilot, is next: the v17 bond future, the underlyings table D21 decides, the import path's empty audit name, the corpus round trip, and defects 14 and 16. PRs 1 to 4 are merged: PR 4 landed as =cd00344ddb= on 2026-09-29 with fifteen checks green, and the collapse closes defect 13. PR 5 is STARTED on =feature/split-bond-security-from-trade=, and PR 4 was raised as [[https://github.com/OreStudio/OreStudio/pull/2348][#2348]] from =feature/collapse-instrument-identity=, rebased onto =e2bda9e108=: the instrument's identity is the trade it belongs to, the relationship is declared and trigger-checked, and defect 13 closes. The bond security split moved to [[id:FF88C139-9C8B-4A59-9CCD-38066CA049DD][its own task]] by D17, and by the owner's ruling of 2026-09-28 defects 14 and 16 move to the bond pilot and defect 15 to the split |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Start the bond pilot, PR 6. |
-| Last touched  | 2026-09-28                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-02                               |
 
 * Acceptance
 
@@ -672,6 +672,17 @@ row is updated as each PR lands.
   the twelve products that need an observation schedule are equity, fx and
   commodity. Moving those scalars into the shared table is those families'
   reshape work, not the bond pilot's.
+- *D30, the story closes with two accepted exceptions.* The owner ruled
+  on 2026-10-02 to close the story with P04 and G04 open, each with a
+  capture. P04: the two export verbs are not operation models
+  ([[id:3AFA8FA2-55B4-441A-BD35-69FA67CDB664][capture]]); the same two
+  messages are M06's only gap. G04: the stamp loop in the service template
+  repeats its comment and reason expression once per member
+  ([[id:EC0935EB-81B1-4301-BBFC-AB0C5B516D01][capture]]). Its fix
+  regenerates every grouped entity in every component and needs the
+  clang-format that CI pins. Reason: both are bounded, recorded and
+  owned by a capture, and neither changes behaviour. Every other
+  applicable row is met, measured on main on 2026-10-02.
 
 * Delivery plan
 
@@ -713,3 +724,22 @@ row is updated as each PR lands.
   models need.
 - The stale =ores_schema.puml= ER diagram, which is a repository-wide
   sweep and not a trading fix. PR 6 records it.
+
+* Result
+
+ores.trading meets the Component Clean Standard, with two accepted
+exceptions (D30). Seven PRs delivered it, #2496 the last of them.
+
+- The component is in =COMPONENTS_UNDER_TEST=, and the drift gate checks
+  it at every address with no drift. 2365 of its 2448 C++ files are
+  generated; the 83 hand-written ones are the composition root, the two
+  readers, the instrument variants, the service host and the tests.
+- All 85 protocol headers are generated and twinned in TypeScript. No
+  hand-written file names a subject.
+- The shell surface, its recipes and its inventory are generated. The
+  V04 replay answers 449 of 452 replayed recipes; the three that do not
+  are the enum sentinel capture.
+- Every generator defect the story found is fixed at source with a
+  regression test in the codegen suite.
+- Open: P04, the two export verbs as operation models, and G04, the
+  stamp-loop template defect. Each has a capture in the inbox.

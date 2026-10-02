@@ -164,6 +164,12 @@ via its "Verifies task" field.
 | 2 | Local review: the CI comment narrated history | =codegen-drift.yml= | Accepted | It now states what fails the step and where an exception goes. |
 | 3 | PR checks: the =ores.analytics.service= source list missed the five today's market event registrars from PR #2500 | =component_files.cmake= | Accepted | Regenerated; the five sources now compile. Like the other analytics registrars, nothing calls them yet. |
 | 4 | PR checks: after the rebase, main's 36 commits added no generated SQL; the =ores.sql.schema= regeneration changed nothing and every generated drop file carries the marker | SQL tree | No change | Verified with the census. |
+| 5 | PR review: reachability is not scoped to a tree; a drop file included only from create.sql counts as wired | =plantuml_er_parse_sql.py= | Accepted | The walk from the bootstrap scripts stops at another tree's root. Test added. |
+| 6 | PR review: every top-level script counts as a bootstrap root | =plantuml_er_parse_sql.py= | Accepted, as a comment | Deliberate, because setup_schema.sql and recreate_database.sql include files directly; the comment now says so. |
+| 7 | PR review: a commented-out =\ir= counts as wiring | =plantuml_er_parse_sql.py= | Accepted | Only an =\ir= at the start of a line counts. Test added. The RLS reachability check shares the collector and gains the same fix. The strict parser still reports no warning. |
+| 8 | PR review: the census marker matches anywhere in the first 3000 bytes | =census_sql_origin.py= | Accepted | It matches on comment lines only. The census counts are unchanged. |
+| 9 | PR review: the 115 leftover functions and the two unwired populate scripts | captures | No change | Already filed. |
+| 10 | PR review: local clang-format mismatch on =trade_service.cpp= | — | No change | Local only; CI passes. |
 
 * Result
 

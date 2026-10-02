@@ -375,6 +375,7 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
     workflow_definition def;
     def.type_name = std::string(provision_tenant_workflow_type);
     def.on_failure = failure_policy::stop;
+    def.steps_depend_on_request = true;
     def.description =
         "Provisions a tenant from a seed profile: publishes the bundles the profile orders, "
         "imports its LEI hierarchy, provisions its parties, loads its staff, attaches its "
@@ -416,6 +417,7 @@ register_provision_party_workflow(ores::workflow::service::workflow_registry& re
     workflow_definition def;
     def.type_name = std::string(provision_party_workflow_type);
     def.on_failure = failure_policy::stop;
+    def.steps_depend_on_request = true;
     def.description =
         "Provisions one party of an existing tenant: publishes the bundles the starting point "
         "orders against it, activates it, marks its onboarding complete, and associates the "

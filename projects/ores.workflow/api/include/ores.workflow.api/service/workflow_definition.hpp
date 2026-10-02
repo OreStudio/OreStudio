@@ -267,6 +267,16 @@ struct workflow_definition {
     failure_policy on_failure = failure_policy::compensate;
 
     /**
+     * @brief Whether the steps come from the request rather than the definition.
+     *
+     * A definition such as tenant provisioning builds one step per kind its
+     * request orders, so it has no step list until a request arrives and
+     * refuses an empty one. The definitions read lists it with no steps
+     * instead of asking build_steps for a list it cannot give.
+     */
+    bool steps_depend_on_request = false;
+
+    /**
      * @brief Builds the full step list for a specific workflow instance.
      *
      * Called once at instance start. The returned vector's size is persisted

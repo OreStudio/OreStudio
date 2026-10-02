@@ -966,11 +966,21 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     workflow_definition request_built;
     request_built.type_name = "test_listed_request_built_workflow";
     request_built.description = "steps come from the request";
+    request_built.steps_depend_on_request = true;
     request_built.build_steps = [](const std::string&, const std::string&, const std::string&)
         -> std::vector<workflow_step_def> {
         throw std::runtime_error("This definition cannot read an empty request.");
     };
     f.registry->register_definition(std::move(request_built));
+
+    // A builder that throws without saying its steps come from the request is
+    // a defect. It is listed with no steps and logged, and the read answers.
+    workflow_definition broken;
+    broken.type_name = "test_listed_broken_workflow";
+    broken.description = "a builder with a defect";
+    broken.build_steps = [](const std::string&, const std::string&, const std::string&)
+        -> std::vector<workflow_step_def> { throw std::runtime_error("A defect in the builder."); };
+    f.registry->register_definition(std::move(broken));
 
     auto handler = std::make_shared<workflow_query_handler>(
         f.nats,
@@ -1001,6 +1011,9 @@ TEST_CASE("workflow_query_handler lists a definition that builds its steps from 
     const auto built = find("test_listed_request_built_workflow");
     REQUIRE(built != answer->definitions.end());
     CHECK(built->step_count == 0);
+    const auto defective = find("test_listed_broken_workflow");
+    REQUIRE(defective != answer->definitions.end());
+    CHECK(defective->step_count == 0);
     BOOST_LOG_SEV(lg, debug) << "Definitions listed: " << answer->definitions.size();
 }
 

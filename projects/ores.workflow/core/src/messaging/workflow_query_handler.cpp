@@ -307,17 +307,19 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
             ds.type_name = def.type_name;
             ds.description = def.description;
 
-            // A definition whose steps do not depend on its request yields its
-            // canonical sequence from an empty one. A definition whose steps the
-            // request decides -- tenant provisioning builds one step per kind its
-            // profile orders -- refuses an empty request, and is listed with no
-            // steps rather than failing the whole read.
+            // A definition whose steps the request decides has no list to show
+            // and says so, so it is not asked for one. Any other definition
+            // yields its canonical sequence from an empty request. One that
+            // throws anyway is a defect in its builder: it is listed with no
+            // steps and logged, so one bad builder cannot fail the whole read.
             std::vector<service::workflow_step_def> steps;
-            try {
-                steps = def.build_steps("", "", "");
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), debug) << "Definition " << def.type_name
-                                           << " builds its steps from its request: " << e.what();
+            if (!def.steps_depend_on_request) {
+                try {
+                    steps = def.build_steps("", "", "");
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn) << "Definition " << def.type_name
+                                              << " failed to build its steps: " << e.what();
+                }
             }
             ds.step_count = static_cast<int>(steps.size());
 

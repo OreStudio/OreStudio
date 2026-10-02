@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "configuration_type_seed_tests.cpp"
     "credit_simulation_database_roundtrip_tests.cpp"
     "domain_currency_mapper_tests.cpp"
     "domain_trade_mapper_tests.cpp"

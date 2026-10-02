@@ -27,6 +27,12 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Button, Input, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 
+/** How many tenants one page of the roster shows. */
+export const TENANT_PAGE_SIZE = 25;
+
+/** How long the search waits after the last keystroke before it asks. */
+const SEARCH_PAUSE_MS = 300;
+
 /**
  * The tenants a deployment holds.
  *
@@ -36,19 +42,13 @@ import { Button, Input, LinkButton, Notice, PageHeader } from '../ui/Primitives.
  * only wants to know what exists never has to open one.
  *
  * The system tenant is not here because it is not a tenant somebody set up: it
- * is the deployment's own bookkeeping. The read drops it, so this screen cannot
- * show it by accident.
+ * is the deployment's own bookkeeping. The server's search leaves it out, so this
+ * screen cannot show it by accident.
  *
  * A deployment that holds no tenant of its own is the state right after the
  * system administrator is created, and it is a normal state rather than an
  * error: the empty roster says so and offers the journey that leaves it.
  */
-/** How many tenants one page of the roster shows. */
-export const TENANT_PAGE_SIZE = 25;
-
-/** How long the search waits after the last keystroke before it asks. */
-const SEARCH_PAUSE_MS = 300;
-
 export function TenantsPage(): ReactNode {
     const { t } = useTranslation();
     const [typed, setTyped] = useState('');
@@ -77,6 +77,20 @@ export function TenantsPage(): ReactNode {
         queryFn: () => api.tenants({ search, offset, limit: TENANT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
+
+    /*
+     * A page can empty under the person -- a tenant retired while they were on
+     * the last page -- and an empty page past the first is not an answer they
+     * can use, so the roster goes back to the first page. The total still
+     * arrives with an empty page, so the screen never claims there is none.
+     */
+    const emptyPastFirst =
+        roster.data !== undefined && roster.data.tenants.length === 0 && offset > 0;
+    useEffect(() => {
+        if (emptyPastFirst) {
+            setOffset(0);
+        }
+    }, [emptyPastFirst]);
     /*
      * The statuses are a second read because their words and colours are
      * reference data shared by every screen that shows one. A failure to read

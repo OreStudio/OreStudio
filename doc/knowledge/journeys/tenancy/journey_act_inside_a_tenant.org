@@ -46,8 +46,9 @@ the ordinary reads do the rest.
    the administrator chooses *Act in this tenant*. The system checks the
    permission, refuses the system tenant, and issues a session scoped to the
    tenant. The session acts as the tenant's system party, which sees every
-   party of the tenant. The system records the entry in the audit trail of the
-   tenant and of the system tenant.
+   party of the tenant. The system records the entry in the tenant's audit
+   trail, with the administrator's account, so the tenant's own trail says who
+   looked inside it.
 2. *See that I am inside.* Every screen shows a banner: *Acting in Acme
    Corporation as admin*, with *Leave*. The session's mode is tenant
    administration, so the menus are the ones a tenant's administrator sees, and
@@ -58,7 +59,7 @@ the ordinary reads do the rest.
    tenant's accounts, sessions and sign-ins. Every read is the ordinary one,
    scoped by the session's token.
 4. *Leave.* The administrator chooses *Leave*. The system ends the tenant
-   session, records the exit in both audit trails, and returns the browser to
+   session, records the exit in the tenant's audit trail, and returns the browser to
    the administrator's own system session, on the tenant's screen. The
    administrator does not sign in again.
 5. *The session runs out.* The tenant session lives for one access lifetime and

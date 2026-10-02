@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-reference-catalogue
-#+pr:
+#+pr: 2510
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2510][#2510]] | [ore] Build the market datum catalogue from ORE's own parser |
 
 * Review
 

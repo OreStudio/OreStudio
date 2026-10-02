@@ -75,9 +75,15 @@ public:
      * @brief Reconstructs an ORE PricingEngines document from mapped entities.
      *
      * Products are emitted in =position= order, and each product's model and
-     * engine parameters in the =position= order of their own scope.
-     * GlobalParameters is written only when a global-scope row exists, which is
-     * equivalent because no shipped document writes an empty one.
+     * engine parameters in the =position= order of their own scope; rows that
+     * share a position are ordered by id, which is stable but not the order
+     * they were created in. GlobalParameters is written only when
+     * a global-scope row exists, which is equivalent because no shipped document
+     * writes an empty one.
+     *
+     * @throws std::runtime_error for a parameter row the document has no place
+     * for: an unknown scope, a global row that names a product, or a model or
+     * engine row whose product is not among the products.
      */
     static pricingengines reverse(const mapped_pricing_engines& v);
 };

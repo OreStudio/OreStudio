@@ -23,7 +23,9 @@
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 /**
  * @file xml_pricing_engine_mapper_roundtrip_tests.cpp
@@ -33,7 +35,9 @@
  * things the mapper carries in a column rather than in the document's own
  * shape: a repeated product type, a repeated parameter name, and a parameter
  * that belongs to no product. Each of those is a shortcut the mapper is
- * forbidden from taking, so each gets a case that fails if it is taken.
+ * forbidden from taking, so each gets a case that fails if it is taken. The
+ * last two cover rows that did not come from a document: rows that share a
+ * position, and rows the document has no place for.
  */
 
 namespace {
@@ -132,7 +136,8 @@ TEST_CASE("a global parameter belongs to no product and comes back", tags) {
     using namespace ores::ore::domain;
 
     pricingengines document;
-    document.Product.push_back(make_product("Swap", "DiscountedCashflows", "DiscountingSwapEngine"));
+    document.Product.push_back(
+        make_product("Swap", "DiscountedCashflows", "DiscountingSwapEngine"));
 
     globalParameters global;
     global.Parameter.push_back(make_parameter("ContinueOnError", "Y"));
@@ -154,8 +159,61 @@ TEST_CASE("a document without global parameters comes back without them", tags) 
     using namespace ores::ore::domain;
 
     pricingengines document;
-    document.Product.push_back(make_product("Swap", "DiscountedCashflows", "DiscountingSwapEngine"));
+    document.Product.push_back(
+        make_product("Swap", "DiscountedCashflows", "DiscountingSwapEngine"));
 
     const auto rebuilt = pricing_engine_mapper::reverse(pricing_engine_mapper::map(document));
     CHECK(!static_cast<bool>(rebuilt.GlobalParameters));
+}
+
+TEST_CASE("rows that share a position come back in id order", tags) {
+    using namespace ores::ore::domain;
+
+    pricingengines document;
+    document.Product.push_back(make_product("Swap", "First", "One"));
+    document.Product.push_back(make_product("Swap", "Second", "Two"));
+
+    // A row written through the shell carries position 0 whatever its place,
+    // so the export falls back to the id. Whichever input order arrives, the
+    // product with the smaller id comes first.
+    auto mapped = pricing_engine_mapper::map(document);
+    REQUIRE(mapped.products.size() == 2);
+    for (auto& product : mapped.products)
+        product.position = 0;
+    const auto& lower = mapped.products.at(0).id < mapped.products.at(1).id ?
+                            mapped.products.at(0) :
+                            mapped.products.at(1);
+    const std::string expected_first = lower.model;
+
+    auto swapped = mapped;
+    std::swap(swapped.products.at(0), swapped.products.at(1));
+
+    for (const auto& input : {mapped, swapped}) {
+        const auto rebuilt = pricing_engine_mapper::reverse(input);
+        REQUIRE(rebuilt.Product.size() == 2);
+        CHECK(std::string(rebuilt.Product.at(0).Model) == expected_first);
+    }
+}
+
+TEST_CASE("a parameter row the document has no place for is an error", tags) {
+    using namespace ores::ore::domain;
+
+    auto product = make_product("Swap", "DiscountedCashflows", "DiscountingSwapEngine");
+    product.EngineParameters.Parameter.push_back(make_parameter("Interactive", "false"));
+    pricingengines document;
+    document.Product.push_back(product);
+    const auto mapped = pricing_engine_mapper::map(document);
+    REQUIRE(mapped.parameters.size() == 1);
+
+    auto unknown_scope = mapped;
+    unknown_scope.parameters.at(0).parameter_scope = "trade";
+    CHECK_THROWS_AS(pricing_engine_mapper::reverse(unknown_scope), std::runtime_error);
+
+    auto global_with_product = mapped;
+    global_with_product.parameters.at(0).parameter_scope = "global";
+    CHECK_THROWS_AS(pricing_engine_mapper::reverse(global_with_product), std::runtime_error);
+
+    auto orphan = mapped;
+    orphan.products.clear();
+    CHECK_THROWS_AS(pricing_engine_mapper::reverse(orphan), std::runtime_error);
 }

@@ -19,9 +19,13 @@
  */
 #include "ores.ore.core/domain/pricing_engine_mapper.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <map>
 #include <optional>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -85,6 +89,53 @@ void append_parameters(std::vector<analytics::domain::pricing_model_product_para
     }
 }
 
+// Rows from the database or the shell can share a position, so the id breaks
+// the tie. That does not recover the order rows were created in, because a
+// UUIDv7 id is random within a millisecond, but it makes the export stable.
+template <typename Row>
+bool by_position(const Row* lhs, const Row* rhs) {
+    if (lhs->position != rhs->position)
+        return lhs->position < rhs->position;
+    return lhs->id < rhs->id;
+}
+
+using parameter_row = analytics::domain::pricing_model_product_parameter;
+using parameter_key = std::pair<std::optional<boost::uuids::uuid>, std::string>;
+
+// Groups the parameter rows by the product and scope that own them, and
+// refuses any row the document has no place for: an unknown scope, a global
+// row with a product, or a model or engine row whose product is absent.
+// Dropping such a row would pass as a round trip while losing data.
+std::map<parameter_key, std::vector<const parameter_row*>>
+group_parameters(const mapped_pricing_engines& v) {
+    std::set<boost::uuids::uuid> product_ids;
+    for (const auto& product : v.products)
+        product_ids.insert(product.id);
+
+    std::map<parameter_key, std::vector<const parameter_row*>> groups;
+    for (const auto& row : v.parameters) {
+        const auto describe = [&row] {
+            return "pricing_engine_mapper: parameter " + boost::uuids::to_string(row.id) + " (" +
+                   row.parameter_name + ")";
+        };
+        if (row.parameter_scope == scope_global) {
+            if (row.pricing_model_product_id)
+                throw std::runtime_error(describe() + " is global but names a product");
+        } else if (row.parameter_scope == scope_model || row.parameter_scope == scope_engine) {
+            if (!row.pricing_model_product_id ||
+                !product_ids.contains(*row.pricing_model_product_id))
+                throw std::runtime_error(describe() + " names no product in the document");
+        } else {
+            throw std::runtime_error(describe() + " has unknown scope '" + row.parameter_scope +
+                                     "'");
+        }
+        groups[{row.pricing_model_product_id, row.parameter_scope}].push_back(&row);
+    }
+    for (auto& [key, rows] : groups)
+        std::sort(rows.begin(), rows.end(), by_position<parameter_row>);
+    return groups;
+}
+
 }
 
 mapped_pricing_engines pricing_engine_mapper::map(const pricingengines& v) {
@@ -109,14 +160,23 @@ mapped_pricing_engines pricing_engine_mapper::map(const pricingengines& v) {
         set_audit(product);
         mapped.products.push_back(product);
 
-        append_parameters(mapped.parameters, config.id, product.id, scope_model,
+        append_parameters(mapped.parameters,
+                          config.id,
+                          product.id,
+                          scope_model,
                           source.ModelParameters.Parameter);
-        append_parameters(mapped.parameters, config.id, product.id, scope_engine,
+        append_parameters(mapped.parameters,
+                          config.id,
+                          product.id,
+                          scope_engine,
                           source.EngineParameters.Parameter);
     }
 
     if (v.GlobalParameters) {
-        append_parameters(mapped.parameters, config.id, std::nullopt, scope_global,
+        append_parameters(mapped.parameters,
+                          config.id,
+                          std::nullopt,
+                          scope_global,
                           v.GlobalParameters->Parameter);
     }
 
@@ -126,66 +186,50 @@ mapped_pricing_engines pricing_engine_mapper::map(const pricingengines& v) {
 pricingengines pricing_engine_mapper::reverse(const mapped_pricing_engines& v) {
     pricingengines document;
 
-    std::vector<analytics::domain::pricing_model_product> products = v.products;
-    std::sort(products.begin(), products.end(),
-              [](const auto& lhs, const auto& rhs) { return lhs.position < rhs.position; });
-
-    const auto in_scope = [&v](const boost::uuids::uuid& product_id,
-                               const std::string_view scope) {
-        std::vector<analytics::domain::pricing_model_product_parameter> rows;
-        for (const auto& row : v.parameters) {
-            if (row.parameter_scope != scope)
-                continue;
-            if (row.pricing_model_product_id != product_id)
-                continue;
-            rows.push_back(row);
-        }
-        std::sort(rows.begin(), rows.end(),
-                  [](const auto& lhs, const auto& rhs) { return lhs.position < rhs.position; });
-        return rows;
+    const auto groups = group_parameters(v);
+    const auto in_scope =
+        [&groups](const std::optional<boost::uuids::uuid>& product_id,
+                  const std::string_view scope) -> const std::vector<const parameter_row*>& {
+        static const std::vector<const parameter_row*> none;
+        const auto it = groups.find({product_id, std::string(scope)});
+        return it == groups.end() ? none : it->second;
+    };
+    const auto to_parameter = [](const parameter_row& row) {
+        domain::parameter parameter;
+        parameter.name = row.parameter_name;
+        assign_text(parameter, row.parameter_value);
+        return parameter;
     };
 
-    for (const auto& product : products) {
-        domain::product source;
-        source.type = product.pricing_engine_type_code;
-        assign_text(source.Model, product.model);
-        assign_text(source.Engine, product.engine);
+    std::vector<const analytics::domain::pricing_model_product*> products;
+    for (const auto& product : v.products)
+        products.push_back(&product);
+    std::sort(
+        products.begin(), products.end(), by_position<analytics::domain::pricing_model_product>);
 
-        for (const auto& row : in_scope(product.id, scope_model)) {
-            domain::parameter parameter;
-            parameter.name = row.parameter_name;
-            assign_text(parameter, row.parameter_value);
-            source.ModelParameters.Parameter.push_back(parameter);
-        }
-        for (const auto& row : in_scope(product.id, scope_engine)) {
-            domain::parameter parameter;
-            parameter.name = row.parameter_name;
-            assign_text(parameter, row.parameter_value);
-            source.EngineParameters.Parameter.push_back(parameter);
-        }
+    for (const auto* product : products) {
+        domain::product source;
+        source.type = product->pricing_engine_type_code;
+        assign_text(source.Model, product->model);
+        assign_text(source.Engine, product->engine);
+
+        for (const auto* row : in_scope(product->id, scope_model))
+            source.ModelParameters.Parameter.push_back(to_parameter(*row));
+        for (const auto* row : in_scope(product->id, scope_engine))
+            source.EngineParameters.Parameter.push_back(to_parameter(*row));
 
         document.Product.push_back(std::move(source));
     }
 
-    std::vector<analytics::domain::pricing_model_product_parameter> globals;
-    for (const auto& row : v.parameters) {
-        if (row.parameter_scope != scope_global)
-            continue;
-        if (row.pricing_model_product_id)
-            continue;
-        globals.push_back(row);
-    }
-    std::sort(globals.begin(), globals.end(),
-              [](const auto& lhs, const auto& rhs) { return lhs.position < rhs.position; });
-
+    // An empty <GlobalParameters/> and an absent one map to the same rows, so
+    // the export writes the element only when a global row exists. No shipped
+    // document writes an empty one; keeping the difference would need a column
+    // of its own.
+    const auto& globals = in_scope(std::nullopt, scope_global);
     if (!globals.empty()) {
         domain::globalParameters parameters;
-        for (const auto& row : globals) {
-            domain::parameter parameter;
-            parameter.name = row.parameter_name;
-            assign_text(parameter, row.parameter_value);
-            parameters.Parameter.push_back(parameter);
-        }
+        for (const auto* row : globals)
+            parameters.Parameter.push_back(to_parameter(*row));
         document.GlobalParameters = std::move(parameters);
     }
 

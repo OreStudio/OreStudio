@@ -25,7 +25,11 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { AuthenticatedCaller } from './account-operations.js';
 import { WireCodec } from './codec.js';
-import { readTenantSetups } from './tenants.js';
+import {
+    PROVISION_TENANT_TARGET_KIND,
+    PROVISION_TENANT_WORKFLOW_TYPE,
+    readTenantSetups,
+} from './tenants.js';
 
 /**
  * The bytes the roster's run read puts on the wire, held against C++.
@@ -42,6 +46,16 @@ import { readTenantSetups } from './tenants.js';
 const FIXTURE = resolve(
     dirname(fileURLToPath(import.meta.url)),
     '../../../../ores.workflow/api/tests/fixtures/list_workflow_instance_summaries_request.msgpack.hex',
+);
+
+/*
+ * The provisioning run's type and target kind are values ores.iam states in
+ * C++ and no model declares, so the roster copies them. The header is read
+ * here so that a rename on either side fails a test.
+ */
+const IAM_WORKFLOW_HEADER = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '../../../../ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp',
 );
 
 function toHex(bytes: Uint8Array): string {
@@ -69,5 +83,16 @@ describe('the workflow wire boundary', () => {
             writeFileSync(FIXTURE, encoded);
         }
         expect(encoded).toBe(readFileSync(FIXTURE, 'utf8'));
+    });
+
+    it('names the provisioning run the way ores.iam does', () => {
+        const header = readFileSync(IAM_WORKFLOW_HEADER, 'utf8');
+
+        expect(header).toContain(
+            `provision_tenant_workflow_type = "${PROVISION_TENANT_WORKFLOW_TYPE}";`,
+        );
+        expect(header).toContain(
+            `provision_tenant_target_kind = "${PROVISION_TENANT_TARGET_KIND}";`,
+        );
     });
 });

@@ -7,26 +7,29 @@
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-one-tenant
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A system administrator opens one tenant from the roster and reads one screen:
+the tenant's details and provenance, the run that set it up, and its parties.
+The journey [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]] is
+written first and the screen follows it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +38,43 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The journey See one tenant is written, with its wireframe, and the tenancy
+  hub lists it.
+- =/tenants/:id= shows the tenant's details, provenance, setup run and parties.
+- The roster row's *Open* item links to that screen.
+- An unknown =id= or the system tenant's =id= shows "no such tenant" and a way
+  back.
+- The parties come from a generated read scoped to the named tenant, which
+  refuses a caller outside the system tenant.
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+1. *Journey.* Write See one tenant, draw its wireframe and list it in the
+   tenancy hub.
+2. *Party read.* Every party read filters by the session's tenant, so a system
+   administrator reads only the system tenant's parties. Declare
+   =refdata.v1.parties.list-of-tenant= in an operation model in
+   =ores.refdata= and generate its protocol. The handler refuses a caller
+   outside the system tenant, checks =refdata::parties:read=, and reads with a
+   context scoped to the named tenant. The party table's policy already lets
+   the system tenant read every row, so no policy changes. Repository and
+   handler tests prove the scope and the refusal.
+3. *BFF.* =GET /api/tenants/:id= refuses a session outside system
+   administration, reads the tenant with =iam.v1.tenants.get=, the tenant's
+   runs with =workflow.v1.instances.list= filtered on the target, and the
+   parties with the new read. It answers 404 for an unknown =id= or the system
+   tenant. A party read that fails does not fail the page: the answer says the
+   parties are unavailable, as the roster does for runs.
+4. *Web.* A =TenantPage= at =/tenants/:id= with three panels: details with
+   provenance, setup, parties. The roster's *Open* item links to it.
+5. *Verify.* Web, BFF and C++ tests; a full build and ctest; a live read of a
+   real tenant and of an unknown =id=.
 
 * Measurements
 

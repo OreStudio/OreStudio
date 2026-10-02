@@ -46,7 +46,8 @@ the token's value, so it assigns fields the way ORE does.
 * Plan
 
 One reader and one writer per instrument type, each citing the ORE form it
-handles. Test-first against the catalogue.
+handles, split into one translation unit per asset-class family. Test-first
+against the catalogue.
 
 * Measurements
 

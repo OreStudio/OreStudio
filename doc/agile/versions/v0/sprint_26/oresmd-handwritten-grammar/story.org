@@ -57,10 +57,10 @@ stores. The same story closes the clean-standard findings that
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9C839F30-C0FB-49DA-8131-C7309ECE7F43][Build the ORE reference catalogue]] | BACKLOG | | | Run every key form ORE's parser accepts, and every corpus key, through ORE's own parseMarketDatum, and check in the fields ORE assigns as the fixture the new codec is tested against. |
-| [[id:97C38DD7-2955-43A1-ABA0-EF6D771C9189][Define the typed market datum model]] | BACKLOG | | | One hand-written struct per ORE instrument type, with typed fields, the coordinate role carried in the type, and free-text names kept verbatim. |
+| [[id:97C38DD7-2955-43A1-ABA0-EF6D771C9189][Define the typed market datum model]] | BACKLOG | | | One hand-written value type with typed fields and a constexpr schema table per ORE instrument type that states each field, its order and its role; free-text names kept verbatim. |
 | [[id:7E29ABC0-A571-4B16-9651-EBAEDE530100][Write the ORE key codec]] | BACKLOG | | | A hand-written reader and writer between ORE key text and the typed datum, choosing fields by token value the way ORE does, proved against the reference catalogue and the corpus. |
 | [[id:0D8B6810-8A58-4E89-BF07-CA0E6B937EEE][Model the ORE types, aliases and metrics oresmd lacks]] | BACKLOG | | | Add ASSUMED_RECOVERY_RATE, BOND_FUTURE, BOND_FUTURE_OPTION and COMMODITY_CALENDAR_SPREAD_OPTION, accept FX_SPOT, FX_FWD and RATE_GVOL, and complete the metric set, so every ORE instrument and quote type is modelled. |
-| [[id:C6BE9E13-4126-4F70-B7B2-3215AF7BE674][Write the oresmd URI codec]] | BACKLOG | | | One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the type. |
+| [[id:C6BE9E13-4126-4F70-B7B2-3215AF7BE674][Write the oresmd URI codec]] | BACKLOG | | | One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the schema. |
 | [[id:3140F0B6-FA7C-4ED2-85FE-074FE0DEC00B][Cut the consumers over to the new codec]] | BACKLOG | | | Move import, export, feed ingest, curve republish and classification onto the new codec, export keys from the stored URI, drop the raw key column, and make the corpus tests compare by key. |
 | [[id:DE953E1E-9E1C-41E6-8D54-91FA85704EBE][Retire the generated grammar and the key shape registry]] | BACKLOG | | | Delete the oresmd grammar templates and model tables, the dead resolver and requirement types, and the SQL key shape table with series_key_registry, so the key grammar exists in one place. |
 | [[id:40BC9458-38CE-4A54-9385-C1BAC3D7FBEB][Rewrite the oresmd design record]] | BACKLOG | | | Make market_data_urn.org describe the grammar that ships, and settle the captures the old grammar left behind. |
@@ -82,18 +82,21 @@ stores. The same story closes the clean-standard findings that
 
 - **Proposed design.**
 
-  1. *One typed model.* =market_datum= is a =std::variant= with one struct
-     for each ORE instrument type (45), for example =cds_quote=,
-     =swaption_vol=, =capfloor_vol=, =equity_option_vol=. Fields have real
-     types: currency codes, ORE periods and dates, the ORE quote type (all
-     16), and enums for call/put, cap/floor and payer/receiver. A strike is a
-     variant of absolute, ATM (with its ATM type), moneyness (reference and
-     value) and delta (delta type, call/put, value). Free-text names (ticker,
-     reference entity, curve id, commodity) keep the case ORE wrote. Equality
-     is the defaulted =operator==.
-  2. *The role is in the type.* A coordinate field has the type
-     =coordinate<T>=. The series identity is the datum with its coordinate
-     fields removed. No table declares roles.
+  1. *One typed record, with its schema as data.* =market_datum= holds the
+     ORE instrument type (an enum of all 45), the ORE quote type (an enum of
+     all 16), and a short list of =(field, value)= pairs. =field= is an enum
+     of every field any ORE key carries. =value= is a small variant of value
+     types: string, ORE period, ORE date, decimal, strike, and enum code. A
+     strike is a variant of absolute, ATM with its ATM type, moneyness and
+     delta. Free-text names (ticker, reference entity, curve id, commodity)
+     keep the case ORE wrote. Equality is the defaulted =operator==.
+  2. *The schema is a table, not a type per instrument.* A =constexpr= table
+     has one row per instrument type. The row lists the type's fields in key
+     order, the role of each field (identity or coordinate), and the fields
+     that may hold =none=. The only constructor checks a datum against its
+     row. A traits map gives each field its value type, so
+     =get<field::expiry>()= is typed at compile time. The series identity is
+     the datum without its coordinate fields.
   3. *Nothing is silently absent.* Where ORE has an optional token (a CDS
      doc clause, a running spread, a cap/floor flag), the struct holds an
      explicit value such as =none=, never a missing field that means a default.
@@ -103,12 +106,12 @@ stores. The same story closes the clean-standard findings that
      number, =C=/=P=, =ATM=, =MNY=, =DEL=), not by segment count. Each form
      cites the ORE form it reads. An alias is read and then written in its
      canonical spelling, and the import reports the change.
-  5. *The URI codec is generic.* It walks a struct's fields with reflect-cpp,
-     which the tree already uses. The authority is the asset class, the path
+  5. *The URI codec is generic.* It walks the datum's fields in schema
+     order. The authority is the asset class, the path
      is the primary subject (percent-encoded, case kept), and the query holds
      every field by name in declaration order. The writer writes every field.
      The reader refuses a missing, unknown or repeated key. No per-family URI
-     code exists, so the URI cannot drift from the struct.
+     code exists, so the URI cannot drift from the schema.
   6. *One grammar.* =ores.ore= keeps only the file reader, which yields date,
      key text and value. The SQL key shape table and =series_key_registry= go.
      Classification reads the asset class and the instrument type from the
@@ -122,9 +125,18 @@ stores. The same story closes the clean-standard findings that
      documented form and every distinct corpus key and writes ORE's fields to
      a checked-in fixture. The codec must match it field by field. (b) Key
      and URI round trips over the whole fixture, with series URIs parsed.
-     (c) Property tests that generate datums from each field's domain.
+     (c) Property tests that generate datums from each schema row and each
+     field's domain.
      (d) Keys that ORE rejects are rejected. (e) The database, corpus and
      export tests, which compare by key.
+
+- **No variant of instrument types.** A =std::variant= with one alternative
+  per ORE instrument type (45) was the first proposal. It was rejected because
+  every translation unit that includes it compiles all 45 types, every
+  =std::visit= instantiates 45 branches, and the variant approaches compiler
+  limits. A new ORE type would also change a header the whole component
+  includes. The schema table moves that cost to one checked constructor, and
+  the only variant left has about six value types.
 
 - **The asset class model stays.** The model from
   [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Declare the asset class lists once]]

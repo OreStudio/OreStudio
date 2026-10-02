@@ -2,7 +2,7 @@
 :ID: 97C38DD7-2955-43A1-ABA0-EF6D771C9189
 :END:
 #+title: Task: Define the typed market datum model
-#+description: One hand-written struct per ORE instrument type, with typed fields, the coordinate role carried in the type, and free-text names kept verbatim.
+#+description: One hand-written value type with typed fields and a constexpr schema table per ORE instrument type that states each field, its order and its role; free-text names kept verbatim.
 #+type: task
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
@@ -20,9 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-One hand-written type, =market_datum=, describes every ORE market datum: a
-variant with one struct per ORE instrument type. Each field has a real type,
-and the coordinate role is in the type, not in a table.
+One hand-written value type, =market_datum=, describes every ORE market datum:
+the instrument type, the quote type and a short list of typed fields. A
+=constexpr= schema table states, per instrument type, which fields exist, in
+which order, and which are coordinates.
 
 * Status
 
@@ -37,19 +38,23 @@ and the coordinate role is in the type, not in a table.
 
 * Acceptance
 
-- =market_datum= has one alternative for each of ORE's 45 instrument types.
-- Currencies, ORE periods, dates, the ORE quote type, call/put, cap/floor and payer/receiver are types, not strings.
-- A strike is a variant of absolute, ATM with its ATM type, moneyness and delta.
+- =instrument_type= enumerates all 45 ORE instrument types and =quote_type= all 16 ORE quote types.
+- =field= enumerates every field any ORE key carries, and a traits map gives each field one value type.
+- The value variant has no more than about six alternatives: string, ORE period, ORE date, decimal, strike and enum code. A strike is a variant of absolute, ATM with its ATM type, moneyness and delta.
+- The schema table has one row per instrument type, listing its fields in key order, each field's role, and the fields that may hold =none=.
+- The only constructor refuses a datum that does not match its row: a missing field, an extra field, or a value of the wrong type.
+- No field is absent where its absence would mean a default; an optional ORE token holds an explicit =none=.
 - Free-text names keep the case they arrived in.
-- Every coordinate field has the type =coordinate<T>=, and =series_of(datum)= removes exactly those fields.
-- No field is =std::optional= where its absence would mean a default. An optional ORE token has an explicit =none= value.
-- Unit tests cover equality, =series_of= and every value type's text form.
+- =series_of(datum)= removes exactly the coordinate fields.
+- No =std::variant= over instrument types exists, and the header that holds the enums and the table includes no codec.
+- Unit tests cover the constructor's refusals, equality, =series_of=, and every value type's text form.
 
 * Plan
 
-1. Derive the field list per type from the reference catalogue, not from the
-   current models.
-2. Write the value types first, then the structs, then =series_of=.
+1. Derive each schema row from the reference catalogue, not from the current
+   models.
+2. Write the value types, then the =field= enum and its traits, then the
+   schema table and the constructor, then =series_of=.
 
 * Measurements
 
@@ -68,7 +73,8 @@ task and name that file in the Command column.
 * Notes
 
 The current identifiers carry every coordinate as =std::optional<std::string>=
-and pick roles from a model table. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3.
+and pick roles from a model table. A variant with one struct per instrument type
+was rejected for its compile cost; see the story's Decisions. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3.
 
 * Test Scenarios
 

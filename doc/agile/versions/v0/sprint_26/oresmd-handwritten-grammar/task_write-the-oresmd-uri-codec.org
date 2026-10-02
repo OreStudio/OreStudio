@@ -2,7 +2,7 @@
 :ID: C6BE9E13-4126-4F70-B7B2-3215AF7BE674
 :END:
 #+title: Task: Write the oresmd URI codec
-#+description: One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the type.
+#+description: One generic codec between the typed datum and its oresmd URI, with every key always written and strictly read, and the series identity derived from the coordinate role in the schema.
 #+type: task
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
@@ -36,16 +36,16 @@ with no code per family.
 
 * Acceptance
 
-- The codec walks struct fields with reflect-cpp; it has no per-family branch.
+- The codec walks the datum's fields in schema order; it has no per-family branch.
 - The writer writes every field. The reader refuses a missing, unknown or repeated key.
 - The path segment is percent-encoded and keeps its case.
 - For every datum in the reference catalogue: =read(write(d)) == d=, =write(read(u)) == u=, and the series URI parses.
-- Property tests generate datums from each field's domain and round-trip them.
+- Property tests generate datums from each schema row and each field's domain and round-trip them.
 
 * Plan
 
-Write the field text forms in the datum model task, then the generic walk
-here.
+The value types' text forms come from the datum model task; this task writes
+the walk, the strict reader and the series URI.
 
 * Measurements
 

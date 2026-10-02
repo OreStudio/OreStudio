@@ -220,6 +220,7 @@ via its "Verifies task" field.
 | 9 | Own review: the harness change hid a binding defect | =roundtrip_harness.hpp= | Moved | The binding does not decode entities in element text. The fix and restoring the harness cycle are [[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]]. |
 | 10 | Own review: hand-written aggregates; the wiring check only warns | SQL aggregates, CI | Moved | [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]]. The recipe now says what the parser checks and how to run it. |
 | 11 | Own review: collection kinds as a seeded lookup, as the plan said | entry and collection models | Deferred | Recorded on [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]]. Binding-to-collection foreign key recorded on [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]]. |
+| 12 | CI: the five handlers check write and delete permissions that no seed creates; the shell recipe inventory was stale | =iam_permissions_populate.sql=, =shell.org= | Accepted | Seeded read, write and delete for all five entities, as the stress test entities are, and regenerated the inventory. No local gate in this round ran these two checks. |
 
 * Result
 

@@ -45,7 +45,7 @@ export function TenantRunPage(): ReactNode {
     const { instanceId = '' } = useParams();
     const server = useJourneyServer();
     const queries = useQueryClient();
-    const roster = useQuery({ queryKey: ['tenants'], queryFn: api.tenants });
+    const roster = useQuery({ queryKey: ['tenants'], queryFn: () => api.tenants() });
     const tenant = roster.data?.tenants.find((row) => row.setup?.instanceId === instanceId);
 
     /*

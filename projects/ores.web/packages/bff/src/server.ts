@@ -32,7 +32,6 @@ import {
     NatsTransport,
     OresClient,
     SUBJECTS,
-    SYSTEM_TENANT_ID,
     bootstrapStatusSchema,
     changeOwnPassword,
     changeOwnPasswordRequestSchema,
@@ -51,7 +50,6 @@ import {
     listAccountsRequestSchema,
     listLoginInfoRequestSchema,
     listSessionsRequestSchema,
-    listTenantsRequestSchema,
     passwordPolicySchema,
     provisionPartyRequestSchema,
     provisionPartyResultSchema,
@@ -66,7 +64,7 @@ import {
     readSessionsPage,
     readTenantStatuses,
     readTenantSetups,
-    readTenantsPage,
+    searchTenantsPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
@@ -843,20 +841,21 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return readActiveSessions(session.client);
     });
 
+    /** What the roster may ask for: a search and one page of the matches. */
+    const tenantRosterQuerySchema = z.object({
+        search: z.string().max(200),
+        offset: z.int().nonnegative(),
+        limit: z.int().positive().max(1000),
+    });
+
     /**
-     * The tenants this deployment holds.
+     * The tenants this deployment holds, one page of the ones that match.
      *
      * The roster the system administration area reads, and the list a screen
-     * picks a tenant from before it retires or resets one. The registry is
-     * system-scoped, so a row's identity is its `id` and never its `tenant_id`:
-     * the system tenant is a row like any other, and it is the deployment's own
-     * bookkeeping rather than a tenant somebody set up. It is therefore dropped
-     * here, together with its count, because a screen that lists the tenants a
-     * deployment holds does not mean the deployment itself.
-     *
-     * The read is unfiltered, so the total contains the system tenant and one
-     * is subtracted. A server-side filter would move this rule to the side that
-     * owns the registry, and that is recorded as the way out.
+     * picks a tenant from before it retires or resets one. The search matches
+     * code, name and hostname, and the server leaves the system tenant out and
+     * counts the matches, beside the registry that owns the rule: the system
+     * tenant is the deployment's own bookkeeping, not a tenant somebody set up.
      */
     server.get('/api/tenants', async (request) => {
         const session = requireSession(request);
@@ -872,14 +871,15 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw notPermitted('The tenants of a deployment are read in system administration.');
         }
         const query = request.query as Record<string, string | undefined>;
-        const page = listTenantsRequestSchema.safeParse({
+        const page = tenantRosterQuerySchema.safeParse({
+            search: query['search'] ?? '',
             offset: Number(query['offset'] ?? 0),
             limit: Number(query['limit'] ?? 100),
         });
         if (!page.success) {
             throw invalidRequest('The page offset and limit must be whole numbers.');
         }
-        const read = await readTenantsPage(session.client, page.data);
+        const read = await searchTenantsPage(session.client, page.data);
         /*
          * Each tenant is joined with the run that provisioned it, which is how a
          * person who left the journey finds the work again. The runs belong to
@@ -903,10 +903,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             setupUnavailable = true;
         }
         return tenantPageSchema.parse({
-            tenants: read.tenants
-                .filter((tenant) => tenant.id !== SYSTEM_TENANT_ID)
-                .map((tenant) => ({ ...tenant, setup: setups.get(tenant.id) ?? null })),
-            totalCount: Math.max(0, read.totalCount - 1),
+            tenants: read.tenants.map((tenant) => ({
+                ...tenant,
+                setup: setups.get(tenant.id) ?? null,
+            })),
+            totalCount: read.totalCount,
             setupUnavailable,
         });
     });

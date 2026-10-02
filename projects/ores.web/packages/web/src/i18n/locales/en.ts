@@ -85,7 +85,15 @@ export const en: SourceCatalogue = {
 
     tenants: {
         title: 'Tenants',
-        count: { one: '{count} tenant', other: '{count} tenants' },
+        description: 'The tenants this deployment holds, and the state each one is in.',
+        search: 'Search by code, name or hostname',
+        noMatch: 'No tenant matches "{search}".',
+        showing: {
+            one: 'Showing {first}–{last} of {count} tenant',
+            other: 'Showing {first}–{last} of {count} tenants',
+        },
+        previous: 'Previous',
+        next: 'Next',
         code: 'Code',
         name: 'Name',
         hostname: 'Hostname',

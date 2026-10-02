@@ -23,6 +23,11 @@ import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import { uuidSchema, wireTimestampSchema, type TenantSetup, type TenantSummary } from './domain.js';
 import { subjects as tenantSubjects } from './generated/iam/protocol/tenant_protocol.js';
+import type { Tenant } from './generated/iam/domain/tenant.js';
+import {
+    subjects as tenantRosterSubjects,
+    type SearchTenantsRequest,
+} from './generated/iam/protocol/tenant_roster_protocol.js';
 import {
     subjects as workflowSubjects,
     type ListWorkflowInstanceSummariesRequest,
@@ -50,6 +55,7 @@ export const TENANT_SUBJECTS = {
 /** The row as the registry writes it. */
 const wireTenantSchema = z.object({
     version: z.int().nonnegative().default(0),
+    tenant_id: z.string().default(''),
     id: uuidSchema,
     code: z.string(),
     name: z.string(),
@@ -84,6 +90,69 @@ function summaryOf(row: z.infer<typeof wireTenantSchema>): TenantSummary {
         registrationDefault: row.is_registration_default,
         setup: null,
     };
+}
+
+/*
+ * The schema reads every field the generated tenant declares. A field the C++
+ * registry gains and this schema does not read fails the typecheck here.
+ */
+const wireTenantReadsEveryField: [
+    Exclude<keyof Tenant, keyof z.input<typeof wireTenantSchema>>,
+] extends [never]
+    ? true
+    : false = true;
+void wireTenantReadsEveryField;
+
+/** What the roster asks the search for. */
+export interface TenantSearch {
+    readonly search?: string;
+    readonly type?: string;
+    readonly status?: string;
+    readonly offset?: number;
+    readonly limit?: number;
+}
+
+/** The search's answer: one page of tenants and how many match in all. */
+const wireTenantSearchSchema = z
+    .object({
+        success: z.boolean().default(false),
+        message: z.string().default(''),
+        tenants: z.array(wireTenantSchema).default([]),
+        total: z.int().nonnegative().default(0),
+    })
+    .transform((row) => ({
+        success: row.success,
+        message: row.message,
+        tenants: row.tenants.map(summaryOf),
+        totalCount: row.total,
+    }));
+
+/**
+ * One page of the tenants a deployment holds that match a search.
+ *
+ * The server leaves the system tenant out and counts the matches, so the page
+ * and the total need no correction here.
+ */
+export async function searchTenantsPage(
+    caller: AuthenticatedCaller,
+    input: TenantSearch = {},
+): Promise<WireTenantPage> {
+    const request: SearchTenantsRequest = {
+        search: input.search ?? '',
+        type_filter: input.type ?? '',
+        status_filter: input.status ?? '',
+        offset: input.offset ?? 0,
+        limit: input.limit ?? 100,
+    };
+    const answer = await caller.callAuthenticated(
+        tenantRosterSubjects.search_tenants_request,
+        request,
+        wireTenantSearchSchema,
+    );
+    if (!answer.success) {
+        throw new Error(answer.message === '' ? 'The tenants were not read.' : answer.message);
+    }
+    return { tenants: answer.tenants, totalCount: answer.totalCount };
 }
 
 /** `list_tenants_request`, sent on `iam.v1.tenants.list`. */

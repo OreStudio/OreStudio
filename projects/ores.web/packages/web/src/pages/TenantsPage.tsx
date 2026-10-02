@@ -19,13 +19,13 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { TenantSetup, TenantStatus, TenantSummary } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Input, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 
 /**
  * The tenants a deployment holds.
@@ -43,9 +43,40 @@ import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
  * system administrator is created, and it is a normal state rather than an
  * error: the empty roster says so and offers the journey that leaves it.
  */
+/** How many tenants one page of the roster shows. */
+export const TENANT_PAGE_SIZE = 25;
+
+/** How long the search waits after the last keystroke before it asks. */
+const SEARCH_PAUSE_MS = 300;
+
 export function TenantsPage(): ReactNode {
-    const { t, plural } = useTranslation();
-    const roster = useQuery({ queryKey: ['tenants'], queryFn: api.tenants });
+    const { t } = useTranslation();
+    const [typed, setTyped] = useState('');
+    const [search, setSearch] = useState('');
+    const [offset, setOffset] = useState(0);
+
+    /*
+     * The search asks once the person pauses, not on every keystroke, and a
+     * new search starts from the first page: the page the person was on
+     * belongs to the old one.
+     */
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(typed.trim());
+            setOffset(0);
+        }, SEARCH_PAUSE_MS);
+        return () => clearTimeout(timer);
+    }, [typed]);
+
+    /*
+     * The previous page stays on screen while the next one loads, so the table
+     * does not collapse to a loading line between pages.
+     */
+    const roster = useQuery({
+        queryKey: ['tenants', search, offset],
+        queryFn: () => api.tenants({ search, offset, limit: TENANT_PAGE_SIZE }),
+        placeholderData: keepPreviousData,
+    });
     /*
      * The statuses are a second read because their words and colours are
      * reference data shared by every screen that shows one. A failure to read
@@ -83,7 +114,7 @@ export function TenantsPage(): ReactNode {
         <div>
             <PageHeader
                 title={t('tenants.title')}
-                description={plural('tenants.count', totalCount)}
+                description={t('tenants.description')}
                 actions={
                     <LinkButton to="/tenants/new" variant="primary">
                         {t('shell.journey.newTenant')}
@@ -95,10 +126,35 @@ export function TenantsPage(): ReactNode {
                     <Notice tone="warn">{t('tenants.setupUnavailable')}</Notice>
                 </div>
             )}
-            {tenants.length === 0 ? (
+            {/*
+             * A deployment with no tenant at all has nothing to search, so the
+             * box appears once there is something to find.
+             */}
+            {totalCount === 0 && search === '' ? (
                 <EmptyRoster />
             ) : (
-                <Roster tenants={tenants} statuses={statuses.data ?? []} />
+                <>
+                    <div className="mb-4 max-w-sm">
+                        <Input
+                            type="search"
+                            aria-label={t('tenants.search')}
+                            placeholder={t('tenants.search')}
+                            value={typed}
+                            onChange={(event) => setTyped(event.target.value)}
+                        />
+                    </div>
+                    {tenants.length === 0 ? (
+                        <p className="text-sm text-ink-muted">{t('tenants.noMatch', { search })}</p>
+                    ) : (
+                        <Roster tenants={tenants} statuses={statuses.data ?? []} />
+                    )}
+                    <Pager
+                        offset={offset}
+                        shown={tenants.length}
+                        total={totalCount}
+                        onMove={setOffset}
+                    />
+                </>
             )}
         </div>
     );
@@ -224,6 +280,49 @@ function SetupCell({ setup }: { readonly setup: TenantSetup | null }): ReactNode
         >
             {label}
         </Link>
+    );
+}
+
+/**
+ * Which rows the roster shows, and the way to the pages either side.
+ *
+ * The count is the server's, so it is every tenant that matches the search,
+ * not the rows on this page.
+ */
+function Pager({
+    offset,
+    shown,
+    total,
+    onMove,
+}: {
+    readonly offset: number;
+    readonly shown: number;
+    readonly total: number;
+    readonly onMove: (offset: number) => void;
+}): ReactNode {
+    const { t, plural } = useTranslation();
+    const first = shown === 0 ? 0 : offset + 1;
+    const last = offset + shown;
+    return (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-muted">
+            <span>{plural('tenants.showing', total, { first, last })}</span>
+            <span className="flex gap-2">
+                <Button
+                    size="sm"
+                    disabled={offset === 0}
+                    onClick={() => onMove(Math.max(0, offset - TENANT_PAGE_SIZE))}
+                >
+                    {t('tenants.previous')}
+                </Button>
+                <Button
+                    size="sm"
+                    disabled={last >= total}
+                    onClick={() => onMove(offset + TENANT_PAGE_SIZE)}
+                >
+                    {t('tenants.next')}
+                </Button>
+            </span>
+        </div>
     );
 }
 

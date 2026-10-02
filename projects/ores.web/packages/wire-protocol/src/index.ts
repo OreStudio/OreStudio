@@ -82,11 +82,12 @@ export {
     listTenantsRequestSchema,
     TENANT_SETUP_READ_LIMIT,
     readTenantSetups,
+    searchTenantsPage,
     readTenantsPage,
     wireTenantPageSchema,
     wireWorkflowInstancesSchema,
 } from './tenants.js';
-export type { ListTenantsRequest, WireTenantPage } from './tenants.js';
+export type { ListTenantsRequest, TenantSearch, WireTenantPage } from './tenants.js';
 
 export {
     ProtocolError,

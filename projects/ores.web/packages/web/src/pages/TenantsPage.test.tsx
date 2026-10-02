@@ -72,7 +72,7 @@ function render(
     setupUnavailable = false,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['tenants'], { tenants, totalCount, setupUnavailable });
+    client.setQueryData(['tenants', '', 0], { tenants, totalCount, setupUnavailable });
     client.setQueryData(['tenant-statuses'], statuses);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
@@ -93,7 +93,7 @@ describe('the tenant roster', () => {
         expect(html).toContain('Acme Corporation');
         expect(html).toContain('operational');
         expect(html).toContain('Active');
-        expect(html).toContain('1 tenant');
+        expect(html).toContain('Showing 1–1 of 1 tenant');
     });
 
     it('names the columns the journey document states', () => {
@@ -264,6 +264,43 @@ describe('the tenant roster', () => {
      * is a normal state, not a failure. The state is stated once and the way
      * out is the header's action, not a second button beneath it.
      */
+    /*
+     * The journey asks for a search over code, name and hostname, so a
+     * deployment with tenants offers one above the table.
+     */
+    it('offers a search over code, name and hostname', () => {
+        const html = render([acme], 1);
+
+        expect(html).toContain('type="search"');
+        expect(html).toContain('Search by code, name or hostname');
+    });
+
+    /*
+     * The count is the server's: every tenant that matches, not the rows on
+     * this page. The first page of many offers the next page and not the one
+     * before it.
+     */
+    it('counts every match and pages from the first page', () => {
+        const html = render([acme], 60);
+
+        expect(html).toContain('Showing 1–1 of 60 tenants');
+        const previous = html.match(/<button[^>]*>Previous<\/button>/)?.[0] ?? '';
+        const next = html.match(/<button[^>]*>Next<\/button>/)?.[0] ?? '';
+        expect(previous).toContain('disabled=""');
+        expect(next).not.toContain('disabled=""');
+    });
+
+    it('offers no next page when every match is shown', () => {
+        const html = render([acme], 1);
+
+        const next = html.match(/<button[^>]*>Next<\/button>/)?.[0] ?? '';
+        expect(next).toContain('disabled=""');
+    });
+
+    it('offers no search to a deployment that holds no tenant', () => {
+        expect(render([], 0)).not.toContain('type="search"');
+    });
+
     it('says so when the deployment holds no tenant, without repeating the action', () => {
         const html = render([], 0);
 

@@ -113,9 +113,8 @@ jobs:
       #
       # The parser runs --strict, so any warning it reports fails the step: a
       # schema file no root script includes (WIRE_001), a tenant table with no
-      # row-level security (RLS_001), and the rest of its rules. Without it the
-      # warnings only printed, and both of those reached main unnoticed. A
-      # deliberate exception goes in validation_ignore.txt with its reason.
+      # row-level security (RLS_001), and the rest of its rules. A deliberate
+      # exception goes in validation_ignore.txt with its reason.
       - name: Check the ER diagram matches the SQL schema
         run: |
           python3 projects/ores.codegen/src/plantuml_er_parse_sql.py \

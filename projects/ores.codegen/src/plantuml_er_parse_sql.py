@@ -1011,14 +1011,12 @@ class SQLParser:
         WIRE_001: every .sql file under create_dir must be reachable from
         create/create.sql, every one under drop_dir from drop/drop.sql, and,
         when populate_dir is given, every one under it from
-        populate/populate.sql or from a bootstrap script beside the trees,
-        through \\ir includes. An unreachable file means
-        the schema flow never executes it: the component builds (or tears
-        down, or seeds) a different object set than its own SQL files define.
-        Every suffix is in scope, not only *_create.sql and *_drop.sql: a
-        file named outside that convention is the one most likely to be a
-        leftover, and fifteen dead *_notify_trigger.sql copies hid behind
-        the narrower pattern.
+        populate/populate.sql, or from a bootstrap script beside the trees,
+        through \\ir includes. An unreachable file means the schema flow
+        never executes it: the component builds (or tears down, or seeds) a
+        different object set than its own SQL files define. Every suffix is in
+        scope, not only *_create.sql and *_drop.sql, because a file named
+        outside that convention is the one most likely to be a leftover.
 
         Encoded structural exceptions, instead of validation_ignore.txt entries:
         - *_rls_policies_create.sql files: RLS_003 already checks reachability

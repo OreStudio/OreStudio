@@ -38,6 +38,11 @@ set(files
     "messaging/stress_test_library_event_registrar.cpp"
     "messaging/stress_test_scenario_event_registrar.cpp"
     "messaging/stress_test_shift_event_registrar.cpp"
+    "messaging/todays_market_collection_event_registrar.cpp"
+    "messaging/todays_market_config_event_registrar.cpp"
+    "messaging/todays_market_configuration_binding_event_registrar.cpp"
+    "messaging/todays_market_configuration_event_registrar.cpp"
+    "messaging/todays_market_entry_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -62,5 +67,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/stress_test_library_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/stress_test_scenario_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/stress_test_shift_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/todays_market_collection_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/todays_market_config_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/todays_market_configuration_binding_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/todays_market_configuration_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/todays_market_entry_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/ores.analytics.service.hpp"
 )

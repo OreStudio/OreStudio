@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/link-the-pricing-engine-configuration-to-its-report-configuration
-#+pr:
+#+pr: 2518
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2518][#2518]] | [analytics] Link the pricing engine configuration to its report |
 
 * Review
 

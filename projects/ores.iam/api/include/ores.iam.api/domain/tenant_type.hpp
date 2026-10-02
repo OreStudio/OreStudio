@@ -75,6 +75,19 @@ struct tenant_type final {
     int display_order = 0;
 
     /**
+     * @brief The badge this type is painted with.
+     *
+     * Soft FK to ores_dq_badge_definitions_tbl.code. The badge supplies the colours and the
+     * severity; the type's own name is the label inside the pill, so the vocabulary a person reads
+     * is this row's and not the badge catalogue's. The roster reads it to tell test infrastructure
+     * from real tenants at a glance.
+     *
+     * Nullable on purpose: a type nobody has painted is written plainly rather than hidden, and a
+     * pill with no colours is worse than the value itself.
+     */
+    std::string badge_code;
+
+    /**
      * @brief Username of the person who last modified this tenant type.
      */
     std::string modified_by;

@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-tenant_types add <type> <name> <description> <display_order> <reason> <commentary>
+tenant_types add <type> <name> <description> <display_order> <badge_code> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.tenant_types.put=.
 
 #+name: tenant_types-add
 #+begin_src ores-shell :tangle tenant_types-add.ores :exports none
-tenant_types add __none__ __none__ __none__ 0 system.new_record generated_script
+tenant_types add __none__ __none__ __none__ 0 __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-tenant_types set <type> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+tenant_types set <type> <name> <description> <display_order> <badge_code> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.tenant_types.put=.
 
 #+name: tenant_types-set
 #+begin_src ores-shell :tangle tenant_types-set.ores :exports none
-tenant_types set __none__ __none__ __none__ 0 system.new_record generated_script
+tenant_types set __none__ __none__ __none__ 0 __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-tenant_types put-many --count <n> <type> <name> <description> <display_order> <reason> <commentary>
+tenant_types put-many --count <n> <type> <name> <description> <display_order> <badge_code> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.tenant_types.put_many=.
 
 #+name: tenant_types-put-many
 #+begin_src ores-shell :tangle tenant_types-put-many.ores :exports none
-tenant_types put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+tenant_types put-many --count 1 __none__ __none__ __none__ 0 __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

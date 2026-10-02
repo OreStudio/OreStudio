@@ -38,6 +38,7 @@ create table if not exists "ores_iam_tenant_types_tbl" (
     "name" text not null,
     "description" text not null,
     "display_order" integer not null default 0,
+    "badge_code" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

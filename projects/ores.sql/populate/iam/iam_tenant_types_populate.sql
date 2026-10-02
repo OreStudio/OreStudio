@@ -28,20 +28,20 @@
 \echo '--- Tenant Types ---'
 
 insert into ores_iam_tenant_types_tbl (
-    tenant_id, type, version, name, description, display_order,
+    tenant_id, type, version, name, description, display_order, badge_code,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     (ores_utility_system_tenant_id_fn(), 'system', 0, 'System',
-     'Platform administration and shared governance data. One per deployment.', 0,
+     'Platform administration and shared governance data. One per deployment.', 0, 'tenant_type_system',
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
     (ores_utility_system_tenant_id_fn(), 'production', 0, 'Production',
-     'Real customer organisation with strict operational controls (four-eyes, KYC).', 10,
+     'Real customer organisation with strict operational controls (four-eyes, KYC).', 10, 'tenant_type_production',
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
     (ores_utility_system_tenant_id_fn(), 'evaluation', 0, 'Evaluation',
-     'Realistic environment for demos, QA, and evaluation. Relaxed controls.', 20,
+     'Realistic environment for demos, QA, and evaluation. Relaxed controls.', 20, 'tenant_type_evaluation',
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
     (ores_utility_system_tenant_id_fn(), 'automation', 0, 'Automation',
-     'Automated test infrastructure for unit, integration, and load testing.', 30,
+     'Automated test infrastructure for unit, integration, and load testing.', 30, 'tenant_type_automation',
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types')
 on conflict (tenant_id, type)
 where valid_to = ores_utility_infinity_timestamp_fn()

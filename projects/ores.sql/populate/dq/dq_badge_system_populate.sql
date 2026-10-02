@@ -567,6 +567,20 @@ BEGIN
         'tenor_anchor_tomorrow', 'Tomorrow', 'Tenor anchored to tomorrow''s date.',
         '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 110);
 
+    -- Tenant Types: the kind of tenant a roster row is
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_type_system', 'System', 'The deployment''s own bookkeeping tenant.',
+        '#475569', '#ffffff', 'secondary', 'badge bg-secondary', 111);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_type_production', 'Production', 'A real customer organisation with strict operational controls.',
+        '#2563eb', '#ffffff', 'info', 'badge bg-info', 112);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_type_evaluation', 'Evaluation', 'A realistic environment for demos, QA and evaluation.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 113);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_type_automation', 'Automation', 'Automated test infrastructure, not a real tenant.',
+        '#9ca3af', '#ffffff', 'secondary', 'badge bg-secondary', 114);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================

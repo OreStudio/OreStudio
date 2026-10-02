@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/investigate-the-hand-written-sql-and-generate-it
-#+pr:
+#+pr: 2515
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2515][#2515]] | [sql] Census the hand-written SQL, gate the schema parser, and mark generated drops |
 
 * Review
 

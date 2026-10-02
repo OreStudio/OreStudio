@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 2D0DA355-69A5-4574-B7C2-DD78564F2AFB
+:END:
+#+title: Task: Give every marketdata entity its shell commands
+#+description: Generate the shell commands and recipes for feed_binding, market_observation, market_fixing and the asset-class junction, and run every marketdata command against the live fleet.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every marketdata entity and the junction can be driven from the shell, and
+every command is proved against the live fleet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- S01: =feed_binding=, =market_observation=, =market_fixing= and the asset-class junction have generated shell command units and tests.
+- S02: each has a generated recipe, and the recipe inventory lists them.
+- V04: every marketdata shell command runs against the live fleet, and the run log is on the task. Any command that cannot run is recorded with its reason.
+
+* Plan
+
+Bind the models to the shell surface, regenerate, then run the recipes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Today only =market_series=, =observation_lineage= and
+=series_classification_rule= have shell commands. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 4.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

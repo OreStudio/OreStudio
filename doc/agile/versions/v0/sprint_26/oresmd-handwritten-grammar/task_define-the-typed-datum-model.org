@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 97C38DD7-2955-43A1-ABA0-EF6D771C9189
+:END:
+#+title: Task: Define the typed market datum model
+#+description: One hand-written struct per ORE instrument type, with typed fields, the coordinate role carried in the type, and free-text names kept verbatim.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One hand-written type, =market_datum=, describes every ORE market datum: a
+variant with one struct per ORE instrument type. Each field has a real type,
+and the coordinate role is in the type, not in a table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- =market_datum= has one alternative for each of ORE's 45 instrument types.
+- Currencies, ORE periods, dates, the ORE quote type, call/put, cap/floor and payer/receiver are types, not strings.
+- A strike is a variant of absolute, ATM with its ATM type, moneyness and delta.
+- Free-text names keep the case they arrived in.
+- Every coordinate field has the type =coordinate<T>=, and =series_of(datum)= removes exactly those fields.
+- No field is =std::optional= where its absence would mean a default. An optional ORE token has an explicit =none= value.
+- Unit tests cover equality, =series_of= and every value type's text form.
+
+* Plan
+
+1. Derive the field list per type from the reference catalogue, not from the
+   current models.
+2. Write the value types first, then the structs, then =series_of=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The current identifiers carry every coordinate as =std::optional<std::string>=
+and pick roles from a model table. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

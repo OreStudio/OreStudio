@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 0D8B6810-8A58-4E89-BF07-CA0E6B937EEE
+:END:
+#+title: Task: Model the ORE types, aliases and metrics oresmd lacks
+#+description: Add ASSUMED_RECOVERY_RATE, BOND_FUTURE, BOND_FUTURE_OPTION and COMMODITY_CALENDAR_SPREAD_OPTION, accept FX_SPOT, FX_FWD and RATE_GVOL, and complete the metric set, so every ORE instrument and quote type is modelled.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every ORE instrument type and quote type is modelled, and ORE's aliases are
+accepted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- =ASSUMED_RECOVERY_RATE=, =BOND_FUTURE=, =BOND_FUTURE_OPTION= and =COMMODITY_CALENDAR_SPREAD_OPTION= have a struct, a reader, a writer and catalogue cases for every form ORE documents.
+- =FX_SPOT=, =FX_FWD= and =RATE_GVOL= read, and write in their canonical spelling.
+- The quote type enum holds all 16 ORE quote types, including =CREDIT_SPREAD=, =CONV_CREDIT_SPREAD=, =HAZARD_RATE= and =BASE_CORRELATION=, and every datum carries its quote type.
+- A test asserts that every ORE =InstrumentType= and =QuoteType= has a modelled form, against a list taken from =marketdatum.hpp=.
+- The asset class model and its seeds cover the classes the new types need.
+
+* Plan
+
+Do this after the key codec, as a set of additions to the model, the codec and
+the catalogue.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+None of the four types is in the corpus, so the corpus-based coverage gate
+could not see the gap. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 1, "Instrument types".
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

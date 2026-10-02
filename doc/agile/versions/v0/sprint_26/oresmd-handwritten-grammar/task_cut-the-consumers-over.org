@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 3140F0B6-FA7C-4ED2-85FE-074FE0DEC00B
+:END:
+#+title: Task: Cut the consumers over to the new codec
+#+description: Move import, export, feed ingest, curve republish and classification onto the new codec, export keys from the stored URI, drop the raw key column, and make the corpus tests compare by key.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every reader and writer of market data identity uses the new codecs, and the
+tests prove values by key.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- =import_service=, =ore_export_service=, =feed_ingest_loop=, =curve_republish_service=, =curve_pillar_reader= and =series_classifier= use the new codecs.
+- The export writes each key from the stored datum URI. =market_observations.key= is gone.
+- A row cannot hold two identities. An FX pair the import reverses is reported, and the row holds the corrected pair only.
+- The corpus import test compares each value with the value under the same key.
+- The corpus selection includes the =MD_*= and =FD_*= files, and the tests share one tokeniser with production.
+- The database recreates, the whole corpus imports, and an export of the import equals the input after canonical spellings.
+
+* Plan
+
+Cut over one consumer at a time behind the same tests. Recreate the database
+and re-import; write no migration.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 2, "The ORE export echoes the input text" and "The corpus
+import compares values without their keys".
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

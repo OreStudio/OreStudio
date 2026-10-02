@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: E773291A-0E73-4AAA-86AD-E94E16D691AF
+:END:
+#+title: Task: Clean the marketdata code
+#+description: Model the tick subject, add the namespace headers, collapse the duplicate repositories, correct the stale table comment, and bring the comments to the project rules.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The hand-written marketdata code meets the structure and hygiene items of the
+standard.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- P02: the tick subject prefix is declared in a model, and =subject_helpers.hpp= uses the generated constant.
+- G08: =ores.marketdata.api=, =ores.marketdata.client= and =ores.marketdata.core= each have their namespace documentation header.
+- G02/H02: each of =market_observations= and =market_fixings= has one repository, and the survivor keeps the consumers both had.
+- The =market_series= table comment no longer describes the dropped columns.
+- H03: no comment narrates edit history, no end-of-line comment remains, and comment volume follows the project rules, in hand-written code and in the templates that produce marketdata code.
+
+* Plan
+
+Run the compass-code-review-comments pass last, over the whole component.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], sections 3 and 4.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

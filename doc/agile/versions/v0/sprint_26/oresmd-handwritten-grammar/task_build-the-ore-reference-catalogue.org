@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 9C839F30-C0FB-49DA-8131-C7309ECE7F43
+:END:
+#+title: Task: Build the ORE reference catalogue
+#+description: Run every key form ORE's parser accepts, and every corpus key, through ORE's own parseMarketDatum, and check in the fields ORE assigns as the fixture the new codec is tested against.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A checked-in fixture states, for every ORE key form and every distinct corpus
+key, the fields ORE's own =parseMarketDatum= assigns. The new codec is tested
+against it. Without it, every round trip compares text with text, and a token
+in the wrong field passes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- An offline harness, linked against the local =libOREData.so=, reads each key and writes the instrument type, the quote type and every field the =MarketDatum= subclass exposes.
+- The input holds every form documented in =OREData/ored/marketdata/marketdatumparser.cpp=, with at least one key per form, plus every distinct key in the corpus market payloads.
+- The input also holds keys that ORE rejects, each with ORE's error.
+- The fixture, the input list and the harness source are checked in. A recipe states how to rebuild the fixture against a new ORE release.
+- The ORE version the fixture came from is recorded in the fixture.
+
+* Plan
+
+1. List every form in =marketdatumparser.cpp=, one key each, with the ORE
+   line that reads it.
+2. Write the harness as a small tool outside the main build, because the main
+   build does not link ORE.
+3. Run it over the form list and the corpus keys; check in the output.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Evidence for the need: [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 1, "Key forms inside a type". The ORE
+build is at =/home/marco/Vault/Development/ORE/Engine/build/linux-clang-ninja-release=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

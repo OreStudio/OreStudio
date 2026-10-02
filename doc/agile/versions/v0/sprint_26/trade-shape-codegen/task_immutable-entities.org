@@ -92,8 +92,9 @@ the =* Flags= drawer =:read_only: true=: only a current-state table has one
 row per key, and only a read-only entity has no derived write verb that
 would ask the store to change a row.
 
-The table gets a =_immutable_trg= trigger that refuses every update and
-delete with SQLSTATE 55000, and the drop script removes it. The repository
+The table gets an =_immutable_trg= row trigger that refuses every update
+and delete, and an =_immutable_truncate_trg= statement trigger that refuses
+truncate, each with SQLSTATE 55000; the drop script removes both. The repository
 writes with =sqlgen::insert= instead of =insert_or_replace=, so a second
 write of the same key fails on the primary key instead of overwriting.
 
@@ -106,6 +107,7 @@ Evidence: =test_immutable_entity.py=, seven cases, including the two
 refused flag combinations and the mutable control. The rendered DDL was
 run against the development Postgres in a rolled-back transaction: the
 first insert succeeded, a duplicate key, an =UPDATE= and a =DELETE= were
-each refused, and the row was unchanged. The codegen suite is 1088
+each refused, and the row was unchanged; after review a =TRUNCATE= was
+refused the same way. The codegen suite is 1088
 passed; the drift dry run changes no generated file apart from the
 known =clang-format= wrapping in =trade_service.cpp=.

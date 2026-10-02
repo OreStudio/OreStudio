@@ -3884,10 +3884,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if domain_entity['immutable'] and not (
                 current_state and domain_entity.get('read_only')):
             raise ValueError(
-                f"{model_path}: :immutable: needs :current_state: in the "
-                "* SQL ** Flags drawer and :read_only: in the * Flags "
-                "drawer; an immutable row has no temporal history and no "
-                "derived write verb.")
+                f"{model_path}: :immutable: needs :current_state: true in "
+                "the SQL section's Flags drawer and :read_only: true in the "
+                "top-level Flags drawer; an immutable row has no temporal "
+                "history and no derived write verb.")
         # Nullable tenant: the table's tenant_id column admits SQL NULL and a
         # NULL row belongs to no tenant. The C++ projection reflects that --
         # the domain and entity tenant are an std::optional, and the mapper

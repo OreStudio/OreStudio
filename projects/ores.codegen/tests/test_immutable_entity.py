@@ -114,18 +114,20 @@ def _repository(tmp_path, body):
                    "anchor_record_repository.cpp", body)
 
 
-def test_the_store_refuses_update_and_delete(tmp_path):
+def test_the_store_refuses_update_delete_and_truncate(tmp_path):
     sql = _create_sql(tmp_path, _model())
 
     assert "create or replace function ores_testcomp_anchor_records_immutable_fn()" in sql
     assert "before update or delete on \"ores_testcomp_anchor_records_tbl\"" in sql
     assert "errcode = '55000'" in sql
+    assert "before truncate on \"ores_testcomp_anchor_records_tbl\"" in sql
 
 
 def test_the_drop_script_removes_the_guard(tmp_path):
     sql = _drop_sql(tmp_path, _model())
 
     assert "drop trigger if exists ores_testcomp_anchor_records_immutable_trg" in sql
+    assert "drop trigger if exists ores_testcomp_anchor_records_immutable_truncate_trg" in sql
     assert "drop function if exists ores_testcomp_anchor_records_immutable_fn" in sql
 
 

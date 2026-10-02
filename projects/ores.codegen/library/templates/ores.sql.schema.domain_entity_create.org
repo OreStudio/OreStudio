@@ -744,6 +744,10 @@ create or replace trigger {{domain_entity.sql_name_base}}_immutable_trg
 before update or delete on "{{domain_entity.sql_name_base}}_tbl"
 for each row execute function {{domain_entity.sql_name_base}}_immutable_fn();
 
+create or replace trigger {{domain_entity.sql_name_base}}_immutable_truncate_trg
+before truncate on "{{domain_entity.sql_name_base}}_tbl"
+for each statement execute function {{domain_entity.sql_name_base}}_immutable_fn();
+
 {{/domain_entity.immutable}}
 {{^domain_entity.current_state}}
 {{#domain_entity.has_delete_cascade}}

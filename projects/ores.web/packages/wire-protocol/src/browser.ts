@@ -52,6 +52,7 @@ export {
     tenantPageSchema,
     tenantSetupSchema,
     tenantStatusSchema,
+    tenantTypeSchema,
     tenantSummarySchema,
 } from './domain.js';
 export type {
@@ -64,12 +65,14 @@ export type {
     TenantPage,
     TenantSetup,
     TenantStatus,
+    TenantType,
     TenantSummary,
 } from './domain.js';
 
 export {
     apiErrorSchema,
     tenantStatusesResponseSchema,
+    tenantTypesResponseSchema,
     bootstrapStatusSchema,
     createAdministratorRequestSchema,
     initialAdministratorSchema,

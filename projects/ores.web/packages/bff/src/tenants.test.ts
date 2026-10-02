@@ -205,16 +205,22 @@ describe('GET /api/tenants', () => {
             ],
             totalCount: 1,
             setupUnavailable: false,
+            hiddenTestCount: 1,
         });
-        expect(calls).toHaveLength(2);
+        // The page leaves test infrastructure out, a second search counts what
+        // that hid, and the run read follows.
+        expect(calls).toHaveLength(3);
         expect(calls[0]?.subject).toBe('iam.v1.tenants.search');
         expect(calls[0]?.body).toEqual({
             search: '',
             type_filter: '',
             status_filter: '',
+            exclude_type_filter: 'automation',
             offset: 0,
             limit: 100,
         });
+        expect(calls[1]?.subject).toBe('iam.v1.tenants.search');
+        expect(calls[1]?.body).toMatchObject({ type_filter: 'automation', limit: 1 });
 
         await server.close();
     });
@@ -240,6 +246,60 @@ describe('GET /api/tenants', () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({ totalCount: 37 });
         expect(calls[0]?.body).toMatchObject({ search: 'acme', offset: 20, limit: 10 });
+
+        await server.close();
+    });
+
+    /*
+     * Test infrastructure is hidden by default, so a person asking to see it,
+     * or asking for that type by name, gets the search with nothing left out
+     * and no hidden count to report.
+     */
+    it('leaves nothing out when test tenants are asked for', async () => {
+        for (const url of ['/api/tenants?includeTest=true', '/api/tenants?type=automation']) {
+            const { server, sessionId, calls } = buildTestServer({
+                success: true,
+                tenants: [],
+                total: 0,
+            });
+
+            const response = await server.inject({
+                method: 'GET',
+                url,
+                cookies: { ores_web_session: sessionId },
+            });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.json()).toMatchObject({ hiddenTestCount: 0 });
+            expect(calls[0]?.body).toMatchObject({ exclude_type_filter: '' });
+            // No second search: nothing was hidden, so there is nothing to count.
+            expect(calls.filter((call) => call.subject === 'iam.v1.tenants.search')).toHaveLength(
+                1,
+            );
+
+            await server.close();
+        }
+    });
+
+    it('passes the type and status filters to the search', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            success: true,
+            tenants: [],
+            total: 0,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants?type=evaluation&status=suspended',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            type_filter: 'evaluation',
+            status_filter: 'suspended',
+            exclude_type_filter: 'automation',
+        });
 
         await server.close();
     });
@@ -273,7 +333,12 @@ describe('GET /api/tenants', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ tenants: [], totalCount: 0, setupUnavailable: false });
+        expect(response.json()).toEqual({
+            tenants: [],
+            totalCount: 0,
+            setupUnavailable: false,
+            hiddenTestCount: 0,
+        });
 
         await server.close();
     });
@@ -317,12 +382,12 @@ describe('GET /api/tenants', () => {
             stepCount: 7,
             error: 'Seeding failed.',
         });
-        expect(calls[1]?.subject).toBe('workflow.v1.instances.list');
+        expect(calls[2]?.subject).toBe('workflow.v1.instances.list');
         /*
          * Every filter is on the wire, because the server refuses a request
          * that leaves one out; the ones not in use are empty.
          */
-        expect(calls[1]?.body).toEqual({
+        expect(calls[2]?.body).toEqual({
             limit: 1000,
             status_filter: '',
             type_filter: 'provision_tenant_workflow',

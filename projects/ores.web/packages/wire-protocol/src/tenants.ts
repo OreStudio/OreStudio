@@ -108,6 +108,7 @@ export interface TenantSearch {
     readonly search?: string;
     readonly type?: string;
     readonly status?: string;
+    readonly excludeType?: string;
     readonly offset?: number;
     readonly limit?: number;
 }
@@ -141,6 +142,7 @@ export async function searchTenantsPage(
         search: input.search ?? '',
         type_filter: input.type ?? '',
         status_filter: input.status ?? '',
+        exclude_type_filter: input.excludeType ?? '',
         offset: input.offset ?? 0,
         limit: input.limit ?? 100,
     };

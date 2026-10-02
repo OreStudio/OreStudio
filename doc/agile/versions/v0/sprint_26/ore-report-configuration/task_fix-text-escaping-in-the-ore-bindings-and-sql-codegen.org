@@ -163,6 +163,9 @@ via its "Verifies task" field.
 | 2 | Local review: the five new binding cases did not log, as the checklist and the file's other cases do | =xml_file_io_tests.cpp= | Accepted | One =BOOST_LOG_SEV(lg, info)= per case. |
 | 3 | Local review: =&#0;= decodes to an embedded NUL | =domain.cpp= (=xsdcpp=) | Declined | Attributes already did this before the change. XML forbids the reference, and no corpus file uses it. |
 | 4 | Local review: an unterminated comment in element text makes =decodeText= scan past its range for =-= | =domain.cpp= (=xsdcpp=) | Declined | Present before this change in =stripComments=, for malformed input only. Out of scope for an escaping fix. |
+| 5 | PR review: =holds_an_ampersand= fails without saying it depends on the fixture | =todays_market_database_roundtrip_tests.cpp= | Accepted | An =INFO= names the fixture and what it must contain. |
+| 6 | PR review: escaping in the loader means the model holds the escaped text; a template-level filter would be more robust | =org_loader.py= | Declined | The templates are Mustache, which has no filters. The loader is the one place these values enter, both are used only inside SQL literals, and the helper's docstring states that contract. |
+| 7 | PR review: a reference split by a comment is not decoded | =domain.cpp= (=xsdcpp=) | No change | The reviewer advises leaving it: very rare, and identical to the generated parser. |
 
 * Result
 

@@ -20,11 +20,16 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
+#include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
+#include <fstream>
 #include <functional>
+#include <iterator>
 #include <map>
+#include <regex>
 #include <set>
 #include <string>
 #include <string_view>
@@ -37,7 +42,8 @@
  * serialises to. For every kind the binding can save, an empty document is
  * saved and must open with that element, so the seed cannot name a root the
  * binding does not write. The kinds the binding cannot save yet are listed, so
- * a kind that gains a binding without joining this check fails here.
+ * a kind that gains a binding without joining this check fails here. Every
+ * seeded run-document parameter must also appear in a shipped run document.
  */
 
 namespace {
@@ -71,17 +77,41 @@ const std::map<std::string, std::function<std::string()>>& savers() {
     return table;
 }
 
-// The first element of the saved document must be exactly the seeded root, so
-// a seeded name that is only a prefix of the real one does not pass.
+// The first element of the saved document, after any declaration or comment,
+// must be exactly the seeded root, so neither a nested element of that name
+// nor a seeded name that is only a prefix of the real one passes.
 bool opens_with_element(const std::string& xml, const std::string& name) {
-    const auto start = xml.find('<' + name);
-    if (start == std::string::npos)
+    auto start = xml.find('<');
+    while (start != std::string::npos && start + 1 < xml.size() &&
+           (xml[start + 1] == '?' || xml[start + 1] == '!'))
+        start = xml.find('<', start + 1);
+    if (start == std::string::npos || xml.compare(start + 1, name.size(), name) != 0)
         return false;
     const auto after = start + 1 + name.size();
     if (after >= xml.size())
         return false;
     const char next = xml[after];
     return next == '>' || next == '/' || next == ' ' || next == '\n' || next == '\t';
+}
+
+// Every parameter name the shipped run documents use, so a seeded run_parameter
+// that no ORE run document writes is caught as a typo.
+std::set<std::string> run_document_parameters() {
+    std::set<std::string> names;
+    const std::regex parameter(R"re(<Parameter name="([A-Za-z]+)")re");
+    const auto root = ores::testing::project_root::resolve("external/ore/examples");
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        const auto file = entry.path().filename().string();
+        if (!entry.is_regular_file() || !file.starts_with("ore") || !file.ends_with(".xml"))
+            continue;
+        std::ifstream in(entry.path());
+        const std::string content((std::istreambuf_iterator<char>(in)),
+                                  std::istreambuf_iterator<char>());
+        for (std::sregex_iterator it(content.begin(), content.end(), parameter), end; it != end;
+             ++it)
+            names.insert((*it)[1].str());
+    }
+    return names;
 }
 
 const std::set<std::string> unbound = {"simm_calibration",
@@ -102,11 +132,16 @@ TEST_CASE("every seeded configuration type the binding can save names its root e
     const auto types = repo.read_latest(sys_ctx);
     REQUIRE(types.size() == savers().size() + unbound.size());
 
+    const auto parameters = run_document_parameters();
+    REQUIRE(!parameters.empty());
+
     std::set<std::string> roots;
     for (const auto& type : types) {
         INFO(type.code);
         CHECK(roots.insert(type.ore_root_element).second);
         CHECK(!type.owning_component.empty());
+        if (type.run_parameter)
+            CHECK(parameters.contains(*type.run_parameter));
 
         const auto saver = savers().find(type.code);
         if (saver == savers().end()) {

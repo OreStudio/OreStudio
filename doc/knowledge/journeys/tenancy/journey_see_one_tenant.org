@@ -42,8 +42,9 @@ This journey writes nothing.
 * Steps
 
 1. *Open the tenant.* The administrator picks *Open* in the roster row's menu.
-   The system shows the tenant's screen at =/tenants/:id=. The address names
-   the tenant's =id=, so a link opens the same tenant again.
+   The system shows the tenant's screen at =/tenants/:code=. The address names
+   the tenant's code, its stable name in a request, so a link opens the same
+   tenant again.
 2. *Read the details.* The system reads the tenant and shows its code, name,
    hostname, type, status and description. The type and the status are painted
    with their badges, as on the roster. The system also shows whether the
@@ -61,7 +62,7 @@ This journey writes nothing.
    name, the category, the type, the status and the parent. The system party
    is listed and marked, because every tenant has one. A tenant with only its
    system party says that no business party exists yet.
-6. *A tenant that does not exist.* The address names an =id= that no tenant
+6. *A tenant that does not exist.* The address names a code that no tenant
    holds, or the system tenant. The screen says that no such tenant exists and
    links back to the roster. It does not show the system tenant, for the same
    reason the roster does not.
@@ -94,28 +95,26 @@ panels are one answer about one tenant, so they sit together on one page.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Read the details | Read one tenant by =id= | =iam.v1.tenants.get= | exists |
+| Read the details | Read one tenant by its code | =iam.v1.tenants.get= | exists |
 | Read the provenance | Carried by the tenant row | =iam.v1.tenants.get= | exists |
 | Read the setup run | Read the runs that target the tenant | =workflow.v1.instances.list=, filtered on the tenant as target | exists |
-| Read the parties | List the parties of one named tenant | =refdata.v1.parties.list-of-tenant= | missing |
+| Read the parties | List the parties of one named tenant | =refdata.v1.parties.list-of-tenant= | exists |
 | A tenant that does not exist | Answer an empty read | =iam.v1.tenants.get= | exists |
 
-The browser reads the screen through one BFF route, =GET /api/tenants/:id=.
+The browser reads the screen through one BFF route, =GET /api/tenants/:code=.
 It refuses a session outside system administration, as =/api/tenants= does.
 It joins the tenant, its setup run and its parties into one answer.
 
 * What is missing
 
-1. *A party read for one named tenant.* Every party read filters by the
-   session's tenant, and a system administrator's session is the system
-   tenant's. So no read answers "the parties of tenant X" to the actor of this
-   journey. The candidate is =refdata.v1.parties.list-of-tenant=, declared in
-   an operation model in =ores.refdata=. Its request names the tenant. Its
-   handler refuses a caller outside the system tenant, checks
-   =refdata::parties:read=, and reads with a context scoped to the named
-   tenant. The database already lets the system tenant read every tenant's
-   parties, so no policy changes. Until the read exists, the screen shows the
-   details and the run, and says the parties cannot be read.
+1. *Closed: a party read for one named tenant.* Every other party read
+   answers the caller's own tenant, and a system administrator's tenant is the
+   system tenant. =refdata.v1.parties.list-of-tenant=, declared in the
+   operation model =ores.refdata.tenant_party_messages=, names the tenant. The
+   service refuses a caller outside the system tenant and refuses the system
+   tenant as a target. It checks =refdata::parties:read= and reads with a
+   context scoped to the named tenant, so the party table's policy admits that
+   tenant's rows and no others.
 2. *The tenant read checks no permission.* =iam.v1.tenants.get= checks none,
    like =iam.v1.tenants.list=. The BFF's refusal of a session outside system
    administration is the boundary, as on the roster.

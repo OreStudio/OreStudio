@@ -40,9 +40,9 @@ written first and the screen follows it.
 
 - The journey See one tenant is written, with its wireframe, and the tenancy
   hub lists it.
-- =/tenants/:id= shows the tenant's details, provenance, setup run and parties.
+- =/tenants/:code= shows the tenant's details, provenance, setup run and parties.
 - The roster row's *Open* item links to that screen.
-- An unknown =id= or the system tenant's =id= shows "no such tenant" and a way
+- An unknown code or the system tenant's code shows "no such tenant" and a way
   back.
 - The parties come from a generated read scoped to the named tenant, which
   refuses a caller outside the system tenant.
@@ -65,16 +65,17 @@ plan itself stays — it is the historical record of what we did.)
    context scoped to the named tenant. The party table's policy already lets
    the system tenant read every row, so no policy changes. Repository and
    handler tests prove the scope and the refusal.
-3. *BFF.* =GET /api/tenants/:id= refuses a session outside system
+3. *BFF.* =GET /api/tenants/:code= refuses a session outside system
    administration, reads the tenant with =iam.v1.tenants.get=, the tenant's
    runs with =workflow.v1.instances.list= filtered on the target, and the
-   parties with the new read. It answers 404 for an unknown =id= or the system
-   tenant. A party read that fails does not fail the page: the answer says the
+   parties with the new read. =iam.v1.tenants.get= keys a tenant by its code,
+   so the address names the code. It answers 404 for an unknown code or the
+   system tenant. A party read that fails does not fail the page: the answer says the
    parties are unavailable, as the roster does for runs.
-4. *Web.* A =TenantPage= at =/tenants/:id= with three panels: details with
+4. *Web.* A =TenantPage= at =/tenants/:code= with three panels: details with
    provenance, setup, parties. The roster's *Open* item links to it.
 5. *Verify.* Web, BFF and C++ tests; a full build and ctest; a live read of a
-   real tenant and of an unknown =id=.
+   real tenant and of an unknown code.
 
 * Measurements
 

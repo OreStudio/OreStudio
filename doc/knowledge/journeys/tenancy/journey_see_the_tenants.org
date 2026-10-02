@@ -78,9 +78,10 @@ find out what exists.
 7. *Leave, or go on.* The administrator leaves the roster, or picks a tenant
    and goes on to another operation on it: retiring or resetting it, or adding
    a party to it. The roster carries the chosen row into that operation. Each
-   row has one menu of actions. *Resume setup* opens the tenant's provisioning
-   run when that run did not complete. *Open* and *Retire or reset* show as not
-   built yet until their journeys exist.
+   row has one menu of actions. *Open*, and the tenant's name, lead to
+   [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]]. *Resume setup*
+   opens the tenant's provisioning run when that run did not complete. *Retire
+   or reset* shows as not built yet until its journey exists.
 
 The roster does not show the system tenant. The tenant registry is
 system-scoped: the table's own check requires every row to carry the system
@@ -178,6 +179,7 @@ the roster chose.
 
 * Related journeys
 
+- [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]] — opened from a row: the tenant's details, setup run and parties
 - [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] — the empty roster's way out: create the tenant this screen would list
 - [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] — picks its tenant from this roster, then suspends, terminates or resets it
 - [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — maintains the tenant details this roster reads

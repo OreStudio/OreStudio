@@ -36,6 +36,9 @@ export interface ConfigurationTypeWrite {
     code: string;
     name: string;
     display_order: number;
+    ore_root_element: string;
+    owning_component: string;
+    run_parameter: string | null;
 }
 
 export interface ConfigurationTypeChange {

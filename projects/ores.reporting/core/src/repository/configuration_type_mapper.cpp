@@ -40,6 +40,9 @@ domain::configuration_type configuration_type_mapper::map(const configuration_ty
     r.code = v.code.value();
     r.name = v.name;
     r.display_order = v.display_order;
+    r.ore_root_element = v.ore_root_element;
+    r.owning_component = v.owning_component;
+    r.run_parameter = v.run_parameter;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -59,6 +62,9 @@ configuration_type_entity configuration_type_mapper::map(const domain::configura
     r.version = v.version;
     r.name = v.name;
     r.display_order = v.display_order;
+    r.ore_root_element = v.ore_root_element;
+    r.owning_component = v.owning_component;
+    r.run_parameter = v.run_parameter;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

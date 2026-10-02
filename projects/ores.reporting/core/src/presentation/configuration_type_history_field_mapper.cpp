@@ -36,6 +36,9 @@ render_configuration_type_fields(const domain::configuration_type& v) {
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
+    fields.push_back({.name = "Ore Root Element", .value = v.ore_root_element});
+    fields.push_back({.name = "Owning Component", .value = v.owning_component});
+    fields.push_back({.name = "Run Parameter", .value = v.run_parameter.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

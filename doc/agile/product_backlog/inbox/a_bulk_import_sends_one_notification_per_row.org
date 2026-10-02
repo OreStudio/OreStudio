@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 9F64D763-6CCD-4FD5-98CD-3897E7940E50
+:END:
+#+title: A bulk import sends one notification and one NATS event per row
+#+description: The 298 generated notify triggers fire for each row, so importing 100,000 market observations sends 100,000 PostgreSQL notifications and 100,000 NATS events.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every generated notify trigger is =for each row=: 298 of them in
+=projects/ores.sql/create=. A bulk write therefore sends one PostgreSQL
+notification per row, and each service that listens turns each one into an
+event-bus event and a NATS message. Importing the example corpus writes about
+100,000 market observations, so one import sends about 100,000 notifications
+and 100,000 NATS events that no subscriber needs one by one. For tables written
+in bulk -- market observations and fixings first -- a statement-level trigger,
+or one notification per transaction carrying the affected keys, would send one
+message per write instead of one per row.
+
+* Why
+
+The per-row design is what turned a slow listener into an outage: the
+listener in =ores.database= paused between polls and fell hours behind a
+corpus import, and its backend in =ClientWrite= stalled every =DROP DATABASE=
+on the shared server. The listener is fixed, but each import still costs every
+listening service 100,000 callbacks and the NATS server 100,000 messages.
+
+* References
+
+- =projects/ores.sql/create/marketdata/marketdata_market_observations_notify_trigger_create.sql=: =for each row=.
+- The generated notify trigger template in =projects/ores.codegen/library/templates=.
+
+* See also
+
+- [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]]

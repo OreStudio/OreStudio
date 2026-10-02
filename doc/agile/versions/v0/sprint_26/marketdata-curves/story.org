@@ -32,7 +32,7 @@ stored as a series.
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not started. Scoped by a read-only investigation on 2026-09-27, recorded below. |
-| Waiting on    | The ores.marketdata clean-up closing. This story should not start before it does, because it changes the data model the clean-up is still bringing under the standard. |
+| Waiting on    | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. That story replaces the datum identity this one builds on, so this one starts when it closes. |
 | Next          | A deeper analysis: decide whether a curve becomes an entity of its own or stays a derived series with an explicit shape. |
 | Last touched  | 2026-09-27                               |
 
@@ -198,6 +198,14 @@ model that is still in motion would mean doing it twice.
 
 * Open questions for the deeper analysis
 
+- **How does a curve read its points?** The grammar story keeps the 45-way
+  variation in the datum identity, which is cold, and leaves the hot side
+  here: a series' points as parallel arrays per coordinate shape (about six:
+  none, term, contract, expiry by strike or delta, maturity by strike, and the
+  shape-profile slot), batched, with each point referring to its series by
+  index. Curve and surface building should read that shape, per the
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria
+  for kernels.
 - **An entity or a shaped series?** Sprint 25 proposed =curve_build= and
   =curve_point= tables. The shipped implementation reused the observation
   tables instead. Which is right, given that a curve's points must be

@@ -29,8 +29,8 @@ stores. The same story closes the clean-standard findings that
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started. Tasks scaffolded; the grammar design is proposed in Decisions. |
-| Waiting on    | Agreement on the proposed grammar design. |
+| Now           | Not yet started. The grammar design is agreed and recorded in Decisions. |
+| Waiting on    | Nothing.                               |
 | Next          | Build the ORE reference catalogue. |
 | Last touched  | 2026-10-02                               |
 
@@ -41,6 +41,8 @@ stores. The same story closes the clean-standard findings that
   produced is the reference.
 - Every ORE =InstrumentType= and =QuoteType= is modelled, and the aliases
   =FX_SPOT=, =FX_FWD= and =RATE_GVOL= are accepted.
+- A quote URI is always fully specified and maps one to one onto the
+  canonical ORE key: no default, no partial form, no extra key.
 - Every datum round-trips key → datum → key and datum → URI → datum. Writing a
   parsed URI again gives the same text. Every series URI parses.
 - The key grammar exists once: no generated oresmd code, no oresmd quote-type
@@ -77,10 +79,12 @@ stores. The same story closes the clean-standard findings that
   rows only chose which hand-written function ran. Generation added a build
   step and an indirection, and it removed no code. ORE's key grammar changes
   slowly and has a fixed shape. A typed class tested against ORE is easier to
-  read, to change and to trust. (Proposed on 2026-10-02 at the user's
-  direction; the design below is a proposal until the first task starts.)
+  read, to change and to trust.
 
-- **Proposed design.**
+- **The design, agreed on 2026-10-02.** It follows the
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria:
+  the identity is a closed value type with identity by key, and per-type
+  behaviour is a =switch=, not a class hierarchy.
 
   1. *One typed record, with its schema as data.* =market_datum= holds the
      ORE instrument type (an enum of all 45), the ORE quote type (an enum of
@@ -97,30 +101,45 @@ stores. The same story closes the clean-standard findings that
      row. A traits map gives each field its value type, so
      =get<field::expiry>()= is typed at compile time. The series identity is
      the datum without its coordinate fields.
-  3. *Nothing is silently absent.* Where ORE has an optional token (a CDS
-     doc clause, a running spread, a cap/floor flag), the struct holds an
+  3. *Per-type logic is a =switch= on the instrument type.* Code that
+     differs per instrument type, chiefly the ORE key codec, switches on
+     =instrument_type= with one function per type, in one translation unit
+     per asset class. The build treats a missing case as an error
+     (=-Werror=switch-enum= on GCC and Clang, C4062 as an error on MSVC), so
+     a new type cannot be forgotten. Where such a function wants typed access,
+     a non-owning view, for example =cds_view(const market_datum&)=, gives
+     typed getters inside that translation unit only.
+  4. *Nothing is silently absent.* Where ORE has an optional token (a CDS
+     doc clause, a running spread, a cap/floor flag), the datum holds an
      explicit value such as =none=, never a missing field that means a default.
-  4. *The ORE key codec* reads and writes ORE key text. It follows the
+  5. *The ORE key codec* reads and writes ORE key text. It follows the
      structure of ORE's =marketdatumparser.cpp=: one reader per instrument
      type, and each reader chooses a field by the token's value (period, date,
      number, =C=/=P=, =ATM=, =MNY=, =DEL=), not by segment count. Each form
      cites the ORE form it reads. An alias is read and then written in its
      canonical spelling, and the import reports the change.
-  5. *The URI codec is generic.* It walks the datum's fields in schema
+  6. *The URI codec is generic.* It walks the datum's fields in schema
      order. The authority is the asset class, the path
      is the primary subject (percent-encoded, case kept), and the query holds
-     every field by name in declaration order. The writer writes every field.
+     every field by name in schema order. The writer writes every field.
      The reader refuses a missing, unknown or repeated key. No per-family URI
      code exists, so the URI cannot drift from the schema.
-  6. *One grammar.* =ores.ore= keeps only the file reader, which yields date,
+  7. *One grammar.* =ores.ore= keeps only the file reader, which yields date,
      key text and value. The SQL key shape table and =series_key_registry= go.
      Classification reads the asset class and the instrument type from the
      datum.
-  7. *Storage.* =market_series.oresmd_uri= holds the series URI and
+  8. *Storage.* =market_series.oresmd_uri= holds the series URI and
      =market_observations.oresmd_uri= holds the datum URI. The raw =key=
      column goes. The export writes =write(read_uri(datum_uri))=. The
      database is recreated and the corpus re-imported, so no migration exists.
-  8. *Tests, in order of authority.* (a) A catalogue that ORE produced: an
+  9. *A quote URI has a strict contract.* =type=quote= names exactly one ORE
+     datum, so its URI is always fully specified: every field of the type's
+     schema row is present and nothing else is, no default applies, no
+     partial or requirement form exists, and the URI maps one to one onto the
+     canonical ORE key with case kept. =role= and the requirement reading of
+     =index= and =tenor= belong to fixings and curves, which keep the richer
+     contract. =market_data_urn.org= states this as a rule of the grammar.
+  10. *Tests, in order of authority.* (a) A catalogue that ORE produced: an
      offline harness, linked against the local =libOREData.so=, reads every
      documented form and every distinct corpus key and writes ORE's fields to
      a checked-in fixture. The codec must match it field by field. (b) Key
@@ -138,6 +157,14 @@ stores. The same story closes the clean-standard findings that
   includes. The schema table moves that cost to one checked constructor, and
   the only variant left has about six value types.
 
+- **No visitor hierarchy.** A classic visitor over one class per instrument
+  type was considered next. It keeps compile cost local and gives full typing,
+  but it puts every datum behind an owning pointer with virtual dispatch. The
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria reject that
+  shape for persisted data (value semantics, explicit variation, no owning
+  pointers) and for kernels (no per-object dispatch). The enum =switch=
+  gives the same exhaustiveness without the hierarchy.
+
 - **The asset class model stays.** The model from
   [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Declare the asset class lists once]]
   generates SQL seeds and DQ badges. It is not part of the key grammar.
@@ -149,3 +176,7 @@ stores. The same story closes the clean-standard findings that
 - ORE's dividend history file. Nothing in the corpus or the product asks for it
   yet.
 - The point-in-time read (P01). Backlog story =F15A8480= holds it.
+- The hot side of the data: a series' points as parallel arrays per
+  coordinate shape, for curve and surface building. The 45-way variation
+  lives in the identity, which is cold; the points vary over about six
+  coordinate shapes. The curve story picks this up after this story closes.

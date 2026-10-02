@@ -39,6 +39,7 @@ with no code per family.
 - The codec walks the datum's fields in schema order; it has no per-family branch.
 - The writer writes every field. The reader refuses a missing, unknown or repeated key.
 - The path segment is percent-encoded and keeps its case.
+- A =type=quote= URI follows the strict contract: every field of its schema row present, nothing else, no default, no partial form, one to one with the canonical ORE key. The reader refuses any =type=quote= URI that breaks it.
 - For every datum in the reference catalogue: =read(write(d)) == d=, =write(read(u)) == u=, and the series URI parses.
 - Property tests generate datums from each schema row and each field's domain and round-trip them.
 

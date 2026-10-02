@@ -40,14 +40,16 @@ the token's value, so it assigns fields the way ORE does.
 - Every key in the reference catalogue reads into the fields ORE assigns.
 - For every key ORE accepts, =write(read(k)) == k=, or the canonical spelling where =k= is an alias.
 - Every key ORE rejects is rejected, with an error that names the form expected.
+- Dispatch is a =switch= on =instrument_type=, and the build fails on a missing case (=-Werror=switch-enum= on GCC and Clang, C4062 as an error on MSVC). No class hierarchy and no visitor.
 - The settlement segment, the case of free-text names and every optional token survive the round trip. No form uses a silent default.
 - The CDS running-spread form, the swaption payer/receiver flag, the commodity =DEL= and =ATM/<type>/DEL= forms, the equity =MNY= form and the 4-segment index CDS option form read into the right fields.
 
 * Plan
 
 One reader and one writer per instrument type, each citing the ORE form it
-handles, split into one translation unit per asset-class family. Test-first
-against the catalogue.
+handles, split into one translation unit per asset-class family. Dispatch is a
+=switch= on =instrument_type=; typed access inside a reader uses a non-owning
+view over the datum. Test-first against the catalogue.
 
 * Measurements
 

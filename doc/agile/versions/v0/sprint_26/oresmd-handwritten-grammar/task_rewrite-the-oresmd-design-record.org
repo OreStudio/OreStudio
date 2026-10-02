@@ -37,6 +37,7 @@ a defect that the new grammar removed.
 * Acceptance
 
 - The record describes the typed model, the two codecs, the series identity and the tests, and drops "proposed", the defaults and "without per-asset-class variants".
+- The record states the strict =type=quote= contract as a rule of the grammar, and states which looser rules (roles, partial requirements, resolution) apply to fixings and curves only.
 - The grammar story 12DAAEC7's =* Status= no longer says that no unit started.
 - Capture =67A49A94= (case loss) is closed against this story.
 - Every other capture the old grammar left is closed or re-pointed.

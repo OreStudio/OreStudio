@@ -71,6 +71,7 @@ stores. The same story closes the clean-standard findings that
 | [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] | BACKLOG | | | Model the tick subject, add the namespace headers, collapse the duplicate repositories, correct the stale table comment, and bring the comments to the project rules. |
 | [[id:2D0DA355-69A5-4574-B7C2-DD78564F2AFB][Give every marketdata entity its shell commands]] | BACKLOG | | | Generate the shell commands and recipes for feed_binding, market_observation, market_fixing and the asset-class junction, and run every marketdata command against the live fleet. |
 | [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] | BACKLOG | | | Survey every source file against the test run, add the missing tests, and record the generated-code review and the items no one has checked. |
+| [[id:C34E1985-B327-494E-B814-8586DDFF8EDE][Scaffold story: Rewrite the oresmd grammar as a hand-written codec checked against ORE]] | DONE | 2026-10-02 | 2026-10-02 | The review, the story, its thirteen tasks and the agreed design ride this task and its PR. Close it before merging that PR. |
 
 * Decisions
 

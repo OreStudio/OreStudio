@@ -8,7 +8,7 @@
 #+filetags: :act_inside_a_tenant:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-act-inside-a-tenant
-#+pr:
+#+pr: 2525
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2525][#2525]] | [agile] Write the Act inside a tenant journey |
 
 * Review
 

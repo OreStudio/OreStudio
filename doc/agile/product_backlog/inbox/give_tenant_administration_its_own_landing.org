@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 18628E96-402A-4307-9705-7BD8D35A98C7
+:END:
+#+title: Give tenant administration its own landing
+#+description: A tenant administrator lands on the generic Signed in card, because the shell declares areas only for system administration. Give tenant administration its own areas and journeys, starting with Parties and New party, so the person lands on cards the way the system administrator does.
+#+type: capture
+#+level: cross
+#+filetags: :web:ux:journeys:shell:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a =tenant-administration= entry to =SHELL_AREAS= in
+[[file:../../../../projects/ores.web/packages/web/src/shell/areas.ts][areas.ts]].
+The first area is *Parties*, with *New party* (=/parties/new=) built and the
+other party journeys drawn as not built. When this lands, the home page of a
+tenant administrator shows that area's cards instead of the generic *Signed
+in* card.
+
+* Why
+
+A tenant administrator signs in and sees a card that says the journeys "arrive
+a group at a time". It names the session and offers one button. A system
+administrator lands on the Tenants area with its cards. The two modes should
+look alike: the area menu and the cards are how the shell says what a person
+can do.
+
+The fallback card offered *New tenant* to every mode, and a tenant
+administrator cannot create a tenant. That button was removed on
+=feature/return-to-a-journey-in-progress= (option 1). This capture is the
+rest of the work (option 2).
+
+* References
+
+- [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]]
+- [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]]
+
+* See also
+
+- [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]]

@@ -124,6 +124,7 @@ public:
     std::optional<domain::stress_test_library>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest stress test libraries with pagination support.
      * @param ctx Repository context with database connection

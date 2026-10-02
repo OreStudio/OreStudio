@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5C04D943-1792-43C5-883E-A0938DE2B00F
+:END:
+#+title: Model the workflow query protocol as an operation
+#+description: ores.workflow's query, steps and retry protocols are hand-written C++, and ores.web mirrors them by hand. A missing optional field silently broke the tenant roster's run read. Model them as one ores.codegen.operation, generate C++ and TypeScript, delete the hand mirrors, and commit the workflow entity TypeScript.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:web:codegen:protocol:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Bring =ores.workflow='s protocols under codegen, as
+[[id:5E4C1A90-3B27-4E6D-9F01-7A2C8D4B6E15][Protocol types are generated from the C++ codegen model]]
+requires:
+
+1. Add =projects/ores.workflow/modeling/ores.workflow.workflow_query_messages.org=
+   as an =ores.codegen.operation= model. It holds the instances list
+   (=list_workflow_instance_summaries_request= / =_response=,
+   =workflow_instance_summary=), the steps read (=get_workflow_steps_request= /
+   =_response=, =workflow_step_summary=, =step_log_entry=) and the retry
+   request and response. Field names and subjects stay exactly as they are.
+   =step_log_entry= goes in the same model, because an operation model cannot
+   reference a sibling model's message in TypeScript (capture C80EC09A).
+2. Generate. The output replaces the hand-written =workflow_query_protocol.hpp=,
+   =steps_query_protocol.hpp= and =workflow_retry_protocol.hpp=.
+3. In =ores.web=, delete the hand mirrors: =listWorkflowInstancesRequestSchema=
+   and the summary schema in =wire-protocol/src/tenants.ts=, and the
+   =workflowInstanceSteps= and =retryWorkflowInstance= subjects and schemas in
+   =operations.ts=. Add mappers typed against the generated interfaces, and take
+   the subjects from the generated =subjects=.
+4. Commit the =workflow_instance= entity's generated TypeScript, which
+   =codegen entity show workflow_instance= reports as missing.
+5. Add a boundary test: a request the client encodes is decoded by the C++
+   handler.
+
+Do this as part of the work to bring =ores.workflow= to the component clean
+standard.
+
+* Why
+
+The roster's run read was written by hand on
+=feature/return-to-a-journey-in-progress=. It left out the unused optional
+filters. The C++ decoder requires every field, so every request failed with
+"Invalid request payload", and the Setup column stayed empty. The BFF tests use
+a fake client, so they did not see it. A generated interface renders a
+=std::optional= field as a required =T | null=, and tsc then refuses a request
+that leaves it out.
+
+* References
+
+- [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]]
+- [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]]
+- [[id:C80EC09A-9F01-495D-B60A-BEA11CC33E50][An operation model cannot reference a sibling model's message in TypeScript]]
+
+* See also
+
+-

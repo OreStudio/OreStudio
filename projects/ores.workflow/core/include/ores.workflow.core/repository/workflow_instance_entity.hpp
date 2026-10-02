@@ -46,6 +46,8 @@ struct workflow_instance_entity {
     std::string tenant_id;
     int version = 0;
     std::string type;
+    std::optional<std::string> target_kind;
+    std::optional<std::string> target_id;
     std::string state_id;
     std::string request_json;
     std::optional<std::string> result_json;

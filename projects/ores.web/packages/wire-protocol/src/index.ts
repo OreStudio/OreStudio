@@ -49,6 +49,7 @@ export {
     badgePresentationSchema,
     partySummarySchema,
     tenantPageSchema,
+    tenantSetupSchema,
     tenantStatusSchema,
     tenantSummarySchema,
 } from './domain.js';
@@ -60,6 +61,7 @@ export type {
     BadgePresentation,
     PartySummary,
     TenantPage,
+    TenantSetup,
     TenantStatus,
     TenantSummary,
 } from './domain.js';
@@ -74,12 +76,22 @@ export {
 } from './tenant-statuses.js';
 
 export {
+    PROVISION_TENANT_TARGET_KIND,
+    PROVISION_TENANT_WORKFLOW_TYPE,
     TENANT_SUBJECTS,
     listTenantsRequestSchema,
+    listWorkflowInstancesRequestSchema,
+    TENANT_SETUP_READ_LIMIT,
+    readTenantSetups,
     readTenantsPage,
     wireTenantPageSchema,
+    wireWorkflowInstancesSchema,
 } from './tenants.js';
-export type { ListTenantsRequest, WireTenantPage } from './tenants.js';
+export type {
+    ListTenantsRequest,
+    ListWorkflowInstancesRequest,
+    WireTenantPage,
+} from './tenants.js';
 
 export {
     ProtocolError,
@@ -263,6 +275,7 @@ export {
     readLoginInfo,
     readLoginInfoPage,
     readSessionsPage,
+    setAccountLocked,
 } from './credentials.js';
 
 // The HTTP contract shared by the BFF and the browser. Both sides parse with

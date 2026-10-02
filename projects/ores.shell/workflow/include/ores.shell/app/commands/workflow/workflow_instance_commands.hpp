@@ -87,27 +87,28 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <type> <state_id> <request_json> <result_json> <error> <correlation_id>
-     * <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at>
-     * <last_event_at> <reason> <commentary>
+     * @brief add <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error>
+     * <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json>
+     * <completed_at> <last_event_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <type> <state_id> <request_json> <result_json> <error> <correlation_id>
-     * <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at>
-     * <last_event_at> <reason> <commentary> [--version <n>]
+     * @brief set <id> <type> <target_kind> <target_id> <state_id> <request_json> <result_json>
+     * <error> <correlation_id> <created_by> <current_step_index> <step_count>
+     * <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <type> <state_id> <request_json> <result_json> <error>
-     * <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json>
-     * <completed_at> <last_event_at> <reason> <commentary>
+     * @brief put-many --count <n> <id> <type> <target_kind> <target_id> <state_id> <request_json>
+     * <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count>
+     * <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

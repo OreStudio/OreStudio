@@ -50,6 +50,7 @@ export {
     badgePresentationSchema,
     partySummarySchema,
     tenantPageSchema,
+    tenantSetupSchema,
     tenantStatusSchema,
     tenantSummarySchema,
 } from './domain.js';
@@ -61,6 +62,7 @@ export type {
     BadgePresentation,
     PartySummary,
     TenantPage,
+    TenantSetup,
     TenantStatus,
     TenantSummary,
 } from './domain.js';

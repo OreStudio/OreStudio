@@ -97,6 +97,7 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
         signOut: vi.fn(async () => undefined),
         passwordPolicy: vi.fn(async () => policy),
         seedProfiles: vi.fn(async () => [operational, demonstration]),
+        tenantCodes: vi.fn(async () => []),
         provision: vi.fn(async () => ({
             success: true,
             message: '',

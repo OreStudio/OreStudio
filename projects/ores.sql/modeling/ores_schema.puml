@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-01T23:06:27.217812Z
+' Generated: 2026-10-02T01:04:40.795700Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10510,6 +10510,8 @@ package "workflow" #FFF8E1 {
         --
         * version : integer
         * type : text
+          target_kind : text
+          target_id : uuid <<FK>>
         * state_id : uuid <<FK>>
         * request_json : jsonb
           result_json : jsonb
@@ -10534,9 +10536,10 @@ package "workflow" #FFF8E1 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Workflow Instance Table
-    Tracks the lifecycle of a workflow execution, including its type, status,
-    the serialised request that triggered it, and any result or error produced.
-    Instances are append-mostly; status transitions are the primary mutation.
+    Tracks the lifecycle of a workflow execution, including its type, the entity it
+    acts on, its status, the serialised request that triggered it, and any result or
+    error produced. Instances are append-mostly; status transitions are the primary
+    mutation.
     end note
 
     entity ores_workflow_workflow_steps_tbl <<temporal>> #C6F0D8 {
@@ -11233,6 +11236,7 @@ package "analytics" #E8F5E9 {
         --
         * version : integer
         * name : text
+          configuration_id : uuid <<FK>>
           use_spreaded_term_structures : boolean
         * modified_by : text
         * performed_by : text

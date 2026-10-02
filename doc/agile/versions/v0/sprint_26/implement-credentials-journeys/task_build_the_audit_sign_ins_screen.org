@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: BB04E2B0-20F7-4831-B6DF-5BC19057A661
+:END:
+#+title: Task: Build the sign-in audit screen
+#+description: Audit sign-ins runs in ores.web on the accepted variant B: three readings behind tabs over one filter bar, over the session and login-record reads the group already landed, with every panel that has no producer saying so.
+#+type: task
+#+level: s1
+#+filetags: :implement-credentials-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/audit-sign-ins-screen
+#+pr: 2495
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] in
+=ores.web= against the real server, on variant B of the accepted prototype: the
+active sessions, the session activity and the failed attempts take turns in the
+body under one filter bar, with Refresh as the only action.
+
+The screen reads what the group already landed — the sessions, the active
+sessions and the login records — and states every panel that has no producer,
+rather than drawing an empty one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-01                               |
+
+* Acceptance
+
+- The screen is reachable from the signed-in shell and reads the sessions, the
+  active sessions and the login records through the BFF routes that already
+  serve them.
+- The account filter is drawn and disabled, with the reason: =iam.v1.sessions.list=
+  takes no account filter, so the server cannot apply one.
+- The session activity panel says its data is not available. Nothing serves
+  =iam.v1.sessions.samples= on either transport, so no empty chart and no
+  fabricated sample rows are drawn.
+- The authentication events are a gap line, not an empty log. No subject carries
+  them on any surface.
+- The failure count and the lock state travel together, and Refresh is the only
+  action: no version, diff or revert control appears.
+- The screen says that nothing writes a session's end time, so an old session
+  cannot be told from a live one in the session list.
+
+* Plan
+
+1. Read the accepted variant B on =prototype/audit-sign-ins= and the three reads
+   the group landed.
+2. Build =/audit= behind the signed-in shell, composing =AppShell= with the
+   shared primitives.
+3. State every gap the prototype records: the account filter, the samples, the
+   auth events and the missing end time.
+4. Drive the screen against the running fleet, then land it.
+
+* Notes
+
+*No new server work.* All three reads this screen needs are landed; the two
+handler gaps the inventory records are =sessions.active=, which is implemented,
+and =sessions.samples=, which cannot be implemented because nothing writes
+=ores_iam_session_samples_tbl=. The samples panel therefore states the gap
+instead of waiting on a task.
+
+*The end-time gap is the screen's honesty problem.* Nothing writes a session's
+=end_time=, so every session row looks open and the "ended" state has no
+producer. The screen states this beside the list rather than inventing an ended
+state.
+
+*The account filter is a scope gap, not a route gap.* Widening
+=iam.v1.sessions.list= with an account filter is its own task, and the
+prototype already draws the control as unavailable.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2495][#2495]] | [agile] Close the credentials journeys story |
+| [[https://github.com/OreStudio/OreStudio/pull/2494][#2494]] | [web] Build the sign-in audit screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built 2026-10-01.
+
+=Audit: sign-ins= is a route behind the signed-in shell, and it adds no server
+work: it reads the sessions, the active sessions and the login records through
+the routes the group already landed. The screen is the accepted prototype's
+variant B, and the reading in view is a query parameter, so =/audit?tab=failures=
+opens the failed attempts directly.
+
+Every reading the server cannot serve says so rather than being drawn empty. The
+account filter is disabled because the session read takes no account filter, and
+the event filter because no subject carries the events. The session-activity
+panel shows the session row's own byte totals and states that the sample series
+behind them has no producer, because nothing writes a row of
+=ores_iam_session_samples_tbl=; no empty chart is drawn. The sessions panel says
+that nothing writes an end time, so every session reads as open and an old one
+cannot be told from a live one.
+
+The period filter works, and the screen says how: the reads take no time bound,
+so it filters in the browser over the page that was read.
+
+[[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] is corrected in
+this branch for the claims this group's own work made false: the BFF now serves
+the three reads the journey said it did not, and =iam.v1.sessions.active= is no
+longer a stub that answers with no rows.
+
+Verification. =npm run typecheck= passes across the three packages, Prettier is
+clean, and the suites are green: bff 102 tests in 21 files, web 198 in 19,
+wire-protocol 51 in 7. Six of the web tests render each reading from a fixture
+and assert the reading each tab shows, the two filters being unavailable with
+their reasons, the sample series being stated as missing, and the gap list.
+
+*What is still missing.* The screen has no test that drives a browser, because
+the web package has no DOM harness; the readings are rendered from a fixture
+instead. And the session reads need =iam::sessions:read= and the login-record
+read =iam::login_info:read=, which the inventory records where the catalogue
+grants them.

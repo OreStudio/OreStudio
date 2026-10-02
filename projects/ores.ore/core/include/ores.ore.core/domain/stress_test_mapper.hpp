@@ -35,10 +35,8 @@ namespace ores::ore::domain {
  * @brief One ORE stress document, mapped to the analytics stress entities.
  *
  * The library is the document and the scenarios are its StressTest elements,
- * in order. The shift blocks a scenario carries are not modelled yet, so each
- * family a scenario uses is counted into unmodelled: a document that applies
- * shifts cannot round trip until they are, and saying which families are in
- * play is how the next step is chosen.
+ * in order. Every shift block a scenario carries is mapped to a shift row and
+ * written back, so a document that applies shifts round trips.
  */
 struct mapped_stress_scenario {
     analytics::domain::stress_test_scenario scenario;
@@ -55,9 +53,9 @@ struct mapped_stress_test {
      * @brief The families a scenario applies that the mapper cannot write back,
      * and how many scenarios carry each.
      *
-     * The count is of scenarios rather than of shift entries: it answers "which
-     * family is in the way", which is what chooses the next one to map, and not
-     * "how much shifting is there".
+     * Every family is mapped, so this is empty for every document. It stays
+     * while the callers that report it do, and a regression that drops a family
+     * shows up here rather than silently in the round trip.
      */
     std::map<std::string, std::size_t> unmodelled;
 

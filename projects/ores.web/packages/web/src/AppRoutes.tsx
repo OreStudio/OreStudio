@@ -32,7 +32,11 @@ import { SignUpJourney } from './journeys/SignUpJourney.js';
 import { AppShell } from './components/AppShell.js';
 import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
+import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
+import { RescuePage } from './pages/RescuePage.js';
+import { SecurityPage } from './pages/SecurityPage.js';
+import { TenantRunPage } from './pages/TenantRunPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
@@ -197,8 +201,44 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path="/security"
+                element={signedIn(gate.version, session, onSignOut, (view) => (
+                    <SecurityPage session={view} />
+                ))}
+            />
+            {/*
+             * The administrator's half of the credentials topic. It is a
+             * screen of its own rather than a panel beside Security, because
+             * it acts on somebody else's account and Security is the member's
+             * own.
+             */}
+            <Route
+                path="/rescue"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <RescuePage />
+                ))}
+            />
+            {/*
+             * The record of what happened: the tenant's sessions, their
+             * activity and the sign-ins that failed. It is the administrator's
+             * third screen rather than a panel of Security, because it reads
+             * the tenant and not the member.
+             */}
+            <Route
+                path="/audit"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <AuditPage />
+                ))}
+            />
+            <Route
                 path="/tenants/new"
                 element={signedIn(gate.version, session, onSignOut, () => newTenantJourney)}
+            />
+            <Route
+                path="/tenants/runs/:instanceId"
+                element={signedIn(gate.version, session, onSignOut, () => (
+                    <TenantRunPage />
+                ))}
             />
             <Route
                 path="/parties/new"

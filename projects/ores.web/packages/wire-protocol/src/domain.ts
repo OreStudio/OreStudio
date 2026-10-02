@@ -120,6 +120,23 @@ export type PartySummary = z.infer<typeof partySummarySchema>;
  * tenants somebody set up" excludes the row whose id is the system id rather
  * than trusting this shape to have done it.
  */
+/**
+ * The provisioning run that set a tenant up, as far as a roster needs it.
+ *
+ * `status` is the engine's state name: `in_progress`, `completed`, `failed`,
+ * `compensating` or `compensated`. The step index counts from zero, as the
+ * engine counts it, and `error` is empty unless the run stopped on one.
+ */
+export const tenantSetupSchema = z.object({
+    instanceId: z.string(),
+    status: z.string(),
+    currentStepIndex: z.int().nonnegative(),
+    stepCount: z.int().nonnegative(),
+    error: z.string(),
+});
+
+export type TenantSetup = z.infer<typeof tenantSetupSchema>;
+
 export const tenantSummarySchema = z.object({
     id: uuidSchema,
     code: z.string(),
@@ -129,6 +146,12 @@ export const tenantSummarySchema = z.object({
     hostname: z.string(),
     status: z.string(),
     registrationDefault: z.boolean(),
+    /**
+     * The latest run that provisioned this tenant, or `null` when none is on
+     * record: a tenant created before runs named their target, or one the
+     * reader could not ask about.
+     */
+    setup: tenantSetupSchema.nullable().default(null),
 });
 
 export type TenantSummary = z.infer<typeof tenantSummarySchema>;
@@ -137,6 +160,12 @@ export type TenantSummary = z.infer<typeof tenantSummarySchema>;
 export const tenantPageSchema = z.object({
     tenants: z.array(tenantSummarySchema),
     totalCount: z.int().nonnegative(),
+    /**
+     * Whether the provisioning runs could not be read. The roster is still
+     * the registry's answer, so a failed run read leaves every `setup` empty
+     * and says so here rather than failing the page.
+     */
+    setupUnavailable: z.boolean().default(false),
 });
 
 export type TenantPage = z.infer<typeof tenantPageSchema>;

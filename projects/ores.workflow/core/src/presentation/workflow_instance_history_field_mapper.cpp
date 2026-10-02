@@ -36,6 +36,8 @@ render_workflow_instance_fields(const domain::workflow_instance& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Type", .value = v.type});
+    fields.push_back({.name = "Target Kind", .value = v.target_kind});
+    fields.push_back({.name = "Target ID", .value = boost::uuids::to_string(v.target_id)});
     fields.push_back({.name = "State ID", .value = boost::uuids::to_string(v.state_id)});
     fields.push_back({.name = "Request Json", .value = v.request_json});
     fields.push_back({.name = "Result Json", .value = v.result_json});

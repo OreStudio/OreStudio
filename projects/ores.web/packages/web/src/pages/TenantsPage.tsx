@@ -21,7 +21,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import type { TenantStatus, TenantSummary } from '@ores/wire-protocol/browser';
+import { Link } from 'react-router';
+import type { TenantSetup, TenantStatus, TenantSummary } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
@@ -67,7 +68,7 @@ export function TenantsPage(): ReactNode {
         );
     }
 
-    const { tenants, totalCount } = roster.data;
+    const { tenants, totalCount, setupUnavailable } = roster.data;
 
     /*
      * The page is the roster. A table inside a card that already carries the
@@ -89,6 +90,11 @@ export function TenantsPage(): ReactNode {
                     </LinkButton>
                 }
             />
+            {setupUnavailable && (
+                <div className="mb-4">
+                    <Notice tone="warn">{t('tenants.setupUnavailable')}</Notice>
+                </div>
+            )}
             {tenants.length === 0 ? (
                 <EmptyRoster />
             ) : (
@@ -118,7 +124,8 @@ function Roster({
                         <th className="py-2 pr-4 font-medium">{t('tenants.name')}</th>
                         <th className="py-2 pr-4 font-medium">{t('tenants.hostname')}</th>
                         <th className="py-2 pr-4 font-medium">{t('tenants.type')}</th>
-                        <th className="py-2 font-medium">{t('tenants.status')}</th>
+                        <th className="py-2 pr-4 font-medium">{t('tenants.status')}</th>
+                        <th className="py-2 font-medium">{t('tenants.setup')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -128,11 +135,14 @@ function Roster({
                             <td className="py-2.5 pr-4">{tenant.name}</td>
                             <td className="py-2.5 pr-4 font-mono text-xs">{tenant.hostname}</td>
                             <td className="py-2.5 pr-4 text-ink-muted">{tenant.type}</td>
-                            <td className="py-2.5">
+                            <td className="py-2.5 pr-4">
                                 <StatusBadge
                                     status={tenant.status}
                                     known={byCode.get(tenant.status)}
                                 />
+                            </td>
+                            <td className="py-2.5">
+                                <SetupCell setup={tenant.setup} />
                             </td>
                         </tr>
                     ))}
@@ -174,6 +184,46 @@ function StatusBadge({
         >
             {known?.name ?? status}
         </span>
+    );
+}
+
+/** The colour each unfinished run state is drawn in. */
+const SETUP_TONE: Record<string, string> = {
+    in_progress: 'text-accent-bright',
+    compensating: 'text-warn',
+    failed: 'text-down',
+    compensated: 'text-ink-faint',
+};
+
+/**
+ * Where a tenant's provisioning run has got to, and the way back to it.
+ *
+ * A completed run says nothing, because the tenant's own status already says
+ * the tenant is there. Every other run links to its rail, which is how a person
+ * who left the journey returns to it: the run kept working on the server, and
+ * a failed one is resumed from that page. A state this screen has no words for
+ * is shown as the engine named it, and still links to the run.
+ */
+function SetupCell({ setup }: { readonly setup: TenantSetup | null }): ReactNode {
+    const { t } = useTranslation();
+    if (setup === null || setup.status === 'completed') {
+        return null;
+    }
+    const known = setup.status in SETUP_TONE;
+    const label = known
+        ? t(`tenants.setupState.${setup.status}`, {
+              step: setup.currentStepIndex + 1,
+              count: setup.stepCount,
+          })
+        : setup.status;
+    return (
+        <Link
+            to={`/tenants/runs/${encodeURIComponent(setup.instanceId)}`}
+            className={`text-xs underline-offset-2 hover:underline ${SETUP_TONE[setup.status] ?? 'text-ink'}`}
+            title={setup.error === '' ? undefined : setup.error}
+        >
+            {label}
+        </Link>
     );
 }
 

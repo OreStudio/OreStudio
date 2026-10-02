@@ -50,6 +50,17 @@ inline constexpr std::string_view provision_tenant_workflow_type = "provision_te
 inline constexpr std::string_view provision_party_workflow_type = "provision_party_workflow";
 
 /**
+ * @brief What each run acts on, as the start message states it.
+ *
+ * The engine stores the pair and never reads it, so the word a component chooses
+ * is its own. These two are the pair ores.iam puts on the runs it starts, and a
+ * component that wants to find the work it has in flight on one of its own
+ * entities asks for the same pair.
+ */
+inline constexpr std::string_view provision_tenant_target_kind = "tenant";
+inline constexpr std::string_view provision_party_target_kind = "party";
+
+/**
  * @brief The subject every step of a provisioning run is dispatched to.
  *
  * One subject serves every step, because the payload says which kind of work

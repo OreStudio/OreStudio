@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-workflow_instances add <type> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>
+workflow_instances add <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =workflow.v1.workflow_instances.put=.
 
 #+name: workflow_instances-add
 #+begin_src ores-shell :tangle workflow_instances-add.ores :exports none
-workflow_instances add __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
+workflow_instances add __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-workflow_instances set <id> <type> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary> [--version <n>]
+workflow_instances set <id> <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =workflow.v1.workflow_instances.put=.
 
 #+name: workflow_instances-set
 #+begin_src ores-shell :tangle workflow_instances-set.ores :exports none
-workflow_instances set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
+workflow_instances set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-workflow_instances put-many --count <n> <id> <type> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>
+workflow_instances put-many --count <n> <id> <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =workflow.v1.workflow_instances.put_many=.
 
 #+name: workflow_instances-put-many
 #+begin_src ores-shell :tangle workflow_instances-put-many.ores :exports none
-workflow_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
+workflow_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 0 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

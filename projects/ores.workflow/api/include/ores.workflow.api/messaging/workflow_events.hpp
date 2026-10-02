@@ -163,6 +163,23 @@ struct start_workflow_message {
     std::string tenant_id;
 
     /**
+     * @brief What the run acts on, named by the caller, or empty.
+     *
+     * The engine stores it on the instance and never interprets it, so a caller
+     * states its own kind without the engine learning the caller's vocabulary.
+     */
+    std::string target_kind;
+
+    /**
+     * @brief Identity of the entity the run acts on, or empty.
+     *
+     * A start that names a target the engine cannot read is refused rather than
+     * run without one, because a run that cannot be found by what it acts on is
+     * a run the caller cannot follow.
+     */
+    std::string target_id;
+
+    /**
      * @brief Serialised JSON payload for the initial step's command builder.
      */
     std::string request_json;

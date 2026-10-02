@@ -121,6 +121,7 @@ function fakeServer(): JourneyServer {
         signOut: vi.fn(async () => undefined),
         passwordPolicy: vi.fn(async () => policy),
         seedProfiles: vi.fn(async () => [profile]),
+        tenantCodes: vi.fn(async () => []),
         provision: vi.fn(async () => ({
             success: true,
             message: '',
@@ -191,6 +192,42 @@ describe('the starting points', () => {
 
         expect(chosen).toContain('aria-checked="true"');
         expect(unchosen).toContain('aria-checked="false"');
+    });
+
+    /*
+     * A profile that names its own tenant code creates that tenant, and a code
+     * is unique. Once the tenant exists the card is still shown, so the person
+     * can see the starting point, but it cannot be chosen and says why.
+     */
+    it('greys out a starting point whose tenant already exists', () => {
+        const acme = {
+            ...acmeProfile,
+            tenant: { ...acmeProfile.tenant, name: 'Acme Corporation', code: 'acme_corporation' },
+        };
+        const html = render(
+            <ProfileCards
+                profiles={[acme, profile]}
+                selected={undefined}
+                onSelect={() => undefined}
+                takenCodes={new Set(['acme_corporation'])}
+            />,
+        );
+
+        expect(html.match(/disabled=""/g)).toHaveLength(1);
+        expect(html).toContain('✓');
+        expect(html).toContain('Installed');
+    });
+
+    it('leaves every starting point open when no tenant exists', () => {
+        const html = render(
+            <ProfileCards
+                profiles={[acmeProfile, profile]}
+                selected={undefined}
+                onSelect={() => undefined}
+            />,
+        );
+
+        expect(html).not.toContain('disabled=""');
     });
 });
 

@@ -36,6 +36,8 @@ render_stress_test_library_fields(const domain::stress_test_library& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Name", .value = v.name});
+    fields.push_back(
+        {.name = "Configuration ID", .value = boost::uuids::to_string(v.configuration_id)});
     fields.push_back({.name = "Use Spreaded Term Structures",
                       .value = v.use_spreaded_term_structures ?
                                    (*v.use_spreaded_term_structures ? "true" : "false") :

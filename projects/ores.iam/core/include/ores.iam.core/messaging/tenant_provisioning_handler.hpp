@@ -277,6 +277,11 @@ public:
             // it: their session is in another tenant. The tenant being
             // provisioned travels in the request and in every step command.
             start.tenant_id = ctx_expected->tenant_id().to_string();
+            // What the run acts on, so the tenant it creates can be followed
+            // from the tenant list after whoever asked for it has left the
+            // screen the run was started from.
+            start.target_kind = std::string(ores::iam::workflow::provision_tenant_target_kind);
+            start.target_id = created.tenant_id;
             start.request_json = rfl::json::write(run);
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
@@ -538,6 +543,10 @@ public:
             ores::workflow::messaging::start_workflow_message start;
             start.type = std::string(ores::iam::workflow::provision_party_workflow_type);
             start.tenant_id = tenant_id;
+            // The party the run acts on, by the identifier the refusal above
+            // resolved, so the run can be found from the party it works on.
+            start.target_kind = std::string(ores::iam::workflow::provision_party_target_kind);
+            start.target_id = found.front();
             start.request_json = rfl::json::write(run);
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;

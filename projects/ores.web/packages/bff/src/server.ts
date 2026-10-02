@@ -65,11 +65,13 @@ import {
     readLoginInfoPage,
     readSessionsPage,
     readTenantStatuses,
+    readTenantSetups,
     readTenantsPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
     sessionViewSchema,
+    setAccountLocked,
     signupRequestSchema,
     signupResultSchema,
     tenantPageSchema,
@@ -78,6 +80,7 @@ import {
     NotAuthenticatedError,
     type LoginOutcome,
     type PartySummary,
+    type TenantSetup,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
 import type { LoadedSiteConfiguration } from './site-config.js';
@@ -734,6 +737,43 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
+     * Locks one account.
+     *
+     * A lock refuses the next sign-in and leaves every session the account
+     * already holds open, which is why the screen says so beside the control: an
+     * administrator who expects a lock to end a stolen session has to know that
+     * it does not.
+     */
+    server.post('/api/accounts/:accountId/lock', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { accountId?: string };
+        const accountId = params.accountId ?? '';
+        if (accountId.length === 0) {
+            throw invalidRequest('An account id is required.');
+        }
+        await setAccountLocked(session.client, { accountId, locked: true });
+        return { success: true };
+    });
+
+    /**
+     * Unlocks one account.
+     *
+     * The server clears the failed attempt count as part of the write, so an
+     * account unlocked after a run of failed attempts starts the count again
+     * rather than one attempt from locking itself.
+     */
+    server.post('/api/accounts/:accountId/unlock', async (request) => {
+        const session = requireSession(request);
+        const params = request.params as { accountId?: string };
+        const accountId = params.accountId ?? '';
+        if (accountId.length === 0) {
+            throw invalidRequest('An account id is required.');
+        }
+        await setAccountLocked(session.client, { accountId, locked: false });
+        return { success: true };
+    });
+
+    /**
      * The tenant's login records, one page at a time.
      *
      * The audit screen reads the failed attempts from this list, and a locked
@@ -840,9 +880,34 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw invalidRequest('The page offset and limit must be whole numbers.');
         }
         const read = await readTenantsPage(session.client, page.data);
+        /*
+         * Each tenant is joined with the run that provisioned it, which is how a
+         * person who left the journey finds the work again. The runs belong to
+         * the session's own tenant and name the tenant they act on as their
+         * target, so one read answers every row. A failure to read them is not a
+         * failure to read the roster: the rows go out without a run, and the
+         * page is told the runs are missing rather than that there are none.
+         */
+        let setups: ReadonlyMap<string, TenantSetup> = new Map();
+        let setupUnavailable = false;
+        try {
+            const runs = await readTenantSetups(session.client);
+            setups = runs.setups;
+            if (!runs.complete) {
+                request.log.warn(
+                    'The provisioning run read reached its limit; the oldest runs are not shown.',
+                );
+            }
+        } catch (error) {
+            request.log.warn({ err: error }, 'The provisioning runs were not read.');
+            setupUnavailable = true;
+        }
         return tenantPageSchema.parse({
-            tenants: read.tenants.filter((tenant) => tenant.id !== SYSTEM_TENANT_ID),
+            tenants: read.tenants
+                .filter((tenant) => tenant.id !== SYSTEM_TENANT_ID)
+                .map((tenant) => ({ ...tenant, setup: setups.get(tenant.id) ?? null })),
             totalCount: Math.max(0, read.totalCount - 1),
+            setupUnavailable,
         });
     });
 

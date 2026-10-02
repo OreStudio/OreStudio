@@ -66,6 +66,7 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
             specialChars: '!@#$%^&*',
         })),
         seedProfiles: vi.fn(async () => []),
+        tenantCodes: vi.fn(async () => []),
         leiEntities: vi.fn(async () => [barclays]),
         provision: vi.fn(async () => ({
             success: true,

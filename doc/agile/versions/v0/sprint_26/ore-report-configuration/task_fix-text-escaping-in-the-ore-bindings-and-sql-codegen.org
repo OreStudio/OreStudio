@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/fix-text-escaping-in-the-ore-bindings-and-sql-codegen
-#+pr:
+#+pr: 2505
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -153,7 +153,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2505][#2505]] | [ore] Decode entity references in element text and escape SQL literals |
 
 * Review
 

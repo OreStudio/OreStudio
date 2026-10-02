@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 3153DC69-27D3-40A0-83A8-6B17F545B3A8
+:END:
+#+title: The shell splits a word at an exclamation mark
+#+description: ores.shell's REPL tokenizer, the vendored cli library's detail/split.h, makes every ! a token of its own, inside a word as well as at its start. A password such as Abc!def becomes three arguments, and the command reports 'Expected 3 arguments, got 5' with no mention of the !. Quoting or escaping the word avoids it.
+#+type: capture
+#+level: cross
+#+filetags: :shell:usability:passwords:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.shell= reads each line with the vendored =cli= library, and its
+tokenizer (=cli/detail/split.h=, =Text::EvalSpace= and =Text::EvalWord=) makes
+every =!= a token of its own, inside a word as well as at its start. The
+library does this for its history-recall syntax.
+
+Observed on 2026-10-02 with =bootstrap create-initial-admin=, which takes three
+arguments:
+
+| Password | Arguments the command sees |
+|----------+-----------------------------|
+| =Abc!def= | 5: =Abc=, =!=, =def= in place of one |
+| =Abcdef!= | 4 |
+| ='Abc!def'=, ="Abc!def"=, =Abc\!def= | 3, correct |
+
+The command answers "Expected 3 arguments, got 5" and does not mention the =!=,
+so the person cannot tell what went wrong. A password policy that asks for a
+symbol makes =!= a likely choice.
+
+The fix could be any of these:
+
+- Stop the split: patch or configure the tokenizer so that =!= is an ordinary
+  character inside a word, if the shell does not use history recall.
+- Explain it: when an argument count is wrong and a token is a bare =!=, say
+  that =!= must be quoted.
+- Document it: the bootstrap and login recipes quote passwords.
+
+* Why
+
+Found while bootstrapping an administrator for a live check of the workflow
+shell verbs. Scripts that interpolate a password into a command
+(=$V04_PASSWORD=, the =.env= login defaults) inherit the same split.
+
+* References
+
+- [[id:5C04D943-1792-43C5-883E-A0938DE2B00F][Model the workflow query protocol as an operation]]
+
+* See also
+
+-

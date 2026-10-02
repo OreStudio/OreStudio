@@ -20,6 +20,7 @@
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <functional>
@@ -366,6 +367,53 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
         REQUIRE(received.size() == 1);
         REQUIRE(received[0] == recovered_payload);
     }
+
+    listener.stop();
+}
+
+TEST_CASE("postgres_listener_service_drains_a_burst_of_notifications", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A bulk import fires one notification per row. The listener must drain a
+    // burst as fast as it can read it: while it falls behind, PostgreSQL holds
+    // its backend in ClientWrite, and on a shared server such a backend stalls
+    // every DROP DATABASE until the backlog clears.
+    constexpr int burst = 20000;
+    const std::string channel_name =
+        "test_channel_burst_" +
+        std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+
+    std::atomic<int> received{0};
+    auto callback = [&](const std::string&, const std::string&) {
+        ++received;
+    };
+
+    database_helper h;
+    postgres_listener_service listener(h.context(), callback);
+    listener.start();
+    listener.subscribe(channel_name);
+    REQUIRE(listener.wait_until_ready());
+
+    // One statement, so the whole burst commits at once, with payloads the size
+    // a notify trigger writes.
+    auto sender = sqlgen::postgres::connect(h.context().credentials());
+    REQUIRE(sender);
+    const auto start = std::chrono::steady_clock::now();
+    REQUIRE((*sender)->execute("SELECT pg_notify('" + channel_name +
+                               "', repeat('x', 300) || g::text) FROM generate_series(1, " +
+                               std::to_string(burst) + ") AS g"));
+
+    const bool drained = wait_for([&] { return received == burst; }, std::chrono::seconds(60));
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - start);
+    BOOST_LOG_SEV(lg, info) << "Drained " << received << " of " << burst << " notifications in "
+                            << elapsed.count() << "ms.";
+    WARN("drained " << received << " of " << burst << " in " << elapsed.count() << "ms");
+
+    REQUIRE(drained);
+    // A burst this size is a few megabytes; reading it takes seconds, not the
+    // sum of fixed pauses between polls.
+    CHECK(elapsed < std::chrono::seconds(10));
 
     listener.stop();
 }

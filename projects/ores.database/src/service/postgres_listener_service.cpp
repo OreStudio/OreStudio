@@ -275,8 +275,14 @@ void postgres_listener_service::listen_loop() {
             continue;
         }
 
-        // Sleep briefly before checking again
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // Sleep only when the poll found nothing. Each poll reads what the
+        // socket holds at that moment, so a fixed pause after every poll caps
+        // the listener at one socket read per pause: a bulk import's per-row
+        // notifications then pile up for minutes, and PostgreSQL holds this
+        // backend in ClientWrite meanwhile, which stalls every DROP DATABASE
+        // on the server.
+        if (batch.empty())
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     BOOST_LOG_SEV(lg(), info) << "Listener thread stopped.";

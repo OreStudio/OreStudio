@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 6CC63A51-AF75-4ADF-80D5-08CB5BF464D1
+:END:
+#+title: Task: Scaffold story: Hotfix: a service listener falls behind a burst of notifications
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :listener-falls-behind-a-notification-burst:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/listener-falls-behind-a-notification-burst
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The hotfix story, its task and the sprint wiring ride this task and the hotfix PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- The story and the implement task have every section filled, and the sprint lists the story.
+
+* Plan
+
+Documents only, scaffolded by =compass story new --kind hotfix=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story, the implement task and the sprint row are written.

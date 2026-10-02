@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: F07D086E-8D72-4A80-B0A2-0A3776D10E26
+:END:
+#+title: The event bus logs every event it publishes at INFO
+#+description: event_bus writes one INFO line per published event, so one corpus import put 566,867 lines in the marketdata service's journal.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-02
+#+updated: 2026-10-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=event_bus::publish= logs "Publishing event type ... to N subscriber(s)" at
+INFO for every event (=ores.eventing.api/service/event_bus.hpp:222=). Under a
+bulk write that is one log line per row: one corpus import put 566,867 such
+lines in the marketdata service's journal in under half an hour. Per-event
+lines belong at DEBUG or TRACE; INFO could report a count per batch.
+
+* Why
+
+At the default service log level of INFO the line is written for every
+event, so the journal grows by hundreds of megabytes per import and the line
+that matters in an incident is buried. Found while diagnosing the stalled
+marketdata listener.
+
+* References
+
+- =projects/ores.eventing/api/include/ores.eventing.api/service/event_bus.hpp:222=
+
+* See also
+
+- [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]]

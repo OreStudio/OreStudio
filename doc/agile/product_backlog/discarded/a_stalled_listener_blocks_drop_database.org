@@ -32,6 +32,14 @@ hours), and one environment's stalled connection can block every other
 environment on the shared server. Neither the cause of the stall nor whether
 the backlog came from the large corpus imports run that day is known yet.
 
+* Resolution
+
+Fixed by [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of
+notifications]]. The listener did not stall: it paused 100 ms after every poll
+and so drained at about 460 notifications a second, while this environment's
+corpus imports sent one per inserted row. It recurred after a restart because
+the cause was throughput, not a stuck thread.
+
 * References
 
 - =projects/ores.database/src/service/postgres_listener_service.cpp=

@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 5EC3425B-7D7B-44B6-93B8-26BB313DBF24
+:END:
+#+title: Task: Implement Hotfix: a service listener falls behind a burst of notifications
+#+description: Initial task for: Hotfix: a service listener falls behind a burst of notifications
+#+type: task
+#+level: s1
+#+filetags: :listener-falls-behind-a-notification-burst:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/listener-falls-behind-a-notification-burst
+#+pr: 2513
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=postgres_listener_service::listen_loop= sleeps only when a poll returns no
+notifications, so a backlog drains at the speed the socket can be read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- =postgres_listener_service_drains_a_burst_of_notifications= sends 20,000
+  notifications in one statement and requires them drained within 10 seconds;
+  it fails on the old loop.
+- Every =[postgres_listener]= test passes.
+- With the marketdata service running, a whole-corpus import leaves no
+  listener backend in =ClientWrite= once the import ends.
+
+* Plan
+
+Diagnosis, from the evidence of 2026-10-02:
+
+1. Two other environments' =DROP DATABASE= stalled on =ProcSignalBarrier=. The
+   blocker was prime_origin's marketdata listener backend, in =ClientWrite=.
+2. The =LISTEN ores_refdata_crm_enabled_derived_pairs= shown for that backend
+   was only its last statement. After the 18:57 restart the service ran no CRM
+   refresh at all, so the CRM channel was not the cause.
+3. The service's journal held 566,867 =market_observation_event= lines from
+   19:47 until it was stopped at 20:14, at a steady 10,000 to 26,000 a minute:
+   the notifications of this environment's corpus import tests, one per row.
+4. A test with a callback that only counts drained 20,000 notifications in
+   43,463 ms, about 460 a second: the cap is the loop, not the work done per
+   notification.
+5. The loop paused 100 ms after every poll, whether or not the poll found
+   anything, and a poll reads only what the socket holds at that moment.
+
+Fix: pause only after a poll that found nothing.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Burst of 20,000 notifications, old loop | drained in 43,463 ms (about 460 a second); the test fails | =ores.database.tests "postgres_listener_service_drains_a_burst_of_notifications"= | =30fafacd28= |
+| Burst of 20,000 notifications, fixed loop | drained in 321 ms | same | =30fafacd28= plus this change |
+| Listener tests | 41 assertions in 8 cases pass | =ores.database.tests "[postgres_listener]"= | =30fafacd28= plus this change |
+| Incident, service journal | 566,867 =market_observation_event= lines from 19:47 to 20:14, 10,000 to 26,000 a minute | =journalctl --user -u ores.marketdata.service-prime_origin.service= | the service as run on 2026-10-02 |
+| Whole-corpus import with the fixed service | 20:21:57 to 20:27:44; listener backend never in =ClientWrite= over 345 one-second samples; last event at 20:27:46 | =pg_stat_activity= polled once a second during =every_line_of_the_whole_corpus_reaches_the_database= | =30fafacd28= plus this change |
+
+* Notes
+
+The =LISTEN ores_refdata_crm_enabled_derived_pairs= shown against the stuck
+backend sent the first reading toward the CRM refresh, which also runs on the
+listener thread. The journal ruled it out: no CRM refresh ran after the
+restart. The column is the connection's last statement, not the channel it
+was blocked on.
+
+During the incident a check of =pg_stat_activity= with a bare =psql= printed
+nothing because it had no password, and that silence was first read as "no
+backend". =compass sql=, or =psql= with the environment's =.env= loaded, is the
+check that works.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2513][#2513]] | [database] Drain the listener's backlog without pausing between polls |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The listener pauses only after a poll that found nothing. A burst that took 43
+seconds drains in a third of a second, and a whole-corpus import no longer
+leaves the marketdata listener behind.

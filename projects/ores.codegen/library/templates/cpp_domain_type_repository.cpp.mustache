@@ -121,7 +121,12 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 {{#current_state}}
     const auto t = apply_claim(ctx, v, claim);
+{{#immutable}}
+    const auto query = sqlgen::insert({{entity_singular}}_mapper::map(t));
+{{/immutable}}
+{{^immutable}}
     const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(t));
+{{/immutable}}
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)
@@ -144,7 +149,12 @@ void {{entity_singular}}_repository::write(
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
 {{#current_state}}
+{{#immutable}}
+    const auto query = sqlgen::insert({{entity_singular}}_mapper::map(batch));
+{{/immutable}}
+{{^immutable}}
     const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(batch));
+{{/immutable}}
     const auto r = sqlgen::session(ctx.connection_pool())
                        .and_then(sqlgen::begin_transaction)
                        .and_then(query)

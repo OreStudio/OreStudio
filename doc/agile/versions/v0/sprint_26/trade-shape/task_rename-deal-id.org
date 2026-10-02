@@ -8,7 +8,7 @@
 #+filetags: :trade-shape:sprint_26:v0:
 #+owner: marco
 #+branch: feature/rename-deal-id
-#+pr:
+#+pr: 2524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2524][#2524]] | [doc] Call the firm's own id the trade id throughout the knowledge notes |
 
 * Review
 

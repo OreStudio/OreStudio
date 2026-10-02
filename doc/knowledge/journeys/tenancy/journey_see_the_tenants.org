@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-10-01
-#+updated: 2026-10-01
+#+updated: 2026-10-02
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the tenants a deployment holds: their code, name, hostname, type and status.
@@ -77,7 +77,10 @@ find out what exists.
    them too. The server leaves them out, so the page and its total agree.
 7. *Leave, or go on.* The administrator leaves the roster, or picks a tenant
    and goes on to another operation on it: retiring or resetting it, or adding
-   a party to it. The roster carries the chosen row into that operation.
+   a party to it. The roster carries the chosen row into that operation. Each
+   row has one menu of actions. *Resume setup* opens the tenant's provisioning
+   run when that run did not complete. *Open* and *Retire or reset* show as not
+   built yet until their journeys exist.
 
 The roster does not show the system tenant. The tenant registry is
 system-scoped: the table's own check requires every row to carry the system

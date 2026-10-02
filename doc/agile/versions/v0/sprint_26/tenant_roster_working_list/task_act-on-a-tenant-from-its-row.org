@@ -7,41 +7,61 @@
 #+level: s1
 #+filetags: :tenant_roster_working_list:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/act-on-a-tenant-from-its-row
+#+pr: 2516
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A system administrator acts on a tenant from its row in the roster: one menu
+per row holds what can be done to that tenant, and says plainly what cannot be
+done yet.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
 
--
+- Each roster row has an actions menu.
+- *Resume setup* opens the tenant's provisioning run when that run is
+  unfinished or failed, and is not offered otherwise.
+- *Open* and *Retire or reset* are shown as not built yet, the way the shell
+  marks a journey the tree has not built, rather than hidden or broken. *Open*
+  is wired when [[id:45E4EB0A-73ED-4361-920F-8928AAE2D9AB][Show one tenant]]
+  lands; *Retire or reset* waits for the capture
+  [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]].
+- Every new behaviour is proved by a test, and the screen was read against the
+  running deployment.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decision, 2026-10-02, the product owner's: build the menu now with *Resume
+setup* working, and *Open* and *Retire or reset* marked as not built; wire
+*Open* when the detail task lands. The retire or reset backend is mostly
+missing (no suspend, terminate or purge subject), so it is a capture rather
+than part of this task.
+
+1. A menu per row, built from a =details= element so it opens without
+   script and renders in the static web tests.
+2. *Resume setup* links to =/tenants/runs/:id= when the run is not completed.
+3. *Open* and *Retire or reset* render disabled with the shell's
+   "Not built yet" words.
+4. Tests for each item's state, then a live read.
 
 * Measurements
 
@@ -74,12 +94,18 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2516][#2516]] | [web] Act on a tenant from its row |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| L1 | The menu stays open when the person clicks elsewhere | =TenantsPage.tsx= | Decline | A =details= element opens and closes without script, which is the plan's choice. Closing on an outside click needs an effect and adds nothing the static tests can read. |
+| L2 | *Resume setup* repeats the Setup column's link | =TenantsPage.tsx= | Decline | The Setup column reports the run; the menu is the one place a person looks for what to do. Both name the same run, and the test counts both links. |
+| R1.1 | The menu does not close on outside click or Escape | =TenantsPage.tsx= | Accept in part | Escape closes it. An outside click does not: the menu now sits in the row's flow, so open menus no longer overlap. |
+| R1.2 | =aria-disabled= has no meaning on a list item | =TenantsPage.tsx= | Accept | Dropped; the visible "Not built yet" words carry the meaning, and the test counts them. |
+| R1.3 | The resume guard repeats the null check | =TenantsPage.tsx= | Accept | A local =setup= narrows the type once. |
+| R1.4 | The summary shows no keyboard focus | =TenantsPage.tsx= | Accept | A =focus-visible= outline in the accent colour. |
+| R1.5 | The scrolling table wrapper clips a floating menu | =TenantsPage.tsx= | Accept | Real defect: a roster of one row clipped the menu. The menu now renders in the cell's flow. |
+| R1.6 | The test's count of two run links needs a reason | =TenantsPage.test.tsx= | Accept | A comment names both links. |
+| R1.7 | Resume covers in-progress and cancelled runs too | =TenantRunPage.tsx= | Decline | The run page draws the shared progress rail for any status and offers retry on failure. |

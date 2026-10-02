@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 8A2A9408-F6C6-4F37-AF6C-557569CA9029
+:END:
+#+title: Task: Implement Hotfix: the marketdata core suite times out in CI
+#+description: Initial task for: Hotfix: the marketdata core suite times out in CI
+#+type: task
+#+level: s1
+#+filetags: :marketdata-corpus-walk-timeout:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/marketdata-corpus-walk-timeout
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BFC0B81D-9DAB-421F-B199-68188E1BD64C][Hotfix: the marketdata core suite times out in CI]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The corpus walk checks each file with one query instead of one query per series
+in the tenant, so its cost grows with the corpus rather than with its square.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BFC0B81D-9DAB-421F-B199-68188E1BD64C][Hotfix: the marketdata core suite times out in CI]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- After each file, the walk reads that file's rows with one query filtered on
+  the file's source tag.
+- The check compares (key, value) pairs, not values alone.
+- The suite passes locally, and its run time is recorded in =* Measurements=.
+
+* Plan
+
+Diagnosis: after each of about 100 files, =import_and_verify= read every series
+in the tenant and then every series' observations, one query per series, to
+find the rows stamped with the file's tag. The tenant grows with each file, so
+the walk made about 100,000 round trips and read the growing tenant 100 times.
+The CMake comment on the suite already measured the walk at about half an hour.
+
+Fix: one query per file, filtered on =source= and the current-row sentinel,
+returning (key, value) pairs. The test change only; no production code moves.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Suite time, before | 1,569.84 s (walk 1,524.80 s), 2,427 assertions, passed | =compass test run -- -R "^ores.marketdata.core.tests$" --timeout 3600= | =bb602755aa= build |
+| Suite time, after | 367.28 s, 2,427 assertions, passed | =compass test run -- -R "^ores.marketdata.core.tests$" --timeout 3600= | =dbba7d3d29= plus this change |
+| Walk time, after | 317.91 s | same run, Catch2 durations | =dbba7d3d29= plus this change |
+| Walk queries, after | 15,047 queries take 278 of 327 s; 10,365 are =read_latest_by_uri= | walk alone with =ORES_TEST_LOG_ENABLED=true= and level =debug=, gaps summed per log line | =dbba7d3d29= plus this change |
+| CI before the fix | killed at 600.11 s on all four Linux jobs; 339.82 s and 495.55 s on macOS | Continuous Linux run 36967550670, Continuous MacOS run 36957593572 | =7fb78ed6e4= |
+
+* Notes
+
+The local machine shared its CPU with another worktree's build during both
+runs, so the absolute times are high; the ratio is the measurement.
+
+What remains of the walk is the import's own cost: one series lookup per
+distinct series per file, at about 18 ms of fixed per-query overhead. That is
+production code and outside this hotfix; it is captured as
+[[id:0669523D-075C-4A7E-921E-83B76E24979C][The marketdata import looks up each
+series with its own query]].
+
+The macOS CI failure in the same window is =ores.workflow.core.tests=, not this
+suite; it is captured as
+[[id:64739960-499A-4B10-AFCF-C8EE3DB87476][The workflow step-deadline tests fail
+on macOS]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The walk checks each file with one query on its source tag and compares (key,
+value) pairs. The suite went from 1,570 s to 367 s locally with the same 2,427
+assertions, all passing.

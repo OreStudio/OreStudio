@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/define-the-typed-datum-model
+#+pr: 2511
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ which order, and which are coordinates.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -68,9 +68,44 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Model size | 45 instrument types, 16 quote types, 61 fields, 5 value kinds plus none | =datum/ore_types.hpp=, =datum/schema.hpp= | =30fafacd28= plus this change |
+| Datum tests | 396 assertions in 18 cases pass | =ores.marketdata.api.tests "[datum]"= | =30fafacd28= plus this change |
+| API suite | 465 assertions in 32 cases pass | =ores.marketdata.api.tests= | =30fafacd28= plus this change |
+| Drift | none for marketdata | =check_component_drift.py --component marketdata --dry-run= | =30fafacd28= plus this change |
 
 * Notes
+
+Choices made while writing the model, each inside the agreed design:
+
+- *Fields take ORE's meanings and names*, from the inspectors the catalogue
+  records, in snake case: =fwd_start= where the old grammar said =settle=,
+  =atm= and =relative= where it said =shift= and =strip=, =quote_tag= where it
+  read an index.
+- *Tokens ORE drops are fields all the same.* ORE ignores the curve name of a
+  ZERO or DISCOUNT key and the seventh segment of a basis swap; the datum keeps
+  them as =curve_id= and =identifier=, because a key must read back as written.
+- *One =term= type, with a kind.* ORE lets one slot hold a period or a date, and
+  a forward's also ON, TN, SN or a continuation =c1=. Separate period and date
+  types would need a field that holds either, so the value kinds are none,
+  text, term, decimal, strike and code.
+- *Numbers keep their text and are checked by the platform.* =decimal::parse=
+  validates through =ores::platform::numeric::parse_double=, the estate's one
+  locale-free number grammar, which exists because libc++ deletes the
+  floating-point =std::from_chars=. It is stricter than ORE's =std::stod=, which
+  accepts trailing text, =inf= and hexadecimal; the catalogue's keys carry none.
+- *A code is used only where ORE checks a vocabulary*: cap/floor, call/put,
+  payer/receiver, the swaption dimension, ORE's booleans, protection side, time
+  unit and DST. ORE accepts any seasonality type, so that field is text. ORE
+  upper-cases a time unit, so only that code compares without case.
+- *The equity ATM and ATMF shorthand is part of the strike*, flagged, so =ATMF=
+  and =ATM/AtmFwd= stay two keys although ORE reads them alike.
+- *The fields are a =std::vector=*, not a small vector; a datum holds at most
+  eight fields, and the choice can change behind the class.
+
+Found on the way: =curve_pillar_reader.cpp:59= and
+=curve_republish_service.cpp:128= convert observation values with =std::stod=,
+bypassing =parse_double=. That is for the clean-up task
+[[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]].
 
 The current identifiers carry every coordinate as =std::optional<std::string>=
 and pick roles from a model table. A variant with one struct per instrument type
@@ -91,12 +126,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2511][#2511]] | [marketdata] Define the typed market datum model |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Say that equality compares text, not value | =market_datum.hpp= | Accept | Documented on =operator==== and =series_of=: 1.0 and 1.00 are different datums and series. |
+| 2 | =get= throws where the datum does not hold the field | =market_datum.hpp= | Accept | Documented, pointing at =holds()=. |
+| 3 | =std::toupper= depends on the locale | =market_datum.cpp= | Accept | ASCII-only upper-casing. |
+| 4 | A hand-built ATM shorthand with another ATM type prints wrongly | =value.hpp= | Decline | A =strike= is built only by =parse=, its constructor being private, and =parse= sets the shorthand for ATM and ATMF alone. |
+| 5 | Check the period grammar against ORE's | =value.cpp= | Decline here | QuantLib's =PeriodParser= splits on =DdWwMmYy= and reads either case and combined units, as the model does; it also takes a sign, which the model does not. The codec task's catalogue check decides whether that matters. |
+| 6 | =series_of= ends in =.value()= | =market_datum.cpp= | Decline | Unreachable for a checked datum, as the reviewer notes. |
+| 7 | The constructor is quadratic in fields | =market_datum.cpp= | Decline | Rows have at most eight fields. |
 
 * Result
+
+=ores::marketdata::datum= holds the model: ORE's two enums, the value types,
+the 45-row schema with its compile-time checks, and =market_datum= with its two
+checked constructors, typed reads and =series_of=. It replaces nothing yet; the
+key codec is the next task.

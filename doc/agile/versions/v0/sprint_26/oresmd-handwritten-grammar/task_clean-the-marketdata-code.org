@@ -40,6 +40,7 @@ standard.
 - G08: =ores.marketdata.api=, =ores.marketdata.client= and =ores.marketdata.core= each have their namespace documentation header.
 - G02/H02: each of =market_observations= and =market_fixings= has one repository, and the survivor keeps the consumers both had.
 - The =market_series= table comment no longer describes the dropped columns.
+- Observation values convert through =ores::platform::numeric::parse_double=, not =std::stod= (=curve_pillar_reader.cpp:59=, =curve_republish_service.cpp:128=).
 - H03: no comment narrates edit history, no end-of-line comment remains, and comment volume follows the project rules, in hand-written code and in the templates that produce marketdata code.
 
 * Plan

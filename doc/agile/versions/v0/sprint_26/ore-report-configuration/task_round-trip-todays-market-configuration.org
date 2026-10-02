@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-todays-market-configuration
-#+pr: 2490
+#+pr: 2500
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -188,6 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2500][#2500]] | [ore] Round trip today's market configuration |
 | [[https://github.com/OreStudio/OreStudio/pull/2490][#2490]] | [agile] Scaffold today's market round trip task |
 
 * Review

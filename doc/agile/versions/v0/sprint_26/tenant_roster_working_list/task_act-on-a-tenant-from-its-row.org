@@ -28,11 +28,11 @@ done yet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Plan written. No code has changed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the menu. |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -100,6 +100,21 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | The menu stays open when the person clicks elsewhere | =TenantsPage.tsx= | Decline | A =details= element opens and closes without script, which is the plan's choice. Closing on an outside click needs an effect and adds nothing the static tests can read. |
+| L2 | *Resume setup* repeats the Setup column's link | =TenantsPage.tsx= | Decline | The Setup column reports the run; the menu is the one place a person looks for what to do. Both name the same run, and the test counts both links. |
 
 * Result
+
+Each roster row ends in an actions menu, built from a =details= element.
+*Resume setup* links to =/tenants/runs/:id= when the tenant's run is not
+completed, and is absent for a completed run or a tenant with none. *Open* and
+*Retire or reset* show with =aria-disabled= and the shell's "Not built yet"
+words. The summary carries the label "Actions for /name/" for screen readers.
+The words are in English, French and Portuguese, and the journey
+[[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] names the menu.
+
+Three new web tests prove the item states: 216 of 216 web tests pass and the
+typecheck is clean. The rebuilt bundle served by the running deployment
+carries the menu. The live roster holds no tenant with an unfinished run, so
+the live read shows only the two not-built items; the *Resume setup* branch is
+proved by the tests alone.

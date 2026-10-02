@@ -28,9 +28,13 @@
  * names its file. The seventeen kinds are seeded by the same script a recreate
  * runs.
  *
- * Setting the two required columns to not null after seeding fails loudly if
- * a database already held a configuration type this migration does not know,
- * which is the right outcome: such a row needs its mapping written by hand.
+ * The seed fills the mapping columns of a row that already holds one of the
+ * seventeen codes. Setting the two required columns to not null afterwards
+ * fails loudly only if a database held a configuration type this migration
+ * does not know, which is the right outcome: such a row needs its mapping
+ * written by hand. A development database that has run the generated eventing
+ * tests holds such rows, under test tenants and with generated codes; recreate
+ * it rather than migrate it.
  *
  * On a freshly recreated database the create and populate scripts already do
  * this, and this migration is unnecessary. It exists for databases created

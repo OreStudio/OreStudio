@@ -30,7 +30,8 @@
  * setup directly. Trades, portfolios, collateral balances, the script library
  * and shared type fragments are not configuration. run_parameter is the
  * parameter a shipped run document uses to name the file, and is null where no
- * shipped run document names one.
+ * shipped run document names one. A version of a kind that already exists keeps
+ * its values and only has its empty mapping columns filled.
  */
 
 \echo '--- Configuration Types ---'
@@ -61,6 +62,16 @@ begin
             (17, 'netting_set_definitions',  'Netting set definitions',  'NettingSetDefinitions',   'ores.trading',   'csaFile')
         ) as k(display_order, code, name, ore_root_element, owning_component, run_parameter)
     loop
+        -- Every version of a kind that predates the mapping columns, current or
+        -- closed, gets them filled in place. It is a correction of missing data,
+        -- not a change to the kind, so it writes no new version.
+        update ores_reporting_configuration_types_tbl
+        set ore_root_element = coalesce(ore_root_element, v_kind.ore_root_element),
+            owning_component = coalesce(owning_component, v_kind.owning_component),
+            run_parameter = coalesce(run_parameter, v_kind.run_parameter)
+        where tenant_id = v_sys_tenant and code = v_kind.code
+          and (ore_root_element is null or owning_component is null);
+
         if not exists (
             select 1 from ores_reporting_configuration_types_tbl
             where tenant_id = v_sys_tenant and code = v_kind.code

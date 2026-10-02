@@ -166,9 +166,12 @@
 \ir ./refdata_ledger_feed_types_notify_trigger_drop.sql
 \ir ./refdata_ledger_feed_types_drop.sql
 
--- Product catalogue: instrument_codes before asset_class_codes it references.
+-- Product catalogue: instrument_codes before the asset_class_codes and
+-- curve_roles it references.
 \ir ./refdata_instrument_codes_notify_trigger_drop.sql
 \ir ./refdata_instrument_codes_drop.sql
+\ir ./refdata_curve_roles_notify_trigger_drop.sql
+\ir ./refdata_curve_roles_drop.sql
 \ir ./refdata_asset_class_codes_notify_trigger_drop.sql
 \ir ./refdata_asset_class_codes_drop.sql
 

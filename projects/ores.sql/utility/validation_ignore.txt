@@ -428,21 +428,23 @@ TENANT_003 ores_synthetic_market_data_generation_configs_tbl
 # =============================================================================
 
 # =============================================================================
-# Curve roles -- creates are wired; refdata_drop.sql has no include for the
-# table drop or its notify-trigger drop.
+# Files a person or another tool runs directly, outside every root script.
+# WIRE_001 covers every .sql file in create/, drop/ and populate/, so these are
+# named here with what runs them.
 # =============================================================================
-WIRE_001 refdata_curve_roles_drop.sql
-WIRE_001 refdata_curve_roles_notify_trigger_drop.sql
 
-# =============================================================================
-# IAM -- iam_drop.sql never wired the session-samples drop or the
-# tenant-terminator drop.
-# =============================================================================
-WIRE_001 iam_session_samples_drop.sql
-WIRE_001 iam_tenant_terminator_drop.sql
+# Manual psql entry points; the usage is in each file's header.
+WIRE_001 drop_database.sql
+WIRE_001 drop_test_databases.sql
+WIRE_001 ip2country_import.sql
 
-# =============================================================================
-# MQ -- mq_drop.sql wires five files; the scrape-function drop is not one of
-# them.
-# =============================================================================
-WIRE_001 mq_scrape_functions_drop.sql
+# Written and run by projects/ores.codegen/src/fpml_parser.py.
+WIRE_001 populate_fpml.sql
+
+# Never wired since they were added. Wiring either changes what a recreate
+# seeds: scheduler_populate.sql adds a job that scrapes MQ statistics every
+# minute, and trading_sample_data_populate.sql books demonstration trades.
+# Whether to wire or delete them is a decision of its own, recorded as a
+# backlog capture.
+WIRE_001 scheduler_populate.sql
+WIRE_001 trading_sample_data_populate.sql

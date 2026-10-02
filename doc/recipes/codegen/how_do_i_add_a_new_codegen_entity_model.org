@@ -106,39 +106,51 @@ The pilot entity =ores.refdata.party= under
 up via the =modeling_dir= entry and produces byte-identical output to
 the legacy =party_entity.org= location.
 
-* Two things a new entity needs that no gate will tell you about
+* Three things a new entity needs that the build does not enforce
 
 Adding an entity to an existing component passes =compass build=, the model
-drift check and every test, and still never reaches the database. Both failures
-below were found by creating the today's market entities; neither is visible to
-an automated check.
-
-**1. List the table in the component's create and drop aggregates.**
-
-=projects/ores.sql/create/<component>/<component>_create.sql= is
-*hand-curated*, not generated. It is a list of =\ir ./...= lines in dependency
-order with prose explaining the component, so a new table is absent from a
-recreate until it is added by hand. The recreate then reports success while
-creating nothing. Check it really landed:
+drift check and every test, and can still miss the database. The schema parser
+reports two of the three below, but CI runs it with =--warn= and not =--strict=,
+so its report only prints. Run it yourself and read its warnings:
 
 #+begin_src sh
-compass sql -- -c "select table_name from information_schema.tables where table_name like 'ores_analytics_todays_market%'"
+python3 projects/ores.codegen/src/plantuml_er_parse_sql.py \
+  --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop \
+  --output /tmp/er_model.json \
+  --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn
 #+end_src
 
-Do the same in =projects/ores.sql/drop/<component>/drop_<component>.sql=,
-children first so nothing is dropped while a reference holds.
+On a clean tree it prints =Warnings: 0=. Making these warnings fail CI is part of
+[[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
 
-**2. Keep an apostrophe out of a foreign key's =error_message=.**
+**1. List the table in the component's create and drop aggregates (=WIRE_001=).**
 
-The message is emitted into a SQL string literal, so =No active today's market
-configuration= produces:
+=projects/ores.sql/create/<component>/<component>_create.sql= is hand-written in
+every component, not generated. It lists =\ir ./...= lines in dependency order,
+with prose for each block. A new table is absent from a recreate until you add
+it, and the recreate still reports success. Do the same in
+=projects/ores.sql/drop/<component>/drop_<component>.sql=, children first, so
+nothing is dropped while a reference holds.
+
+**2. Set =:rls_tenant_isolation: true= on a tenant-scoped entity (=RLS_001=).**
+
+Without the flag the table has a =tenant_id= and no row-level security policy,
+so every tenant can read every other tenant's rows. Set it under =* SQL= /
+=** Flags=, next to =:tablename:=.
+
+**3. Keep an apostrophe out of a foreign key's =error_message=.**
+
+The codegen writes the message into a SQL string literal without escaping it,
+so =No active today's market configuration= produces:
 
 #+begin_src
 ERROR:  syntax error at or near "s"
 #+end_src
 
-and the recreate stops with whatever was already built left in place — on this
-occasion two of five tables. Write it without the apostrophe.
+and the recreate stops with part of the schema built. Write the message without
+an apostrophe until
+[[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]]
+makes the codegen escape it.
 
 * See also
 

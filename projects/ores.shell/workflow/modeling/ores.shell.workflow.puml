@@ -39,10 +39,18 @@ namespace ores #F2F2F2 {
                     +process_versions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_version(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
-                class workflow_operation_commands {
+                class workflow_operations_commands {
                     -lg() : auto&
                     +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
+                    +process_step_result(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_instances(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_steps(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                     +process_definitions(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                    +process_retry(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
+                }
+                class workflow_run_commands {
+                    -lg() : auto&
+                    +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void
                     +process_start(ostream& out, ores::nats::service::nats_client& session, const vector<string>& args) : void
                 }
                 class workflow_step_commands {
@@ -70,23 +78,20 @@ namespace ores #F2F2F2 {
 ores.shell.api ..> ores.shell.workflow : menu, command feedback, argument parsing
 ores.workflow.api ..> ores.shell.workflow : domain, messaging
 
-' The automated pass draws one box per unit and cannot show which of the three a
-' person wrote, or why. Two are generated from the workflow entity models, one per
-' entity, and each answers its entity's derived verbs. The third is hand-written
-' because blocking on a run is not an entity verb: it polls the engine's step query
-' until the instance reaches a terminal state, and no entity model can express that.
-' Three other command units -- bundles, provision and ORE import -- call its
-' wait_for_instance at four sites, so retiring it would break them.
+' The automated pass draws one box per unit and cannot show which a person wrote,
+' or why. Two are generated from the workflow entity models, one per entity, and
+' answer its derived verbs. workflow_operations_commands is generated from the
+' operation model ores.workflow.workflow_messages. workflow_run_commands is
+' hand-written, because wait and start do work around their messages that no model
+' states. Bundles, provision and ORE import call its wait_for_instance.
 
-note bottom of "ores::shell::app::commands::workflow::workflow_operation_commands"
-Answers `workflow wait <instance_id> [--timeout] [--expect-steps]`,
-and exposes wait_for_instance for the command units that dispatch a
-workflow and then block on it.
-
-The two units beside it answer the entity protocols, addressed per
-row; this one answers the engine, addressed per run. The workflow
-component's P04 records the operation model that would generate it,
-as iam's *_operations_commands units already are.
+note bottom of "ores::shell::app::commands::workflow::workflow_run_commands"
+Answers `workflow wait` and `workflow start`, the two workflow
+verbs that are not messages: wait polls a run, and start publishes
+on the stream with no reply. It joins the workflow menu that the
+generated workflow_operations_commands owns, and exposes
+wait_for_instance for the command units that dispatch a workflow
+and then block on it.
 end note
 
 ' Local Variables:

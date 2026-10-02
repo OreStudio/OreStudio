@@ -146,6 +146,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] | DONE | 2026-10-01 | 2026-10-02 | Rewrite the oresmd URI grammar so that no key's absence carries meaning and no coordinate is an untyped string, then move the stored series identity and coordinate onto it. |
 | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] | BACKLOG | | | The tenant roster reads the tenants but cannot search, filter, page or act on one. Bring it to the design the See the tenants journey and the proposed layout describe: search and paging, type and status filters, a per-row actions menu, and a tenant detail screen. |
 | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] | BACKLOG | | | Replace the generated oresmd grammar with a hand-written, typed codec checked field by field against ORE's own parser, model every ORE type, and close the clean-standard findings of the 2026-10-02 review. |
+| [[id:BFC0B81D-9DAB-421F-B199-68188E1BD64C][Hotfix: the marketdata core suite times out in CI]] | DONE | 2026-10-02 | 2026-10-02 | ores.marketdata.core.tests is killed at the 600-second ctest limit on every Linux CI job, because the whole-corpus import walk now runs by default and its per-file check reads the whole tenant back after every file. |
 
 * Achievements
 

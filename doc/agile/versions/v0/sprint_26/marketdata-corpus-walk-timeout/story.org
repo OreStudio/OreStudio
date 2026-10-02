@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: BFC0B81D-9DAB-421F-B199-68188E1BD64C
+:END:
+#+title: Story: Hotfix: the marketdata core suite times out in CI
+#+description: ores.marketdata.core.tests is killed at the 600-second ctest limit on every Linux CI job, because the whole-corpus import walk now runs by default and its per-file check reads the whole tenant back after every file.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:marketdata:sprint_26:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.marketdata.core.tests= passes inside the 600-second ctest limit on every
+CI platform again, with the whole-corpus import walk still in the default test
+set. Since PR 2497 promoted the walk out of its hidden tag, the suite is killed
+at 600.11 seconds on all four Linux jobs, and it passes on macOS with little
+margin (340 and 496 seconds).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-02                               |
+
+* Acceptance
+
+- =ores.marketdata.core.tests= passes on every Linux and macOS CI job, well
+  inside the 600-second limit.
+- The whole-corpus walk still runs by default and still checks every file.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:093396C6-628B-4877-BE2E-F3FEC656CF35][Scaffold story: Hotfix: the marketdata core suite times out in CI]] | DONE | 2026-10-02 | 2026-10-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8A2A9408-F6C6-4F37-AF6C-557569CA9029][Implement Hotfix: the marketdata core suite times out in CI]] | DONE | 2026-10-02 | 2026-10-02 | Initial task for: Hotfix: the marketdata core suite times out in CI |
+
+* Decisions
+
+* Out of scope
+
+- The macOS failure of =ores.workflow.core.tests= in the step-deadline cases.
+  It is a separate defect.
+- The wider corpus-test findings of the 2026-10-02 review, which story
+  =92415927= owns.
+
+* Result
+
+The corpus walk's per-file check was quadratic: it read every series in a
+growing tenant, one query each, after every file. One query per file on the
+source tag replaces it, and the check now compares (key, value) pairs. The
+suite runs in 367 s locally where it took 1,570 s, with the same assertions.
+The import's own per-series lookups remain, captured for follow-up.

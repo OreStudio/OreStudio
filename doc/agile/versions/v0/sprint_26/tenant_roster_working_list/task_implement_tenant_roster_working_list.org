@@ -29,11 +29,11 @@ results, and says how many there are, as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] |
-| Now          | Plan written. No code has changed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1: the search function. |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -104,3 +104,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- *The server searches.* =ores_iam_tenants_search_fn= answers one page of the
+  tenants that match a search over code, name and hostname, a type filter and a
+  status filter, in code order, each row carrying the total. It leaves the
+  system tenant out, so the BFF no longer does. Four tests drive it; with the
+  system rule removed from the function, the system-tenant test fails and the
+  other three pass (checked).
+- *The wire is generated.* =iam.v1.tenants.search= is declared in
+  =ores.iam.tenant_roster_messages=, so its C++ header, its TypeScript twin, the
+  =tenant_roster search= shell command and its recipe are generated. The
+  handler checks =iam::tenants:read=. The filters are in the request already, so
+  the filters task adds a screen and no protocol.
+- *The BFF and the screen.* =/api/tenants= passes =search=, =offset= and
+  =limit= through and refuses a page that is not a whole number. The roster has
+  a search box that asks after a pause, previous and next paging that keeps the
+  last page on screen, and a "Showing a-b of n tenants" footer; an empty
+  deployment shows no search box, and a search with no match says so.
+- *Checked live.* Through the BFF: no search answers 26 tenants, =cd_tenant_1=
+  six, =GROUP= with a page of two at offset two the second page of four, and
+  =system= none. The generated shell command answers on the fleet. The rendered
+  page was not opened in a browser; its behaviour is covered by the web tests.
+- *Recorded.* The task that built the roster carries a dated correction for the
+  journey items its acceptance left out.
+

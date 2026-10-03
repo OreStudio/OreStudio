@@ -22,6 +22,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Turn the nine-field rule of Data-Oriented Design in ORE Studio into a check, so a model that would break the MSVC build fails before it is generated.
 
+Abandoned: the rule does not hold. See the Result.
+
 * Status
 
 | Field        | Value                                  |
@@ -84,7 +86,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale C1202 claims elsewhere | investigation, dq capture | Accept | Pointers to the correction added. |
+| 2 | Line 81 not in instrument_payload.cpp | capture | Clarify | The CI log puts the rfl::json::write call at instrument_payload.cpp(81); the capture now names the file for each line. |
+| 3 | Sprint row start date empty | sprint.org | Accept | Filled; the row description now matches the re-scoped story. |
+| 4 | Goal reads as live | task | Accept | Pointer to the Result under the goal. |
+| 5 | Cause stated from the CI log only | capture | Accept | Worded as per the CI log, not reproduced locally. |
+| 6 | Schedule the capture soon | capture | Leave | A prioritisation call for the product owner. |
 
 * Result
 

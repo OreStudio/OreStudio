@@ -36,7 +36,8 @@ Read on main at =1786aa23cd= (2026-10-02).
 - The five sub-structs are not tables, are never loaded separately, and
   are used by no other model. The trade model states their reason: to
   keep each reflected struct under MSVC's C1202 limit in reflect-cpp's
-  reflection. They also fix the wire as nested JSON. =trade_audit= is a
+  reflection (a reason section 16's correction shows does not hold for
+  plain structs). They also fix the wire as nested JSON. =trade_audit= is a
   field-for-field copy of =ores.dq.audit_record=, which every
   instrument uses. The split is driven by a serialiser limit, not by
   any access pattern.
@@ -118,8 +119,8 @@ its own timeline.
   checks that =trade_type= is one of its own types, and the lists are
   disjoint, so a trade's instrument can sit in exactly one table. That
   closes findings 1 to 4.
-- The five field groups go: each table is narrow enough to stay under
-  the C1202 limit unaided. =trade_audit= becomes =ores.dq.audit_record=;
+- The five field groups go: each table is narrow (see section 16's
+  correction on what the C1202 limit counts). =trade_audit= becomes =ores.dq.audit_record=;
   =instrument_identity= loses its unpinned copies and becomes the one
   shared key group.
 
@@ -384,8 +385,8 @@ and CSAs, before anything in it computes; and placing them in trading.
 
 /Superseded on 2026-10-03/: the nine-field limit below does not hold.
 220 of the 287 reflected structs the models generate have more than nine
-members and compile on MSVC. The failure comes from tagged variant writes
-over large carriers; see the decomposition section of Data-Oriented
+members and compile on MSVC. The failure the CI log shows comes from a
+tagged variant write over a large carrier; see the decomposition section of Data-Oriented
 Design and [[id:7878D057-5504-4117-98DF-6CEA9BB5D6B9][MSVC fails C1202 on the bond export carrier]]. The counts
 below still show that each table is narrow.
 

@@ -46,6 +46,7 @@ generate_synthetic_curve_bootstrap_config(utility::generation::generation_contex
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
+    r.default_curve_configuration_id = boost::uuids::nil_uuid();
     r.accuracy = std::nullopt;
     r.global_accuracy = std::nullopt;
     r.dont_throw = std::nullopt;

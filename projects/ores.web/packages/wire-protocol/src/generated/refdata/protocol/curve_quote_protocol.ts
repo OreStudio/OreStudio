@@ -36,6 +36,7 @@ export interface CurveQuoteWrite {
     id: string;
     curve_definition_id: string;
     curve_segment_id: string;
+    default_curve_configuration_id: string;
     quote_text: string | null;
     optional_flag: string | null;
     rate_quote: string | null;

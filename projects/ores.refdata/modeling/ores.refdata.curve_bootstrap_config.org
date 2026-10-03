@@ -55,6 +55,20 @@ The curve entry this row belongs to.
 ctx.generate_uuid()
 #+end_src
 
+** default_curve_configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The default curve configuration whose list holds the row, or nil when it
+belongs to the curve entry or one of its segments.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
 ** accuracy
 :PROPERTIES:
 :type:     double precision
@@ -181,6 +195,15 @@ std::nullopt
 :parent_entity: curve_definition
 :nullable:      false
 :error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** default_curve_configuration_id
+:PROPERTIES:
+:table:         ores_refdata_default_curve_configurations_tbl
+:target_column: id
+:parent_entity: default_curve_configuration
+:nullable:      true
+:error_message: Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.
 :END:
 
 * SQL

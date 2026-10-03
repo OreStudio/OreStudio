@@ -87,24 +87,26 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <curve_segment_id> <quote_text> <optional_flag> <rate_quote>
-     * <spread_quote> <position> <reason> <commentary>
+     * @brief add <curve_definition_id> <curve_segment_id> <default_curve_configuration_id>
+     * <quote_text> <optional_flag> <rate_quote> <spread_quote> <position> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <curve_definition_id> <curve_segment_id> <quote_text> <optional_flag>
-     * <rate_quote> <spread_quote> <position> <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_definition_id> <curve_segment_id> <default_curve_configuration_id>
+     * <quote_text> <optional_flag> <rate_quote> <spread_quote> <position> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <curve_definition_id> <curve_segment_id> <quote_text>
-     * <optional_flag> <rate_quote> <spread_quote> <position> <reason> <commentary>
+     * @brief put-many --count <n> <id> <curve_definition_id> <curve_segment_id>
+     * <default_curve_configuration_id> <quote_text> <optional_flag> <rate_quote> <spread_quote>
+     * <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

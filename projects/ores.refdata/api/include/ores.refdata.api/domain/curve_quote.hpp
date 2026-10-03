@@ -38,8 +38,9 @@ namespace ores::refdata::domain {
  * @brief One market quote a curve entry or one of its segments is built from.
  *
  * One market quote a curve is built from. A quote sits either directly on the
- * curve entry or inside one of its segments, and the row names both so the quotes
- * of a curve can be read without walking its segments.
+ * curve entry or inside one of its segments, or in a default curve's configuration, and the row
+ * names the curve entry as well so the quotes of a curve can be read without walking its segments
+ * or configurations.
  *
  * Almost every list is of Quote elements, each a market point and an optional
  * optional attribute. An average OIS segment lists CompositeQuote elements
@@ -72,6 +73,12 @@ struct curve_quote final {
      * curve entry.
      */
     boost::uuids::uuid curve_segment_id;
+
+    /**
+     * @brief The default curve configuration whose list holds the row, or nil when it belongs to
+     * the curve entry or one of its segments.
+     */
+    boost::uuids::uuid default_curve_configuration_id;
 
     /**
      * @brief The market point a Quote names, exactly as the document spells it.

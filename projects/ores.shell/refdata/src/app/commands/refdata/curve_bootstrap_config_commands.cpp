@@ -142,27 +142,27 @@ void curve_bootstrap_config_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <curve_definition_id> <accuracy> <global_accuracy> <dont_throw> <max_attempts> "
-        "<max_factor> <min_factor> <dont_throw_steps> <global> <smoothness_lambda> <reason> "
-        "<commentary>");
+        "add <curve_definition_id> <default_curve_configuration_id> <accuracy> <global_accuracy> "
+        "<dont_throw> <max_attempts> <max_factor> <min_factor> <dont_throw_steps> <global> "
+        "<smoothness_lambda> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <curve_definition_id> <accuracy> <global_accuracy> <dont_throw> <max_attempts> "
-        "<max_factor> <min_factor> <dont_throw_steps> <global> <smoothness_lambda> <reason> "
-        "<commentary> [--version <n>]");
+        "set <id> <curve_definition_id> <default_curve_configuration_id> <accuracy> "
+        "<global_accuracy> <dont_throw> <max_attempts> <max_factor> <min_factor> "
+        "<dont_throw_steps> <global> <smoothness_lambda> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <curve_definition_id> <accuracy> <global_accuracy> <dont_throw> "
-        "<max_attempts> <max_factor> <min_factor> <dont_throw_steps> <global> <smoothness_lambda> "
-        "<reason> <commentary>");
+        "put-many --count <n> <id> <curve_definition_id> <default_curve_configuration_id> "
+        "<accuracy> <global_accuracy> <dont_throw> <max_attempts> <max_factor> <min_factor> "
+        "<dont_throw_steps> <global> <smoothness_lambda> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void curve_bootstrap_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -365,6 +365,9 @@ void curve_bootstrap_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.curve_definition_id,
                    parsed->positionals[next++],
                    "curve_definition_id");
+        read_token(req.change.write.default_curve_configuration_id,
+                   parsed->positionals[next++],
+                   "default_curve_configuration_id");
         read_token(req.change.write.accuracy, parsed->positionals[next++], "accuracy");
         read_token(
             req.change.write.global_accuracy, parsed->positionals[next++], "global_accuracy");
@@ -419,8 +422,8 @@ void curve_bootstrap_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -428,6 +431,9 @@ void curve_bootstrap_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.curve_definition_id,
                    parsed->positionals[next++],
                    "curve_definition_id");
+        read_token(req.change.write.default_curve_configuration_id,
+                   parsed->positionals[next++],
+                   "default_curve_configuration_id");
         read_token(req.change.write.accuracy, parsed->positionals[next++], "accuracy");
         read_token(
             req.change.write.global_accuracy, parsed->positionals[next++], "global_accuracy");
@@ -494,8 +500,8 @@ void curve_bootstrap_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -505,6 +511,9 @@ void curve_bootstrap_config_commands::process_put_many(std::ostream& out,
             read_token(change.write.curve_definition_id,
                        parsed->positionals[next++],
                        "curve_definition_id");
+            read_token(change.write.default_curve_configuration_id,
+                       parsed->positionals[next++],
+                       "default_curve_configuration_id");
             read_token(change.write.accuracy, parsed->positionals[next++], "accuracy");
             read_token(
                 change.write.global_accuracy, parsed->positionals[next++], "global_accuracy");

@@ -31,6 +31,9 @@
 #include "ores.refdata.core/repository/curve_segment_curve_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
 #include "ores.refdata.core/repository/curve_security_repository.hpp"
+#include "ores.refdata.core/repository/cds_convention_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_configuration_repository.hpp"
+#include "ores.refdata.core/repository/default_curve_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.refdata.core/repository/equity_curve_repository.hpp"
 #include "ores.refdata.core/repository/inflation_curve_repository.hpp"
@@ -75,17 +78,15 @@ Document load(const std::string& name) {
 
 const std::string equity_example = "external/ore/examples/Input/curveconfig.xml";
 
-// The equity curves, inflation curves, securities and FX spots of a corpus
-// document, with every other section kept empty, so only the inflation swap
-// conventions have to be written first.
+// The default, equity and inflation curves, securities and FX spots of a corpus
+// document, with every other section kept empty, so only the inflation swap and
+// CDS conventions have to be written first.
 curveconfiguration equity_and_securities() {
     curveconfiguration d;
     load_data(file::read_content(ores::testing::project_root::resolve(equity_example)), d);
     d.ReportConfiguration = decltype(d.ReportConfiguration){};
     if (d.YieldCurves)
         d.YieldCurves->YieldCurve.clear();
-    if (d.DefaultCurves)
-        d.DefaultCurves->DefaultCurve.clear();
     if (d.CommodityCurves)
         d.CommodityCurves->CommodityCurve.clear();
     if (d.FXVolatilities)
@@ -141,14 +142,16 @@ void write_conventions(const ores::database::context& ctx) {
     write_missing(ctx, average_ois_convention_repository(), mapped.average_ois);
 }
 
-// The inflation curves of the equity example name inflation swap conventions,
-// which the example's own conventions file defines.
-void write_inflation_conventions(const ores::database::context& ctx) {
+// The inflation and default curves of the equity example name inflation swap
+// and CDS conventions, which the example's own conventions file defines.
+void write_input_conventions(const ores::database::context& ctx) {
     conventions c;
     load_data(file::read_content(
                   ores::testing::project_root::resolve("external/ore/examples/Input/conventions.xml")),
               c);
-    write_missing(ctx, inflation_swap_convention_repository(), conventions_mapper::map(c).inflation_swap);
+    const auto mapped = conventions_mapper::map(c);
+    write_missing(ctx, inflation_swap_convention_repository(), mapped.inflation_swap);
+    write_missing(ctx, cds_convention_repository(), mapped.cds);
 }
 
 void write(const ores::database::context& ctx, const mapped_curve_configuration& m) {
@@ -157,6 +160,8 @@ void write(const ores::database::context& ctx, const mapped_curve_configuration&
     curve_definition_repository().write(ctx, m.definitions);
     yield_curve_repository().write(ctx, m.yield_curves);
     equity_curve_repository().write(ctx, m.equity_curves);
+    default_curve_repository().write(ctx, m.default_curves);
+    default_curve_configuration_repository().write(ctx, m.default_curve_configurations);
     inflation_curve_repository().write(ctx, m.inflation_curves);
     inflation_seasonality_factor_repository().write(ctx, m.seasonality_factors);
     curve_security_repository().write(ctx, m.securities);
@@ -201,6 +206,10 @@ mapped_curve_configuration read_back(const ores::database::context& ctx,
         read<ores::refdata::domain::equity_curve>(ctx, equity_curve_repository(), of_definition);
     m.securities =
         read<ores::refdata::domain::curve_security>(ctx, curve_security_repository(), of_definition);
+    m.default_curves =
+        read<ores::refdata::domain::default_curve>(ctx, default_curve_repository(), of_definition);
+    m.default_curve_configurations = read<ores::refdata::domain::default_curve_configuration>(
+        ctx, default_curve_configuration_repository(), of_definition);
     m.inflation_curves = read<ores::refdata::domain::inflation_curve>(
         ctx, inflation_curve_repository(), of_definition);
     m.seasonality_factors = read<ores::refdata::domain::inflation_seasonality_factor>(
@@ -288,21 +297,23 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused", tags) {
     CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
 }
 
-TEST_CASE("equity curves, inflation curves and securities round trip through the database", tags) {
+TEST_CASE("default, equity and inflation curves and securities round trip through the database", tags) {
     ores::testing::scoped_database_helper h;
-    write_inflation_conventions(h.context());
+    write_input_conventions(h.context());
 
     const auto original = equity_and_securities();
     const auto mapped = curve_configuration_mapper::map(original);
     REQUIRE(!mapped.equity_curves.empty());
     REQUIRE(!mapped.securities.empty());
     REQUIRE(!mapped.inflation_curves.empty());
+    REQUIRE(!mapped.default_curve_configurations.empty());
 
     write(h.context(), mapped);
     const auto back = read_back(h.context(), mapped);
     CHECK(back.equity_curves.size() == mapped.equity_curves.size());
     CHECK(back.securities.size() == mapped.securities.size());
     CHECK(back.inflation_curves.size() == mapped.inflation_curves.size());
+    CHECK(back.default_curve_configurations.size() == mapped.default_curve_configurations.size());
     CHECK(back.seasonality_factors.size() == mapped.seasonality_factors.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
 

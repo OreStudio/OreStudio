@@ -46,6 +46,7 @@ struct curve_bootstrap_config_entity {
     std::string tenant_id;
     int version = 0;
     std::string curve_definition_id;
+    std::optional<std::string> default_curve_configuration_id;
     std::optional<double> accuracy;
     std::optional<double> global_accuracy;
     std::optional<bool> dont_throw;

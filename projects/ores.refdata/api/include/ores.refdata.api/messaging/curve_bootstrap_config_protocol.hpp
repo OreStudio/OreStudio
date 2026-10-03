@@ -42,6 +42,7 @@ struct curve_bootstrap_config_key {
 struct curve_bootstrap_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
+    boost::uuids::uuid default_curve_configuration_id;
     std::optional<double> accuracy;
     std::optional<double> global_accuracy;
     std::optional<bool> dont_throw;

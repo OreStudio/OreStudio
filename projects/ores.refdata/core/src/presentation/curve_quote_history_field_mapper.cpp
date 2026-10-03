@@ -39,6 +39,8 @@ render_curve_quote_fields(const domain::curve_quote& v) {
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back(
         {.name = "Curve Segment ID", .value = boost::uuids::to_string(v.curve_segment_id)});
+    fields.push_back({.name = "Default Curve Configuration ID",
+                      .value = boost::uuids::to_string(v.default_curve_configuration_id)});
     fields.push_back({.name = "Quote Text", .value = v.quote_text.value_or(std::string{})});
     fields.push_back({.name = "Optional Flag", .value = v.optional_flag.value_or(std::string{})});
     fields.push_back({.name = "Rate Quote", .value = v.rate_quote.value_or(std::string{})});

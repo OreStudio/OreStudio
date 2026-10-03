@@ -85,6 +85,7 @@ domain::curve_bootstrap_config to_domain(const messaging::curve_bootstrap_config
     domain::curve_bootstrap_config v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
+    v.default_curve_configuration_id = write.default_curve_configuration_id;
     v.accuracy = write.accuracy;
     v.global_accuracy = write.global_accuracy;
     v.dont_throw = write.dont_throw;

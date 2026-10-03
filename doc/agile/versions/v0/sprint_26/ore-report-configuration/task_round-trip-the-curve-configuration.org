@@ -172,6 +172,19 @@ Step 3b, decided while building it:
   The mapper refuses an entry that does, rather than lose it; modelling them
   waits for a document that needs them.
 
+Step 3c, decided while building it:
+
+- A default curve writes its settings inline (144 corpus curves) or as a list
+  of prioritised =Configurations= (189, nine with two), never both. One table,
+  =default_curve_configuration=, holds both forms: an inline curve is one row
+  with =is_inline= set. =default_curve= holds only the currency.
+- A configuration's quotes and =BootstrapConfig= are rows of =curve_quote= and
+  =curve_bootstrap_config= naming the configuration, through a new nullable
+  =default_curve_configuration_id= on each.
+- =Pillars= and =States= are comma lists in ORE's own text and are held as
+  written. =SourceCurves= and =SwitchDates= appear in no corpus document and are
+  refused, as inflation segments are.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

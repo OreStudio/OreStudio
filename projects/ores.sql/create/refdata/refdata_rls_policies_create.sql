@@ -1947,6 +1947,40 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Default Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_default_curves_tbl enable row level security;
+
+drop policy if exists default_curves_tbl_tenant_isolation_policy
+    on ores_refdata_default_curves_tbl;
+
+create policy default_curves_tbl_tenant_isolation_policy
+on ores_refdata_default_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Default Curve Configurations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_default_curve_configurations_tbl enable row level security;
+
+drop policy if exists default_curve_configurations_tbl_tenant_isolation_policy
+    on ores_refdata_default_curve_configurations_tbl;
+
+create policy default_curve_configurations_tbl_tenant_isolation_policy
+on ores_refdata_default_curve_configurations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

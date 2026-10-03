@@ -72,6 +72,8 @@ set(files
     "curve_segment_type_eventing_integration_tests.cpp"
     "day_count_fraction_type_eventing_integration_tests.cpp"
     "day_counter_eventing_integration_tests.cpp"
+    "default_curve_configuration_eventing_integration_tests.cpp"
+    "default_curve_eventing_integration_tests.cpp"
     "deposit_convention_eventing_integration_tests.cpp"
     "derivation_kind_eventing_integration_tests.cpp"
     "diary_entry_type_eventing_integration_tests.cpp"

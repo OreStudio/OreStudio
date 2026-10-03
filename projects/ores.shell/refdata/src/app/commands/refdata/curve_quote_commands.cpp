@@ -141,24 +141,27 @@ void curve_quote_commands::register_commands(cli::Menu& root_menu, nats_client& 
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <curve_definition_id> <curve_segment_id> <quote_text> <optional_flag> <rate_quote> "
-        "<spread_quote> <position> <reason> <commentary>");
+        "add <curve_definition_id> <curve_segment_id> <default_curve_configuration_id> "
+        "<quote_text> <optional_flag> <rate_quote> <spread_quote> <position> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <curve_definition_id> <curve_segment_id> <quote_text> <optional_flag> "
-        "<rate_quote> <spread_quote> <position> <reason> <commentary> [--version <n>]");
+        "set <id> <curve_definition_id> <curve_segment_id> <default_curve_configuration_id> "
+        "<quote_text> <optional_flag> <rate_quote> <spread_quote> <position> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <curve_definition_id> <curve_segment_id> <quote_text> "
-        "<optional_flag> <rate_quote> <spread_quote> <position> <reason> <commentary>");
+        "put-many --count <n> <id> <curve_definition_id> <curve_segment_id> "
+        "<default_curve_configuration_id> <quote_text> <optional_flag> <rate_quote> <spread_quote> "
+        "<position> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -352,8 +355,8 @@ void curve_quote_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -363,6 +366,9 @@ void curve_quote_commands::process_add(std::ostream& out,
                    "curve_definition_id");
         read_token(
             req.change.write.curve_segment_id, parsed->positionals[next++], "curve_segment_id");
+        read_token(req.change.write.default_curve_configuration_id,
+                   parsed->positionals[next++],
+                   "default_curve_configuration_id");
         read_token(req.change.write.quote_text, parsed->positionals[next++], "quote_text");
         read_token(req.change.write.optional_flag, parsed->positionals[next++], "optional_flag");
         read_token(req.change.write.rate_quote, parsed->positionals[next++], "rate_quote");
@@ -410,8 +416,8 @@ void curve_quote_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,6 +427,9 @@ void curve_quote_commands::process_set(std::ostream& out,
                    "curve_definition_id");
         read_token(
             req.change.write.curve_segment_id, parsed->positionals[next++], "curve_segment_id");
+        read_token(req.change.write.default_curve_configuration_id,
+                   parsed->positionals[next++],
+                   "default_curve_configuration_id");
         read_token(req.change.write.quote_text, parsed->positionals[next++], "quote_text");
         read_token(req.change.write.optional_flag, parsed->positionals[next++], "optional_flag");
         read_token(req.change.write.rate_quote, parsed->positionals[next++], "rate_quote");
@@ -480,8 +489,8 @@ void curve_quote_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -493,6 +502,9 @@ void curve_quote_commands::process_put_many(std::ostream& out,
                        "curve_definition_id");
             read_token(
                 change.write.curve_segment_id, parsed->positionals[next++], "curve_segment_id");
+            read_token(change.write.default_curve_configuration_id,
+                       parsed->positionals[next++],
+                       "default_curve_configuration_id");
             read_token(change.write.quote_text, parsed->positionals[next++], "quote_text");
             read_token(change.write.optional_flag, parsed->positionals[next++], "optional_flag");
             read_token(change.write.rate_quote, parsed->positionals[next++], "rate_quote");

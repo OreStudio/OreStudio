@@ -1264,3 +1264,11 @@ tangled into the runnable script library
 * Inflation Seasonality Factors
 
 - [[id:D10D373B-D722-5932-B59F-5D3C0CCD548E][How do I run the inflation_seasonality_factors commands from the shell?]]
+
+* Default Curve Configurations
+
+- [[id:D1801F72-0CCA-5248-9428-26329B6B88B3][How do I run the default_curve_configurations commands from the shell?]]
+
+* Default Curves
+
+- [[id:6C38EA7F-1EA6-58DD-B8DD-104F79921131][How do I run the default_curves commands from the shell?]]

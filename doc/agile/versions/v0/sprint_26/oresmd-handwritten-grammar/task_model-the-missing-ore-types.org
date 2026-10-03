@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-the-missing-ore-types
-#+pr:
+#+pr: 2527
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -142,7 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2527][#2527]] | [marketdata] Admit exactly the quote types ORE admits for each key form |
 
 * Review
 

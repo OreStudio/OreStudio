@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/write-floating-point-values-without-rounding
-#+pr:
+#+pr: 2540
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2540][#2540]] | [build] Write floating point values to the database without rounding |
 
 * Review
 

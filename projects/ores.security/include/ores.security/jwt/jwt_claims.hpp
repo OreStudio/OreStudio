@@ -23,9 +23,20 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::security::jwt {
+
+/**
+ * @brief The audience of the token that only lets a person choose a party.
+ *
+ * Login issues it when an account works in more than one party. Party
+ * selection is the one operation that accepts it; refresh and every service's
+ * request context refuse it. No signer or verifier sets an audience, so the
+ * check is by this name, and every party to it uses this constant.
+ */
+inline constexpr std::string_view party_selection_audience = "select_party_only";
 
 /**
  * @brief Represents the claims extracted from a JWT token.

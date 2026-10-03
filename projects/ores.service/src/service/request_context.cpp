@@ -20,6 +20,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.security/jwt/jwt_error.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -63,7 +64,7 @@ make_context_from_jwt(const ores::database::context& base_ctx,
 
     // A token that only lets a person choose a party is for that one request;
     // no signer or verifier sets an audience, so it is refused here by name.
-    if (claims->audience == "select_party_only")
+    if (claims->audience == ores::security::jwt::party_selection_audience)
         return std::unexpected(ores::service::error_code::unauthorized);
 
     const auto tenant_id_str = claims->tenant_id.value_or("");

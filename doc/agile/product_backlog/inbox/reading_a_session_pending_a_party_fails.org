@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 31DA10EB-A132-4288-94B1-1F778A8ADA0A
+:END:
+#+title: Reading a session that still has to choose a party answers 500
+#+description: After a sign-in that needs a party, GET /api/session answers 500: the session view requires a party and the pending session has none, so the BFF's schema parse throws. It should answer the party-required state or 401. Found by the role walk in Give a person's token the permissions they hold.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

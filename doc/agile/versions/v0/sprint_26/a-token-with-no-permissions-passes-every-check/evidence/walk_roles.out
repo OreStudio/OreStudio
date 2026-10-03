@@ -1,0 +1,13 @@
+route	SuperAdmin	TenantAdmin	Viewer	Trading	Sales	Support	Operations
+sign in	200	200	200	200	200	200	200
+GET /api/session	200	200	200	200	200	200	200
+GET /api/parties	403	200	200	200	200	200	200
+GET /api/accounts	200	200	403	403	403	200	200
+GET /api/login-info	200	200	403	403	403	200	403
+GET /api/sessions	200	200	403	403	403	403	403
+GET /api/change-reasons	200	200	200	200	200	200	200
+GET /api/seed-profiles	200	200	200	200	200	200	200
+GET /api/tenants	200	403	403	403	403	403	403
+POST /api/accounts/{target}/lock	200	200	403	403	403	403	403
+POST /api/accounts/{target}/unlock	200	200	403	403	403	403	403
+POST /api/provision-party	200	200	403	403	403	403	403

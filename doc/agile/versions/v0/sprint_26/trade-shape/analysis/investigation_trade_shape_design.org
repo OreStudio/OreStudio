@@ -382,6 +382,13 @@ and CSAs, before anything in it computes; and placing them in trading.
 
 ** 16. The C1202 check
 
+/Superseded on 2026-10-03/: the nine-field limit below does not hold.
+220 of the 287 reflected structs the models generate have more than nine
+members and compile on MSVC. The failure comes from tagged variant writes
+over large carriers; see the decomposition section of Data-Oriented
+Design and [[id:7878D057-5504-4117-98DF-6CEA9BB5D6B9][MSVC fails C1202 on the bond export carrier]]. The counts
+below still show that each table is narrow.
+
 Every reflected struct keeps nine effective fields or fewer, a nested
 group counting as one.
 

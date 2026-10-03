@@ -18,11 +18,9 @@
  *
  */
 #include "ores.marketdata.core/service/ore_export_service.hpp"
-#include "ores.marketdata.api/domain/oresmd_uri.hpp"
+#include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -67,23 +65,8 @@ ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
 }
 
 /**
- * @brief Whether a series is a fixing rather than a quote.
- *
- * The identity's own type is the authority, as it is for the parser's index-name
- * projection: asking whether a name projects would confuse a fixing the grammar
- * cannot name with a quote.
- */
-bool is_fixing_series(const domain::market_data_identifier& identifier) {
-    return std::visit([](const auto& id) { return id.type == domain::instrument_type::fixing; },
-                      identifier);
-}
-
-/**
- * @brief One stored fixing as the serializer's input.
- *
- * A fixing's index name is a projection of the series' identity, the same way a
- * quote's key is: the identity is what the row is named by, so the name is read
- * from it rather than from a decomposition column.
+ * @brief One stored fixing as the serializer's input, under the index name its
+ * series' URI writes.
  */
 ores::ore::market::fixing to_fixing(const std::string& index_name, const domain::market_fixing& f) {
     ores::ore::market::fixing r;
@@ -107,33 +90,19 @@ ore_export_result ore_export_service::write_all() const {
     std::vector<ores::ore::market::market_datum> data;
     std::vector<ores::ore::market::fixing> fixings;
     for (const auto& s : series) {
-        // A quote series has a URI the datum codec reads; every other series is a
-        // fixing, whose index identity keeps the richer grammar. A series neither
-        // reads is a data-integrity error and names itself.
+        // A quote series has a URI the datum codec reads and a fixing series one
+        // the index codec reads. A series neither reads is a data-integrity error
+        // and names both reasons.
         if (const auto quote_series = datum::oresmd_uri_codec::read(s.oresmd_uri); !quote_series) {
-            // Neither reading is a fixing: name both reasons, so a quote URI the
-            // codec refuses says why rather than that the old grammar disagrees.
-            const auto refusal = [&](const std::string& fixing_reason) {
-                return std::runtime_error(
+            const auto index = datum::oresmd_uri_codec::read_index(s.oresmd_uri);
+            if (!index)
+                throw std::runtime_error(
                     "market data export: series " + boost::uuids::to_string(s.id) + " carries '" +
                     s.oresmd_uri + "', which is no quote series (" + quote_series.error() +
-                    ") and no fixing series (" + fixing_reason + ")");
-            };
-            domain::market_data_identifier identifier;
-            try {
-                identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
-            } catch (const std::exception& e) {
-                throw refusal(e.what());
-            }
-            if (!is_fixing_series(identifier))
-                throw refusal("it names no fixing");
-            const auto index_name = core::oresmd_projections::to_index_name(identifier);
-            if (!index_name)
-                throw std::runtime_error("market data export: fixing series " +
-                                         boost::uuids::to_string(s.id) +
-                                         " names no index: " + s.oresmd_uri);
+                    ") and no fixing series (" + index.error() + ")");
+            const auto index_name = datum::ore_index_codec::write(*index);
             for (const auto& f : fixings_repo.read_latest(ctx_, s.id))
-                fixings.push_back(to_fixing(*index_name, f));
+                fixings.push_back(to_fixing(index_name, f));
             continue;
         }
         for (const auto& o : obs_repo.read_latest(ctx_, s.id))

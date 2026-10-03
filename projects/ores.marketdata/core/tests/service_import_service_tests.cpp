@@ -359,10 +359,10 @@ TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
     CHECK(fx.front().oresmd_uri ==
           "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
 
-    const auto inflation =
-        series_with_uri(series_repo, h.context(), "oresmd://inflation/ukrpi?type=fixing");
+    const auto inflation = series_with_uri(
+        series_repo, h.context(), "oresmd://inflation/UKRPI?type=fixing&index=inflation");
     REQUIRE(inflation.size() == 1);
-    CHECK(inflation.front().oresmd_uri == "oresmd://inflation/ukrpi?type=fixing");
+    CHECK(inflation.front().oresmd_uri == "oresmd://inflation/UKRPI?type=fixing&index=inflation");
 }
 
 TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
@@ -449,7 +449,9 @@ TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", tags) {
     import_service svc(h.context(), auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
-    req.fixings_content = "2016-02-05 NOSUCHINDEX 0.001\n"
+    // An FX index is FX-SOURCE-CCY1-CCY2; with three tokens no family reads it. A
+    // hyphen-free name would read, as an inflation index a convention may define.
+    req.fixings_content = "2016-02-05 FX-ECB-EUR 0.001\n"
                           "2016-02-05 EUR-EONIA 0.001\n";
     req.source = "test.import_service";
 
@@ -458,7 +460,7 @@ TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", tags) {
     CHECK(resp.success);
     CHECK(resp.fixing_count == 1);
     REQUIRE(resp.warnings.size() == 1);
-    CHECK(resp.warnings[0].find("NOSUCHINDEX") != std::string::npos);
+    CHECK(resp.warnings[0].find("FX-ECB-EUR") != std::string::npos);
     CHECK(resp.warnings[0].find("skipped") != std::string::npos);
     // The warning is the unnameable name's whole record: a name no class can read
     // has no identity, so it files no series and reports itself instead.

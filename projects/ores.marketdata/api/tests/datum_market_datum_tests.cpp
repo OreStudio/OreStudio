@@ -279,4 +279,3 @@ TEST_CASE("every_asset_class_but_correlation_and_generic_is_a_refdata_asset_clas
         CHECK(asset_class_for_authority(name_of(a)).has_value() != none);
     }
 }
-}

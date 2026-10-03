@@ -1,0 +1,9 @@
+login party-selection-required
+read with the party-choice token: refused: NotAuthenticatedError
+read after choosing a party: ANSWERED with 5 parties
+login party-selection-required
+refresh refused: SessionExpiredError
+{"outcome":"party-selection-required","roles":[]}
+{"afterSelect":["*"]}
+{"afterSwitch":["*"]}
+{"afterRefresh":["*"]}

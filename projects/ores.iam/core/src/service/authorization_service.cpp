@@ -25,6 +25,7 @@
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.security/authorization/grants.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -488,16 +489,7 @@ bool authorization_service::has_permission(const boost::uuids::uuid& account_id,
 
 bool authorization_service::check_permission(const std::vector<std::string>& permissions,
                                              std::string_view required_permission) {
-    // Precondition: permissions vector must be sorted (guaranteed by
-    // get_effective_permissions which uses ORDER BY in the SQL query)
-
-    // Wildcard grants all permissions
-    if (std::binary_search(permissions.begin(), permissions.end(), domain::permissions::all)) {
-        return true;
-    }
-
-    // Check for exact match
-    return std::binary_search(permissions.begin(), permissions.end(), required_permission);
+    return ores::security::authorization::grants(permissions, required_permission);
 }
 
 void authorization_service::publish_account_permissions_changed(

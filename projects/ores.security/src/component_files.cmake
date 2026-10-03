@@ -28,6 +28,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/authorization/grants.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/password_hasher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/jwt/boost_json_traits.hpp"

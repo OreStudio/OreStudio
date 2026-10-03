@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "authorization_grants_tests.cpp"
     "crypto_password_hasher_tests.cpp"
     "jwt_authenticator_tests.cpp"
     "main.cpp"

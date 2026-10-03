@@ -205,6 +205,33 @@ TEST_CASE("a token with no tenant is unauthorized", tags) {
     REQUIRE(result.error() == error_code::unauthorized);
 }
 
+/*
+ * No signer or verifier in the deployment sets an audience, so the token that
+ * only lets a person choose a party would otherwise pass as an ordinary one.
+ * The verifier here sets none, as the services' verifiers do.
+ */
+TEST_CASE("a token that only chooses a party is unauthorized", tags) {
+    ores::testing::database_helper h;
+    const auto verifier = ores::security::jwt::jwt_authenticator::create_hs256(secret);
+    auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
+    claims.subject = "account-1";
+    claims.username = "alice";
+    claims.tenant_id = tenant;
+
+    const auto request = [&](const std::string& token_audience) {
+        claims.audience = token_audience;
+        ores::nats::message msg;
+        msg.headers[std::string(ores::nats::headers::authorization)] =
+            bearer(verifier.create_token(claims).value());
+        return make_request_context(h.context(), msg, verifier);
+    };
+
+    const auto choosing = request("select_party_only");
+    REQUIRE_FALSE(choosing.has_value());
+    CHECK(choosing.error() == error_code::unauthorized);
+    CHECK(request("").has_value());
+}
+
 TEST_CASE("the workspace headers scope the context to the requested workspace and chain", tags) {
     ores::testing::database_helper h;
     ores::nats::message msg;

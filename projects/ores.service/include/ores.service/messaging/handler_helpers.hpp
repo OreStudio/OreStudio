@@ -27,6 +27,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/authorization/grants.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -188,13 +189,10 @@ void reply(ores::nats::service::client& nats, const ores::nats::message& msg, co
 /**
  * @brief Checks whether the request context carries a required permission.
  *
- * Returns true when:
- * - The context's permission list is empty (token predates RBAC enforcement;
- *   treated as pass-through to preserve backward compatibility with existing
- *   user sessions and un-migrated callers), OR
- * - The list contains @p required_permission exactly, OR
- * - The list contains the component-level wildcard that covers the permission
- *   (e.g. "iam::*" satisfies any "iam::…" permission).
+ * A context built from a token carries the token's permission list, and the
+ * check passes only when that list grants the permission; an empty list
+ * grants nothing. A context that carries no list is the service's own,
+ * derived from its base context, and passes.
  *
  * Usage in a write handler:
  * @code
@@ -206,20 +204,10 @@ void reply(ores::nats::service::client& nats, const ores::nats::message& msg, co
  */
 inline bool has_permission(const ores::database::context& ctx,
                            std::string_view required_permission) {
-    const auto& perms = ctx.roles();
-    // Empty list: token predates RBAC — allow to preserve backward compat.
-    if (perms.empty())
+    const auto& granted = ctx.roles();
+    if (!granted)
         return true;
-    for (const auto& p : perms) {
-        if (p == "*" || p == required_permission)
-            return true;
-        if (p.size() >= 2 && p.ends_with("::*")) {
-            const auto prefix = std::string_view(p).substr(0, p.size() - 1);
-            if (required_permission.starts_with(prefix))
-                return true;
-        }
-    }
-    return false;
+    return ores::security::authorization::grants(*granted, required_permission);
 }
 
 /**

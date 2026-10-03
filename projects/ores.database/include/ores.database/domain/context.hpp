@@ -155,19 +155,22 @@ public:
     }
 
     /**
-     * @brief Gets the permission codes carried in this context.
+     * @brief Gets the permission codes carried in this context, if any.
      *
-     * Populated from the JWT at request time for service-to-service calls;
-     * empty for contexts that pre-date the RBAC enforcement layer.
+     * A context built from a token carries the token's list, which may be
+     * empty; an empty list grants nothing. A context that carries no list at
+     * all is trusted: only the services' base contexts, built by
+     * =context_factory::make_context=, and contexts derived from them carry
+     * none, for work that runs on the service's own authority.
      */
-    const std::vector<std::string>& roles() const {
+    const std::optional<std::vector<std::string>>& roles() const {
         return roles_;
     }
 
     /**
-     * @brief Returns a copy of this context with the given permission codes.
+     * @brief Returns a copy of this context carrying the given permission codes.
      *
-     * Used by make_request_context to attach JWT permissions to the
+     * Used by make_request_context to attach a token's permissions to the
      * per-request database context.
      */
     [[nodiscard]] context with_roles(std::vector<std::string> roles) const {
@@ -221,36 +224,42 @@ public:
     /**
      * @brief Creates a new context with a different tenant ID (no party).
      *
-     * The service_account and pool acquisition policy are preserved from the
-     * base context.
+     * The service_account, the pool acquisition policy and the permissions are
+     * preserved from the base context, so narrowing a request's context never
+     * widens what it may do.
      */
     [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const {
-        return context(connection_pool_.underlying_pool(),
-                       credentials_,
-                       std::move(tenant_id),
-                       std::move(actor),
-                       service_account_,
-                       policy_);
+        auto scoped = context(connection_pool_.underlying_pool(),
+                              credentials_,
+                              std::move(tenant_id),
+                              std::move(actor),
+                              service_account_,
+                              policy_);
+        scoped.roles_ = roles_;
+        return scoped;
     }
 
     /**
      * @brief Creates a new context with tenant and party isolation.
      *
-     * The service_account and pool acquisition policy are preserved from the
-     * base context.
+     * The service_account, the pool acquisition policy and the permissions are
+     * preserved from the base context, so narrowing a request's context never
+     * widens what it may do.
      */
     [[nodiscard]] context with_party(utility::uuid::tenant_id tenant_id,
                                      boost::uuids::uuid party_id,
                                      std::vector<boost::uuids::uuid> visible_party_ids,
                                      std::string actor) const {
-        return context(connection_pool_.underlying_pool(),
-                       credentials_,
-                       std::move(tenant_id),
-                       party_id,
-                       std::move(visible_party_ids),
-                       std::move(actor),
-                       service_account_,
-                       policy_);
+        auto scoped = context(connection_pool_.underlying_pool(),
+                              credentials_,
+                              std::move(tenant_id),
+                              party_id,
+                              std::move(visible_party_ids),
+                              std::move(actor),
+                              service_account_,
+                              policy_);
+        scoped.roles_ = roles_;
+        return scoped;
     }
 
 private:
@@ -258,7 +267,7 @@ private:
     sqlgen::postgres::Credentials credentials_;
     pool_acquire_policy policy_;
     std::string service_account_;
-    std::vector<std::string> roles_;
+    std::optional<std::vector<std::string>> roles_;
     std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
     std::vector<std::string> workspace_resolution_;
 };

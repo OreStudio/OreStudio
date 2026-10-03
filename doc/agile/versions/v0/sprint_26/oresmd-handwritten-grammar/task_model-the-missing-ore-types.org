@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/model-the-missing-ore-types
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,19 +27,20 @@ accepted.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
 
-- =ASSUMED_RECOVERY_RATE=, =BOND_FUTURE=, =BOND_FUTURE_OPTION= and =COMMODITY_CALENDAR_SPREAD_OPTION= have a struct, a reader, a writer and catalogue cases for every form ORE documents.
+- =ASSUMED_RECOVERY_RATE=, =BOND_FUTURE=, =BOND_FUTURE_OPTION= and =COMMODITY_CALENDAR_SPREAD_OPTION= have a schema row, a reader, a writer and catalogue cases for every form ORE documents. (The agreed design replaced the struct per type with a schema row per type.)
 - =FX_SPOT=, =FX_FWD= and =RATE_GVOL= read, and write in their canonical spelling.
-- The quote type enum holds all 16 ORE quote types, including =CREDIT_SPREAD=, =CONV_CREDIT_SPREAD=, =HAZARD_RATE= and =BASE_CORRELATION=, and every datum carries its quote type.
-- A test asserts that every ORE =InstrumentType= and =QuoteType= has a modelled form, against a list taken from =marketdatum.hpp=.
+- The quote type enum holds all 17 members of ORE's =QuoteType=, including =HAZARD_RATE=, which ORE's parser gives no token, and =NONE=, which a key spells =NULL=. Every datum carries its quote type.
+- For every documented form and every quote token, the codec accepts exactly the keys ORE accepts, except keys where ORE ignores or misreads a token, which it refuses.
+- A test asserts that every ORE =InstrumentType= and =QuoteType= is modelled and every token ORE's parser reads opens a key both accept, against lists taken from =marketdatum.hpp= and =marketdatumparser.cpp=.
 - The asset class model and its seeds cover the classes the new types need.
 
 * Plan
@@ -59,12 +60,72 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quote matrix keys | 2,124: each of the 122 accepted forms with each of ORE's 17 quote tokens and HAZARD_RATE, less repeats | =generate_quote_matrix.py= in =regenerate.sh= | 88d987ca50 |
+| Matrix keys ORE accepts | 1,138, of which 49 use NULL | =quote_matrix.jsonl= | 88d987ca50 |
+| Matrix keys the codec refuses on purpose | 180: 176 where ORE ignores the quote token and records RATE, 4 where ORE misreads a token | =ores.marketdata.core.tests "[ore_key_codec]"= | 88d987ca50 |
+| Codec differences from ORE over the matrix before the fix | 254: 176 RATE-only, 76 shift forms without SHIFT, 2 misread keys not yet listed | the same test, before the fix | 88d987ca50 |
+| Existing catalogue files after regeneration | byte for byte unchanged | =git status external/ore/catalogue= | 88d987ca50 |
+| Codec test cases | 24 cases, 293 assertions, all passed (core); 35 cases, 500 assertions (API) | =ores.marketdata.core.tests "[ore_key_codec],[oresmd_uri_codec]"= | 88d987ca50 |
 
 * Notes
 
 None of the four types is in the corpus, so the corpus-based coverage gate
 could not see the gap. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 1, "Instrument types".
+
+** The audit
+
+The typed datum model and the ORE key codec, merged before this task, already
+covered most of the acceptance:
+
+- The four types have schema rows, readers and writers, and =forms.txt= holds
+  every form ORE documents for them: 3 assumed recovery, 2 bond future, 4 bond
+  future option and 2 calendar spread option keys, accepted and refused.
+- The three aliases read and write canonically, through the forms and a unit
+  test.
+
+Two gaps were real.
+
+1. *Quote types.* The model held 16 quote types. ORE's =QuoteType= has 17,
+   with =NONE=. ORE's =parseQuoteType= maps =NULL= to =NONE= and has no token
+   for =HAZARD_RATE=. So the codec refused =NULL= where ORE accepts it, and
+   read =HAZARD_RATE=, which ORE refuses.
+2. *No coverage test against ORE's lists.* Only the old grammar's test read
+   =instrument_types.txt=, and no quote type list existed.
+
+** What the quote matrix showed
+
+Most of ORE's parser cases never check the quote type, so a list of forms
+cannot say which quote types a form admits. The catalogue now records it:
+=generate_quote_matrix.py= gives every accepted form each quote token, and ORE's
+parser reads them. Comparing the codec with ORE over that matrix found three
+kinds of difference, now fixed:
+
+- The swaption, cap/floor and bond option shift forms: ORE requires =SHIFT=,
+  and the codec accepted any quote type (76 keys).
+- Hazard rate, recovery rate, assumed recovery rate, seasonality and the two
+  inflation swaps: ORE reads any quote token and records =RATE=. The codec now
+  requires =RATE=, by the rule it already applies to tokens ORE drops: a token
+  ORE ignores cannot be written back. The test derives this case from ORE's
+  output (its quote type differs from the key's) rather than from a list.
+- Two keys where ORE misreads tokens, now in the test's list of deliberate
+  refusals: =BOND_FUTURE/PRICE/ISIN0001/TYM26= (ORE ignores every token after
+  the security of a price) and
+  =INDEX_CDS_TRANCHE/BASE_CORRELATION/CDXIG/5Y/0.03/0.07= (ORE takes 0.03 as
+  the detachment point and drops 0.07). The list is now looked up by canonical
+  key, so the =RATE_GVOL= spelling of the index CDS option key matches too.
+
+** Asset classes
+
+The new types need the credit, security and commodity classes, which the
+model and =ores.refdata='s seeds already hold. A test checks that every
+asset class in the schema except =correlation= maps onto a refdata asset class
+through =asset_class_for_authority=.
+
+** Verification that the tests bite
+
+With the codec's refusal of =HAZARD_RATE= disabled, the matrix test failed. The
+coverage test had a check that =HAZARD_RATE= is never read; it could not fail,
+because it only sees tokens ORE accepts, so it was removed.
 
 * Test Scenarios
 
@@ -87,6 +148,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the coverage test checked that HAZARD_RATE is never read, which could not fail. | =datum_ore_key_codec_tests.cpp= | Accepted | Removed; disabling the codec's refusal showed the matrix test is the one that catches it. |
+| 2 | Local review: the datum files from this story's PRs were never clang-formatted, and the earlier "format clean" checks counted the wrong word in clang-format's output. | the 14 datum files | Accepted | Formatted in a separate, format-only commit; all 26 datum files now pass =clang-format --dry-run=. |
+| 3 | Local review: the bond future and tranche keys could be read as ORE does instead of refused. | =datum_ore_key_codec_tests.cpp= | Declined | ORE drops or misplaces a token in each; a datum that held ORE's reading would write a different key, as for the index CDS option key. |
 
 * Result
+
+The model holds all 45 ORE instrument types and all 17 ORE quote types. The
+ORE key codec accepts exactly the keys ORE accepts across every documented form
+and every quote token, except 180 keys where ORE ignores or misreads a token,
+which it refuses on purpose. The catalogue records ORE's quote types and the
+quote matrix, both regenerated from ORE, and tests check the codecs against
+them.

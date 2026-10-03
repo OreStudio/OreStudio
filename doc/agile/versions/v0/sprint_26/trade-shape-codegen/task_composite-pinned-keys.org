@@ -88,7 +88,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Message not checked for one % | core.py | Accept | Refused unless it has exactly one %, for every pin, since a source can change mode. |
+| 2 | Columns not checked to exist | core.py | Accept | Both column lists are checked against the two models. |
+| 3 | Duplicate pin names | core.py | Accept | Refused. |
+| 4 | Source table quoted in one path only | template | Decline | The trigger form matches the existing copy validations; generated table names never need quoting. |
+| 5 | Notes on the insert-only rule and nulls | meta-model page | Accept | Both stated. |
+| 6 | Tenant column in the missing-key message | core.py | Decline | The message already lists tenant_id among the columns it needs. |
 
 * Result
 
@@ -103,9 +108,10 @@ via its "Verifies task" field.
   row. The check holds at insert only, so a pin copies only facts the
   source never changes.
 - The generator refuses an unknown source, column lists of different
-  lengths, tenant scopes that differ, a mutable current-state source and a
-  constraint name over 63 characters.
-- Five tests in =projects/ores.codegen/tests/test_pinned_key.py=.
+  lengths, columns either model does not declare, repeated pin names, a
+  message without exactly one =%=, tenant scopes that differ, a mutable
+  current-state source and a constraint name over 63 characters.
+- Nine tests in =projects/ores.codegen/tests/test_pinned_key.py=.
 - In Postgres, in transactions that rolled back, a copy whose kind differed
   from its source was refused with 23503: by
   =ores_testcomp_copier_records_source_pin= against an immutable source,

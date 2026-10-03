@@ -155,7 +155,8 @@ KIND_KEY = """
 
 def _render(tmp_path, immutable=True, indexes=KIND_KEY,
             columns="source_id, source_kind", target_columns="id, kind",
-            source_table="ores_testcomp_source_records_tbl"):
+            source_table="ores_testcomp_source_records_tbl",
+            edit_copier=lambda body: body):
     modeling = tmp_path / "projects" / "ores.testcomp" / "modeling"
     modeling.mkdir(parents=True)
     (modeling / "ores.testcomp.source_record.org").write_text(
@@ -165,9 +166,10 @@ def _render(tmp_path, immutable=True, indexes=KIND_KEY,
         encoding="utf-8")
     copier = modeling / "ores.testcomp.copier_record.org"
     copier.write_text(
-        COPIER.format(columns=columns, target_columns=target_columns)
-        .replace("| ores_testcomp_source_records_tbl |",
-                 f"| {source_table} |"),
+        edit_copier(
+            COPIER.format(columns=columns, target_columns=target_columns)
+            .replace("| ores_testcomp_source_records_tbl |",
+                     f"| {source_table} |")),
         encoding="utf-8")
     output_dir = tmp_path / "out"
     output_dir.mkdir()
@@ -212,3 +214,31 @@ def test_a_pin_needs_as_many_target_columns_as_columns(tmp_path):
 def test_a_pin_to_an_unknown_table_is_refused(tmp_path):
     with pytest.raises(ValueError, match="no model declares the table"):
         _render(tmp_path, source_table="ores_testcomp_missing_tbl")
+
+
+def test_a_pin_message_needs_one_placeholder(tmp_path):
+    def edit(body):
+        return body.replace("Invalid source_id: %. Kind", "Invalid source. Kind")
+
+    with pytest.raises(ValueError, match="exactly one %"):
+        _render(tmp_path, immutable=False, indexes="", edit_copier=edit)
+
+
+def test_a_pin_over_an_unknown_column_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="this model declares no column source_sort"):
+        _render(tmp_path, columns="source_id, source_sort")
+
+
+def test_a_pin_to_an_unknown_source_column_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="declares no column sort"):
+        _render(tmp_path, immutable=False, indexes="", target_columns="id, sort")
+
+
+def test_pin_names_must_not_repeat(tmp_path):
+    def edit(body):
+        row = next(line for line in body.splitlines()
+                   if line.startswith("| source "))
+        return body.replace(row, row + "\n" + row)
+
+    with pytest.raises(ValueError, match="pinned key names repeat: source"):
+        _render(tmp_path, edit_copier=edit)

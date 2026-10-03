@@ -1732,6 +1732,19 @@ def _immutable_tenant_key(de: dict[str, Any]) -> bool:
                 and not sql.get('nullable_tenant_id'))
 
 
+def _column_names(de: dict[str, Any]) -> set[str]:
+    """Every column a model declares, key columns included."""
+    names = set()
+    for source in (de.get('columns') or [],
+                   (de.get('primary_key') or {}).get('columns') or [],
+                   de.get('natural_keys') or []):
+        for column in source:
+            name = column.get('name') or column.get('column')
+            if name:
+                names.add(name)
+    return names
+
+
 def _unique_keys(de: dict[str, Any]) -> list[frozenset[str]]:
     """The column sets a foreign key can reference: the primary key and
     every unique index over plain columns with no predicate."""
@@ -1765,8 +1778,22 @@ def _resolve_pinned_keys(domain_entity: dict[str, Any], model_path) -> None:
     org_by_table = _entity_org_by_table(_projects_dir_from(model_path))
     has_tenant = bool(domain_entity.get('has_tenant_id'))
     base = domain_entity['sql_name_base']
+    names = [pin['name'] for pin in pins]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    if duplicates:
+        raise ValueError(
+            f"{model_path}: pinned key names repeat: {', '.join(duplicates)}.")
+    own_columns = _column_names(domain_entity)
     for pin in pins:
         where = f"{model_path}: pinned key {pin['name']}"
+        if pin['error_message'].replace('%%', '').count('%') != 1:
+            raise ValueError(
+                f"{where}: the error message needs exactly one %, which "
+                "stands for the first column.")
+        unknown = [c for c in pin['columns'] if c not in own_columns]
+        if unknown:
+            raise ValueError(
+                f"{where}: this model declares no column {', '.join(unknown)}.")
         if len(pin['columns']) != len(pin['target_columns']):
             raise ValueError(
                 f"{where} lists {len(pin['columns'])} columns but "
@@ -1776,6 +1803,12 @@ def _resolve_pinned_keys(domain_entity: dict[str, Any], model_path) -> None:
         if not parent:
             raise ValueError(
                 f"{where}: no model declares the table {pin['table']}.")
+        unknown = [c for c in pin['target_columns']
+                   if c not in parent['column_names']]
+        if unknown:
+            raise ValueError(
+                f"{where}: {pin['table']} declares no column "
+                f"{', '.join(unknown)}.")
         if parent['has_tenant_id'] != has_tenant:
             raise ValueError(
                 f"{where}: {pin['table']} and this table must both be "
@@ -1857,6 +1890,7 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'has_tenant_id': bool(de.get('has_tenant_id')),
         'current_state': bool((de.get('sql') or {}).get('current_state')),
         'unique_keys': _unique_keys(de),
+        'column_names': _column_names(de),
     }
 
 

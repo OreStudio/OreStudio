@@ -36,12 +36,16 @@ namespace ores::service::service {
  * Extracts the Bearer JWT from the Authorization header, validates it, and
  * returns a context scoped to the tenant + party encoded in the claims.
  *
- * If @p verifier is empty the base context is returned directly (service does
- * not require authentication). Otherwise:
+ * If @p verifier is empty the base context is returned directly, and it
+ * carries no permission list, so every permission check passes: it is the
+ * service's own context. No production service runs that way, because every
+ * domain service builds a verifier; tests do. Otherwise:
  * - Missing or malformed Authorization header → error_code::unauthorized
  * - Valid but expired token                   → error_code::token_expired
  * - Invalid token (bad signature, etc.)       → error_code::unauthorized
- * - Valid token                               → scoped database context
+ * - A token that only chooses a party          → error_code::unauthorized
+ * - Valid token                               → scoped database context,
+ *   carrying the token's permission list
  *
  * @param base_ctx  Service-level context (tenant-neutral), returned as-is when
  *                  no verifier is present.

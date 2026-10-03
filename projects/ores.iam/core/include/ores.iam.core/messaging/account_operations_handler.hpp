@@ -722,7 +722,7 @@ public:
                     select_party_response{.success = false, .message = "Invalid or expired token"});
                 return;
             }
-            if (claims_result->audience != "select_party_only") {
+            if (claims_result->audience != security::jwt::party_selection_audience) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: unexpected token audience: " << claims_result->audience;
                 reply(
@@ -918,7 +918,7 @@ public:
             // (jwt_claims::audience is only ever set to a non-empty value
             // for that one special case, in auth_handler.hpp), not the
             // literal string "authenticated".
-            if (claims_result->audience == "select_party_only") {
+            if (claims_result->audience == security::jwt::party_selection_audience) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
                     << "switch_party: rejecting single-use select_party_only token -- "
                        "use select_party to complete initial login instead";

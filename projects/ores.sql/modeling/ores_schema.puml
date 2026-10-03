@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T14:04:39.633090Z
+' Generated: 2026-10-03T14:05:02.023958Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -939,6 +939,49 @@ package "refdata" #FFF3E0 {
     tenor, and how the fixed leg pays against it. Corresponds to the <AverageOIS>
     element in ORE conventions.xml. The id field is the natural key (ORE <Id>
     element).
+    end note
+
+    entity ores_refdata_base_correlations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * terms : text
+        * detachment_points : text
+        * settlement_days : double
+        * calendar : text
+        * business_day_convention : text
+        * day_counter : text
+          extrapolate : text
+          quote_name : text
+          start_date : text
+          rule : text
+          adjust_for_losses : text
+          index_term : text
+          index_spread : text
+          currency : text
+          calibrate_constituents_to_index_spread : text
+          use_assumed_recovery : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_base_correlations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Base Correlation Table
+    The settings of one BaseCorrelation entry of a curveconfig.xml, one row per
+    curve_definition in the BaseCorrelations section: a credit index tranche
+    correlation surface over terms and detachment points.
+    The schema also allows RecoveryGrid, RecoveryProbabilities and QuoteTypes
+    lists, which no corpus document writes; the mapper refuses an entry that has
+    them rather than lose them.
     end note
 
     entity ores_refdata_benchmark_rates_tbl <<temporal>> #C6F0D8 {
@@ -2648,6 +2691,44 @@ package "refdata" #FFF3E0 {
     configuration it is registered as.
     end note
 
+    entity ores_refdata_curve_correlations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * correlation_type : text
+          index_1 : text
+          index_2 : text
+          conventions : text
+          swaption_volatility : text
+          discount_curve : text
+          currency : text
+          dimension : text
+          quote_type : text
+          extrapolation : text
+          day_counter : text
+          calendar : text
+          business_day_convention : text
+          option_tenors : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_correlations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Correlation Table
+    The settings of one Correlation entry of a curveconfig.xml, one row per
+    curve_definition in the Correlations section: the correlation between two
+    indices over option tenors, given directly or implied from CMS spread options.
+    end note
+
     entity ores_refdata_curve_definitions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -2721,6 +2802,44 @@ package "refdata" #FFF3E0 {
     optional attribute. An average OIS segment lists CompositeQuote elements
     instead, each a rate quote and a spread quote. A row is one or the other: a
     quote_text, or a rate_quote with a spread_quote.
+    end note
+
+    entity ores_refdata_curve_report_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          report_on_delta_grid : text
+          report_on_moneyness_grid : text
+          report_on_strike_grid : text
+          report_on_strike_spread_grid : text
+          deltas : text
+          moneyness : text
+          strikes : text
+          strike_spreads : text
+          expiries : text
+          pillar_dates : text
+          underlying_tenors : text
+          continuation_expiry : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_report_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Report Configuration Table
+    The Report element of a volatility or correlation entry: which grids the
+    built surface is reported on, and the points of each. Ten section types carry
+    the same element, so it is one table keyed to the entry. A row exists exactly
+    when the entry writes the element. The grids are comma separated lists in
+    ORE's own text, held as written.
     end note
 
     entity ores_refdata_curve_roles_tbl <<temporal>> #C6F0D8 {
@@ -3368,6 +3487,52 @@ package "refdata" #FFF3E0 {
     the delta is measured, and what happens beyond a switch tenor. Corresponds to
     the <FxOption> element in ORE conventions.xml. The id field is the natural key
     (ORE <Id> element).
+    end note
+
+    entity ores_refdata_fx_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * dimension : text
+          smile_type : text
+          smile_interpolation : text
+          deltas : text
+          smile_delta : text
+          conventions : text
+          expiries : text
+          fx_spot_id : text <<FK>>
+          fx_foreign_curve_id : text <<FK>>
+          fx_domestic_curve_id : text <<FK>>
+          calendar : text
+          day_counter : text
+          fx_index_tag : text
+          base_volatility_1 : text
+          base_volatility_2 : text
+          smile_extrapolation : text
+          time_interpolation : text
+          time_weighting : text
+          butterfly_error_tolerance : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fx_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Table
+    The settings of one FXVolatility entry of a curveconfig.xml, one row per
+    curve_definition in the FXVolatilities section: the surface's dimension and
+    smile, the deltas and expiries it is quoted on, and the curves and spot it is
+    built with. Its Report is a row of curve_report_configuration.
+    The schema also allows a ParametricSmileConfiguration, which no corpus
+    document writes; the mapper refuses an entry that has one rather than lose it.
     end note
 
     entity ores_refdata_ibor_index_conventions_tbl <<temporal>> #C6F0D8 {
@@ -5164,6 +5329,39 @@ package "refdata" #FFF3E0 {
     Y, true and True among other spellings. They are held as the spelling the
     document used, so the export writes it back unchanged. The day counter is held
     the same way and refers to day_counter.
+    end note
+
+    entity ores_refdata_yield_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * qualifier : text
+          dimension : text
+        * volatility_type : text
+        * extrapolation : text
+        * day_counter : text
+        * calendar : text
+        * business_day_convention : text
+        * option_tenors : text
+        * bond_tenors : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_yield_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Yield Volatility Table
+    The settings of one YieldVolatility entry of a curveconfig.xml, one row per
+    curve_definition in the YieldVolatilities section: a bond yield volatility
+    surface over option tenors and bond tenors.
     end note
 
     entity ores_refdata_zero_conventions_tbl <<temporal>> #C6F0D8 {

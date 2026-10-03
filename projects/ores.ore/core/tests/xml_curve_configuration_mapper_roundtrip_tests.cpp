@@ -52,12 +52,8 @@ std::filesystem::path corpus_root() {
 
 curveconfiguration modelled_only(curveconfiguration d) {
     d.ReportConfiguration = decltype(d.ReportConfiguration){};
-    if (d.FXVolatilities)
-        d.FXVolatilities->FXVolatility.clear();
     if (d.SwaptionVolatilities)
         d.SwaptionVolatilities->SwaptionVolatility.clear();
-    if (d.YieldVolatilities)
-        d.YieldVolatilities->YieldVolatility.clear();
     if (d.CapFloorVolatilities)
         d.CapFloorVolatilities->CapFloorVolatility.clear();
     if (d.CDSVolatilities)
@@ -66,12 +62,8 @@ curveconfiguration modelled_only(curveconfiguration d) {
         d.InflationCapFloorVolatilities->InflationCapFloorVolatility.clear();
     if (d.EquityVolatilities)
         d.EquityVolatilities->EquityVolatility.clear();
-    if (d.BaseCorrelations)
-        d.BaseCorrelations->BaseCorrelation.clear();
     if (d.CommodityVolatilities)
         d.CommodityVolatilities->CommodityVolatility.clear();
-    if (d.Correlations)
-        d.Correlations->Correlation.clear();
     if (d.BondFutureVolatilities)
         d.BondFutureVolatilities->BondFutureVolatility.clear();
     return d;
@@ -263,8 +255,26 @@ TEST_CASE("a yield curve with every segment element round trips", tags) {
 
 TEST_CASE("entries of a section the mapper does not model are refused", tags) {
     curveconfiguration d;
-    d.Correlations = correlations{};
-    d.Correlations->Correlation.push_back(correlation{});
+    d.SwaptionVolatilities = swaptionVolatilities{};
+    d.SwaptionVolatilities->SwaptionVolatility.push_back(swaptionVolatility{});
+    CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
+}
+
+TEST_CASE("an FX volatility with a parametric smile is refused", tags) {
+    curveconfiguration d;
+    d.FXVolatilities = fxVolatilities{};
+    fxVolatility v;
+    v.ParametricSmileConfiguration = parametricSmileConfig{};
+    d.FXVolatilities->FXVolatility.push_back(v);
+    CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
+}
+
+TEST_CASE("a base correlation with a recovery grid is refused", tags) {
+    curveconfiguration d;
+    d.BaseCorrelations = baseCorrelations{};
+    baseCorrelation v;
+    v.RecoveryGrid = baseCorrelation_RecoveryGrid_t{};
+    d.BaseCorrelations->BaseCorrelation.push_back(v);
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
 }
 

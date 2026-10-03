@@ -1,0 +1,382 @@
+:PROPERTIES:
+:ID: BDBBC2A5-0698-426A-8951-363BBB792EB2
+:END:
+#+title: ores.refdata.fx_volatility
+#+description: Codegen entity model for the refdata =fx_volatility= table. The settings of one ORE FX volatility.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE FX volatility entry.
+#+entity_singular: fx_volatility
+#+entity_plural: fx_volatilities
+#+entity_title: FX Volatility
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =FXVolatility= entry of a =curveconfig.xml=, one row per
+=curve_definition= in the =FXVolatilities= section: the surface's dimension and
+smile, the deltas and expiries it is quoted on, and the curves and spot it is
+built with. Its =Report= is a row of =curve_report_configuration=.
+
+The schema also allows a =ParametricSmileConfiguration=, which no corpus
+document writes; the mapper refuses an entry that has one rather than lose it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** dimension
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the surface is =ATM= only or has a =Smile=.
+
+#+begin_src cpp :name generator
+std::string("ATM")
+#+end_src
+
+** smile_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile is quoted.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** deltas
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The deltas the smile is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_delta
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The delta convention of the smile.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention the surface's options follow, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** expiries
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The expiries the surface is quoted at, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fx_spot_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The FX spot the surface is built with.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fx_foreign_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The foreign currency's yield curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fx_domestic_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The domestic currency's yield curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The surface's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter of the surface, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fx_index_tag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The tag of the FX index the surface fixes against.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** base_volatility_1
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The first volatility a triangulated surface is built from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** base_volatility_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The second volatility a triangulated surface is built from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smile_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the smile extrapolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface interpolates in time.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_weighting
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The time weighting the surface's time interpolation uses.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** butterfly_error_tolerance
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The tolerance a smile's butterfly arbitrage check allows.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| conventions          | ores_refdata_validate_convention_id_fn        |
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fx_volatilities_tbl
+:END:
+
+** Checks
+
+| expression        |
+|-------------------|
+| "dimension" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_volatility
+:entity_plural_short:   fx_volatilities
+:entity_singular_words: FX volatility
+:entity_plural_words:   FX volatilities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fv
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

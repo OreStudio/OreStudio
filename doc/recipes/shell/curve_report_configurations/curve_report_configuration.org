@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 9971E745-EC2C-56DF-B416-C298B5AA5330
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_report_configurations commands from the shell?
+#+description: Every command the curve_report_configurations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_report_configurations:
+
+This file documents the curve_report_configurations resource at the shell, one section per command. Every command is a subcommand of =curve_report_configurations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 55018804-AA36-5FCC-A5EB-5575D5FD80DE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.list=.
+
+#+name: curve_report_configurations-list
+#+begin_src ores-shell :tangle curve_report_configurations-list.ores :exports none
+curve_report_configurations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: F52BF273-3ACC-5152-A213-7D44B5A1C46A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.get=.
+
+#+name: curve_report_configurations-get
+#+begin_src ores-shell :tangle curve_report_configurations-get.ores :exports none
+curve_report_configurations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D03809C2-DEBD-52AB-92E5-FA8D75FC6DA3
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.get_many=.
+
+#+name: curve_report_configurations-get-many
+#+begin_src ores-shell :tangle curve_report_configurations-get-many.ores :exports none
+curve_report_configurations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: E6584FC4-C184-540F-B074-213BBFD4DBC2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations add <curve_definition_id> <report_on_delta_grid> <report_on_moneyness_grid> <report_on_strike_grid> <report_on_strike_spread_grid> <deltas> <moneyness> <strikes> <strike_spreads> <expiries> <pillar_dates> <underlying_tenors> <continuation_expiry> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.put=.
+
+#+name: curve_report_configurations-add
+#+begin_src ores-shell :tangle curve_report_configurations-add.ores :exports none
+curve_report_configurations add 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8AA7E14A-CC54-5883-A9E3-54A72C7E2E24
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations set <id> <curve_definition_id> <report_on_delta_grid> <report_on_moneyness_grid> <report_on_strike_grid> <report_on_strike_spread_grid> <deltas> <moneyness> <strikes> <strike_spreads> <expiries> <pillar_dates> <underlying_tenors> <continuation_expiry> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.put=.
+
+#+name: curve_report_configurations-set
+#+begin_src ores-shell :tangle curve_report_configurations-set.ores :exports none
+curve_report_configurations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A3B515A8-710B-55FB-B525-8802EE395DC1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations put-many --count <n> <id> <curve_definition_id> <report_on_delta_grid> <report_on_moneyness_grid> <report_on_strike_grid> <report_on_strike_spread_grid> <deltas> <moneyness> <strikes> <strike_spreads> <expiries> <pillar_dates> <underlying_tenors> <continuation_expiry> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.put_many=.
+
+#+name: curve_report_configurations-put-many
+#+begin_src ores-shell :tangle curve_report_configurations-put-many.ores :exports none
+curve_report_configurations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D75F4A47-B5BE-5CD0-B90D-BF51AD6940AC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.delete=.
+
+#+name: curve_report_configurations-delete
+#+begin_src ores-shell :tangle curve_report_configurations-delete.ores :exports none
+curve_report_configurations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: BFBE63DC-ECD1-54C3-AC45-BB3B3A12F317
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations.delete_many=.
+
+#+name: curve_report_configurations-delete-many
+#+begin_src ores-shell :tangle curve_report_configurations-delete-many.ores :exports none
+curve_report_configurations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9D99D381-CA4E-5FEE-9D0F-899960979E1B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations_versions.list=.
+
+#+name: curve_report_configurations-versions
+#+begin_src ores-shell :tangle curve_report_configurations-versions.ores :exports none
+curve_report_configurations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 915880EF-2633-50C6-B6BD-5CCBB3AD14BE
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_report_configurations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_report_configurations_versions.get=.
+
+#+name: curve_report_configurations-version
+#+begin_src ores-shell :tangle curve_report_configurations-version.ores :exports none
+curve_report_configurations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -343,6 +343,16 @@
 \ir ./refdata_commodity_curves_notify_trigger_create.sql
 \ir ./refdata_commodity_price_segments_create.sql
 \ir ./refdata_commodity_price_segments_notify_trigger_create.sql
+\ir ./refdata_curve_report_configurations_create.sql
+\ir ./refdata_curve_report_configurations_notify_trigger_create.sql
+\ir ./refdata_fx_volatilities_create.sql
+\ir ./refdata_fx_volatilities_notify_trigger_create.sql
+\ir ./refdata_yield_volatilities_create.sql
+\ir ./refdata_yield_volatilities_notify_trigger_create.sql
+\ir ./refdata_base_correlations_create.sql
+\ir ./refdata_base_correlations_notify_trigger_create.sql
+\ir ./refdata_curve_correlations_create.sql
+\ir ./refdata_curve_correlations_notify_trigger_create.sql
 \ir ./refdata_curve_segments_create.sql
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql

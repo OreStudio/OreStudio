@@ -64,6 +64,12 @@ struct curve_bootstrap_config final {
     boost::uuids::uuid curve_definition_id;
 
     /**
+     * @brief The default curve configuration whose list holds the row, or nil when it belongs to
+     * the curve entry or one of its segments.
+     */
+    boost::uuids::uuid default_curve_configuration_id;
+
+    /**
      * @brief The accuracy each instrument is bootstrapped to.
      */
     std::optional<double> accuracy;

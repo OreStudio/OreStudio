@@ -43,6 +43,7 @@ struct curve_quote_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     boost::uuids::uuid curve_segment_id;
+    boost::uuids::uuid default_curve_configuration_id;
     std::optional<std::string> quote_text;
     std::optional<std::string> optional_flag;
     std::optional<std::string> rate_quote;

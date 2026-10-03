@@ -25,8 +25,9 @@
  * Curve Quote Table
  *
  * One market quote a curve is built from. A quote sits either directly on the
- * curve entry or inside one of its segments, and the row names both so the quotes
- * of a curve can be read without walking its segments.
+ * curve entry or inside one of its segments, or in a default curve's configuration, and the row names
+ * the curve entry as well so the quotes of a curve can be read without walking
+ * its segments or configurations.
  *
  * Almost every list is of Quote elements, each a market point and an optional
  * optional attribute. An average OIS segment lists CompositeQuote elements
@@ -40,6 +41,7 @@ create table if not exists "ores_refdata_curve_quotes_tbl" (
     "version" integer not null,
     "curve_definition_id" uuid not null,
     "curve_segment_id" uuid null,
+    "default_curve_configuration_id" uuid null,
     "quote_text" text null,
     "optional_flag" text null,
     "rate_quote" text null,
@@ -104,6 +106,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid curve_segment_id: %. No active curve segment found with this id.', NEW.curve_segment_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate default_curve_configuration_id (optional soft FK to ores_refdata_default_curve_configurations_tbl)
+    if NEW.default_curve_configuration_id is not null then
+        if not exists (
+            select 1 from ores_refdata_default_curve_configurations_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.default_curve_configuration_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.', NEW.default_curve_configuration_id
                 using errcode = '23503';
         end if;
     end if;

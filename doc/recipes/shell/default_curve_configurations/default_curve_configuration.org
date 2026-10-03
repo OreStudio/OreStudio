@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D1801F72-0CCA-5248-9428-26329B6B88B3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the default_curve_configurations commands from the shell?
+#+description: Every command the default_curve_configurations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:default_curve_configurations:
+
+This file documents the default_curve_configurations resource at the shell, one section per command. Every command is a subcommand of =default_curve_configurations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 34F3FF22-F5D0-596E-B39C-74D6E861E5FA
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.list=.
+
+#+name: default_curve_configurations-list
+#+begin_src ores-shell :tangle default_curve_configurations-list.ores :exports none
+default_curve_configurations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6C6858B0-B3F5-5908-847E-2AA1AA5E3D5F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.get=.
+
+#+name: default_curve_configurations-get
+#+begin_src ores-shell :tangle default_curve_configurations-get.ores :exports none
+default_curve_configurations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 75A66E3F-070D-524D-B892-C99B2C36271A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.get_many=.
+
+#+name: default_curve_configurations-get-many
+#+begin_src ores-shell :tangle default_curve_configurations-get-many.ores :exports none
+default_curve_configurations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FBA2E204-023F-5F95-B6DF-BDB24C3A7A50
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations add <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.put=.
+
+#+name: default_curve_configurations-add
+#+begin_src ores-shell :tangle default_curve_configurations-add.ores :exports none
+default_curve_configurations add 00000000-0000-0000-0000-000000000000 false - - - - - - false - - - - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 62A9D221-BB8A-5F6A-8558-0D61A2752404
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations set <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.put=.
+
+#+name: default_curve_configurations-set
+#+begin_src ores-shell :tangle default_curve_configurations-set.ores :exports none
+default_curve_configurations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - false - - - - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E666C890-2964-50E2-9FAC-D06F4A3EB1AC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations put-many --count <n> <id> <curve_definition_id> <is_inline> <priority> <default_curve_type> <discount_curve> <day_counter> <recovery_rate> <start_date> <has_quotes> <benchmark_curve> <reinterpreted_yield_curve> <source_curve> <pillars> <spot_lag> <calendar> <conventions> <extrapolation> <running_spread> <index_term> <imply_default_from_market> <allow_negative_rates> <price_is_upfront> <initial_state> <states> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.put_many=.
+
+#+name: default_curve_configurations-put-many
+#+begin_src ores-shell :tangle default_curve_configurations-put-many.ores :exports none
+default_curve_configurations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - false - - - - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7B35CC26-2524-5D87-AC45-CEEEF8540307
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.delete=.
+
+#+name: default_curve_configurations-delete
+#+begin_src ores-shell :tangle default_curve_configurations-delete.ores :exports none
+default_curve_configurations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 87FD8B3D-ABC8-5B0E-8CE4-71AAE5FC8BF4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations.delete_many=.
+
+#+name: default_curve_configurations-delete-many
+#+begin_src ores-shell :tangle default_curve_configurations-delete-many.ores :exports none
+default_curve_configurations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 85666678-AEC0-50B8-837E-44C001CD7FC3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations_versions.list=.
+
+#+name: default_curve_configurations-versions
+#+begin_src ores-shell :tangle default_curve_configurations-versions.ores :exports none
+default_curve_configurations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E1CAE07A-0941-5593-8AD4-119087A5EE94
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+default_curve_configurations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.default_curve_configurations_versions.get=.
+
+#+name: default_curve_configurations-version
+#+begin_src ores-shell :tangle default_curve_configurations-version.ores :exports none
+default_curve_configurations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

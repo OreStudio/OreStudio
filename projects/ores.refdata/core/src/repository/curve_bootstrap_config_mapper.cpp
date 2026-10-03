@@ -42,6 +42,10 @@ curve_bootstrap_config_mapper::map(const curve_bootstrap_config_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
+    r.default_curve_configuration_id =
+        v.default_curve_configuration_id.has_value() ?
+            boost::lexical_cast<boost::uuids::uuid>(*v.default_curve_configuration_id) :
+            boost::uuids::uuid{};
     r.accuracy = v.accuracy;
     r.global_accuracy = v.global_accuracy;
     r.dont_throw = v.dont_throw;
@@ -70,6 +74,10 @@ curve_bootstrap_config_mapper::map(const domain::curve_bootstrap_config& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
+    r.default_curve_configuration_id =
+        v.default_curve_configuration_id == boost::uuids::uuid{} ?
+            std::nullopt :
+            std::optional(boost::uuids::to_string(v.default_curve_configuration_id));
     r.accuracy = v.accuracy;
     r.global_accuracy = v.global_accuracy;
     r.dont_throw = v.dont_throw;

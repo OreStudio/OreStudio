@@ -77,6 +77,8 @@ set(files
     "curve_segment_type_commands_tests.cpp"
     "day_count_fraction_type_commands_tests.cpp"
     "day_counter_commands_tests.cpp"
+    "default_curve_commands_tests.cpp"
+    "default_curve_configuration_commands_tests.cpp"
     "deposit_convention_commands_tests.cpp"
     "derivation_kind_commands_tests.cpp"
     "diary_entry_type_commands_tests.cpp"

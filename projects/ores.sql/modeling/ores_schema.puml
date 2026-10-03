@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T14:03:55.981880Z
+' Generated: 2026-10-03T14:04:17.792030Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2479,6 +2479,7 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * curve_definition_id : uuid <<FK>>
+          default_curve_configuration_id : uuid <<FK>>
           accuracy : double
           global_accuracy : double
           dont_throw : boolean
@@ -2607,6 +2608,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * curve_definition_id : uuid <<FK>>
           curve_segment_id : uuid <<FK>>
+          default_curve_configuration_id : uuid <<FK>>
           quote_text : text
           optional_flag : text
           rate_quote : text
@@ -2626,8 +2628,9 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Curve Quote Table
     One market quote a curve is built from. A quote sits either directly on the
-    curve entry or inside one of its segments, and the row names both so the quotes
-    of a curve can be read without walking its segments.
+    curve entry or inside one of its segments, or in a default curve's configuration, and the row names
+    the curve entry as well so the quotes of a curve can be read without walking
+    its segments or configurations.
     Almost every list is of Quote elements, each a market point and an optional
     optional attribute. An average OIS segment lists CompositeQuote elements
     instead, each a rate quote and a spread quote. A row is one or the other: a
@@ -2915,6 +2918,89 @@ package "refdata" #FFF3E0 {
     The set is the schema's dayCounter enumeration in ore_types.xsd. Which
     canonical day count fraction each spelling means is not recorded here: nothing
     reads it yet, and a wrong mapping would be worse than none.
+    end note
+
+    entity ores_refdata_default_curve_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * is_inline : boolean
+          priority : integer
+          default_curve_type : text
+          discount_curve : text
+          day_counter : text
+          recovery_rate : text
+          start_date : text
+        * has_quotes : boolean
+          benchmark_curve : text
+          reinterpreted_yield_curve : text
+          source_curve : text
+          pillars : text
+          spot_lag : integer
+          calendar : text
+          conventions : text
+          extrapolation : text
+          running_spread : double
+          index_term : text
+          imply_default_from_market : text
+          allow_negative_rates : text
+          price_is_upfront : text
+          initial_state : text
+          states : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Configuration Table
+    One way a default curve may be built. A DefaultCurve either writes its
+    settings inline, or lists them as Configurations, each with a priority; ORE
+    builds the first configuration that succeeds. The corpus writes 144 curves
+    inline and 189 with configurations, nine of them with two, and never both. Each
+    inline curve is one row with is_inline set; each listed configuration is one
+    row with its priority.
+    The quotes a configuration is built from are rows of curve_quote, and its
+    BootstrapConfig a row of curve_bootstrap_config, both naming this row.
+    Pillars and States are comma separated lists in ORE's own text, held as
+    written. The schema also allows SourceCurves and SwitchDates lists, which
+    no corpus document writes; the mapper refuses an entry that has them rather
+    than lose them.
+    end note
+
+    entity ores_refdata_default_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Table
+    The settings of one DefaultCurve entry of a curveconfig.xml that do not
+    depend on how the curve is built, one row per curve_definition in the
+    DefaultCurves section. That is only its currency: everything else belongs to a
+    configuration, a row of default_curve_configuration.
     end note
 
     entity ores_refdata_deposit_conventions_tbl <<temporal>> #C6F0D8 {

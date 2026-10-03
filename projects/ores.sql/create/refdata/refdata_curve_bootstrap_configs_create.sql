@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_curve_bootstrap_configs_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "curve_definition_id" uuid not null,
+    "default_curve_configuration_id" uuid null,
     "accuracy" double precision null,
     "global_accuracy" double precision null,
     "dont_throw" boolean null,
@@ -90,6 +91,19 @@ begin
     ) then
         raise exception 'Invalid curve_definition_id: %. No active curve definition found with this id.', NEW.curve_definition_id
             using errcode = '23503';
+    end if;
+
+    -- Validate default_curve_configuration_id (optional soft FK to ores_refdata_default_curve_configurations_tbl)
+    if NEW.default_curve_configuration_id is not null then
+        if not exists (
+            select 1 from ores_refdata_default_curve_configurations_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.default_curve_configuration_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.', NEW.default_curve_configuration_id
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code

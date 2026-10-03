@@ -37,6 +37,8 @@ render_curve_bootstrap_config_fields(const domain::curve_bootstrap_config& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
+    fields.push_back({.name = "Default Curve Configuration ID",
+                      .value = boost::uuids::to_string(v.default_curve_configuration_id)});
     fields.push_back(
         {.name = "Accuracy", .value = v.accuracy ? std::to_string(*v.accuracy) : std::string{}});
     fields.push_back(

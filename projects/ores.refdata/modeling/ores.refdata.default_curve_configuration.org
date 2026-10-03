@@ -1,0 +1,459 @@
+:PROPERTIES:
+:ID: 2197187C-7D71-43FF-A862-CBED7E0C654C
+:END:
+#+title: ores.refdata.default_curve_configuration
+#+description: Codegen entity model for the refdata =default_curve_configuration= table. One configuration of an ORE default curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One way an ORE default curve may be built, with its priority.
+#+entity_singular: default_curve_configuration
+#+entity_plural: default_curve_configurations
+#+entity_title: Default Curve Configuration
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One way a default curve may be built. A =DefaultCurve= either writes its
+settings inline, or lists them as =Configurations=, each with a =priority=; ORE
+builds the first configuration that succeeds. The corpus writes 144 curves
+inline and 189 with configurations, nine of them with two, and never both. Each
+inline curve is one row with =is_inline= set; each listed configuration is one
+row with its priority.
+
+The quotes a configuration is built from are rows of =curve_quote=, and its
+=BootstrapConfig= a row of =curve_bootstrap_config=, both naming this row.
+=Pillars= and =States= are comma separated lists in ORE's own text, held as
+written. The schema also allows =SourceCurves= and =SwitchDates= lists, which
+no corpus document writes; the mapper refuses an entry that has them rather
+than lose them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** is_inline
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the settings are written directly on the curve entry rather than as a
+configuration in a =Configurations= list.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** priority
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The configuration's =priority= attribute, when it has one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** default_curve_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the curve is built: =SpreadCDS=, =HazardRate=, =Benchmark= and the other
+values ORE's schema allows. Required in a listed configuration, optional
+inline.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** discount_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve the configuration discounts on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter the curve is built on, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** recovery_rate
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The recovery rate, as a quote name or a number, as the document writes it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date the curve starts from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_quotes
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the configuration writes a =Quotes= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** benchmark_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve a benchmark default curve is implied from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** reinterpreted_yield_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The yield curve a configuration reads as a default curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** source_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve a configuration is derived from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** pillars
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The pillars of a curve derived from another, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spot_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The spot lag in days.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The configuration's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention the configuration's instruments are priced with, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the curve extrapolates, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** running_spread
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The running spread of an upfront quoted curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** index_term
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The term of the credit index the curve is built from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** imply_default_from_market
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether a missing default is implied from the market, as the ORE boolean the
+document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** allow_negative_rates
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the bootstrap allows negative hazard rates, as the ORE boolean the
+document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** price_is_upfront
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether price quotes are upfront amounts, as the ORE boolean the document
+wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** initial_state
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The initial rating state of a transition matrix curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** states
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rating states of a transition matrix curve, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The configuration's place in its list, which the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| conventions          | ores_refdata_validate_convention_id_fn        |
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_default_curve_configurations_tbl
+:END:
+
+** Checks
+
+| expression      |
+|-----------------|
+| "position" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: configuration
+:entity_plural_short:   configurations
+:entity_singular_words: default curve configuration
+:entity_plural_words:   default curve configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: dcc
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

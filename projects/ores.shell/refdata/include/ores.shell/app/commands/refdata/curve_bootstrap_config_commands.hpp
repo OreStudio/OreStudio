@@ -87,27 +87,27 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <accuracy> <global_accuracy> <dont_throw> <max_attempts>
-     * <max_factor> <min_factor> <dont_throw_steps> <global> <smoothness_lambda> <reason>
-     * <commentary>
+     * @brief add <curve_definition_id> <default_curve_configuration_id> <accuracy>
+     * <global_accuracy> <dont_throw> <max_attempts> <max_factor> <min_factor> <dont_throw_steps>
+     * <global> <smoothness_lambda> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <curve_definition_id> <accuracy> <global_accuracy> <dont_throw>
-     * <max_attempts> <max_factor> <min_factor> <dont_throw_steps> <global> <smoothness_lambda>
-     * <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_definition_id> <default_curve_configuration_id> <accuracy>
+     * <global_accuracy> <dont_throw> <max_attempts> <max_factor> <min_factor> <dont_throw_steps>
+     * <global> <smoothness_lambda> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <curve_definition_id> <accuracy> <global_accuracy>
-     * <dont_throw> <max_attempts> <max_factor> <min_factor> <dont_throw_steps> <global>
-     * <smoothness_lambda> <reason> <commentary>
+     * @brief put-many --count <n> <id> <curve_definition_id> <default_curve_configuration_id>
+     * <accuracy> <global_accuracy> <dont_throw> <max_attempts> <max_factor> <min_factor>
+     * <dont_throw_steps> <global> <smoothness_lambda> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

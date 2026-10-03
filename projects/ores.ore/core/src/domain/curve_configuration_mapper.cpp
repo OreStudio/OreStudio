@@ -43,6 +43,7 @@ constexpr std::string_view audit_commentary = "Imported from ORE XML";
 constexpr std::string_view yield_curves_section = "YieldCurves";
 constexpr std::string_view equity_curves_section = "EquityCurves";
 constexpr std::string_view inflation_curves_section = "InflationCurves";
+constexpr std::string_view default_curves_section = "DefaultCurves";
 constexpr std::string_view securities_section = "Securities";
 constexpr std::string_view fx_spots_section = "FXSpots";
 constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves";
@@ -51,7 +52,7 @@ constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves"
 // recorded only when it is empty.
 bool is_modelled(std::string_view section) {
     return section == yield_curves_section || section == equity_curves_section ||
-           section == inflation_curves_section ||
+           section == inflation_curves_section || section == default_curves_section ||
            section == securities_section || section == fx_spots_section ||
            section == intraday_power_curves_section;
 }
@@ -209,7 +210,8 @@ const std::vector<section_access>& sections() {
                      &capFloorVolatilities::CapFloorVolatility),
         make_section(
             "CDSVolatilities", &curveconfiguration::CDSVolatilities, &cdsVolatilities::CDSVolatility),
-        make_section("DefaultCurves", &curveconfiguration::DefaultCurves, &defaultCurves::DefaultCurve),
+        make_section(
+            default_curves_section, &curveconfiguration::DefaultCurves, &defaultCurves::DefaultCurve),
         make_section(yield_curves_section, &curveconfiguration::YieldCurves, &yieldCurves::YieldCurve),
         make_section(inflation_curves_section,
                      &curveconfiguration::InflationCurves,
@@ -288,13 +290,16 @@ struct import_context {
         return out.segments.back();
     }
 
-    void quotes(const boost::uuids::uuid& segment_id, const quoteType& v) {
+    void quotes(const boost::uuids::uuid& segment_id,
+                const quoteType& v,
+                const boost::uuids::uuid& configuration_id = boost::uuids::uuid{}) {
         int position = 0;
         for (const auto& q : v.Quote) {
             refdata::domain::curve_quote r;
             r.id = new_uuid();
             r.curve_definition_id = definition_id;
             r.curve_segment_id = segment_id;
+            r.default_curve_configuration_id = configuration_id;
             r.quote_text = text(q);
             if (q.optional)
                 r.optional_flag = std::string(*q.optional);
@@ -509,6 +514,41 @@ refdata::domain::curve_definition& add_definition(mapped_curve_configuration& ou
     return out.definitions.back();
 }
 
+void import_bootstrap(mapped_curve_configuration& out,
+                      const boost::uuids::uuid& definition_id,
+                      const boost::uuids::uuid& configuration_id,
+                      const bootstrapConfigType& b) {
+    refdata::domain::curve_bootstrap_config c;
+    c.id = new_uuid();
+    c.curve_definition_id = definition_id;
+    c.default_curve_configuration_id = configuration_id;
+    c.accuracy = optional_double(b.Accuracy);
+    c.global_accuracy = optional_double(b.GlobalAccuracy);
+    c.dont_throw = optional_bool(b.DontThrow);
+    c.max_attempts = optional_int(b.MaxAttempts);
+    c.max_factor = optional_double(b.MaxFactor);
+    c.min_factor = optional_double(b.MinFactor);
+    c.dont_throw_steps = optional_int(b.DontThrowSteps);
+    c.global = optional_bool(b.Global);
+    c.smoothness_lambda = optional_double(b.SmoothnessLambda);
+    set_audit(c);
+    out.bootstrap_configs.push_back(std::move(c));
+}
+
+bootstrapConfigType export_bootstrap(const refdata::domain::curve_bootstrap_config& c) {
+    bootstrapConfigType b;
+    assign_optional_double(b.Accuracy, c.accuracy);
+    assign_optional_double(b.GlobalAccuracy, c.global_accuracy);
+    assign_optional_bool(b.DontThrow, c.dont_throw);
+    assign_optional_int(b.MaxAttempts, c.max_attempts);
+    assign_optional_double(b.MaxFactor, c.max_factor);
+    assign_optional_double(b.MinFactor, c.min_factor);
+    assign_optional_int(b.DontThrowSteps, c.dont_throw_steps);
+    assign_optional_bool(b.Global, c.global);
+    assign_optional_double(b.SmoothnessLambda, c.smoothness_lambda);
+    return b;
+}
+
 void import_yield_curve(mapped_curve_configuration& out, const yieldCurve& v, int position) {
     const auto d = add_definition(
         out, yield_curves_section, text(v.CurveId), text(v.CurveDescription), position);
@@ -532,23 +572,8 @@ void import_yield_curve(mapped_curve_configuration& out, const yieldCurve& v, in
     set_audit(y);
     out.yield_curves.push_back(std::move(y));
 
-    if (v.BootstrapConfig) {
-        const auto& b = *v.BootstrapConfig;
-        refdata::domain::curve_bootstrap_config c;
-        c.id = new_uuid();
-        c.curve_definition_id = d.id;
-        c.accuracy = optional_double(b.Accuracy);
-        c.global_accuracy = optional_double(b.GlobalAccuracy);
-        c.dont_throw = optional_bool(b.DontThrow);
-        c.max_attempts = optional_int(b.MaxAttempts);
-        c.max_factor = optional_double(b.MaxFactor);
-        c.min_factor = optional_double(b.MinFactor);
-        c.dont_throw_steps = optional_int(b.DontThrowSteps);
-        c.global = optional_bool(b.Global);
-        c.smoothness_lambda = optional_double(b.SmoothnessLambda);
-        set_audit(c);
-        out.bootstrap_configs.push_back(std::move(c));
-    }
+    if (v.BootstrapConfig)
+        import_bootstrap(out, d.id, boost::uuids::uuid{}, *v.BootstrapConfig);
 
     import_context ctx{out, d.id};
     import_segments(ctx, v.Segments);
@@ -637,6 +662,93 @@ void import_inflation_curve(mapped_curve_configuration& out,
     }
 }
 
+// The settings a default curve writes both inline and in a listed
+// configuration, under the same element names.
+template <typename Source>
+void import_configuration_settings(refdata::domain::default_curve_configuration& r,
+                                   const Source& v) {
+    r.discount_curve = optional_text(v.DiscountCurve);
+    r.recovery_rate = optional_text(v.RecoveryRate);
+    r.start_date = optional_text(v.StartDate);
+    r.has_quotes = static_cast<bool>(v.Quotes);
+    r.benchmark_curve = optional_text(v.BenchmarkCurve);
+    r.source_curve = optional_text(v.SourceCurve);
+    r.pillars = optional_text(v.Pillars);
+    if (v.SpotLag)
+        r.spot_lag = static_cast<int>(*v.SpotLag);
+    r.calendar = optional_text(v.Calendar);
+    r.conventions = optional_text(v.Conventions);
+    r.extrapolation = optional_enum_text(v.Extrapolation);
+    r.running_spread = optional_double(v.RunningSpread);
+    r.index_term = optional_text(v.IndexTerm);
+    r.imply_default_from_market = optional_enum_text(v.ImplyDefaultFromMarket);
+    r.allow_negative_rates = optional_enum_text(v.AllowNegativeRates);
+    r.price_is_upfront = optional_enum_text(v.PriceIsUpfront);
+    r.initial_state = optional_text(v.InitialState);
+    r.states = optional_text(v.States);
+}
+
+template <typename Source>
+void import_configuration_lists(mapped_curve_configuration& out,
+                                const refdata::domain::curve_definition& d,
+                                const refdata::domain::default_curve_configuration& r,
+                                const Source& v) {
+    if (v.SourceCurves || v.SwitchDates)
+        throw refusal("default curve " + d.curve_id +
+                      " writes SourceCurves or SwitchDates, which are not modelled yet");
+    if (v.Quotes) {
+        import_context ctx{out, d.id};
+        ctx.quotes(boost::uuids::uuid{}, *v.Quotes, r.id);
+    }
+    if (v.BootstrapConfig)
+        import_bootstrap(out, d.id, r.id, *v.BootstrapConfig);
+}
+
+void import_default_curve(mapped_curve_configuration& out, const defaultCurve& v, int position) {
+    const auto d = add_definition(
+        out, default_curves_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::default_curve c;
+    c.id = new_uuid();
+    c.curve_definition_id = d.id;
+    c.currency = to_string(v.Currency);
+    set_audit(c);
+    out.default_curves.push_back(std::move(c));
+
+    const auto add = [&](int at) -> refdata::domain::default_curve_configuration {
+        refdata::domain::default_curve_configuration r;
+        r.id = new_uuid();
+        r.curve_definition_id = d.id;
+        r.position = at;
+        set_audit(r);
+        return r;
+    };
+
+    if (v.Configurations) {
+        int at = 0;
+        for (const auto& k : v.Configurations->Configuration) {
+            auto r = add(at++);
+            r.is_inline = false;
+            r.priority = optional_int(k.priority);
+            r.default_curve_type = to_string(k.Type);
+            r.day_counter = to_string(k.DayCounter);
+            r.reinterpreted_yield_curve = optional_text(k.ReinterpretedYieldCurve);
+            import_configuration_settings(r, k);
+            import_configuration_lists(out, d, r, k);
+            out.default_curve_configurations.push_back(std::move(r));
+        }
+        return;
+    }
+
+    auto r = add(0);
+    r.is_inline = true;
+    r.default_curve_type = optional_enum_text(v.Type);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    import_configuration_settings(r, v);
+    import_configuration_lists(out, d, r, v);
+    out.default_curve_configurations.push_back(std::move(r));
+}
+
 void import_security(mapped_curve_configuration& out, const security& v, int position) {
     const auto d = add_definition(
         out, securities_section, text(v.CurveId), text(v.CurveDescription), position);
@@ -704,6 +816,15 @@ boost::uuids::uuid quote_definition(const refdata::domain::curve_quote& q) {
     return q.curve_definition_id;
 }
 
+boost::uuids::uuid quote_configuration(const refdata::domain::curve_quote& q) {
+    return q.default_curve_configuration_id;
+}
+
+boost::uuids::uuid configuration_definition(
+    const refdata::domain::default_curve_configuration& c) {
+    return c.curve_definition_id;
+}
+
 boost::uuids::uuid factor_definition(const refdata::domain::inflation_seasonality_factor& f) {
     return f.curve_definition_id;
 }
@@ -717,6 +838,10 @@ boost::uuids::uuid definition_of(const refdata::domain::curve_segment& s) {
 struct export_context {
     std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>> quotes;
     std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>> entry_quotes;
+    std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>>
+        configuration_quotes;
+    std::map<boost::uuids::uuid, const refdata::domain::curve_bootstrap_config*>
+        configuration_bootstraps;
 
     const std::vector<const refdata::domain::curve_quote*>& quotes_of_entry(
         const boost::uuids::uuid& definition_id) const {
@@ -992,19 +1117,8 @@ yieldCurve export_yield_curve(const refdata::domain::curve_definition& d,
         assign_optional_text(report.PillarDates, y.report_pillar_dates);
         r.Report = std::move(report);
     }
-    if (bootstrap) {
-        bootstrapConfigType b;
-        assign_optional_double(b.Accuracy, bootstrap->accuracy);
-        assign_optional_double(b.GlobalAccuracy, bootstrap->global_accuracy);
-        assign_optional_bool(b.DontThrow, bootstrap->dont_throw);
-        assign_optional_int(b.MaxAttempts, bootstrap->max_attempts);
-        assign_optional_double(b.MaxFactor, bootstrap->max_factor);
-        assign_optional_double(b.MinFactor, bootstrap->min_factor);
-        assign_optional_int(b.DontThrowSteps, bootstrap->dont_throw_steps);
-        assign_optional_bool(b.Global, bootstrap->global);
-        assign_optional_double(b.SmoothnessLambda, bootstrap->smoothness_lambda);
-        r.BootstrapConfig = std::move(b);
-    }
+    if (bootstrap)
+        r.BootstrapConfig = export_bootstrap(*bootstrap);
     for (const auto* s : segments)
         export_segment(r.Segments, *s, ctx);
     return r;
@@ -1086,6 +1200,85 @@ inflationCurve export_inflation_curve(
     assign_optional_enum(r.UseLastFixingDate, v.use_last_fixing_date, "ORE boolean");
     assign_optional_text(r.InterpolationVariable, v.interpolation_variable);
     assign_optional_text(r.InterpolationMethod, v.interpolation_method);
+    return r;
+}
+
+template <typename Target>
+void export_configuration_settings(Target& r,
+                                   const refdata::domain::default_curve_configuration& c,
+                                   const export_context& ctx) {
+    assign_optional_text(r.DiscountCurve, c.discount_curve);
+    assign_optional_text(r.RecoveryRate, c.recovery_rate);
+    if (c.start_date)
+        r.StartDate = *c.start_date;
+    if (c.has_quotes) {
+        quoteType quotes;
+        const auto it = ctx.configuration_quotes.find(c.id);
+        if (it != ctx.configuration_quotes.end()) {
+            for (const auto* q : it->second) {
+                quoteType_Quote_t item;
+                assign_text(item, q->quote_text.value_or(""));
+                if (q->optional_flag)
+                    item.optional = *q->optional_flag;
+                quotes.Quote.push_back(std::move(item));
+            }
+        }
+        r.Quotes = std::move(quotes);
+    }
+    assign_optional_text(r.BenchmarkCurve, c.benchmark_curve);
+    assign_optional_text(r.SourceCurve, c.source_curve);
+    assign_optional_text(r.Pillars, c.pillars);
+    if (c.spot_lag)
+        r.SpotLag = static_cast<int64_t>(*c.spot_lag);
+    if (c.calendar)
+        r.Calendar = *c.calendar;
+    assign_optional_text(r.Conventions, c.conventions);
+    assign_optional_enum(r.Extrapolation, c.extrapolation, "ORE boolean");
+    assign_optional_double(r.RunningSpread, c.running_spread);
+    assign_optional_text(r.IndexTerm, c.index_term);
+    assign_optional_enum(r.ImplyDefaultFromMarket, c.imply_default_from_market, "ORE boolean");
+    assign_optional_enum(r.AllowNegativeRates, c.allow_negative_rates, "ORE boolean");
+    assign_optional_enum(r.PriceIsUpfront, c.price_is_upfront, "ORE boolean");
+    assign_optional_text(r.InitialState, c.initial_state);
+    assign_optional_text(r.States, c.states);
+    const auto b = ctx.configuration_bootstraps.find(c.id);
+    if (b != ctx.configuration_bootstraps.end())
+        r.BootstrapConfig = export_bootstrap(*b->second);
+}
+
+defaultCurve export_default_curve(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::default_curve& v,
+    const std::vector<const refdata::domain::default_curve_configuration*>& configurations,
+    const export_context& ctx) {
+    defaultCurve r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Currency = enum_from_text<currencyCode>(v.currency, "currency code");
+
+    if (configurations.size() == 1 && configurations.front()->is_inline) {
+        const auto& c = *configurations.front();
+        assign_optional_enum(r.Type, c.default_curve_type, "default curve type");
+        assign_optional_enum(r.DayCounter, c.day_counter, "day counter");
+        export_configuration_settings(r, c, ctx);
+        return r;
+    }
+
+    defaultCurve_Configurations_t list;
+    for (const auto* c : configurations) {
+        if (c->is_inline)
+            throw refusal("default curve " + d.curve_id +
+                          " mixes an inline configuration with listed ones");
+        defaultCurve_Configurations_t_Configuration_t k;
+        assign_optional_int(k.priority, c->priority);
+        k.Type = enum_from_text<defaultCurveType>(c->default_curve_type.value_or(""),
+                                                  "default curve type");
+        k.DayCounter = enum_from_text<dayCounter>(c->day_counter.value_or(""), "day counter");
+        assign_optional_text(k.ReinterpretedYieldCurve, c->reinterpreted_yield_curve);
+        export_configuration_settings(k, *c, ctx);
+        list.Configuration.push_back(std::move(k));
+    }
+    r.Configurations = std::move(list);
     return r;
 }
 
@@ -1173,6 +1366,9 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     if (v.FXSpots)
         for (const auto& e : v.FXSpots->FXSpot)
             import_fx_spot(mapped, e, position++);
+    if (v.DefaultCurves)
+        for (const auto& e : v.DefaultCurves->DefaultCurve)
+            import_default_curve(mapped, e, position++);
     if (v.YieldCurves)
         for (const auto& e : v.YieldCurves->YieldCurve)
             import_yield_curve(mapped, e, position++);
@@ -1211,15 +1407,29 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     std::map<boost::uuids::uuid, const refdata::domain::curve_bootstrap_config*>
         bootstrap_by_definition;
     for (const auto& b : v.bootstrap_configs)
-        bootstrap_by_definition.emplace(b.curve_definition_id, &b);
+        if (b.default_curve_configuration_id == boost::uuids::uuid{})
+            bootstrap_by_definition.emplace(b.curve_definition_id, &b);
 
     export_context ctx;
     std::vector<refdata::domain::curve_quote> segment_quotes;
     std::vector<refdata::domain::curve_quote> entry_quotes;
-    for (const auto& q : v.quotes)
-        (q.curve_segment_id == boost::uuids::uuid{} ? entry_quotes : segment_quotes).push_back(q);
+    std::vector<refdata::domain::curve_quote> configuration_quotes;
+    for (const auto& q : v.quotes) {
+        if (q.default_curve_configuration_id != boost::uuids::uuid{})
+            configuration_quotes.push_back(q);
+        else if (q.curve_segment_id != boost::uuids::uuid{})
+            segment_quotes.push_back(q);
+        else
+            entry_quotes.push_back(q);
+    }
     ctx.quotes = group_by(segment_quotes, &segment_of);
     ctx.entry_quotes = group_by(entry_quotes, &quote_definition);
+    ctx.configuration_quotes = group_by(configuration_quotes, &quote_configuration);
+    for (const auto& b : v.bootstrap_configs)
+        if (b.default_curve_configuration_id != boost::uuids::uuid{})
+            ctx.configuration_bootstraps.emplace(b.default_curve_configuration_id, &b);
+    const auto default_by_definition = by_definition(v.default_curves);
+    const auto configurations = group_by(v.default_curve_configurations, &configuration_definition);
     ctx.curves = group_by(v.segment_curves, &parent_segment);
     const auto segments = group_by(v.segments, &definition_of);
     const auto equity_by_definition = by_definition(v.equity_curves);
@@ -1243,6 +1453,16 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
                 document.EquityCurves = equityCurves{};
             document.EquityCurves->EquityCurve.push_back(
                 export_equity_curve(*d, settings_of(equity_by_definition, *d), ctx));
+            continue;
+        }
+        if (d->section_code == default_curves_section) {
+            const auto k = configurations.find(d->id);
+            if (k == configurations.end())
+                throw refusal("default curve " + d->curve_id + " has no configuration");
+            if (!document.DefaultCurves)
+                document.DefaultCurves = defaultCurves{};
+            document.DefaultCurves->DefaultCurve.push_back(
+                export_default_curve(*d, settings_of(default_by_definition, *d), k->second, ctx));
             continue;
         }
         if (d->section_code == inflation_curves_section) {

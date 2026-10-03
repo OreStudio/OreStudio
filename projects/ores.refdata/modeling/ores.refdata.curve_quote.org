@@ -14,8 +14,9 @@
 #+updated: 2026-10-03
 
 One market quote a curve is built from. A quote sits either directly on the
-curve entry or inside one of its segments, and the row names both so the quotes
-of a curve can be read without walking its segments.
+curve entry or inside one of its segments, or in a default curve's configuration, and the row names
+the curve entry as well so the quotes of a curve can be read without walking
+its segments or configurations.
 
 Almost every list is of =Quote= elements, each a market point and an optional
 =optional= attribute. An average OIS segment lists =CompositeQuote= elements
@@ -68,6 +69,20 @@ ctx.generate_uuid()
 
 The segment whose list holds the quote, or nil when the quote sits directly on
 the curve entry.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
+** default_curve_configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The default curve configuration whose list holds the row, or nil when it
+belongs to the curve entry or one of its segments.
 
 #+begin_src cpp :name generator
 boost::uuids::nil_uuid()
@@ -158,6 +173,15 @@ what the export restores.
 :parent_entity: curve_segment
 :nullable:      true
 :error_message: Invalid curve_segment_id: %. No active curve segment found with this id.
+:END:
+
+** default_curve_configuration_id
+:PROPERTIES:
+:table:         ores_refdata_default_curve_configurations_tbl
+:target_column: id
+:parent_entity: default_curve_configuration
+:nullable:      true
+:error_message: Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.
 :END:
 
 * SQL

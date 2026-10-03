@@ -8,7 +8,7 @@
 #+filetags: :serialise_the_web_ctest_entries:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/serialise-the-web-ctest-entries
-#+pr:
+#+pr: 2546
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2546][#2546]] | [web] Stop the web typecheck racing the web tests |
 
 * Review
 

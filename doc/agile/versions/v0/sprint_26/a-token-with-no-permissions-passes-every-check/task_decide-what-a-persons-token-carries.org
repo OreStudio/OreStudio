@@ -8,7 +8,7 @@
 #+filetags: :iam:security:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2548
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2548][#2548]] | [agile] Promote the token permission gap to a story |
 
 * Review
 

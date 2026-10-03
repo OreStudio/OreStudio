@@ -7,40 +7,41 @@
 #+level: s1
 #+filetags: :act_inside_a_tenant:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-act-inside-a-tenant
+#+pr: 2525
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A system administrator can enter one tenant on purpose, see on every screen that they are acting in it, read its data through the same reads its own members use, and leave. Row-level security does the scoping from the session's token, so no read takes a tenant parameter and no cross-tenant subject is needed. The hand-written refdata.v1.parties.list-of-tenant read is removed.
+Write the journey [[id:0CD07C06-080B-4BBE-83DE-F6C3841BD209][Act inside a tenant]]
+before any code, so the session, the web and the parties tasks build one
+design: how an administrator enters a tenant, what the session carries, what
+every screen shows while inside, how they leave, and what is recorded.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
-- The journey Act inside a tenant is written first, with its wireframe.
-- Entering a tenant needs iam::tenants:impersonate, refuses the system tenant as a target, and is recorded in the audit trail.
-- While acting in a tenant, every screen says so and offers the way out; leaving returns to system administration.
-- The tenant's parties are read with refdata.v1.parties.list in the tenant's session, paged, with no fixed cap.
-- refdata.v1.parties.list-of-tenant, its service, handler, tests and shell command are removed.
-- Every new behaviour is proved by a test, and each screen was read against the running deployment.
+- The journey names the actor, the trigger, every step including expiry and
+  refusal, the operations with their status, and what is missing.
+- It has a wireframe, and the tenancy hub lists it.
+- It states what the tenant session carries and what it may do.
 
 * Plan
 
@@ -79,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2525][#2525]] | [agile] Write the Act inside a tenant journey |
 
 * Review
 
@@ -88,3 +89,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+
+The journey [[id:0CD07C06-080B-4BBE-83DE-F6C3841BD209][Act inside a tenant]] is
+written, with its wireframe, and the tenancy hub lists it. Its decisions:
+
+- Entering is the domain operation =iam.v1.ops.enter_tenant=, and leaving
+  =iam.v1.ops.leave_tenant=. Both check =iam::tenants:impersonate=, refuse the
+  system tenant, and record the event in the audit trail of the tenant and of
+  the system tenant.
+- The tenant session acts as the tenant's system party, which sees every party,
+  in the tenant administration mode. Its token carries a claim naming the
+  tenant the administrator acts from.
+- The session reads only: it carries the read permissions of the
+  administrator's roles, and the BFF refuses every change while inside. The
+  operator decided this: data is read only inside a tenant, and a system
+  administrator changes a tenant only by deleting all of it.
+- The session is not refreshed. On expiry, and on leaving, the browser returns
+  to the administrator's own system session without a new sign-in.
+- The BFF routes are =POST= and =DELETE= on =/api/session/tenant=.
+

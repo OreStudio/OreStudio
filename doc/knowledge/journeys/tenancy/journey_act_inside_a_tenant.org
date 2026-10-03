@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 0CD07C06-080B-4BBE-83DE-F6C3841BD209
+:END:
+#+title: User Journey: Act inside a tenant
+#+description: A system administrator enters one tenant on purpose, sees on every screen that they act in it, reads its data through the ordinary reads, and leaves.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator enters one tenant on purpose, sees on every screen that they act in it, reads its data through the ordinary reads, and leaves.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to look inside this tenant the way its own people see it, and know that
+I am doing so." The system administrator enters one tenant on purpose, reads
+its data through the same screens and reads its members use, and leaves. The
+journey is done when the administrator is back in system administration, and
+the tenant's audit trail says who entered, when, and when they left.
+
+* Actor and trigger
+
+The system administrator: an account that holds the =SuperAdmin= role in the
+system tenant, with the permission =iam::tenants:impersonate=. The trigger is a
+question that only the tenant's own data answers: which parties it holds, who
+has access, what its members signed in to. The journey starts on the tenant's
+screen in [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]] and ends
+when the administrator leaves the tenant.
+
+The rule behind the journey: a tenant's data is read from inside the tenant.
+The session's token names the tenant, row-level security scopes every read from
+it, and no read takes a tenant as a parameter. So the administrator does not
+get a second, cross-tenant way to read; they get a session in the tenant, and
+the ordinary reads do the rest.
+
+* Steps
+
+1. *Enter the tenant.* On the tenant's screen, or from the roster row's menu,
+   the administrator chooses *Act in this tenant*. The system checks the
+   permission, refuses the system tenant, and issues a session scoped to the
+   tenant. The session acts as the tenant's system party, which sees every
+   party of the tenant. The system records the entry in the audit trail of the
+   tenant and of the system tenant.
+2. *See that I am inside.* Every screen shows a banner: *Acting in Acme
+   Corporation as admin*, with *Leave*. The session's mode is tenant
+   administration, so the menus are the ones a tenant's administrator sees, and
+   the system administration screens are not offered.
+3. *Read the tenant.* The administrator uses the tenant's own screens. The
+   tenant's screen lists its parties with =refdata.v1.parties.list=, paged with
+   the server's total. *Who has access*, *Rescue access* and *Audit* read the
+   tenant's accounts, sessions and sign-ins. Every read is the ordinary one,
+   scoped by the session's token.
+4. *Leave.* The administrator chooses *Leave*. The system ends the tenant
+   session, records the exit in both audit trails, and returns the browser to
+   the administrator's own system session, on the tenant's screen. The
+   administrator does not sign in again.
+5. *The session runs out.* The tenant session lives for one access lifetime and
+   is not refreshed. When it expires, the system returns the browser to the
+   system session and says the time in the tenant ended. The administrator can
+   enter again.
+6. *Refused.* An account without =iam::tenants:impersonate=, a session that is
+   not in system administration, or the system tenant as the target is refused
+   with a reason, and the browser stays where it was.
+
+Entering writes only the audit records. Inside a tenant, data is read only. The
+session carries the read permissions of the administrator's roles and no write
+permission, and the BFF refuses every change while the session is in a tenant.
+A system administrator changes a tenant in one way only: by deleting the whole
+tenant, from system administration, in
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]].
+
+* Screens and wireframes
+
+No new screen. The journey adds a button on the tenant's screen, a menu item on
+the roster row, and a banner on every screen while the administrator is
+inside. The wireframe shows the tenant's screen before entry, and the same
+screen inside the tenant with the banner and the parties.
+
+#+caption: Act inside a tenant: the entry on the tenant's screen, and the banner and parties while inside.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/tenancy/wireframe_act_inside_a_tenant.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenant= | The tenant entered, named in the banner | [[id:11ED9447-461D-4074-9663-E83190BA7371][ores.iam.tenant]] |
+| =party= | The tenant's system party the session acts as, and the parties listed inside | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Enter the tenant | Issue a session scoped to one tenant, record the entry | =iam.v1.ops.enter_tenant= | missing |
+| Read the tenant | List the tenant's parties, paged | =refdata.v1.parties.list= | exists |
+| Read the tenant | The tenant's accounts, sessions and sign-ins | the reads behind Who has access, Rescue access and Audit | exists |
+| Leave | End the tenant session, record the exit | =iam.v1.ops.leave_tenant= | missing |
+
+=iam.v1.ops.enter_tenant= is a domain operation, because it acts on a session
+and not on an entity. Its request names the tenant by id. Its reply is the
+token, the tenant's name and code, the party the session acts as, and the
+access lifetime. The token carries the tenant, the tenant's system party, every
+party of the tenant as visible, the administrator as subject and actor, and a
+claim that names the tenant the administrator acts from, so audit columns and
+the banner can say who is really acting.
+
+The browser reaches both operations through the BFF: =POST /api/session/tenant=
+enters and =DELETE /api/session/tenant= leaves. The BFF keeps the system
+session while the tenant session is in use, so leaving needs no sign-in.
+
+* What is missing
+
+1. *A session scoped to another tenant.* Nothing issues one. The permission
+   =iam::tenants:impersonate= is seeded and granted to =SuperAdmin=, and no
+   code checks it. =iam.v1.ops.enter_tenant= and =iam.v1.ops.leave_tenant= are
+   the candidates, in an operation model in =ores.iam=.
+2. *A claim that says who is really acting.* The token names one subject and
+   one tenant. An administrator acting in Acme is not an Acme account, so the
+   token needs a claim naming the tenant they act from, and the audit trail
+   needs to show it.
+3. *Removing the cross-tenant party read.* =refdata.v1.parties.list-of-tenant=
+   was added for the tenant's screen before this journey existed. It goes once
+   the parties are read from inside the tenant.
+
+* Related journeys
+
+- [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]] — where the journey starts, and where leaving returns
+- [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] — the roster row's menu offers the entry too
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] — read inside the tenant
+- [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] — read inside the tenant
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — where the entry and the exit are recorded
+- [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] — the same re-scoping of a session, for a member's own parties
+
+* Related knowledge
+
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]]
+- [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy journeys]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:41A46D59-D62F-4805-B8ED-C014D9F87A47][Task: Write the act inside a tenant journey]]

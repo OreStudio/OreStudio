@@ -24,7 +24,9 @@ begin
 {{#has_audit_columns}}
         changed_version := OLD.version;
 {{/has_audit_columns}}
+{{#has_tenant_id}}
         changed_tenant_id := OLD.tenant_id::text;
+{{/has_tenant_id}}
     elsif TG_OP = 'UPDATE' then
 {{#has_audit_columns}}
         -- A versioned table's update is the internal close of the current
@@ -37,7 +39,9 @@ begin
         change_action := 'updated';
         {{primary_key.notify_assign_new}}
         changed_version := 0;
+{{#has_tenant_id}}
         changed_tenant_id := NEW.tenant_id::text;
+{{/has_tenant_id}}
 {{/has_audit_columns}}
     else
 {{#has_audit_columns}}
@@ -55,7 +59,9 @@ begin
         changed_version := 0;
 {{/has_audit_columns}}
         {{primary_key.notify_assign_new}}
+{{#has_tenant_id}}
         changed_tenant_id := NEW.tenant_id::text;
+{{/has_tenant_id}}
     end if;
 
     changed_key := {{primary_key.notify_key_object}};

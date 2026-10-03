@@ -48,9 +48,12 @@
 #include "ores.trading.core/messaging/bond_option_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_repo_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_trs_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/booking_nature_type_registrar.hpp"
 #include "ores.trading.core/messaging/callable_swap_call_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/commodity_basket_constituent_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/counterparty_scope_type_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/entry_channel_type_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_registrar.hpp"
 #include "ores.trading.core/messaging/fpml_event_type_history_provider_registrar.hpp"
@@ -82,6 +85,7 @@
 #include "ores.trading.core/messaging/return_type_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_registrar.hpp"
+#include "ores.trading.core/messaging/trade_anchor_registrar.hpp"
 #include "ores.trading.core/messaging/trade_envelope_additional_field_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_envelope_additional_field_registrar.hpp"
 #include "ores.trading.core/messaging/trade_envelope_history_provider_registrar.hpp"
@@ -141,6 +145,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_amortization_type_handlers(nats, ctx, verifier));
     append(register_average_type_handlers(nats, ctx, verifier));
     append(register_barrier_type_handlers(nats, ctx, verifier));
+    append(register_booking_nature_type_handlers(nats, ctx, verifier));
+    append(register_counterparty_scope_type_handlers(nats, ctx, verifier));
+    append(register_entry_channel_type_handlers(nats, ctx, verifier));
     append(register_exercise_type_handlers(nats, ctx, verifier));
     append(register_fpml_event_type_handlers(nats, ctx, verifier));
     append(register_lifecycle_event_handlers(nats, ctx, verifier));
@@ -152,6 +159,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_price_type_handlers(nats, ctx, verifier));
     append(register_return_type_handlers(nats, ctx, verifier));
     append(register_settlement_type_handlers(nats, ctx, verifier));
+    append(register_trade_anchor_handlers(nats, ctx, verifier));
     append(register_trade_envelope_additional_field_handlers(nats, ctx, verifier));
     append(register_trade_envelope_handlers(nats, ctx, verifier));
     append(register_trade_envelope_portfolio_id_handlers(nats, ctx, verifier));

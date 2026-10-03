@@ -69,6 +69,15 @@
 \ir ./trading_long_short_types_create.sql
 \ir ./trading_long_short_types_notify_trigger_create.sql
 
+\ir ./trading_entry_channel_types_create.sql
+\ir ./trading_entry_channel_types_notify_trigger_create.sql
+
+\ir ./trading_counterparty_scope_types_create.sql
+\ir ./trading_counterparty_scope_types_notify_trigger_create.sql
+
+\ir ./trading_booking_nature_types_create.sql
+\ir ./trading_booking_nature_types_notify_trigger_create.sql
+
 \ir ./trading_moment_types_create.sql
 \ir ./trading_moment_types_notify_trigger_create.sql
 
@@ -289,6 +298,10 @@
 -- Scripted instruments (depends on reference data above)
 \ir ./trading_scripted_instruments_create.sql
 \ir ./trading_scripted_instruments_notify_trigger_create.sql
+
+-- Trade anchors (depend on the classification lookups above)
+\ir ./trading_trade_anchors_create.sql
+\ir ./trading_trade_anchors_notify_trigger_create.sql
 
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql

@@ -16,6 +16,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | Entity | Brief |
 |--------+-------|
 | [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][ores.trading.trade]] | Trade capturing FpML Trade Header properties. |
+| [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] | The immutable anchor of a trade. |
 | [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] | External identifier (UTI, USI, internal) assigned to a trade. |
 | [[id:E031135C-5728-401B-BBD4-88B197B937B1][ores.trading.trade_party_role]] | Counterparty role assignment on a trade. |
 | [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] | ORE instrument type code (e.g. Swap, FxForward, CapFloor, Swaption). |
@@ -25,6 +26,9 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][ores.trading.activity_type]] | Internal trade activity classification (e.g. new_booking, amendment, novation). |
 | [[id:F0F5580D-B2BD-48BE-9ADA-1F21A311326C][ores.trading.fpml_event_type]] | Standard FpML lc_EventType_Type coding scheme (New, Amendment, Novation, PartialTermination, FullTermination). |
 | [[id:BAC3E39A-8EE6-4114-A69D-E83487939887][ores.trading.long_short_type]] | Position direction code (Long or Short). |
+| [[id:C407B4FF-9370-4C27-9A15-F428B9BE7C69][ores.trading.entry_channel_type]] | How a trade reached the firm's books. |
+| [[id:D0FE23D4-5138-4770-8DED-FFF702338F70][ores.trading.counterparty_scope_type]] | Who the firm faces on a trade. |
+| [[id:735BC0F4-EC7A-4F70-AE47-5C9DA0013F78][ores.trading.booking_nature_type]] | Whether anything happened to cause a booking. |
 | [[id:1C68526F-83B7-4371-B17C-FE0621618FA7][ores.trading.payoff_type]] | Option payoff type from the ORE optionData PayoffType. |
 | [[id:A09F91EA-DF8C-41EE-853E-3F62274B3ED9][ores.trading.return_type]] | Equity leg return type (Total or Price). |
 | [[id:8818F9D5-C62F-40A4-9053-755C2674039B][ores.trading.option_type]] | Option exercise right (Call or Put). |

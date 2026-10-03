@@ -216,6 +216,16 @@ TENANT_001 ores_compute_app_version_platforms_tbl
 TENANT_001 ores_telemetry_service_samples_tbl
 
 # =============================================================================
+# Trade classification lookups - closed, immutable code sets.
+# The codes are the enumerators of C++ enums and are the same for every tenant.
+# The trade anchor references each with a database foreign key, which needs an
+# immutable target; a tenant-scoped copy would add a key with nothing to vary.
+# =============================================================================
+TENANT_001 ores_trading_entry_channel_types_tbl
+TENANT_001 ores_trading_counterparty_scope_types_tbl
+TENANT_001 ores_trading_booking_nature_types_tbl
+
+# =============================================================================
 # Market data TimescaleDB hypertables — observations and fixings.
 # These tables use (id, date) as the primary key because TimescaleDB requires
 # the partition column in the PK. GIST exclusion is incompatible with

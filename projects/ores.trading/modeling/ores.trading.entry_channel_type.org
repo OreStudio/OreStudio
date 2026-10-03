@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: C407B4FF-9370-4C27-9A15-F428B9BE7C69
+:END:
+#+title: ores.trading.entry_channel_type
+#+description: Codegen entity model for the trading entry_channel_type table: the closed set of entry channel codes a trade anchor carries.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: How a trade reached the firm's books.
+#+entity_singular: entry_channel_type
+#+entity_plural: entry_channel_types
+#+entity_title: Entry Channel Type
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+Reference data table holding the ways a trade reaches the firm's books:
+=manual= (a user captured it), =stp= (straight-through processing from
+an upstream system), =ecn= (an electronic communication network) and
+=allocation= (a block trade split into its allocations).
+
+The set is closed, and the C++ enum =domain::entry_channel= holds the same
+values. A code with no enum value cannot be read back, so the table is
+immutable: it is seeded once and never changes at run time. Because it
+is immutable, the trade anchor references it with a database foreign
+key rather than a trigger check. The table has no tenant: the set is the
+same for every tenant.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:profile:       read-only-current-state
+:has_tenant_id: false
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique entry channel code.
+
+Examples: 'manual', 'stp'.
+
+#+begin_src cpp :name generator
+std::string("manual")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the code means.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_trading_entry_channel_types_tbl
+:immutable:        true
+:no_audit_columns: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: entry_channel_type
+:entity_plural_short:   entry_channel_types
+:entity_singular_words: entry channel type
+:entity_plural_words:   entry channel types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ec
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the two other closed classifications on the anchor.

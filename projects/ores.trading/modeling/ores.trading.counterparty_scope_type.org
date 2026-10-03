@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: D0FE23D4-5138-4770-8DED-FFF702338F70
+:END:
+#+title: ores.trading.counterparty_scope_type
+#+description: Codegen entity model for the trading counterparty_scope_type table: the closed set of counterparty scope codes a trade anchor carries.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Who the firm faces on a trade.
+#+entity_singular: counterparty_scope_type
+#+entity_plural: counterparty_scope_types
+#+entity_title: Counterparty Scope Type
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+Reference data table holding who the firm faces on a trade, and so what
+obligation the booking creates: =external= (a party outside the group),
+=inter_entity= (another legal entity of the same group) and
+=intra_entity= (another book in the same legal entity and branch).
+
+The set is closed, and the C++ enum =domain::counterparty_scope= holds the same
+values. A code with no enum value cannot be read back, so the table is
+immutable: it is seeded once and never changes at run time. Because it
+is immutable, the trade anchor references it with a database foreign
+key rather than a trigger check. The table has no tenant: the set is the
+same for every tenant.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:profile:       read-only-current-state
+:has_tenant_id: false
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique counterparty scope code.
+
+Examples: 'external', 'intra_entity'.
+
+#+begin_src cpp :name generator
+std::string("external")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the code means.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_trading_counterparty_scope_types_tbl
+:immutable:        true
+:no_audit_columns: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: counterparty_scope_type
+:entity_plural_short:   counterparty_scope_types
+:entity_singular_words: counterparty scope type
+:entity_plural_words:   counterparty scope types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cs
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — what each value means and why it is not a boolean.

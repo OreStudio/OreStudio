@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:v0:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The immutable anchor is in, beside the wide trade. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-02                               |
+| Next          | Booking and state components keyed by the anchor. |
+| Last touched  | 2026-10-03 |
 
 * Acceptance
 
@@ -45,9 +45,32 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:55A6C125-F7F2-49AC-AAF3-AA9A31DE6316][Add the immutable trade anchor]] | DONE | 2026-10-03 | 2026-10-03 | Add trade_anchor beside the wide trade: an immutable, tenant-keyed row with party, counterparty, trade type, counterparty scope, booking nature and entry channel, and the three closed lookups it references. |
 
 * Decisions
+
+- Build beside, then switch (owner's choice): the anchor and its components
+  are new generated entities next to today's wide trade; each consumer
+  moves onto them in its own pull request; the wide trade, its field
+  groups and the envelope tables are removed last. Every pull request
+  builds and passes, so main is never half migrated.
+- While the wide trade exists the anchor is named =trade_anchor=; it takes
+  the name =trade= in the last task.
+- The anchor's origin is =entry_channel= (owner's choice): how the trade
+  reached the firm's books — =manual=, =stp=, =ecn= or =allocation=. The
+  name avoids =booking_origin=, which the data quality origin dimension
+  already uses. The originating system's own id is an identifier scheme
+  and its version belongs to the agreement.
+- =entry_channel= is a C++ enum backed by a lookup table, with a foreign
+  key (owner's choice). The anchor is immutable and a database foreign key
+  needs an immutable target, so the lookup is an immutable table with no
+  tenant, seeded once with the four codes. The enum and the lookup hold the
+  same closed set: a code with no enum value cannot be added at run time.
+  =counterparty_scope= and =booking_nature= are closed sets of the same kind
+  and follow the same pattern.
+- Task order: the anchor; booking and state; identifiers, party roles and
+  additional fields; catalogue-generated trade-type checks and routing; ORE
+  import and export; the remaining consumers; removal of the wide trade.
 
 * Out of scope
 

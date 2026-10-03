@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/ore-report-configuration
+#+branch: feature/round-trip-the-curve-configuration
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Curves are referenced by name from five of the analytics documents, so a curve t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,56 @@ Curves are referenced by name from five of the analytics documents, so a curve t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measured on 2026-10-03 at fe244a3331 before any change:
+
+- 89 corpus documents have the root =CurveConfiguration=, with 22 section kinds.
+  An entry carries from 2 to 30 distinct child elements, by section. Yield
+  curves are the largest: 1193 entries and 10 segment kinds in use.
+- The binding already holds =curveconfiguration= with a loader and saver. No
+  binding work is needed.
+- The binding groups a yield curve's segments by kind, one vector per kind, so
+  the order of segments across kinds is lost before a mapper runs. A mapper can
+  keep only the order within a kind.
+- The curve tables on main (=curve_definition=, =curve_section=,
+  =curve_segment=, =curve_quote=) store each entry's common settings as text
+  and the rest as a semicolon and pipe encoded =extras= column. Nothing reads,
+  writes or seeds them. That shape fails this task's acceptance and the
+  story's (no name and value pairs, references by foreign key).
+- The day counters the corpus writes do not match the seeded day count codes:
+  =Actual/365 (Fixed)=, =ACT=, =Actual/360=, =ActActISDA= and =30E/360E= have
+  no row, 657 values in all. The schema's =dayCounter= enum lists every
+  spelling ORE accepts, about seventy.
+- Curve segments name 219 distinct convention ids. Conventions are one table
+  per category, each keyed by its text id, with no shared identity table.
+
+Shape:
+
+- A curve entry is a header row, =curve_definition= (section, =CurveId=,
+  description, position), which is the one identity other documents refer to,
+  plus a detail row per section family with that family's settings as typed
+  columns. Nested lists (segments, quotes, volatility configurations) are child
+  rows with typed columns and a position within their kind.
+- An ORE enumeration becomes a seeded lookup derived from the schema by a
+  script, keyed by ORE's own spelling, so a column keeps the exact spelling
+  and resolves by foreign key. A day counter spelling also names its canonical
+  day count code.
+- A convention reference is checked against every convention table by one
+  validation function, because there is no shared convention identity. An
+  index reference resolves against the floating index types.
+
+Delivery, one PR per step, each with its own check:
+
+1. Lookups. The curve sections, the segment kinds and types, and the ORE day
+   counter spellings, seeded by a script that reads the schema. Check: the
+   seed counts equal the schema's enumerations.
+2. Yield curves. Replace the generic columns with the header and the yield
+   curve detail, segments and quotes; the mapper for the =YieldCurves=
+   section. Check: every =YieldCurves= section in the corpus round trips in
+   memory and through the database.
+3. The other curve sections (default, equity, inflation, commodity, securities,
+   FX spots, intraday power). Same check per section.
+4. The volatility and correlation sections and the report configuration. Check:
+   every whole document in the corpus round trips.
 
 * Measurements
 

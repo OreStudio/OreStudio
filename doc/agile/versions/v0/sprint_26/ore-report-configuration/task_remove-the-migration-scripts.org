@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/remove-the-migration-scripts
-#+pr:
+#+pr: 2572
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2572][#2572]] | [sql] Remove the migration scripts |
 
 * Review
 

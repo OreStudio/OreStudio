@@ -64,7 +64,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Token permission checks in handlers | 1193 call sites in 17 components | =grep -rn 'has_permission(' projects --include=*.hpp --include=*.cpp= less tests and the two definitions | =4fe36432cf= |
-| Seeded roles | 28, the largest granting 17 codes; most grant a component wildcard | =iam_roles_populate.sql= read by script | =4fe36432cf= |
+| Seeded roles | 28, the largest granting 17 codes; most grant a component wildcard | =grep -o "role_permissions_assign_fn([^,]*, '[A-Za-z]*', '[^']*'" projects/ores.sql/populate/iam/iam_roles_populate.sql \| awk -F"'" '{c[$2]++} END {for (r in c) print c[r], r}' \| sort -rn= | =4fe36432cf= |
 | Access token lifetime | 1800 s; maximum session 28800 s | =variability_system_settings_populate.sql= | =4fe36432cf= |
 
 * Notes
@@ -91,7 +91,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1.1 | The story's Now field is stale | =story.org= | Accept | Now and Next updated. |
+| R1.2 | A context with no list must not arise by accident | =story.org= | Accept | Decision 5: only a named constructor builds it, and no production request path does. |
+| R1.3 | The party-choice token would be refused everywhere | =story.org= | Accept | Decision 1: the selection handler checks no permission and accepts only that audience, which the standard verifier rejects elsewhere. |
+| R1.4 | Say the maximum session does not lengthen the window | =story.org= | Accept | Decision 3. |
+| R1.5 | Say what the tenant session carries | =story.org= | Accept | Decision 1: unchanged. |
+| R1.6 | The roles measurement names no command | this task | Accept | The command is in the table. |
 
 * Result
 

@@ -25,9 +25,9 @@ it says for a person as well as for a service.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Design done.                           |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Issue tokens with their permissions.   |
 | Last touched  | 2026-10-03                               |
 
 * Acceptance
@@ -58,22 +58,31 @@ it says for a person as well as for a service.
    permission codes from the database and put them in the token. Refresh reads
    them again rather than copying the old token's, so a role change reaches the
    token at the next refresh. The token that only lets a person choose a party
-   carries none, and so can do nothing else.
+   carries none. It needs none: the party selection handler checks no
+   permission and accepts only that token's =select_party_only= audience, and
+   the standard verifier rejects that audience everywhere else.
+   The tenant session keeps what it carries now: the administrator's read
+   codes, read from the database when the tenant is entered.
 2. *The codes are carried as granted, wildcards included.* =*= and =x::*= stay
    as they are, so a token holds at most a handful of codes: the largest seeded
    role grants 17.
 3. *A role change takes effect within one access lifetime.* With the default
-   of 1800 s, a revoked permission stops working within 30 minutes. Pushing the
-   change to live sessions is out of scope; the in-process event that announces
-   a change has no listener outside the service.
+   of 1800 s, a revoked permission stops working within 30 minutes. The
+   maximum session of 28800 s does not lengthen this, because every refresh
+   reads the permissions again. Pushing the change to live sessions is out of
+   scope; the in-process event that announces a change has no listener outside
+   the service.
 4. *One rule matches a permission.* The token check understands =*= and =x::*=;
    the database check =authorization_service::check_permission= understands only
    =*=, so a role granted =refdata::*= passes one and fails the other. Both use
    one matching function that understands both.
-5. *An empty list refuses; no token trusts.* The request context's permissions
-   become optional. A context built from a token carries the token's list, and
-   an empty list refuses every check. A context with no token, which only tests
-   and service-internal work build, carries no list and passes, as it does now.
+5. *An empty list refuses; no token trusts, by name.* The request context's
+   permissions become optional. A context built from a token carries the
+   token's list, and an empty list refuses every check. A context that carries
+   no list passes, as it does now, but only a named constructor builds one, so
+   no code path reaches it by leaving a field unset. The services' base
+   contexts and the tests use it; the request path never does in production,
+   because every domain service builds a verifier and so validates a token.
 6. *Order.* Issue tokens with their permissions first, then refuse an empty
    list, then walk each role. A token issued before the change carries an empty
    list; its next refresh reads the permissions, so nobody is locked out longer

@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2564
+#+pr: 2566
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -296,6 +296,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2566][#2566]] | [refdata] Map the curve report configuration and close the round trip |
 | [[https://github.com/OreStudio/OreStudio/pull/2564][#2564]] | [refdata] Map the equity, commodity and bond future volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2562][#2562]] | [refdata] Map the swaption and cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2560][#2560]] | [refdata] Map the CDS and inflation cap and floor volatility sections |

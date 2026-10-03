@@ -47,6 +47,7 @@ export interface Book {
     regulatory_book_type: string;
     is_sweepable: boolean;
     rates_centre_code: string;
+    sandbox_id: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

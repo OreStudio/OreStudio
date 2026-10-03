@@ -95,6 +95,7 @@ domain::book to_domain(const messaging::book_write& write) {
     v.regulatory_book_type = write.regulatory_book_type;
     v.is_sweepable = write.is_sweepable;
     v.rates_centre_code = write.rates_centre_code;
+    v.sandbox_id = write.sandbox_id;
     return v;
 }
 

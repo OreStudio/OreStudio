@@ -1101,6 +1101,24 @@ for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
+-- Sandbox isolation, as for portfolios: a virtual book is read and written
+-- only by those who may see its sandbox, so no official read, report or
+-- process reaches it.
+drop policy if exists books_sandbox_isolation_policy
+    on ores_refdata_books_tbl;
+
+create policy books_sandbox_isolation_policy
+on ores_refdata_books_tbl
+as restrictive
+for all using (
+    sandbox_id is null
+    or ores_refdata_actor_sees_sandbox_fn(tenant_id, sandbox_id)
+)
+with check (
+    sandbox_id is null
+    or ores_refdata_actor_sees_sandbox_fn(tenant_id, sandbox_id)
+);
+
 -- -----------------------------------------------------------------------------
 -- Party Counterparties (dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------

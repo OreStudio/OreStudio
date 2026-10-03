@@ -41,6 +41,7 @@ Let users import and experiment without disturbing official data, as the Sandbox
 |------+-------+-------+-----+-------------|
 | [[id:B83FC239-CD20-41D9-9244-B07188940E58][Grant rights at portfolio nodes]] | DONE | 2026-10-03 | 2026-10-03 | Let an account hold a named right at a node of the portfolio tree, inherited by everything below it, starting with the rights to read a node and to open sandboxes there. |
 | [[id:9F4588CF-9024-48FC-A53B-ADF333327B8A][Model sandboxes]] | DONE | 2026-10-03 | 2026-10-03 | Generate sandbox and sandbox_member in ores.refdata, give portfolios a sandbox so each sandbox has its own tree, and check the right to open one at its anchor. |
+| [[id:F1569F86-743C-4377-AF54-51BEB8DA5F01][Model virtual books]] | DONE | 2026-10-03 | 2026-10-03 | Let a book belong to a sandbox: a virtual book sits in its sandbox's portfolio tree, never maps to the ledger, and is seen only by those who may see the sandbox. |
 
 * Decisions
 

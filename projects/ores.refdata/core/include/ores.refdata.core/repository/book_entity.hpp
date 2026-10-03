@@ -61,6 +61,7 @@ struct book_entity {
     std::string regulatory_book_type = "Trading";
     bool is_sweepable = false;
     std::string rates_centre_code = "WRLD";
+    std::optional<std::string> sandbox_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

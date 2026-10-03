@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T13:11:22.388166Z
+' Generated: 2026-10-03T14:11:51.236152Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1114,6 +1114,7 @@ package "refdata" #FFF3E0 {
         * regulatory_book_type : text
         * is_sweepable : boolean
         * rates_centre_code : text
+          sandbox_id : uuid <<FK>>
         * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text

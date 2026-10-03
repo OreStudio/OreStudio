@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/rename-the-curve-configuration-tables
-#+pr:
+#+pr: 2571
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2571][#2571]] | [refdata] Rename the curve configuration tables with a _config suffix |
 
 * Review
 

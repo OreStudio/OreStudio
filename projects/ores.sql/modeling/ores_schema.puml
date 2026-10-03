@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T07:24:46.669495Z
+' Generated: 2026-10-03T09:41:34.034593Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -9460,7 +9460,7 @@ package "trading" #E8F5E9 {
 }
 
 '
-' ==================== mq (Message Queue (pgmq)) ====================
+' ==================== mq (Message Queue) ====================
 '
 package "mq" #FBE9E7 {
     entity ores_mq_message_archive_tbl  #F7E5FF {
@@ -9523,7 +9523,7 @@ package "mq" #FBE9E7 {
 
     note right of ores_mq_queue_stats_tbl
     MQ queue statistics time-series table.
-    Populated by ores_mq_queue_stats_scrape_fn() via a pg_cron job.
+    Populated by ores_mq_queue_stats_scrape_fn() via an ores.scheduler job.
     TimescaleDB hypertable when available; degrades gracefully to a plain table.
     Partitioned by recorded_at with 1-day chunks and 30-day retention.
     end note
@@ -9549,7 +9549,7 @@ package "mq" #FBE9E7 {
 }
 
 '
-' ==================== scheduler (Job Scheduler (pg_cron)) ====================
+' ==================== scheduler (Job Scheduler) ====================
 '
 package "scheduler" #F1F8E9 {
     entity ores_scheduler_job_definitions_tbl <<temporal>> #C6F0D8 {
@@ -10595,7 +10595,6 @@ package "compute" #EDE7F6 {
         * version : integer
         * workunit_id : uuid <<FK>>
           host_id : uuid <<FK>>
-          pgmq_msg_id : bigint <<FK>>
         * server_state : integer
           outcome : integer
           output_uri : text
@@ -10615,8 +10614,8 @@ package "compute" #EDE7F6 {
     To modify, update the template and regenerate.
     Result Table
     Bridges the workunit definition and the actual execution on a grid node.
-    Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
-    and the location of output data. The BOINC equivalent of 'result'.
+    Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+    location of output data. The BOINC equivalent of 'result'.
     The entity carries no change-reason cache: the grid machinery writes results
     and there is no human edit flow.
     Generator-signature exception: the generator takes only the generation

@@ -35,7 +35,7 @@ namespace ores::scheduler::domain {
  *
  * Wraps a cron expression string, validating it on construction via croncpp.
  * Provides C++23 chrono-based next-occurrence computation and serialisation
- * to the plain string required by pg_cron's cron.schedule() function.
+ * to the plain 5-field string stored in the job definition.
  *
  * Use the factory method from_string() to construct:
  * @code
@@ -66,7 +66,7 @@ public:
     from_string(std::string_view expr);
 
     /**
-     * @brief The validated cron string, suitable for pg_cron's cron.schedule().
+     * @brief The validated 5-field cron string.
      */
     [[nodiscard]] const std::string& to_string() const noexcept;
 

@@ -176,7 +176,7 @@ jobs:
           port: 5432
           postgres-version: "18"
           postgres-conf: |
-            shared_preload_libraries = 'pg_cron,timescaledb'
+            shared_preload_libraries = 'timescaledb'
           hba-conf: |
             local all all trust
             host all all 0.0.0.0/0 scram-sha-256

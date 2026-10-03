@@ -46,7 +46,6 @@ domain::result generate_synthetic_result(utility::generation::generation_context
     r.id = ctx.generate_uuid();
     r.workunit_id = ctx.generate_uuid();
     r.host_id = boost::uuids::uuid{};
-    r.pgmq_msg_id = 0;
     r.server_state = 1;
     r.outcome = 0;
     r.output_uri = std::string();

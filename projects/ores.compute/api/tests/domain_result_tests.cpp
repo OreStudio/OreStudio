@@ -49,7 +49,6 @@ TEST_CASE("create_result_with_valid_fields", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
-    sut.pgmq_msg_id = 42;
     // Done.
     sut.server_state = 5;
     // Success.
@@ -75,7 +74,6 @@ TEST_CASE("create_inactive_result", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::nil_uuid();
-    sut.pgmq_msg_id = 0;
     // Inactive.
     sut.server_state = 1;
     sut.outcome = 0;
@@ -97,7 +95,6 @@ TEST_CASE("create_in_progress_result", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
-    sut.pgmq_msg_id = 789;
     // InProgress.
     sut.server_state = 4;
     sut.outcome = 0;
@@ -107,7 +104,6 @@ TEST_CASE("create_in_progress_result", tags) {
     BOOST_LOG_SEV(lg, info) << "Result: " << sut;
 
     CHECK(sut.server_state == 4);
-    CHECK(sut.pgmq_msg_id == 789);
 }
 
 TEST_CASE("create_result_with_specific_uuid", tags) {
@@ -122,7 +118,6 @@ TEST_CASE("create_result_with_specific_uuid", tags) {
     sut.id = specific_id;
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
-    sut.pgmq_msg_id = 0;
     sut.server_state = 5;
     sut.outcome = 1;
     sut.output_uri = "s3://bucket/outputs/validated.zip";
@@ -143,7 +138,6 @@ TEST_CASE("result_insertion_operator", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
-    sut.pgmq_msg_id = 100;
     sut.server_state = 5;
     sut.outcome = 1;
     sut.output_uri = "s3://bucket/outputs/serialization-test.zip";
@@ -168,7 +162,6 @@ TEST_CASE("result_convert_single_to_table", tags) {
     r.id = boost::uuids::random_generator()();
     r.workunit_id = boost::uuids::random_generator()();
     r.host_id = boost::uuids::random_generator()();
-    r.pgmq_msg_id = 0;
     r.server_state = 5;
     r.outcome = 1;
     r.output_uri = "s3://bucket/outputs/result.zip";
@@ -193,7 +186,6 @@ TEST_CASE("result_convert_multiple_to_table", tags) {
         r.id = boost::uuids::random_generator()();
         r.workunit_id = boost::uuids::random_generator()();
         r.host_id = boost::uuids::random_generator()();
-        r.pgmq_msg_id = i;
         r.server_state = 5;
         r.outcome = 1;
         r.output_uri = "s3://bucket/outputs/result-" + std::to_string(i) + ".zip";
@@ -232,7 +224,6 @@ TEST_CASE("create_result_with_faker", tags) {
     sut.id = boost::uuids::random_generator()();
     sut.workunit_id = boost::uuids::random_generator()();
     sut.host_id = boost::uuids::random_generator()();
-    sut.pgmq_msg_id = faker::number::integer(0, 10000);
     sut.server_state = states[faker::number::integer(0, 3)];
     sut.outcome = outcomes[faker::number::integer(0, 3)];
     sut.output_uri = "s3://bucket/outputs/" + std::string(faker::word::noun()) + ".zip";

@@ -47,7 +47,6 @@ domain::result result_mapper::map(const result_entity& v) {
     r.workunit_id = boost::lexical_cast<boost::uuids::uuid>(v.workunit_id);
     r.host_id = v.host_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.host_id) :
                                         boost::uuids::uuid{};
-    r.pgmq_msg_id = v.pgmq_msg_id.value_or(0);
     r.server_state = v.server_state;
     r.outcome = v.outcome.value_or(0);
     r.output_uri = v.output_uri.value_or("");
@@ -77,7 +76,6 @@ result_entity result_mapper::map(const domain::result& v) {
     r.host_id = v.host_id == boost::uuids::uuid{} ?
                     std::nullopt :
                     std::optional(boost::uuids::to_string(v.host_id));
-    r.pgmq_msg_id = v.pgmq_msg_id == 0 ? std::nullopt : std::optional(v.pgmq_msg_id);
     r.server_state = v.server_state;
     r.outcome = v.outcome == 0 ? std::nullopt : std::optional(v.outcome);
     r.output_uri = v.output_uri.empty() ? std::nullopt : std::optional(v.output_uri);

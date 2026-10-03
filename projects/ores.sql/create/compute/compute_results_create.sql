@@ -25,8 +25,8 @@
  * Result Table
  *
  * Bridges the workunit definition and the actual execution on a grid node.
- * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
- * and the location of output data. The BOINC equivalent of 'result'.
+ * Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+ * location of output data. The BOINC equivalent of 'result'.
  *
  * The entity carries no change-reason cache: the grid machinery writes results
  * and there is no human edit flow.
@@ -45,7 +45,6 @@ create table if not exists "ores_compute_results_tbl" (
     "version" integer not null,
     "workunit_id" uuid not null,
     "host_id" uuid null,
-    "pgmq_msg_id" bigint null,
     "server_state" integer not null default 1,
     "outcome" integer null,
     "output_uri" text null,

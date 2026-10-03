@@ -169,13 +169,13 @@ between runs.
 
 ** ores.scheduler
 
-Task scheduling for compute jobs — wraps =pg_cron= to schedule ORE scenario runs
-and report generation at defined intervals or calendar times.
+Task scheduling for compute jobs — an in-process timer loop schedules ORE
+scenario runs and report generation at defined intervals or calendar times.
 
 | Sub-component          | Role                                          | Dependencies                      |
 |------------------------+-----------------------------------------------+-----------------------------------|
 | [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]]     | Shared scheduler types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                 |
-| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]]    | pg_cron integration, schedule management      | [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
+| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]]    | Timer loop, schedule management               | [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 | [[id:86B4ECD8-FF01-438A-99BB-55B4CA523AED][ores.scheduler.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                     | [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 
 ** ores.reporting

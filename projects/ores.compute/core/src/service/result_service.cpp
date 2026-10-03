@@ -85,7 +85,6 @@ domain::result to_domain(const messaging::result_write& write) {
     v.id = write.id;
     v.workunit_id = write.workunit_id;
     v.host_id = write.host_id;
-    v.pgmq_msg_id = write.pgmq_msg_id;
     v.server_state = write.server_state;
     v.outcome = write.outcome;
     v.output_uri = write.output_uri;

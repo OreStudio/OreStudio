@@ -71,10 +71,6 @@ grant connect, temp on database :db_name to :rw_role, :ro_role, :service_role;
 -- on party-isolated tables independently of the calling session's party context.
 alter role :ddl_user bypassrls;
 
--- Install postgres-database extensions (must run before switching databases)
--- pg_cron can only be installed in the postgres database (cron.database_name)
-\i setup_extensions_postgres.sql
-
 -- Connect to new database
 \c :db_name
 
@@ -84,33 +80,6 @@ alter role :ddl_user bypassrls;
 -- Grant schema permissions to appropriate roles
 grant usage on schema public to :owner_role, :rw_role, :ro_role, :service_role;
 grant create on schema public to :owner_role;
-
--- Grant pgmq schema access if the extension was installed.
--- pgmq is owned by postgres so all grants must be applied here (superuser phase).
--- pgmq functions are SECURITY INVOKER, so the calling role needs:
---   USAGE  – to call functions
---   CREATE – because pgmq.create() dynamically creates queue tables
---   Table/sequence access – for pgmq.meta and queue tables created at runtime
--- Pass role names via session config (psql does not substitute :vars inside $$)
-select set_config('ores.owner_role', :'owner_role', false);
-select set_config('ores.rw_role',    :'rw_role',    false);
-select set_config('ores.ro_role',    :'ro_role',    false);
-
-do $$
-declare
-    v_owner text := current_setting('ores.owner_role');
-    v_rw    text := current_setting('ores.rw_role');
-    v_ro    text := current_setting('ores.ro_role');
-begin
-    if exists (select 1 from pg_extension where extname = 'pgmq') then
-        execute format('grant usage, create on schema pgmq to %I, %I', v_owner, v_rw);
-        execute format('grant usage on schema pgmq to %I', v_ro);
-        execute format('grant execute on all functions in schema pgmq to %I, %I', v_owner, v_rw);
-        execute format('grant all on all tables in schema pgmq to %I, %I', v_owner, v_rw);
-        execute format('grant all on all sequences in schema pgmq to %I, %I', v_owner, v_rw);
-        raise notice 'Granted pgmq schema access to env roles';
-    end if;
-end $$;
 
 \echo ''
 \echo '=========================================='

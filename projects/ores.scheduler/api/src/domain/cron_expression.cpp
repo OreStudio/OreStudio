@@ -25,15 +25,15 @@ namespace ores::scheduler::domain {
 namespace {
 
 /**
- * @brief Convert a 5-field pg_cron expression to croncpp's 6-field format.
+ * @brief Convert a 5-field cron expression to croncpp's 6-field format.
  *
- * pg_cron uses standard Unix cron: minute hour day month weekday
+ * The job definition uses standard Unix cron: minute hour day month weekday
  * croncpp requires:               second minute hour day month weekday
  *
  * We prepend "0 " (seconds = 0) to bridge the two formats.
  */
-std::string to_croncpp_expr(std::string_view pg_cron_expr) {
-    return "0 " + std::string(pg_cron_expr);
+std::string to_croncpp_expr(std::string_view expr) {
+    return "0 " + std::string(expr);
 }
 
 } // anonymous namespace
@@ -45,9 +45,8 @@ cron_expression::cron_expression(std::string validated_expr)
     : expr_(std::move(validated_expr)) {}
 
 std::expected<cron_expression, std::string> cron_expression::from_string(std::string_view expr) {
-    // pg_cron uses 5-field cron (minute hour day month weekday).
-    // croncpp requires 6 fields (second minute hour day month weekday).
-    // We validate by prepending "0 " for the seconds field.
+    // croncpp requires 6 fields, so validation prepends "0 " for the
+    // seconds field.
     try {
         cron::make_cron(to_croncpp_expr(expr));
         return cron_expression(std::string(expr));

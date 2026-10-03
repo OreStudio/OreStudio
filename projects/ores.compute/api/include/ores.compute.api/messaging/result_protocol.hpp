@@ -43,7 +43,6 @@ struct result_write {
     boost::uuids::uuid id;
     boost::uuids::uuid workunit_id;
     boost::uuids::uuid host_id;
-    std::int64_t pgmq_msg_id;
     int server_state;
     int outcome;
     std::string output_uri;

@@ -18,4 +18,17 @@
  *
  */
 
-drop table if exists ores_mq_metrics_samples_tbl cascade;
+/**
+ * One-shot migration: the result stops carrying a pgmq lease pointer
+ *
+ * projects/ores.compute/modeling/ores.compute.result.org declared pgmq_msg_id
+ * as the id of the pgmq message that leased the result. pgmq was replaced by
+ * the ores_mq_* tables, and nothing sets or reads the column since, so it goes.
+ *
+ * On a freshly recreated database the create script no longer emits the
+ * column and this migration is unnecessary. It exists for databases created
+ * before the change.
+ */
+
+alter table ores_compute_results_tbl
+    drop column if exists "pgmq_msg_id";

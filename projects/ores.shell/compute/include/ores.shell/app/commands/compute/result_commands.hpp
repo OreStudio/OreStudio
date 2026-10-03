@@ -86,24 +86,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri>
-     * <error_message> <received_at> <reason> <commentary>
+     * @brief add <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message>
+     * <received_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri>
-     * <error_message> <received_at> <reason> <commentary> [--version <n>]
+     * @brief set <id> <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message>
+     * <received_at> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state>
-     * <outcome> <output_uri> <error_message> <received_at> <reason> <commentary>
+     * @brief put-many --count <n> <id> <workunit_id> <host_id> <server_state> <outcome>
+     * <output_uri> <error_message> <received_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

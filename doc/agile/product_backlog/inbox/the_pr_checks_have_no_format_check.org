@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: DDCAB387-6661-4398-9BB9-6E9F9D16AFC2
+:END:
+#+title: The pre-PR checks have no format check, though a nightly job enforces one
+#+description: compass-pr-raise lists no clang-format check for a code change, so unformatted files reach main and only the nightly format workflow reports them.
+#+type: capture
+#+level: cross
+#+filetags: :compass:process:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The code class in =compass-pr-raise= runs the full build, ctest and the drift
+checks, but no clang-format check. The repository has a =check-format= CMake
+target, and =nightly-format.yml= runs it, so a badly formatted file reaches
+main and fails only the next nightly run. Add the check to the code class:
+=clang-format --dry-run --Werror= over the C++ files the branch changed, judged
+by its exit status. Better still, give compass a verb for it, so the check is
+one command whose failure cannot be misread.
+
+* Why
+
+In the =oresmd-handwritten-grammar= story the agent checked the format by hand
+and counted =warning= in the output. Under =--Werror= clang-format reports
+=error:=, so the count was always zero and three PRs merged 14 unformatted
+files. PR 2527 formatted them. A check judged by exit status, run as a listed
+step, would have failed on the first PR.
+
+* References
+
+- =CMakeLists.txt=: the =check-format= target.
+- =.github/workflows/nightly-format.yml=.
+- =doc/llm/skills/compass-pr-raise=: the class table and its checks.
+- PR 2527: the format-only commit.
+
+* See also
+
+- [[id:0D8B6810-8A58-4E89-BF07-CA0E6B937EEE][Model the ORE types, aliases and metrics oresmd lacks]]

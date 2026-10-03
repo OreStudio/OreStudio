@@ -178,6 +178,14 @@ TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri", tags) {
           "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=null&ccy=USD");
 }
 
+TEST_CASE("a_quote_type_no_ore_key_can_name_is_refused", tags) {
+    const auto uri = oresmd_uri_codec::read(
+        "oresmd://credit/ACME?type=quote&instrument=hazard_rate&quote=hazard_rate"
+        "&seniority=SNRFOR&ccy=USD&term=5Y");
+    REQUIRE_FALSE(uri);
+    CHECK(uri.error().contains("no ORE key names this datum"));
+}
+
 TEST_CASE("a_quote_uri_has_the_agreed_shape", tags) {
     const auto cds = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");
     REQUIRE(cds);

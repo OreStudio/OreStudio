@@ -151,6 +151,11 @@ via its "Verifies task" field.
 | 1 | Local review: the coverage test checked that HAZARD_RATE is never read, which could not fail. | =datum_ore_key_codec_tests.cpp= | Accepted | Removed; disabling the codec's refusal showed the matrix test is the one that catches it. |
 | 2 | Local review: the datum files from this story's PRs were never clang-formatted, and the earlier "format clean" checks counted the wrong word in clang-format's output. | the 14 datum files | Accepted | Formatted in a separate, format-only commit; all 26 datum files now pass =clang-format --dry-run=. |
 | 3 | Local review: the bond future and tranche keys could be read as ORE does instead of refused. | =datum_ore_key_codec_tests.cpp= | Declined | ORE drops or misplaces a token in each; a datum that held ORE's reading would write a different key, as for the index CDS option key. |
+| 4 | PR 2527 round 1: the SHIFT check runs after the shape checks, so a malformed key reports the shape first. | =ore_key_volatility.cpp= | Declined | The shape decides which form a key is, and only the shift forms need SHIFT; both outcomes are refusals. |
+| 5 | PR 2527 round 1: the URI codec might admit hazard_rate, which no ORE key can name. | =oresmd_uri_codec.cpp= | Accepted | It already refuses it, through the ORE key check; test =a_quote_type_no_ore_key_can_name_is_refused= pins that down. |
+| 6 | PR 2527 round 1: =generate_quote_matrix.py= opens files without =with=. | =generate_quote_matrix.py= | Accepted | Uses =with=; it still writes the same 2,124 keys in the same order. |
+| 7 | PR 2527 round 1: squash the history. | | Declined | The project merges with merge commits and never squashes. |
+| 8 | PR 2527 round 1: make the format check fail loudly. | =compass-pr-raise= | Deferred | The pre-PR checks have no format check at all; captured as "The pre-PR checks have no format check, though a nightly job enforces one". |
 
 * Result
 

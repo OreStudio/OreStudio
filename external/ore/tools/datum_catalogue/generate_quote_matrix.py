@@ -16,21 +16,23 @@ import sys
 
 def main():
     tokens = []
-    for line in open(sys.argv[2]):
-        tokens.extend(line.split()[1:])
+    with open(sys.argv[2]) as quote_types:
+        for line in quote_types:
+            tokens.extend(line.split()[1:])
     tokens.append("HAZARD_RATE")
 
     seen = set()
-    for line in open(sys.argv[1]):
-        form = json.loads(line)
-        if form["accepted"] != "true":
-            continue
-        parts = form["key"].split("/")
-        for token in tokens:
-            key = "/".join([parts[0], token] + parts[2:])
-            if key not in seen:
-                seen.add(key)
-                print(key)
+    with open(sys.argv[1]) as forms:
+        for line in forms:
+            form = json.loads(line)
+            if form["accepted"] != "true":
+                continue
+            parts = form["key"].split("/")
+            for token in tokens:
+                key = "/".join([parts[0], token] + parts[2:])
+                if key not in seen:
+                    seen.add(key)
+                    print(key)
 
 
 if __name__ == "__main__":

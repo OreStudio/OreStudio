@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/netting_sets/netting_set.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+netting_sets add __none__ - - - - - - system.new_record generated_script

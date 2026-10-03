@@ -183,6 +183,7 @@ std::optional<domain::stress_test_shift> stress_test_shift_repository::read_at_v
     return entities.front();
 }
 
+
 stress_test_shift_repository::remove_status stress_test_shift_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing stress test shift. " << "id: " << id;

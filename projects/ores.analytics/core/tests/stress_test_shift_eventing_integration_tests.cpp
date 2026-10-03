@@ -22,6 +22,11 @@
  * Template: cpp_nats_integration_test.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.analytics.api/domain/stress_test_shift.hpp"
 #include "ores.analytics.api/domain/stress_test_shift_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/eventing/stress_test_shift_event.hpp"
@@ -29,7 +34,6 @@
 #include "ores.analytics.api/messaging/stress_test_shift_protocol.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_repository.hpp"
 #include "ores.analytics.core/service/stress_test_shift_service.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -39,6 +43,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+// Soft-FK parent seeding (ores_analytics_stress_shift_families_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.analytics.api/generators/stress_shift_family_generator.hpp"
+#include "ores.analytics.core/repository/stress_shift_family_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -113,6 +122,18 @@ TEST_CASE("write_stress_test_shift_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_stress_test_shift(ctx);
     v.change_reason_code = "system.test";
+    // stress_shift_family is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::analytics::repository::stress_shift_family_repository family_catalogue_repo;
+        const auto family_catalogue = family_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(family_catalogue.empty());
+        v.family = family_catalogue.front().code;
+    }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Stress Test Shift: " << v;
 

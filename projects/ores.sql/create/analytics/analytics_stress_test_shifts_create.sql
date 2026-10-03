@@ -96,6 +96,30 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate family (soft FK to ores_analytics_stress_shift_families_tbl)
+    if not exists (
+        select 1 from ores_analytics_stress_shift_families_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.family
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid family: %. No active stress shift family found with this code.', NEW.family
+            using errcode = '23503';
+    end if;
+
+    -- Validate shift_type (optional soft FK to ores_analytics_shift_types_tbl)
+    if NEW.shift_type is not null then
+        if not exists (
+            select 1 from ores_analytics_shift_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.shift_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid shift_type: %. No active shift type found with this code.', NEW.shift_type
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

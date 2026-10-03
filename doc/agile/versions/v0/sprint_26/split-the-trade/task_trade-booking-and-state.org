@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trade-booking-and-state
-#+pr:
+#+pr: 2573
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2573][#2573]] | [trading] Add the trade booking and state components |
 
 * Review
 

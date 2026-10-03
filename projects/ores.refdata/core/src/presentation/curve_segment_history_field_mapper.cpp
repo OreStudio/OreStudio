@@ -37,11 +37,57 @@ render_curve_segment_fields(const domain::curve_segment& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
-    fields.push_back({.name = "Kind", .value = v.kind});
-    fields.push_back({.name = "Segment Type", .value = v.segment_type.value_or(std::string{})});
-    fields.push_back({.name = "Conventions", .value = v.conventions.value_or(std::string{})});
-    fields.push_back({.name = "Extras", .value = v.extras.value_or(std::string{})});
+    fields.push_back({.name = "Segment Type", .value = v.segment_type});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
+    fields.push_back({.name = "Conventions", .value = v.conventions.value_or(std::string{})});
+    fields.push_back({.name = "Pillar Choice", .value = v.pillar_choice.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Priority", .value = v.priority ? std::to_string(*v.priority) : std::string{}});
+    fields.push_back({.name = "Min Distance",
+                      .value = v.min_distance ? std::to_string(*v.min_distance) : std::string{}});
+    fields.push_back(
+        {.name = "Projection Curve", .value = v.projection_curve.value_or(std::string{})});
+    fields.push_back({.name = "Discount Curve", .value = v.discount_curve.value_or(std::string{})});
+    fields.push_back({.name = "Spot Rate", .value = v.spot_rate.value_or(std::string{})});
+    fields.push_back({.name = "Projection Curve Domestic",
+                      .value = v.projection_curve_domestic.value_or(std::string{})});
+    fields.push_back({.name = "Projection Curve Foreign",
+                      .value = v.projection_curve_foreign.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Projection Curve Pay", .value = v.projection_curve_pay.value_or(std::string{})});
+    fields.push_back({.name = "Projection Curve Receive",
+                      .value = v.projection_curve_receive.value_or(std::string{})});
+    fields.push_back({.name = "Projection Curve Long",
+                      .value = v.projection_curve_long.value_or(std::string{})});
+    fields.push_back({.name = "Projection Curve Short",
+                      .value = v.projection_curve_short.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Reference Curve", .value = v.reference_curve.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Reference Curve 2", .value = v.reference_curve_2.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Weight 1", .value = v.weight_1 ? std::to_string(*v.weight_1) : std::string{}});
+    fields.push_back(
+        {.name = "Weight 2", .value = v.weight_2 ? std::to_string(*v.weight_2) : std::string{}});
+    fields.push_back({.name = "Ibor Index", .value = v.ibor_index.value_or(std::string{})});
+    fields.push_back({.name = "Rfr Curve", .value = v.rfr_curve.value_or(std::string{})});
+    fields.push_back({.name = "Rfr Index", .value = v.rfr_index.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Spread", .value = v.spread ? std::to_string(*v.spread) : std::string{}});
+    fields.push_back({.name = "Base Curve", .value = v.base_curve.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Base Curve Currency", .value = v.base_curve_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Numerator Curve", .value = v.numerator_curve.value_or(std::string{})});
+    fields.push_back({.name = "Numerator Curve Currency",
+                      .value = v.numerator_curve_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Denominator Curve", .value = v.denominator_curve.value_or(std::string{})});
+    fields.push_back({.name = "Denominator Curve Currency",
+                      .value = v.denominator_curve_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Extrapolate Flat",
+         .value = v.extrapolate_flat ? (*v.extrapolate_flat ? "true" : "false") : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

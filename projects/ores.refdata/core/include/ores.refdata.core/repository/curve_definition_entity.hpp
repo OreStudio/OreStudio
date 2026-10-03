@@ -45,16 +45,10 @@ struct curve_definition_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string curve_configuration_id;
     std::string section_code;
     std::string curve_id;
     std::optional<std::string> description;
-    std::optional<std::string> currency;
-    std::optional<std::string> day_counter;
-    std::optional<std::string> interpolation_method;
-    std::optional<std::string> interpolation_variable;
-    std::optional<std::string> extrapolation;
-    std::optional<std::string> tolerance;
-    std::optional<std::string> extras;
     int position = 0;
     std::string modified_by;
     std::string performed_by;

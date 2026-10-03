@@ -180,6 +180,7 @@ std::optional<domain::curve_segment> curve_segment_repository::read_at_version(
     return entities.front();
 }
 
+
 curve_segment_repository::remove_status curve_segment_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve segment. " << "id: " << id;

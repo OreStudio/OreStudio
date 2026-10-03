@@ -62,10 +62,21 @@
 -- sections it references)
 \ir ./refdata_curve_quotes_notify_trigger_drop.sql
 \ir ./refdata_curve_quotes_drop.sql
+\ir ./refdata_curve_segment_curves_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_curves_drop.sql
 \ir ./refdata_curve_segments_notify_trigger_drop.sql
 \ir ./refdata_curve_segments_drop.sql
+\ir ./refdata_curve_bootstrap_configs_notify_trigger_drop.sql
+\ir ./refdata_curve_bootstrap_configs_drop.sql
+\ir ./refdata_yield_curves_notify_trigger_drop.sql
+\ir ./refdata_yield_curves_drop.sql
 \ir ./refdata_curve_definitions_notify_trigger_drop.sql
 \ir ./refdata_curve_definitions_drop.sql
+\ir ./refdata_curve_configuration_sections_notify_trigger_drop.sql
+\ir ./refdata_curve_configuration_sections_drop.sql
+\ir ./refdata_curve_configurations_notify_trigger_drop.sql
+\ir ./refdata_curve_configurations_drop.sql
+\ir ./refdata_conventions_validate_fn_drop.sql
 \ir ./refdata_day_counters_notify_trigger_drop.sql
 \ir ./refdata_day_counters_drop.sql
 \ir ./refdata_curve_segment_types_notify_trigger_drop.sql

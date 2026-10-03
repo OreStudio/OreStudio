@@ -24,44 +24,30 @@
  *
  * Curve Definition Table
  *
- * One curve entry of one section of a curveconfig.xml. Seventy-six of those
- * documents ship and hold two thousand eight hundred and fifty-three entries
- * across nineteen sections.
+ * One curve entry of one section of a curveconfig.xml, held as the identity
+ * every part of the entry hangs off: the document it belongs to, its section, its
+ * CurveId and CurveDescription, and its place in the document.
  *
- * Every entry, whatever its section, opens the same way -- a CurveId and a
- * CurveDescription occur once per entry in the corpus, and the settings that
- * follow are drawn from a much smaller vocabulary than the sections suggest:
- * Currency in two thousand one hundred and ninety-two entries, DiscountCurve
- * in one thousand two hundred and eighty-nine, DayCounter in one thousand two
- * hundred and seventy-five, InterpolationMethod in seven hundred and
- * thirty-four. Those are columns. What is left over differs by section --
- * ImplyDefaultFromMarket and RecoveryRate belong to default curves,
- * ExerciseStyle to equity curves, BootstrapConfig to most of them -- and is
- * written into extras as a stated list of name and value pairs, so a section
- * the mapper has not read yet is carried rather than dropped.
+ * The settings that follow differ by section and live on a detail row per
+ * section family, as typed columns: yield_curve for YieldCurves. The lists an
+ * entry holds are child rows keyed to this one: its segments in curve_segment,
+ * its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.
+ * So one table of quotes serves every section, and a reference to a curve is a
+ * reference to this row whatever its section.
  *
- * The lists an entry may hold -- Segments, Quotes, Pillars,
- * Configurations -- are ordered and heterogeneous and belong in child tables
- * that follow this one. This table is the entry's own settings.
- *
- * The natural key is the section and the curve id together: EUR-ESTR names a
- * curve inside one section, and nothing stops another section naming its own.
+ * The natural key is the document, the section and the curve id together:
+ * EUR-ESTR names a curve inside one section of one document, another section
+ * may name its own, and two documents may define the same curve differently.
  */
 
 create table if not exists "ores_refdata_curve_definitions_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "curve_configuration_id" uuid not null,
     "section_code" text not null,
     "curve_id" text not null,
     "description" text null,
-    "currency" text null,
-    "day_counter" text null,
-    "interpolation_method" text null,
-    "interpolation_variable" text null,
-    "extrapolation" text null,
-    "tolerance" text null,
-    "extras" text null,
     "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -101,6 +87,28 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate curve_configuration_id (soft FK to ores_refdata_curve_configurations_tbl)
+    if not exists (
+        select 1 from ores_refdata_curve_configurations_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.curve_configuration_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid curve_configuration_id: %. No active curve configuration found with this id.', NEW.curve_configuration_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate section_code (soft FK to ores_refdata_curve_sections_tbl)
+    if not exists (
+        select 1 from ores_refdata_curve_sections_tbl
+        where tenant_id = NEW.tenant_id
+          and code = NEW.section_code
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid section_code: %. No active curve section found with this code.', NEW.section_code
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

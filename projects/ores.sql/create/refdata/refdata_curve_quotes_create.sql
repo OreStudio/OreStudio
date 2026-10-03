@@ -24,21 +24,14 @@
  *
  * Curve Quote Table
  *
- * The market quotes a curve is built from. The corpus holds four thousand one
- * hundred and fifty-six of them directly on a curve entry -- a default curve
- * names its credit spreads this way -- and twenty-nine thousand more inside the
- * segments of the yield curves, which is where most of them live.
+ * One market quote a curve is built from. A quote sits either directly on the
+ * curve entry or inside one of its segments, and the row names both so the quotes
+ * of a curve can be read without walking its segments.
  *
- * A quote is one string naming a market point, FRA/RATE/USD/1M/1M or
- * CDS/CREDIT_SPREAD/BANK/SR/USD/1Y, and the order they are listed in is the
- * order the curve is built in, so it is kept.
- *
- * Two places hold the same element and this one table holds both. A quote whose
- * curve_segment_id is set belongs to that segment's own list; a quote whose
- * curve_segment_id is nil belongs to the curve entry itself, and the export
- * writes it at the level it came from. The element is not always spelled Quote:
- * an average OIS segment names its quotes CompositeQuote, so the item's own
- * element name is a column.
+ * Almost every list is of Quote elements, each a market point and an optional
+ * optional attribute. An average OIS segment lists CompositeQuote elements
+ * instead, each a rate quote and a spread quote. A row is one or the other: a
+ * quote_text, or a rate_quote with a spread_quote.
  */
 
 create table if not exists "ores_refdata_curve_quotes_tbl" (
@@ -47,8 +40,10 @@ create table if not exists "ores_refdata_curve_quotes_tbl" (
     "version" integer not null,
     "curve_definition_id" uuid not null,
     "curve_segment_id" uuid null,
-    "item_kind" text not null,
-    "quote_text" text not null,
+    "quote_text" text null,
+    "optional_flag" text null,
+    "rate_quote" text null,
+    "spread_quote" text null,
     "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -64,8 +59,8 @@ create table if not exists "ores_refdata_curve_quotes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("item_kind" <> ''),
-    check ("quote_text" <> '')
+    check (("quote_text" is not null and "rate_quote" is null and "spread_quote" is null) or ("quote_text" is null and "rate_quote" is not null and "spread_quote" is not null)),
+    check ("position" >= 0)
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -88,6 +83,30 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate curve_definition_id (soft FK to ores_refdata_curve_definitions_tbl)
+    if not exists (
+        select 1 from ores_refdata_curve_definitions_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.curve_definition_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid curve_definition_id: %. No active curve definition found with this id.', NEW.curve_definition_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate curve_segment_id (optional soft FK to ores_refdata_curve_segments_tbl)
+    if NEW.curve_segment_id is not null then
+        if not exists (
+            select 1 from ores_refdata_curve_segments_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.curve_segment_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid curve_segment_id: %. No active curve segment found with this id.', NEW.curve_segment_id
+                using errcode = '23503';
+        end if;
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

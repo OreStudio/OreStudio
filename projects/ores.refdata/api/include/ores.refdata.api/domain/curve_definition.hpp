@@ -35,28 +35,20 @@ namespace ores::refdata::domain {
 /**
  * @brief One curve recipe in an ORE curveconfig.xml, with the settings common to every section.
  *
- * One curve entry of one section of a curveconfig.xml. Seventy-six of those
- * documents ship and hold two thousand eight hundred and fifty-three entries
- * across nineteen sections.
+ * One curve entry of one section of a curveconfig.xml, held as the identity
+ * every part of the entry hangs off: the document it belongs to, its section, its
+ * CurveId and CurveDescription, and its place in the document.
  *
- * Every entry, whatever its section, opens the same way -- a CurveId and a
- * CurveDescription occur once per entry in the corpus, and the settings that
- * follow are drawn from a much smaller vocabulary than the sections suggest:
- * Currency in two thousand one hundred and ninety-two entries, DiscountCurve
- * in one thousand two hundred and eighty-nine, DayCounter in one thousand two
- * hundred and seventy-five, InterpolationMethod in seven hundred and
- * thirty-four. Those are columns. What is left over differs by section --
- * ImplyDefaultFromMarket and RecoveryRate belong to default curves,
- * ExerciseStyle to equity curves, BootstrapConfig to most of them -- and is
- * written into extras as a stated list of name and value pairs, so a section
- * the mapper has not read yet is carried rather than dropped.
+ * The settings that follow differ by section and live on a detail row per
+ * section family, as typed columns: yield_curve for YieldCurves. The lists an
+ * entry holds are child rows keyed to this one: its segments in curve_segment,
+ * its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.
+ * So one table of quotes serves every section, and a reference to a curve is a
+ * reference to this row whatever its section.
  *
- * The lists an entry may hold -- Segments, Quotes, Pillars,
- * Configurations -- are ordered and heterogeneous and belong in child tables
- * that follow this one. This table is the entry's own settings.
- *
- * The natural key is the section and the curve id together: EUR-ESTR names a
- * curve inside one section, and nothing stops another section naming its own.
+ * The natural key is the document, the section and the curve id together:
+ * EUR-ESTR names a curve inside one section of one document, another section
+ * may name its own, and two documents may define the same curve differently.
  */
 struct curve_definition final {
     /**
@@ -75,6 +67,11 @@ struct curve_definition final {
     boost::uuids::uuid id;
 
     /**
+     * @brief The curveconfig.xml document the entry belongs to.
+     */
+    boost::uuids::uuid curve_configuration_id;
+
+    /**
      * @brief The section the entry belongs to, as curve_section.code names it. Half of the natural
      * key: two sections may hold a curve of the same id.
      *
@@ -84,7 +81,7 @@ struct curve_definition final {
 
     /**
      * @brief ORE's CurveId, the name the document gives the curve and the name every other part of
-     * the configuration refers to it by. The other half of the natural key.
+     * the configuration refers to it by. The last part of the natural key.
      */
     std::string curve_id;
 
@@ -93,48 +90,6 @@ struct curve_definition final {
      * corpus but is not required by the schema.
      */
     std::optional<std::string> description;
-
-    /**
-     * @brief The curve's currency, as the document spells it. Held as text so the export writes
-     * back exactly what the document held.
-     */
-    std::optional<std::string> currency;
-
-    /**
-     * @brief The day counter the curve is built on. The sections name the same idea three ways --
-     * DayCounter, YieldCurveDayCounter, DayCountConvention -- and this column holds whichever
-     * spelling the entry's section uses, because the reader and the writer both know the section.
-     */
-    std::optional<std::string> day_counter;
-
-    /**
-     * @brief How the curve is interpolated between its pillars.
-     */
-    std::optional<std::string> interpolation_method;
-
-    /**
-     * @brief What the interpolation is a function of -- the tenor, the date, or the discount
-     * factor.
-     */
-    std::optional<std::string> interpolation_variable;
-
-    /**
-     * @brief Whether and how the curve is extrapolated beyond its last pillar.
-     */
-    std::optional<std::string> extrapolation;
-
-    /**
-     * @brief The bootstrap tolerance, kept as the document's own spelling of the number: carrying
-     * it as text means the export cannot turn 0.0001 into 9.999999999999999e-05.
-     */
-    std::optional<std::string> tolerance;
-
-    /**
-     * @brief The entry's remaining settings, one per semicolon, each a pipe-separated name and
-     * value. They differ by section and none is common to all, so a section whose reader has not
-     * been written yet still round trips.
-     */
-    std::optional<std::string> extras;
 
     /**
      * @brief The order the document wrote the entry in. The store does not order by it, and the

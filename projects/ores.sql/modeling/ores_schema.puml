@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T13:11:22.388166Z
+' Generated: 2026-10-03T14:02:56.059565Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2440,21 +2440,105 @@ package "refdata" #FFF3E0 {
     rationale.
     end note
 
+    entity ores_refdata_curve_bootstrap_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          accuracy : double
+          global_accuracy : double
+          dont_throw : boolean
+          max_attempts : integer
+          max_factor : double
+          min_factor : double
+          dont_throw_steps : integer
+          global : boolean
+          smoothness_lambda : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_bootstrap_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Bootstrap Config Table
+    The BootstrapConfig of one curve entry. Five section types carry the same
+    element, so it is one table keyed to the entry rather than columns on each
+    section's row. A row exists exactly when the entry writes the element: fourteen
+    corpus yield curves write it empty, and the export writes them back empty.
+    end note
+
+    entity ores_refdata_curve_configuration_sections_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_configuration_id : uuid <<FK>>
+        * section_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_configuration_sections_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Configuration Section Table
+    Which section elements a curveconfig.xml document writes. A document may
+    write a section with no entries -- sixteen of the nineteen sections appear
+    empty somewhere in the corpus, BaseCorrelations and Correlations fifteen
+    times each -- and the export must write it back. Entries alone cannot say
+    that, so each section element the document writes is one row here, whether it
+    holds entries or not.
+    end note
+
+    entity ores_refdata_curve_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+          description : text
+          configuration_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Configuration Table
+    One curveconfig.xml document, held as the thing its curve entries hang off.
+    The document itself is only a list of sections, and the entries are rows of
+    curve_definition. This row is the document's identity, so that a tenant may
+    hold more than one and a report may choose between them through the reporting
+    configuration it is registered as.
+    end note
+
     entity ores_refdata_curve_definitions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
         * version : integer
+        * curve_configuration_id : uuid <<FK>>
         * section_code : text
         * curve_id : text <<FK>>
           description : text
-          currency : text
-          day_counter : text
-          interpolation_method : text
-          interpolation_variable : text
-          extrapolation : text
-          tolerance : text
-          extras : text
         * position : integer
         * modified_by : text
         * performed_by : text
@@ -2469,25 +2553,18 @@ package "refdata" #FFF3E0 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Curve Definition Table
-    One curve entry of one section of a curveconfig.xml. Seventy-six of those
-    documents ship and hold two thousand eight hundred and fifty-three entries
-    across nineteen sections.
-    Every entry, whatever its section, opens the same way -- a CurveId and a
-    CurveDescription occur once per entry in the corpus, and the settings that
-    follow are drawn from a much smaller vocabulary than the sections suggest:
-    Currency in two thousand one hundred and ninety-two entries, DiscountCurve
-    in one thousand two hundred and eighty-nine, DayCounter in one thousand two
-    hundred and seventy-five, InterpolationMethod in seven hundred and
-    thirty-four. Those are columns. What is left over differs by section --
-    ImplyDefaultFromMarket and RecoveryRate belong to default curves,
-    ExerciseStyle to equity curves, BootstrapConfig to most of them -- and is
-    written into extras as a stated list of name and value pairs, so a section
-    the mapper has not read yet is carried rather than dropped.
-    The lists an entry may hold -- Segments, Quotes, Pillars,
-    Configurations -- are ordered and heterogeneous and belong in child tables
-    that follow this one. This table is the entry's own settings.
-    The natural key is the section and the curve id together: EUR-ESTR names a
-    curve inside one section, and nothing stops another section naming its own.
+    One curve entry of one section of a curveconfig.xml, held as the identity
+    every part of the entry hangs off: the document it belongs to, its section, its
+    CurveId and CurveDescription, and its place in the document.
+    The settings that follow differ by section and live on a detail row per
+    section family, as typed columns: yield_curve for YieldCurves. The lists an
+    entry holds are child rows keyed to this one: its segments in curve_segment,
+    its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.
+    So one table of quotes serves every section, and a reference to a curve is a
+    reference to this row whatever its section.
+    The natural key is the document, the section and the curve id together:
+    EUR-ESTR names a curve inside one section of one document, another section
+    may name its own, and two documents may define the same curve differently.
     end note
 
     entity ores_refdata_curve_quotes_tbl <<temporal>> #C6F0D8 {
@@ -2497,8 +2574,10 @@ package "refdata" #FFF3E0 {
         * version : integer
         * curve_definition_id : uuid <<FK>>
           curve_segment_id : uuid <<FK>>
-        * item_kind : text
-        * quote_text : text
+          quote_text : text
+          optional_flag : text
+          rate_quote : text
+          spread_quote : text
         * position : integer
         * modified_by : text
         * performed_by : text
@@ -2513,19 +2592,13 @@ package "refdata" #FFF3E0 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Curve Quote Table
-    The market quotes a curve is built from. The corpus holds four thousand one
-    hundred and fifty-six of them directly on a curve entry -- a default curve
-    names its credit spreads this way -- and twenty-nine thousand more inside the
-    segments of the yield curves, which is where most of them live.
-    A quote is one string naming a market point, FRA/RATE/USD/1M/1M or
-    CDS/CREDIT_SPREAD/BANK/SR/USD/1Y, and the order they are listed in is the
-    order the curve is built in, so it is kept.
-    Two places hold the same element and this one table holds both. A quote whose
-    curve_segment_id is set belongs to that segment's own list; a quote whose
-    curve_segment_id is nil belongs to the curve entry itself, and the export
-    writes it at the level it came from. The element is not always spelled Quote:
-    an average OIS segment names its quotes CompositeQuote, so the item's own
-    element name is a column.
+    One market quote a curve is built from. A quote sits either directly on the
+    curve entry or inside one of its segments, and the row names both so the quotes
+    of a curve can be read without walking its segments.
+    Almost every list is of Quote elements, each a market point and an optional
+    optional attribute. An average OIS segment lists CompositeQuote elements
+    instead, each a rate quote and a spread quote. A row is one or the other: a
+    quote_text, or a rate_quote with a spread_quote.
     end note
 
     entity ores_refdata_curve_roles_tbl <<temporal>> #C6F0D8 {
@@ -2595,6 +2668,37 @@ package "refdata" #FFF3E0 {
     report configuration registry made for every one of its discriminators.
     end note
 
+    entity ores_refdata_curve_segment_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_segment_id : uuid <<FK>>
+        * role : text
+        * curve : text
+          index_name : text
+          weight : double
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Curve Table
+    The lists of curves some segments hold. A fitted bond and a bond yield shifted
+    segment list the curves their bonds' indices are projected on, as
+    IndexCurves, IborIndexCurves and InflationIndexCurves; a yield plus
+    default segment lists its default curves, each with a weight. Each entry is one
+    row, and role names the list it came from.
+    end note
+
     entity ores_refdata_curve_segment_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -2631,11 +2735,36 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * curve_definition_id : uuid <<FK>>
-        * kind : text
-          segment_type : text
-          conventions : text
-          extras : text
+        * segment_type : text
         * position : integer
+          conventions : text
+          pillar_choice : text
+          priority : integer
+          min_distance : integer
+          projection_curve : text
+          discount_curve : text
+          spot_rate : text
+          projection_curve_domestic : text
+          projection_curve_foreign : text
+          projection_curve_pay : text
+          projection_curve_receive : text
+          projection_curve_long : text
+          projection_curve_short : text
+          reference_curve : text
+          reference_curve_2 : text
+          weight_1 : double
+          weight_2 : double
+          ibor_index : text
+          rfr_curve : text
+          rfr_index : text
+          spread : double
+          base_curve : text
+          base_curve_currency : text
+          numerator_curve : text
+          numerator_curve_currency : text
+          denominator_curve : text
+          denominator_curve_currency : text
+          extrapolate_flat : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2649,19 +2778,20 @@ package "refdata" #FFF3E0 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Curve Segment Table
-    A curve is bootstrapped from one or more segments, and each segment names the
-    kind of instrument it is built from. The corpus uses ten kinds -- Simple in
-    1198 entries, CrossCurrency in 500, ZeroSpread in 66, Direct in 50,
-    AverageOIS in 24, IborFallback in 20, DiscountRatio in 15 and four more --
-    in one Segments block per curve.
-    The kinds look different and share a skeleton: every one of them carries a
-    Type and a Conventions, and each adds its own settings -- ProjectionCurve
-    for a simple segment, DiscountCurve and SpotRate for a cross-currency one,
-    ReferenceCurve for a zero spread. The kind is a column, the Type and
-    Conventions are columns because every kind has them, and the rest is written
-    into extras as a stated list of name and value pairs, so the ten kinds need
-    one table rather than ten.
-    Each segment's own quote list belongs to the segment, in curve_quote.
+    A yield curve is bootstrapped from one or more segments, and each states its
+    Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more.
+    The type fixes the segment element it is written under, so the row holds only
+    the type and refers to curve_segment_type, and a type written under the wrong
+    element cannot be stored.
+    The twelve segment elements share a skeleton and differ in a few settings
+    each: projection curves for simple and tenor basis segments, a discount curve
+    and a spot rate for cross currency ones, a reference curve for zero spread
+    ones. Each setting is its own typed column, null where the segment's element
+    has no such setting. The lists a segment holds are child rows: its quotes in
+    curve_quote, and the index curves and default curves of the bond and default
+    based segments in curve_segment_curve.
+    The convention a segment names may be any of ORE's convention kinds, which are
+    one table each, so a function that looks in all of them checks the reference.
     end note
 
     entity ores_refdata_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
@@ -4614,6 +4744,48 @@ package "refdata" #FFF3E0 {
     are deliberately out of scope — they are per-instance ladder data, not
     master data, and reference a row here only when they happen to coincide
     with a standard label.
+    end note
+
+    entity ores_refdata_yield_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+        * discount_curve : text
+          interpolation_variable : text
+          interpolation_method : text
+          mixed_interpolation_cutoff : integer
+          day_counter : text
+          tolerance : double
+          extrapolation : text
+          extrapolation_method : text
+          exclude_t0_from_interpolation : text
+        * has_report : boolean
+          report_pillar_dates : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_yield_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Yield Curve Table
+    The settings of one YieldCurve entry of a curveconfig.xml, one row per
+    curve_definition in the YieldCurves section. The entry's identity is on the
+    definition, its segments in curve_segment, its bootstrap settings in
+    curve_bootstrap_config; this row holds the rest, each as the column its
+    schema type calls for.
+    Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept
+    Y, true and True among other spellings. They are held as the spelling the
+    document used, so the export writes it back unchanged. The day counter is held
+    the same way and refers to day_counter.
     end note
 
     entity ores_refdata_zero_conventions_tbl <<temporal>> #C6F0D8 {

@@ -6,28 +6,29 @@
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
-#+brief: One segment of a curve recipe: the instrument the curve is bootstrapped from.
+#+brief: One segment of a yield curve recipe: the instruments the curve is bootstrapped from.
 #+entity_singular: curve_segment
 #+entity_plural: curve_segments
 #+entity_title: Curve Segment
 #+created: 2026-10-01
-#+updated: 2026-10-01
+#+updated: 2026-10-03
 
-A curve is bootstrapped from one or more segments, and each segment names the
-kind of instrument it is built from. The corpus uses ten kinds -- =Simple= in
-1198 entries, =CrossCurrency= in 500, =ZeroSpread= in 66, =Direct= in 50,
-=AverageOIS= in 24, =IborFallback= in 20, =DiscountRatio= in 15 and four more --
-in one =Segments= block per curve.
+A yield curve is bootstrapped from one or more segments, and each states its
+=Type=: =Deposit=, =Cross Currency Basis Swap=, =Average OIS= and eighteen more.
+The type fixes the segment element it is written under, so the row holds only
+the type and refers to =curve_segment_type=, and a type written under the wrong
+element cannot be stored.
 
-The kinds look different and share a skeleton: every one of them carries a
-=Type= and a =Conventions=, and each adds its own settings -- =ProjectionCurve=
-for a simple segment, =DiscountCurve= and =SpotRate= for a cross-currency one,
-=ReferenceCurve= for a zero spread. The kind is a column, the =Type= and
-=Conventions= are columns because every kind has them, and the rest is written
-into =extras= as a stated list of name and value pairs, so the ten kinds need
-one table rather than ten.
+The twelve segment elements share a skeleton and differ in a few settings
+each: projection curves for simple and tenor basis segments, a discount curve
+and a spot rate for cross currency ones, a reference curve for zero spread
+ones. Each setting is its own typed column, null where the segment's element
+has no such setting. The lists a segment holds are child rows: its quotes in
+=curve_quote=, and the index curves and default curves of the bond and default
+based segments in =curve_segment_curve=.
 
-Each segment's own quote list belongs to the segment, in =curve_quote=.
+The convention a segment names may be any of ORE's convention kinds, which are
+one table each, so a function that looks in all of them checks the reference.
 
 * Flags
 :PROPERTIES:
@@ -41,8 +42,8 @@ Each segment's own quote list belongs to the segment, in =curve_quote=.
 
 ** id
 :PROPERTIES:
-:type:          uuid
-:cpp_type:      boost::uuids::uuid
+:type:     uuid
+:cpp_type: boost::uuids::uuid
 :primary_key:   true
 :uuid_check_fn: ores_utility_nil_uuid_fn()
 :END:
@@ -60,67 +61,24 @@ ctx.generate_uuid()
 :nullable: false
 :END:
 
-The curve recipe this segment bootstraps.
+The curve entry this row belongs to.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
 #+end_src
 
-** kind
+** segment_type
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
 
-The segment's element name in the document: Simple, CrossCurrency, ZeroSpread
-and the rest. It is what the export writes the segment back as.
+The segment's =Type=, as =curve_segment_type.code= names it. It also fixes the
+segment element the row is written back as.
 
 #+begin_src cpp :name generator
-std::string("Simple")
-#+end_src
-
-** segment_type
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The segment's own =Type= -- FRA, Tenor Basis Swap, Deposit and so on -- which
-chooses the instrument the segment is built from. Named =segment_type= because
-=type= alone reads as the row's own type.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** conventions
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The convention set the segment's instruments are priced with, by name.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** extras
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The segment's remaining settings, one per semicolon, each a pipe-separated name
-and value: =ProjectionCurve=, =DiscountCurve=, =SpotRate=, =PillarChoice=,
-=Priority=, =MinDistance= and whatever a kind adds next.
-
-#+begin_src cpp :name generator
-std::nullopt
+std::string("Deposit")
 #+end_src
 
 ** position
@@ -130,11 +88,419 @@ std::nullopt
 :nullable: false
 :END:
 
-The order the document wrote the segment in, which the export restores.
+The segment's place among the curve's segments of the same element. The
+binding keeps one list per element, so that is the order the export restores.
 
 #+begin_src cpp :name generator
 1
 #+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention the segment's instruments are priced with, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** pillar_choice
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Which date of each instrument becomes the curve's pillar.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** priority
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The segment's priority when two segments' pillars are too close.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** min_distance
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The least number of days between this segment's pillars and the next's.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve the segment's floating index is projected on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** discount_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve a cross currency segment discounts its other currency on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spot_rate
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The FX spot quote a cross currency segment converts with.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_domestic
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a cross currency segment's domestic leg.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_foreign
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a cross currency segment's foreign leg.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_pay
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's pay leg.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_receive
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's receive leg.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_long
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's longer tenor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** projection_curve_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The projection curve of a tenor basis segment's shorter tenor.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** reference_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve a zero spread, bond yield shifted or yield plus default segment is
+built over, and the first curve of a weighted average.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** reference_curve_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The second curve of a weighted average segment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** weight_1
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The weight of a weighted average segment's first curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** weight_2
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The weight of a weighted average segment's second curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** ibor_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The Ibor index an Ibor fallback segment builds.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rfr_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The risk free curve an Ibor fallback segment falls back to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rfr_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The risk free index an Ibor fallback segment falls back to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The spread an Ibor fallback segment adds to the risk free rate.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** base_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The base curve of a discount ratio segment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** base_curve_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of a discount ratio segment's base curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** numerator_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The numerator curve of a discount ratio segment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** numerator_curve_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of a discount ratio segment's numerator curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** denominator_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The denominator curve of a discount ratio segment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** denominator_curve_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of a discount ratio segment's denominator curve.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extrapolate_flat
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a fitted bond or bond yield shifted segment extrapolates flat.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** segment_type
+:PROPERTIES:
+:table:         ores_refdata_curve_segment_types_tbl
+:target_column: code
+:nullable:      false
+:error_message: Invalid segment_type: %. No active curve segment type found with this code.
+:END:
+
+** ibor_index
+:PROPERTIES:
+:table:         ores_refdata_floating_index_types_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid ibor_index: %. No active floating index type found with this code.
+:END:
+
+** rfr_index
+:PROPERTIES:
+:table:         ores_refdata_floating_index_types_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid rfr_index: %. No active floating index type found with this code.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| conventions          | ores_refdata_validate_convention_id_fn        |
 
 * SQL
 
@@ -145,9 +511,10 @@ The order the document wrote the segment in, which the export restores.
 
 ** Checks
 
-| expression       |
-|------------------|
-| "kind" <> ''     |
+| expression           |
+|----------------------|
+| "segment_type" <> '' |
+| "position" >= 0      |
 
 * C++
 
@@ -169,6 +536,8 @@ The order the document wrote the segment in, which the export restores.
 #+begin_src cpp :name includes
 #include <optional>
 #include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #+end_src
 
 ** Conventions
@@ -180,5 +549,5 @@ The order the document wrote the segment in, which the export restores.
 
 * See also
 
-- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve this segment belongs to.
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

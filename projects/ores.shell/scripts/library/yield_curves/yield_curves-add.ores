@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/yield_curves/yield_curve.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+yield_curves add 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - false - system.new_record generated_script

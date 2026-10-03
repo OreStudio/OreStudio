@@ -34,16 +34,10 @@ export interface CurveDefinition {
     version: number;
     tenant_id: string;
     id: string;
+    curve_configuration_id: string;
     section_code: string;
     curve_id: string;
     description: string | null;
-    currency: string | null;
-    day_counter: string | null;
-    interpolation_method: string | null;
-    interpolation_variable: string | null;
-    extrapolation: string | null;
-    tolerance: string | null;
-    extras: string | null;
     position: number;
     modified_by: string;
     performed_by: string;

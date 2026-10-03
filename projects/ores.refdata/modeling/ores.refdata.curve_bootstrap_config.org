@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: 3D0A848D-458F-4ACC-8E1A-12D0D083F4F8
+:END:
+#+title: ores.refdata.curve_bootstrap_config
+#+description: Codegen entity model for the refdata =curve_bootstrap_config= table. The bootstrap settings of one ORE curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The bootstrap settings of one ORE curve entry.
+#+entity_singular: curve_bootstrap_config
+#+entity_plural: curve_bootstrap_configs
+#+entity_title: Curve Bootstrap Config
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The =BootstrapConfig= of one curve entry. Five section types carry the same
+element, so it is one table keyed to the entry rather than columns on each
+section's row. A row exists exactly when the entry writes the element: fourteen
+corpus yield curves write it empty, and the export writes them back empty.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** accuracy
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The accuracy each instrument is bootstrapped to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** global_accuracy
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The accuracy of a global bootstrap.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** dont_throw
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a failed bootstrap keeps its best result instead of failing.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** max_attempts
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+How many times the bootstrap is tried.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** max_factor
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The largest factor the bootstrap widens its search bounds by.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** min_factor
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The smallest factor the bootstrap widens its search bounds by.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** dont_throw_steps
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+How many steps a failed bootstrap keeps when it does not fail.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** global
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the curve is bootstrapped globally rather than pillar by pillar.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** smoothness_lambda
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The smoothness weight of a global bootstrap.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_bootstrap_configs_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bootstrap_config
+:entity_plural_short:   bootstrap_configs
+:entity_singular_words: curve bootstrap config
+:entity_plural_words:   curve bootstrap configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bc
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -45,16 +45,10 @@ generate_synthetic_curve_definition(utility::generation::generation_context& ctx
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.curve_configuration_id = ctx.generate_uuid();
     r.section_code = std::string("YieldCurves");
     r.curve_id = std::string("EUR-ESTR");
     r.description = std::nullopt;
-    r.currency = std::nullopt;
-    r.day_counter = std::nullopt;
-    r.interpolation_method = std::nullopt;
-    r.interpolation_variable = std::nullopt;
-    r.extrapolation = std::nullopt;
-    r.tolerance = std::nullopt;
-    r.extras = std::nullopt;
     r.position = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

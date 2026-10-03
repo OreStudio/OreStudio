@@ -46,8 +46,10 @@ domain::curve_quote generate_synthetic_curve_quote(utility::generation::generati
     r.id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.curve_segment_id = boost::uuids::nil_uuid();
-    r.item_kind = std::string("Quote");
-    r.quote_text = std::string("FRA/RATE/USD/1M/1M");
+    r.quote_text = std::string("MM/RATE/EUR/0D/1D");
+    r.optional_flag = std::nullopt;
+    r.rate_quote = std::nullopt;
+    r.spread_quote = std::nullopt;
     r.position = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

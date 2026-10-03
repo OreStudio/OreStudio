@@ -44,8 +44,10 @@ domain::curve_quote curve_quote_mapper::map(const curve_quote_entity& v) {
     r.curve_segment_id = v.curve_segment_id.has_value() ?
                              boost::lexical_cast<boost::uuids::uuid>(*v.curve_segment_id) :
                              boost::uuids::uuid{};
-    r.item_kind = v.item_kind;
     r.quote_text = v.quote_text;
+    r.optional_flag = v.optional_flag;
+    r.rate_quote = v.rate_quote;
+    r.spread_quote = v.spread_quote;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -68,8 +70,10 @@ curve_quote_entity curve_quote_mapper::map(const domain::curve_quote& v) {
     r.curve_segment_id = v.curve_segment_id == boost::uuids::uuid{} ?
                              std::nullopt :
                              std::optional(boost::uuids::to_string(v.curve_segment_id));
-    r.item_kind = v.item_kind;
     r.quote_text = v.quote_text;
+    r.optional_flag = v.optional_flag;
+    r.rate_quote = v.rate_quote;
+    r.spread_quote = v.spread_quote;
     r.position = v.position;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 21C84908-9A7A-4804-AD3D-26FCBD65CCE6
+:END:
+#+title: ores.refdata.curve_configuration
+#+description: Codegen entity model for the refdata =curve_configuration= table. One ORE curve configuration document.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One ORE curveconfig.xml document: the curve recipes a run builds its market from.
+#+entity_singular: curve_configuration
+#+entity_plural: curve_configurations
+#+entity_title: Curve Configuration
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One =curveconfig.xml= document, held as the thing its curve entries hang off.
+The document itself is only a list of sections, and the entries are rows of
+=curve_definition=. This row is the document's identity, so that a tenant may
+hold more than one and a report may choose between them through the reporting
+configuration it is registered as.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the document.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+A name for the document, chosen by whoever imports it: ORE gives the
+document none.
+
+#+begin_src cpp :name generator
+std::string("default")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+A free line about the document.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The reporting configuration this document is registered as. Nullable because
+a document can be imported before it is registered: the mapper reads and
+writes content and does not invent a header, the caller supplies one.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
+* Foreign keys
+
+** configuration_id
+:PROPERTIES:
+:table:         ores_reporting_configurations_tbl
+:target_column: id
+:parent_entity: configuration
+:nullable:      true
+:error_message: Invalid configuration_id: %. No active configuration found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_configurations_tbl
+:END:
+
+** Checks
+
+| expression   |
+|--------------|
+| "name" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: configuration
+:entity_plural_short:   configurations
+:entity_singular_words: curve configuration
+:entity_plural_words:   curve configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cc
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the entries of the document.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

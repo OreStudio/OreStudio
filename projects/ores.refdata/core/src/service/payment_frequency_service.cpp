@@ -96,14 +96,16 @@ domain::payment_frequency to_domain(const messaging::payment_frequency_write& wr
 messaging::list_payment_frequencies_response payment_frequency_service::list_payment_frequencies(
     const messaging::list_payment_frequencies_request& request) {
     messaging::list_payment_frequencies_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::payment_frequency_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of payment frequencies cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.payment_frequencies = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.payment_frequencies =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_payment_frequency_count(ctx_);
     return response;
 }

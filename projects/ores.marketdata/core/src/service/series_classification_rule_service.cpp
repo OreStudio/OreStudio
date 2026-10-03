@@ -100,14 +100,15 @@ messaging::list_series_classification_rules_response
 series_classification_rule_service::list_series_classification_rules(
     const messaging::list_series_classification_rules_request& request) {
     messaging::list_series_classification_rules_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::series_classification_rule_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result.message = "A list of series classification rules cannot be ordered by " +
+                                  request.order.field + ".";
         return response;
     }
-    response.rules = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.rules = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_rule_count(ctx_);
     return response;
 }

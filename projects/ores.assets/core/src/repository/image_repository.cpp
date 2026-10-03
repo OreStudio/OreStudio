@@ -28,8 +28,13 @@
 #include "ores.assets.core/repository/image_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::assets::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string image_repository::sql() {
     return generate_create_table_sql<image_entity>(lg());
+}
+
+bool image_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!image_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of asset images cannot be ordered by " + order.field +
+                                    ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition image_repository::replace_claim(context ctx,
@@ -243,18 +273,22 @@ void image_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::image>
-image_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+image_repository::read_latest(context ctx,
+                              std::uint32_t offset,
+                              std::uint32_t limit,
+                              const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset images with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<image_entity, domain::image>(
+    return execute_ordered_read_query<image_entity, domain::image>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
         "Reading latest asset images with pagination.");

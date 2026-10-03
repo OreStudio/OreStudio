@@ -97,14 +97,15 @@ domain::market_series to_domain(const messaging::market_series_write& write) {
 messaging::list_market_series_response
 market_series_service::list_market_series(const messaging::list_market_series_request& request) {
     messaging::list_market_series_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::market_series_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of market series cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.market_series = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.market_series = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_market_series_count(ctx_);
     return response;
 }

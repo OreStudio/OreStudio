@@ -92,14 +92,16 @@ domain::activity_category to_domain(const messaging::activity_category_write& wr
 messaging::list_activity_categories_response activity_category_service::list_activity_categories(
     const messaging::list_activity_categories_request& request) {
     messaging::list_activity_categories_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::activity_category_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of activity categorys cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.activity_categories = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.activity_categories =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_activity_category_count(ctx_);
     return response;
 }

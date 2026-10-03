@@ -95,14 +95,15 @@ domain::trade_identifier to_domain(const messaging::trade_identifier_write& writ
 messaging::list_trade_identifiers_response trade_identifier_service::list_trade_identifiers(
     const messaging::list_trade_identifiers_request& request) {
     messaging::list_trade_identifiers_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::trade_identifier_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of trade identifiers cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.identifiers = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.identifiers = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_identifier_count(ctx_);
     return response;
 }

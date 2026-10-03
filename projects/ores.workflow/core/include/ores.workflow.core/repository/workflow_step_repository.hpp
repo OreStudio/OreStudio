@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::workflow::repository {
@@ -130,11 +131,14 @@ public:
      * @param workflow_id The workflow_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::workflow_step> read_latest_by_workflow_id(context ctx,
-                                                                  const std::string& workflow_id,
-                                                                  std::uint32_t offset,
-                                                                  std::uint32_t limit);
+    std::vector<domain::workflow_step>
+    read_latest_by_workflow_id(context ctx,
+                               const std::string& workflow_id,
+                               std::uint32_t offset,
+                               std::uint32_t limit,
+                               const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active workflow steps filtered by workflow_id.
@@ -143,13 +147,24 @@ public:
 
 
     /**
+     * @brief Whether a list of workflow steps can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest workflow steps with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::workflow_step>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::workflow_step> read_latest(context ctx,
+                                                   std::uint32_t offset,
+                                                   std::uint32_t limit,
+                                                   const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active workflow steps.

@@ -94,14 +94,15 @@ domain::concurrency_policy to_domain(const messaging::concurrency_policy_write& 
 messaging::list_concurrency_policies_response concurrency_policy_service::list_concurrency_policies(
     const messaging::list_concurrency_policies_request& request) {
     messaging::list_concurrency_policies_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::concurrency_policy_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of concurrency policies cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.policies = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.policies = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_policy_count(ctx_);
     return response;
 }

@@ -98,11 +98,12 @@ domain::result to_domain(const messaging::result_write& write) {
 messaging::list_results_response
 result_service::list_results(const messaging::list_results_request& request) {
     messaging::list_results_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::result_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of compute results cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -111,7 +112,7 @@ result_service::list_results(const messaging::list_results_request& request) {
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.results = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.results = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_result_count(ctx_);
     return response;
 }
@@ -119,11 +120,12 @@ result_service::list_results(const messaging::list_results_request& request) {
 messaging::list_by_workunit_id_results_response result_service::list_by_workunit_id_results(
     const messaging::list_by_workunit_id_results_request& request) {
     messaging::list_by_workunit_id_results_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::result_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of compute results cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -139,8 +141,8 @@ messaging::list_by_workunit_id_results_response result_service::list_by_workunit
         return response;
     }
     const auto relation = boost::uuids::to_string(request.workunit_id);
-    response.results =
-        repo_.read_latest_by_workunit_id(ctx_, relation, request.offset, request.limit);
+    response.results = repo_.read_latest_by_workunit_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_result_count_by_workunit_id(ctx_, relation);
     return response;
 }

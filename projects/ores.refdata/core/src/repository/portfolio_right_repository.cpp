@@ -25,11 +25,16 @@
 #include "ores.refdata.core/repository/portfolio_right_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.refdata.api/domain/portfolio_right_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/portfolio_right_entity.hpp"
 #include "ores.refdata.core/repository/portfolio_right_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::refdata::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string portfolio_right_repository::sql() {
     return generate_create_table_sql<portfolio_right_entity>(lg());
+}
+
+bool portfolio_right_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!portfolio_right_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of portfolio rights cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -215,8 +245,12 @@ std::optional<domain::portfolio_right> portfolio_right_repository::read_at_versi
     return entities.front();
 }
 
-std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_account_id(
-    context ctx, const std::string& account_id, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::portfolio_right>
+portfolio_right_repository::read_latest_by_account_id(context ctx,
+                                                      const std::string& account_id,
+                                                      std::uint32_t offset,
+                                                      std::uint32_t limit,
+                                                      const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights. account_id: " << account_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -224,11 +258,12 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
     const auto query =
         sqlgen::read<std::vector<portfolio_right_entity>> |
         where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<portfolio_right_entity, domain::portfolio_right>(
+    return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights by account_id.");
@@ -259,8 +294,12 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_acc
 }
 
 
-std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_portfolio_id(
-    context ctx, const std::string& portfolio_id, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::portfolio_right>
+portfolio_right_repository::read_latest_by_portfolio_id(context ctx,
+                                                        const std::string& portfolio_id,
+                                                        std::uint32_t offset,
+                                                        std::uint32_t limit,
+                                                        const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights. portfolio_id: " << portfolio_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -268,11 +307,12 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
     const auto query = sqlgen::read<std::vector<portfolio_right_entity>> |
                        where("tenant_id"_c == tid && "portfolio_id"_c == portfolio_id &&
                              "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<portfolio_right_entity, domain::portfolio_right>(
+    return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights by portfolio_id.");
@@ -337,18 +377,22 @@ void portfolio_right_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::portfolio_right>
-portfolio_right_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+portfolio_right_repository::read_latest(context ctx,
+                                        std::uint32_t offset,
+                                        std::uint32_t limit,
+                                        const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<portfolio_right_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<portfolio_right_entity, domain::portfolio_right>(
+    return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights with pagination.");

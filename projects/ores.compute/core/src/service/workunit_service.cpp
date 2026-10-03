@@ -98,11 +98,12 @@ domain::workunit to_domain(const messaging::workunit_write& write) {
 messaging::list_workunits_response
 workunit_service::list_workunits(const messaging::list_workunits_request& request) {
     messaging::list_workunits_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::workunit_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of workunits cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -111,7 +112,7 @@ workunit_service::list_workunits(const messaging::list_workunits_request& reques
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.workunits = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.workunits = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_workunit_count(ctx_);
     return response;
 }
@@ -119,11 +120,12 @@ workunit_service::list_workunits(const messaging::list_workunits_request& reques
 messaging::list_by_batch_id_workunits_response workunit_service::list_by_batch_id_workunits(
     const messaging::list_by_batch_id_workunits_request& request) {
     messaging::list_by_batch_id_workunits_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::workunit_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of workunits cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -140,7 +142,7 @@ messaging::list_by_batch_id_workunits_response workunit_service::list_by_batch_i
     }
     const auto relation = boost::uuids::to_string(request.batch_id);
     response.workunits =
-        repo_.read_latest_by_batch_id(ctx_, relation, request.offset, request.limit);
+        repo_.read_latest_by_batch_id(ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_workunit_count_by_batch_id(ctx_, relation);
     return response;
 }

@@ -25,11 +25,16 @@
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/change_reason_category_entity.hpp"
 #include "ores.dq.core/repository/change_reason_category_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::dq::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string change_reason_category_repository::sql() {
     return generate_create_table_sql<change_reason_category_entity>(lg());
+}
+
+bool change_reason_category_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"code"});
+    if (!change_reason_category_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of change reason categories cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"code"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -219,18 +249,23 @@ void change_reason_category_repository::remove(context ctx, const std::string& c
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::change_reason_category> change_reason_category_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::change_reason_category>
+change_reason_category_repository::read_latest(context ctx,
+                                               std::uint32_t offset,
+                                               std::uint32_t limit,
+                                               const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason categories with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("code"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
-    return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
+    return execute_ordered_read_query<change_reason_category_entity,
+                                      domain::change_reason_category>(
         ctx,
         query,
+        list_order(order, {"code"}, false),
         [](const auto& entities) { return change_reason_category_mapper::map(entities); },
         lg(),
         "Reading latest change reason categories with pagination.");

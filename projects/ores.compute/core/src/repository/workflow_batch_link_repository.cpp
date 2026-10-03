@@ -28,8 +28,13 @@
 #include "ores.compute.core/repository/workflow_batch_link_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::compute::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string workflow_batch_link_repository::sql() {
     return generate_create_table_sql<workflow_batch_link_entity>(lg());
+}
+
+bool workflow_batch_link_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"batch_id"});
+    if (!workflow_batch_link_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of workflow batch links cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"batch_id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -177,16 +207,20 @@ void workflow_batch_link_repository::remove(context ctx, const std::string& batc
     static_cast<void>(remove(ctx, batch_id, std::nullopt));
 }
 
-std::vector<domain::workflow_batch_link> workflow_batch_link_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::workflow_batch_link>
+workflow_batch_link_repository::read_latest(context ctx,
+                                            std::uint32_t offset,
+                                            std::uint32_t limit,
+                                            const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow batch links with offset: " << offset
                                << " and limit: " << limit;
     const auto query = sqlgen::read<std::vector<workflow_batch_link_entity>> |
-                       order_by("batch_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<workflow_batch_link_entity, domain::workflow_batch_link>(
+    return execute_ordered_read_query<workflow_batch_link_entity, domain::workflow_batch_link>(
         ctx,
         query,
+        list_order(order, {"batch_id"}, false),
         [](const auto& entities) { return workflow_batch_link_mapper::map(entities); },
         lg(),
         "Reading latest workflow batch links with pagination.");

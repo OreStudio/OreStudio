@@ -97,11 +97,12 @@ domain::netting_agreement to_domain(const messaging::netting_agreement_write& wr
 messaging::list_netting_agreements_response netting_agreement_service::list_netting_agreements(
     const messaging::list_netting_agreements_request& request) {
     messaging::list_netting_agreements_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::netting_agreement_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of netting agreements cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -110,7 +111,8 @@ messaging::list_netting_agreements_response netting_agreement_service::list_nett
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.netting_agreements = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.netting_agreements =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_netting_agreement_count(ctx_);
     return response;
 }
@@ -119,11 +121,12 @@ messaging::list_by_counterparty_id_netting_agreements_response
 netting_agreement_service::list_by_counterparty_id_netting_agreements(
     const messaging::list_by_counterparty_id_netting_agreements_request& request) {
     messaging::list_by_counterparty_id_netting_agreements_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::netting_agreement_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of netting agreements cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -139,8 +142,8 @@ netting_agreement_service::list_by_counterparty_id_netting_agreements(
         return response;
     }
     const auto relation = boost::uuids::to_string(request.counterparty_id);
-    response.netting_agreements =
-        repo_.read_latest_by_counterparty_id(ctx_, relation, request.offset, request.limit);
+    response.netting_agreements = repo_.read_latest_by_counterparty_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_netting_agreement_count_by_counterparty_id(ctx_, relation);
     return response;
 }

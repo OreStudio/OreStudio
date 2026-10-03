@@ -96,14 +96,15 @@ domain::business_centre to_domain(const messaging::business_centre_write& write)
 messaging::list_business_centres_response business_centre_service::list_business_centres(
     const messaging::list_business_centres_request& request) {
     messaging::list_business_centres_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::business_centre_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of business centres cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.centres = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.centres = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_centre_count(ctx_);
     return response;
 }

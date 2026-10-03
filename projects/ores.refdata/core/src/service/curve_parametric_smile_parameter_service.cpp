@@ -100,14 +100,18 @@ messaging::list_curve_parametric_smile_parameters_response
 curve_parametric_smile_parameter_service::list_curve_parametric_smile_parameters(
     const messaging::list_curve_parametric_smile_parameters_request& request) {
     messaging::list_curve_parametric_smile_parameters_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::curve_parametric_smile_parameter_repository::is_sortable(
+            request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of curve parametric smile parameters cannot be ordered by " +
+            request.order.field + ".";
         return response;
     }
-    response.smile_parameters = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.smile_parameters =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_smile_parameter_count(ctx_);
     return response;
 }

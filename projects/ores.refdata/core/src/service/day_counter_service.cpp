@@ -92,14 +92,15 @@ domain::day_counter to_domain(const messaging::day_counter_write& write) {
 messaging::list_day_counters_response
 day_counter_service::list_day_counters(const messaging::list_day_counters_request& request) {
     messaging::list_day_counters_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::day_counter_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of day counters cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.day_counters = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.day_counters = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_day_counter_count(ctx_);
     return response;
 }

@@ -98,14 +98,16 @@ messaging::list_currency_pair_classifications_response
 currency_pair_classification_service::list_currency_pair_classifications(
     const messaging::list_currency_pair_classifications_request& request) {
     messaging::list_currency_pair_classifications_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::currency_pair_classification_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result.message = "A list of currency pair classifications cannot be ordered by " +
+                                  request.order.field + ".";
         return response;
     }
-    response.classifications = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.classifications =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_classification_count(ctx_);
     return response;
 }

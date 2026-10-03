@@ -122,14 +122,15 @@ domain::curve_segment to_domain(const messaging::curve_segment_write& write) {
 messaging::list_curve_segments_response
 curve_segment_service::list_curve_segments(const messaging::list_curve_segments_request& request) {
     messaging::list_curve_segments_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::curve_segment_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of curve segments cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.segments = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.segments = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_segment_count(ctx_);
     return response;
 }

@@ -101,11 +101,12 @@ domain::calendar_rule to_domain(const messaging::calendar_rule_write& write) {
 messaging::list_calendar_rules_response
 calendar_rule_service::list_calendar_rules(const messaging::list_calendar_rules_request& request) {
     messaging::list_calendar_rules_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::calendar_rule_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of calendar rules cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -114,7 +115,7 @@ calendar_rule_service::list_calendar_rules(const messaging::list_calendar_rules_
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.calendar_rules = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.calendar_rules = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_calendar_rule_count(ctx_);
     return response;
 }
@@ -123,11 +124,12 @@ messaging::list_by_calendar_code_calendar_rules_response
 calendar_rule_service::list_by_calendar_code_calendar_rules(
     const messaging::list_by_calendar_code_calendar_rules_request& request) {
     messaging::list_by_calendar_code_calendar_rules_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::calendar_rule_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of calendar rules cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -143,8 +145,8 @@ calendar_rule_service::list_by_calendar_code_calendar_rules(
         return response;
     }
     const auto relation = request.calendar_code;
-    response.calendar_rules =
-        repo_.read_latest_by_calendar_code(ctx_, relation, request.offset, request.limit);
+    response.calendar_rules = repo_.read_latest_by_calendar_code(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_calendar_rule_count_by_calendar_code(ctx_, relation);
     return response;
 }

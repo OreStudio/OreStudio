@@ -25,13 +25,17 @@
 #include "ores.trading.core/repository/trade_envelope_portfolio_id_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.trading.api/domain/trade_envelope_portfolio_id_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/trade_envelope_portfolio_id_entity.hpp"
 #include "ores.trading.core/repository/trade_envelope_portfolio_id_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <set>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 
 namespace ores::trading::repository {
@@ -43,6 +47,34 @@ using namespace ores::database::repository;
 
 std::string trade_envelope_portfolio_id_repository::sql() {
     return generate_create_table_sql<trade_envelope_portfolio_id_entity>(lg());
+}
+
+bool trade_envelope_portfolio_id_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns,
+                          default_descending != order.descending,
+                          {"trade_id", "sequence_number"});
+    if (!trade_envelope_portfolio_id_repository::is_sortable(order.field))
+        throw std::invalid_argument(
+            "A list of trade envelope portfolio identifiers cannot be ordered by " + order.field +
+            ".");
+    return make_order({order.field}, order.descending, {"trade_id", "sequence_number"});
+}
+
 }
 
 ores::utility::domain::precondition trade_envelope_portfolio_id_repository::replace_claim(
@@ -261,7 +293,8 @@ void trade_envelope_portfolio_id_repository::remove(context ctx,
 std::vector<domain::trade_envelope_portfolio_id>
 trade_envelope_portfolio_id_repository::read_latest(context ctx,
                                                     std::uint32_t offset,
-                                                    std::uint32_t limit) {
+                                                    std::uint32_t limit,
+                                                    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest trade envelope portfolio identifiers with offset: " << offset
         << " and limit: " << limit;
@@ -269,13 +302,13 @@ trade_envelope_portfolio_id_repository::read_latest(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_envelope_portfolio_id_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("trade_id"_c, "sequence_number"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<trade_envelope_portfolio_id_entity,
-                              domain::trade_envelope_portfolio_id>(
+    return execute_ordered_read_query<trade_envelope_portfolio_id_entity,
+                                      domain::trade_envelope_portfolio_id>(
         ctx,
         query,
+        list_order(order, {"trade_id", "sequence_number"}, false),
         [](const auto& entities) { return trade_envelope_portfolio_id_mapper::map(entities); },
         lg(),
         "Reading latest trade envelope portfolio identifiers with pagination.");

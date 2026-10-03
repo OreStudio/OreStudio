@@ -99,11 +99,13 @@ messaging::list_credit_simulation_netting_set_configs_response
 credit_simulation_netting_set_config_service::list_credit_simulation_netting_set_configs(
     const messaging::list_credit_simulation_netting_set_configs_request& request) {
     messaging::list_credit_simulation_netting_set_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::credit_simulation_netting_set_config_repository::is_sortable(
+            request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of netting sets cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -112,7 +114,7 @@ credit_simulation_netting_set_config_service::list_credit_simulation_netting_set
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.netting_sets = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.netting_sets = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_netting_set_count(ctx_);
     return response;
 }
@@ -125,11 +127,13 @@ credit_simulation_netting_set_config_service::
                 request) {
     messaging::list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_response
         response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::credit_simulation_netting_set_config_repository::is_sortable(
+            request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of netting sets cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -146,7 +150,7 @@ credit_simulation_netting_set_config_service::
     }
     const auto relation = boost::uuids::to_string(request.credit_simulation_config_id);
     response.netting_sets = repo_.read_latest_by_credit_simulation_config_id(
-        ctx_, relation, request.offset, request.limit);
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total =
         repo_.get_total_netting_set_count_by_credit_simulation_config_id(ctx_, relation);
     return response;

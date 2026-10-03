@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::compute::repository {
@@ -127,11 +128,14 @@ public:
      * @param workunit_id The workunit_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::result> read_latest_by_workunit_id(context ctx,
-                                                           const std::string& workunit_id,
-                                                           std::uint32_t offset,
-                                                           std::uint32_t limit);
+    std::vector<domain::result>
+    read_latest_by_workunit_id(context ctx,
+                               const std::string& workunit_id,
+                               std::uint32_t offset,
+                               std::uint32_t limit,
+                               const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active compute results filtered by workunit_id.
@@ -141,12 +145,24 @@ public:
 
 
     /**
+     * @brief Whether a list of compute results can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest compute results with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::result> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::result> read_latest(context ctx,
+                                            std::uint32_t offset,
+                                            std::uint32_t limit,
+                                            const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active compute results.

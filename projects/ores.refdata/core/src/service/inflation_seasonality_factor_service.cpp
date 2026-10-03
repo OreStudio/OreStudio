@@ -98,14 +98,16 @@ messaging::list_inflation_seasonality_factors_response
 inflation_seasonality_factor_service::list_inflation_seasonality_factors(
     const messaging::list_inflation_seasonality_factors_request& request) {
     messaging::list_inflation_seasonality_factors_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::inflation_seasonality_factor_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result.message = "A list of inflation seasonality factors cannot be ordered by " +
+                                  request.order.field + ".";
         return response;
     }
-    response.seasonality_factors = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.seasonality_factors =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_seasonality_factor_count(ctx_);
     return response;
 }

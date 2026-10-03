@@ -25,13 +25,17 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <set>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 
 namespace ores::trading::repository {
@@ -43,6 +47,40 @@ using namespace ores::database::repository;
 
 std::string bond_issue_leg_schedule_date_repository::sql() {
     return generate_create_table_sql<bond_issue_leg_schedule_date_entity>(lg());
+}
+
+bool bond_issue_leg_schedule_date_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns,
+                          default_descending != order.descending,
+                          {"issue_id",
+                           "leg_number",
+                           "schedule_role",
+                           "schedule_sequence_number",
+                           "sequence_number"});
+    if (!bond_issue_leg_schedule_date_repository::is_sortable(order.field))
+        throw std::invalid_argument(
+            "A list of bond issue leg schedule dates cannot be ordered by " + order.field + ".");
+    return make_order(
+        {order.field},
+        order.descending,
+        {"issue_id", "leg_number", "schedule_role", "schedule_sequence_number", "sequence_number"});
+}
+
 }
 
 ores::utility::domain::precondition bond_issue_leg_schedule_date_repository::replace_claim(
@@ -317,24 +355,27 @@ void bond_issue_leg_schedule_date_repository::remove(context ctx,
 std::vector<domain::bond_issue_leg_schedule_date>
 bond_issue_leg_schedule_date_repository::read_latest(context ctx,
                                                      std::uint32_t offset,
-                                                     std::uint32_t limit) {
+                                                     std::uint32_t limit,
+                                                     const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue leg schedule dates with offset: "
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_issue_leg_schedule_date_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("issue_id"_c,
-                                "leg_number"_c,
-                                "schedule_role"_c,
-                                "schedule_sequence_number"_c,
-                                "sequence_number"_c) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<bond_issue_leg_schedule_date_entity,
-                              domain::bond_issue_leg_schedule_date>(
+    return execute_ordered_read_query<bond_issue_leg_schedule_date_entity,
+                                      domain::bond_issue_leg_schedule_date>(
         ctx,
         query,
+        list_order(order,
+                   {"issue_id",
+                    "leg_number",
+                    "schedule_role",
+                    "schedule_sequence_number",
+                    "sequence_number"},
+                   false),
         [](const auto& entities) { return bond_issue_leg_schedule_date_mapper::map(entities); },
         lg(),
         "Reading latest bond issue leg schedule dates with pagination.");

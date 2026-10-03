@@ -97,11 +97,12 @@ messaging::list_csa_eligible_currencies_response
 csa_eligible_currency_service::list_csa_eligible_currencies(
     const messaging::list_csa_eligible_currencies_request& request) {
     messaging::list_csa_eligible_currencies_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::csa_eligible_currency_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of CSA eligible currencies cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -110,7 +111,8 @@ csa_eligible_currency_service::list_csa_eligible_currencies(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.csa_eligible_currencies = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.csa_eligible_currencies =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_csa_eligible_currency_count(ctx_);
     return response;
 }
@@ -119,11 +121,12 @@ messaging::list_by_csa_id_csa_eligible_currencies_response
 csa_eligible_currency_service::list_by_csa_id_csa_eligible_currencies(
     const messaging::list_by_csa_id_csa_eligible_currencies_request& request) {
     messaging::list_by_csa_id_csa_eligible_currencies_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::csa_eligible_currency_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of CSA eligible currencies cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -140,7 +143,7 @@ csa_eligible_currency_service::list_by_csa_id_csa_eligible_currencies(
     }
     const auto relation = boost::uuids::to_string(request.csa_id);
     response.csa_eligible_currencies =
-        repo_.read_latest_by_csa_id(ctx_, relation, request.offset, request.limit);
+        repo_.read_latest_by_csa_id(ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_csa_eligible_currency_count_by_csa_id(ctx_, relation);
     return response;
 }

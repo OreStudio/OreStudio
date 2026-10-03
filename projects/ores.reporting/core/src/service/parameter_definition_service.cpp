@@ -99,11 +99,12 @@ messaging::list_parameter_definitions_response
 parameter_definition_service::list_parameter_definitions(
     const messaging::list_parameter_definitions_request& request) {
     messaging::list_parameter_definitions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::parameter_definition_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of parameter definitions cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -112,7 +113,7 @@ parameter_definition_service::list_parameter_definitions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.parameters = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.parameters = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_parameter_count(ctx_);
     return response;
 }
@@ -121,11 +122,12 @@ messaging::list_by_parameter_value_domain_code_parameter_definitions_response
 parameter_definition_service::list_by_parameter_value_domain_code_parameter_definitions(
     const messaging::list_by_parameter_value_domain_code_parameter_definitions_request& request) {
     messaging::list_by_parameter_value_domain_code_parameter_definitions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::parameter_definition_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of parameter definitions cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -142,7 +144,7 @@ parameter_definition_service::list_by_parameter_value_domain_code_parameter_defi
     }
     const auto relation = request.parameter_value_domain_code;
     response.parameters = repo_.read_latest_by_parameter_value_domain_code(
-        ctx_, relation, request.offset, request.limit);
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_parameter_count_by_parameter_value_domain_code(ctx_, relation);
     return response;
 }

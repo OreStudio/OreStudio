@@ -25,11 +25,16 @@
 #include "ores.iam.core/repository/seed_profile_parameter_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.iam.api/domain/seed_profile_parameter_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/seed_profile_parameter_entity.hpp"
 #include "ores.iam.core/repository/seed_profile_parameter_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::iam::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string seed_profile_parameter_repository::sql() {
     return generate_create_table_sql<seed_profile_parameter_entity>(lg());
+}
+
+bool seed_profile_parameter_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!seed_profile_parameter_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of seed profile parameters cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -193,7 +223,11 @@ std::optional<domain::seed_profile_parameter> seed_profile_parameter_repository:
 
 std::vector<domain::seed_profile_parameter>
 seed_profile_parameter_repository::read_latest_by_seed_profile_id(
-    context ctx, const std::string& seed_profile_id, std::uint32_t offset, std::uint32_t limit) {
+    context ctx,
+    const std::string& seed_profile_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest seed profile parameters. seed_profile_id: "
                                << seed_profile_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -201,11 +235,13 @@ seed_profile_parameter_repository::read_latest_by_seed_profile_id(
     const auto query = sqlgen::read<std::vector<seed_profile_parameter_entity>> |
                        where("tenant_id"_c == tid && "seed_profile_id"_c == seed_profile_id &&
                              "valid_to"_c == max.value()) |
-                       order_by("display_order"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<seed_profile_parameter_entity, domain::seed_profile_parameter>(
+    return execute_ordered_read_query<seed_profile_parameter_entity,
+                                      domain::seed_profile_parameter>(
         ctx,
         query,
+        list_order(order, {"display_order"}, false),
         [](const auto& entities) { return seed_profile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest seed profile parameters by seed_profile_id.");
@@ -273,19 +309,24 @@ void seed_profile_parameter_repository::remove(context ctx, const std::string& i
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::seed_profile_parameter> seed_profile_parameter_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::seed_profile_parameter>
+seed_profile_parameter_repository::read_latest(context ctx,
+                                               std::uint32_t offset,
+                                               std::uint32_t limit,
+                                               const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest seed profile parameters with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<seed_profile_parameter_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<seed_profile_parameter_entity, domain::seed_profile_parameter>(
+    return execute_ordered_read_query<seed_profile_parameter_entity,
+                                      domain::seed_profile_parameter>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return seed_profile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest seed profile parameters with pagination.");

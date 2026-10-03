@@ -28,8 +28,13 @@
 #include "ores.analytics.core/repository/todays_market_entry_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::analytics::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string todays_market_entry_repository::sql() {
     return generate_create_table_sql<todays_market_entry_entity>(lg());
+}
+
+bool todays_market_entry_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!todays_market_entry_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of today's market entries cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -191,7 +221,8 @@ todays_market_entry_repository::read_latest_by_todays_market_config_id(
     context ctx,
     const std::string& todays_market_config_id,
     std::uint32_t offset,
-    std::uint32_t limit) {
+    std::uint32_t limit,
+    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market entries. todays_market_config_id: "
                                << todays_market_config_id << " offset: " << offset
                                << " limit: " << limit;
@@ -201,11 +232,12 @@ todays_market_entry_repository::read_latest_by_todays_market_config_id(
         sqlgen::read<std::vector<todays_market_entry_entity>> |
         where("tenant_id"_c == tid && "todays_market_config_id"_c == todays_market_config_id &&
               "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<todays_market_entry_entity, domain::todays_market_entry>(
+    return execute_ordered_read_query<todays_market_entry_entity, domain::todays_market_entry>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return todays_market_entry_mapper::map(entities); },
         lg(),
         "Reading latest today's market entries by todays_market_config_id.");
@@ -244,7 +276,8 @@ todays_market_entry_repository::read_latest_by_todays_market_collection_id(
     context ctx,
     const std::string& todays_market_collection_id,
     std::uint32_t offset,
-    std::uint32_t limit) {
+    std::uint32_t limit,
+    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest today's market entries. todays_market_collection_id: "
         << todays_market_collection_id << " offset: " << offset << " limit: " << limit;
@@ -254,11 +287,12 @@ todays_market_entry_repository::read_latest_by_todays_market_collection_id(
                        where("tenant_id"_c == tid &&
                              "todays_market_collection_id"_c == todays_market_collection_id &&
                              "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<todays_market_entry_entity, domain::todays_market_entry>(
+    return execute_ordered_read_query<todays_market_entry_entity, domain::todays_market_entry>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return todays_market_entry_mapper::map(entities); },
         lg(),
         "Reading latest today's market entries by todays_market_collection_id.");
@@ -326,19 +360,23 @@ void todays_market_entry_repository::remove(context ctx, const std::string& id) 
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::todays_market_entry> todays_market_entry_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::todays_market_entry>
+todays_market_entry_repository::read_latest(context ctx,
+                                            std::uint32_t offset,
+                                            std::uint32_t limit,
+                                            const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market entries with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<todays_market_entry_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<todays_market_entry_entity, domain::todays_market_entry>(
+    return execute_ordered_read_query<todays_market_entry_entity, domain::todays_market_entry>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return todays_market_entry_mapper::map(entities); },
         lg(),
         "Reading latest today's market entries with pagination.");

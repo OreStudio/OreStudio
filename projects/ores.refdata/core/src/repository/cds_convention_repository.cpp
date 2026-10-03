@@ -25,11 +25,16 @@
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.refdata.api/domain/cds_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/cds_convention_entity.hpp"
 #include "ores.refdata.core/repository/cds_convention_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::refdata::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string cds_convention_repository::sql() {
     return generate_create_table_sql<cds_convention_entity>(lg());
+}
+
+bool cds_convention_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!cds_convention_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of CDS conventions cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -237,7 +267,10 @@ void cds_convention_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::cds_convention>
-cds_convention_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+cds_convention_repository::read_latest(context ctx,
+                                       std::uint32_t offset,
+                                       std::uint32_t limit,
+                                       const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CDS conventions with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -246,11 +279,12 @@ cds_convention_repository::read_latest(context ctx, std::uint32_t offset, std::u
     const auto query =
         sqlgen::read<std::vector<cds_convention_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<cds_convention_entity, domain::cds_convention>(
+    return execute_ordered_read_query<cds_convention_entity, domain::cds_convention>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return cds_convention_mapper::map(entities); },
         lg(),
         "Reading latest CDS conventions with pagination.");

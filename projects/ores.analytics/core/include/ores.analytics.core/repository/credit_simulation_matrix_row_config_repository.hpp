@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::analytics::repository {
@@ -149,12 +150,14 @@ public:
      * @param transition_matrix_id The transition_matrix_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::credit_simulation_matrix_row_config>
     read_latest_by_transition_matrix_id(context ctx,
                                         const std::string& transition_matrix_id,
                                         std::uint32_t offset,
-                                        std::uint32_t limit);
+                                        std::uint32_t limit,
+                                        const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active matrix rows filtered by transition_matrix_id.
@@ -165,13 +168,25 @@ public:
 
 
     /**
+     * @brief Whether a list of matrix rows can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest matrix rows with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::credit_simulation_matrix_row_config>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active matrix rows.

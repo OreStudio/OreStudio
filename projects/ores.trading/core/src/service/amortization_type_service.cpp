@@ -92,14 +92,16 @@ domain::amortization_type to_domain(const messaging::amortization_type_write& wr
 messaging::list_amortization_types_response amortization_type_service::list_amortization_types(
     const messaging::list_amortization_types_request& request) {
     messaging::list_amortization_types_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::amortization_type_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of amortization types cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.amortization_types = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.amortization_types =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_amortization_type_count(ctx_);
     return response;
 }

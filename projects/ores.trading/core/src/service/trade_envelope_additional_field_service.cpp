@@ -100,15 +100,17 @@ messaging::list_trade_envelope_additional_fields_response
 trade_envelope_additional_field_service::list_trade_envelope_additional_fields(
     const messaging::list_trade_envelope_additional_fields_request& request) {
     messaging::list_trade_envelope_additional_fields_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::trade_envelope_additional_field_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of trade envelope additional fields cannot be ordered by " +
+            request.order.field + ".";
         return response;
     }
     response.trade_envelope_additional_fields =
-        repo_.read_latest(ctx_, request.offset, request.limit);
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_trade_envelope_additional_field_count(ctx_);
     return response;
 }

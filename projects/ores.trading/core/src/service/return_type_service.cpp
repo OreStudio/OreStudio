@@ -92,14 +92,15 @@ domain::return_type to_domain(const messaging::return_type_write& write) {
 messaging::list_return_types_response
 return_type_service::list_return_types(const messaging::list_return_types_request& request) {
     messaging::list_return_types_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::return_type_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of return types cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.return_types = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.return_types = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_return_type_count(ctx_);
     return response;
 }

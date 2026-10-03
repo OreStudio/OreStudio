@@ -99,11 +99,12 @@ messaging::list_todays_market_configs_response
 todays_market_config_service::list_todays_market_configs(
     const messaging::list_todays_market_configs_request& request) {
     messaging::list_todays_market_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::todays_market_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result.message = "A list of today's market configurations cannot be ordered by " +
+                                  request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -112,7 +113,7 @@ todays_market_config_service::list_todays_market_configs(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.configs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.configs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_config_count(ctx_);
     return response;
 }
@@ -121,11 +122,12 @@ messaging::list_by_configuration_id_todays_market_configs_response
 todays_market_config_service::list_by_configuration_id_todays_market_configs(
     const messaging::list_by_configuration_id_todays_market_configs_request& request) {
     messaging::list_by_configuration_id_todays_market_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::todays_market_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result.message = "A list of today's market configurations cannot be ordered by " +
+                                  request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -141,8 +143,8 @@ todays_market_config_service::list_by_configuration_id_todays_market_configs(
         return response;
     }
     const auto relation = boost::uuids::to_string(request.configuration_id);
-    response.configs =
-        repo_.read_latest_by_configuration_id(ctx_, relation, request.offset, request.limit);
+    response.configs = repo_.read_latest_by_configuration_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_config_count_by_configuration_id(ctx_, relation);
     return response;
 }

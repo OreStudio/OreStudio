@@ -92,14 +92,15 @@ domain::calendar_name to_domain(const messaging::calendar_name_write& write) {
 messaging::list_calendar_names_response
 calendar_name_service::list_calendar_names(const messaging::list_calendar_names_request& request) {
     messaging::list_calendar_names_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::calendar_name_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of calendar names cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.calendar_names = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.calendar_names = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_calendar_name_count(ctx_);
     return response;
 }

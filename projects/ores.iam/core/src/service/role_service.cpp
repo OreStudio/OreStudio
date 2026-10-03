@@ -94,14 +94,15 @@ domain::role to_domain(const messaging::role_write& write) {
 messaging::list_roles_response
 role_service::list_roles(const messaging::list_roles_request& request) {
     messaging::list_roles_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::role_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of roles cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.roles = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.roles = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_role_count(ctx_);
     return response;
 }

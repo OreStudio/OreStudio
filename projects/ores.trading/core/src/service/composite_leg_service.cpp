@@ -94,11 +94,12 @@ domain::composite_leg to_domain(const messaging::composite_leg_write& write) {
 messaging::list_composite_legs_response
 composite_leg_service::list_composite_legs(const messaging::list_composite_legs_request& request) {
     messaging::list_composite_legs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::composite_leg_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of composite legs cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -107,7 +108,7 @@ composite_leg_service::list_composite_legs(const messaging::list_composite_legs_
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.composite_legs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.composite_legs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_composite_leg_count(ctx_);
     return response;
 }
@@ -116,11 +117,12 @@ messaging::list_by_trade_id_composite_legs_response
 composite_leg_service::list_by_trade_id_composite_legs(
     const messaging::list_by_trade_id_composite_legs_request& request) {
     messaging::list_by_trade_id_composite_legs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::composite_leg_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of composite legs cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -137,7 +139,7 @@ composite_leg_service::list_by_trade_id_composite_legs(
     }
     const auto relation = boost::uuids::to_string(request.trade_id);
     response.composite_legs =
-        repo_.read_latest_by_trade_id(ctx_, relation, request.offset, request.limit);
+        repo_.read_latest_by_trade_id(ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_composite_leg_count_by_trade_id(ctx_, relation);
     return response;
 }

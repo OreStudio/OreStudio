@@ -121,14 +121,16 @@ messaging::list_instrument_schedules_response
 instrument_schedule_service::list_instrument_schedules(
     const messaging::list_instrument_schedules_request& request) {
     messaging::list_instrument_schedules_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::instrument_schedule_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of instrument schedules cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.instrument_schedules = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.instrument_schedules =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_instrument_schedule_count(ctx_);
     return response;
 }

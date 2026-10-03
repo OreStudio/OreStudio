@@ -25,11 +25,16 @@
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.trading.api/domain/bond_issue_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_issue_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::trading::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string bond_issue_repository::sql() {
     return generate_create_table_sql<bond_issue_entity>(lg());
+}
+
+bool bond_issue_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"issue_id"});
+    if (!bond_issue_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of bond issues cannot be ordered by " + order.field +
+                                    ".");
+    return make_order({order.field}, order.descending, {"issue_id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -235,7 +265,10 @@ void bond_issue_repository::remove(context ctx, const std::string& issue_id) {
 }
 
 std::vector<domain::bond_issue>
-bond_issue_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+bond_issue_repository::read_latest(context ctx,
+                                   std::uint32_t offset,
+                                   std::uint32_t limit,
+                                   const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issues with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -244,11 +277,12 @@ bond_issue_repository::read_latest(context ctx, std::uint32_t offset, std::uint3
     const auto query =
         sqlgen::read<std::vector<bond_issue_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<bond_issue_entity, domain::bond_issue>(
+    return execute_ordered_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
         query,
+        list_order(order, {"issue_id"}, false),
         [](const auto& entities) { return bond_issue_mapper::map(entities); },
         lg(),
         "Reading latest bond issues with pagination.");

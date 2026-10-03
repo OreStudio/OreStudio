@@ -24,6 +24,7 @@
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -147,4 +148,40 @@ TEST_CASE("an_inactive_csa_keeps_its_terms", tags) {
         }
     }
     CHECK(inactive > 0);
+}
+
+TEST_CASE("netting_set_details_naming_an_agreement_type_are_refused", tags) {
+    const std::string xml = R"(<NettingSetDefinitions>
+  <NettingSet>
+    <NettingSetDetails>
+      <NettingSetId>CPTY_A</NettingSetId>
+      <AgreementType>ISDA</AgreementType>
+    </NettingSetDetails>
+    <ActiveCSAFlag>false</ActiveCSAFlag>
+  </NettingSet>
+</NettingSetDefinitions>)";
+
+    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml)), std::runtime_error);
+}
+
+TEST_CASE("an_active_csa_flag_without_details_is_refused", tags) {
+    const std::string xml = R"(<NettingSetDefinitions>
+  <NettingSet>
+    <NettingSetId>CPTY_A</NettingSetId>
+    <ActiveCSAFlag>true</ActiveCSAFlag>
+  </NettingSet>
+</NettingSetDefinitions>)";
+
+    CHECK_THROWS_AS(netting_set_mapper::map(parse(xml)), std::runtime_error);
+}
+
+TEST_CASE("a_csa_with_one_margining_frequency_is_refused_on_export", tags) {
+    const auto path = ores::testing::project_root::resolve(
+        "external/ore/examples/ExposureWithCollateral/Input/netting.xml");
+    auto mapped = netting_set_mapper::map(
+        parse(ores::platform::filesystem::file::read_content(path)));
+    REQUIRE(!mapped.csas.empty());
+    mapped.csas.front().post_frequency.reset();
+
+    CHECK_THROWS_AS(netting_set_mapper::reverse(mapped), std::runtime_error);
 }

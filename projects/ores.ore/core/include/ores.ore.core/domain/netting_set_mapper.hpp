@@ -72,6 +72,11 @@ public:
     /**
      * @brief Reconstructs an ORE NettingSetDefinitions document from the
      * entities, sets in the order given and currencies by position.
+     *
+     * Every set states ActiveCSAFlag, false when it has no active CSA, as
+     * every example document does. A CSA that states half of its independent
+     * amount or one of its two margining frequencies is refused, because ORE
+     * needs both and the mapper will not invent the other.
      */
     static nettingsetdefinitions reverse(const mapped_netting_sets& v);
 };

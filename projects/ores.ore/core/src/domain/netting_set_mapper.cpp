@@ -22,8 +22,11 @@
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
 
 namespace ores::ore::domain {
 
@@ -153,17 +156,22 @@ reverse_csa(const refdata::domain::csa& c,
     put(d.ThresholdReceive, c.threshold_receive);
     put(d.MinimumTransferAmountPay, c.minimum_transfer_amount_pay);
     put(d.MinimumTransferAmountReceive, c.minimum_transfer_amount_receive);
-    if (c.independent_amount_held || c.independent_amount_type) {
+    if (c.independent_amount_held.has_value() != c.independent_amount_type.has_value())
+        throw std::runtime_error(
+            "A CSA states half of its independent amount; ORE needs both the amount and its type.");
+    if (c.independent_amount_held) {
         nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t amount;
-        amount.IndependentAmountHeld = c.independent_amount_held.value_or(0.0);
-        amount.IndependentAmountType =
-            parse_independent_amount_type(c.independent_amount_type.value_or("FIXED"));
+        amount.IndependentAmountHeld = *c.independent_amount_held;
+        amount.IndependentAmountType = parse_independent_amount_type(*c.independent_amount_type);
         d.IndependentAmount = std::move(amount);
     }
-    if (c.call_frequency || c.post_frequency) {
+    if (c.call_frequency.has_value() != c.post_frequency.has_value())
+        throw std::runtime_error(
+            "A CSA states one margining frequency; ORE needs both the call and the post frequency.");
+    if (c.call_frequency) {
         nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t frequency;
-        static_cast<xsd::string&>(frequency.CallFrequency) = c.call_frequency.value_or("");
-        static_cast<xsd::string&>(frequency.PostFrequency) = c.post_frequency.value_or("");
+        static_cast<xsd::string&>(frequency.CallFrequency) = *c.call_frequency;
+        static_cast<xsd::string&>(frequency.PostFrequency) = *c.post_frequency;
         d.MarginingFrequency = std::move(frequency);
     }
     put_text(d.MarginPeriodOfRisk, c.margin_period_of_risk);
@@ -241,6 +249,16 @@ mapped_netting_sets netting_set_mapper::map(const nettingsetdefinitions& v) {
 nettingsetdefinitions netting_set_mapper::reverse(const mapped_netting_sets& v) {
     BOOST_LOG_SEV(lg(), debug) << "Reversing " << v.sets.size() << " netting sets.";
 
+    using uuid_hash = boost::hash<boost::uuids::uuid>;
+    std::unordered_map<boost::uuids::uuid, const refdata::domain::csa*, uuid_hash> csa_by_set;
+    for (const auto& c : v.csas)
+        csa_by_set.emplace(c.netting_set_id, &c);
+    std::unordered_map<boost::uuids::uuid,
+                       std::vector<const refdata::domain::csa_eligible_currency*>, uuid_hash>
+        currencies_by_csa;
+    for (const auto& e : v.eligible_currencies)
+        currencies_by_csa[e.csa_id].push_back(&e);
+
     nettingsetdefinitions r;
     for (const auto& s : v.sets) {
         nettingsetdefinitions_NettingSet_t n;
@@ -256,18 +274,12 @@ nettingsetdefinitions netting_set_mapper::reverse(const mapped_netting_sets& v) 
             n.nettingSetGroup.NettingSetId = std::move(id);
         }
 
-        const auto csa = std::find_if(v.csas.begin(), v.csas.end(), [&](const auto& c) {
-            return c.netting_set_id == s.id;
-        });
-        n.ActiveCSAFlag = csa != v.csas.end() && csa->is_active;
-        if (csa != v.csas.end()) {
-            std::vector<const refdata::domain::csa_eligible_currency*> currencies;
-            for (const auto& e : v.eligible_currencies) {
-                if (e.csa_id == csa->id)
-                    currencies.push_back(&e);
-            }
+        const auto csa = csa_by_set.find(s.id);
+        n.ActiveCSAFlag = csa != csa_by_set.end() && csa->second->is_active;
+        if (csa != csa_by_set.end()) {
+            auto currencies = currencies_by_csa[csa->second->id];
             std::ranges::sort(currencies, {}, &refdata::domain::csa_eligible_currency::position);
-            n.CSADetails = reverse_csa(*csa, currencies);
+            n.CSADetails = reverse_csa(*csa->second, currencies);
         }
         put(n.RiskWeight, s.risk_weight);
         r.NettingSet.push_back(std::move(n));

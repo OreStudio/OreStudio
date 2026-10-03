@@ -32,6 +32,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_market_binding_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/eventing/report_market_binding_event.hpp"
@@ -58,6 +60,25 @@ namespace {
 const std::string_view test_suite("reporting.tests");
 const std::string tags("[eventing][integration]");
 
+// Report Market Binding writes are party-scoped: the session-level
+// app.current_party_id GUC must be set before writing.
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
+    using ores::refdata::repository::party_repository;
+    party_repository party_repo;
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+}
 
 }
 
@@ -72,7 +93,7 @@ TEST_CASE("write_report_market_binding_publishes_an_event", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto& party_ctx = h.context();
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled
@@ -113,6 +134,7 @@ TEST_CASE("write_report_market_binding_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_report_market_binding(ctx);
     v.change_reason_code = "system.test";
+    v.party_id = *party_ctx.party_id();
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Report Market Binding: " << v;
 
@@ -175,6 +197,8 @@ TEST_CASE("write_report_market_binding_publishes_an_event", tags) {
     // (the notify re-drive above may have written more than once), so
     // only growth is asserted, not an exact count.
     {
+        // party_ctx already carries the visible-party set: v's own
+        // party is the session party the RLS policies filter by.
         const auto& crud_ctx = party_ctx;
         ores::reporting::service::report_market_binding_service svc(crud_ctx);
         v.change_commentary = "updated-by-crud-round-trip";

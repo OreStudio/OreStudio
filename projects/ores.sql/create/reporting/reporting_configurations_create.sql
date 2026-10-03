@@ -35,6 +35,7 @@ create table if not exists "ores_reporting_configurations_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "name" text not null,
     "configuration_type_code" text not null,
     "owning_component" text not null,
@@ -166,4 +167,24 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists configurations_tbl_party_isolation_policy
+    on ores_reporting_configurations_tbl;
+
+create policy configurations_tbl_party_isolation_policy
+on ores_reporting_configurations_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

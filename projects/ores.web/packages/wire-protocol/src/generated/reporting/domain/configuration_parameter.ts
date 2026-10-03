@@ -34,6 +34,7 @@ export interface ConfigurationParameter {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     configuration_id: string;
     parameter_definition_id: string;
     value: string;

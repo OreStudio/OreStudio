@@ -45,6 +45,7 @@ generate_synthetic_report_market_binding(utility::generation::generation_context
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.report_definition_id = ctx.generate_uuid();
     r.role = std::string(faker::word::noun());
     r.configuration_name = std::string(faker::word::noun());

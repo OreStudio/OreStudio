@@ -34,6 +34,7 @@ export interface ReportMarketBinding {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     report_definition_id: string;
     role: string;
     configuration_name: string;

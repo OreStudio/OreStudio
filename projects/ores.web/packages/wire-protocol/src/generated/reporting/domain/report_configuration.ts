@@ -34,6 +34,7 @@ export interface ReportConfiguration {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     report_definition_id: string;
     configuration_type_code: string;
     configuration_id: string;

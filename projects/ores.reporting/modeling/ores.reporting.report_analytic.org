@@ -47,6 +47,21 @@ document, and the definition has many analytics.
 
 UUID uniquely identifying this analytic.
 
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** report_definition_id
 :PROPERTIES:
 :type:        uuid
@@ -91,6 +106,7 @@ parameter of every analytic, so the row carries it rather than inferring it.
 :PROPERTIES:
 :tablename: ores_reporting_report_analytics_tbl
 :rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 * Foreign keys

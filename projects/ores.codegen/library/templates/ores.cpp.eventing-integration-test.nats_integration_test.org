@@ -298,6 +298,12 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     // invisible to the very session that wrote it.
     {{column}}_parent.{{{parent_party_prefix}}}party_id = *party_ctx.party_id();
 {{/parent_supplies_party}}
+{{#parent_party_isolated}}
+    // The {{parent_entity_singular}} is party-isolated, so it carries the
+    // session party: under any other party the child's insert trigger could
+    // not see it, and the existence check would reject the child.
+    {{column}}_parent.{{{parent_party_prefix}}}party_id = *party_ctx.party_id();
+{{/parent_party_isolated}}
 {{#parent_requires_party}}
 {{^parent_supplies_party}}
     // {{parent_entity_singular}}'s own mandatory party_id FK (session-set in

@@ -45,6 +45,7 @@ generate_synthetic_report_configuration(utility::generation::generation_context&
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.report_definition_id = ctx.generate_uuid();
     r.configuration_type_code = std::string(faker::word::noun());
     r.configuration_id = ctx.generate_uuid();

@@ -19,8 +19,10 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "party_fixture.hpp"
 #include "ores.reporting.core/repository/analytic_type_repository.hpp"
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
 #include "ores.reporting.core/repository/parameter_value_domain_repository.hpp"
@@ -102,6 +104,11 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
         binding.report_definition_id = definition_id;
     }
 
+    const auto party = next_id();
+    ores::ore::domain::assign_party(setup, party);
+    ores::ore::domain::assign_party(analytics, party);
+    ores::ore::domain::assign_party(bindings, party);
+
     report_run_setup_repository setups;
     analytic_type_repository types_repo;
     report_analytic_repository analytics_repo;
@@ -177,6 +184,7 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
                 definition_ids.at({row.analytic.analytic_type_code, parameter.name});
             value.value = parameter.value;
             value.position = parameter.position;
+            value.party_id = party;
             written_parameters.push_back(std::move(value));
         }
     }
@@ -188,6 +196,7 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
             return row.report_definition_id == definition_id;
         });
     REQUIRE(found_setup != stored_setups.end());
+    CHECK(found_setup->party_id == party);
 
     const auto stored_analytics = analytics_repo.read_latest(h.context());
     std::vector<decltype(analytics)::value_type> read_analytics;
@@ -285,4 +294,27 @@ TEST_CASE("run_document_roundtrips_through_the_database", tags) {
 
     INFO("parameters compared: " << compared_parameters);
     CHECK(compared_parameters > 0);
+}
+
+TEST_CASE("a party sees only its own run document", tags) {
+    scoped_database_helper h;
+    auto parties = ores::ore::tests::make_two_parties(h);
+
+    ores::ore::domain::ore original;
+    ores::ore::domain::load_data(
+        file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")), original);
+    auto next_id = boost::uuids::random_generator();
+    auto setup = run_document_mapper::map_setup(original);
+    setup.id = next_id();
+    setup.report_definition_id = next_id();
+    ores::ore::domain::assign_party(setup, parties.a);
+
+    report_run_setup_repository setups;
+    setups.write(parties.a_context, setup);
+
+    const auto owns = [&](const auto& rows) {
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == setup.id; });
+    };
+    CHECK(owns(setups.read_latest(parties.a_context)));
+    CHECK_FALSE(owns(setups.read_latest(parties.b_context)));
 }

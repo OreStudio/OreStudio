@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists report_analytics_tbl_party_isolation_policy on "ores_reporting_report_analytics_tbl";
 drop policy if exists report_analytics_tbl_tenant_isolation_policy on "ores_reporting_report_analytics_tbl";
 drop rule if exists ores_reporting_report_analytics_delete_rule on "ores_reporting_report_analytics_tbl";
 drop trigger if exists ores_reporting_report_analytics_insert_trg on "ores_reporting_report_analytics_tbl";

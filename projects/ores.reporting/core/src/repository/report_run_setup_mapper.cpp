@@ -42,6 +42,7 @@ domain::report_run_setup report_run_setup_mapper::map(const report_run_setup_ent
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
 
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.asof_date = v.asof_date;
     r.accrual_date = v.accrual_date;
     r.input_path = v.input_path;
@@ -104,6 +105,7 @@ report_run_setup_entity report_run_setup_mapper::map(const domain::report_run_se
     r.version = v.version;
     r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
 
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.asof_date = v.asof_date;
     r.accrual_date = v.accrual_date;
     r.input_path = v.input_path;

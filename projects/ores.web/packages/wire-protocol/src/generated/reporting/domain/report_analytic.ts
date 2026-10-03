@@ -34,6 +34,7 @@ export interface ReportAnalytic {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     report_definition_id: string;
     analytic_type_code: string;
     display_order: number;

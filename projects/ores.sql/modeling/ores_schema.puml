@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T22:20:13.710343Z
+' Generated: 2026-10-03T23:19:46.848391Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11343,6 +11343,7 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * configuration_id : uuid <<FK>>
         * parameter_definition_id : uuid <<FK>>
         * value : text
@@ -11407,6 +11408,7 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * name : text
         * configuration_type_code : text
         * owning_component : text
@@ -11501,6 +11503,7 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * report_analytic_id : uuid <<FK>>
         * parameter_definition_id : uuid <<FK>>
         * value : text
@@ -11539,6 +11542,7 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * report_definition_id : uuid <<FK>>
         * analytic_type_code : text
         * display_order : integer
@@ -11574,6 +11578,7 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * report_definition_id : uuid <<FK>>
         * configuration_type_code : text
         * configuration_id : uuid <<FK>>
@@ -11707,6 +11712,7 @@ package "reporting" #E0F7FA {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * report_definition_id : uuid <<FK>>
         * role : text
         * configuration_name : text
@@ -11747,6 +11753,7 @@ package "reporting" #E0F7FA {
         --
         * version : integer
         * report_definition_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
           asof_date : text
           accrual_date : text
           input_path : text

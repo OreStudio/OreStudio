@@ -45,6 +45,7 @@ struct report_analytic_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string report_definition_id;
     std::string analytic_type_code;
     int display_order = 0;

@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 6BAB3C9A-960C-4335-A8C7-B64F8B8FD71B
+:END:
+#+title: ores.refdata.curve_segment_type
+#+description: Codegen entity model for the refdata =curve_segment_type= table. The segment types an ORE yield curve is bootstrapped from.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One ORE yield curve segment type and the segment element it is written under.
+#+entity_singular: curve_segment_type
+#+entity_plural: curve_segment_types
+#+entity_title: Curve Segment Type
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A yield curve in =curveconfig.xml= is a list of segments, and each segment
+states its =Type=: =Deposit=, =FRA=, =Cross Currency Basis Swap=, =Average
+OIS= and so on. The schema fixes the set: an enumeration for the =Simple=,
+=Direct=, =TenorBasis=, =CrossCurrency=, =ZeroSpread= and =DiscountRatio=
+segments, and a fixed value for the other six. Twenty-one types in all.
+
+The type is a seeded lookup rather than text, so a new segment type is a row
+and a segment that names an unknown type is refused. The segment element is a
+column of the type, because each type belongs to exactly one element.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The segment's =Type= exactly as ORE spells it: 'Deposit', 'Cross Currency
+Basis Swap', 'Average OIS'. It chooses the instrument a yield curve segment is
+bootstrapped from.
+
+#+begin_src cpp :name generator
+std::string("Deposit")
+#+end_src
+
+** segment_kind
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:END:
+
+The segment element the type is written under: 'Simple' for 'Deposit',
+'CrossCurrency' for 'FX Forward'. Every type belongs to one kind, so a segment
+stores only its type and the kind follows from it.
+
+#+begin_src cpp :name generator
+std::string("Simple")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    true
+:END:
+
+What the segment is built from, in one line, for a reader who does not know ORE.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_segment_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: segment_type
+:entity_plural_short:   segment_types
+:entity_singular_words: curve segment type
+:entity_plural_words:   curve segment types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: t
+:END:
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/curve_segment_type.hpp
+:domain_class:           refdata::domain::curve_segment_type
+:protocol_include:       ores.refdata.api/messaging/curve_segment_type_protocol.hpp
+:collection_name:        segment_types
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field        | label        | widget          | type      | is_key | is_required | placeholder         |
+|--------------+--------------+-----------------+-----------+--------+-------------+---------------------|
+| code         | Code         | codeEdit        | line_edit | true   | true        | e.g. Deposit        |
+| segment_kind | Segment kind | kindEdit        | line_edit |        | true        | e.g. Simple         |
+| description  | Description  | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name    | field        | header       | type      | width |
+|--------------+--------------+--------------+-----------+-------|
+| Code         | code         | Code         | string    | 200   |
+| SegmentKind  | segment_kind | Segment Kind | string    | 150   |
+| Description  | description  | Description  | string    | 350   |
+| Version      | version      | Version      | int       | 80    |
+| ModifiedBy   | modified_by  | Modified By  | string    | 120   |
+| RecordedAt   | recorded_at  | Recorded At  | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -386,6 +386,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:read',                     'View curve sections');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:write',                    'Create and modify curve sections');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:delete',                   'Delete curve sections');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_types:read',               'View curve segment types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_types:write',              'Create and modify curve segment types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_segment_types:delete',             'Delete curve segment types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::day_counters:read',                      'View day counters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::day_counters:write',                     'Create and modify day counters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::day_counters:delete',                    'Delete day counters');
 
     -- Derivation kinds permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:read',                    'View derivation kinds');

@@ -1188,3 +1188,11 @@ tangled into the runnable script library
 * Netting Sets
 
 - [[id:9993B255-2A0E-5AD9-B8F0-3CE5F85E6356][How do I run the netting_sets commands from the shell?]]
+
+* Curve Segment Types
+
+- [[id:AFCB301B-2E0C-5882-A30D-6A01C20DCE3C][How do I run the curve_segment_types commands from the shell?]]
+
+* Day Counters
+
+- [[id:0844FFAF-8E10-5875-9A96-4853A0E595DD][How do I run the day_counters commands from the shell?]]

@@ -8,7 +8,7 @@
 #+filetags: :trade-shape-codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/composite-pinned-keys
-#+pr:
+#+pr: 2531
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2531][#2531]] | [codegen] Pin copied facts with composite keys |
 
 * Review
 

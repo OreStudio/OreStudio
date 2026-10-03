@@ -23,11 +23,6 @@
 -- =============================================================================
 -- Scheduler jobs are party-scoped: each job belongs to exactly one party within
 -- a tenant. RLS enforces both tenant and party isolation.
---
--- Note: pg_cron itself (cron.job, cron.job_run_details) runs as the database
--- owner and ignores RLS. Tenant/party isolation for job instances is enforced
--- at the application layer by filtering on the cron_job_id values registered
--- in ores_scheduler_job_definitions_tbl.
 
 -- -----------------------------------------------------------------------------
 -- Job Definitions

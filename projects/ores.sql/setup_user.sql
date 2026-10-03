@@ -395,43 +395,6 @@ alter role :readonly_user         set search_path to public;
 alter role :test_ddl_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 alter role :test_dml_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
--- Grant pg_cron permissions to application users (if pg_cron is installed).
-do $$
-declare
-    v_shell_user           text := :'shell_user';
-    v_iam_service_user     text := :'iam_service_user';
-    v_refdata_service_user text := :'refdata_service_user';
-    v_dq_service_user      text := :'dq_service_user';
-    v_variability_service_user text := :'variability_service_user';
-    v_assets_service_user  text := :'assets_service_user';
-    v_synthetic_service_user text := :'synthetic_service_user';
-    v_scheduler_service_user text := :'scheduler_service_user';
-    v_reporting_service_user text := :'reporting_service_user';
-    v_telemetry_service_user text := :'telemetry_service_user';
-    v_trading_service_user text := :'trading_service_user';
-begin
-    if exists (select 1 from pg_extension where extname = 'pg_cron') then
-        for v_user in select * from (values
-            (v_shell_user), (v_iam_service_user), (v_refdata_service_user),
-            (v_dq_service_user), (v_variability_service_user), (v_assets_service_user),
-            (v_synthetic_service_user), (v_scheduler_service_user),
-            (v_reporting_service_user), (v_telemetry_service_user),
-            (v_trading_service_user)
-        ) as t(u) loop
-            execute format('grant connect on database postgres to %I', v_user.u);
-            execute format('grant usage on schema cron to %I', v_user.u);
-            execute format(
-                'grant execute on function cron.schedule_in_database(text,text,text,text,text,boolean) to %I',
-                v_user.u);
-            execute format('grant execute on function cron.unschedule(text) to %I', v_user.u);
-            raise notice 'Granted pg_cron permissions to %', v_user.u;
-        end loop;
-    else
-        raise notice 'pg_cron not installed; skipping pg_cron grants';
-        raise notice '(Run setup_extensions.sql after installing pg_cron, then re-run this script)';
-    end if;
-end $$;
-
 \echo ''
 \echo '=========================================='
 \echo 'ORES role-based users created successfully!'

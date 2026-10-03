@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment: eager_maxwell
+#+environment: goedel
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -41,6 +41,7 @@ Nothing in the tree computes, documents or names a Qt concept that no longer exi
 |------+-------+-------+-----+-------------|
 | [[id:BEBB4056-11B2-4CA8-BBC8-EE322B45AE6D][Scaffold story: Remove the legacy Qt remnants]] | DONE | 2026-09-23 | 2026-09-23 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:54AEFA10-CE27-4878-B692-4CD1A109FF84][Remove the presentation keys no template reads]] | STARTED | 2026-09-23 | | Initial task for: Remove the legacy Qt remnants |
+| [[id:4B4FE8E7-BACE-499E-87F9-463B59D816A1][Remove the system packages and Postgres extensions nothing uses]] | DONE | 2026-10-01 | 2026-10-03 | Remove the X11 and GL headers the Qt client needed, and pg_cron and pgmq, from the package installer, the Postgres setup, the SQL and CI. Keep timescaledb. |
 
 * Decisions
 
@@ -178,6 +179,20 @@ next, and the same is true of =has_parent_relationship= and then
 =parent_entity_singular=, which four models still declare. The method is the one
 already proven here, key by key with the drift gate between each, and it belongs
 to this task rather than to a rushed pass before a merge.
+
+** The setup installs only what the build and the services use
+
+The X11, GL and xcb headers were the Qt client's. With the client gone,
+=vcpkg.json= names no Qt, OpenGL or X11 port, and the full debug build passes
+on a host that has none of them. The baseline keeps autotools, =libltdl-dev=
+and =pkg-config=, because vcpkg ports such as =libpq= build with them.
+
+pg_cron and pgmq went the same way. The scheduler runs an in-process timer
+loop and the =ores_mq_*= tables replaced pgmq, so timescaledb is the only
+extension the setup installs and the only library it preloads. The column
+=pgmq_msg_id= and the =Credentials= query overloads, which existed only for
+the two extensions, are gone too. A migration drops the column from
+databases created before the change.
 
 * Out of scope
 

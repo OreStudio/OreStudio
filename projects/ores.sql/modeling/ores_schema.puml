@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T10:30:27.648639Z
+' Generated: 2026-10-03T11:20:16.403483Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2595,6 +2595,36 @@ package "refdata" #FFF3E0 {
     report configuration registry made for every one of its discriminators.
     end note
 
+    entity ores_refdata_curve_segment_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * segment_kind : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_segment_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Segment Type Table
+    A yield curve in curveconfig.xml is a list of segments, and each segment
+    states its Type: Deposit, FRA, Cross Currency Basis Swap, Average
+    OIS and so on. The schema fixes the set: an enumeration for the Simple,
+    Direct, TenorBasis, CrossCurrency, ZeroSpread and DiscountRatio
+    segments, and a fixed value for the other six. Twenty-one types in all.
+    The type is a seeded lookup rather than text, so a new segment type is a row
+    and a segment that names an unknown type is refused. The segment element is a
+    column of the type, because each type belongs to exactly one element.
+    end note
+
     entity ores_refdata_curve_segments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -2661,6 +2691,37 @@ package "refdata" #FFF3E0 {
     ORE's ore_types.xsd. Follows the same aux-type pattern (code / name /
     description / display_order) as
     [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][business_day_convention_type]].
+    end note
+
+    entity ores_refdata_day_counters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_day_counters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Day Counter Table
+    ORE names a day counter by text, and its schema accepts about seventy
+    spellings: A365, A365F, Actual/365 (Fixed) and ACT/365.FIXED are four
+    of them. The curve configuration corpus writes nine distinct spellings, and five
+    of them have no row in day_count_fraction_type, whose codes are canonical
+    names rather than ORE's text.
+    A curve keeps the spelling its document used, so the export writes it back
+    unchanged, and refers to this table by it, so an unknown spelling is refused.
+    The set is the schema's dayCounter enumeration in ore_types.xsd. Which
+    canonical day count fraction each spelling means is not recorded here: nothing
+    reads it yet, and a wrong mapping would be worse than none.
     end note
 
     entity ores_refdata_deposit_conventions_tbl <<temporal>> #C6F0D8 {
@@ -9494,7 +9555,7 @@ package "trading" #E8F5E9 {
 }
 
 '
-' ==================== mq (Message Queue (pgmq)) ====================
+' ==================== mq (Message Queue) ====================
 '
 package "mq" #FBE9E7 {
     entity ores_mq_message_archive_tbl  #F7E5FF {
@@ -9557,7 +9618,7 @@ package "mq" #FBE9E7 {
 
     note right of ores_mq_queue_stats_tbl
     MQ queue statistics time-series table.
-    Populated by ores_mq_queue_stats_scrape_fn() via a pg_cron job.
+    Populated by ores_mq_queue_stats_scrape_fn() via an ores.scheduler job.
     TimescaleDB hypertable when available; degrades gracefully to a plain table.
     Partitioned by recorded_at with 1-day chunks and 30-day retention.
     end note
@@ -9583,7 +9644,7 @@ package "mq" #FBE9E7 {
 }
 
 '
-' ==================== scheduler (Job Scheduler (pg_cron)) ====================
+' ==================== scheduler (Job Scheduler) ====================
 '
 package "scheduler" #F1F8E9 {
     entity ores_scheduler_job_definitions_tbl <<temporal>> #C6F0D8 {
@@ -10629,7 +10690,6 @@ package "compute" #EDE7F6 {
         * version : integer
         * workunit_id : uuid <<FK>>
           host_id : uuid <<FK>>
-          pgmq_msg_id : bigint <<FK>>
         * server_state : integer
           outcome : integer
           output_uri : text
@@ -10649,8 +10709,8 @@ package "compute" #EDE7F6 {
     To modify, update the template and regenerate.
     Result Table
     Bridges the workunit definition and the actual execution on a grid node.
-    Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
-    and the location of output data. The BOINC equivalent of 'result'.
+    Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+    location of output data. The BOINC equivalent of 'result'.
     The entity carries no change-reason cache: the grid machinery writes results
     and there is no human edit flow.
     Generator-signature exception: the generator takes only the generation

@@ -25,4 +25,3 @@
 \ir ./mq_message_archive_drop.sql
 \ir ./mq_messages_drop.sql
 \ir ./mq_queues_drop.sql
-\ir ./mq_metrics_samples_drop.sql

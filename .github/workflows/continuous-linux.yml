@@ -214,7 +214,7 @@ jobs:
       - name: Configure shared_preload_libraries
         run: |
           PGDATA="$RUNNER_TEMP/pgdata"
-          echo "shared_preload_libraries = 'pg_cron,timescaledb'" >> "$PGDATA/postgresql.conf"
+          echo "shared_preload_libraries = 'timescaledb'" >> "$PGDATA/postgresql.conf"
           pg_ctl restart --pgdata="$PGDATA" --wait
 
       - name: Init environment

@@ -141,24 +141,24 @@ void result_commands::register_commands(cli::Menu& root_menu, nats_client& sessi
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> "
-        "<error_message> <received_at> <reason> <commentary>");
+        "add <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message> "
+        "<received_at> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> <output_uri> "
-        "<error_message> <received_at> <reason> <commentary> [--version <n>]");
+        "set <id> <workunit_id> <host_id> <server_state> <outcome> <output_uri> <error_message> "
+        "<received_at> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <workunit_id> <host_id> <pgmq_msg_id> <server_state> <outcome> "
-        "<output_uri> <error_message> <received_at> <reason> <commentary>");
+        "put-many --count <n> <id> <workunit_id> <host_id> <server_state> <outcome> <output_uri> "
+        "<error_message> <received_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,15 +359,14 @@ void result_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
         read_token(req.change.write.workunit_id, parsed->positionals[next++], "workunit_id");
         read_token(req.change.write.host_id, parsed->positionals[next++], "host_id");
-        read_token(req.change.write.pgmq_msg_id, parsed->positionals[next++], "pgmq_msg_id");
         read_token(req.change.write.server_state, parsed->positionals[next++], "server_state");
         read_token(req.change.write.outcome, parsed->positionals[next++], "outcome");
         read_token(req.change.write.output_uri, parsed->positionals[next++], "output_uri");
@@ -415,15 +414,14 @@ void result_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.workunit_id, parsed->positionals[next++], "workunit_id");
         read_token(req.change.write.host_id, parsed->positionals[next++], "host_id");
-        read_token(req.change.write.pgmq_msg_id, parsed->positionals[next++], "pgmq_msg_id");
         read_token(req.change.write.server_state, parsed->positionals[next++], "server_state");
         read_token(req.change.write.outcome, parsed->positionals[next++], "outcome");
         read_token(req.change.write.output_uri, parsed->positionals[next++], "output_uri");
@@ -483,8 +481,8 @@ void result_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -493,7 +491,6 @@ void result_commands::process_put_many(std::ostream& out,
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.workunit_id, parsed->positionals[next++], "workunit_id");
             read_token(change.write.host_id, parsed->positionals[next++], "host_id");
-            read_token(change.write.pgmq_msg_id, parsed->positionals[next++], "pgmq_msg_id");
             read_token(change.write.server_state, parsed->positionals[next++], "server_state");
             read_token(change.write.outcome, parsed->positionals[next++], "outcome");
             read_token(change.write.output_uri, parsed->positionals[next++], "output_uri");

@@ -844,7 +844,7 @@ Unschedule a job, deactivate a scheduled task.
 
 *Usage*: "Unschedule" button in a job definition toolbar or step. Semantically
 distinct from =Delete= (which implies permanent removal) — unschedule removes
-from pg_cron while retaining the definition.
+from the schedule while retaining the definition.
 
 *** Tasks App
 Job definitions list, task management application.

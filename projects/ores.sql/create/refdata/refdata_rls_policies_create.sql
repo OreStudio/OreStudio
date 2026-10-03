@@ -1790,6 +1790,40 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Curve Segment Types
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_segment_types_tbl enable row level security;
+
+drop policy if exists curve_segment_types_tbl_tenant_isolation_policy
+    on ores_refdata_curve_segment_types_tbl;
+
+create policy curve_segment_types_tbl_tenant_isolation_policy
+on ores_refdata_curve_segment_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Day Counters
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_day_counters_tbl enable row level security;
+
+drop policy if exists day_counters_tbl_tenant_isolation_policy
+    on ores_refdata_day_counters_tbl;
+
+create policy day_counters_tbl_tenant_isolation_policy
+on ores_refdata_day_counters_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Definitions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_definitions_tbl enable row level security;

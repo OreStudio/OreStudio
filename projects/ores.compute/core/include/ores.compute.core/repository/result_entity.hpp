@@ -47,7 +47,6 @@ struct result_entity {
     int version = 0;
     std::string workunit_id;
     std::optional<std::string> host_id;
-    std::optional<std::int64_t> pgmq_msg_id;
     int server_state = 0;
     std::optional<int> outcome;
     std::optional<std::string> output_uri;

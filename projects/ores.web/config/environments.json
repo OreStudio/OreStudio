@@ -110,6 +110,16 @@
       "subjectPrefix": "ores.dev.clever_dijkstra",
       "httpBaseUrl": "http://localhost:21600",
       "nonProduction": true
+    },
+    {
+      "id": "goedel",
+      "displayName": "Goedel",
+      "description": "Local development checkout on the host goedel, on the standard developer ports.",
+      "host": "localhost",
+      "port": 20005,
+      "subjectPrefix": "ores.dev.goedel",
+      "httpBaseUrl": "http://localhost:20000",
+      "nonProduction": true
     }
   ],
   "tls": {

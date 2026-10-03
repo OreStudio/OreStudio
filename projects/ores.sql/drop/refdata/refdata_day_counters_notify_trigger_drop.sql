@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,24 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * PostgreSQL Extensions Setup — postgres database only
- *
- * Previously installed pg_cron here for job scheduling. pg_cron has been
- * removed: ores.scheduler now uses an in-process timer loop (scheduler_loop)
- * instead of relying on the pg_cron extension.
- *
- * This file is retained for consistency with the setup script pipeline but
- * no longer installs any extensions.
- *
- * USAGE:
- *   psql -U postgres -f setup_extensions_postgres.sql
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger_drop.mustache
+ * To modify, update the template and regenerate.
  */
 
-\set ON_ERROR_STOP on
-
-\echo ''
-\echo 'No postgres-database extensions required.'
-\echo '(pg_cron removed: ores.scheduler now uses in-process timer loop)'
-\echo ''
+drop trigger if exists ores_refdata_day_counters_notify_trg on "ores_refdata_day_counters_tbl";
+drop function if exists ores_refdata_day_counters_notify_fn;

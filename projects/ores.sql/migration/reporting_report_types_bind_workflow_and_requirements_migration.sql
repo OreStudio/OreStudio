@@ -45,7 +45,12 @@
  * On a freshly recreated database the create and populate scripts already do
  * this, and this migration is unnecessary. It exists for databases created
  * before the change.
+ *
+ * The whole migration runs in one transaction, so a failure part-way cannot
+ * leave the delete rule disabled or the lookup half seeded.
  */
+
+begin;
 
 do $$
 declare
@@ -85,3 +90,5 @@ alter table ores_reporting_report_types_tbl
 
 alter table ores_reporting_report_types_tbl
     alter column "workflow_type" set not null;
+
+commit;

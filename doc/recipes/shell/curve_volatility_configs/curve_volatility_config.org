@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 2FA31558-E591-5171-A62C-8E349E1EF2A4
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_volatility_configs commands from the shell?
+#+description: Every command the curve_volatility_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_volatility_configs:
+
+This file documents the curve_volatility_configs resource at the shell, one section per command. Every command is a subcommand of =curve_volatility_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8E6166B4-6931-5CAC-B189-38F445DFCD29
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.list=.
+
+#+name: curve_volatility_configs-list
+#+begin_src ores-shell :tangle curve_volatility_configs-list.ores :exports none
+curve_volatility_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0F3A28CD-C24C-5F7A-8696-C39E3D06C570
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.get=.
+
+#+name: curve_volatility_configs-get
+#+begin_src ores-shell :tangle curve_volatility_configs-get.ores :exports none
+curve_volatility_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 69E66367-6205-573A-BE54-4ED47CC271AD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.get_many=.
+
+#+name: curve_volatility_configs-get-many
+#+begin_src ores-shell :tangle curve_volatility_configs-get-many.ores :exports none
+curve_volatility_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 52F7A2CC-7698-5EFE-BA7B-8E7F319F15AE
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs add <curve_definition_id> <kind> <priority> <quote_type> <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <calendar> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.put=.
+
+#+name: curve_volatility_configs-add
+#+begin_src ores-shell :tangle curve_volatility_configs-add.ores :exports none
+curve_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FA4D2D53-9834-5026-AA25-AED6C50C142D
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs set <id> <curve_definition_id> <kind> <priority> <quote_type> <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <calendar> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.put=.
+
+#+name: curve_volatility_configs-set
+#+begin_src ores-shell :tangle curve_volatility_configs-set.ores :exports none
+curve_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B33E9AFD-EFE3-5ECF-A770-51FCA5D8539A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs put-many --count <n> <id> <curve_definition_id> <kind> <priority> <quote_type> <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation> <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation> <calendar> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.put_many=.
+
+#+name: curve_volatility_configs-put-many
+#+begin_src ores-shell :tangle curve_volatility_configs-put-many.ores :exports none
+curve_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 95E26D28-1F6E-5072-B281-1F925463DC1A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.delete=.
+
+#+name: curve_volatility_configs-delete
+#+begin_src ores-shell :tangle curve_volatility_configs-delete.ores :exports none
+curve_volatility_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: FD5425B4-74B5-5359-90DC-CBE2CC749EFD
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs.delete_many=.
+
+#+name: curve_volatility_configs-delete-many
+#+begin_src ores-shell :tangle curve_volatility_configs-delete-many.ores :exports none
+curve_volatility_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0B393898-BE06-5C5A-83D3-5A60A7D6E7BA
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs_versions.list=.
+
+#+name: curve_volatility_configs-versions
+#+begin_src ores-shell :tangle curve_volatility_configs-versions.ores :exports none
+curve_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 15E57916-10CC-5F47-8CE4-1645266636AE
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_volatility_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_volatility_configs_versions.get=.
+
+#+name: curve_volatility_configs-version
+#+begin_src ores-shell :tangle curve_volatility_configs-version.ores :exports none
+curve_volatility_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

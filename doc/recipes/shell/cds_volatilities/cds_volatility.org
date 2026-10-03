@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 240C9D4C-3797-57FC-98DF-7774EE5B0051
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cds_volatilities commands from the shell?
+#+description: Every command the cds_volatilities submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cds_volatilities:
+
+This file documents the cds_volatilities resource at the shell, one section per command. Every command is a subcommand of =cds_volatilities=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D42827BC-1169-58C0-8F13-5E7687C933AE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.list=.
+
+#+name: cds_volatilities-list
+#+begin_src ores-shell :tangle cds_volatilities-list.ores :exports none
+cds_volatilities list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 2E7DDBD5-9AE1-56E0-A099-55E8809165B7
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities get <id>
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.get=.
+
+#+name: cds_volatilities-get
+#+begin_src ores-shell :tangle cds_volatilities-get.ores :exports none
+cds_volatilities get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5E220815-7FC2-568E-9C71-2DD5F20D2F28
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.get_many=.
+
+#+name: cds_volatilities-get-many
+#+begin_src ores-shell :tangle cds_volatilities-get-many.ores :exports none
+cds_volatilities get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 165F7248-5EC4-544B-B8E7-233162AEAF13
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities add <curve_definition_id> <expiries> <day_counter> <calendar> <strike_type> <quote_name> <strike_factor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.put=.
+
+#+name: cds_volatilities-add
+#+begin_src ores-shell :tangle cds_volatilities-add.ores :exports none
+cds_volatilities add 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6624E58B-B689-584B-B61A-4CC34E26C753
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities set <id> <curve_definition_id> <expiries> <day_counter> <calendar> <strike_type> <quote_name> <strike_factor> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.put=.
+
+#+name: cds_volatilities-set
+#+begin_src ores-shell :tangle cds_volatilities-set.ores :exports none
+cds_volatilities set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6811EE64-BBBA-58A3-A09F-CDA8A4ACD014
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities put-many --count <n> <id> <curve_definition_id> <expiries> <day_counter> <calendar> <strike_type> <quote_name> <strike_factor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.put_many=.
+
+#+name: cds_volatilities-put-many
+#+begin_src ores-shell :tangle cds_volatilities-put-many.ores :exports none
+cds_volatilities put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: B736B9C4-A015-5FE6-B6A2-6726998CA4CF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.delete=.
+
+#+name: cds_volatilities-delete
+#+begin_src ores-shell :tangle cds_volatilities-delete.ores :exports none
+cds_volatilities delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C28C68CD-AE14-5F7E-B592-F5A17BED1E29
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities.delete_many=.
+
+#+name: cds_volatilities-delete-many
+#+begin_src ores-shell :tangle cds_volatilities-delete-many.ores :exports none
+cds_volatilities delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D0076754-F20D-5E98-BF59-2532020BC7F9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities_versions.list=.
+
+#+name: cds_volatilities-versions
+#+begin_src ores-shell :tangle cds_volatilities-versions.ores :exports none
+cds_volatilities versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 38088B8B-C482-5905-87A6-F6C9A9BEF9A1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cds_volatilities version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cds_volatilities_versions.get=.
+
+#+name: cds_volatilities-version
+#+begin_src ores-shell :tangle cds_volatilities-version.ores :exports none
+cds_volatilities version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

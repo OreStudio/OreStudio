@@ -66,6 +66,14 @@
 \ir ./refdata_curve_segment_curves_drop.sql
 \ir ./refdata_curve_segments_notify_trigger_drop.sql
 \ir ./refdata_curve_segments_drop.sql
+\ir ./refdata_inflation_cap_floor_volatilities_notify_trigger_drop.sql
+\ir ./refdata_inflation_cap_floor_volatilities_drop.sql
+\ir ./refdata_curve_volatility_configs_notify_trigger_drop.sql
+\ir ./refdata_curve_volatility_configs_drop.sql
+\ir ./refdata_cds_volatility_terms_notify_trigger_drop.sql
+\ir ./refdata_cds_volatility_terms_drop.sql
+\ir ./refdata_cds_volatilities_notify_trigger_drop.sql
+\ir ./refdata_cds_volatilities_drop.sql
 \ir ./refdata_curve_correlations_notify_trigger_drop.sql
 \ir ./refdata_curve_correlations_drop.sql
 \ir ./refdata_base_correlations_notify_trigger_drop.sql

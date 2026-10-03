@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 1027E041-1B39-4150-8725-3C0C78F0F1D1
+:END:
+#+title: Task: Discuss the _config suffix for the curve configuration tables
+#+description: Talk through renaming the curve configuration tables so their names say they hold configuration, not curve data: yield_curve to yield_curve_config, fx_volatility to fx_volatility_config, and the rest.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Decide with the operator whether the curve configuration tables take a _config suffix. A row holds the recipe for building a curve, never the curve's data, but names such as yield_curve, fx_volatility and curve_definition read as if they held data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- The operator has decided whether to rename, and which tables the rename covers.
+- If the decision is to rename, a follow-up task holds the rename and its migration.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Raised by the operator during step 4b of
+[[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]]: a curve has data, a curve
+configuration has only the shape of that data, and the table names should not
+blur the two. The operator asked for this conversation to wait until the curve
+configuration work reaches it, so it sits last in the story.
+
+Tables to cover, as of step 4a: =curve_definition=, =yield_curve=,
+=equity_curve=, =default_curve=, =inflation_curve=, =commodity_curve=,
+=intraday_power_curve=, =curve_security=, =fx_volatility=, =yield_volatility=,
+=base_correlation=, =curve_correlation=, and the step 4b to 4d tables. The
+lookups (=curve_segment_type=, =day_counter=, =curve_section=) and
+=curve_configuration= itself already say what they are.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

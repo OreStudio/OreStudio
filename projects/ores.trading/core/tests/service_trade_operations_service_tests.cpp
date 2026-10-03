@@ -35,6 +35,7 @@
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <string>
 
 namespace {
@@ -101,7 +102,10 @@ struct fixture final {
 
 TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     fixture f;
-    const auto req = f.request();
+    auto req = f.request();
+    const auto executed_at = std::chrono::floor<std::chrono::seconds>(
+        std::chrono::system_clock::now());
+    req.booking.execution_timestamp = executed_at;
     const auto id = boost::uuids::to_string(req.anchor.id);
 
     const auto response = trade_operations_service(f.ctx).book_trade(req);
@@ -114,6 +118,8 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     REQUIRE(bookings.size() == 1);
     CHECK(bookings.front().book_id == f.book_id);
     CHECK(bookings.front().party_id == *f.ctx.party_id());
+    REQUIRE(bookings.front().execution_timestamp.has_value());
+    CHECK(*bookings.front().execution_timestamp == executed_at);
     REQUIRE(ores::trading::repository::trade_state_repository().read_latest(f.ctx, id).size() ==
             1);
 }

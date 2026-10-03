@@ -109,6 +109,11 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: a check the trade fails (an unknown book, a virtual book for a live trade) answers =failed= with =internal_error= rather than =invalid= | =trade_operations_handler.hpp= | Decline for now | The store's message names the cause; mapping SQLSTATEs to outcomes is a cross-cutting change no service does yet. |
 | 2 | Local review: the operation books under =trading::trades:write=, not a permission of its own | =trade_operations_handler.hpp= | Accept as is | Booking writes trades; the wide trade's writers already hold it. |
+| 3 | @claude: the raw database message reaches the client | =trade_operations_handler.hpp= | Decline | The generated handlers do the same, and the trigger messages are the domain explanation the caller needs. |
+| 4 | @claude: an empty result is reported as a conflict | =trade_operations_service.cpp= | Accept | Only =false= is a conflict; any other result throws and is reported as failed. |
+| 5 | @claude: empty change reason or commentary | =trade_operations_service.cpp= | Decline | =stamp= fills the change reason when it is empty, and commentary is free text. |
+| 6 | @claude: cover the optional casts, another party, the permission | service tests | Accept in part | The booking test now sends an execution timestamp and reads it back; the party comes from the context by construction, and the permission check is the shared helper. |
+| 7 | @claude: a helper for the registrar block; a header-local logger | =registrar.cpp=, handler | Decline | Both follow the existing hand-written handler pattern. |
 
 * Result
 

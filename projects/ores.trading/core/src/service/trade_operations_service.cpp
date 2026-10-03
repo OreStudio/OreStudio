@@ -24,6 +24,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 namespace ores::trading::service {
@@ -77,8 +78,12 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         lg(),
         "Booking a trade");
 
+    if (booked.size() != 1 || (booked.front() != "true" && booked.front() != "false"))
+        throw std::runtime_error("Booking trade " + boost::uuids::to_string(anchor.id) +
+                                 " returned no outcome.");
+
     messaging::book_trade_response response;
-    if (booked.empty() || booked.front() != "true") {
+    if (booked.front() == "false") {
         response.result.outcome = outcome::conflict;
         response.result.code = "already_exists";
         response.result.message = "Trade " + boost::uuids::to_string(anchor.id) +

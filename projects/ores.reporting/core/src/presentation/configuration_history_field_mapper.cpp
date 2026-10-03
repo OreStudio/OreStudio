@@ -35,6 +35,7 @@ render_configuration_fields(const domain::configuration& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Configuration Type Code", .value = v.configuration_type_code});
     fields.push_back({.name = "Owning Component", .value = v.owning_component});

@@ -1888,6 +1888,7 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'immutable': bool((de.get('sql') or {}).get('immutable')),
         'immutable_tenant_key': _immutable_tenant_key(de),
         'has_tenant_id': bool(de.get('has_tenant_id')),
+        'party_isolated': bool((de.get('sql') or {}).get('rls_party_isolation')),
         'current_state': bool((de.get('sql') or {}).get('current_state')),
         'unique_keys': _unique_keys(de),
         'column_names': _column_names(de),
@@ -3966,6 +3967,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     'party_id_from_book_id') or {}).get('book_table')
                 fk['parent_supplies_party'] = bool(
                     _book and fk.get('table') == _book)
+                # A party-isolated parent shows its rows only to the parties
+                # a session may see, so the seeded parent carries the session
+                # party; any other party would make it invisible to the
+                # existence check the child's insert trigger runs.
+                fk['parent_party_isolated'] = (
+                    parent['party_isolated'] and not fk['parent_supplies_party'])
                 fk['parent_requires_party'] = any(
                     not mfk.get('nullable')
                     and (org_by_table.get(mfk.get('table')) or {}).get(

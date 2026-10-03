@@ -37,6 +37,7 @@ render_report_run_setup_fields(const domain::report_run_setup& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back(
         {.name = "Report Definition ID", .value = boost::uuids::to_string(v.report_definition_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Asof Date", .value = v.asof_date.value_or(std::string{})});
     fields.push_back({.name = "Accrual Date", .value = v.accrual_date.value_or(std::string{})});
     fields.push_back({.name = "Input Path", .value = v.input_path.value_or(std::string{})});

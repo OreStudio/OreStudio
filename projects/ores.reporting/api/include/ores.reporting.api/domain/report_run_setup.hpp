@@ -76,6 +76,12 @@ struct report_run_setup final {
     boost::uuids::uuid report_definition_id;
 
     /**
+     * @brief The party that owns the document this row belongs to. Set from the session that writes
+     * the document, and enforced by row level security, so a party sees only its own configuration.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief The date the run values the portfolio at, as ORE spells it.
      */
     std::optional<std::string> asof_date;

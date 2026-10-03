@@ -45,6 +45,7 @@ struct configuration_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string name;
     std::string configuration_type_code;
     std::string owning_component;

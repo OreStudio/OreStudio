@@ -68,6 +68,12 @@ struct report_analytic_parameter final {
     boost::uuids::uuid id;
 
     /**
+     * @brief The party that owns the document this row belongs to. Set from the session that writes
+     * the document, and enforced by row level security, so a party sees only its own configuration.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief The analytic this parameter belongs to.
      */
     boost::uuids::uuid report_analytic_id;

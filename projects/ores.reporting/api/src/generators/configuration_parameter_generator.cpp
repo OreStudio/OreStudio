@@ -45,6 +45,7 @@ generate_synthetic_configuration_parameter(utility::generation::generation_conte
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.configuration_id = ctx.generate_uuid();
     r.parameter_definition_id = ctx.generate_uuid();
     r.value = std::string(faker::word::noun());

@@ -47,6 +47,7 @@ struct report_run_setup_entity {
     int version = 0;
     std::string report_definition_id;
 
+    std::string party_id;
     std::optional<std::string> asof_date;
     std::optional<std::string> accrual_date;
     std::optional<std::string> input_path;

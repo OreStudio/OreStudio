@@ -35,6 +35,7 @@ render_configuration_parameter_fields(const domain::configuration_parameter& v) 
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Configuration ID", .value = boost::uuids::to_string(v.configuration_id)});
     fields.push_back({.name = "Parameter Definition ID",

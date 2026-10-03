@@ -41,6 +41,7 @@ report_configuration_mapper::map(const report_configuration_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
     r.configuration_type_code = v.configuration_type_code;
     r.configuration_id = boost::lexical_cast<boost::uuids::uuid>(v.configuration_id);
@@ -62,6 +63,7 @@ report_configuration_mapper::map(const domain::report_configuration& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.report_definition_id = boost::uuids::to_string(v.report_definition_id);
     r.configuration_type_code = v.configuration_type_code;
     r.configuration_id = boost::uuids::to_string(v.configuration_id);

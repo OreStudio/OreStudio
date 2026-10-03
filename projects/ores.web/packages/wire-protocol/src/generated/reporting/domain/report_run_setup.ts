@@ -35,6 +35,7 @@ export interface ReportRunSetup {
     tenant_id: string;
     id: string;
     report_definition_id: string;
+    party_id: string;
     asof_date: string | null;
     accrual_date: string | null;
     input_path: string | null;

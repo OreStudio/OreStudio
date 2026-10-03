@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 271BEEF0-59C2-4F4D-BAEF-A80BE873257D
+:END:
+#+title: Task: Scope the configuration documents to a party
+#+description: Every ORE configuration document is per tenant and per party: party_id on every table, restrictive party RLS, keys and checks that let two parties hold the same names. Currencies, currency pairs and calendar adjustments stay per tenant.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/scope-the-run-document-to-a-party
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party sees and writes only its own configuration documents, as it already does its report definitions, and two parties in one tenant can each hold a document with the same names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- Every table behind the run document, the reporting registry, pricing engines, today's market, stress test, credit simulation, conventions and curve configuration has party_id and a restrictive party RLS policy.
+- A test per document group proves a party cannot read another party's rows.
+- Two parties can each import the same corpus document.
+- Currencies, currency pairs and calendar adjustments stay per tenant.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Decided with the operator on 2026-10-03: every configuration document is per
+tenant and per party; currencies, currency pairs and calendar adjustments stay
+per tenant for now. The policies come from model flags wherever codegen can
+emit them, so the order is:
+
+1. The run document and reporting registry (seven tables, already
+   flag-generated RLS).
+2. The analytics documents, by flag; the pricing model tables' hand-written
+   policies move to flags.
+3. [[id:AE86A142-B734-44F1-9647-0F37A551DA83][Generate the hand-written RLS policies from model flags]], so components
+   created before iam get generated policies too.
+4. Conventions and curve configuration, by flag; text keys gain the party.
+
+Step 1, decided while building it:
+
+- A party-scoped table models =party_id uuid not null= and sets
+  =:rls_party_isolation: true= beside =:rls_tenant_isolation:=, as
+  =variability.system_setting= does.
+- The mappers stay party-unaware. =ores::ore::domain::assign_party= stamps the
+  party on every row of a mapped document, walking vectors, optionals and
+  structs by reflection; whoever persists a document calls it.
+- The eventing test template stamped the session party only on the row under
+  test, so a party-isolated parent it seeded was invisible to the child's
+  insert trigger. Codegen now marks a party-isolated parent
+  (=parent_party_isolated=) and the template stamps the session party on it.
+- =tests/party_fixture.hpp= makes two operational parties of the test tenant,
+  with a context that sees only each, for the per-group isolation tests.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -34,6 +34,7 @@ export interface Configuration {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     name: string;
     configuration_type_code: string;
     owning_component: string;

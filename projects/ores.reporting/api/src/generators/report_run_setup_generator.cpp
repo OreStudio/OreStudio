@@ -46,6 +46,7 @@ generate_synthetic_report_run_setup(utility::generation::generation_context& ctx
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.report_definition_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

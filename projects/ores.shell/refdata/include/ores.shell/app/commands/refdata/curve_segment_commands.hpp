@@ -87,24 +87,40 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <kind> <segment_type> <conventions> <extras> <position>
-     * <reason> <commentary>
+     * @brief add <curve_definition_id> <segment_type> <position> <conventions> <pillar_choice>
+     * <priority> <min_distance> <projection_curve> <discount_curve> <spot_rate>
+     * <projection_curve_domestic> <projection_curve_foreign> <projection_curve_pay>
+     * <projection_curve_receive> <projection_curve_long> <projection_curve_short> <reference_curve>
+     * <reference_curve_2> <weight_1> <weight_2> <ibor_index> <rfr_curve> <rfr_index> <spread>
+     * <base_curve> <base_curve_currency> <numerator_curve> <numerator_curve_currency>
+     * <denominator_curve> <denominator_curve_currency> <extrapolate_flat> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <curve_definition_id> <kind> <segment_type> <conventions> <extras> <position>
-     * <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_definition_id> <segment_type> <position> <conventions> <pillar_choice>
+     * <priority> <min_distance> <projection_curve> <discount_curve> <spot_rate>
+     * <projection_curve_domestic> <projection_curve_foreign> <projection_curve_pay>
+     * <projection_curve_receive> <projection_curve_long> <projection_curve_short> <reference_curve>
+     * <reference_curve_2> <weight_1> <weight_2> <ibor_index> <rfr_curve> <rfr_index> <spread>
+     * <base_curve> <base_curve_currency> <numerator_curve> <numerator_curve_currency>
+     * <denominator_curve> <denominator_curve_currency> <extrapolate_flat> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <curve_definition_id> <kind> <segment_type> <conventions>
-     * <extras> <position> <reason> <commentary>
+     * @brief put-many --count <n> <id> <curve_definition_id> <segment_type> <position>
+     * <conventions> <pillar_choice> <priority> <min_distance> <projection_curve> <discount_curve>
+     * <spot_rate> <projection_curve_domestic> <projection_curve_foreign> <projection_curve_pay>
+     * <projection_curve_receive> <projection_curve_long> <projection_curve_short> <reference_curve>
+     * <reference_curve_2> <weight_1> <weight_2> <ibor_index> <rfr_curve> <rfr_index> <spread>
+     * <base_curve> <base_curve_currency> <numerator_curve> <numerator_curve_currency>
+     * <denominator_curve> <denominator_curve_currency> <extrapolate_flat> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

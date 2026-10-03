@@ -39,6 +39,14 @@
 #include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
 #include "ores.refdata.core/service/curve_definition_service.hpp"
+// Soft-FK parent seeding (ores_refdata_curve_configurations_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.refdata.api/generators/curve_configuration_generator.hpp"
+#include "ores.refdata.core/repository/curve_configuration_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_curve_sections_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.refdata.api/generators/curve_section_generator.hpp"
+#include "ores.refdata.core/repository/curve_section_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -113,6 +121,23 @@ TEST_CASE("write_curve_definition_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_curve_definition(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active curve_configuration row ores_refdata_curve_configurations_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto curve_configuration_id_parent =
+        ores::refdata::generators::generate_synthetic_curve_configuration(ctx);
+    curve_configuration_id_parent.change_reason_code = "system.test";
+    ores::refdata::repository::curve_configuration_repository curve_configuration_id_repo;
+    curve_configuration_id_repo.write(party_ctx, curve_configuration_id_parent);
+    v.curve_configuration_id = curve_configuration_id_parent.id;
+    // Seed the active curve_section row ores_refdata_curve_sections_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto section_code_parent = ores::refdata::generators::generate_synthetic_curve_section(ctx);
+    section_code_parent.change_reason_code = "system.test";
+    ores::refdata::repository::curve_section_repository section_code_repo;
+    section_code_repo.write(party_ctx, section_code_parent);
+    v.section_code = section_code_parent.code;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Curve Definition: " << v;
 

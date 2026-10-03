@@ -50,6 +50,8 @@ target_link_libraries(${tests_target_name}
         ores.analytics.core.lib
         ores.reporting.api.lib
         ores.reporting.core.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
         ores.logging.lib
         ores.eventing.api.lib
         ores.eventing.core.lib

@@ -1845,6 +1845,91 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Curve Configurations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_configurations_tbl enable row level security;
+
+drop policy if exists curve_configurations_tbl_tenant_isolation_policy
+    on ores_refdata_curve_configurations_tbl;
+
+create policy curve_configurations_tbl_tenant_isolation_policy
+on ores_refdata_curve_configurations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Configuration Sections
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_configuration_sections_tbl enable row level security;
+
+drop policy if exists curve_configuration_sections_tbl_tenant_isolation_policy
+    on ores_refdata_curve_configuration_sections_tbl;
+
+create policy curve_configuration_sections_tbl_tenant_isolation_policy
+on ores_refdata_curve_configuration_sections_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Yield Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_yield_curves_tbl enable row level security;
+
+drop policy if exists yield_curves_tbl_tenant_isolation_policy
+    on ores_refdata_yield_curves_tbl;
+
+create policy yield_curves_tbl_tenant_isolation_policy
+on ores_refdata_yield_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Bootstrap Configs
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_bootstrap_configs_tbl enable row level security;
+
+drop policy if exists curve_bootstrap_configs_tbl_tenant_isolation_policy
+    on ores_refdata_curve_bootstrap_configs_tbl;
+
+create policy curve_bootstrap_configs_tbl_tenant_isolation_policy
+on ores_refdata_curve_bootstrap_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Segment Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_segment_curves_tbl enable row level security;
+
+drop policy if exists curve_segment_curves_tbl_tenant_isolation_policy
+    on ores_refdata_curve_segment_curves_tbl;
+
+create policy curve_segment_curves_tbl_tenant_isolation_policy
+on ores_refdata_curve_segment_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Definitions
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_definitions_tbl enable row level security;

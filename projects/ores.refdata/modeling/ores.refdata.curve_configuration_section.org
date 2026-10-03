@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 06E59596-5D26-41A5-8356-23F5D754AF12
+:END:
+#+title: ores.refdata.curve_configuration_section
+#+description: Codegen entity model for the refdata =curve_configuration_section= table. One section element of an ORE curve configuration document.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One section element an ORE curveconfig.xml document writes, with or without entries.
+#+entity_singular: curve_configuration_section
+#+entity_plural: curve_configuration_sections
+#+entity_title: Curve Configuration Section
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+Which section elements a =curveconfig.xml= document writes. A document may
+write a section with no entries -- sixteen of the nineteen sections appear
+empty somewhere in the corpus, =BaseCorrelations= and =Correlations= fifteen
+times each -- and the export must write it back. Entries alone cannot say
+that, so each section element the document writes is one row here, whether it
+holds entries or not.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_configuration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The document that writes the section.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** section_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The section, as =curve_section.code= names it.
+
+#+begin_src cpp :name generator
+std::string("YieldCurves")
+#+end_src
+
+* Foreign keys
+
+** curve_configuration_id
+:PROPERTIES:
+:table:         ores_refdata_curve_configurations_tbl
+:target_column: id
+:parent_entity: curve_configuration
+:nullable:      false
+:error_message: Invalid curve_configuration_id: %. No active curve configuration found with this id.
+:END:
+
+** section_code
+:PROPERTIES:
+:table:         ores_refdata_curve_sections_tbl
+:target_column: code
+:nullable:      false
+:error_message: Invalid section_code: %. No active curve section found with this code.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_configuration_sections_tbl
+:END:
+
+** Checks
+
+| expression           |
+|----------------------|
+| "section_code" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: section
+:entity_plural_short:   sections
+:entity_singular_words: curve configuration section
+:entity_plural_words:   curve configuration sections
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cs
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:21C84908-9A7A-4804-AD3D-26FCBD65CCE6][ores.refdata.curve_configuration]] — the document.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

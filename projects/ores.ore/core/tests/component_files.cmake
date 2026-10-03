@@ -22,6 +22,7 @@
 set(files
     "configuration_type_seed_tests.cpp"
     "credit_simulation_database_roundtrip_tests.cpp"
+    "curve_configuration_database_roundtrip_tests.cpp"
     "domain_currency_mapper_tests.cpp"
     "domain_trade_mapper_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
@@ -56,6 +57,7 @@ set(files
     "xml_creditsimulation_roundtrip_tests.cpp"
     "xml_crossassetmodel_roundtrip_tests.cpp"
     "xml_currency_config_tests.cpp"
+    "xml_curve_configuration_mapper_roundtrip_tests.cpp"
     "xml_curveconfig_roundtrip_tests.cpp"
     "xml_equity_golden_roundtrip_tests.cpp"
     "xml_equity_mapper_roundtrip_tests.cpp"

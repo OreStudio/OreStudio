@@ -178,6 +178,7 @@ curve_quote_repository::read_at_version(context ctx, const std::string& id, std:
     return entities.front();
 }
 
+
 curve_quote_repository::remove_status curve_quote_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve quote. " << "id: " << id;

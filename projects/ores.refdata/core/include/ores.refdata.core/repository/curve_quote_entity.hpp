@@ -47,8 +47,10 @@ struct curve_quote_entity {
     int version = 0;
     std::string curve_definition_id;
     std::optional<std::string> curve_segment_id;
-    std::string item_kind;
-    std::string quote_text;
+    std::optional<std::string> quote_text;
+    std::optional<std::string> optional_flag;
+    std::optional<std::string> rate_quote;
+    std::optional<std::string> spread_quote;
     int position = 0;
     std::string modified_by;
     std::string performed_by;

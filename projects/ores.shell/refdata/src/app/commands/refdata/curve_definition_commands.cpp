@@ -141,27 +141,24 @@ void curve_definition_commands::register_commands(cli::Menu& root_menu, nats_cli
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <section_code> <curve_id> <description> <currency> <day_counter> "
-        "<interpolation_method> <interpolation_variable> <extrapolation> <tolerance> <extras> "
-        "<position> <reason> <commentary>");
+        "add <curve_configuration_id> <section_code> <curve_id> <description> <position> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <section_code> <curve_id> <description> <currency> <day_counter> "
-        "<interpolation_method> <interpolation_variable> <extrapolation> <tolerance> <extras> "
-        "<position> <reason> <commentary> [--version <n>]");
+        "set <id> <curve_configuration_id> <section_code> <curve_id> <description> <position> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <section_code> <curve_id> <description> <currency> "
-        "<day_counter> <interpolation_method> <interpolation_variable> <extrapolation> <tolerance> "
-        "<extras> <position> <reason> <commentary>");
+        "put-many --count <n> <id> <curve_configuration_id> <section_code> <curve_id> "
+        "<description> <position> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,26 +353,18 @@ void curve_definition_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
+        read_token(req.change.write.curve_configuration_id,
+                   parsed->positionals[next++],
+                   "curve_configuration_id");
         read_token(req.change.write.section_code, parsed->positionals[next++], "section_code");
         read_token(req.change.write.curve_id, parsed->positionals[next++], "curve_id");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.day_counter, parsed->positionals[next++], "day_counter");
-        read_token(req.change.write.interpolation_method,
-                   parsed->positionals[next++],
-                   "interpolation_method");
-        read_token(req.change.write.interpolation_variable,
-                   parsed->positionals[next++],
-                   "interpolation_variable");
-        read_token(req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        read_token(req.change.write.tolerance, parsed->positionals[next++], "tolerance");
-        read_token(req.change.write.extras, parsed->positionals[next++], "extras");
         read_token(req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -419,26 +408,18 @@ void curve_definition_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
+        read_token(req.change.write.curve_configuration_id,
+                   parsed->positionals[next++],
+                   "curve_configuration_id");
         read_token(req.change.write.section_code, parsed->positionals[next++], "section_code");
         read_token(req.change.write.curve_id, parsed->positionals[next++], "curve_id");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
-        read_token(req.change.write.currency, parsed->positionals[next++], "currency");
-        read_token(req.change.write.day_counter, parsed->positionals[next++], "day_counter");
-        read_token(req.change.write.interpolation_method,
-                   parsed->positionals[next++],
-                   "interpolation_method");
-        read_token(req.change.write.interpolation_variable,
-                   parsed->positionals[next++],
-                   "interpolation_variable");
-        read_token(req.change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-        read_token(req.change.write.tolerance, parsed->positionals[next++], "tolerance");
-        read_token(req.change.write.extras, parsed->positionals[next++], "extras");
         read_token(req.change.write.position, parsed->positionals[next++], "position");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -494,28 +475,20 @@ void curve_definition_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::curve_definition_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
+            read_token(change.write.curve_configuration_id,
+                       parsed->positionals[next++],
+                       "curve_configuration_id");
             read_token(change.write.section_code, parsed->positionals[next++], "section_code");
             read_token(change.write.curve_id, parsed->positionals[next++], "curve_id");
             read_token(change.write.description, parsed->positionals[next++], "description");
-            read_token(change.write.currency, parsed->positionals[next++], "currency");
-            read_token(change.write.day_counter, parsed->positionals[next++], "day_counter");
-            read_token(change.write.interpolation_method,
-                       parsed->positionals[next++],
-                       "interpolation_method");
-            read_token(change.write.interpolation_variable,
-                       parsed->positionals[next++],
-                       "interpolation_variable");
-            read_token(change.write.extrapolation, parsed->positionals[next++], "extrapolation");
-            read_token(change.write.tolerance, parsed->positionals[next++], "tolerance");
-            read_token(change.write.extras, parsed->positionals[next++], "extras");
             read_token(change.write.position, parsed->positionals[next++], "position");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

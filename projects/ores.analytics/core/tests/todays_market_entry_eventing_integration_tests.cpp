@@ -22,6 +22,11 @@
  * Template: cpp_nats_integration_test.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.analytics.api/domain/todays_market_entry.hpp"
 #include "ores.analytics.api/domain/todays_market_entry_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/eventing/todays_market_entry_event.hpp"
@@ -29,7 +34,6 @@
 #include "ores.analytics.api/messaging/todays_market_entry_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_entry_repository.hpp"
 #include "ores.analytics.core/service/todays_market_entry_service.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -39,6 +43,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_analytics_todays_market_configs_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.analytics.api/generators/todays_market_config_generator.hpp"
@@ -47,6 +52,11 @@
 // another component, so its own component names the headers.
 #include "ores.analytics.api/generators/todays_market_collection_generator.hpp"
 #include "ores.analytics.core/repository/todays_market_collection_repository.hpp"
+// Grand-parent seeding (ores_analytics_todays_market_collection_kinds_tbl): the parent's own
+// mandatory soft FKs reference rows the test seeds before the parent, so their generator and
+// repository headers are needed too.
+#include "ores.analytics.api/generators/todays_market_collection_kind_generator.hpp"
+#include "ores.analytics.core/repository/todays_market_collection_kind_repository.hpp"
 // Grand-parent seeding (ores_analytics_todays_market_configs_tbl): the parent's own mandatory soft
 // FKs reference rows the test seeds before the parent, so their generator and repository headers
 // are needed too.
@@ -145,6 +155,25 @@ TEST_CASE("write_todays_market_entry_publishes_an_event", tags) {
         ores::analytics::generators::generate_synthetic_todays_market_config(ctx);
     todays_market_collection_id_parent_todays_market_config_parent.change_reason_code =
         "system.test";
+    // todays_market_collection_kind is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::analytics::repository::todays_market_collection_kind_repository
+            todays_market_collection_id_parent_todays_market_collection_kind_parent_repo;
+        const auto
+            todays_market_collection_id_parent_todays_market_collection_kind_parent_catalogue =
+                todays_market_collection_id_parent_todays_market_collection_kind_parent_repo
+                    .read_latest(party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(),
+                                                       h.db_user()));
+        REQUIRE_FALSE(
+            todays_market_collection_id_parent_todays_market_collection_kind_parent_catalogue
+                .empty());
+        todays_market_collection_id_parent.collection =
+            todays_market_collection_id_parent_todays_market_collection_kind_parent_catalogue
+                .front()
+                .code;
+    }
     // Seed the active todays_market_config row ores_analytics_todays_market_configs_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.

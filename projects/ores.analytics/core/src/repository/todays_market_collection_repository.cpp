@@ -231,6 +231,7 @@ todays_market_collection_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 std::vector<domain::todays_market_collection>
 todays_market_collection_repository::read_latest_by_todays_market_config_id(
     context ctx,

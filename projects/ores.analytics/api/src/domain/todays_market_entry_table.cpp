@@ -46,12 +46,12 @@ std::string convert_to_table(const std::vector<todays_market_entry>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Attribute" << "Key" << "Key 2" << "Reference" << "Modified By"
-          << "Version" << fort::endr;
+    table << fort::header << "Key" << "Key 2" << "Reference" << "Modified By" << "Version"
+          << fort::endr;
 
     for ([[maybe_unused]] const auto& tme : v) {
-        table << tme.key_attribute << opt_str(tme.key_value) << opt_str(tme.key_value_2)
-              << tme.target << tme.modified_by << tme.version << fort::endr;
+        table << opt_str(tme.key_value) << opt_str(tme.key_value_2) << tme.target << tme.modified_by
+              << tme.version << fort::endr;
     }
     return table.to_string();
 }

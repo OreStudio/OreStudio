@@ -141,17 +141,16 @@ void todays_market_entry_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <todays_market_config_id> <todays_market_collection_id> <key_attribute> <key_value> "
-        "<key_value_2> <target> <discounting> <position> <reason> <commentary>");
+        "add <todays_market_config_id> <todays_market_collection_id> <key_value> <key_value_2> "
+        "<target> <discounting> <position> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <todays_market_config_id> <todays_market_collection_id> <key_attribute> "
-        "<key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary> "
-        "[--version <n>]");
+        "set <id> <todays_market_config_id> <todays_market_collection_id> <key_value> "
+        "<key_value_2> <target> <discounting> <position> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,8 +158,7 @@ void todays_market_entry_commands::register_commands(cli::Menu& root_menu, nats_
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <todays_market_config_id> <todays_market_collection_id> "
-        "<key_attribute> <key_value> <key_value_2> <target> <discounting> <position> <reason> "
-        "<commentary>");
+        "<key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -371,8 +369,8 @@ void todays_market_entry_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -383,7 +381,6 @@ void todays_market_entry_commands::process_add(std::ostream& out,
         read_token(req.change.write.todays_market_collection_id,
                    parsed->positionals[next++],
                    "todays_market_collection_id");
-        read_token(req.change.write.key_attribute, parsed->positionals[next++], "key_attribute");
         read_token(req.change.write.key_value, parsed->positionals[next++], "key_value");
         read_token(req.change.write.key_value_2, parsed->positionals[next++], "key_value_2");
         read_token(req.change.write.target, parsed->positionals[next++], "target");
@@ -431,8 +428,8 @@ void todays_market_entry_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -443,7 +440,6 @@ void todays_market_entry_commands::process_set(std::ostream& out,
         read_token(req.change.write.todays_market_collection_id,
                    parsed->positionals[next++],
                    "todays_market_collection_id");
-        read_token(req.change.write.key_attribute, parsed->positionals[next++], "key_attribute");
         read_token(req.change.write.key_value, parsed->positionals[next++], "key_value");
         read_token(req.change.write.key_value_2, parsed->positionals[next++], "key_value_2");
         read_token(req.change.write.target, parsed->positionals[next++], "target");
@@ -503,8 +499,8 @@ void todays_market_entry_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -517,7 +513,6 @@ void todays_market_entry_commands::process_put_many(std::ostream& out,
             read_token(change.write.todays_market_collection_id,
                        parsed->positionals[next++],
                        "todays_market_collection_id");
-            read_token(change.write.key_attribute, parsed->positionals[next++], "key_attribute");
             read_token(change.write.key_value, parsed->positionals[next++], "key_value");
             read_token(change.write.key_value_2, parsed->positionals[next++], "key_value_2");
             read_token(change.write.target, parsed->positionals[next++], "target");

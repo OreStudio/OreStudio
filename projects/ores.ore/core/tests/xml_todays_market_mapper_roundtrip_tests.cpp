@@ -23,6 +23,9 @@
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -57,6 +60,23 @@ ores::ore::xml::roundtrip_kind todays_market_kind() {
 }
 
 using namespace ores::ore::domain;
+
+// The collection kinds the schema declares, read from the children of its
+// todaysmarket type apart from Configuration. The seeded collection kind
+// lookup is pinned to the same list, so matching it here ties the mapper's
+// branches to the lookup.
+std::set<std::string> schema_collection_kinds() {
+    std::ifstream in(ores::testing::project_root::resolve("external/ore/xsd/todaysmarket.xsd"));
+    const std::string schema((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    const auto start = schema.find("<xs:complexType name=\"todaysmarket\"");
+    const auto root = schema.substr(start, schema.find("</xs:complexType>", start) - start);
+    const std::regex child(R"re(<xs:element type="[A-Za-z]+"\s+name=\s*"([A-Za-z]+)")re");
+    std::set<std::string> out;
+    for (std::sregex_iterator it(root.begin(), root.end(), child), end; it != end; ++it)
+        if ((*it)[1].str() != "Configuration")
+            out.insert((*it)[1].str());
+    return out;
+}
 
 template <typename Wrapper, typename Entry>
 void add(xsd::vector<Wrapper>& collections,
@@ -274,6 +294,7 @@ TEST_CASE("a document with every collection and every binding round trips", tags
         bindings.insert(b.collection);
     CHECK(collections.size() == 24);
     CHECK(bindings == collections);
+    CHECK(collections == schema_collection_kinds());
 
     const auto rebuilt = todays_market_mapper::reverse(mapped);
     const auto difference = ores::ore::xml::parsed_text_difference(original, rebuilt, "synthetic");

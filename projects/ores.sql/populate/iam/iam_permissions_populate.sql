@@ -1145,6 +1145,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::shift_types:read', 'View shift types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::shift_types:write', 'Create and modify shift types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::shift_types:delete', 'Delete shift types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::todays_market_collection_kinds:read', 'View today''s market collection kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::todays_market_collection_kinds:write', 'Create and modify today''s market collection kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::todays_market_collection_kinds:delete', 'Delete today''s market collection kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_model_configs:read',   'View pricing model configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_model_configs:write',  'Create and modify pricing model configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_model_configs:delete', 'Delete pricing model configurations');

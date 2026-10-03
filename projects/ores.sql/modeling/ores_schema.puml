@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T12:31:44.645273Z
+' Generated: 2026-10-03T13:04:25.418154Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11741,6 +11741,39 @@ package "analytics" #E8F5E9 {
     Each row belongs to exactly one scenario, in the order the document wrote it.
     end note
 
+    entity ores_analytics_todays_market_collection_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * entry_element : text
+        * key_attribute : text
+          key_attribute_2 : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_collection_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Collection Kind Table
+    A todaysmarket.xml document is a set of collections of twenty-four kinds --
+    YieldCurves, DiscountingCurves, FxSpots and the rest -- plus
+    configurations that pick one collection of each kind. The schema fixes the set
+    as the children of its TodaysMarket element, apart from Configuration, and
+    fixes for each kind the element its entries are written as and the attribute
+    or two attributes an entry identifies itself by.
+    The kind is a seeded lookup, seeded for the system tenant and read by every
+    tenant, so a collection or a binding that names a kind ORE does not have is
+    refused, and an entry no longer repeats its kind's key attribute.
+    end note
+
     entity ores_analytics_todays_market_collections_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -11875,7 +11908,6 @@ package "analytics" #E8F5E9 {
         * version : integer
         * todays_market_config_id : uuid <<FK>>
         * todays_market_collection_id : uuid <<FK>>
-        * key_attribute : text
           key_value : text
           key_value_2 : text
         * target : text
@@ -11900,8 +11932,8 @@ package "analytics" #E8F5E9 {
     The attribute is not one name. It is name for nineteen collections,
     currency for DiscountingCurves, pair for the two FX collections and the
     literal string key for SwaptionVolatilities and CapFloorVolatilities.
-    key_attribute records which one this row used, so a column named key_value
-    does not have to pretend the attribute is always the same word.
+    Which one is a fact about the collection's kind, so it is held once on
+    todays_market_collection_kind rather than repeated on every entry.
     SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
     once, so key_value_2 carries the second. SwapIndexCurves is the only
     collection whose entry nests, and discounting carries its one child.

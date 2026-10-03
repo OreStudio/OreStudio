@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 6DA71D24-A2E8-446F-B30C-C8DBB1C6E660
+:END:
+#+title: ores.analytics.todays_market_collection_kind
+#+description: Codegen entity model for the analytics =todays_market_collection_kind= table. The collection kinds of an ORE today's market document.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One kind of collection an ORE today's market document holds, with the element and attributes its entries use.
+#+entity_singular: todays_market_collection_kind
+#+entity_plural: todays_market_collection_kinds
+#+entity_title: Todays Market Collection Kind
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A =todaysmarket.xml= document is a set of collections of twenty-four kinds --
+=YieldCurves=, =DiscountingCurves=, =FxSpots= and the rest -- plus
+configurations that pick one collection of each kind. The schema fixes the set
+as the children of its =TodaysMarket= element, apart from =Configuration=, and
+fixes for each kind the element its entries are written as and the attribute
+or two attributes an entry identifies itself by.
+
+The kind is a seeded lookup, seeded for the system tenant and read by every
+tenant, so a collection or a binding that names a kind ORE does not have is
+refused, and an entry no longer repeats its kind's key attribute.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The collection's element name in =todaysmarket.xml=, exactly as ORE spells it:
+'YieldCurves', 'DiscountingCurves', 'FxSpots'. A collection row and a
+configuration binding both name their kind by it.
+
+#+begin_src cpp :name generator
+std::string("YieldCurves")
+#+end_src
+
+** entry_element
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The element one entry of this kind is written as: 'YieldCurve' for
+'YieldCurves', 'Index' for 'IndexForwardingCurves'.
+
+#+begin_src cpp :name generator
+std::string("YieldCurve")
+#+end_src
+
+** key_attribute
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The attribute an entry identifies itself by: 'name' for nineteen kinds,
+'currency' for 'DiscountingCurves', 'pair' for the two FX kinds and 'key' for
+the swaption and cap and floor volatilities.
+
+#+begin_src cpp :name generator
+std::string("name")
+#+end_src
+
+** key_attribute_2
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The second attribute of the two kinds an entry identifies by two: 'currency'
+for 'SwaptionVolatilities' and 'CapFloorVolatilities'. Null for every other
+kind.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the kind holds, in one line, for a reader who does not know ORE.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_todays_market_collection_kinds_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: kind
+:entity_plural_short:   kinds
+:entity_singular_words: today's market collection kind
+:entity_plural_words:   today's market collection kinds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tck
+:END:
+
+** Table display
+
+| column          | header        |
+|-----------------+---------------|
+| code            | Code          |
+| entry_element   | Entry Element |
+| key_attribute   | Key           |
+| key_attribute_2 | Key 2         |
+| modified_by     | Modified By   |
+| version         | Version       |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  kinds
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field           | label         | widget          | type      | is_key | is_required | placeholder         |
+|-----------------+---------------+-----------------+-----------+--------+-------------+---------------------|
+| code            | Code          | codeEdit        | line_edit | true   | true        | e.g. YieldCurves    |
+| entry_element   | Entry element | entryEdit       | line_edit |        | true        | e.g. YieldCurve     |
+| key_attribute   | Key           | keyEdit         | line_edit |        | true        | e.g. name           |
+| key_attribute_2 | Key 2         | key2Edit        | line_edit |        |             | e.g. currency       |
+| description     | Description   | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name     | field           | header        | type      | width |
+|---------------+-----------------+---------------+-----------+-------|
+| Code          | code            | Code          | string    | 220   |
+| EntryElement  | entry_element   | Entry Element | string    | 200   |
+| KeyAttribute  | key_attribute   | Key           | string    | 100   |
+| KeyAttribute2 | key_attribute_2 | Key 2         | string    | 100   |
+| Description   | description     | Description   | string    | 320   |
+| Version       | version         | Version       | int       | 70    |
+| ModifiedBy    | modified_by     | Modified By   | string    | 120   |
+| RecordedAt    | recorded_at     | Recorded At   | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5A389C83-D6AE-49CA-8055-EA2E5ECAA5F6][ores.analytics.todays_market_config]] — the document the collections belong to.
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

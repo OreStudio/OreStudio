@@ -37,6 +37,9 @@
 \ir ./analytics_stress_shift_families_notify_trigger_create.sql
 \ir ./analytics_shift_types_create.sql
 \ir ./analytics_shift_types_notify_trigger_create.sql
+-- Today's market vocabulary (collection kinds)
+\ir ./analytics_todays_market_collection_kinds_create.sql
+\ir ./analytics_todays_market_collection_kinds_notify_trigger_create.sql
 
 -- Pricing model configuration (header)
 \ir ./analytics_pricing_model_configs_create.sql

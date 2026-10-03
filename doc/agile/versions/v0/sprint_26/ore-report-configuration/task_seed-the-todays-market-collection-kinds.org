@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/seed-the-todays-market-collection-kinds
+#+pr: 2542
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ each kind's key attributes live in one row rather than on every entry.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -47,9 +47,20 @@ each kind's key attributes live in one row rather than on every entry.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The kinds are the children of the =todaysmarket= type in
+  =external/ore/xsd/todaysmarket.xsd=, apart from =Configuration=: twenty-four.
+  Each kind's entry element and key attributes come from the same file; two
+  kinds, =SwaptionVolatilities= and =CapFloorVolatilities=, identify an entry by
+  =key= and =currency=.
+- =todays_market_collection_kind= is an analytics lookup seeded for the system
+  tenant and readable by every tenant, as =pricing_engine_type= is. Both
+  =collection= columns resolve against it under the system tenant.
+- =key_attribute= only ever repeated the kind's attribute, and the export never
+  read it, so it leaves the entry table and the mapper.
+- The mapper keeps one branch per kind, because the binding gives each kind its
+  own member. A test checks the mapper's twenty-four names against the schema,
+  and the seed test checks the lookup against the same schema, so the two
+  cannot drift apart.
 
 * Measurements
 
@@ -63,7 +74,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Collection kinds in the schema | 24 | children of =todaysmarket= in =todaysmarket.xsd=, apart from =Configuration= | 4b5499c45d |
+| Kinds keyed by two attributes | 2 (=SwaptionVolatilities=, =CapFloorVolatilities=: =key= and =currency=) | attributes of each kind's entry element, apart from =id= | 4b5499c45d |
+| Places =key_attribute= was read on export | 0 | =grep -n key_attribute projects/ores.ore/core/src/domain/todays_market_mapper.cpp= (writes only) | 4b5499c45d |
 
 * Notes
 
@@ -99,12 +112,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2542][#2542]] | [analytics] Seed the today's market collection kinds |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Run the migration once on a database holding rows from before the change | analytics_todays_market_collection_kinds_migration.sql | Done | Ran on a database with the old shape and test rows: 26 collections, 46 bindings and 339 entries before and after, =key_attribute= dropped, 24 kinds seeded, exit 0. |
+| 2 | The seed test parses the schema with regexes | repository_collection_kind_seed_tests.cpp | No change | The INFO message names the layout it assumes; reading the facts from the schema is what keeps the seed tied to it. |
+| 3 | Confirm a tenant cannot update or delete the system rows | analytics_rls_policies_create.sql | No change | The policy is the one =pricing_engine_types= uses: a tenant reads system rows, and the with check clause refuses any write whose row is not the tenant's own. |
+| 4 | Unrelated generated shell scripts in the diff | projects/ores.shell/scripts/library | No change | The tangle regenerates every script, and the shell script drift gate fails a PR whose scripts lag the recipes merged in PR 2539. |
+| 5 | Generated code not checked against templates | generated files | No change | =check_component_drift.py --all= covers it and was clean apart from the known local formatting item. |
 
 * Result
+
+- New analytics lookup =todays_market_collection_kind=, 24 rows seeded for the
+  system tenant from =todaysmarket.xsd=, each with its entry element and key
+  attribute or attributes; readable by every tenant.
+- =todays_market_collection.collection= and
+  =todays_market_configuration_binding.collection= resolve against it under the
+  system tenant; an unknown kind is refused on insert.
+- =todays_market_entry.key_attribute= is gone from the table, the model and the
+  mapper.
+- Tests: the seed pinned to the schema; the mapper's twenty-four collection
+  names checked against the same schema; a refusal case for an unknown kind.
+  The corpus walk and the database round trip still pass.
+- Migration =analytics_todays_market_collection_kinds_migration.sql= for
+  existing databases.
+- Build clean; ctest 89/89 after a database recreate.

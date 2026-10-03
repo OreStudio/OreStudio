@@ -84,6 +84,13 @@ uses a one-of member in place of a single read capped at 1000.
    empty list matches no row; the page still applies.
 4. *Search is literal.* A case-insensitive substring match; =%= and =_= are
    not wildcards; an empty string sets no condition.
+5. *Equals members need no new flag.* A column is filterable when the model
+   already reads by it: =:list_filter_column:= and the scoped-read relation
+   columns. Sorting and searching have flags because no existing declaration
+   states them.
+6. *Query parameter names are reserved.* =offset=, =limit=, =order=,
+   =descending=, =search=, =scope=, =as_of= and =keys=; the generator refuses a
+   filter member with one of them.
 
 * Out of scope
 

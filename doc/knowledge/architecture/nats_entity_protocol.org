@@ -347,6 +347,11 @@ default order is ordered by its key.
   are ordered by the key, ascending, whatever the stated direction. Two reads
   of the same set therefore return the same pages.
 
+For example, an entity declares =:default_order: name desc=. A request with an
+empty field and =descending= false orders by =name= descending. The same request
+with =descending= true orders by =name= ascending. In both, rows with the same
+name are in ascending key order.
+
 The allow-list is the model's and not the caller's, because an order by a
 column with no index is a full sort of the table on every page. A model makes a
 column sortable when it is prepared to index it.
@@ -372,17 +377,21 @@ hold for a row to match.
   for.
 - *Is one of.* The primary key column and every relation column have a member
   that carries a list of the column's type. A row matches when its column
-  equals any value in the list. This is how a screen reads the rows for the
-  keys on its current page in one call -- the parent of each party on a page,
-  or the provisioning runs of the tenants on a page -- with no fixed cap on the
-  read. An empty list matches no row. A list carries at most =1000= values, the
+  equals any value in the list. The primary key has a one-of member and no
+  equals member, because one key is a =get=. This is how a screen reads the
+  rows for the keys on its current page in one call -- the parent of each
+  party on a page, or the provisioning runs of the tenants on a page -- with no
+  fixed cap on the read. An empty list matches no row. A list carries at most =1000= values, the
   bound a key set carries (see *get_many*), and a longer list is =invalid= with
   the code =filter_too_large=. The page still applies, so a caller sets
-  =limit= to at least the length of the list when it wants every match.
+  =limit= to at least the length of the list when it wants every match. A page
+  carries up to =1000= rows (see *Batching*), so one read returns every match
+  of a full list.
 - *Contains.* A column declares =:searchable: true=, and an entity with one or
   more searchable columns has a =search= member. A row matches when any
-  searchable column contains the text, ignoring case. The text is matched
-  literally, so =%= and =_= are not wildcards. An empty string sets no
+  searchable column contains the text, ignoring case. Case is folded as the
+  database's =lower= folds it, so letters outside ASCII also match. The text is
+  matched literally, so =%= and =_= are not wildcards. An empty string sets no
   condition.
 
 =search= is not a query language. It is one typed member with one fixed
@@ -947,6 +956,9 @@ on both sides.
 Order and filter become query parameters. =order= names the field and
 =descending=true= reverses it. An equals member is =<column>=<value>=, a one-of
 member repeats =<column>_one_of= once per value, and =search= carries the text.
+=offset=, =limit=, =order=, =descending=, =search=, =scope=, =as_of= and
+=keys= are reserved. The generator refuses a model whose filter member has one
+of these names, so a parameter always has one meaning.
 
 The projection does not restate the contract. The key in the path is the key in
 the request, the filter is the filter record, and the =result= is the HTTP
@@ -969,8 +981,8 @@ and whose last segment is in the verb set; a key that carries every identifying
 column with its own type; a response that carries a =result= and no data
 outside =ok=; a list whose =offset=, =limit= and =total= are unconditional, and
 whose order is from the model's sortable fields with the key as the last
-tie-break, and whose filter members are the ones the model declares; a write record with no server-owned field and
-no tenancy; a single-entity verb that comes with its batch form; a batch whose
+tie-break, and whose filter members are the ones the model declares; a write
+record with no server-owned field and no tenancy; a single-entity verb that comes with its batch form; a batch whose
 every element carries its own precondition; a batch or page within its bound; a
 collection subordinated to an entity that is named as a sub-resource rather than
 given a verb of its own; and a name that follows =<verb>_<resource>_request= and

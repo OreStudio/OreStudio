@@ -8,7 +8,7 @@
 #+filetags: :refuse-a-stale-database:sprint_26:v0:
 #+owner: marco
 #+branch: feature/refuse-a-stale-database
-#+pr:
+#+pr: 2574
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2574][#2574]] | [database] Refuse to start against a database built from other SQL |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :protocol:docs:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/amend-the-list-contract-specification
-#+pr: 2547
+#+pr: 2568
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -86,6 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2568][#2568]] | [protocol] State the order and filter a list accepts |
 | [[https://github.com/OreStudio/OreStudio/pull/2547][#2547]] | [agile] Promote the list contract gap to a story |
 
 * Review

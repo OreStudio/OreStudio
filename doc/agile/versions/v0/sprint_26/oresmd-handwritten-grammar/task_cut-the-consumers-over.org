@@ -195,6 +195,9 @@ via its "Verifies task" field.
 | 7 | PR 2545 round 1: old-format URIs no longer read. | | Noted | The PR body names the recreate step; the journal records the merge date. |
 | 8 | Local review, part 2: =.journal.org= is git-ignored, so it cannot carry the merge date to other developers. | =sprint.org= | Accepted | Recorded in the sprint's Achievements instead. |
 | 9 | Local review, part 2: the corpus test and the rest of the suite, run together, reached 592 s against CI's 600 s limit. | =tests/CMakeLists.txt= | Accepted | The whole-corpus walk is its own ctest entry; the seed scan drops =std::regex=. |
+| 10 | PR 2559 round 1: =marketdata_market_observations_add_key_migration.sql= still adds the dropped column. | =ores.sql/migration= | Accepted | The migrations are a history, so a drop migration follows it, as for =compute_results_drop_pgmq_msg_id=; it runs and skips on a recreated database. |
+| 11 | PR 2559 round 1: check CI time before merging. | | Noted | The build-and-test workflows run on a schedule, not on a PR, so the first CI timing comes after merge; it will be checked then. |
+| 12 | PR 2559 round 1: the fixing walk runs in the main entry. | | No change | Measured: the main entry, including the 54 s fixing walk, ran 167.87 s. |
 
 * Result
 

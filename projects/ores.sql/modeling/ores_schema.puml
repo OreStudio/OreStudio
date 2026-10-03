@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T19:47:50.595356Z
+' Generated: 2026-10-03T20:46:52.476425Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -941,7 +941,7 @@ package "refdata" #FFF3E0 {
     element).
     end note
 
-    entity ores_refdata_base_correlations_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_base_correlation_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -971,11 +971,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_base_correlations_tbl
+    note right of ores_refdata_base_correlation_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Base Correlation Table
+    Base Correlation Config Table
     The settings of one BaseCorrelation entry of a curveconfig.xml, one row per
     curve_definition in the BaseCorrelations section: a credit index tranche
     correlation surface over terms and detachment points.
@@ -1044,7 +1044,7 @@ package "refdata" #FFF3E0 {
     either payment convention.
     end note
 
-    entity ores_refdata_bond_future_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_bond_future_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -1067,11 +1067,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_bond_future_volatilities_tbl
+    note right of ores_refdata_bond_future_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Bond Future Volatility Table
+    Bond Future Volatility Config Table
     The settings of one BondFutureVolatility entry of a curveconfig.xml, one
     row per curve_definition in the BondFutureVolatilities section: the future
     contract and the yield curve the surface is built with. Its volatility configurations, written directly or inside a VolatilityConfig
@@ -1619,7 +1619,7 @@ package "refdata" #FFF3E0 {
     than a nullable country reference, since no single country owns them.
     end note
 
-    entity ores_refdata_cap_floor_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cap_floor_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -1669,11 +1669,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cap_floor_volatilities_tbl
+    note right of ores_refdata_cap_floor_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Cap Floor Volatility Table
+    Cap Floor Volatility Config Table
     The settings of one CapFloorVolatility entry of a curveconfig.xml, one row
     per curve_definition in the CapFloorVolatilities section: the cap and floor
     surface's tenors and strikes, the index and discount curve it is stripped with,
@@ -1741,7 +1741,7 @@ package "refdata" #FFF3E0 {
     The rule field governs IMM dates and standard CDS roll dates.
     end note
 
-    entity ores_refdata_cds_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_cds_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -1761,11 +1761,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_cds_volatilities_tbl
+    note right of ores_refdata_cds_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    CDS Volatility Table
+    CDS Volatility Config Table
     The settings of one CDSVolatility entry of a curveconfig.xml, one row per
     curve_definition in the CDSVolatilities section: the expiries the surface
     is quoted at, how its strikes are quoted, and its day counter and calendar.
@@ -1841,7 +1841,7 @@ package "refdata" #FFF3E0 {
     convention are normalised to the canonical codes the other tables hold.
     end note
 
-    entity ores_refdata_commodity_curves_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_commodity_curve_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -1876,11 +1876,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_commodity_curves_tbl
+    note right of ores_refdata_commodity_curve_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Commodity Curve Table
+    Commodity Curve Config Table
     The settings of one CommodityCurve entry of a curveconfig.xml, one row per
     curve_definition in the CommodityCurves section. A commodity curve is built
     from forward quotes, or from a base curve and a yield curve, or as a basis over
@@ -2051,7 +2051,7 @@ package "refdata" #FFF3E0 {
     curve_quote with the list names OffPeakQuotes and PeakQuotes.
     end note
 
-    entity ores_refdata_commodity_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_commodity_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -2078,11 +2078,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_commodity_volatilities_tbl
+    note right of ores_refdata_commodity_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Commodity Volatility Table
+    Commodity Volatility Config Table
     The settings of one CommodityVolatility entry of a curveconfig.xml, one row
     per curve_definition in the CommodityVolatilities section: the currency, the
     instrument the surface is quoted on, and the price curve, yield curve and
@@ -2901,7 +2901,7 @@ package "refdata" #FFF3E0 {
     configuration it is registered as.
     end note
 
-    entity ores_refdata_curve_correlations_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_curve_correlation_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -2929,11 +2929,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_curve_correlations_tbl
+    note right of ores_refdata_curve_correlation_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Curve Correlation Table
+    Curve Correlation Config Table
     The settings of one Correlation entry of a curveconfig.xml, one row per
     curve_definition in the Correlations section: the correlation between two
     indices over option tenors, given directly or implied from CMS spread options.
@@ -2966,7 +2966,7 @@ package "refdata" #FFF3E0 {
     every part of the entry hangs off: the document it belongs to, its section, its
     CurveId and CurveDescription, and its place in the document.
     The settings that follow differ by section and live on a detail row per
-    section family, as typed columns: yield_curve for YieldCurves. The lists an
+    section family, as typed columns: yield_curve_config for YieldCurves. The lists an
     entry holds are child rows keyed to this one: its segments in curve_segment,
     its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.
     So one table of quotes serves every section, and a reference to a curve is a
@@ -3222,7 +3222,7 @@ package "refdata" #FFF3E0 {
     report configuration registry made for every one of its discriminators.
     end note
 
-    entity ores_refdata_curve_securities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_curve_security_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -3241,11 +3241,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_curve_securities_tbl
+    note right of ores_refdata_curve_security_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Curve Security Table
+    Curve Security Config Table
     The settings of one Security entry of a curveconfig.xml, one row per
     curve_definition in the Securities section. A security entry names the
     market quotes a bond is priced from, each optional: its spread, its recovery
@@ -3499,6 +3499,32 @@ package "refdata" #FFF3E0 {
     reads it yet, and a wrong mapping would be worse than none.
     end note
 
+    entity ores_refdata_default_curve_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_default_curve_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Default Curve Config Table
+    The settings of one DefaultCurve entry of a curveconfig.xml that do not
+    depend on how the curve is built, one row per curve_definition in the
+    DefaultCurves section. That is only its currency: everything else belongs to a
+    configuration, a row of default_curve_configuration.
+    end note
+
     entity ores_refdata_default_curve_configurations_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -3554,32 +3580,6 @@ package "refdata" #FFF3E0 {
     written. The schema also allows SourceCurves and SwitchDates lists, which
     no corpus document writes; the mapper refuses an entry that has them rather
     than lose them.
-    end note
-
-    entity ores_refdata_default_curves_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * curve_definition_id : uuid <<FK>>
-        * currency : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_refdata_default_curves_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Default Curve Table
-    The settings of one DefaultCurve entry of a curveconfig.xml that do not
-    depend on how the curve is built, one row per curve_definition in the
-    DefaultCurves section. That is only its currency: everything else belongs to a
-    configuration, a row of default_curve_configuration.
     end note
 
     entity ores_refdata_deposit_conventions_tbl <<temporal>> #C6F0D8 {
@@ -3705,7 +3705,7 @@ package "refdata" #FFF3E0 {
     Financial Entity Indicator as defined by the CFTC.
     end note
 
-    entity ores_refdata_equity_curves_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_equity_curve_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -3732,11 +3732,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_equity_curves_tbl
+    note right of ores_refdata_equity_curve_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Equity Curve Table
+    Equity Curve Config Table
     The settings of one EquityCurve entry of a curveconfig.xml, one row per
     curve_definition in the EquityCurves section: the equity's spot quote and
     forecasting curve, how its forward curve is given, and how its dividends
@@ -3748,7 +3748,7 @@ package "refdata" #FFF3E0 {
     checked by ores_refdata_validate_calendar_fn.
     end note
 
-    entity ores_refdata_equity_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_equity_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -3773,11 +3773,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_equity_volatilities_tbl
+    note right of ores_refdata_equity_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Equity Volatility Table
+    Equity Volatility Config Table
     The settings of one EquityVolatility entry of a curveconfig.xml, one row per
     curve_definition in the EquityVolatilities section: the equity, its
     currency, and the settings the older form of the entry writes directly
@@ -3903,7 +3903,7 @@ package "refdata" #FFF3E0 {
     (ORE <Id> element).
     end note
 
-    entity ores_refdata_fx_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_fx_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -3936,11 +3936,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_fx_volatilities_tbl
+    note right of ores_refdata_fx_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    FX Volatility Table
+    FX Volatility Config Table
     The settings of one FXVolatility entry of a curveconfig.xml, one row per
     curve_definition in the FXVolatilities section: the surface's dimension and
     smile, the deltas and expiries it is quoted on, and the curves and spot it is
@@ -3978,7 +3978,7 @@ package "refdata" #FFF3E0 {
     Corresponds to the <IborIndex> element in ORE conventions.xml.
     end note
 
-    entity ores_refdata_inflation_cap_floor_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_inflation_cap_floor_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -4011,11 +4011,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_inflation_cap_floor_volatilities_tbl
+    note right of ores_refdata_inflation_cap_floor_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Inflation Cap Floor Volatility Table
+    Inflation Cap Floor Volatility Config Table
     The settings of one InflationCapFloorVolatility entry of a curveconfig.xml,
     one row per curve_definition in the InflationCapFloorVolatilities section:
     a zero coupon or year on year inflation cap and floor surface over tenors and
@@ -4024,7 +4024,7 @@ package "refdata" #FFF3E0 {
     curve_bootstrap_config, both keyed to the entry.
     end note
 
-    entity ores_refdata_inflation_curves_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_inflation_curve_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -4055,11 +4055,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_inflation_curves_tbl
+    note right of ores_refdata_inflation_curve_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Inflation Curve Table
+    Inflation Curve Config Table
     The settings of one InflationCurve entry of a curveconfig.xml, one row per
     curve_definition in the InflationCurves section: the nominal curve it is
     built over, whether it is zero coupon or year on year, its lag and frequency,
@@ -4196,7 +4196,7 @@ package "refdata" #FFF3E0 {
     tenant, like other shared code tables.
     end note
 
-    entity ores_refdata_intraday_power_curves_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_intraday_power_curve_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -4214,11 +4214,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_intraday_power_curves_tbl
+    note right of ores_refdata_intraday_power_curve_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Intraday Power Curve Table
+    Intraday Power Curve Config Table
     The settings of one IntradayPowerCurve entry of a curveconfig.xml, one row
     per curve_definition in the IntradayPowerCurves section: the daily average
     price curve it is shaped from, the quote that names the shape, and the
@@ -5379,7 +5379,7 @@ package "refdata" #FFF3E0 {
     (ORE <Id> element).
     end note
 
-    entity ores_refdata_swaption_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_swaption_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -5417,11 +5417,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_swaption_volatilities_tbl
+    note right of ores_refdata_swaption_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Swaption Volatility Table
+    Swaption Volatility Config Table
     The settings of one SwaptionVolatility entry of a curveconfig.xml, one row
     per curve_definition in the SwaptionVolatilities section: the surface's
     dimension and volatility type, the option and swap tenors of its ATM matrix and
@@ -5803,7 +5803,7 @@ package "refdata" #FFF3E0 {
     with a standard label.
     end note
 
-    entity ores_refdata_yield_curves_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_yield_curve_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -5829,11 +5829,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_yield_curves_tbl
+    note right of ores_refdata_yield_curve_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Yield Curve Table
+    Yield Curve Config Table
     The settings of one YieldCurve entry of a curveconfig.xml, one row per
     curve_definition in the YieldCurves section. The entry's identity is on the
     definition, its segments in curve_segment, its bootstrap settings in
@@ -5845,7 +5845,7 @@ package "refdata" #FFF3E0 {
     the same way and refers to day_counter.
     end note
 
-    entity ores_refdata_yield_volatilities_tbl <<temporal>> #C6F0D8 {
+    entity ores_refdata_yield_volatility_configs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
@@ -5868,11 +5868,11 @@ package "refdata" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of ores_refdata_yield_volatilities_tbl
+    note right of ores_refdata_yield_volatility_configs_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Yield Volatility Table
+    Yield Volatility Config Table
     The settings of one YieldVolatility entry of a curveconfig.xml, one row per
     curve_definition in the YieldVolatilities section: a bond yield volatility
     surface over option tenors and bond tenors.

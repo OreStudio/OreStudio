@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 28DF664C-4503-5DAF-A8A6-747AE8E09AA2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_volatility_configs commands from the shell?
+#+description: Every command the fx_volatility_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_volatility_configs:
+
+This file documents the fx_volatility_configs resource at the shell, one section per command. Every command is a subcommand of =fx_volatility_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D01E70AC-5A8A-5F9E-9C47-2090E76212A3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.list=.
+
+#+name: fx_volatility_configs-list
+#+begin_src ores-shell :tangle fx_volatility_configs-list.ores :exports none
+fx_volatility_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 07AE5517-E3D9-5089-AAA2-30869C4B6586
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.get=.
+
+#+name: fx_volatility_configs-get
+#+begin_src ores-shell :tangle fx_volatility_configs-get.ores :exports none
+fx_volatility_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B06C9E4E-D764-50AA-8174-588A99E182C9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.get_many=.
+
+#+name: fx_volatility_configs-get-many
+#+begin_src ores-shell :tangle fx_volatility_configs-get-many.ores :exports none
+fx_volatility_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CD9A4253-24AA-508E-8E0E-CA7A7075B1D8
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs add <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> <butterfly_error_tolerance> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.put=.
+
+#+name: fx_volatility_configs-add
+#+begin_src ores-shell :tangle fx_volatility_configs-add.ores :exports none
+fx_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 410368B3-2468-5A98-94D5-83E4840647C1
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs set <id> <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> <butterfly_error_tolerance> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.put=.
+
+#+name: fx_volatility_configs-set
+#+begin_src ores-shell :tangle fx_volatility_configs-set.ores :exports none
+fx_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B804AC9F-7F2F-5CAD-A6E7-896D8969B341
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs put-many --count <n> <id> <curve_definition_id> <dimension> <smile_type> <smile_interpolation> <deltas> <smile_delta> <conventions> <expiries> <fx_spot_id> <fx_foreign_curve_id> <fx_domestic_curve_id> <calendar> <day_counter> <fx_index_tag> <base_volatility_1> <base_volatility_2> <smile_extrapolation> <time_interpolation> <time_weighting> <butterfly_error_tolerance> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.put_many=.
+
+#+name: fx_volatility_configs-put-many
+#+begin_src ores-shell :tangle fx_volatility_configs-put-many.ores :exports none
+fx_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 91F2EBBE-FD7A-510D-A62C-467F9831C47C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.delete=.
+
+#+name: fx_volatility_configs-delete
+#+begin_src ores-shell :tangle fx_volatility_configs-delete.ores :exports none
+fx_volatility_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 1643374E-3885-53E0-94C7-8A71B01C716E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs.delete_many=.
+
+#+name: fx_volatility_configs-delete-many
+#+begin_src ores-shell :tangle fx_volatility_configs-delete-many.ores :exports none
+fx_volatility_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 605D0351-77BF-55AA-BDEA-7559A0C67765
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs_versions.list=.
+
+#+name: fx_volatility_configs-versions
+#+begin_src ores-shell :tangle fx_volatility_configs-versions.ores :exports none
+fx_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5E9E4CF5-7CA6-5642-A425-4D29E23A86A2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_volatility_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fx_volatility_configs_versions.get=.
+
+#+name: fx_volatility_configs-version
+#+begin_src ores-shell :tangle fx_volatility_configs-version.ores :exports none
+fx_volatility_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

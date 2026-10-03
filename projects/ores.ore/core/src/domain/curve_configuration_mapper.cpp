@@ -591,7 +591,7 @@ void import_yield_curve(mapped_curve_configuration& out, const yieldCurve& v, in
     const auto d = add_definition(
         out, yield_curves_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::yield_curve y;
+    refdata::domain::yield_curve_config y;
     y.id = new_uuid();
     y.curve_definition_id = d.id;
     y.currency = to_string(v.Currency);
@@ -621,7 +621,7 @@ void import_equity_curve(mapped_curve_configuration& out, const equityCurve& v, 
     const auto d = add_definition(
         out, equity_curves_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::equity_curve e;
+    refdata::domain::equity_curve_config e;
     e.id = new_uuid();
     e.curve_definition_id = d.id;
     e.currency = text(v.Currency);
@@ -659,7 +659,7 @@ void import_inflation_curve(mapped_curve_configuration& out,
         throw refusal("inflation curve " + d.curve_id +
                       " writes Segments, which are not modelled yet");
 
-    refdata::domain::inflation_curve r;
+    refdata::domain::inflation_curve_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.nominal_term_structure = text(v.NominalTermStructure);
@@ -746,7 +746,7 @@ void import_default_curve(mapped_curve_configuration& out, const defaultCurve& v
     const auto d = add_definition(
         out, default_curves_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::default_curve c;
+    refdata::domain::default_curve_config c;
     c.id = new_uuid();
     c.curve_definition_id = d.id;
     c.currency = to_string(v.Currency);
@@ -818,7 +818,7 @@ void import_commodity_curve(mapped_curve_configuration& out,
         out, commodity_curves_section, text(v.CurveId), text(v.CurveDescription), position);
     const boost::uuids::uuid none{};
 
-    refdata::domain::commodity_curve r;
+    refdata::domain::commodity_curve_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.currency = to_string(v.Currency);
@@ -984,7 +984,7 @@ void import_fx_volatility(mapped_curve_configuration& out, const fxVolatility& v
     const auto d = add_definition(
         out, fx_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::fx_volatility r;
+    refdata::domain::fx_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.dimension = to_string(v.Dimension);
@@ -1020,7 +1020,7 @@ void import_yield_volatility(mapped_curve_configuration& out,
     const auto d = add_definition(
         out, yield_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::yield_volatility r;
+    refdata::domain::yield_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.qualifier = text(v.Qualifier);
@@ -1048,7 +1048,7 @@ void import_base_correlation(mapped_curve_configuration& out,
                       " writes RecoveryGrid, RecoveryProbabilities or QuoteTypes, which are not "
                       "modelled yet");
 
-    refdata::domain::base_correlation r;
+    refdata::domain::base_correlation_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.terms = text(v.Terms);
@@ -1384,7 +1384,7 @@ void import_equity_volatility(mapped_curve_configuration& out,
         throw refusal("equity volatility " + d.curve_id +
                       " writes a OneDimSolverConfig, which is not modelled yet");
 
-    refdata::domain::equity_volatility r;
+    refdata::domain::equity_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.equity_id = optional_text(v.EquityId);
@@ -1417,7 +1417,7 @@ void import_commodity_volatility(mapped_curve_configuration& out,
         throw refusal("commodity volatility " + d.curve_id +
                       " writes a OneDimSolverConfig, which is not modelled yet");
 
-    refdata::domain::commodity_volatility r;
+    refdata::domain::commodity_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.currency = to_string(v.Currency);
@@ -1452,7 +1452,7 @@ void import_bond_future_volatility(mapped_curve_configuration& out,
         throw refusal("bond future volatility " + d.curve_id +
                       " writes a OneDimSolverConfig, which is not modelled yet");
 
-    refdata::domain::bond_future_volatility r;
+    refdata::domain::bond_future_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.contract_name = text(v.ContractName);
@@ -1483,7 +1483,7 @@ void import_cds_volatility(mapped_curve_configuration& out, const cdsVolatility&
     if (v.Terms && v.Terms->Term.empty())
         throw refusal("CDS volatility " + d.curve_id + " writes an empty Terms element");
 
-    refdata::domain::cds_volatility r;
+    refdata::domain::cds_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.expiries = optional_text(v.Expiries);
@@ -1522,7 +1522,7 @@ void import_inflation_cap_floor_volatility(mapped_curve_configuration& out,
                                   text(v.CurveDescription),
                                   position);
 
-    refdata::domain::inflation_cap_floor_volatility r;
+    refdata::domain::inflation_cap_floor_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.inflation_type = to_string(v.Type);
@@ -1558,7 +1558,7 @@ void import_swaption_volatility(mapped_curve_configuration& out,
     const auto d = add_definition(
         out, swaption_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::swaption_volatility r;
+    refdata::domain::swaption_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.dimension = optional_enum_text(v.Dimension);
@@ -1602,7 +1602,7 @@ void import_cap_floor_volatility(mapped_curve_configuration& out,
     const auto d = add_definition(
         out, cap_floor_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::cap_floor_volatility r;
+    refdata::domain::cap_floor_volatility_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.volatility_type = optional_enum_text(v.VolatilityType);
@@ -1658,7 +1658,7 @@ void import_correlation(mapped_curve_configuration& out, const correlation& v, i
     const auto d = add_definition(
         out, correlations_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::curve_correlation r;
+    refdata::domain::curve_correlation_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.correlation_type = to_string(v.CorrelationType);
@@ -1683,7 +1683,7 @@ void import_security(mapped_curve_configuration& out, const security& v, int pos
     const auto d = add_definition(
         out, securities_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::curve_security r;
+    refdata::domain::curve_security_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.spread_quote = optional_text(v.SpreadQuote);
@@ -1705,7 +1705,7 @@ void import_intraday_power_curve(mapped_curve_configuration& out,
     const auto d = add_definition(
         out, intraday_power_curves_section, text(v.CurveId), text(v.CurveDescription), position);
 
-    refdata::domain::intraday_power_curve r;
+    refdata::domain::intraday_power_curve_config r;
     r.id = new_uuid();
     r.curve_definition_id = d.id;
     r.currency = to_string(v.Currency);
@@ -2049,7 +2049,7 @@ void export_segment(segmentsType& out,
 }
 
 yieldCurve export_yield_curve(const refdata::domain::curve_definition& d,
-                              const refdata::domain::yield_curve& y,
+                              const refdata::domain::yield_curve_config& y,
                               const refdata::domain::curve_bootstrap_config* bootstrap,
                               const std::vector<const refdata::domain::curve_segment*>& segments,
                               const export_context& ctx) {
@@ -2092,7 +2092,7 @@ quoteType entry_quotes(const refdata::domain::curve_definition& d, const export_
 }
 
 equityCurve export_equity_curve(const refdata::domain::curve_definition& d,
-                                const refdata::domain::equity_curve& e,
+                                const refdata::domain::equity_curve_config& e,
                                 const export_context& ctx) {
     equityCurve r;
     assign_text(r.CurveId, d.curve_id);
@@ -2122,7 +2122,7 @@ equityCurve export_equity_curve(const refdata::domain::curve_definition& d,
 
 inflationCurve export_inflation_curve(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::inflation_curve& v,
+    const refdata::domain::inflation_curve_config& v,
     const std::vector<const refdata::domain::inflation_seasonality_factor*>& factors,
     const export_context& ctx) {
     inflationCurve r;
@@ -2203,7 +2203,7 @@ void export_configuration_settings(Target& r,
 
 defaultCurve export_default_curve(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::default_curve& v,
+    const refdata::domain::default_curve_config& v,
     const std::vector<const refdata::domain::default_curve_configuration*>& configurations,
     const export_context& ctx) {
     defaultCurve r;
@@ -2255,7 +2255,7 @@ quoteType quote_list(const std::vector<const refdata::domain::curve_quote*>& row
 
 simCommodityCurve export_commodity_curve(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::commodity_curve& v,
+    const refdata::domain::commodity_curve_config& v,
     const std::vector<const refdata::domain::commodity_price_segment*>& segments,
     const export_context& ctx) {
     static const std::vector<const refdata::domain::curve_quote*> none;
@@ -2324,7 +2324,7 @@ simCommodityCurve export_commodity_curve(
 }
 
 fxVolatility export_fx_volatility(const refdata::domain::curve_definition& d,
-                                  const refdata::domain::fx_volatility& v,
+                                  const refdata::domain::fx_volatility_config& v,
                                   const refdata::domain::curve_report_configuration* report,
                                   const std::optional<parametricSmileConfig>& smile) {
     fxVolatility r;
@@ -2358,7 +2358,7 @@ fxVolatility export_fx_volatility(const refdata::domain::curve_definition& d,
 }
 
 yieldVolatility export_yield_volatility(const refdata::domain::curve_definition& d,
-                                        const refdata::domain::yield_volatility& v,
+                                        const refdata::domain::yield_volatility_config& v,
                                         const refdata::domain::curve_report_configuration* report) {
     yieldVolatility r;
     assign_text(r.CurveId, d.curve_id);
@@ -2379,7 +2379,7 @@ yieldVolatility export_yield_volatility(const refdata::domain::curve_definition&
 }
 
 baseCorrelation export_base_correlation(const refdata::domain::curve_definition& d,
-                                        const refdata::domain::base_correlation& v) {
+                                        const refdata::domain::base_correlation_config& v) {
     baseCorrelation r;
     assign_text(r.CurveId, d.curve_id);
     assign_text(r.CurveDescription, d.description.value_or(""));
@@ -2408,7 +2408,7 @@ baseCorrelation export_base_correlation(const refdata::domain::curve_definition&
 
 cdsVolatility export_cds_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::cds_volatility& v,
+    const refdata::domain::cds_volatility_config& v,
     const std::vector<const refdata::domain::cds_volatility_term*>& terms,
     const std::vector<const refdata::domain::curve_volatility_config*>& configs) {
     cdsVolatility r;
@@ -2444,7 +2444,7 @@ cdsVolatility export_cds_volatility(
 
 inflationCapFloorVolatility export_inflation_cap_floor_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::inflation_cap_floor_volatility& v,
+    const refdata::domain::inflation_cap_floor_volatility_config& v,
     const refdata::domain::curve_report_configuration* report,
     const refdata::domain::curve_bootstrap_config* bootstrap) {
     inflationCapFloorVolatility r;
@@ -2479,7 +2479,7 @@ inflationCapFloorVolatility export_inflation_cap_floor_volatility(
 
 swaptionVolatility export_swaption_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::swaption_volatility& v,
+    const refdata::domain::swaption_volatility_config& v,
     const refdata::domain::curve_report_configuration* report,
     const std::optional<parametricSmileConfig>& smile) {
     swaptionVolatility r;
@@ -2522,7 +2522,7 @@ swaptionVolatility export_swaption_volatility(
 
 capFloorVolatility export_cap_floor_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::cap_floor_volatility& v,
+    const refdata::domain::cap_floor_volatility_config& v,
     const refdata::domain::curve_report_configuration* report,
     const refdata::domain::curve_bootstrap_config* bootstrap,
     const std::optional<parametricSmileConfig>& smile) {
@@ -2582,7 +2582,7 @@ capFloorVolatility export_cap_floor_volatility(
 
 equityVolatility export_equity_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::equity_volatility& v,
+    const refdata::domain::equity_volatility_config& v,
     const std::vector<const refdata::domain::curve_volatility_config*>& configs,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
     const refdata::domain::curve_report_configuration* report) {
@@ -2608,7 +2608,7 @@ equityVolatility export_equity_volatility(
 
 commodityVolatility export_commodity_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::commodity_volatility& v,
+    const refdata::domain::commodity_volatility_config& v,
     const std::vector<const refdata::domain::curve_volatility_config*>& configs,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
     const refdata::domain::curve_report_configuration* report) {
@@ -2636,7 +2636,7 @@ commodityVolatility export_commodity_volatility(
 
 bondFutureVolatility export_bond_future_volatility(
     const refdata::domain::curve_definition& d,
-    const refdata::domain::bond_future_volatility& v,
+    const refdata::domain::bond_future_volatility_config& v,
     const std::vector<const refdata::domain::curve_volatility_config*>& configs,
     const std::vector<const refdata::domain::curve_quote*>& entry_quotes) {
     bondFutureVolatility r;
@@ -2657,7 +2657,7 @@ bondFutureVolatility export_bond_future_volatility(
 }
 
 correlation export_correlation(const refdata::domain::curve_definition& d,
-                               const refdata::domain::curve_correlation& v) {
+                               const refdata::domain::curve_correlation_config& v) {
     correlation r;
     assign_text(r.CurveId, d.curve_id);
     assign_text(r.CurveDescription, d.description.value_or(""));
@@ -2680,7 +2680,7 @@ correlation export_correlation(const refdata::domain::curve_definition& d,
 }
 
 security export_security(const refdata::domain::curve_definition& d,
-                         const refdata::domain::curve_security& v) {
+                         const refdata::domain::curve_security_config& v) {
     security r;
     assign_text(r.CurveId, d.curve_id);
     assign_text(r.CurveDescription, d.description.value_or(""));
@@ -2700,7 +2700,7 @@ fxSpot export_fx_spot(const refdata::domain::curve_definition& d) {
 }
 
 intradayPowerCurve export_intraday_power_curve(const refdata::domain::curve_definition& d,
-                                               const refdata::domain::intraday_power_curve& v) {
+                                               const refdata::domain::intraday_power_curve_config& v) {
     intradayPowerCurve r;
     assign_text(r.CurveId, d.curve_id);
     assign_text(r.CurveDescription, d.description.value_or(""));
@@ -2941,7 +2941,7 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
         document.ReportConfiguration = export_global_report(reports);
     }
 
-    std::map<boost::uuids::uuid, const refdata::domain::yield_curve*> yield_by_definition;
+    std::map<boost::uuids::uuid, const refdata::domain::yield_curve_config*> yield_by_definition;
     for (const auto& y : v.yield_curves)
         yield_by_definition.emplace(y.curve_definition_id, &y);
     std::map<boost::uuids::uuid, const refdata::domain::curve_bootstrap_config*>

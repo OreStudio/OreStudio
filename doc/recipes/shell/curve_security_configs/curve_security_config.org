@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: DAE19173-3298-547B-84A4-EFDA7E58CEE8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_security_configs commands from the shell?
+#+description: Every command the curve_security_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_security_configs:
+
+This file documents the curve_security_configs resource at the shell, one section per command. Every command is a subcommand of =curve_security_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1ECFD2EE-9F1B-54AC-BBC6-AFFE9C722463
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.list=.
+
+#+name: curve_security_configs-list
+#+begin_src ores-shell :tangle curve_security_configs-list.ores :exports none
+curve_security_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 68A84931-74F8-5013-B33F-8DA561E98F3D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.get=.
+
+#+name: curve_security_configs-get
+#+begin_src ores-shell :tangle curve_security_configs-get.ores :exports none
+curve_security_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 93A2BDF3-7169-5DD0-9B67-559125FD03EF
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.get_many=.
+
+#+name: curve_security_configs-get-many
+#+begin_src ores-shell :tangle curve_security_configs-get-many.ores :exports none
+curve_security_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 70F4B3D2-4334-5C80-BA4C-EA5D6D28CFF2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs add <curve_definition_id> <spread_quote> <recovery_rate_quote> <cpr_quote> <price_quote> <conversion_factor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.put=.
+
+#+name: curve_security_configs-add
+#+begin_src ores-shell :tangle curve_security_configs-add.ores :exports none
+curve_security_configs add 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: BC647CE1-7195-5D53-9E40-EED4943025BA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs set <id> <curve_definition_id> <spread_quote> <recovery_rate_quote> <cpr_quote> <price_quote> <conversion_factor> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.put=.
+
+#+name: curve_security_configs-set
+#+begin_src ores-shell :tangle curve_security_configs-set.ores :exports none
+curve_security_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 2D0F376C-17BB-5EFE-A10D-90BA0F108783
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs put-many --count <n> <id> <curve_definition_id> <spread_quote> <recovery_rate_quote> <cpr_quote> <price_quote> <conversion_factor> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.put_many=.
+
+#+name: curve_security_configs-put-many
+#+begin_src ores-shell :tangle curve_security_configs-put-many.ores :exports none
+curve_security_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4846BD8B-E293-5274-B20E-31E8BFC1BFB3
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.delete=.
+
+#+name: curve_security_configs-delete
+#+begin_src ores-shell :tangle curve_security_configs-delete.ores :exports none
+curve_security_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 2BF8F293-A0C9-5682-B2AB-F5F33DCD0C2E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs.delete_many=.
+
+#+name: curve_security_configs-delete-many
+#+begin_src ores-shell :tangle curve_security_configs-delete-many.ores :exports none
+curve_security_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6F55F658-69F6-51FB-8638-8D1905F40AA4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs_versions.list=.
+
+#+name: curve_security_configs-versions
+#+begin_src ores-shell :tangle curve_security_configs-versions.ores :exports none
+curve_security_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 628E315F-02B9-504D-A434-E64EFDDE36E1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_security_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_security_configs_versions.get=.
+
+#+name: curve_security_configs-version
+#+begin_src ores-shell :tangle curve_security_configs-version.ores :exports none
+curve_security_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

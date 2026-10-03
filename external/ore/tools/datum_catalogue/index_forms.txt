@@ -1,0 +1,96 @@
+# Index names covering every form ORE's parseIndex documents, and names it
+# refuses. One name per line; read by index_catalogue with the corpus's
+# conventions loaded. Cited lines are OREData/ored/utilities/indexparser.cpp at
+# the ORE commit in ore_version.txt.
+
+# Equity: EQ-<name>, any text after the prefix (:227).
+EQ-SP5
+EQ-RIC:.SPX
+EQ-Lufthansa AG
+EQ-NAME-WITH-HYPHENS
+EQ-
+
+# Bond: BOND-<id>, or a bond future when the name ends in YYYY-MM or YYYY-MM-DD (:676).
+BOND-ISIN:IE00BH3SQ895
+BOND-ISIN:IE00BH3SQ895-2025-08
+BOND-ISIN:IE00BH3SQ895-2025-08-15
+BOND-SEC-WITH-HYPHENS
+BOND-
+
+# Bond future: BOND_FUTURE-<contract> (:720).
+BOND_FUTURE-TYM26
+
+# Commodity: COMM-<name>, a futures index when it ends in YYYY-MM or YYYY-MM-DD (:763).
+COMM-GOLD
+COMM-NYMEX:CL-2025-01
+COMM-NYMEX:CL-2025-01-15
+COMM-ICE:B
+COMM-PJM-WH-RT
+COMM-
+
+# Intraday power: POWER-<name>[-<date>[-<start>-<end>[-DST]]], the name without
+# a hyphen (:883).
+POWER-ICE:PDQ-2021-01-01-3600-7200
+POWER-ICE:PDQ-2021-03-28-3600-7200-DST
+POWER-ICE:PDQ-2021-01-04
+POWER-ICE:PDQ
+POWER-ICE:PDQ-2021-01-01-3600
+POWER-ICE:PDQ-2021-01-01-3600-7200-XYZ
+
+# FX: FX-<source>-<ccy1>-<ccy2>, exactly four tokens (:208).
+FX-ECB-EUR-USD
+FX-TR20H-GBP-USD
+FX-Reuters-USD-EUR
+FX-ECB-EUR
+FX-ECB-EUR-USD-X
+FX-ECB-EUR-XXX
+
+# Generic: GENERIC-<anything> (:236).
+GENERIC-JuniorNote
+GENERIC-PortfolioBasket#1
+GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C
+
+# Constant maturity bond: CMB-<family>-<tenor>, the family possibly hyphenated (:737).
+CMB-US-TREASURY-10Y
+CMB-BUND-5Y
+CMB-BUND
+
+# IBOR and overnight: CCY-NAME[-TENOR], from ORE's maps or a convention (:258).
+EUR-EURIBOR-6M
+EUR-EURIBOR-1W
+EUR-ESTER
+USD-SOFR
+USD-SOFR-3M
+GBP-SONIA
+USD-FedFunds
+USD-SIFMA
+JPY-TONAR
+CZK-CZEONIA
+MXN-FTIIE
+MXN-TIIE-28D
+CNY-REPOFIX-7D
+EUR-EURIBOR-6X
+EUR
+EUR-EURIBOR-6M-X
+EURO-EURIBOR-6M
+
+# CMS swap: CCY-CMS-TENOR or CCY-CMS-TAG-TENOR (:519).
+EUR-CMS-10Y
+USD-CMS-5Y
+EUR-CMS-30Y
+EUR-CMS-1Y
+EUR-CMS
+EUR-CMS-10X
+
+# Zero inflation: ORE's list and its spaced aliases, or a convention (:622).
+UKRPI
+UK RPI
+EUHICPXT
+EU HICPXT
+EUHICP
+FRHICP
+USCPI
+ZACPI
+AUCPI
+DECPI
+NOSUCHCPI

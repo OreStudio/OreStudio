@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 03FFC102-CB45-553E-BCEF-E56F641CCFEE
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the yield_curve_configs commands from the shell?
+#+description: Every command the yield_curve_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:yield_curve_configs:
+
+This file documents the yield_curve_configs resource at the shell, one section per command. Every command is a subcommand of =yield_curve_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1AD00D0D-D509-5CC5-B1E5-9472F54205F1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.list=.
+
+#+name: yield_curve_configs-list
+#+begin_src ores-shell :tangle yield_curve_configs-list.ores :exports none
+yield_curve_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 95EC6C87-A7BB-5FE1-8E4E-FCC0A51EA106
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.get=.
+
+#+name: yield_curve_configs-get
+#+begin_src ores-shell :tangle yield_curve_configs-get.ores :exports none
+yield_curve_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 333A9CB6-27C5-5E7F-82BB-B60EC0C17193
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.get_many=.
+
+#+name: yield_curve_configs-get-many
+#+begin_src ores-shell :tangle yield_curve_configs-get-many.ores :exports none
+yield_curve_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: DCC31ECA-DE0B-5CA6-BB8D-05595C2816B9
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs add <curve_definition_id> <currency> <discount_curve> <interpolation_variable> <interpolation_method> <mixed_interpolation_cutoff> <day_counter> <tolerance> <extrapolation> <extrapolation_method> <exclude_t0_from_interpolation> <has_report> <report_pillar_dates> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.put=.
+
+#+name: yield_curve_configs-add
+#+begin_src ores-shell :tangle yield_curve_configs-add.ores :exports none
+yield_curve_configs add 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - false - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 3677237D-1B2D-5DC4-80A5-9CC6ACF5B7A5
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs set <id> <curve_definition_id> <currency> <discount_curve> <interpolation_variable> <interpolation_method> <mixed_interpolation_cutoff> <day_counter> <tolerance> <extrapolation> <extrapolation_method> <exclude_t0_from_interpolation> <has_report> <report_pillar_dates> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.put=.
+
+#+name: yield_curve_configs-set
+#+begin_src ores-shell :tangle yield_curve_configs-set.ores :exports none
+yield_curve_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - false - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: AB230403-857C-5D11-8F68-5BF14D0BB7CF
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs put-many --count <n> <id> <curve_definition_id> <currency> <discount_curve> <interpolation_variable> <interpolation_method> <mixed_interpolation_cutoff> <day_counter> <tolerance> <extrapolation> <extrapolation_method> <exclude_t0_from_interpolation> <has_report> <report_pillar_dates> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.put_many=.
+
+#+name: yield_curve_configs-put-many
+#+begin_src ores-shell :tangle yield_curve_configs-put-many.ores :exports none
+yield_curve_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ - - - - - - - - false - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6C4DA4DA-F657-5617-B1C6-E43553506258
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.delete=.
+
+#+name: yield_curve_configs-delete
+#+begin_src ores-shell :tangle yield_curve_configs-delete.ores :exports none
+yield_curve_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 5499C508-F391-525B-BEDE-2E0BE111CD93
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs.delete_many=.
+
+#+name: yield_curve_configs-delete-many
+#+begin_src ores-shell :tangle yield_curve_configs-delete-many.ores :exports none
+yield_curve_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E346E0EE-A92F-5F66-AAF6-0B9AE9E670FA
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs_versions.list=.
+
+#+name: yield_curve_configs-versions
+#+begin_src ores-shell :tangle yield_curve_configs-versions.ores :exports none
+yield_curve_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 7C1679E6-5417-5AD1-B0E1-052D09815DEC
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_curve_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.yield_curve_configs_versions.get=.
+
+#+name: yield_curve_configs-version
+#+begin_src ores-shell :tangle yield_curve_configs-version.ores :exports none
+yield_curve_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

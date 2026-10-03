@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: C55F5003-5B50-5006-965F-19178C3EB95B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the bond_future_volatility_configs commands from the shell?
+#+description: Every command the bond_future_volatility_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:bond_future_volatility_configs:
+
+This file documents the bond_future_volatility_configs resource at the shell, one section per command. Every command is a subcommand of =bond_future_volatility_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: AD7A4973-5AE7-5E92-AFF4-135365CA37C1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.list=.
+
+#+name: bond_future_volatility_configs-list
+#+begin_src ores-shell :tangle bond_future_volatility_configs-list.ores :exports none
+bond_future_volatility_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B6C54B15-6A04-5A87-9533-01B9971EDDCA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.get=.
+
+#+name: bond_future_volatility_configs-get
+#+begin_src ores-shell :tangle bond_future_volatility_configs-get.ores :exports none
+bond_future_volatility_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 76BA856E-4545-5E06-971B-02E6D54B7FB2
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.get_many=.
+
+#+name: bond_future_volatility_configs-get-many
+#+begin_src ores-shell :tangle bond_future_volatility_configs-get-many.ores :exports none
+bond_future_volatility_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 660A64BF-0186-5982-9AAD-02BD7865910E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs add <curve_definition_id> <contract_name> <day_counter> <calendar> <yield_curve_id> <strike_factor> <use_only_put_call> <prefer_out_of_the_money> <treat_as_european> <has_volatility_config> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.put=.
+
+#+name: bond_future_volatility_configs-add
+#+begin_src ores-shell :tangle bond_future_volatility_configs-add.ores :exports none
+bond_future_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 35F91CB5-5B1F-54BE-AE83-6A1DA3F45FCB
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs set <id> <curve_definition_id> <contract_name> <day_counter> <calendar> <yield_curve_id> <strike_factor> <use_only_put_call> <prefer_out_of_the_money> <treat_as_european> <has_volatility_config> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.put=.
+
+#+name: bond_future_volatility_configs-set
+#+begin_src ores-shell :tangle bond_future_volatility_configs-set.ores :exports none
+bond_future_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B9EDCC2A-DAF7-5608-A3CB-5178FA0F7DEE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs put-many --count <n> <id> <curve_definition_id> <contract_name> <day_counter> <calendar> <yield_curve_id> <strike_factor> <use_only_put_call> <prefer_out_of_the_money> <treat_as_european> <has_volatility_config> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.put_many=.
+
+#+name: bond_future_volatility_configs-put-many
+#+begin_src ores-shell :tangle bond_future_volatility_configs-put-many.ores :exports none
+bond_future_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6DC28A94-271B-55B8-AD0A-C3169C6D54A8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.delete=.
+
+#+name: bond_future_volatility_configs-delete
+#+begin_src ores-shell :tangle bond_future_volatility_configs-delete.ores :exports none
+bond_future_volatility_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: E2DD623D-69F5-5D22-8CB5-115227599E7D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs.delete_many=.
+
+#+name: bond_future_volatility_configs-delete-many
+#+begin_src ores-shell :tangle bond_future_volatility_configs-delete-many.ores :exports none
+bond_future_volatility_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6D1724DE-6F6C-5198-95CE-455CFFDCB326
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs_versions.list=.
+
+#+name: bond_future_volatility_configs-versions
+#+begin_src ores-shell :tangle bond_future_volatility_configs-versions.ores :exports none
+bond_future_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FC356792-69E3-52AC-AE02-D3911F239DB2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+bond_future_volatility_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.bond_future_volatility_configs_versions.get=.
+
+#+name: bond_future_volatility_configs-version
+#+begin_src ores-shell :tangle bond_future_volatility_configs-version.ores :exports none
+bond_future_volatility_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 4EC7B099-1BA4-4CE2-92FA-B48599603099
+:END:
+#+title: No migrations: trash and recreate the database
+#+description: Schema changes edit the create scripts only; the database is recreated, never migrated, and no backwards compatibility code is kept.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+Do not write migration scripts or any backwards compatibility code for schema changes. The database is trashed and recreated with compass db recreate, so a change to tables only edits the create scripts, and nothing keeps legacy names, columns or handling around.
+
+*Why:* The operator said so on 2026-10-03, during the curve configuration table rename: do not worry about backwards compatibility, do not create migration scripts, trash and recreate, keep it clean.
+
+*How to apply:* When a change alters tables, change the create, drop, RLS and populate scripts only, and verify with compass db recreate. Do not add files under projects/ores.sql/migration, and do not add compatibility shims, column aliases or old permission codes.

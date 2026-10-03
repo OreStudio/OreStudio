@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "datum/market_datum.cpp"
+    "datum/market_index.cpp"
     "datum/ore_types.cpp"
     "datum/schema.cpp"
     "datum/value.cpp"
@@ -60,6 +61,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_datum.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_index.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/ore_types.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/schema.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/value.hpp"

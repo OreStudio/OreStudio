@@ -24,10 +24,9 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
@@ -372,24 +371,24 @@ import_service::import(const messaging::import_market_data_request& req) {
             std::vector<domain::market_fixing> fixings;
             fixings.reserve(data.size());
             for (const auto& f : data) {
-                // Fixing series: series_type=FIXING, metric=RATE, qualifier=index_name.
-                // The index name is an identity of its own class, so it is read by
-                // from_index_name() rather than by the ORE key grammar, and the URI
-                // it projects to is the series' identity. A name no class can name
-                // has none, so the row is reported and dropped like an unnameable
-                // key above.
-                const auto identifier = core::oresmd_projections::from_index_name(f.qualifier);
-                if (!identifier) {
-                    resp.warnings.push_back(f.qualifier +
-                                            " skipped: oresmd names no series for this index "
-                                            "name.");
+                // A fixing's series is the index it fixes: the ORE index codec
+                // reads the name, and the index's fixing URI is the series'
+                // identity. A name the codec refuses has none, so the row is
+                // reported and dropped, as a quote key the codec refuses is.
+                const auto index = datum::ore_index_codec::read(f.qualifier);
+                if (!index) {
+                    resp.warnings.push_back(f.qualifier + " skipped: " + index.error());
                     continue;
                 }
-                const auto series =
-                    find_or_create_series(std::string(fixing_series_type),
-                                          "RATE",
-                                          f.qualifier,
-                                          core::oresmd_parser::to_uri(*identifier).value);
+                const auto uri = datum::oresmd_uri_codec::write_index(*index);
+                if (!uri) {
+                    resp.warnings.push_back(f.qualifier + " skipped: " + uri.error());
+                    continue;
+                }
+                const auto series = find_or_create_series(std::string(fixing_series_type),
+                                                          "RATE",
+                                                          datum::ore_index_codec::write(*index),
+                                                          *uri);
 
                 domain::market_fixing fix;
                 fix.id = gen();

@@ -1880,15 +1880,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Curve Securities
+-- Curve Security Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_curve_securities_tbl enable row level security;
+alter table ores_refdata_curve_security_configs_tbl enable row level security;
 
-drop policy if exists curve_securities_tbl_tenant_isolation_policy
-    on ores_refdata_curve_securities_tbl;
+drop policy if exists curve_security_configs_tbl_tenant_isolation_policy
+    on ores_refdata_curve_security_configs_tbl;
 
-create policy curve_securities_tbl_tenant_isolation_policy
-on ores_refdata_curve_securities_tbl
+create policy curve_security_configs_tbl_tenant_isolation_policy
+on ores_refdata_curve_security_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -1897,15 +1897,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Intraday Power Curves
+-- Intraday Power Curve Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_intraday_power_curves_tbl enable row level security;
+alter table ores_refdata_intraday_power_curve_configs_tbl enable row level security;
 
-drop policy if exists intraday_power_curves_tbl_tenant_isolation_policy
-    on ores_refdata_intraday_power_curves_tbl;
+drop policy if exists intraday_power_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_intraday_power_curve_configs_tbl;
 
-create policy intraday_power_curves_tbl_tenant_isolation_policy
-on ores_refdata_intraday_power_curves_tbl
+create policy intraday_power_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_intraday_power_curve_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -1914,15 +1914,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Equity Curves
+-- Equity Curve Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_equity_curves_tbl enable row level security;
+alter table ores_refdata_equity_curve_configs_tbl enable row level security;
 
-drop policy if exists equity_curves_tbl_tenant_isolation_policy
-    on ores_refdata_equity_curves_tbl;
+drop policy if exists equity_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_equity_curve_configs_tbl;
 
-create policy equity_curves_tbl_tenant_isolation_policy
-on ores_refdata_equity_curves_tbl
+create policy equity_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_equity_curve_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -1931,15 +1931,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Inflation Curves
+-- Inflation Curve Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_inflation_curves_tbl enable row level security;
+alter table ores_refdata_inflation_curve_configs_tbl enable row level security;
 
-drop policy if exists inflation_curves_tbl_tenant_isolation_policy
-    on ores_refdata_inflation_curves_tbl;
+drop policy if exists inflation_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_inflation_curve_configs_tbl;
 
-create policy inflation_curves_tbl_tenant_isolation_policy
-on ores_refdata_inflation_curves_tbl
+create policy inflation_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_inflation_curve_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -1965,15 +1965,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Default Curves
+-- Default Curve Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_default_curves_tbl enable row level security;
+alter table ores_refdata_default_curve_configs_tbl enable row level security;
 
-drop policy if exists default_curves_tbl_tenant_isolation_policy
-    on ores_refdata_default_curves_tbl;
+drop policy if exists default_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_default_curve_configs_tbl;
 
-create policy default_curves_tbl_tenant_isolation_policy
-on ores_refdata_default_curves_tbl
+create policy default_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_default_curve_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -1999,15 +1999,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Commodity Curves
+-- Commodity Curve Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_commodity_curves_tbl enable row level security;
+alter table ores_refdata_commodity_curve_configs_tbl enable row level security;
 
-drop policy if exists commodity_curves_tbl_tenant_isolation_policy
-    on ores_refdata_commodity_curves_tbl;
+drop policy if exists commodity_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_commodity_curve_configs_tbl;
 
-create policy commodity_curves_tbl_tenant_isolation_policy
-on ores_refdata_commodity_curves_tbl
+create policy commodity_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_commodity_curve_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2050,15 +2050,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- FX Volatilities
+-- FX Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_fx_volatilities_tbl enable row level security;
+alter table ores_refdata_fx_volatility_configs_tbl enable row level security;
 
-drop policy if exists fx_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_fx_volatilities_tbl;
+drop policy if exists fx_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_fx_volatility_configs_tbl;
 
-create policy fx_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_fx_volatilities_tbl
+create policy fx_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_fx_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2067,15 +2067,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Yield Volatilities
+-- Yield Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_yield_volatilities_tbl enable row level security;
+alter table ores_refdata_yield_volatility_configs_tbl enable row level security;
 
-drop policy if exists yield_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_yield_volatilities_tbl;
+drop policy if exists yield_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_yield_volatility_configs_tbl;
 
-create policy yield_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_yield_volatilities_tbl
+create policy yield_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_yield_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2084,15 +2084,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Base Correlations
+-- Base Correlation Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_base_correlations_tbl enable row level security;
+alter table ores_refdata_base_correlation_configs_tbl enable row level security;
 
-drop policy if exists base_correlations_tbl_tenant_isolation_policy
-    on ores_refdata_base_correlations_tbl;
+drop policy if exists base_correlation_configs_tbl_tenant_isolation_policy
+    on ores_refdata_base_correlation_configs_tbl;
 
-create policy base_correlations_tbl_tenant_isolation_policy
-on ores_refdata_base_correlations_tbl
+create policy base_correlation_configs_tbl_tenant_isolation_policy
+on ores_refdata_base_correlation_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2101,15 +2101,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Curve Correlations
+-- Curve Correlation Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_curve_correlations_tbl enable row level security;
+alter table ores_refdata_curve_correlation_configs_tbl enable row level security;
 
-drop policy if exists curve_correlations_tbl_tenant_isolation_policy
-    on ores_refdata_curve_correlations_tbl;
+drop policy if exists curve_correlation_configs_tbl_tenant_isolation_policy
+    on ores_refdata_curve_correlation_configs_tbl;
 
-create policy curve_correlations_tbl_tenant_isolation_policy
-on ores_refdata_curve_correlations_tbl
+create policy curve_correlation_configs_tbl_tenant_isolation_policy
+on ores_refdata_curve_correlation_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2118,15 +2118,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- CDS Volatilities
+-- CDS Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_cds_volatilities_tbl enable row level security;
+alter table ores_refdata_cds_volatility_configs_tbl enable row level security;
 
-drop policy if exists cds_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_cds_volatilities_tbl;
+drop policy if exists cds_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_cds_volatility_configs_tbl;
 
-create policy cds_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_cds_volatilities_tbl
+create policy cds_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_cds_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2169,15 +2169,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Inflation Cap Floor Volatilities
+-- Inflation Cap Floor Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_inflation_cap_floor_volatilities_tbl enable row level security;
+alter table ores_refdata_inflation_cap_floor_volatility_configs_tbl enable row level security;
 
-drop policy if exists inflation_cap_floor_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_inflation_cap_floor_volatilities_tbl;
+drop policy if exists inflation_cap_floor_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_inflation_cap_floor_volatility_configs_tbl;
 
-create policy inflation_cap_floor_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_inflation_cap_floor_volatilities_tbl
+create policy inflation_cap_floor_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_inflation_cap_floor_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2220,15 +2220,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Swaption Volatilities
+-- Swaption Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_swaption_volatilities_tbl enable row level security;
+alter table ores_refdata_swaption_volatility_configs_tbl enable row level security;
 
-drop policy if exists swaption_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_swaption_volatilities_tbl;
+drop policy if exists swaption_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_swaption_volatility_configs_tbl;
 
-create policy swaption_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_swaption_volatilities_tbl
+create policy swaption_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_swaption_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2237,15 +2237,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Cap Floor Volatilities
+-- Cap Floor Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_cap_floor_volatilities_tbl enable row level security;
+alter table ores_refdata_cap_floor_volatility_configs_tbl enable row level security;
 
-drop policy if exists cap_floor_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_cap_floor_volatilities_tbl;
+drop policy if exists cap_floor_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_cap_floor_volatility_configs_tbl;
 
-create policy cap_floor_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_cap_floor_volatilities_tbl
+create policy cap_floor_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_cap_floor_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2254,15 +2254,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Equity Volatilities
+-- Equity Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_equity_volatilities_tbl enable row level security;
+alter table ores_refdata_equity_volatility_configs_tbl enable row level security;
 
-drop policy if exists equity_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_equity_volatilities_tbl;
+drop policy if exists equity_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_equity_volatility_configs_tbl;
 
-create policy equity_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_equity_volatilities_tbl
+create policy equity_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_equity_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2271,15 +2271,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Commodity Volatilities
+-- Commodity Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_commodity_volatilities_tbl enable row level security;
+alter table ores_refdata_commodity_volatility_configs_tbl enable row level security;
 
-drop policy if exists commodity_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_commodity_volatilities_tbl;
+drop policy if exists commodity_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_commodity_volatility_configs_tbl;
 
-create policy commodity_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_commodity_volatilities_tbl
+create policy commodity_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_commodity_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2288,15 +2288,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Bond Future Volatilities
+-- Bond Future Volatility Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_bond_future_volatilities_tbl enable row level security;
+alter table ores_refdata_bond_future_volatility_configs_tbl enable row level security;
 
-drop policy if exists bond_future_volatilities_tbl_tenant_isolation_policy
-    on ores_refdata_bond_future_volatilities_tbl;
+drop policy if exists bond_future_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_bond_future_volatility_configs_tbl;
 
-create policy bond_future_volatilities_tbl_tenant_isolation_policy
-on ores_refdata_bond_future_volatilities_tbl
+create policy bond_future_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_bond_future_volatility_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -2356,15 +2356,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Yield Curves
+-- Yield Curve Configs
 -- -----------------------------------------------------------------------------
-alter table ores_refdata_yield_curves_tbl enable row level security;
+alter table ores_refdata_yield_curve_configs_tbl enable row level security;
 
-drop policy if exists yield_curves_tbl_tenant_isolation_policy
-    on ores_refdata_yield_curves_tbl;
+drop policy if exists yield_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_yield_curve_configs_tbl;
 
-create policy yield_curves_tbl_tenant_isolation_policy
-on ores_refdata_yield_curves_tbl
+create policy yield_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_yield_curve_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

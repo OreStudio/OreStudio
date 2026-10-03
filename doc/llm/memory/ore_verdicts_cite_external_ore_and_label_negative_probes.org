@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 15E89857-823C-4C42-89AC-B3CC117EF669
+:END:
+#+title: Cite external/ore for ORE verdicts and label negative probes
+#+description: ORE verdicts come from the vendored external/ore catalogue; hand-written negative probes are always labelled as such.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The source of truth for what ORE accepts is the vendored tree external/ore: its catalogue (index_forms.jsonl, forms.jsonl, corpus.jsonl.gz, quote_matrix.jsonl, ore_version.txt) and its examples. The ORE Engine checkout outside the repo is for reading why ORE behaves as it does, at the commit ore_version.txt names. When a name or key in a test or a report is a negative probe that we wrote, and not data from ORE, say so explicitly every time it is mentioned.
+
+*Why:* On 2026-10-03, while discussing the index codec (PR 2570), FX-ECB-EUR-XXX and NOSUCHCPI were described as names ORE refuses without a convention. Both were negative probes written into index_forms.txt, not ORE test data, and the user had to ask whether they were errors in ORE's data.
+
+*How to apply:* Before reporting an ORE verdict, cite the external/ore catalogue line. When listing deviations, refusals or accepted-by-structure names, mark each as either from the ORE corpus or a hand-written probe.

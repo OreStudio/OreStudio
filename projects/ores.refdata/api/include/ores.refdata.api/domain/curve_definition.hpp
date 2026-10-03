@@ -40,7 +40,7 @@ namespace ores::refdata::domain {
  * CurveId and CurveDescription, and its place in the document.
  *
  * The settings that follow differ by section and live on a detail row per
- * section family, as typed columns: yield_curve for YieldCurves. The lists an
+ * section family, as typed columns: yield_curve_config for YieldCurves. The lists an
  * entry holds are child rows keyed to this one: its segments in curve_segment,
  * its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.
  * So one table of quotes serves every section, and a reference to a curve is a

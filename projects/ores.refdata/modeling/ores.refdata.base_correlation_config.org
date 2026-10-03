@@ -1,0 +1,342 @@
+:PROPERTIES:
+:ID: 22735D34-F4B3-401D-B245-CD33F4261083
+:END:
+#+title: ores.refdata.base_correlation_config
+#+description: Codegen entity model for the refdata =base_correlation_config= table. The settings of one ORE base correlation.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE base correlation entry.
+#+entity_singular: base_correlation_config
+#+entity_plural: base_correlation_configs
+#+entity_title: Base Correlation Config
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =BaseCorrelation= entry of a =curveconfig.xml=, one row per
+=curve_definition= in the =BaseCorrelations= section: a credit index tranche
+correlation surface over terms and detachment points.
+
+The schema also allows =RecoveryGrid=, =RecoveryProbabilities= and =QuoteTypes=
+lists, which no corpus document writes; the mapper refuses an entry that has
+them rather than lose them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** terms
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The terms of the surface, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string("5Y")
+#+end_src
+
+** detachment_points
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The tranche detachment points, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string("0.03")
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The number of settlement days.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The surface's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The business day convention of the surface's dates.
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The day counter of the surface, as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("A365")
+#+end_src
+
+** extrapolate
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface extrapolates, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** quote_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The name the surface's quotes are found under.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date the surface starts from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date generation rule of the surface's schedule.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** adjust_for_losses
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether detachment points are adjusted for index losses, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** index_term
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The term of the credit index.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** index_spread
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The quote of the credit index spread.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of the credit index.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calibrate_constituents_to_index_spread
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the constituents are calibrated to the index spread, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** use_assumed_recovery
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether an assumed recovery is used, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      false
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_base_correlation_configs_tbl
+:END:
+
+** Checks
+
+| expression    |
+|---------------|
+| "terms" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: base_correlation_config
+:entity_plural_short:   base_correlation_configs
+:entity_singular_words: base correlation config
+:entity_plural_words:   base correlation configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bcr
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

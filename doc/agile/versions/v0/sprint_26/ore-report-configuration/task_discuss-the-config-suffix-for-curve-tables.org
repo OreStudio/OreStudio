@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Decide with the operator whether the curve configuration tables take a _config s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -97,3 +97,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Decided by the operator on 2026-10-03, after the curve configuration round trip
+closed: the per-entry curve configuration tables take a =_config= suffix
+(=yield_curve_config=, =fx_volatility_config= and so on), matching
+=curve_volatility_config=. =curve_definition= keeps its name, because it is the
+header row other documents refer to. Child tables (segments, quotes, terms,
+factors, price segments, smile parameters) and the tables whose names already
+say configuration keep theirs.
+
+The rename is [[id:57EE13B8-4975-4919-A8E7-747B7EE931C0][Rename the curve configuration tables with a _config suffix]].

@@ -44,7 +44,10 @@ namespace ores::refdata::domain {
  * Two rights exist, the ones [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandboxes]] need: read, to
  * see what a node holds, and open_sandbox, to open a sandbox anchored at the node.
  * ores_refdata_account_holds_portfolio_right_fn answers whether an account
- * holds a right at a node, directly or through an ancestor.
+ * holds a right at a node, directly or through an ancestor. It runs with the
+ * caller's rights, so it answers only within the session's tenant, and a
+ * closed account holds no right. A right granted to an account stays on
+ * record after the account closes; the function stops honouring it.
  */
 struct portfolio_right final {
     /**

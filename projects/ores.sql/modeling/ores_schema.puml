@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T10:20:46.679522Z
+' Generated: 2026-10-03T10:30:27.648639Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3836,7 +3836,10 @@ package "refdata" #FFF3E0 {
     Two rights exist, the ones [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandboxes]] need: read, to see what a
     node holds, and open_sandbox, to open a sandbox anchored at the node.
     ores_refdata_account_holds_portfolio_right_fn answers whether an account
-    holds a right at a node, directly or through an ancestor.
+    holds a right at a node, directly or through an ancestor. It runs with the
+    caller's rights, so it answers only within the session's tenant, and a
+    closed account holds no right. A right granted to an account stays on
+    record after the account closes; the function stops honouring it.
     end note
 
     entity ores_refdata_portfolios_tbl <<temporal>> #C6F0D8 {

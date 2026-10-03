@@ -21,7 +21,10 @@ sibling desks.
 Two rights exist, the ones [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandboxes]] need: =read=, to see what a
 node holds, and =open_sandbox=, to open a sandbox anchored at the node.
 =ores_refdata_account_holds_portfolio_right_fn= answers whether an account
-holds a right at a node, directly or through an ancestor.
+holds a right at a node, directly or through an ancestor. It runs with the
+caller's rights, so it answers only within the session's tenant, and a
+closed account holds no right. A right granted to an account stays on
+record after the account closes; the function stops honouring it.
 
 * Flags
 :PROPERTIES:
@@ -148,13 +151,20 @@ refused, and the other tests in the binary share the database.
 
 #+begin_src sql :name holds_right_fn :implements 92432102-d405-46fc-911a-111dfed27358
 -- Whether an account holds a right at a portfolio node, directly or through
--- an ancestor. The walk up the tree is bounded so a cycle cannot loop.
+-- an ancestor. The function runs with the caller's rights, so row-level
+-- security confines it to the session's tenant whatever tenant is passed.
+-- A closed account holds nothing. Portfolio inserts refuse cycles; the depth
+-- bound only keeps a corrupt tree from looping. PL/pgSQL, not SQL: refdata is
+-- created before iam, and a SQL function would resolve the accounts table at
+-- creation time.
 create or replace function ores_refdata_account_holds_portfolio_right_fn(
     p_tenant_id uuid,
     p_account_id uuid,
     p_portfolio_id uuid,
     p_right_code text
 ) returns boolean as $$
+begin
+    return exists (
     with recursive ancestry as (
         select id, parent_portfolio_id, 0 as depth
         from ores_refdata_portfolios_tbl
@@ -169,16 +179,20 @@ create or replace function ores_refdata_account_holds_portfolio_right_fn(
           and p.valid_to = ores_utility_infinity_timestamp_fn()
           and a.depth < 64
     )
-    select exists (
         select 1
         from ores_refdata_portfolio_rights_tbl r
         join ancestry a on r.portfolio_id = a.id
+        join ores_iam_accounts_tbl acc
+          on acc.id = r.account_id
+         and acc.tenant_id = r.tenant_id
+         and acc.valid_to = ores_utility_infinity_timestamp_fn()
         where r.tenant_id = p_tenant_id
           and r.account_id = p_account_id
           and r.right_code = p_right_code
           and r.valid_to = ores_utility_infinity_timestamp_fn()
     );
-$$ language sql stable security definer set search_path = public, pg_temp;
+end;
+$$ language plpgsql stable set search_path = public, pg_temp;
 #+end_src
 
 * C++

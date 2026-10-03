@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 91F79965-AA37-45F6-8E4C-DFD0C4D9E105
+:END:
+#+title: Task: Map netting sets to and from ORE
+#+description: Map nettingsetdefinitions.xml to netting sets, CSAs and eligible currencies and back, round-tripping every netting set document in ORE's examples.
+#+type: task
+#+level: s1
+#+filetags: :netting-agreements:sprint_26:v0:
+#+owner: marco
+#+branch: feature/netting-ore-mapping
+#+pr: 2539
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read and write ORE's netting set definitions through the new entities, so an imported document exports unchanged.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- A mapper turns a nettingsetdefinitions document into netting sets, CSAs and eligible currencies, and back.
+- Every netting set document in ORE's examples round-trips through the entities unchanged.
+- A netting set carries ORE's call type and initial margin type through the round trip.
+
+* Plan
+
+- A =netting_set_mapper= in =ores.ore.core=, following the credit
+  simulation mapper: =map= returns one list per table (sets, CSAs,
+  eligible currencies) and =reverse= rebuilds the document.
+- ORE names a set by id alone, so an imported set has no agreement and no
+  parties. NettingSetDetails with an agreement type or a legal entity is
+  refused, since both must resolve to entities and the mapper has no store;
+  no ORE example uses either.
+- A set exports as NettingSetDetails when it has a call type or an
+  initial margin type, and as a plain NettingSetId otherwise.
+- The round trip is checked by serialising the original and the rebuilt
+  document with the same binding and comparing the text.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2539][#2539]] | [ore] Map netting sets to and from ORE |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | ActiveCSAFlag always written | mapper | Document | Every example states it; the header says export always does. |
+| 2 | Defaults hide a half-stated CSA | mapper | Fix | Export refuses a CSA with half an independent amount or one margining frequency. |
+| 3 | Active flag without details refused | mapper | Keep | Nothing could hold the flag; no example has it. |
+| 4 | Quadratic lookup in reverse | mapper | Fix | CSAs and currencies indexed by key. |
+| 5 | Tenant and party not set | mapper | Keep | The import planner sets them when it is wired. |
+| 6 | Missing refusal tests | tests | Fix | Agreement type, active flag without details, and one margining frequency on export. |
+| 7 | Includes by transit | mapper, tests | Fix | =<optional>= and =<stdexcept>= included directly. |
+
+* Result
+
+- =netting_set_mapper= maps a NettingSetDefinitions document to netting
+  sets, CSAs and eligible currencies, and back.
+- All 99 netting set documents in ORE's examples, holding 191 netting
+  sets, round-trip through the entities to the same serialised document.
+  The binding keeps the whitespace between CSADetails' elements as mixed
+  text; the test checks that it is whitespace before setting it aside.
+- NettingSetDetails carries a set's call type and initial margin type
+  through the round trip; details naming a legal entity are refused.
+- An inactive CSA keeps its terms through the mapping.
+- After review: export refuses a half-stated independent amount or margining
+  frequency rather than inventing the missing value, and reverse indexes
+  CSAs and currencies by key.
+- ctest: 89 of 89 binaries passed, =ores.ore.core.tests= with the four
+  new cases.

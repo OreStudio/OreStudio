@@ -42,6 +42,7 @@ constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
 constexpr std::string_view yield_curves_section = "YieldCurves";
 constexpr std::string_view equity_curves_section = "EquityCurves";
+constexpr std::string_view inflation_curves_section = "InflationCurves";
 constexpr std::string_view securities_section = "Securities";
 constexpr std::string_view fx_spots_section = "FXSpots";
 constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves";
@@ -50,6 +51,7 @@ constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves"
 // recorded only when it is empty.
 bool is_modelled(std::string_view section) {
     return section == yield_curves_section || section == equity_curves_section ||
+           section == inflation_curves_section ||
            section == securities_section || section == fx_spots_section ||
            section == intraday_power_curves_section;
 }
@@ -65,6 +67,10 @@ void set_audit(T& r) {
     r.performed_by = std::string(audit_modified_by);
     r.change_reason_code = std::string(audit_reason_code);
     r.change_commentary = std::string(audit_commentary);
+}
+
+std::runtime_error refusal(const std::string& what) {
+    return std::runtime_error("curve_configuration_mapper: " + what);
 }
 
 template <typename T>
@@ -205,8 +211,9 @@ const std::vector<section_access>& sections() {
             "CDSVolatilities", &curveconfiguration::CDSVolatilities, &cdsVolatilities::CDSVolatility),
         make_section("DefaultCurves", &curveconfiguration::DefaultCurves, &defaultCurves::DefaultCurve),
         make_section(yield_curves_section, &curveconfiguration::YieldCurves, &yieldCurves::YieldCurve),
-        make_section(
-            "InflationCurves", &curveconfiguration::InflationCurves, &inflationCurves::InflationCurve),
+        make_section(inflation_curves_section,
+                     &curveconfiguration::InflationCurves,
+                     &inflationCurves::InflationCurve),
         make_section("InflationCapFloorVolatilities",
                      &curveconfiguration::InflationCapFloorVolatilities,
                      &inflationCapFloorVolatlities::InflationCapFloorVolatility),
@@ -580,6 +587,56 @@ void import_equity_curve(mapped_curve_configuration& out, const equityCurve& v, 
     }
 }
 
+void import_inflation_curve(mapped_curve_configuration& out,
+                            const inflationCurve& v,
+                            int position) {
+    const auto d = add_definition(
+        out, inflation_curves_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.Segments)
+        throw refusal("inflation curve " + d.curve_id +
+                      " writes Segments, which are not modelled yet");
+
+    refdata::domain::inflation_curve r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.nominal_term_structure = text(v.NominalTermStructure);
+    r.inflation_type = to_string(v.Type);
+    r.conventions = optional_text(v.Conventions);
+    r.has_quotes = static_cast<bool>(v.Quotes);
+    r.extrapolation = optional_enum_text(v.Extrapolation);
+    r.calendar = text(v.Calendar);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.lag = text(v.Lag);
+    r.frequency = to_string(v.Frequency);
+    r.base_rate = optional_text(v.BaseRate);
+    r.tolerance = optional_double(v.Tolerance);
+    r.has_seasonality = static_cast<bool>(v.Seasonality);
+    if (v.Seasonality) {
+        r.seasonality_base_date = text(v.Seasonality->BaseDate);
+        r.seasonality_frequency = to_string(v.Seasonality->Frequency);
+        int factor_position = 0;
+        for (const auto& f : v.Seasonality->Factors.Factor) {
+            refdata::domain::inflation_seasonality_factor sf;
+            sf.id = new_uuid();
+            sf.curve_definition_id = d.id;
+            sf.factor = text(f);
+            sf.position = factor_position++;
+            set_audit(sf);
+            out.seasonality_factors.push_back(std::move(sf));
+        }
+    }
+    r.use_last_fixing_date = optional_enum_text(v.UseLastFixingDate);
+    r.interpolation_variable = optional_text(v.InterpolationVariable);
+    r.interpolation_method = optional_text(v.InterpolationMethod);
+    set_audit(r);
+    out.inflation_curves.push_back(std::move(r));
+
+    if (v.Quotes) {
+        import_context ctx{out, d.id};
+        ctx.quotes(boost::uuids::uuid{}, *v.Quotes);
+    }
+}
+
 void import_security(mapped_curve_configuration& out, const security& v, int position) {
     const auto d = add_definition(
         out, securities_section, text(v.CurveId), text(v.CurveDescription), position);
@@ -647,12 +704,12 @@ boost::uuids::uuid quote_definition(const refdata::domain::curve_quote& q) {
     return q.curve_definition_id;
 }
 
-boost::uuids::uuid definition_of(const refdata::domain::curve_segment& s) {
-    return s.curve_definition_id;
+boost::uuids::uuid factor_definition(const refdata::domain::inflation_seasonality_factor& f) {
+    return f.curve_definition_id;
 }
 
-std::runtime_error refusal(const std::string& what) {
-    return std::runtime_error("curve_configuration_mapper: " + what);
+boost::uuids::uuid definition_of(const refdata::domain::curve_segment& s) {
+    return s.curve_definition_id;
 }
 
 // The rows read back for one document, grouped by the parent each attaches to,
@@ -953,6 +1010,18 @@ yieldCurve export_yield_curve(const refdata::domain::curve_definition& d,
     return r;
 }
 
+quoteType entry_quotes(const refdata::domain::curve_definition& d, const export_context& ctx) {
+    quoteType quotes;
+    for (const auto* q : ctx.quotes_of_entry(d.id)) {
+        quoteType_Quote_t item;
+        assign_text(item, q->quote_text.value_or(""));
+        if (q->optional_flag)
+            item.optional = *q->optional_flag;
+        quotes.Quote.push_back(std::move(item));
+    }
+    return quotes;
+}
+
 equityCurve export_equity_curve(const refdata::domain::curve_definition& d,
                                 const refdata::domain::equity_curve& e,
                                 const export_context& ctx) {
@@ -966,17 +1035,8 @@ equityCurve export_equity_curve(const refdata::domain::curve_definition& d,
     r.Type = enum_from_text<equityType>(e.equity_type, "equity curve type");
     assign_optional_enum(r.ExerciseStyle, e.exercise_style, "exercise style");
     assign_text(r.SpotQuote, e.spot_quote);
-    if (e.has_quotes) {
-        quoteType quotes;
-        for (const auto* q : ctx.quotes_of_entry(d.id)) {
-            quoteType_Quote_t item;
-            assign_text(item, q->quote_text.value_or(""));
-            if (q->optional_flag)
-                item.optional = *q->optional_flag;
-            quotes.Quote.push_back(std::move(item));
-        }
-        r.Quotes = std::move(quotes);
-    }
+    if (e.has_quotes)
+        r.Quotes = entry_quotes(d, ctx);
     assign_optional_enum(r.DayCounter, e.day_counter, "day counter");
     if (e.has_dividend_interpolation) {
         dividendInterpolation di;
@@ -988,6 +1048,44 @@ equityCurve export_equity_curve(const refdata::domain::curve_definition& d,
     }
     assign_optional_enum(r.DividendExtrapolation, e.dividend_extrapolation, "ORE boolean");
     assign_optional_enum(r.Extrapolation, e.extrapolation, "ORE boolean");
+    return r;
+}
+
+inflationCurve export_inflation_curve(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::inflation_curve& v,
+    const std::vector<const refdata::domain::inflation_seasonality_factor*>& factors,
+    const export_context& ctx) {
+    inflationCurve r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    assign_text(r.NominalTermStructure, v.nominal_term_structure);
+    r.Type = enum_from_text<inflationType>(v.inflation_type, "inflation type");
+    assign_optional_text(r.Conventions, v.conventions);
+    if (v.has_quotes)
+        r.Quotes = entry_quotes(d, ctx);
+    assign_optional_enum(r.Extrapolation, v.extrapolation, "ORE boolean");
+    r.Calendar = v.calendar;
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    assign_text(r.Lag, v.lag);
+    r.Frequency = enum_from_text<frequencyType>(v.frequency, "frequency");
+    assign_optional_text(r.BaseRate, v.base_rate);
+    assign_optional_double(r.Tolerance, v.tolerance);
+    if (v.has_seasonality) {
+        seasonalityType season;
+        season.BaseDate = v.seasonality_base_date.value_or("");
+        season.Frequency =
+            enum_from_text<frequencyType>(v.seasonality_frequency.value_or(""), "frequency");
+        for (const auto* f : factors) {
+            factorType_Factor_t item;
+            assign_text(item, f->factor);
+            season.Factors.Factor.push_back(std::move(item));
+        }
+        r.Seasonality = std::move(season);
+    }
+    assign_optional_enum(r.UseLastFixingDate, v.use_last_fixing_date, "ORE boolean");
+    assign_optional_text(r.InterpolationVariable, v.interpolation_variable);
+    assign_optional_text(r.InterpolationMethod, v.interpolation_method);
     return r;
 }
 
@@ -1078,6 +1176,9 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     if (v.YieldCurves)
         for (const auto& e : v.YieldCurves->YieldCurve)
             import_yield_curve(mapped, e, position++);
+    if (v.InflationCurves)
+        for (const auto& e : v.InflationCurves->InflationCurve)
+            import_inflation_curve(mapped, e, position++);
     if (v.EquityCurves)
         for (const auto& e : v.EquityCurves->EquityCurve)
             import_equity_curve(mapped, e, position++);
@@ -1122,6 +1223,8 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     ctx.curves = group_by(v.segment_curves, &parent_segment);
     const auto segments = group_by(v.segments, &definition_of);
     const auto equity_by_definition = by_definition(v.equity_curves);
+    const auto inflation_by_definition = by_definition(v.inflation_curves);
+    const auto factors = group_by(v.seasonality_factors, &factor_definition);
     const auto security_by_definition = by_definition(v.securities);
     const auto power_by_definition = by_definition(v.intraday_power_curves);
 
@@ -1131,7 +1234,8 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     std::sort(definitions.begin(), definitions.end(), by_position<refdata::domain::curve_definition>);
 
     for (const auto* d : definitions) {
-        if (d->section_code != equity_curves_section && ctx.entry_quotes.contains(d->id))
+        if (d->section_code != equity_curves_section &&
+            d->section_code != inflation_curves_section && ctx.entry_quotes.contains(d->id))
             throw refusal("curve " + d->curve_id + " in section " + d->section_code +
                           " holds a quote directly on its entry");
         if (d->section_code == equity_curves_section) {
@@ -1139,6 +1243,18 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
                 document.EquityCurves = equityCurves{};
             document.EquityCurves->EquityCurve.push_back(
                 export_equity_curve(*d, settings_of(equity_by_definition, *d), ctx));
+            continue;
+        }
+        if (d->section_code == inflation_curves_section) {
+            static const std::vector<const refdata::domain::inflation_seasonality_factor*> none;
+            const auto f = factors.find(d->id);
+            if (!document.InflationCurves)
+                document.InflationCurves = inflationCurves{};
+            document.InflationCurves->InflationCurve.push_back(
+                export_inflation_curve(*d,
+                                       settings_of(inflation_by_definition, *d),
+                                       f == factors.end() ? none : f->second,
+                                       ctx));
             continue;
         }
         if (d->section_code == securities_section) {

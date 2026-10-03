@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: D10D373B-D722-5932-B59F-5D3C0CCD548E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the inflation_seasonality_factors commands from the shell?
+#+description: Every command the inflation_seasonality_factors submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:inflation_seasonality_factors:
+
+This file documents the inflation_seasonality_factors resource at the shell, one section per command. Every command is a subcommand of =inflation_seasonality_factors=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DE1D549F-62EB-518F-B8A8-2BB419CCDC74
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.list=.
+
+#+name: inflation_seasonality_factors-list
+#+begin_src ores-shell :tangle inflation_seasonality_factors-list.ores :exports none
+inflation_seasonality_factors list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 32CB8424-EDF2-5550-9AA4-4E1F36CBC840
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors get <id>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.get=.
+
+#+name: inflation_seasonality_factors-get
+#+begin_src ores-shell :tangle inflation_seasonality_factors-get.ores :exports none
+inflation_seasonality_factors get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9F6A0FB7-BD45-5B26-881A-B416F2A8D92B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.get_many=.
+
+#+name: inflation_seasonality_factors-get-many
+#+begin_src ores-shell :tangle inflation_seasonality_factors-get-many.ores :exports none
+inflation_seasonality_factors get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0342054A-2D0D-51A4-A934-DA4DCE1F1C7D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors add <curve_definition_id> <factor> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.put=.
+
+#+name: inflation_seasonality_factors-add
+#+begin_src ores-shell :tangle inflation_seasonality_factors-add.ores :exports none
+inflation_seasonality_factors add 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 11E59656-5E62-5EB8-90F8-3518EF98AF7C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors set <id> <curve_definition_id> <factor> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.put=.
+
+#+name: inflation_seasonality_factors-set
+#+begin_src ores-shell :tangle inflation_seasonality_factors-set.ores :exports none
+inflation_seasonality_factors set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6F325542-07B8-5E8E-AF52-08339634AA8E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors put-many --count <n> <id> <curve_definition_id> <factor> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.put_many=.
+
+#+name: inflation_seasonality_factors-put-many
+#+begin_src ores-shell :tangle inflation_seasonality_factors-put-many.ores :exports none
+inflation_seasonality_factors put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C63D04C4-3BE3-5802-A31C-81565612518A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.delete=.
+
+#+name: inflation_seasonality_factors-delete
+#+begin_src ores-shell :tangle inflation_seasonality_factors-delete.ores :exports none
+inflation_seasonality_factors delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: D3F75BA6-81DC-51F1-9E54-F11C1D6F7F19
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors.delete_many=.
+
+#+name: inflation_seasonality_factors-delete-many
+#+begin_src ores-shell :tangle inflation_seasonality_factors-delete-many.ores :exports none
+inflation_seasonality_factors delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 71436BCC-F051-5E8A-85CC-99C6ED09BC4D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors_versions.list=.
+
+#+name: inflation_seasonality_factors-versions
+#+begin_src ores-shell :tangle inflation_seasonality_factors-versions.ores :exports none
+inflation_seasonality_factors versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 18D8145C-7E48-58F8-8A33-28629333603A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+inflation_seasonality_factors version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.inflation_seasonality_factors_versions.get=.
+
+#+name: inflation_seasonality_factors-version
+#+begin_src ores-shell :tangle inflation_seasonality_factors-version.ores :exports none
+inflation_seasonality_factors version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

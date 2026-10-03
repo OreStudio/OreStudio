@@ -162,6 +162,16 @@ Step 3a, decided while building it:
   generated event test cannot seed a convention; the mapper refuses to export
   an entry without one.
 
+Step 3b, decided while building it:
+
+- An inflation curve's settings are =inflation_curve= and its seasonality
+  factors =inflation_seasonality_factor=; its quotes sit on the entry, as an
+  equity curve's do. =has_quotes= and =has_seasonality= hold the presence of
+  the two optional elements.
+- The schema allows inflation =Segments= and no corpus document writes them.
+  The mapper refuses an entry that does, rather than lose it; modelling them
+  waits for a document that needs them.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

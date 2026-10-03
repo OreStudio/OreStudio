@@ -31,8 +31,8 @@
  * @file xml_curve_configuration_mapper_roundtrip_tests.cpp
  * @brief The curve configuration document, mapped and mapped back.
  *
- * The mapper models the yield curve, equity curve, security, FX spot and
- * intraday power curve sections so far, so the walk compares each corpus
+ * The mapper models the yield curve, equity curve, inflation curve, security,
+ * FX spot and intraday power curve sections so far, so the walk compares each corpus
  * document projected onto them: every section element is kept, the entries of
  * the other sections are cleared, and the report configuration is dropped. The cases below the walk cover what the projection
  * hides: the refusal of entries the mapper cannot hold, and every segment
@@ -63,8 +63,6 @@ curveconfiguration modelled_only(curveconfiguration d) {
         d.CDSVolatilities->CDSVolatility.clear();
     if (d.DefaultCurves)
         d.DefaultCurves->DefaultCurve.clear();
-    if (d.InflationCurves)
-        d.InflationCurves->InflationCurve.clear();
     if (d.InflationCapFloorVolatilities)
         d.InflationCapFloorVolatilities->InflationCapFloorVolatility.clear();
     if (d.EquityVolatilities)

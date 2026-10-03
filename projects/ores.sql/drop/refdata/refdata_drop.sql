@@ -66,6 +66,10 @@
 \ir ./refdata_curve_segment_curves_drop.sql
 \ir ./refdata_curve_segments_notify_trigger_drop.sql
 \ir ./refdata_curve_segments_drop.sql
+\ir ./refdata_inflation_seasonality_factors_notify_trigger_drop.sql
+\ir ./refdata_inflation_seasonality_factors_drop.sql
+\ir ./refdata_inflation_curves_notify_trigger_drop.sql
+\ir ./refdata_inflation_curves_drop.sql
 \ir ./refdata_equity_curves_notify_trigger_drop.sql
 \ir ./refdata_equity_curves_drop.sql
 \ir ./refdata_intraday_power_curves_notify_trigger_drop.sql

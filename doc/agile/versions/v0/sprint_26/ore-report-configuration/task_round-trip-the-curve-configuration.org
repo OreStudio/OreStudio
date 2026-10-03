@@ -134,6 +134,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 2536: schema regexes depend on attribute order and fail without saying why | repository_curve_vocabulary_seed_tests.cpp | Accept | Each size check now states the pattern's assumption. |
+| 2 | PR 2536: nothing checks that a new tenant receives the vocabularies | iam_tenant_provisioner_create.sql | No change | No test fixture counts provisioned lookups. Verified instead: a tenant provisioned in a rolled-back transaction received 71, 19 and 21 rows. |
+| 3 | PR 2536: new permission rows not column-aligned | iam_permissions_populate.sql | Accept | Aligned. |
+| 4 | PR 2536: note that day counters are not unique by meaning | ores.refdata.day_counter.org | No change | The model already states that ORE accepts several spellings of one day counter. |
 
 * Result

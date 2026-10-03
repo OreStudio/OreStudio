@@ -86,6 +86,7 @@ domain::report_type to_domain(const messaging::report_type_write& write) {
     v.name = write.name;
     v.description = write.description;
     v.display_order = write.display_order;
+    v.workflow_type = write.workflow_type;
     return v;
 }
 

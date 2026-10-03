@@ -35,4 +35,5 @@ set(files
     "report_market_binding_commands_tests.cpp"
     "report_operations_operations_commands_tests.cpp"
     "report_type_commands_tests.cpp"
+    "report_type_configuration_type_commands_tests.cpp"
 )

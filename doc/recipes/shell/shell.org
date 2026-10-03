@@ -1173,13 +1173,9 @@ tangled into the runnable script library
 
 - [[id:2F6C97DD-4F60-5936-870C-ACA6B4DD4811][How do I run the tenant_party commands from the shell?]]
 
-* Netting Agreements
+* Report Type Configuration Types
 
-- [[id:8973DCC5-2AD0-5F32-A9BB-6245ADC8AA9D][How do I run the netting_agreements commands from the shell?]]
-
-* Netting Sets
-
-- [[id:9993B255-2A0E-5AD9-B8F0-3CE5F85E6356][How do I run the netting_sets commands from the shell?]]
+- [[id:A47F6639-BDCD-5BBE-81C0-64F3B734A7B3][How do I run the report_type_configuration_types commands from the shell?]]
 
 * Csa Eligible Currencies
 
@@ -1188,3 +1184,11 @@ tangled into the runnable script library
 * Csas
 
 - [[id:A5CDA5E7-E6D9-5B5B-AFA3-B8CFFABD462F][How do I run the csas commands from the shell?]]
+
+* Netting Agreements
+
+- [[id:8973DCC5-2AD0-5F32-A9BB-6245ADC8AA9D][How do I run the netting_agreements commands from the shell?]]
+
+* Netting Sets
+
+- [[id:9993B255-2A0E-5AD9-B8F0-3CE5F85E6356][How do I run the netting_sets commands from the shell?]]

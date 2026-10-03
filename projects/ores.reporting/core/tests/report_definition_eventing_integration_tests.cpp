@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -41,6 +45,11 @@
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+// Soft-FK parent seeding (ores_reporting_report_types_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.reporting.api/generators/report_type_generator.hpp"
+#include "ores.reporting.core/repository/report_type_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -135,6 +144,18 @@ TEST_CASE("write_report_definition_publishes_an_event", tags) {
     auto v = generate_synthetic_report_definition(ctx);
     v.change_reason_code = "system.test";
     v.party_id = *party_ctx.party_id();
+    // report_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::reporting::repository::report_type_repository report_type_catalogue_repo;
+        const auto report_type_catalogue = report_type_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(report_type_catalogue.empty());
+        v.report_type = report_type_catalogue.front().code;
+    }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Report Definition: " << v;
 

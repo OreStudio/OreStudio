@@ -37,6 +37,7 @@ export interface ReportTypeWrite {
     name: string;
     description: string;
     display_order: number;
+    workflow_type: string;
 }
 
 export interface ReportTypeChange {

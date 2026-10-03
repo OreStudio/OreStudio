@@ -25,10 +25,11 @@
  * Report Type Table
  *
  * Reference data table defining valid report type classifications.
- * Examples: 'risk', 'grid'.
+ * Example: 'risk'.
  *
- * Report types are managed by the system tenant and drive which
- * configuration block is used when creating a report definition.
+ * Report types are managed by the system tenant. A report type names the
+ * workflow its reports run and, through the report type configuration type
+ * junction, the configuration types a run requires.
  */
 
 create table if not exists "ores_reporting_report_types_tbl" (
@@ -38,6 +39,7 @@ create table if not exists "ores_reporting_report_types_tbl" (
     "name" text not null,
     "description" text not null,
     "display_order" integer not null,
+    "workflow_type" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -1344,3 +1344,7 @@ tangled into the runnable script library
 * Equity Volatilities
 
 - [[id:729F89D9-A60D-55B1-8790-4014E2AFBD03][How do I run the equity_volatilities commands from the shell?]]
+
+* Curve Global Reports
+
+- [[id:5EA45D27-11CE-5737-AA64-B553CBD8D0A2][How do I run the curve_global_reports commands from the shell?]]

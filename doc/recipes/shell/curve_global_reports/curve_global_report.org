@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 5EA45D27-11CE-5737-AA64-B553CBD8D0A2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_global_reports commands from the shell?
+#+description: Every command the curve_global_reports submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_global_reports:
+
+This file documents the curve_global_reports resource at the shell, one section per command. Every command is a subcommand of =curve_global_reports=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8E050508-A6F0-54CF-9D18-A414A80EFF86
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.list=.
+
+#+name: curve_global_reports-list
+#+begin_src ores-shell :tangle curve_global_reports-list.ores :exports none
+curve_global_reports list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C1B0496F-02A8-565E-A186-1FE2251CFF66
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.get=.
+
+#+name: curve_global_reports-get
+#+begin_src ores-shell :tangle curve_global_reports-get.ores :exports none
+curve_global_reports get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FA09D28A-2E28-5FCD-84DB-CC52AD44B24A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.get_many=.
+
+#+name: curve_global_reports-get-many
+#+begin_src ores-shell :tangle curve_global_reports-get-many.ores :exports none
+curve_global_reports get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 89D2354A-8BBB-5681-8720-F00CEFB159A4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports add <curve_configuration_id> <family> <has_report> <report_on_delta_grid> <report_on_moneyness_grid> <report_on_strike_grid> <report_on_strike_spread_grid> <deltas> <moneyness> <strikes> <strike_spreads> <expiries> <pillar_dates> <underlying_tenors> <continuation_expiry> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.put=.
+
+#+name: curve_global_reports-add
+#+begin_src ores-shell :tangle curve_global_reports-add.ores :exports none
+curve_global_reports add 00000000-0000-0000-0000-000000000000 __none__ false - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: FFFFB05E-D50B-566C-BC11-3ECAB3FF056D
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports set <id> <curve_configuration_id> <family> <has_report> <report_on_delta_grid> <report_on_moneyness_grid> <report_on_strike_grid> <report_on_strike_spread_grid> <deltas> <moneyness> <strikes> <strike_spreads> <expiries> <pillar_dates> <underlying_tenors> <continuation_expiry> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.put=.
+
+#+name: curve_global_reports-set
+#+begin_src ores-shell :tangle curve_global_reports-set.ores :exports none
+curve_global_reports set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 550A59AB-3C14-520B-878A-8A07A25E5B03
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports put-many --count <n> <id> <curve_configuration_id> <family> <has_report> <report_on_delta_grid> <report_on_moneyness_grid> <report_on_strike_grid> <report_on_strike_spread_grid> <deltas> <moneyness> <strikes> <strike_spreads> <expiries> <pillar_dates> <underlying_tenors> <continuation_expiry> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.put_many=.
+
+#+name: curve_global_reports-put-many
+#+begin_src ores-shell :tangle curve_global_reports-put-many.ores :exports none
+curve_global_reports put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false - - - - - - - - - - - - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8F767EBF-067D-5198-929A-C9D16EAA0EAB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.delete=.
+
+#+name: curve_global_reports-delete
+#+begin_src ores-shell :tangle curve_global_reports-delete.ores :exports none
+curve_global_reports delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: BD6794A1-BA0D-58F4-BC31-63CE7A2357D8
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports.delete_many=.
+
+#+name: curve_global_reports-delete-many
+#+begin_src ores-shell :tangle curve_global_reports-delete-many.ores :exports none
+curve_global_reports delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 84D9FE2F-7B5E-5327-A41C-CFADC701B7D9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports_versions.list=.
+
+#+name: curve_global_reports-versions
+#+begin_src ores-shell :tangle curve_global_reports-versions.ores :exports none
+curve_global_reports versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8632B835-A183-57C9-8086-6133368DAD64
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_global_reports version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_global_reports_versions.get=.
+
+#+name: curve_global_reports-version
+#+begin_src ores-shell :tangle curve_global_reports-version.ores :exports none
+curve_global_reports version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

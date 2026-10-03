@@ -21,12 +21,12 @@ Model the legal and credit grouping trades net under, as the Netting sets note a
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-02                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-03                               |
 
 * Acceptance
 
@@ -40,9 +40,34 @@ Model the legal and credit grouping trades net under, as the Netting sets note a
 |------+-------+-------+-----+-------------|
 | [[id:66026B70-2557-48A0-A3B9-74BDA4384B31][Model netting agreements and netting sets]] | DONE | 2026-10-03 | 2026-10-03 | Generate netting_agreement and netting_set in ores.refdata, with the set's counterparty and legal entity pinned to its agreement. |
 | [[id:F53DCDBB-C2B1-4CFA-B015-D2D173239402][Model the credit support annex]] | DONE | 2026-10-03 | 2026-10-03 | Generate csa and its eligible collateral currencies in ores.refdata, carrying ORE's CSA details, with at most one active CSA per netting set. |
+| [[id:91F79965-AA37-45F6-8E4C-DFD0C4D9E105][Map netting sets to and from ORE]] | DONE | 2026-10-03 | 2026-10-03 | Map nettingsetdefinitions.xml to netting sets, CSAs and eligible currencies and back, round-tripping every netting set document in ORE's examples. |
 
 * Decisions
+
+- A netting set's counterparty and legal entity are optional, because ORE
+  names a set by id alone; a check makes both required once the set has an
+  agreement, and a pinned key holds them to the agreement's.
+- The agreement's parties are fixed columns, so a set's copy of them stays
+  true when the agreement is amended.
+- The active flag is the CSA's, not the set's: ORE's examples keep the
+  details of CSAs that are switched off.
 
 * Out of scope
 
 -
+
+* Result
+
+Netting agreements, netting sets and credit support annexes are generated
+entities in =ores.refdata=, and ORE's netting set definitions read and
+write through them.
+
+- =netting_agreement= and =netting_set=, with the set's parties pinned to
+  its agreement and the agreement's parties fixed (PR 2537). Codegen gained
+  fixed columns for this.
+- =csa= and =csa_eligible_currency=, with at most one active CSA per set
+  and each currency position used once (PR 2538).
+- =netting_set_mapper=, round-tripping all 99 netting set documents in
+  ORE's examples.
+- The credit limit the netting sets analysis names is filed as a capture,
+  because no credit limit entity exists yet.

@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 077FEE5D-28FD-4691-BF79-95FEF1A9F816
+:END:
+#+title: Task: Write floating point values to the database without rounding
+#+description: sqlgen writes every float and double with std::to_string, which keeps six decimal places, so a curve tolerance of 1e-12 is stored as 0 and every double column is rounded to six decimals. Patch the sqlgen overlay port to write the shortest text that reads back as the same value.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/write-floating-point-values-without-rounding
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A double written through sqlgen reads back as the same double, so no value the system stores is silently rounded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- A double such as 1e-12 or 0.0123456789 written through a generated repository reads back unchanged, proven by a test.
+- The fix is a patch on the sqlgen overlay port at its pinned commit, with the upstream code named so it can be offered upstream.
+- The curve configuration database round trip passes once this lands.
+
+* Plan
+
+Found by the curve configuration database round trip: a yield curve tolerance
+of =1e-12= was written to the database and read back as =0=.
+
+The cause is upstream. sqlgen's =Parser<T>::write= in
+=include/sqlgen/parsing/Parser_default.hpp= turns every value with no
+reflection method and no enum type into text with =std::to_string=. For a
+float or a double that is =printf("%f")=: six decimal places, so =1e-12= is
+written as =0.000000= and =0.0123456789= as =0.012346=. The read side,
+=std::stod=, is exact; only the write loses digits. The latest upstream commit
+that touches the file, =816ca6adec=, still does this.
+
+The fix is a patch on the overlay port, which pins sqlgen at =47e5711=: floats
+are written with =std::to_chars=, the shortest text that reads back as the same
+value. The port version is bumped so a cached build of the old port is not
+reused.
+
+Proof: a repository test writes three doubles through a generated repository
+and reads them back. Run against the unpatched port it fails all three cases;
+with the patch it passes them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Double fields in generated repository entities | 29 fields in 20 entities: trading 13, refdata 4, dq 1, reporting 1, synthetic 1 | =grep -rlE "std::optional<double>\|double [a-z_]+;" projects/*/core/include/*/repository/*_entity.hpp= | 4b5499c45d |
+| Values read back before the patch | 1e-12 as 0.0; 0.0123456789 as 0.012346; 123456789.123456789 as 123456789.123457 | =compass test run -- -R ores.refdata.core.tests=, cases in =repository_floating_point_precision_tests.cpp= | 4b5499c45d |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- The sqlgen overlay port carries =fix-floating-point-precision.patch=, which
+  writes floats with =std::to_chars= instead of =std::to_string=. The port
+  version is bumped to 1 so a cached build is not reused.
+- =repository_floating_point_precision_tests.cpp= writes =1e-12=,
+  =0.0123456789= and =123456789.123456789= through a generated repository. It
+  failed all three against the unpatched port and passes all three with the
+  patch.
+- Build clean after a reconfigure; ctest 89/89 with services up.
+- The same defect exists in upstream sqlgen at =816ca6adec=; the patch is
+  written against the upstream file so it can be offered there.

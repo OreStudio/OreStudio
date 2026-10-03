@@ -7,30 +7,32 @@
 #+level: s1
 #+filetags: :service:security:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/refuse-a-token-with-no-permissions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A token that grants nothing is refused, and every permission check uses one
+matching rule, as the story's decisions 4 and 5 say. The party-choice token is
+refused everywhere but party selection.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -88,3 +90,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=has_permission= refuses a token whose permission list is empty. The database
+context's list became optional: a context built from a token carries the
+token's list, and a context with no list, which only =context_factory= builds
+for a service's own work, passes. =with_tenant= and =with_party= now keep the
+list they narrow, so a request's context is never trusted for want of one.
+=grants= in =ores.security= is the one matching rule, understanding a code, =*=
+and =x::*=, and both =has_permission= and =authorization_service::check_permission=
+use it; the database check no longer needs a sorted list and now honours
+component wildcards. =make_request_context= refuses the =select_party_only=
+audience by name, because no signer or verifier sets an audience.
+
+Tests: five cases for =grants=; =has_permission= refusing an empty list,
+passing the service's own context, and narrowed contexts keeping their list;
+the request context refusing the party-choice token. The full build is clean
+with no warnings. The full ctest failed 5 suites on a database built before
+main added tables and columns (=sandbox_id=, =curve_configurations= and
+others); all five pass on a recreated database (refdata 286, trading 127, ore
+637, reporting 49, analytics 53), as do service 46, iam 192 and security 64
+under ctest. Live, with the probes in =evidence/=: the party-choice token is
+refused a parties read and refresh, the same session reads 5 parties after
+choosing a party, and the tenant live check passes 15 of 15
+(=evidence/refuse_task_live.out=).
+

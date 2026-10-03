@@ -84,18 +84,37 @@ TEST_CASE("has_permission accepts the global wildcard", tags) {
     REQUIRE_FALSE(has_permission(limited, "iam::accounts:create"));
 }
 
-// A token minted before RBAC carries no permission list. The handler treats
-// that as pass-through, and the behaviour is pinned here so a change to it is
-// a deliberate one.
-TEST_CASE("has_permission passes a token that carries no permissions at all", tags) {
+// A token that carries an empty permission list grants nothing. Before this
+// change it passed every check, which let every signed-in person through.
+TEST_CASE("has_permission refuses a token that carries no permissions", tags) {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({});
-    // A context with an unrelated permission is refused, which separates the
-    // documented empty-list pass-through from a check that always answers true.
-    const auto limited = h.context().with_roles({"refdata::parties:delete"});
 
-    REQUIRE(has_permission(ctx, "iam::accounts:create"));
-    REQUIRE_FALSE(has_permission(limited, "iam::accounts:create"));
+    REQUIRE_FALSE(has_permission(ctx, "iam::accounts:create"));
+}
+
+// A context that carries no list at all is the service's own, built from its
+// base context, and runs on the service's authority.
+TEST_CASE("has_permission passes the service's own context", tags) {
+    ores::testing::database_helper h;
+
+    REQUIRE_FALSE(h.context().roles().has_value());
+    REQUIRE(has_permission(h.context(), "iam::accounts:create"));
+}
+
+// Narrowing a request's context to a tenant or a party keeps the token's list,
+// so a derived context is never trusted for want of one.
+TEST_CASE("a context narrowed to a tenant or a party keeps its permissions", tags) {
+    ores::testing::database_helper h;
+    const auto request = h.context().with_roles({"refdata::parties:read"});
+
+    const auto tenant = request.with_tenant(h.tenant_id(), "alice");
+    const auto party = request.with_party(h.tenant_id(), {}, {}, "alice");
+
+    REQUIRE(tenant.roles() == request.roles());
+    REQUIRE(party.roles() == request.roles());
+    REQUIRE_FALSE(has_permission(tenant, "iam::accounts:create"));
+    REQUIRE_FALSE(has_permission(party, "iam::accounts:create"));
 }
 
 TEST_CASE("stamp writes the context tenant and the acting user onto the object", tags) {

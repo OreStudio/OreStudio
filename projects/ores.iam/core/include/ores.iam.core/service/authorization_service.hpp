@@ -307,7 +307,8 @@ public:
     /**
      * @brief Checks if the given permissions list satisfies a permission check.
      *
-     * Supports the wildcard permission "*" which grants all permissions.
+     * The same rule the token check uses: a code, the wildcard "*", or a
+     * component wildcard such as "refdata::*". The list needs no order.
      *
      * @param permissions The list of permission codes
      * @param required_permission The permission to check for

@@ -61,6 +61,11 @@ make_context_from_jwt(const ores::database::context& base_ctx,
         return std::unexpected(ores::service::error_code::unauthorized);
     }
 
+    // A token that only lets a person choose a party is for that one request;
+    // no signer or verifier sets an audience, so it is refused here by name.
+    if (claims->audience == "select_party_only")
+        return std::unexpected(ores::service::error_code::unauthorized);
+
     const auto tenant_id_str = claims->tenant_id.value_or("");
     if (tenant_id_str.empty())
         return std::unexpected(ores::service::error_code::unauthorized);

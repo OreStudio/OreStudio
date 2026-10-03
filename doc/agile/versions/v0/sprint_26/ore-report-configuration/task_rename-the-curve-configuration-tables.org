@@ -1,13 +1,13 @@
 :PROPERTIES:
-:ID: 1027E041-1B39-4150-8725-3C0C78F0F1D1
+:ID: 57EE13B8-4975-4919-A8E7-747B7EE931C0
 :END:
-#+title: Task: Discuss the _config suffix for the curve configuration tables
-#+description: Talk through renaming the curve configuration tables so their names say they hold configuration, not curve data: yield_curve to yield_curve_config, fx_volatility to fx_volatility_config, and the rest.
+#+title: Task: Rename the curve configuration tables with a _config suffix
+#+description: Give every per-entry curve configuration table a _config suffix, so its name says it holds a curve's recipe, not its data; curve_definition keeps its name.
 #+type: task
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rename-the-curve-configuration-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,23 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Decide with the operator whether the curve configuration tables take a _config suffix. A row holds the recipe for building a curve, never the curve's data, but names such as yield_curve, fx_volatility and curve_definition read as if they held data.
+Rename the per-entry curve configuration tables so each name says it holds configuration: yield_curve becomes yield_curve_config, fx_volatility becomes fx_volatility_config, and so on. curve_definition, the header row other documents refer to, keeps its name.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
-- The operator has decided whether to rename, and which tables the rename covers.
-- If the decision is to rename, a follow-up task holds the rename and its migration.
+- Every per-entry curve configuration table, and its C++ type, repository, protocol, shell commands and permissions, carries the _config suffix.
+- curve_definition, the child tables and the tables whose names already say configuration keep their names.
+- Every corpus curveconfig.xml still round trips, in memory and through the database.
+- A migration takes a database that holds the old tables to the new names.
 
 * Plan
 
@@ -59,19 +61,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-Raised by the operator during step 4b of
-[[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]]: a curve has data, a curve
-configuration has only the shape of that data, and the table names should not
-blur the two. The operator asked for this conversation to wait until the curve
-configuration work reaches it, so it sits last in the story.
-
-Tables to cover, as of step 4a: =curve_definition=, =yield_curve=,
-=equity_curve=, =default_curve=, =inflation_curve=, =commodity_curve=,
-=intraday_power_curve=, =curve_security=, =fx_volatility=, =yield_volatility=,
-=base_correlation=, =curve_correlation=, and the step 4b to 4d tables. The
-lookups (=curve_segment_type=, =day_counter=, =curve_section=) and
-=curve_configuration= itself already say what they are.
 
 * Test Scenarios
 
@@ -97,13 +86,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-Decided by the operator on 2026-10-03, after the curve configuration round trip
-closed: the per-entry curve configuration tables take a =_config= suffix
-(=yield_curve_config=, =fx_volatility_config= and so on), matching
-=curve_volatility_config=. =curve_definition= keeps its name, because it is the
-header row other documents refer to. Child tables (segments, quotes, terms,
-factors, price segments, smile parameters) and the tables whose names already
-say configuration keep theirs.
-
-The rename is [[id:57EE13B8-4975-4919-A8E7-747B7EE931C0][Rename the curve configuration tables with a _config suffix]].

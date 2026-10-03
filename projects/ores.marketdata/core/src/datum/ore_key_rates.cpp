@@ -169,31 +169,31 @@ market_datum read_cc_fix_float_swap(quote_type q, tokens rest) {
 
 market_datum read_rates(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::zero:
-        return read_zero(q, rest);
-    case it::discount:
-        return read_discount(q, rest);
-    case it::mm:
-        return read_mm(q, rest);
-    case it::mm_future:
-    case it::oi_future:
-        return read_future(t, q, rest);
-    case it::fra:
-        return read_fra(q, rest);
-    case it::imm_fra:
-        return read_imm_fra(q, rest);
-    case it::ir_swap:
-        return read_ir_swap(q, rest);
-    case it::basis_swap:
-        return read_basis_swap(q, rest);
-    case it::bma_swap:
-        return read_bma_swap(q, rest);
-    case it::cc_basis_swap:
-        return read_cc_basis_swap(q, rest);
-    case it::cc_fix_float_swap:
-        return read_cc_fix_float_swap(q, rest);
-    default:
-        throw std::logic_error("read_rates called for a type it does not read");
+        case it::zero:
+            return read_zero(q, rest);
+        case it::discount:
+            return read_discount(q, rest);
+        case it::mm:
+            return read_mm(q, rest);
+        case it::mm_future:
+        case it::oi_future:
+            return read_future(t, q, rest);
+        case it::fra:
+            return read_fra(q, rest);
+        case it::imm_fra:
+            return read_imm_fra(q, rest);
+        case it::ir_swap:
+            return read_ir_swap(q, rest);
+        case it::basis_swap:
+            return read_basis_swap(q, rest);
+        case it::bma_swap:
+            return read_bma_swap(q, rest);
+        case it::cc_basis_swap:
+            return read_cc_basis_swap(q, rest);
+        case it::cc_fix_float_swap:
+            return read_cc_fix_float_swap(q, rest);
+        default:
+            throw std::logic_error("read_rates called for a type it does not read");
     }
 }
 

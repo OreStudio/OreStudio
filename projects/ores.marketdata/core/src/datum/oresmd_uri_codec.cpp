@@ -62,16 +62,16 @@ std::unexpected<std::string> refuse(std::string_view uri, std::string_view why) 
 /// A field's value read from its URI text, by the value type the field holds.
 std::expected<value, std::string> value_of(field f, std::string_view text) {
     switch (kind_of(f)) {
-    case value_kind::text:
-        return value(std::string(text));
-    case value_kind::term:
-        return term::parse(text).transform([](term t) { return value(std::move(t)); });
-    case value_kind::decimal:
-        return decimal::parse(text).transform([](decimal d) { return value(std::move(d)); });
-    case value_kind::strike:
-        return strike::parse(text).transform([](strike s) { return value(std::move(s)); });
-    case value_kind::code:
-        return code::parse(text).transform([](code c) { return value(std::move(c)); });
+        case value_kind::text:
+            return value(std::string(text));
+        case value_kind::term:
+            return term::parse(text).transform([](term t) { return value(std::move(t)); });
+        case value_kind::decimal:
+            return decimal::parse(text).transform([](decimal d) { return value(std::move(d)); });
+        case value_kind::strike:
+            return strike::parse(text).transform([](strike s) { return value(std::move(s)); });
+        case value_kind::code:
+            return code::parse(text).transform([](code c) { return value(std::move(c)); });
     }
     return std::unexpected(std::string("unknown value kind"));
 }
@@ -127,8 +127,8 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
     for (const auto& param : u.params(query_encoding())) {
         if (param.key.empty() || !param.has_value || param.value.empty())
             return refuse(uri, std::format("the query key '{}' has no value", param.key));
-        const bool repeated = std::ranges::any_of(
-            entries, [&](const query_entry& e) { return e.key == param.key; });
+        const bool repeated =
+            std::ranges::any_of(entries, [&](const query_entry& e) { return e.key == param.key; });
         if (repeated)
             return refuse(uri, std::format("the query repeats '{}'", param.key));
         entries.push_back({param.key, param.value});
@@ -174,7 +174,8 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
         const auto name = name_of(spec.name);
         if (spec.name == row.subject) {
             if (take(name))
-                return refuse(uri, std::format("'{}' is the path; the query must not repeat it", name));
+                return refuse(uri,
+                              std::format("'{}' is the path; the query must not repeat it", name));
             auto held = value_of(spec.name, subject_text);
             if (!held)
                 return refuse(uri, std::format("the path: {}", held.error()));
@@ -200,7 +201,8 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
                                     return s.name == *f && s.role == field_role::coordinate;
                                 });
         if (series && coordinate)
-            return refuse(uri, std::format("a series has no coordinate, but the query has '{}'", key));
+            return refuse(uri,
+                          std::format("a series has no coordinate, but the query has '{}'", key));
         return refuse(uri, std::format("a {} has no field '{}'", *instrument_text, key));
     }
 

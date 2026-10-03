@@ -28,14 +28,16 @@
 // GCC and Clang report a missing case in the dispatch switch through -Wall's
 // -Wswitch and -Werror; MSVC's equivalent, C4062, is off by default.
 #if defined(_MSC_VER)
-#pragma warning(error : 4062)
+#    pragma warning(error : 4062)
 #endif
 
 namespace ores::marketdata::datum {
 
 namespace detail {
 
-void refuse(const std::string& why) { throw refusal(why); }
+void refuse(const std::string& why) {
+    throw refusal(why);
+}
 
 datum_builder::datum_builder(instrument_type type, quote_type quote)
     : type_(type)
@@ -76,7 +78,9 @@ term term_of(std::string_view t, std::initializer_list<term::kind> allowed) {
     return std::move(*parsed);
 }
 
-term period(std::string_view t) { return term_of(t, {term::kind::period}); }
+term period(std::string_view t) {
+    return term_of(t, {term::kind::period});
+}
 
 term period_or_date(std::string_view t) {
     return term_of(t, {term::kind::period, term::kind::date});
@@ -129,7 +133,8 @@ std::string join(tokens parts) {
 
 void require_size(tokens rest, std::initializer_list<std::size_t> allowed) {
     if (std::ranges::find(allowed, rest.size()) == allowed.end())
-        refuse(std::format("{} tokens after the quote type is not a form of this type", rest.size()));
+        refuse(
+            std::format("{} tokens after the quote type is not a form of this type", rest.size()));
 }
 
 void require_quote(quote_type q, std::initializer_list<quote_type> allowed) {
@@ -141,19 +146,20 @@ bool is_one_period(std::string_view t) {
     if (t.size() < 2)
         return false;
     switch (t.back()) {
-    case 'D':
-    case 'd':
-    case 'W':
-    case 'w':
-    case 'M':
-    case 'm':
-    case 'Y':
-    case 'y':
-        break;
-    default:
-        return false;
+        case 'D':
+        case 'd':
+        case 'W':
+        case 'w':
+        case 'M':
+        case 'm':
+        case 'Y':
+        case 'y':
+            break;
+        default:
+            return false;
     }
-    return std::ranges::all_of(t.substr(0, t.size() - 1), [](char c) { return c >= '0' && c <= '9'; });
+    return std::ranges::all_of(t.substr(0, t.size() - 1),
+                               [](char c) { return c >= '0' && c <= '9'; });
 }
 
 bool is_doc_clause(std::string_view t) {
@@ -162,7 +168,9 @@ bool is_doc_clause(std::string_view t) {
     return std::ranges::find(clauses, t) != clauses.end();
 }
 
-bool is_number(std::string_view t) { return decimal::parse(t).has_value(); }
+bool is_number(std::string_view t) {
+    return decimal::parse(t).has_value();
+}
 
 }
 
@@ -205,59 +213,59 @@ std::vector<std::string_view> split(std::string_view key) {
 market_datum dispatch(instrument_type t, quote_type q, detail::tokens rest) {
     using it = instrument_type;
     switch (t) {
-    case it::zero:
-    case it::discount:
-    case it::mm:
-    case it::mm_future:
-    case it::oi_future:
-    case it::fra:
-    case it::imm_fra:
-    case it::ir_swap:
-    case it::basis_swap:
-    case it::bma_swap:
-    case it::cc_basis_swap:
-    case it::cc_fix_float_swap:
-        return detail::read_rates(t, q, rest);
-    case it::cds:
-    case it::cds_index:
-    case it::hazard_rate:
-    case it::recovery_rate:
-    case it::assumed_recovery_rate:
-    case it::index_cds_option:
-    case it::index_cds_tranche:
-        return detail::read_credit(t, q, rest);
-    case it::swaption:
-    case it::capfloor:
-    case it::bond_option:
-        return detail::read_volatility(t, q, rest);
-    case it::fx_spot:
-    case it::fx_fwd:
-    case it::fx_option:
-        return detail::read_fx(t, q, rest);
-    case it::zc_inflation_swap:
-    case it::zc_inflation_capfloor:
-    case it::yy_inflation_swap:
-    case it::yy_inflation_capfloor:
-    case it::seasonality:
-        return detail::read_inflation(t, q, rest);
-    case it::equity_spot:
-    case it::equity_fwd:
-    case it::equity_dividend:
-    case it::equity_option:
-        return detail::read_equity(t, q, rest);
-    case it::commodity_spot:
-    case it::commodity_fwd:
-    case it::commodity_option:
-    case it::commodity_calendar_spread_option:
-        return detail::read_commodity(t, q, rest);
-    case it::bond:
-    case it::bond_future:
-    case it::bond_future_option:
-    case it::correlation:
-    case it::cpr:
-    case it::rating:
-    case it::shape_profile:
-        return detail::read_securities(t, q, rest);
+        case it::zero:
+        case it::discount:
+        case it::mm:
+        case it::mm_future:
+        case it::oi_future:
+        case it::fra:
+        case it::imm_fra:
+        case it::ir_swap:
+        case it::basis_swap:
+        case it::bma_swap:
+        case it::cc_basis_swap:
+        case it::cc_fix_float_swap:
+            return detail::read_rates(t, q, rest);
+        case it::cds:
+        case it::cds_index:
+        case it::hazard_rate:
+        case it::recovery_rate:
+        case it::assumed_recovery_rate:
+        case it::index_cds_option:
+        case it::index_cds_tranche:
+            return detail::read_credit(t, q, rest);
+        case it::swaption:
+        case it::capfloor:
+        case it::bond_option:
+            return detail::read_volatility(t, q, rest);
+        case it::fx_spot:
+        case it::fx_fwd:
+        case it::fx_option:
+            return detail::read_fx(t, q, rest);
+        case it::zc_inflation_swap:
+        case it::zc_inflation_capfloor:
+        case it::yy_inflation_swap:
+        case it::yy_inflation_capfloor:
+        case it::seasonality:
+            return detail::read_inflation(t, q, rest);
+        case it::equity_spot:
+        case it::equity_fwd:
+        case it::equity_dividend:
+        case it::equity_option:
+            return detail::read_equity(t, q, rest);
+        case it::commodity_spot:
+        case it::commodity_fwd:
+        case it::commodity_option:
+        case it::commodity_calendar_spread_option:
+            return detail::read_commodity(t, q, rest);
+        case it::bond:
+        case it::bond_future:
+        case it::bond_future_option:
+        case it::correlation:
+        case it::cpr:
+        case it::rating:
+        case it::shape_profile:
+            return detail::read_securities(t, q, rest);
     }
     detail::refuse("unknown instrument type");
 }
@@ -267,8 +275,8 @@ market_datum dispatch(instrument_type t, quote_type q, detail::tokens rest) {
 std::expected<market_datum, std::string> ore_key_codec::read(std::string_view key) {
     const auto parts = split(key);
     if (parts.size() < 3)
-        return std::unexpected(std::format(
-            "'{}' needs at least an instrument type, a quote type and one field", key));
+        return std::unexpected(
+            std::format("'{}' needs at least an instrument type, a quote type and one field", key));
     const auto type = type_from_token(parts[0]);
     if (!type)
         return std::unexpected(std::format("'{}' is not an ORE instrument type", parts[0]));
@@ -307,16 +315,16 @@ std::string_view ore_key_codec::token_of(instrument_type t) {
     // ORE's parseInstrumentType spells these four differently from the enum's
     // name; every other key starts with the name.
     switch (t) {
-    case instrument_type::fx_spot:
-        return "FX";
-    case instrument_type::fx_fwd:
-        return "FXFWD";
-    case instrument_type::equity_spot:
-        return "EQUITY";
-    case instrument_type::commodity_spot:
-        return "COMMODITY";
-    default:
-        return ore_name(t);
+        case instrument_type::fx_spot:
+            return "FX";
+        case instrument_type::fx_fwd:
+            return "FXFWD";
+        case instrument_type::equity_spot:
+            return "EQUITY";
+        case instrument_type::commodity_spot:
+            return "COMMODITY";
+        default:
+            return ore_name(t);
     }
 }
 

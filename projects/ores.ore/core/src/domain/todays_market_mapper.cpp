@@ -20,8 +20,8 @@
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.core/domain/ore_code_tables.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid.hpp>
+#include <algorithm>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -62,7 +62,9 @@ std::string base_text(const T& e) {
 }
 
 // The second key of the collections that have one, and nothing for the rest.
-const auto no_second_key = [](const auto&) { return std::optional<std::string>{}; };
+const auto no_second_key = [](const auto&) {
+    return std::optional<std::string>{};
+};
 
 std::optional<std::string> collection_id_of(const auto& wrapper) {
     if (!wrapper.id)
@@ -103,7 +105,7 @@ void map_collection(mapped_todays_market& out,
                     const char* key_attribute,
                     int& collection_position,
                     const xsd::vector<Wrapper>& wrappers,
-                    xsd::vector<EntryT> Wrapper::* entries,
+                    xsd::vector<EntryT> Wrapper::*entries,
                     K1 key1,
                     K2 key2,
                     Tg target) {
@@ -131,8 +133,8 @@ void map_collection(mapped_todays_market& out,
 // The reverse: one collection row and its entry rows become one element.
 template <typename Wrapper, typename EntryT, typename Build>
 void build_collection(todaysmarket& doc,
-                      xsd::vector<Wrapper> todaysmarket::* member,
-                      xsd::vector<EntryT> Wrapper::* entries,
+                      xsd::vector<Wrapper> todaysmarket::*member,
+                      xsd::vector<EntryT> Wrapper::*entries,
                       const todays_market_collection& c,
                       const std::vector<const todays_market_entry*>& rows,
                       Build build) {
@@ -206,101 +208,252 @@ mapped_todays_market todays_market_mapper::map(const todaysmarket& v) {
     }
 
     int cp = 0;
-    const auto by_name = [](const auto& e) { return std::string(e.name); };
-    map_collection(mapped, config.id, "YieldCurves", "name", cp, v.YieldCurves,
-                   &yieldCurvesType::YieldCurve, by_name, no_second_key, base_text<yieldCurvesType_YieldCurve_t>);
-    map_collection(mapped, config.id, "IndexForwardingCurves", "name", cp,
-                   v.IndexForwardingCurves, &indexForwardingCurvesType::Index, by_name,
-                   no_second_key, base_text<indexForwardingCurvesType_Index_t>);
-    map_collection(mapped, config.id, "ZeroInflationIndexCurves", "name", cp,
-                   v.ZeroInflationIndexCurves, &zeroInflationIndexCurvesType::ZeroInflationIndexCurve,
-                   by_name, no_second_key,
+    const auto by_name = [](const auto& e) {
+        return std::string(e.name);
+    };
+    map_collection(mapped,
+                   config.id,
+                   "YieldCurves",
+                   "name",
+                   cp,
+                   v.YieldCurves,
+                   &yieldCurvesType::YieldCurve,
+                   by_name,
+                   no_second_key,
+                   base_text<yieldCurvesType_YieldCurve_t>);
+    map_collection(mapped,
+                   config.id,
+                   "IndexForwardingCurves",
+                   "name",
+                   cp,
+                   v.IndexForwardingCurves,
+                   &indexForwardingCurvesType::Index,
+                   by_name,
+                   no_second_key,
+                   base_text<indexForwardingCurvesType_Index_t>);
+    map_collection(mapped,
+                   config.id,
+                   "ZeroInflationIndexCurves",
+                   "name",
+                   cp,
+                   v.ZeroInflationIndexCurves,
+                   &zeroInflationIndexCurvesType::ZeroInflationIndexCurve,
+                   by_name,
+                   no_second_key,
                    base_text<zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t>);
-    map_collection(mapped, config.id, "YYInflationIndexCurves", "name", cp,
-                   v.YYInflationIndexCurves, &yyInflationIndexCurvesType::YYInflationIndexCurve,
-                   by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "YYInflationIndexCurves",
+                   "name",
+                   cp,
+                   v.YYInflationIndexCurves,
+                   &yyInflationIndexCurvesType::YYInflationIndexCurve,
+                   by_name,
+                   no_second_key,
                    base_text<yyInflationIndexCurvesType_YYInflationIndexCurve_t>);
-    map_collection(mapped, config.id, "YieldVolatilities", "name", cp, v.YieldVolatilities,
-                   &yieldVolatilitiesType::YieldVolatility, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "YieldVolatilities",
+                   "name",
+                   cp,
+                   v.YieldVolatilities,
+                   &yieldVolatilitiesType::YieldVolatility,
+                   by_name,
+                   no_second_key,
                    base_text<yieldVolatilitiesType_YieldVolatility_t>);
-    map_collection(mapped, config.id, "CDSVolatilities", "name", cp, v.CDSVolatilities,
-                   &cdsVolatilitiesType::CDSVolatility, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "CDSVolatilities",
+                   "name",
+                   cp,
+                   v.CDSVolatilities,
+                   &cdsVolatilitiesType::CDSVolatility,
+                   by_name,
+                   no_second_key,
                    base_text<cdsVolatilitiesType_CDSVolatility_t>);
-    map_collection(mapped, config.id, "DefaultCurves", "name", cp, v.DefaultCurves,
-                   &defaultCurvesType::DefaultCurve, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "DefaultCurves",
+                   "name",
+                   cp,
+                   v.DefaultCurves,
+                   &defaultCurvesType::DefaultCurve,
+                   by_name,
+                   no_second_key,
                    base_text<defaultCurvesType_DefaultCurve_t>);
-    map_collection(mapped, config.id, "EquityCurves", "name", cp, v.EquityCurves,
-                   &equityCurvesType::EquityCurve, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "EquityCurves",
+                   "name",
+                   cp,
+                   v.EquityCurves,
+                   &equityCurvesType::EquityCurve,
+                   by_name,
+                   no_second_key,
                    base_text<equityCurvesType_EquityCurve_t>);
-    map_collection(mapped, config.id, "EquityVolatilities", "name", cp, v.EquityVolatilities,
-                   &equityVolatilitiesType::EquityVolatility, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "EquityVolatilities",
+                   "name",
+                   cp,
+                   v.EquityVolatilities,
+                   &equityVolatilitiesType::EquityVolatility,
+                   by_name,
+                   no_second_key,
                    base_text<equityVolatilitiesType_EquityVolatility_t>);
-    map_collection(mapped, config.id, "Securities", "name", cp, v.Securities,
-                   &securitiesType::Security, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "Securities",
+                   "name",
+                   cp,
+                   v.Securities,
+                   &securitiesType::Security,
+                   by_name,
+                   no_second_key,
                    base_text<securitiesType_Security_t>);
-    map_collection(mapped, config.id, "BaseCorrelations", "name", cp, v.BaseCorrelations,
-                   &baseCorrelationsType::BaseCorrelation, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "BaseCorrelations",
+                   "name",
+                   cp,
+                   v.BaseCorrelations,
+                   &baseCorrelationsType::BaseCorrelation,
+                   by_name,
+                   no_second_key,
                    base_text<baseCorrelationsType_BaseCorrelation_t>);
-    map_collection(mapped, config.id, "CommodityCurves", "name", cp, v.CommodityCurves,
-                   &commodityCurvesType::CommodityCurve, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "CommodityCurves",
+                   "name",
+                   cp,
+                   v.CommodityCurves,
+                   &commodityCurvesType::CommodityCurve,
+                   by_name,
+                   no_second_key,
                    base_text<commodityCurvesType_CommodityCurve_t>);
-    map_collection(mapped, config.id, "CommodityVolatilities", "name", cp,
-                   v.CommodityVolatilities, &commodityVolatilitiesType::CommodityVolatility,
-                   by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "CommodityVolatilities",
+                   "name",
+                   cp,
+                   v.CommodityVolatilities,
+                   &commodityVolatilitiesType::CommodityVolatility,
+                   by_name,
+                   no_second_key,
                    base_text<commodityVolatilitiesType_CommodityVolatility_t>);
-    map_collection(mapped, config.id, "Correlations", "name", cp, v.Correlations,
-                   &correlationsType::Correlation, by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "Correlations",
+                   "name",
+                   cp,
+                   v.Correlations,
+                   &correlationsType::Correlation,
+                   by_name,
+                   no_second_key,
                    base_text<correlationsType_Correlation_t>);
-    map_collection(mapped, config.id, "BondFutureVolatilities", "name", cp,
-                   v.BondFutureVolatilities, &bondFutureVolatilitiesType::BondFutureVolatility,
-                   by_name, no_second_key,
+    map_collection(mapped,
+                   config.id,
+                   "BondFutureVolatilities",
+                   "name",
+                   cp,
+                   v.BondFutureVolatilities,
+                   &bondFutureVolatilitiesType::BondFutureVolatility,
+                   by_name,
+                   no_second_key,
                    base_text<bondFutureVolatilitiesType_BondFutureVolatility_t>);
-    map_collection(mapped, config.id, "IntradayPowerPriceCurves", "name", cp,
+    map_collection(mapped,
+                   config.id,
+                   "IntradayPowerPriceCurves",
+                   "name",
+                   cp,
                    v.IntradayPowerPriceCurves,
-                   &intradayPowerPriceCurvesType::IntradayPowerPriceCurve, by_name,
+                   &intradayPowerPriceCurvesType::IntradayPowerPriceCurve,
+                   by_name,
                    no_second_key,
                    base_text<intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t>);
-    map_collection(mapped, config.id, "DiscountingCurves", "currency", cp,
-                   v.DiscountingCurves, &discountCurvesType::DiscountingCurve,
-                   [](const auto& e) { return std::string(e.currency); }, no_second_key,
-                   base_text<discountCurvesType_DiscountingCurve_t>);
-    map_collection(mapped, config.id, "FxSpots", "pair", cp, v.FxSpots,
-                   &fxSpotsType::FxSpot,
-                   [](const auto& e) { return std::string(e.pair); }, no_second_key,
-                   base_text<fxSpotsType_FxSpot_t>);
-    map_collection(mapped, config.id, "FxVolatilities", "pair", cp, v.FxVolatilities,
-                   &fxVolatilitiesType::FxVolatility,
-                   [](const auto& e) { return std::string(e.pair); }, no_second_key,
-                   base_text<fxVolatilitiesType_FxVolatility_t>);
-    map_collection(mapped, config.id, "SwaptionVolatilities", "key", cp,
-                   v.SwaptionVolatilities, &swaptionVolatilitiesType::SwaptionVolatility,
-                   [](const auto& e) {
-                       return e.key ? std::optional<std::string>(std::string(*e.key)) : std::nullopt;
-                   },
-                   [](const auto& e) {
-                       return e.currency ? std::optional<std::string>(to_string(*e.currency))
-                                         : std::nullopt;
-                   },
-                   base_text<swaptionVolatilitiesType_SwaptionVolatility_t>);
-    map_collection(mapped, config.id, "CapFloorVolatilities", "key", cp,
-                   v.CapFloorVolatilities, &capFloorVolatilitiesType::CapFloorVolatility,
-                   [](const auto& e) {
-                       return e.key ? std::optional<std::string>(std::string(*e.key)) : std::nullopt;
-                   },
-                   [](const auto& e) {
-                       return e.currency ? std::optional<std::string>(to_string(*e.currency))
-                                         : std::nullopt;
-                   },
-                   base_text<capFloorVolatilitiesType_CapFloorVolatility_t>);
-    map_collection(mapped, config.id, "ZeroInflationCapFloorVolatilities", "name", cp,
-                   v.ZeroInflationCapFloorVolatilities,
-                   &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility,
-                   by_name, no_second_key,
-                   base_text<zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t>);
-    map_collection(mapped, config.id, "YYInflationCapFloorVolatilities", "name", cp,
+    map_collection(
+        mapped,
+        config.id,
+        "DiscountingCurves",
+        "currency",
+        cp,
+        v.DiscountingCurves,
+        &discountCurvesType::DiscountingCurve,
+        [](const auto& e) { return std::string(e.currency); },
+        no_second_key,
+        base_text<discountCurvesType_DiscountingCurve_t>);
+    map_collection(
+        mapped,
+        config.id,
+        "FxSpots",
+        "pair",
+        cp,
+        v.FxSpots,
+        &fxSpotsType::FxSpot,
+        [](const auto& e) { return std::string(e.pair); },
+        no_second_key,
+        base_text<fxSpotsType_FxSpot_t>);
+    map_collection(
+        mapped,
+        config.id,
+        "FxVolatilities",
+        "pair",
+        cp,
+        v.FxVolatilities,
+        &fxVolatilitiesType::FxVolatility,
+        [](const auto& e) { return std::string(e.pair); },
+        no_second_key,
+        base_text<fxVolatilitiesType_FxVolatility_t>);
+    map_collection(
+        mapped,
+        config.id,
+        "SwaptionVolatilities",
+        "key",
+        cp,
+        v.SwaptionVolatilities,
+        &swaptionVolatilitiesType::SwaptionVolatility,
+        [](const auto& e) {
+            return e.key ? std::optional<std::string>(std::string(*e.key)) : std::nullopt;
+        },
+        [](const auto& e) {
+            return e.currency ? std::optional<std::string>(to_string(*e.currency)) : std::nullopt;
+        },
+        base_text<swaptionVolatilitiesType_SwaptionVolatility_t>);
+    map_collection(
+        mapped,
+        config.id,
+        "CapFloorVolatilities",
+        "key",
+        cp,
+        v.CapFloorVolatilities,
+        &capFloorVolatilitiesType::CapFloorVolatility,
+        [](const auto& e) {
+            return e.key ? std::optional<std::string>(std::string(*e.key)) : std::nullopt;
+        },
+        [](const auto& e) {
+            return e.currency ? std::optional<std::string>(to_string(*e.currency)) : std::nullopt;
+        },
+        base_text<capFloorVolatilitiesType_CapFloorVolatility_t>);
+    map_collection(
+        mapped,
+        config.id,
+        "ZeroInflationCapFloorVolatilities",
+        "name",
+        cp,
+        v.ZeroInflationCapFloorVolatilities,
+        &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility,
+        by_name,
+        no_second_key,
+        base_text<zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t>);
+    map_collection(mapped,
+                   config.id,
+                   "YYInflationCapFloorVolatilities",
+                   "name",
+                   cp,
                    v.YYInflationCapFloorVolatilities,
                    &yyInflationCapFloorVolatilitiesType::YYInflationCapFloorVolatility,
-                   by_name, no_second_key,
+                   by_name,
+                   no_second_key,
                    base_text<yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t>);
 
     // SwapIndexCurves is the exception: its entry has no reference text, and its
@@ -332,8 +485,9 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
     todaysmarket doc;
 
     auto collections = v.collections;
-    std::sort(collections.begin(), collections.end(),
-              [](const auto& a, const auto& b) { return a.position < b.position; });
+    std::sort(collections.begin(), collections.end(), [](const auto& a, const auto& b) {
+        return a.position < b.position;
+    });
 
     const auto rows_for = [&v](const boost::uuids::uuid& collection_id) {
         std::vector<const todays_market_entry*> rows;
@@ -341,8 +495,9 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
             if (r.todays_market_collection_id == collection_id)
                 rows.push_back(&r);
         }
-        std::sort(rows.begin(), rows.end(),
-                  [](const auto* a, const auto* b) { return a->position < b->position; });
+        std::sort(rows.begin(), rows.end(), [](const auto* a, const auto* b) {
+            return a->position < b->position;
+        });
         return rows;
     };
 
@@ -350,129 +505,174 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
         const auto rows = rows_for(c.id);
 
         if (c.collection == "YieldCurves") {
-            build_collection(doc, &todaysmarket::YieldCurves, &yieldCurvesType::YieldCurve, c, rows,
-                [](const todays_market_entry& r) {
-                    yieldCurvesType_YieldCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::YieldCurves,
+                             &yieldCurvesType::YieldCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 yieldCurvesType_YieldCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "IndexForwardingCurves") {
-            build_collection(doc, &todaysmarket::IndexForwardingCurves,
-                &indexForwardingCurvesType::Index, c, rows,
-                [](const todays_market_entry& r) {
-                    indexForwardingCurvesType_Index_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::IndexForwardingCurves,
+                             &indexForwardingCurvesType::Index,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 indexForwardingCurvesType_Index_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "DiscountingCurves") {
-            build_collection(doc, &todaysmarket::DiscountingCurves,
-                &discountCurvesType::DiscountingCurve, c, rows,
-                [](const todays_market_entry& r) {
-                    discountCurvesType_DiscountingCurve_t e;
-                    e.currency = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::DiscountingCurves,
+                             &discountCurvesType::DiscountingCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 discountCurvesType_DiscountingCurve_t e;
+                                 e.currency = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "SwapIndexCurves") {
-            build_collection(doc, &todaysmarket::SwapIndexCurves, &swapIndexCurvesType::SwapIndex, c,
-                rows,
-                [](const todays_market_entry& r) {
-                    swapIndexCurvesType_SwapIndex_t e;
-                    e.name = required_key(r);
-                    e.Discounting = r.discounting.value_or("");
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::SwapIndexCurves,
+                             &swapIndexCurvesType::SwapIndex,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 swapIndexCurvesType_SwapIndex_t e;
+                                 e.name = required_key(r);
+                                 e.Discounting = r.discounting.value_or("");
+                                 return e;
+                             });
         } else if (c.collection == "ZeroInflationIndexCurves") {
-            build_collection(doc, &todaysmarket::ZeroInflationIndexCurves,
-                &zeroInflationIndexCurvesType::ZeroInflationIndexCurve, c, rows,
-                [](const todays_market_entry& r) {
-                    zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::ZeroInflationIndexCurves,
+                             &zeroInflationIndexCurvesType::ZeroInflationIndexCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "YYInflationIndexCurves") {
-            build_collection(doc, &todaysmarket::YYInflationIndexCurves,
-                &yyInflationIndexCurvesType::YYInflationIndexCurve, c, rows,
-                [](const todays_market_entry& r) {
-                    yyInflationIndexCurvesType_YYInflationIndexCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::YYInflationIndexCurves,
+                             &yyInflationIndexCurvesType::YYInflationIndexCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 yyInflationIndexCurvesType_YYInflationIndexCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "FxSpots") {
-            build_collection(doc, &todaysmarket::FxSpots, &fxSpotsType::FxSpot, c, rows,
-                [](const todays_market_entry& r) {
-                    fxSpotsType_FxSpot_t e;
-                    e.pair = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::FxSpots,
+                             &fxSpotsType::FxSpot,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 fxSpotsType_FxSpot_t e;
+                                 e.pair = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "FxVolatilities") {
-            build_collection(doc, &todaysmarket::FxVolatilities, &fxVolatilitiesType::FxVolatility, c,
-                rows,
-                [](const todays_market_entry& r) {
-                    fxVolatilitiesType_FxVolatility_t e;
-                    e.pair = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::FxVolatilities,
+                             &fxVolatilitiesType::FxVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 fxVolatilitiesType_FxVolatility_t e;
+                                 e.pair = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "SwaptionVolatilities") {
-            build_collection(doc, &todaysmarket::SwaptionVolatilities,
-                &swaptionVolatilitiesType::SwaptionVolatility, c, rows,
-                [](const todays_market_entry& r) {
-                    swaptionVolatilitiesType_SwaptionVolatility_t e;
-                    if (r.key_value)
-                        e.key = *r.key_value;
-                    if (r.key_value_2)
-                        e.currency = parse_currency_code(*r.key_value_2);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::SwaptionVolatilities,
+                             &swaptionVolatilitiesType::SwaptionVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 swaptionVolatilitiesType_SwaptionVolatility_t e;
+                                 if (r.key_value)
+                                     e.key = *r.key_value;
+                                 if (r.key_value_2)
+                                     e.currency = parse_currency_code(*r.key_value_2);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "CapFloorVolatilities") {
-            build_collection(doc, &todaysmarket::CapFloorVolatilities,
-                &capFloorVolatilitiesType::CapFloorVolatility, c, rows,
-                [](const todays_market_entry& r) {
-                    capFloorVolatilitiesType_CapFloorVolatility_t e;
-                    if (r.key_value)
-                        e.key = *r.key_value;
-                    if (r.key_value_2)
-                        e.currency = parse_currency_code(*r.key_value_2);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::CapFloorVolatilities,
+                             &capFloorVolatilitiesType::CapFloorVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 capFloorVolatilitiesType_CapFloorVolatility_t e;
+                                 if (r.key_value)
+                                     e.key = *r.key_value;
+                                 if (r.key_value_2)
+                                     e.currency = parse_currency_code(*r.key_value_2);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "YieldVolatilities") {
-            build_collection(doc, &todaysmarket::YieldVolatilities,
-                &yieldVolatilitiesType::YieldVolatility, c, rows,
-                [](const todays_market_entry& r) {
-                    yieldVolatilitiesType_YieldVolatility_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::YieldVolatilities,
+                             &yieldVolatilitiesType::YieldVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 yieldVolatilitiesType_YieldVolatility_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "CDSVolatilities") {
-            build_collection(doc, &todaysmarket::CDSVolatilities, &cdsVolatilitiesType::CDSVolatility,
-                c, rows,
-                [](const todays_market_entry& r) {
-                    cdsVolatilitiesType_CDSVolatility_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::CDSVolatilities,
+                             &cdsVolatilitiesType::CDSVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 cdsVolatilitiesType_CDSVolatility_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "DefaultCurves") {
-            build_collection(doc, &todaysmarket::DefaultCurves, &defaultCurvesType::DefaultCurve, c,
-                rows,
-                [](const todays_market_entry& r) {
-                    defaultCurvesType_DefaultCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::DefaultCurves,
+                             &defaultCurvesType::DefaultCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 defaultCurvesType_DefaultCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "YYInflationCapFloorVolatilities") {
-            build_collection(doc, &todaysmarket::YYInflationCapFloorVolatilities,
-                &yyInflationCapFloorVolatilitiesType::YYInflationCapFloorVolatility, c, rows,
+            build_collection(
+                doc,
+                &todaysmarket::YYInflationCapFloorVolatilities,
+                &yyInflationCapFloorVolatilitiesType::YYInflationCapFloorVolatility,
+                c,
+                rows,
                 [](const todays_market_entry& r) {
                     yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t e;
                     e.name = required_key(r);
@@ -480,8 +680,12 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                     return e;
                 });
         } else if (c.collection == "ZeroInflationCapFloorVolatilities") {
-            build_collection(doc, &todaysmarket::ZeroInflationCapFloorVolatilities,
-                &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility, c, rows,
+            build_collection(
+                doc,
+                &todaysmarket::ZeroInflationCapFloorVolatilities,
+                &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility,
+                c,
+                rows,
                 [](const todays_market_entry& r) {
                     zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t e;
                     e.name = required_key(r);
@@ -489,85 +693,113 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                     return e;
                 });
         } else if (c.collection == "EquityCurves") {
-            build_collection(doc, &todaysmarket::EquityCurves, &equityCurvesType::EquityCurve, c,
-                rows,
-                [](const todays_market_entry& r) {
-                    equityCurvesType_EquityCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::EquityCurves,
+                             &equityCurvesType::EquityCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 equityCurvesType_EquityCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "EquityVolatilities") {
-            build_collection(doc, &todaysmarket::EquityVolatilities,
-                &equityVolatilitiesType::EquityVolatility, c, rows,
-                [](const todays_market_entry& r) {
-                    equityVolatilitiesType_EquityVolatility_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::EquityVolatilities,
+                             &equityVolatilitiesType::EquityVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 equityVolatilitiesType_EquityVolatility_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "Securities") {
-            build_collection(doc, &todaysmarket::Securities, &securitiesType::Security, c, rows,
-                [](const todays_market_entry& r) {
-                    securitiesType_Security_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::Securities,
+                             &securitiesType::Security,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 securitiesType_Security_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "BaseCorrelations") {
-            build_collection(doc, &todaysmarket::BaseCorrelations,
-                &baseCorrelationsType::BaseCorrelation, c, rows,
-                [](const todays_market_entry& r) {
-                    baseCorrelationsType_BaseCorrelation_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::BaseCorrelations,
+                             &baseCorrelationsType::BaseCorrelation,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 baseCorrelationsType_BaseCorrelation_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "CommodityCurves") {
-            build_collection(doc, &todaysmarket::CommodityCurves, &commodityCurvesType::CommodityCurve,
-                c, rows,
-                [](const todays_market_entry& r) {
-                    commodityCurvesType_CommodityCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::CommodityCurves,
+                             &commodityCurvesType::CommodityCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 commodityCurvesType_CommodityCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "CommodityVolatilities") {
-            build_collection(doc, &todaysmarket::CommodityVolatilities,
-                &commodityVolatilitiesType::CommodityVolatility, c, rows,
-                [](const todays_market_entry& r) {
-                    commodityVolatilitiesType_CommodityVolatility_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::CommodityVolatilities,
+                             &commodityVolatilitiesType::CommodityVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 commodityVolatilitiesType_CommodityVolatility_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "Correlations") {
-            build_collection(doc, &todaysmarket::Correlations, &correlationsType::Correlation, c,
-                rows,
-                [](const todays_market_entry& r) {
-                    correlationsType_Correlation_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::Correlations,
+                             &correlationsType::Correlation,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 correlationsType_Correlation_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "BondFutureVolatilities") {
-            build_collection(doc, &todaysmarket::BondFutureVolatilities,
-                &bondFutureVolatilitiesType::BondFutureVolatility, c, rows,
-                [](const todays_market_entry& r) {
-                    bondFutureVolatilitiesType_BondFutureVolatility_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::BondFutureVolatilities,
+                             &bondFutureVolatilitiesType::BondFutureVolatility,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 bondFutureVolatilitiesType_BondFutureVolatility_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else if (c.collection == "IntradayPowerPriceCurves") {
-            build_collection(doc, &todaysmarket::IntradayPowerPriceCurves,
-                &intradayPowerPriceCurvesType::IntradayPowerPriceCurve, c, rows,
-                [](const todays_market_entry& r) {
-                    intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t e;
-                    e.name = required_key(r);
-                    static_cast<xsd::string&>(e) = r.target;
-                    return e;
-                });
+            build_collection(doc,
+                             &todaysmarket::IntradayPowerPriceCurves,
+                             &intradayPowerPriceCurvesType::IntradayPowerPriceCurve,
+                             c,
+                             rows,
+                             [](const todays_market_entry& r) {
+                                 intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t e;
+                                 e.name = required_key(r);
+                                 static_cast<xsd::string&>(e) = r.target;
+                                 return e;
+                             });
         } else {
             throw std::runtime_error("todays_market_mapper: unknown collection '" + c.collection +
                                      "'");
@@ -575,8 +807,9 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
     }
 
     auto configurations = v.configurations;
-    std::sort(configurations.begin(), configurations.end(),
-              [](const auto& a, const auto& b) { return a.position < b.position; });
+    std::sort(configurations.begin(), configurations.end(), [](const auto& a, const auto& b) {
+        return a.position < b.position;
+    });
 
     for (const auto& c : configurations) {
         configurationType el;
@@ -587,8 +820,9 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
             if (b.todays_market_configuration_id == c.id)
                 bindings.push_back(&b);
         }
-        std::sort(bindings.begin(), bindings.end(),
-                  [](const auto* a, const auto* b) { return a->position < b->position; });
+        std::sort(bindings.begin(), bindings.end(), [](const auto* a, const auto* b) {
+            return a->position < b->position;
+        });
 
         for (const auto* b : bindings) {
             const auto& name = b->collection;
@@ -651,8 +885,9 @@ todaysmarket todays_market_mapper::reverse(const mapped_todays_market& v) {
                 el.IntradayPowerPriceCurvesId =
                     configurationType_IntradayPowerPriceCurvesId_t(b->reference);
             else
-                throw std::runtime_error("todays_market_mapper: configuration " + c.configuration_id +
-                                         " binds unknown collection '" + name + "'");
+                throw std::runtime_error("todays_market_mapper: configuration " +
+                                         c.configuration_id + " binds unknown collection '" + name +
+                                         "'");
         }
 
         doc.Configuration.push_back(std::move(el));

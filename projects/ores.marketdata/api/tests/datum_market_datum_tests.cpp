@@ -163,10 +163,10 @@ TEST_CASE("free_text_keeps_its_case", tags) {
 }
 
 TEST_CASE("free_text_cannot_be_empty", tags) {
-    const auto datum = market_datum::make(
-        instrument_type::equity_spot,
-        quote_type::price,
-        {{field::eq_name, std::string()}, {field::ccy, std::string("EUR")}});
+    const auto datum =
+        market_datum::make(instrument_type::equity_spot,
+                           quote_type::price,
+                           {{field::eq_name, std::string()}, {field::ccy, std::string("EUR")}});
     REQUIRE_FALSE(datum);
     CHECK(datum.error().contains("eq_name"));
 

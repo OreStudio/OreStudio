@@ -111,8 +111,7 @@ TEST_CASE("todaysmarket_load_file_save_file_roundtrip", tags) {
 
 namespace {
 
-ores::ore::domain::correlationsType_Correlation_t
-only_correlation(const std::string& xml) {
+ores::ore::domain::correlationsType_Correlation_t only_correlation(const std::string& xml) {
     ores::ore::domain::todaysmarket doc;
     ores::ore::domain::load_data(xml, doc);
     REQUIRE(doc.Correlations.size() == 1);
@@ -141,8 +140,8 @@ TEST_CASE("element_text_decodes_entity_references_as_attributes_do", tags) {
 
 TEST_CASE("element_text_decodes_every_predefined_and_numeric_reference", tags) {
     auto lg(make_logger(test_suite));
-    const auto c = only_correlation(
-        correlation_document("x", "&lt;&gt;&amp;&quot;&apos;&#38;&#x26;"));
+    const auto c =
+        only_correlation(correlation_document("x", "&lt;&gt;&amp;&quot;&apos;&#38;&#x26;"));
     CHECK(text_of(c) == "<>&\"'&&");
     BOOST_LOG_SEV(lg, info) << "Every reference decoded: " << text_of(c);
 }

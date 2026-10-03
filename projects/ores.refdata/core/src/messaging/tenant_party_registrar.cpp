@@ -28,16 +28,15 @@ namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
 } // namespace
 
-std::vector<ores::nats::service::subscription> register_tenant_party_handlers(
-    ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+std::vector<ores::nats::service::subscription>
+register_tenant_party_handlers(ores::nats::service::client& nats,
+                               ores::database::context ctx,
+                               std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<tenant_party_handler>(nats, std::move(ctx), std::move(verifier));
-    subs.push_back(nats.queue_subscribe(
-        list_tenant_parties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(list_tenant_parties_request::nats_subject,
+                                        queue_group,
+                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
     return subs;
 }
 

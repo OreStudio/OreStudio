@@ -1,3 +1,4 @@
+#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
@@ -66,7 +67,6 @@
 #include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
-#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"

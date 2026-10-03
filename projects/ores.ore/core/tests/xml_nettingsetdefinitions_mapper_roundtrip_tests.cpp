@@ -82,8 +82,7 @@ TEST_CASE("every_ore_netting_document_roundtrips_through_the_entities", tags) {
     std::size_t sets = 0;
     for (const auto& path : documents) {
         INFO(path.string());
-        const auto original =
-            parse(ores::platform::filesystem::file::read_content(path));
+        const auto original = parse(ores::platform::filesystem::file::read_content(path));
         const auto mapped = netting_set_mapper::map(original);
         CHECK(mapped.sets.size() == original.NettingSet.size());
 
@@ -92,8 +91,8 @@ TEST_CASE("every_ore_netting_document_roundtrips_through_the_entities", tags) {
         CHECK(actual == expected);
         sets += mapped.sets.size();
     }
-    BOOST_LOG_SEV(lg, info) << "Round-tripped " << sets << " netting sets in "
-                            << documents.size() << " documents.";
+    BOOST_LOG_SEV(lg, info) << "Round-tripped " << sets << " netting sets in " << documents.size()
+                            << " documents.";
 }
 
 TEST_CASE("netting_set_details_carry_call_type_and_initial_margin_type", tags) {
@@ -137,8 +136,8 @@ TEST_CASE("netting_set_details_naming_a_legal_entity_are_refused", tags) {
 TEST_CASE("an_inactive_csa_keeps_its_terms", tags) {
     const auto path = ores::testing::project_root::resolve(
         "external/ore/examples/ExposureWithCollateral/Input/netting.xml");
-    const auto mapped = netting_set_mapper::map(
-        parse(ores::platform::filesystem::file::read_content(path)));
+    const auto mapped =
+        netting_set_mapper::map(parse(ores::platform::filesystem::file::read_content(path)));
 
     std::size_t inactive = 0;
     for (const auto& c : mapped.csas) {
@@ -178,8 +177,8 @@ TEST_CASE("an_active_csa_flag_without_details_is_refused", tags) {
 TEST_CASE("a_csa_with_one_margining_frequency_is_refused_on_export", tags) {
     const auto path = ores::testing::project_root::resolve(
         "external/ore/examples/ExposureWithCollateral/Input/netting.xml");
-    auto mapped = netting_set_mapper::map(
-        parse(ores::platform::filesystem::file::read_content(path)));
+    auto mapped =
+        netting_set_mapper::map(parse(ores::platform::filesystem::file::read_content(path)));
     REQUIRE(!mapped.csas.empty());
     mapped.csas.front().post_frequency.reset();
 

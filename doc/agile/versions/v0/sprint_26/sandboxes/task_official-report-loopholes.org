@@ -8,7 +8,7 @@
 #+filetags: :sandboxes:sprint_26:v0:
 #+owner: marco
 #+branch: feature/official-report-loopholes
-#+pr:
+#+pr: 2563
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2563][#2563]] | [reporting] Close the official report loopholes |
 
 * Review
 

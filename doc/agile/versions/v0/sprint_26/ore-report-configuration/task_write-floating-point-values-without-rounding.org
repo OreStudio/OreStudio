@@ -99,7 +99,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Scientific notation in numeric or text columns; nan and inf | patch | No change | PostgreSQL reads 1e-12 into double precision, real and numeric; nan and inf were written the same way before. |
+| 2 | Floating to_chars needs a recent standard library | patch | No change | The macOS build uses Xcode 16 on macos-14; Apple's libc++ provides floating to_chars from macOS 13.3. The scheduled macOS build confirms it. |
+| 3 | Add float, negative and zero cases | repository_floating_point_precision_tests.cpp | Decline | No entity holds a float; sign and zero do not depend on the digit count the defect was about. |
+| 4 | Offer the fix upstream | portfile.cmake | Deferred to the operator | Opening an issue on getml/sqlgen is an outward action; proposed to the operator. |
+| 5 | Existing rows keep their rounded values | PR | No change | Stated in the PR's limitations; release notes are built from the PR. |
 
 * Result
 

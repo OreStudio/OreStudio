@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T01:55:13.746161Z
+' Generated: 2026-10-03T02:23:36.619784Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2060,6 +2060,82 @@ package "refdata" #FFF3E0 {
     required in all forty-one elements and sets none of the optional ones, so the
     optional half of the mapping is proven by a case that builds the element rather
     than by the corpus walk.
+    end note
+
+    entity ores_refdata_csa_eligible_currencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * csa_id : uuid <<FK>>
+        * currency_code : text <<FK>>
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_csa_eligible_currencies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CSA Eligible Currency Table
+    One row per currency a [[id:29A8E20A-0F02-4D54-830E-8DDD668E86C0][CSA]] accepts as collateral. ORE lists them
+    under the CSA's EligibleCollaterals, in order; the position keeps that
+    order so a CSA written back to ORE lists them as it read them.
+    end note
+
+    entity ores_refdata_csas_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * netting_set_id : uuid <<FK>>
+        * is_active : boolean
+          bilateral : text
+          csa_currency : text
+          index_name : text
+          threshold_pay : double
+          threshold_receive : double
+          minimum_transfer_amount_pay : double
+          minimum_transfer_amount_receive : double
+          independent_amount_held : double
+          independent_amount_type : text
+          call_frequency : text
+          post_frequency : text
+          margin_period_of_risk : text
+          collateral_compounding_spread_receive : double
+          collateral_compounding_spread_pay : double
+          apply_initial_margin : boolean
+          initial_margin_type : text
+          calculate_im_amount : boolean
+          calculate_vm_amount : boolean
+          non_exempt_im_regulations : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_csas_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CSA Table
+    A Credit Support Annex holds the collateral terms of a [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][netting set]]:
+    thresholds, minimum transfer amounts, margining frequencies, the margin
+    period of risk and the eligible collateral. Netting reduces exposure, and
+    collateral mitigates what remains (see [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]]).
+    A CSA has a lifecycle of its own: it is added, changed or switched off
+    without touching the trades in its set. A set has at most one active CSA;
+    an inactive one keeps its terms, as ORE keeps the details of a set whose
+    CSA flag is off. The columns follow ORE's CSADetails one for one, and
+    the eligible collateral currencies are [[id:25090994-3093-470E-BB3F-7832EDCA26A4][rows of their own]].
     end note
 
     entity ores_refdata_currencies_tbl <<temporal>> #C6F0D8 {

@@ -1,4 +1,3 @@
-#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
@@ -22,6 +21,8 @@
 #include "ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_enabled_derived_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_topology_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/csa_commands.hpp"
+#include "ores.shell/app/commands/refdata/csa_eligible_currency_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_calendar_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_country_commands.hpp"
@@ -65,6 +66,7 @@
 #include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
@@ -107,6 +109,8 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     crm_driver_pair_commands::register_commands(root_menu, session);
     crm_enabled_derived_pair_commands::register_commands(root_menu, session);
     crm_topology_config_commands::register_commands(root_menu, session);
+    csa_commands::register_commands(root_menu, session);
+    csa_eligible_currency_commands::register_commands(root_menu, session);
     currency_calendar_commands::register_commands(root_menu, session);
     currency_commands::register_commands(root_menu, session);
     currency_country_commands::register_commands(root_menu, session);

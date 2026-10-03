@@ -181,6 +181,12 @@
 \ir ./refdata_netting_sets_create.sql
 \ir ./refdata_netting_sets_notify_trigger_create.sql
 
+-- Credit support annexes on netting sets, and their eligible collateral
+\ir ./refdata_csas_create.sql
+\ir ./refdata_csas_notify_trigger_create.sql
+\ir ./refdata_csa_eligible_currencies_create.sql
+\ir ./refdata_csa_eligible_currencies_notify_trigger_create.sql
+
 -- Business unit types (must precede business units)
 \ir ./refdata_business_unit_types_create.sql
 \ir ./refdata_business_unit_types_notify_trigger_create.sql

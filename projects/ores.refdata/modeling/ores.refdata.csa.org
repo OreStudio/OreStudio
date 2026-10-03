@@ -1,0 +1,489 @@
+:PROPERTIES:
+:ID: 29A8E20A-0F02-4D54-830E-8DDD668E86C0
+:END:
+#+title: ores.refdata.csa
+#+description: Codegen entity model for the refdata =csa= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The collateral terms attached to a netting set.
+#+entity_singular: csa
+#+entity_plural: csas
+#+entity_title: CSA
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A Credit Support Annex holds the collateral terms of a [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][netting set]]:
+thresholds, minimum transfer amounts, margining frequencies, the margin
+period of risk and the eligible collateral. Netting reduces exposure, and
+collateral mitigates what remains (see [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]]).
+
+A CSA has a lifecycle of its own: it is added, changed or switched off
+without touching the trades in its set. A set has at most one active CSA;
+an inactive one keeps its terms, as ORE keeps the details of a set whose
+CSA flag is off. The columns follow ORE's =CSADetails= one for one, and
+the eligible collateral currencies are [[id:25090994-3093-470E-BB3F-7832EDCA26A4][rows of their own]].
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this CSA.
+
+Surrogate key for the CSA record.
+
+** netting_set_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The netting set these collateral terms govern.
+
+References the netting sets table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** is_active
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:END:
+
+Whether the CSA is in force.
+
+ORE's ActiveCSAFlag. A set has at most one active CSA; an inactive one keeps its terms.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** bilateral
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:no_generator_suffix: true
+:END:
+
+Who posts collateral.
+
+Bilateral, CallOnly or PostOnly, as ORE names them.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Bilateral")
+#+end_src
+
+** csa_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency the CSA is denominated in.
+
+An ISO currency code. Not checked against the currencies table: like the
+currency columns of the instrument models, it holds what the ORE document
+states.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("EUR")
+#+end_src
+
+** index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The index that accrues interest on collateral.
+
+ORE's Index, such as EUR-EONIA.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("EUR-EONIA")
+#+end_src
+
+** threshold_pay
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The exposure the firm may owe before it must post.
+
+Not negative.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** threshold_receive
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The exposure the counterparty may owe before it must post.
+
+Not negative.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** minimum_transfer_amount_pay
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The smallest transfer the firm makes.
+
+Not negative.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** minimum_transfer_amount_receive
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The smallest transfer the counterparty makes.
+
+Not negative.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** independent_amount_held
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The independent amount held.
+
+ORE's IndependentAmountHeld.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** independent_amount_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:no_generator_suffix: true
+:END:
+
+How the independent amount is expressed.
+
+ORE's IndependentAmountType; FIXED is the only value ORE defines.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** call_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How often the firm calls for collateral.
+
+A period, such as 1D.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("1D")
+#+end_src
+
+** post_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How often the firm posts collateral.
+
+A period, such as 1D.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("1D")
+#+end_src
+
+** margin_period_of_risk
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The time to close out after a default.
+
+A period, such as 2W.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("2W")
+#+end_src
+
+** collateral_compounding_spread_receive
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The spread on collateral the firm receives.
+
+ORE's CollateralCompoundingSpreadReceive.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** collateral_compounding_spread_pay
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The spread on collateral the firm posts.
+
+ORE's CollateralCompoundingSpreadPay.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** apply_initial_margin
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether initial margin applies.
+
+ORE's ApplyInitialMargin.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** initial_margin_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:no_generator_suffix: true
+:END:
+
+Who posts initial margin.
+
+Bilateral, CallOnly or PostOnly, as ORE names them.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calculate_im_amount
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether ORE calculates the initial margin amount.
+
+ORE's CalculateIMAmount.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calculate_vm_amount
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether ORE calculates the variation margin amount.
+
+ORE's CalculateVMAmount.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** non_exempt_im_regulations
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The regulations under which initial margin is not exempt.
+
+ORE's NonExemptIMRegulations, as written.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_csas_tbl
+:END:
+
+** Checks
+
+| expression                                                                                      |
+|-------------------------------------------------------------------------------------------------|
+| "bilateral" is null or "bilateral" in ('Bilateral', 'CallOnly', 'PostOnly')                     |
+| "initial_margin_type" is null or "initial_margin_type" in ('Bilateral', 'CallOnly', 'PostOnly') |
+| "independent_amount_type" is null or "independent_amount_type" = 'FIXED'                        |
+| "threshold_pay" is null or "threshold_pay" >= 0                                                 |
+| "threshold_receive" is null or "threshold_receive" >= 0                                         |
+| "minimum_transfer_amount_pay" is null or "minimum_transfer_amount_pay" >= 0                     |
+| "minimum_transfer_amount_receive" is null or "minimum_transfer_amount_receive" >= 0             |
+
+** Indexes
+
+| name              | columns        | unique | current_only | where_extra |
+|-------------------+----------------+--------+--------------+-------------|
+| active_set        | netting_set_id | true   | true         | is_active   |
+
+* Foreign keys
+
+** netting_set_id
+:PROPERTIES:
+:table:         ores_refdata_netting_sets_tbl
+:parent_entity: netting_set
+:nullable:      false
+:error_message: Invalid netting_set_id: %. No active netting set found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: csa
+:entity_plural_short:   csas
+:entity_singular_words: CSA
+:entity_plural_words:   CSAs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: csa
+:END:
+
+** Table display
+
+| column                | header      |
+|-----------------------+-------------|
+| is_active             | Active      |
+| bilateral             | Bilateral   |
+| csa_currency          | Currency    |
+| margin_period_of_risk | MPOR        |
+| modified_by           | Modified By |
+| version               | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/csa.hpp
+:domain_class:            refdata::domain::csa
+:protocol_include:        ores.refdata.api/messaging/csa_protocol.hpp
+:collection_name:         csas
+:key_field:               id
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field                 | label     | widget             | type      | is_key | is_required | placeholder              |
+|-----------------------+-----------+--------------------+-----------+--------+-------------+--------------------------|
+| bilateral             | Bilateral | bilateralEdit      | line_edit | false  | false       | Bilateral, CallOnly, PostOnly |
+| csa_currency          | Currency  | csaCurrencyEdit    | line_edit | false  | false       | ISO currency code        |
+| index_name            | Index     | indexNameEdit      | line_edit | false  | false       | Collateral index         |
+| margin_period_of_risk | MPOR      | mporEdit           | line_edit | false  | false       | Period, such as 2W       |
+
+*** Columns
+
+| enum_name          | field                 | header      | type      | width |
+|--------------------+-----------------------+-------------+-----------+-------|
+| IsActive           | is_active             | Active      | string    |    60 |
+| Bilateral          | bilateral             | Bilateral   | string    |   100 |
+| CsaCurrency        | csa_currency          | Currency    | string    |    80 |
+| MarginPeriodOfRisk | margin_period_of_risk | MPOR        | string    |    80 |
+| Version            | version               | Version     | int       |    80 |
+| ModifiedBy         | modified_by           | Modified By | string    |   120 |
+| RecordedAt         | recorded_at           | Recorded At | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][ores.refdata.netting_set]] — the set a CSA governs.
+- [[id:25090994-3093-470E-BB3F-7832EDCA26A4][ores.refdata.csa_eligible_currency]] — the CSA's eligible collateral.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the analysis this entity follows.

@@ -40,6 +40,8 @@
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_eligible_currency_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
@@ -132,6 +134,8 @@
 #include "ores.refdata.core/messaging/counterparty_contact_information_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_eligible_currency_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/country_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_history_provider_registrar.hpp"
@@ -237,6 +241,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_counterparty_handlers(nats, ctx, verifier));
     append(register_counterparty_contact_information_handlers(nats, ctx, verifier));
     append(register_counterparty_identifier_handlers(nats, ctx, verifier));
+    append(register_csa_handlers(nats, ctx, verifier));
+    append(register_csa_eligible_currency_handlers(nats, ctx, verifier));
     append(register_country_handlers(nats, ctx, verifier));
     append(register_crm_driver_pair_handlers(nats, ctx, verifier));
     append(register_crm_enabled_derived_pair_handlers(nats, ctx, verifier));
@@ -424,6 +430,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_calendar_type_history_provider(hist_registry);
         register_counterparty_contact_information_history_provider(hist_registry);
         register_counterparty_identifier_history_provider(hist_registry);
+        register_csa_history_provider(hist_registry);
+        register_csa_eligible_currency_history_provider(hist_registry);
         register_derivation_kind_history_provider(hist_registry);
         register_instrument_code_history_provider(hist_registry);
         register_ir_curve_bootstrap_config_history_provider(hist_registry);

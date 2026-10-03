@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: D19E448B-CD4A-5F3A-818C-E21EFB7CE3A1
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the csa_eligible_currencies commands from the shell?
+#+description: Every command the csa_eligible_currencies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:csa_eligible_currencies:
+
+This file documents the csa_eligible_currencies resource at the shell, one section per command. Every command is a subcommand of =csa_eligible_currencies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D45ECB53-77A8-5005-8E71-4E1EBC9A075F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.list=.
+
+#+name: csa_eligible_currencies-list
+#+begin_src ores-shell :tangle csa_eligible_currencies-list.ores :exports none
+csa_eligible_currencies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5D036172-1BF2-5034-BF49-E821FD7A9776
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies get <currency_code>
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.get=.
+
+#+name: csa_eligible_currencies-get
+#+begin_src ores-shell :tangle csa_eligible_currencies-get.ores :exports none
+csa_eligible_currencies get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 432ADADC-3FF9-5307-8FF8-40142D352A52
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies get-many <currency_code>
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.get_many=.
+
+#+name: csa_eligible_currencies-get-many
+#+begin_src ores-shell :tangle csa_eligible_currencies-get-many.ores :exports none
+csa_eligible_currencies get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CFA48802-AAAF-57EF-932B-3E8C24FE7B80
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies add <csa_id> <currency_code> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.put=.
+
+#+name: csa_eligible_currencies-add
+#+begin_src ores-shell :tangle csa_eligible_currencies-add.ores :exports none
+csa_eligible_currencies add 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 75791798-F955-5BBF-ACAB-76859B1FD492
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies set <id> <csa_id> <currency_code> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.put=.
+
+#+name: csa_eligible_currencies-set
+#+begin_src ores-shell :tangle csa_eligible_currencies-set.ores :exports none
+csa_eligible_currencies set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 55635DB7-629F-5C6A-8554-FDC1F3FF2BE1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies put-many --count <n> <id> <csa_id> <currency_code> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.put_many=.
+
+#+name: csa_eligible_currencies-put-many
+#+begin_src ores-shell :tangle csa_eligible_currencies-put-many.ores :exports none
+csa_eligible_currencies put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 48B0FB6F-CB48-5C5C-9824-42B0A7F01BC4
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies delete <currency_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.delete=.
+
+#+name: csa_eligible_currencies-delete
+#+begin_src ores-shell :tangle csa_eligible_currencies-delete.ores :exports none
+csa_eligible_currencies delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AE19DB2B-F614-5AC6-AE8E-91B24E1F2AF3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies delete-many <currency_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.delete_many=.
+
+#+name: csa_eligible_currencies-delete-many
+#+begin_src ores-shell :tangle csa_eligible_currencies-delete-many.ores :exports none
+csa_eligible_currencies delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-csa-id=
+:PROPERTIES:
+:ID: 0F34AE8A-E5A7-55CA-A480-D1AE912E835E
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies by-csa-id <csa_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies.list_by_csa_id=.
+
+#+name: csa_eligible_currencies-by-csa-id
+#+begin_src ores-shell :tangle csa_eligible_currencies-by-csa-id.ores :exports none
+csa_eligible_currencies by-csa-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9E9A978F-7F73-56FF-90E0-854970EB2733
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies versions <currency_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies_versions.list=.
+
+#+name: csa_eligible_currencies-versions
+#+begin_src ores-shell :tangle csa_eligible_currencies-versions.ores :exports none
+csa_eligible_currencies versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 03A8B31D-7F67-5429-B2F8-3D7230CCCB1F
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+csa_eligible_currencies version <currency_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.csa_eligible_currencies_versions.get=.
+
+#+name: csa_eligible_currencies-version
+#+begin_src ores-shell :tangle csa_eligible_currencies-version.ores :exports none
+csa_eligible_currencies version __none__ --version 1
+#+end_src
+

@@ -311,6 +311,9 @@
 \ir ./refdata_curve_segment_types_notify_trigger_create.sql
 \ir ./refdata_day_counters_create.sql
 \ir ./refdata_day_counters_notify_trigger_create.sql
+\ir ./refdata_calendar_names_create.sql
+\ir ./refdata_calendar_names_notify_trigger_create.sql
+\ir ./refdata_calendar_names_validate_fn_create.sql
 \ir ./refdata_conventions_validate_fn_create.sql
 \ir ./refdata_curve_configurations_create.sql
 \ir ./refdata_curve_configurations_notify_trigger_create.sql
@@ -322,6 +325,12 @@
 \ir ./refdata_yield_curves_notify_trigger_create.sql
 \ir ./refdata_curve_bootstrap_configs_create.sql
 \ir ./refdata_curve_bootstrap_configs_notify_trigger_create.sql
+\ir ./refdata_curve_securities_create.sql
+\ir ./refdata_curve_securities_notify_trigger_create.sql
+\ir ./refdata_intraday_power_curves_create.sql
+\ir ./refdata_intraday_power_curves_notify_trigger_create.sql
+\ir ./refdata_equity_curves_create.sql
+\ir ./refdata_equity_curves_notify_trigger_create.sql
 \ir ./refdata_curve_segments_create.sql
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql

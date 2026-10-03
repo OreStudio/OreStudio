@@ -30,7 +30,10 @@
 #include "ores.refdata.core/repository/curve_quote_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_curve_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
+#include "ores.refdata.core/repository/curve_security_repository.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include "ores.refdata.core/repository/equity_curve_repository.hpp"
+#include "ores.refdata.core/repository/intraday_power_curve_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_repository.hpp"
 #include "ores.testing/project_root.hpp"
@@ -67,6 +70,47 @@ Document load(const std::string& name) {
     return d;
 }
 
+const std::string equity_example = "external/ore/examples/Input/curveconfig.xml";
+
+// The equity curves, securities and FX spots of a corpus document, with every
+// other section kept empty, so no convention has to be written first.
+curveconfiguration equity_and_securities() {
+    curveconfiguration d;
+    load_data(file::read_content(ores::testing::project_root::resolve(equity_example)), d);
+    d.ReportConfiguration = decltype(d.ReportConfiguration){};
+    if (d.YieldCurves)
+        d.YieldCurves->YieldCurve.clear();
+    if (d.DefaultCurves)
+        d.DefaultCurves->DefaultCurve.clear();
+    if (d.InflationCurves)
+        d.InflationCurves->InflationCurve.clear();
+    if (d.CommodityCurves)
+        d.CommodityCurves->CommodityCurve.clear();
+    if (d.FXVolatilities)
+        d.FXVolatilities->FXVolatility.clear();
+    if (d.SwaptionVolatilities)
+        d.SwaptionVolatilities->SwaptionVolatility.clear();
+    if (d.YieldVolatilities)
+        d.YieldVolatilities->YieldVolatility.clear();
+    if (d.CapFloorVolatilities)
+        d.CapFloorVolatilities->CapFloorVolatility.clear();
+    if (d.CDSVolatilities)
+        d.CDSVolatilities->CDSVolatility.clear();
+    if (d.InflationCapFloorVolatilities)
+        d.InflationCapFloorVolatilities->InflationCapFloorVolatility.clear();
+    if (d.EquityVolatilities)
+        d.EquityVolatilities->EquityVolatility.clear();
+    if (d.BaseCorrelations)
+        d.BaseCorrelations->BaseCorrelation.clear();
+    if (d.CommodityVolatilities)
+        d.CommodityVolatilities->CommodityVolatility.clear();
+    if (d.Correlations)
+        d.Correlations->Correlation.clear();
+    if (d.BondFutureVolatilities)
+        d.BondFutureVolatilities->BondFutureVolatility.clear();
+    return d;
+}
+
 // Writes the conventions of one kind that the tenant does not hold yet. The
 // test tenant is shared by every case in a run, so a second case finds them
 // already written.
@@ -100,6 +144,9 @@ void write(const ores::database::context& ctx, const mapped_curve_configuration&
     curve_configuration_section_repository().write(ctx, m.sections);
     curve_definition_repository().write(ctx, m.definitions);
     yield_curve_repository().write(ctx, m.yield_curves);
+    equity_curve_repository().write(ctx, m.equity_curves);
+    curve_security_repository().write(ctx, m.securities);
+    intraday_power_curve_repository().write(ctx, m.intraday_power_curves);
     curve_bootstrap_config_repository().write(ctx, m.bootstrap_configs);
     curve_segment_repository().write(ctx, m.segments);
     curve_segment_curve_repository().write(ctx, m.segment_curves);
@@ -136,6 +183,12 @@ mapped_curve_configuration read_back(const ores::database::context& ctx,
     };
     m.yield_curves =
         read<ores::refdata::domain::yield_curve>(ctx, yield_curve_repository(), of_definition);
+    m.equity_curves =
+        read<ores::refdata::domain::equity_curve>(ctx, equity_curve_repository(), of_definition);
+    m.securities =
+        read<ores::refdata::domain::curve_security>(ctx, curve_security_repository(), of_definition);
+    m.intraday_power_curves = read<ores::refdata::domain::intraday_power_curve>(
+        ctx, intraday_power_curve_repository(), of_definition);
     m.bootstrap_configs = read<ores::refdata::domain::curve_bootstrap_config>(
         ctx, curve_bootstrap_config_repository(), of_definition);
     m.segments =
@@ -215,4 +268,50 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused", tags) {
     curve_configuration_repository().write(h.context(), mapped.config);
     curve_definition_repository().write(h.context(), mapped.definitions);
     CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
+}
+
+TEST_CASE("equity curves and securities round trip through the database", tags) {
+    ores::testing::scoped_database_helper h;
+
+    const auto original = equity_and_securities();
+    const auto mapped = curve_configuration_mapper::map(original);
+    REQUIRE(!mapped.equity_curves.empty());
+    REQUIRE(!mapped.securities.empty());
+
+    write(h.context(), mapped);
+    const auto back = read_back(h.context(), mapped);
+    CHECK(back.equity_curves.size() == mapped.equity_curves.size());
+    CHECK(back.securities.size() == mapped.securities.size());
+    CHECK(back.quotes.size() == mapped.quotes.size());
+
+    curveconfiguration exported;
+    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
+    const auto difference =
+        ores::ore::xml::parsed_text_difference(original, exported, equity_example);
+    INFO(difference);
+    CHECK(difference.empty());
+}
+
+TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", tags) {
+    ores::testing::scoped_database_helper h;
+
+    auto mapped = curve_configuration_mapper::map(equity_and_securities());
+    REQUIRE(!mapped.equity_curves.empty());
+    mapped.equity_curves.front().calendar = "JoinHolidays(TARGET, Atlantis)";
+
+    curve_configuration_repository().write(h.context(), mapped.config);
+    curve_definition_repository().write(h.context(), mapped.definitions);
+    CHECK_THROWS(equity_curve_repository().write(h.context(), mapped.equity_curves.front()));
+}
+
+TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", tags) {
+    ores::testing::scoped_database_helper h;
+
+    auto mapped = curve_configuration_mapper::map(equity_and_securities());
+    REQUIRE(!mapped.equity_curves.empty());
+    mapped.equity_curves.front().calendar = "JoinHolidays(TARGET, US settlement, XNYS, CUSTOM_DESK)";
+
+    curve_configuration_repository().write(h.context(), mapped.config);
+    curve_definition_repository().write(h.context(), mapped.definitions);
+    CHECK_NOTHROW(equity_curve_repository().write(h.context(), mapped.equity_curves.front()));
 }

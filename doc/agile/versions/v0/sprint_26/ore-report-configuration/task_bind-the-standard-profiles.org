@@ -26,11 +26,11 @@ Every entity model authored from this environment names a catalogued profile ins
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 
 * Acceptance
@@ -85,3 +85,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered by PR 2481, merged 2026-10-01; this record was left open and is
+closed now. Nine entity models authored from this environment bound no
+profile: the analytics stress library, scenario and shift, the refdata curve
+definition, segment and quote, and the reporting report analytic parameter,
+report market binding and risk report config. All nine match one shape and now
+bind =uuid-identified-lookup=, dropping the =has_tenant_id= the profile
+supplies. The binding enabled the shell command and event test facets, so
+each gained a command unit, its recipe and an event test, while the domain,
+repository, service and SQL output stayed byte-identical. Evidence from the
+PR: =check_model_drift.py= 248 of 411 models bind a profile (was 239);
+=check_component_drift.py --all= clean; affected tests 7/7 passed. Models
+owned by other environments were left to their owners.

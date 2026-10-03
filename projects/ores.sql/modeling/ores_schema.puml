@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T14:02:56.059565Z
+' Generated: 2026-10-03T14:03:34.453546Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1393,6 +1393,39 @@ package "refdata" #FFF3E0 {
     data.
     end note
 
+    entity ores_refdata_calendar_names_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_calendar_names_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Calendar Name Table
+    ORE names a calendar by text, and its schema fixes the names it accepts: 471
+    of them, such as TARGET, US settlement, weekends only and currency codes
+    that stand for a currency's calendar. The schema also accepts two open forms
+    no list can hold -- any four-letter exchange code such as XNYS, and any name
+    beginning CUSTOM_ -- and joins of several calendars, written as TARGET,UK
+    or JoinHolidays(TARGET, US settlement).
+    A curve keeps the calendar expression its document wrote, so the export writes
+    it back unchanged. ores_refdata_validate_calendar_fn splits the expression
+    and checks each calendar in it against this table or against one of the two
+    open forms, so a calendar ORE would refuse is refused on insert. The refdata
+    calendar table models calendars the system materialises; this table is the
+    vocabulary of names an ORE document may write.
+    end note
+
     entity ores_refdata_calendar_rules_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -2668,6 +2701,36 @@ package "refdata" #FFF3E0 {
     report configuration registry made for every one of its discriminators.
     end note
 
+    entity ores_refdata_curve_securities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          spread_quote : text
+          recovery_rate_quote : text
+          cpr_quote : text
+          price_quote : text
+          conversion_factor : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_securities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Security Table
+    The settings of one Security entry of a curveconfig.xml, one row per
+    curve_definition in the Securities section. A security entry names the
+    market quotes a bond is priced from, each optional: its spread, its recovery
+    rate, its prepayment rate, its price and its conversion factor.
+    end note
+
     entity ores_refdata_curve_segment_curves_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -2977,6 +3040,49 @@ package "refdata" #FFF3E0 {
     Financial Entity Indicator as defined by the CFTC.
     end note
 
+    entity ores_refdata_equity_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+          calendar : text
+        * forecasting_curve : text
+        * equity_type : text
+          exercise_style : text
+        * spot_quote : text
+        * has_quotes : boolean
+          day_counter : text
+        * has_dividend_interpolation : boolean
+          dividend_interpolation_variable : text
+          dividend_interpolation_method : text
+          dividend_extrapolation : text
+          extrapolation : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_equity_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Curve Table
+    The settings of one EquityCurve entry of a curveconfig.xml, one row per
+    curve_definition in the EquityCurves section: the equity's spot quote and
+    forecasting curve, how its forward curve is given, and how its dividends
+    interpolate. The quotes the forward curve is built from are rows of
+    curve_quote.
+    Three corpus entries write an empty Quotes element, so has_quotes holds
+    whether the element is there. 101 write an empty Calendar; the column then
+    holds the empty text the document wrote. A calendar that is not empty is
+    checked by ores_refdata_validate_calendar_fn.
+    end note
+
     entity ores_refdata_floating_index_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -3220,6 +3326,35 @@ package "refdata" #FFF3E0 {
     independently for any future feature needing to classify or enumerate
     the instrument types the system supports. Managed by the system
     tenant, like other shared code tables.
+    end note
+
+    entity ores_refdata_intraday_power_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+        * daily_average_price_curve : text
+        * shape_quote_name : text
+          convention : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_intraday_power_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Intraday Power Curve Table
+    The settings of one IntradayPowerCurve entry of a curveconfig.xml, one row
+    per curve_definition in the IntradayPowerCurves section: the daily average
+    price curve it is shaped from, the quote that names the shape, and the
+    convention it is built with.
     end note
 
     entity ores_refdata_intraday_power_load_conventions_tbl <<temporal>> #C6F0D8 {

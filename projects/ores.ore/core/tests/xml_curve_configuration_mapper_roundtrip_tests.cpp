@@ -31,10 +31,10 @@
  * @file xml_curve_configuration_mapper_roundtrip_tests.cpp
  * @brief The curve configuration document, mapped and mapped back.
  *
- * The yield curves section is what the mapper models so far, so the walk
- * compares each corpus document projected onto it: every section element is
- * kept, the entries of the other sections are cleared, and the report
- * configuration is dropped. The cases below the walk cover what the projection
+ * The mapper models the yield curve, equity curve, security, FX spot and
+ * intraday power curve sections so far, so the walk compares each corpus
+ * document projected onto them: every section element is kept, the entries of
+ * the other sections are cleared, and the report configuration is dropped. The cases below the walk cover what the projection
  * hides: the refusal of entries the mapper cannot hold, and every segment
  * element in one document.
  */
@@ -49,10 +49,8 @@ std::filesystem::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-curveconfiguration yield_curves_only(curveconfiguration d) {
+curveconfiguration modelled_only(curveconfiguration d) {
     d.ReportConfiguration = decltype(d.ReportConfiguration){};
-    if (d.FXSpots)
-        d.FXSpots->FXSpot.clear();
     if (d.FXVolatilities)
         d.FXVolatilities->FXVolatility.clear();
     if (d.SwaptionVolatilities)
@@ -69,12 +67,8 @@ curveconfiguration yield_curves_only(curveconfiguration d) {
         d.InflationCurves->InflationCurve.clear();
     if (d.InflationCapFloorVolatilities)
         d.InflationCapFloorVolatilities->InflationCapFloorVolatility.clear();
-    if (d.EquityCurves)
-        d.EquityCurves->EquityCurve.clear();
     if (d.EquityVolatilities)
         d.EquityVolatilities->EquityVolatility.clear();
-    if (d.Securities)
-        d.Securities->Security.clear();
     if (d.BaseCorrelations)
         d.BaseCorrelations->BaseCorrelation.clear();
     if (d.CommodityCurves)
@@ -85,24 +79,22 @@ curveconfiguration yield_curves_only(curveconfiguration d) {
         d.Correlations->Correlation.clear();
     if (d.BondFutureVolatilities)
         d.BondFutureVolatilities->BondFutureVolatility.clear();
-    if (d.IntradayPowerCurves)
-        d.IntradayPowerCurves->IntradayPowerCurve.clear();
     return d;
 }
 
 mapped_curve_configuration map_projected(const curveconfiguration& d) {
-    return curve_configuration_mapper::map(yield_curves_only(d));
+    return curve_configuration_mapper::map(modelled_only(d));
 }
 
 std::string compare_projected(const curveconfiguration& original,
                               const curveconfiguration& exported,
                               const std::string& path) {
-    return ores::ore::xml::parsed_text_difference(yield_curves_only(original), exported, path);
+    return ores::ore::xml::parsed_text_difference(modelled_only(original), exported, path);
 }
 
 ores::ore::xml::roundtrip_kind yield_curves_kind() {
     return ores::ore::xml::make_roundtrip_kind<curveconfiguration, mapped_curve_configuration>(
-        "curve configuration yield curves",
+        "curve configuration modelled sections",
         "curveconfig",
         &map_projected,
         &curve_configuration_mapper::reverse,
@@ -246,7 +238,7 @@ curveconfiguration every_segment() {
 
 }
 
-TEST_CASE("every curve configuration document round trips its yield curves", tags) {
+TEST_CASE("every curve configuration document round trips its modelled sections", tags) {
     const auto walk = ores::ore::xml::walk_kind(yield_curves_kind(), corpus_root());
 
     INFO("files: " << walk.files << ", passed: " << walk.passed);

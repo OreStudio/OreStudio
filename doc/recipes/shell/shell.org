@@ -1240,3 +1240,19 @@ tangled into the runnable script library
 * Yield Curves
 
 - [[id:075A0A10-FFA0-560D-96E6-085B755714B9][How do I run the yield_curves commands from the shell?]]
+
+* Calendar Names
+
+- [[id:58362D85-3BC7-5309-A91C-811E7C6B7E3F][How do I run the calendar_names commands from the shell?]]
+
+* Curve Securities
+
+- [[id:50474A63-FCC6-575B-A7D4-76CA92FC3778][How do I run the curve_securities commands from the shell?]]
+
+* Equity Curves
+
+- [[id:EE615A53-A85D-54A8-8E40-3762D4AE0186][How do I run the equity_curves commands from the shell?]]
+
+* Intraday Power Curves
+
+- [[id:FD0054AF-F29F-5C8A-8C04-3F78AE74F65F][How do I run the intraday_power_curves commands from the shell?]]

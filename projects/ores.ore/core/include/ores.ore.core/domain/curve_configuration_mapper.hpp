@@ -28,7 +28,10 @@
 #include "ores.refdata.api/domain/curve_definition.hpp"
 #include "ores.refdata.api/domain/curve_quote.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
+#include "ores.refdata.api/domain/curve_security.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/equity_curve.hpp"
+#include "ores.refdata.api/domain/intraday_power_curve.hpp"
 #include "ores.refdata.api/domain/yield_curve.hpp"
 #include <vector>
 
@@ -46,6 +49,9 @@ struct mapped_curve_configuration {
     std::vector<refdata::domain::curve_configuration_section> sections;
     std::vector<refdata::domain::curve_definition> definitions;
     std::vector<refdata::domain::yield_curve> yield_curves;
+    std::vector<refdata::domain::equity_curve> equity_curves;
+    std::vector<refdata::domain::curve_security> securities;
+    std::vector<refdata::domain::intraday_power_curve> intraday_power_curves;
     std::vector<refdata::domain::curve_bootstrap_config> bootstrap_configs;
     std::vector<refdata::domain::curve_segment> segments;
     std::vector<refdata::domain::curve_segment_curve> segment_curves;
@@ -56,8 +62,9 @@ struct mapped_curve_configuration {
  * @brief Maps between an ORE CurveConfiguration document and the refdata curve
  * entities.
  *
- * The yield curves section is mapped; the other sections are mapped only when
- * they hold no entries, which records that the document wrote them. A section
+ * The yield curve, equity curve, security, FX spot and intraday power curve
+ * sections are mapped; the other sections are mapped only when they hold no
+ * entries, which records that the document wrote them. A section
  * with entries the mapper cannot hold yet, or a report configuration, is
  * refused rather than dropped, because a dropped entry would pass as a round
  * trip while losing data.
@@ -82,7 +89,8 @@ public:
      *
      * @throws std::runtime_error for a row the document has no place for: an
      * unknown section or segment type, a detail or child row whose parent is
-     * absent, or a quote on a yield curve entry rather than on a segment.
+     * absent, or a quote directly on an entry whose section holds quotes only on
+ * its segments.
      */
     static curveconfiguration reverse(const mapped_curve_configuration& v);
 };

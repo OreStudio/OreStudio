@@ -154,6 +154,7 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_curve_sections_populate.sql
 \ir ../refdata/refdata_curve_segment_types_populate.sql
 \ir ../refdata/refdata_day_counters_populate.sql
+\ir ../refdata/refdata_calendar_names_populate.sql
 
 -- Derivation kinds and series subclass codes: before marketdata's
 -- market_series (FK via validation function).

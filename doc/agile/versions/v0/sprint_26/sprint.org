@@ -160,6 +160,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] | DONE | 2026-10-03 | 2026-10-03 | A system administrator explicitly enters a tenant, sees that they are acting in it, reads that tenant's data through the ordinary reads, and leaves. Replaces the cross-tenant party read. |
 | [[id:47BF4D70-7118-4E86-BF9E-C5BBE47FE33E][Stop the web typecheck racing the web tests]] | DONE | 2026-10-03 | 2026-10-03 | ctest runs ores.web.typecheck and ores.web.tests together; tsc --build --force rewrites the wire package's dist while the BFF tests load it, so 18 suites fail with an undefined import on linux-clang-release. |
 | [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] | BACKLOG | | | The generated service refuses a stated order and any filter. Generate order, filter, search and one-of members from the model, then move the hand-written tenant reads onto them. |
+| [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] | BACKLOG | | | A person's token carries no permissions and the token check passes an empty list, so every permission check passes for every signed-in person. Issue tokens with the effective permissions, keep them current, and fail closed. |
 
 * Achievements
 

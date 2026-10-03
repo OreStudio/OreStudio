@@ -35,7 +35,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =has_permission= refuses a token with an empty permission list, and both
+  checks use one matching rule that understands =*= and =x::*=.
+- Only a named constructor builds a context with no permission list.
+- A service's request context refuses a token with the =select_party_only=
+  audience, which no signer or verifier rejects today.
+- Every new behaviour is proved by a test.
 
 * Plan
 

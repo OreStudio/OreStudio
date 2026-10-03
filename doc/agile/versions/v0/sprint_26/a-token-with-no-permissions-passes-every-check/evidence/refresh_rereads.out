@@ -1,0 +1,5 @@
+before ["*"]
+assign {"success":true,"error_message":""}
+after grant + refresh ["*","refdata::currencies:read","variability::flags:read","workspace::workspaces:read"]
+revoke {"success":true,"error_message":""}
+after revoke + refresh ["*"]

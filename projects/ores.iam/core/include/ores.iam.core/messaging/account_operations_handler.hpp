@@ -813,6 +813,8 @@ public:
             new_claims.email = claims_result->email;
             new_claims.tenant_id = tenant_id_str;
             new_claims.party_id = boost::uuids::to_string(requested_party_id);
+            new_claims.roles =
+                service::authorization_service(ctx).get_effective_permissions(account_id);
             // Carry the session identifiers forward so logout can end
             // the session record created at login.
             new_claims.session_id = claims_result->session_id;
@@ -1004,6 +1006,8 @@ public:
             new_claims.email = claims_result->email;
             new_claims.tenant_id = tenant_id_str;
             new_claims.party_id = boost::uuids::to_string(requested_party_id);
+            new_claims.roles =
+                service::authorization_service(ctx).get_effective_permissions(account_id);
             // Carry the session identifiers forward so logout can end
             // the session record created at login.
             new_claims.session_id = claims_result->session_id;

@@ -84,6 +84,40 @@ inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
     return val.substr(ores::nats::headers::bearer_prefix.size());
 }
 
+/**
+ * @brief Why refresh refuses a token, or nothing when it may be refreshed.
+ *
+ * A session inside another tenant lasts one access lifetime and is not
+ * renewed. A token that only lets a person choose a party carries its own
+ * audience, and refreshing it would hand back a full token before a party was
+ * chosen. A service's token names no party either, and is refreshed.
+ */
+inline std::optional<std::string> auth_refresh_refusal(const security::jwt::jwt_claims& claims) {
+    if (claims.acting_from_tenant_id)
+        return "A session inside a tenant is not refreshed.";
+    if (claims.audience == "select_party_only")
+        return "A token that only chooses a party is not refreshed.";
+    return std::nullopt;
+}
+
+/**
+ * @brief The permissions a refreshed token carries, read from the database.
+ *
+ * They are read again rather than copied, so a role granted or revoked since
+ * the last token reaches this one. The account belongs to the token's tenant,
+ * so the read runs there.
+ */
+inline std::vector<std::string>
+auth_refreshed_permissions(const ores::database::context& ctx,
+                           const security::jwt::jwt_claims& claims) {
+    const auto tenant = ores::utility::uuid::tenant_id::from_string(claims.tenant_id.value_or(""));
+    if (!tenant)
+        throw std::runtime_error("The token names no tenant to read permissions in.");
+    const auto account_id = boost::uuids::string_generator()(claims.subject);
+    return service::authorization_service(ctx.with_tenant(*tenant, claims.username.value_or("")))
+        .get_effective_permissions(account_id);
+}
+
 inline std::vector<boost::uuids::uuid>
 auth_compute_visible_party_ids(const service::cache::party_cache& cache,
                                const std::string& tenant_id,
@@ -664,6 +698,8 @@ public:
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
                 claims.party_id = boost::uuids::to_string(party_id);
+                claims.roles =
+                    service::authorization_service(login_ctx).get_effective_permissions(acct.id);
                 claims.session_id = session_id_str;
                 claims.session_start_time = now;
                 for (const auto& vid : visible)
@@ -937,14 +973,8 @@ public:
                 return;
             }
 
-            // A session inside another tenant lasts one access lifetime. It is
-            // not renewed, so an administrator's time in a tenant has an end
-            // the administrator did not choose to extend.
-            if (claims_result->acting_from_tenant_id) {
-                reply(nats_,
-                      msg,
-                      refresh_response{.success = false,
-                                       .message = "A session inside a tenant is not refreshed."});
+            if (const auto refusal = auth_refresh_refusal(*claims_result)) {
+                reply(nats_, msg, refresh_response{.success = false, .message = *refusal});
                 return;
             }
 
@@ -982,7 +1012,9 @@ public:
             new_claims.party_id = claims_result->party_id;
             new_claims.session_id = claims_result->session_id;
             new_claims.session_start_time = claims_result->session_start_time;
-            new_claims.roles = claims_result->roles;
+            // The permissions are read again rather than copied, so a role
+            // granted or revoked since the last token reaches this one.
+            new_claims.roles = auth_refreshed_permissions(ctx_, *claims_result);
             new_claims.visible_party_ids = claims_result->visible_party_ids;
 
             const auto new_token = signer_.create_token(new_claims).value_or("");

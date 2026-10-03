@@ -25,6 +25,7 @@ set(files
     "account_type_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_account_party_handler_tests.cpp"
+    "messaging_auth_refresh_tests.cpp"
     "messaging_auth_registration_gate_tests.cpp"
     "messaging_provision_step_arguments_tests.cpp"
     "repository_account_party_repository_tests.cpp"

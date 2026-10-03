@@ -8,7 +8,7 @@
 #+filetags: :web:tenancy:act_inside_a_tenant:sprint_26:v0:
 #+owner: marco
 #+branch: feature/enter-and-leave-a-tenant
-#+pr:
+#+pr: 2534
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2534][#2534]] | [web] Enter and leave a tenant, and say so on every screen |
 
 * Review
 

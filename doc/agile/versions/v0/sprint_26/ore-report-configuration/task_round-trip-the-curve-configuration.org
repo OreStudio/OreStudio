@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2562
+#+pr: 2564
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -283,6 +283,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2564][#2564]] | [refdata] Map the equity, commodity and bond future volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2562][#2562]] | [refdata] Map the swaption and cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2560][#2560]] | [refdata] Map the CDS and inflation cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2558][#2558]] | [refdata] Map the flat volatility and correlation sections |

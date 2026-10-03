@@ -123,8 +123,12 @@ via its "Verifies task" field.
 | 2 | Local review: removing =pgmq_msg_id= changes the =v1= result write payload | =result_protocol.hpp= | Decline | Every producer and consumer is generated from the same model in this repository, and nothing set the field. No =v2=. |
 | 3 | Local review: the shell =results add=, =set= and =put-many= take one argument fewer | =result_commands.cpp= | Decline | Generated with the recipe; the dropped argument was always the unused lease pointer. |
 | 4 | Local review: =setup_extensions.sql= names the packagecloud package for timescaledb | =setup_extensions.sql= | Accept | Now =postgresql-18-timescaledb=. |
-| 5 | Local review: =--configure= keeps =pg_cron= in an existing =shared_preload_libraries= | =setup_postgres_extensions.sh= | Decline | It only appends missing libraries. A host that removes the pg_cron package must take it out of the list by hand, as =goedel= did. |
+| 5 | Local review: =--configure= keeps =pg_cron= in an existing =shared_preload_libraries= | =setup_postgres_extensions.sh= | Accept | Declined at first; accepted in PR round 1 (row 7). |
 | 6 | Misspell check | all changed files | Accept | =misspell-fixer= exit 0. |
+| 7 | PR #2528 round 1 (claude): a host that already preloads =pg_cron= keeps it, and PostgreSQL fails to start once the package is gone | =setup_postgres_extensions.sh= | Accept | =--configure= now drops =pg_cron= from an existing list. The rewrite also fixes a list of two or more entries, which was written back separated by newlines, and a trailing comment, which was parsed as a library. Tested on 6 sample lines. |
+| 8 | PR #2528 round 1 (claude): confirm a runner applies =migration/*.sql= and an old column cannot break the entity | =compute_results_drop_pgmq_msg_id_migration.sql= | Decline | No runner exists by design: =ores.sql= applies migrations by hand. =sqlgen::read= selects the entity's own columns by name and inserts name theirs, so an extra nullable column is ignored. |
+| 9 | PR #2528 round 1 (claude): the build and ctest have not run on the rebased tree | PR body | Decline | No change; the rebased build is running, and the result goes in the PR. |
+| 10 | PR #2528 round 1 (claude): the workflow edits look correct | =.github/workflows= | Decline | No action asked. |
 
 * Result
 

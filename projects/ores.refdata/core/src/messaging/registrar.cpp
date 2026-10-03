@@ -85,6 +85,7 @@
 #include "ores.refdata.core/messaging/party_type_registrar.hpp"
 #include "ores.refdata.core/messaging/payment_frequency_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_registrar.hpp"
+#include "ores.refdata.core/messaging/portfolio_right_registrar.hpp"
 #include "ores.refdata.core/messaging/purpose_type_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
@@ -172,6 +173,7 @@
 #include "ores.refdata.core/messaging/party_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/payment_frequency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/portfolio_right_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_history_provider_registrar.hpp"
@@ -282,6 +284,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_party_status_handlers(nats, ctx, verifier));
     append(register_party_type_handlers(nats, ctx, verifier));
     append(register_portfolio_handlers(nats, ctx, verifier));
+    append(register_portfolio_right_handlers(nats, ctx, verifier));
     append(register_purpose_type_handlers(nats, ctx, verifier));
     append(register_regulatory_book_type_handlers(nats, ctx, verifier));
     append(register_rounding_type_handlers(nats, ctx, verifier));
@@ -410,6 +413,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_party_type_history_provider(hist_registry);
         register_payment_frequency_history_provider(hist_registry);
         register_portfolio_history_provider(hist_registry);
+        register_portfolio_right_history_provider(hist_registry);
         register_purpose_type_history_provider(hist_registry);
         register_regulatory_book_type_history_provider(hist_registry);
         register_rounding_type_history_provider(hist_registry);

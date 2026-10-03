@@ -1,0 +1,282 @@
+:PROPERTIES:
+:ID: F783F38A-C123-489A-881D-5BCB5DE6D05D
+:END:
+#+title: ores.refdata.portfolio_right
+#+description: Codegen entity model for the refdata =portfolio_right= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A right an account holds at a node of the portfolio tree.
+#+entity_singular: portfolio_right
+#+entity_plural: portfolio_rights
+#+entity_title: Portfolio Right
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A portfolio right says that one account holds one named right at one node
+of the [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][portfolio]] tree. A right held at a node applies to every node
+below it, so a right granted on a desk covers its sub-desks and not its
+sibling desks.
+
+Two rights exist, the ones [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandboxes]] need: =read=, to see what a
+node holds, and =open_sandbox=, to open a sandbox anchored at the node.
+=ores_refdata_account_holds_portfolio_right_fn= answers whether an account
+holds a right at a node, directly or through an ancestor. It runs with the
+caller's rights, so it answers only within the session's tenant, and a
+closed account holds no right. A right granted to an account stays on
+record after the account closes; the function stops honouring it.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this grant.
+
+Surrogate key for the portfolio right record.
+
+** account_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The account that holds the right.
+
+References the IAM accounts table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** portfolio_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The node the right is held at.
+
+The right also applies to every node below it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** right_code
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:natural_key:         true
+:no_generator_suffix: true
+:END:
+
+The right held.
+
+=read= or =open_sandbox=.
+
+#+begin_src cpp :name generator
+std::string("read")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_portfolio_rights_tbl
+:END:
+
+** Checks
+
+| expression                                       |
+|--------------------------------------------------|
+| "right_code" in ('read', 'open_sandbox')         |
+
+* Foreign keys
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:error_message: Invalid account_id: %. No account found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+The seeded account is a service account. A user account would end the test
+tenant's bootstrap, after which every write that names a system user is
+refused, and the other tests in the binary share the database.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto account = ores::iam::generators::generate_synthetic_account(ctx);
+        account.account_type = "service";
+        account.change_reason_code = "system.test";
+        ores::iam::repository::account_repository account_repo;
+        account_repo.write(party_ctx, account);
+        v.account_id = account.id;
+    }
+#+end_src
+
+** portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:nullable:      false
+:error_message: Invalid portfolio_id: %. No active portfolio found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+* Insert trigger
+
+#+begin_src sql :name holds_right_fn :implements 92432102-d405-46fc-911a-111dfed27358
+-- Whether an account holds a right at a portfolio node, directly or through
+-- an ancestor. The function runs with the caller's rights, so row-level
+-- security confines it to the session's tenant whatever tenant is passed.
+-- A closed account holds nothing. Portfolio inserts refuse cycles; the depth
+-- bound only keeps a corrupt tree from looping. PL/pgSQL, not SQL: refdata is
+-- created before iam, and a SQL function would resolve the accounts table at
+-- creation time.
+create or replace function ores_refdata_account_holds_portfolio_right_fn(
+    p_tenant_id uuid,
+    p_account_id uuid,
+    p_portfolio_id uuid,
+    p_right_code text
+) returns boolean as $$
+begin
+    return exists (
+    with recursive ancestry as (
+        select id, parent_portfolio_id, 0 as depth
+        from ores_refdata_portfolios_tbl
+        where tenant_id = p_tenant_id
+          and id = p_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        union all
+        select p.id, p.parent_portfolio_id, a.depth + 1
+        from ores_refdata_portfolios_tbl p
+        join ancestry a on p.id = a.parent_portfolio_id
+        where p.tenant_id = p_tenant_id
+          and p.valid_to = ores_utility_infinity_timestamp_fn()
+          and a.depth < 64
+    )
+        select 1
+        from ores_refdata_portfolio_rights_tbl r
+        join ancestry a on r.portfolio_id = a.id
+        join ores_iam_accounts_tbl acc
+          on acc.id = r.account_id
+         and acc.tenant_id = r.tenant_id
+         and acc.valid_to = ores_utility_infinity_timestamp_fn()
+        where r.tenant_id = p_tenant_id
+          and r.account_id = p_account_id
+          and r.right_code = p_right_code
+          and r.valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable set search_path = public, pg_temp;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: portfolio_right
+:entity_plural_short:   portfolio_rights
+:entity_singular_words: portfolio right
+:entity_plural_words:   portfolio rights
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pr
+:END:
+
+** Table display
+
+| column       | header      |
+|--------------+-------------|
+| account_id   | Account     |
+| portfolio_id | Portfolio   |
+| right_code   | Right       |
+| modified_by  | Modified By |
+| version      | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/portfolio_right.hpp
+:domain_class:            refdata::domain::portfolio_right
+:protocol_include:        ores.refdata.api/messaging/portfolio_right_protocol.hpp
+:collection_name:         portfolio_rights
+:key_field:               right_code
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field      | label | widget        | type      | is_key | is_required | placeholder           |
+|------------+-------+---------------+-----------+--------+-------------+-----------------------|
+| right_code | Right | rightCodeEdit | line_edit | true   | true        | read or open_sandbox  |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| RightCode  | right_code  | Right       | string    |   120 |
+| Version    | version     | Version     | int       |    80 |
+| ModifiedBy | modified_by | Modified By | string    |   120 |
+| RecordedAt | recorded_at | Recorded At | timestamp |   150 |
+
+** Paste blocks
+
+*** Extra drop statements
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_account_holds_portfolio_right_fn;
+#+end_src
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] — the tree the rights are held on.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — why the rights exist.

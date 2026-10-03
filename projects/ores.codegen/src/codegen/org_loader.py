@@ -1039,16 +1039,13 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     # image_id).
     out.setdefault("target_column", "id")
     # A named ``parent_seed`` source block under the FK heading is the
-    # seeding snippet for a parent table with no modeling org (a
-    # hand-authored table such as ores_iam_accounts_tbl): the eventing
-    # integration test cannot call a generated synthetic generator for
-    # it, so the org supplies the seed code verbatim. Emitted by
-    # cpp_nats_integration_test.cpp.mustache in place of the auto
-    # parent seeding, which only fires for org-resolved parents. The
-    # sibling ``parent_seed_includes`` block names the headers the
-    # snippet needs: the auto include emission derives its paths from
-    # the parent's org metadata, which by definition does not exist
-    # here.
+    # seeding snippet for the FK's parent. The eventing integration test
+    # emits it in place of the derived parent seeding: for a parent with no
+    # modeling org, which has no generated generator, and for one whose
+    # derived seed would be wrong, such as an account that must be a
+    # service account so the test tenant stays in bootstrap. The sibling
+    # ``parent_seed_includes`` block names the headers the snippet needs,
+    # since the derived include emission is skipped with the seeding.
     if "parent_seed" in node.src_blocks:
         out["parent_seed_snippet"] = node.src_blocks["parent_seed"]
     if "parent_seed_includes" in node.src_blocks:

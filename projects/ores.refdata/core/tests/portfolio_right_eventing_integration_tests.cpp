@@ -23,10 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-// A seeded parent is system-tenant reference data (its soft FK carries
-// :use_system_tenant:), so its row is forced to the system tenant and
-// written under a system-scoped context, and the tenant_id helpers are
-// needed.
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -36,57 +32,67 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
-#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value_json_io.hpp" // IWYU pragma: keep.
-#include "ores.synthetic.api/eventing/ir_curve_generation_config_process_parameter_value_event.hpp"
-#include "ores.synthetic.api/generators/ir_curve_generation_config_process_parameter_value_generator.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
-#include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
-#include "ores.synthetic.core/service/ir_curve_generation_config_process_parameter_value_service.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-// Soft-FK parent seeding (ores_synthetic_ir_curve_generation_configs_tbl): the parent may live in
-// another component, so its own component names the headers.
-#include "ores.synthetic.api/generators/ir_curve_generation_config_generator.hpp"
-#include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
-// Grand-parent seeding (ores_synthetic_market_data_generation_configs_tbl): the parent's own
-// mandatory soft FKs reference rows the test seeds before the parent, so their generator and
-// repository headers are needed too.
-#include "ores.synthetic.api/generators/market_data_generation_config_generator.hpp"
-#include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
-// Parent-seed snippet includes (ores_synthetic_process_parameter_definitions_tbl): the parent table
-// is hand-authored with no modeling org, so the snippet's generator and repository headers are
-// named by the org rather than derived.
-#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
+#include "ores.refdata.api/domain/portfolio_right.hpp"
+#include "ores.refdata.api/domain/portfolio_right_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/eventing/portfolio_right_event.hpp"
+#include "ores.refdata.api/generators/portfolio_right_generator.hpp"
+#include "ores.refdata.api/messaging/portfolio_right_protocol.hpp"
+#include "ores.refdata.core/repository/portfolio_right_repository.hpp"
+#include "ores.refdata.core/service/portfolio_right_service.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+// FK-parent aggregation-currency seed: a seeded portfolio parent's insert
+// trigger validates aggregation_ccy against the currencies table for the
+// write tenant, and the synthetic portfolio generator always emits the
+// X-0 sentinel -- the test seeds it before the parent write or the
+// parent insert is rejected. Like the entity-level currency seed, the
+// currency generator and repository are used regardless of the child's
+// generator facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+// Parent-seed snippet includes (ores_iam_accounts_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_portfolios_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.refdata.api/generators/portfolio_generator.hpp"
+#include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <thread>
 
 // Proves the "write an entity, observe its NATS entity-changed
-// notification" pattern end to end for ir_curve_generation_config_process_parameter_value -- the
+// notification" pattern end to end for portfolio_right -- the
 // production DB-write -> pg_notify -> postgres_event_source ->
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
 namespace {
 
-const std::string_view test_suite("synthetic.tests");
+const std::string_view test_suite("refdata.tests");
 const std::string tags("[eventing][integration]");
 
 
 }
 
-using namespace ores::synthetic::generators;
-using ores::synthetic::domain::ir_curve_generation_config_process_parameter_value;
-using ores::synthetic::repository::ir_curve_generation_config_process_parameter_value_repository;
+using namespace ores::refdata::generators;
+using ores::refdata::domain::portfolio_right;
+using ores::refdata::repository::portfolio_right_repository;
+using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an_event", tags) {
+TEST_CASE("write_portfolio_right_publishes_an_event", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -104,16 +110,14 @@ TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an
     nats.connect();
     REQUIRE(nats.is_connected());
 
-    using event_type =
-        ores::synthetic::messaging::ir_curve_generation_config_process_parameter_value_event;
+    using event_type = ores::refdata::messaging::portfolio_right_event;
     auto sub = bus.subscribe<event_type>([&nats](const event_type& e) {
         // One payload is addressed by three subjects, so the subject is the
         // collection's prefix and the action the event reports.
         ev::service::publish_entity_event(nats, ev::domain::event_subject<event_type>(e.action), e);
     });
 
-    event_source.register_entity_event_mapping<event_type>(
-        "ores_synthetic_config_process_parameter_values");
+    event_source.register_entity_event_mapping<event_type>("ores_refdata_portfolio_rights");
 
     // 2. Subscribe as an external observer would, on the relative subject --
     // client::subscribe() prepends the subject_prefix itself. The wildcard
@@ -132,47 +136,54 @@ TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an
 
     // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
     // the chain wired above -> NATS.
-    auto v = generate_synthetic_ir_curve_generation_config_process_parameter_value(ctx);
+    auto v = generate_synthetic_portfolio_right(ctx);
     v.change_reason_code = "system.test";
-    // Seed the active ir_curve_generation_config row ores_synthetic_ir_curve_generation_configs_tbl
-    // references: the insert trigger's existence check rejects a synthetic key that matches no
-    // active row, so the parent must be written first.
-    auto config_id_parent =
-        ores::synthetic::generators::generate_synthetic_ir_curve_generation_config(ctx);
-    config_id_parent.change_reason_code = "system.test";
-    auto config_id_parent_market_data_generation_config_parent =
-        ores::synthetic::generators::generate_synthetic_market_data_generation_config(ctx);
-    config_id_parent_market_data_generation_config_parent.change_reason_code = "system.test";
-    // Seed the active market_data_generation_config row
-    // ores_synthetic_market_data_generation_configs_tbl references: the referencing row's insert
-    // trigger rejects a synthetic key that matches no active row, so it must be written first.
-    ores::synthetic::repository::market_data_generation_config_repository
-        config_id_parent_market_data_generation_config_parent_repo;
-    config_id_parent_market_data_generation_config_parent_repo.write(
-        party_ctx, config_id_parent_market_data_generation_config_parent);
-    config_id_parent.config_id = config_id_parent_market_data_generation_config_parent.id;
-    ores::synthetic::repository::ir_curve_generation_config_repository config_id_repo;
-    config_id_repo.write(party_ctx, config_id_parent);
-    v.config_id = config_id_parent.id;
     {
-        // The insert trigger requires the definition's process type to
-        // match the config's, and the config generator always emits
-        // VASICEK, so the seeded catalogue row must be a VASICEK
-        // definition.
-        ores::synthetic::repository::yield_curve_process_parameter_definition_repository
-            definition_repo;
-        const auto definitions = definition_repo.read_latest(
-            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        const auto match = std::find_if(definitions.begin(), definitions.end(), [](const auto& d) {
-            return d.process_type_code == "VASICEK";
-        });
-        REQUIRE(match != definitions.end());
-        v.parameter_definition_id = match->id;
+        auto account = ores::iam::generators::generate_synthetic_account(ctx);
+        account.account_type = "service";
+        account.change_reason_code = "system.test";
+        ores::iam::repository::account_repository account_repo;
+        account_repo.write(party_ctx, account);
+        v.account_id = account.id;
     }
+    // Seed the active portfolio row ores_refdata_portfolios_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto portfolio_id_parent = ores::refdata::generators::generate_synthetic_portfolio(ctx);
+    portfolio_id_parent.change_reason_code = "system.test";
+    // portfolio's own mandatory party_id FK (session-set in
+    // production) needs an active party too: seed one, attached under the
+    // tenant's root party like the direct-party branch below.
+    auto portfolio_id_party = ores::refdata::generators::generate_synthetic_party(ctx);
+    portfolio_id_party.change_reason_code = "system.test";
+    auto portfolio_id_party_existing =
+        ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : portfolio_id_party_existing) {
+        if (e.tenant_id == portfolio_id_party.tenant_id) {
+            portfolio_id_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository portfolio_id_party_repo;
+    portfolio_id_party_repo.write(party_ctx, portfolio_id_party);
+    portfolio_id_parent.party_id = portfolio_id_party.id;
+    // The parent portfolio's insert trigger validates aggregation_ccy
+    // against the currencies table for the write tenant, and the
+    // synthetic portfolio generator always emits the X-0 sentinel --
+    // seed it before the parent write or the parent insert is rejected.
+    // Distinct name from the entity-level currency seed block: both are
+    // in scope when the entity also carries the seed_currency flag.
+    auto parent_ccy = ores::refdata::generators::generate_synthetic_currency(ctx);
+    parent_ccy.iso_code = "X-0";
+    currency_repository parent_ccy_repo;
+    parent_ccy_repo.write(party_ctx, {parent_ccy});
+    ores::refdata::repository::portfolio_repository portfolio_id_repo;
+    portfolio_id_repo.write(party_ctx, portfolio_id_parent);
+    v.portfolio_id = portfolio_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
-    BOOST_LOG_SEV(lg, debug) << "IR Curve Generation Config Process Parameter Value: " << v;
+    BOOST_LOG_SEV(lg, debug) << "Portfolio Right: " << v;
 
-    ir_curve_generation_config_process_parameter_value_repository repo;
+    portfolio_right_repository repo;
     repo.write(party_ctx, v);
 
     // 4. Poll the observer's buffer for the notification. The chain --
@@ -198,7 +209,7 @@ TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an
                 auto decoded = ores::nats::default_wire_codec().decode<event_type>(msg.data);
                 // The event carries the row's own key record, so the row under
                 // test is recognised by comparing it with the row written.
-                if (decoded && decoded->key.id == v.id)
+                if (decoded && decoded->key.right_code == v.right_code)
                     received.push_back(msg);
             }
         }
@@ -210,19 +221,16 @@ TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error)
-            << "No notification for ir_curve_generation_config_process_parameter_value " << id_str
-            << " after " << max_attempts << " writes; observer received " << final_snapshot.size()
-            << " message(s) in total";
+        BOOST_LOG_SEV(lg, error) << "No notification for portfolio_right " << id_str << " after "
+                                 << max_attempts << " writes; observer received "
+                                 << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
             BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
                                      << msg.data.size() << " bytes";
     }
     REQUIRE_FALSE(received.empty());
-    BOOST_LOG_SEV(lg, info)
-        << "Received " << received.size()
-        << " matching NATS notification(s) for ir_curve_generation_config_process_parameter_value "
-        << id_str;
+    BOOST_LOG_SEV(lg, info) << "Received " << received.size()
+                            << " matching NATS notification(s) for portfolio_right " << id_str;
 
     // 5. CRUD round trip on the same row: update through the
     // repository, read the version history through the service, and
@@ -234,20 +242,19 @@ TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an
     // only growth is asserted, not an exact count.
     {
         const auto& crud_ctx = party_ctx;
-        ores::synthetic::service::ir_curve_generation_config_process_parameter_value_service svc(
-            crud_ctx);
+        ores::refdata::service::portfolio_right_service svc(crud_ctx);
         v.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
-        auto versions = svc.get_process_parameter_value_history(id_str);
+        auto versions = svc.get_portfolio_right_history(v.right_code);
         REQUIRE(versions.size() >= 2);
         REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
 
-        svc.delete_process_parameter_value(v.id);
+        svc.delete_portfolio_right(v.id);
         // Delete soft-closes the active row (the instead-of delete
         // rule sets valid_to): the row disappears from latest reads,
         // and the version history keeps every version.
-        REQUIRE_FALSE(svc.get_process_parameter_value(v.id).has_value());
-        REQUIRE(svc.get_process_parameter_value_history(id_str).size() == versions.size());
+        REQUIRE_FALSE(svc.get_portfolio_right(v.id).has_value());
+        REQUIRE(svc.get_portfolio_right_history(v.right_code).size() == versions.size());
     }
 }

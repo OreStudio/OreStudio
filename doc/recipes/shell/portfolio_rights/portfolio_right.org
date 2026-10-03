@@ -1,0 +1,266 @@
+:PROPERTIES:
+:ID: B0D65F25-06B1-5B18-8202-16E4741931BD
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the portfolio_rights commands from the shell?
+#+description: Every command the portfolio_rights submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:portfolio_rights:
+
+This file documents the portfolio_rights resource at the shell, one section per command. Every command is a subcommand of =portfolio_rights=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A471C078-73E4-5BAD-BA2D-4F369FF553E4
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.list=.
+
+#+name: portfolio_rights-list
+#+begin_src ores-shell :tangle portfolio_rights-list.ores :exports none
+portfolio_rights list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0845DFAF-95F4-502F-83E7-7A765BAE284D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights get <right_code>
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.get=.
+
+#+name: portfolio_rights-get
+#+begin_src ores-shell :tangle portfolio_rights-get.ores :exports none
+portfolio_rights get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 73290D4F-C7F2-5C17-B76D-926100061574
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights get-many <right_code>
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.get_many=.
+
+#+name: portfolio_rights-get-many
+#+begin_src ores-shell :tangle portfolio_rights-get-many.ores :exports none
+portfolio_rights get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 488BA106-5DDF-5D2D-9D86-9D634EC009F7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights add <account_id> <portfolio_id> <right_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.put=.
+
+#+name: portfolio_rights-add
+#+begin_src ores-shell :tangle portfolio_rights-add.ores :exports none
+portfolio_rights add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F1A1412D-5125-5855-BD24-495053FAF385
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights set <id> <account_id> <portfolio_id> <right_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.put=.
+
+#+name: portfolio_rights-set
+#+begin_src ores-shell :tangle portfolio_rights-set.ores :exports none
+portfolio_rights set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CD93300A-AFE3-53C0-9D2A-B02D6265899F
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights put-many --count <n> <id> <account_id> <portfolio_id> <right_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.put_many=.
+
+#+name: portfolio_rights-put-many
+#+begin_src ores-shell :tangle portfolio_rights-put-many.ores :exports none
+portfolio_rights put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 30DBCEBE-40E4-5CF4-BCF2-414C6AFFC532
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights delete <right_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.delete=.
+
+#+name: portfolio_rights-delete
+#+begin_src ores-shell :tangle portfolio_rights-delete.ores :exports none
+portfolio_rights delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 74331AC6-0CA1-5321-9A46-2B953DAF8122
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights delete-many <right_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.delete_many=.
+
+#+name: portfolio_rights-delete-many
+#+begin_src ores-shell :tangle portfolio_rights-delete-many.ores :exports none
+portfolio_rights delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: 71A9F952-5070-553B-A32F-1521B7F79D2A
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.list_by_account_id=.
+
+#+name: portfolio_rights-by-account-id
+#+begin_src ores-shell :tangle portfolio_rights-by-account-id.ores :exports none
+portfolio_rights by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-portfolio-id=
+:PROPERTIES:
+:ID: E2007339-D97E-506D-9FE5-7594ADA436A6
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights by-portfolio-id <portfolio_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights.list_by_portfolio_id=.
+
+#+name: portfolio_rights-by-portfolio-id
+#+begin_src ores-shell :tangle portfolio_rights-by-portfolio-id.ores :exports none
+portfolio_rights by-portfolio-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 354BC56A-A580-5224-956D-DC2082AE8EBB
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights versions <right_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights_versions.list=.
+
+#+name: portfolio_rights-versions
+#+begin_src ores-shell :tangle portfolio_rights-versions.ores :exports none
+portfolio_rights versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A76DEF6C-6744-59D6-A68A-940737A348CF
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+portfolio_rights version <right_code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.portfolio_rights_versions.get=.
+
+#+name: portfolio_rights-version
+#+begin_src ores-shell :tangle portfolio_rights-version.ores :exports none
+portfolio_rights version __none__ --version 1
+#+end_src
+

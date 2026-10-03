@@ -30,6 +30,7 @@ drop policy if exists netting_agreements_tenant_isolation_policy on "ores_refdat
 drop policy if exists netting_sets_party_isolation_policy on "ores_refdata_netting_sets_tbl";
 drop policy if exists netting_sets_tenant_isolation_policy on "ores_refdata_netting_sets_tbl";
 drop policy if exists csas_tenant_isolation_policy on "ores_refdata_csas_tbl";
+drop policy if exists portfolio_rights_tenant_isolation_policy on "ores_refdata_portfolio_rights_tbl";
 drop policy if exists csa_eligible_currencies_tenant_isolation_policy on "ores_refdata_csa_eligible_currencies_tbl";
 
 -- Portfolios

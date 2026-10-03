@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/cut-the-consumers-over
-#+pr:
+#+pr: 2545
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -159,7 +159,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2545][#2545]] | [marketdata] Cut the quote readers and writers over to the new codecs |
 
 * Review
 

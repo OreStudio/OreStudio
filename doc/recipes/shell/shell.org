@@ -1300,3 +1300,19 @@ tangled into the runnable script library
 * Yield Volatilities
 
 - [[id:B41CF7F7-C607-5141-9E55-3905AFB64B83][How do I run the yield_volatilities commands from the shell?]]
+
+* Cds Volatilities
+
+- [[id:240C9D4C-3797-57FC-98DF-7774EE5B0051][How do I run the cds_volatilities commands from the shell?]]
+
+* Cds Volatility Terms
+
+- [[id:5A869E98-55AB-5A5C-B7FB-9AE395AF293F][How do I run the cds_volatility_terms commands from the shell?]]
+
+* Curve Volatility Configs
+
+- [[id:2FA31558-E591-5171-A62C-8E349E1EF2A4][How do I run the curve_volatility_configs commands from the shell?]]
+
+* Inflation Cap Floor Volatilities
+
+- [[id:6C85A0A9-1646-5B73-A131-A0F78EB386F9][How do I run the inflation_cap_floor_volatilities commands from the shell?]]

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T15:38:09.515444Z
+' Generated: 2026-10-03T16:11:36.727114Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1636,6 +1636,68 @@ package "refdata" #FFF3E0 {
     The rule field governs IMM dates and standard CDS roll dates.
     end note
 
+    entity ores_refdata_cds_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          expiries : text
+          day_counter : text
+          calendar : text
+          strike_type : text
+          quote_name : text
+          strike_factor : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cds_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CDS Volatility Table
+    The settings of one CDSVolatility entry of a curveconfig.xml, one row per
+    curve_definition in the CDSVolatilities section: the expiries the surface
+    is quoted at, how its strikes are quoted, and its day counter and calendar.
+    Its Terms are rows of cds_volatility_term, and the surface it is built as,
+    when it names one, a row of curve_volatility_config.
+    The schema also allows a PriceInfo element, which no corpus document writes;
+    the mapper refuses an entry that has one rather than lose it.
+    end note
+
+    entity ores_refdata_cds_volatility_terms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * label : text
+        * curve : text
+          maturity : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cds_volatility_terms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    CDS Volatility Term Table
+    One Term of a CDS volatility's Terms list: the term's label, the default
+    curve the term is priced with, and an optional maturity, in the order the
+    document lists them.
+    end note
+
     entity ores_refdata_cms_spread_option_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
@@ -3066,6 +3128,50 @@ package "refdata" #FFF3E0 {
     one table each, so a function that looks in all of them checks the reference.
     end note
 
+    entity ores_refdata_curve_volatility_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * kind : text
+          priority : integer
+          quote_type : text
+          volatility_type : text
+          exercise_type : text
+          strikes : text
+          expiries : text
+          time_interpolation : text
+          strike_interpolation : text
+          extrapolation : text
+          time_extrapolation : text
+          time_extrapolation_variance : text
+          strike_extrapolation : text
+          calendar : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_volatility_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Volatility Config Table
+    One way a volatility entry's surface may be built. CDS, equity and commodity
+    volatilities each name one or more volatility configurations, each with an
+    optional priority; ORE builds the first that succeeds. kind names the
+    element the document wrote, and the columns that kind uses are set.
+    Only the StrikeSurface kind is modelled so far, because it is the only kind a
+    corpus CDS volatility writes. The other kinds (Constant, Curve,
+    ProxySurface and the equity and commodity surfaces) are added with the
+    sections that write them, and the mapper refuses them until then.
+    end note
+
     entity ores_refdata_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -3563,6 +3669,52 @@ package "refdata" #FFF3E0 {
     Defines the fixing calendar, day count, settlement lag, and business day
     convention for a term IBOR index such as EURIBOR or USD LIBOR.
     Corresponds to the <IborIndex> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_inflation_cap_floor_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * inflation_type : text
+        * quote_type : text
+        * volatility_type : text
+        * extrapolation : text
+        * tenors : text
+          settlement_days : integer
+          cap_strikes : text
+          floor_strikes : text
+          strikes : text
+        * calendar : text
+        * day_counter : text
+        * business_day_convention : text
+        * index : text
+        * index_curve : text
+          index_interpolated : text
+        * observation_lag : text
+        * yield_term_structure : text
+          quote_index : text
+          conventions : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_cap_floor_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Cap Floor Volatility Table
+    The settings of one InflationCapFloorVolatility entry of a curveconfig.xml,
+    one row per curve_definition in the InflationCapFloorVolatilities section:
+    a zero coupon or year on year inflation cap and floor surface over tenors and
+    strikes, with the index and curves it is built from. Its Report is a row of
+    curve_report_configuration and its BootstrapConfig a row of
+    curve_bootstrap_config, both keyed to the entry.
     end note
 
     entity ores_refdata_inflation_curves_tbl <<temporal>> #C6F0D8 {

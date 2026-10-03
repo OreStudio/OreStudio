@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: 1937C645-B3BD-4847-AC75-CF5589A56CB6
+:END:
+#+title: ores.refdata.cds_volatility_term
+#+description: Codegen entity model for the refdata =cds_volatility_term= table. One term of an ORE CDS volatility.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One term of an ORE CDS volatility, with the default curve it uses.
+#+entity_singular: cds_volatility_term
+#+entity_plural: cds_volatility_terms
+#+entity_title: CDS Volatility Term
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One =Term= of a CDS volatility's =Terms= list: the term's label, the default
+curve the term is priced with, and an optional maturity, in the order the
+document lists them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** label
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The term's label, such as =5Y=.
+
+#+begin_src cpp :name generator
+std::string("5Y")
+#+end_src
+
+** curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The default curve the term is priced with.
+
+#+begin_src cpp :name generator
+std::string("Default/USD/CPTY_A")
+#+end_src
+
+** maturity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The term's maturity, when the document gives one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The term's place in the list, which the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cds_volatility_terms_tbl
+:END:
+
+** Checks
+
+| expression      |
+|-----------------|
+| "label" <> ''   |
+| "curve" <> ''   |
+| "position" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: term
+:entity_plural_short:   terms
+:entity_singular_words: CDS volatility term
+:entity_plural_words:   CDS volatility terms
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: vt
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

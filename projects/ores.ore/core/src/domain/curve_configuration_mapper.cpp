@@ -49,6 +49,10 @@ constexpr std::string_view fx_volatilities_section = "FXVolatilities";
 constexpr std::string_view yield_volatilities_section = "YieldVolatilities";
 constexpr std::string_view base_correlations_section = "BaseCorrelations";
 constexpr std::string_view correlations_section = "Correlations";
+constexpr std::string_view cds_volatilities_section = "CDSVolatilities";
+constexpr std::string_view inflation_cap_floor_volatilities_section =
+    "InflationCapFloorVolatilities";
+constexpr std::string_view strike_surface_kind = "StrikeSurface";
 
 constexpr std::string_view basis_quotes_list = "BasisQuotes";
 constexpr std::string_view off_peak_quotes_list = "OffPeakQuotes";
@@ -64,7 +68,8 @@ bool is_modelled(std::string_view section) {
            section == inflation_curves_section || section == default_curves_section ||
            section == commodity_curves_section || section == fx_volatilities_section ||
            section == yield_volatilities_section || section == base_correlations_section ||
-           section == correlations_section ||
+           section == correlations_section || section == cds_volatilities_section ||
+           section == inflation_cap_floor_volatilities_section ||
            section == securities_section || section == fx_spots_section ||
            section == intraday_power_curves_section;
 }
@@ -221,15 +226,16 @@ const std::vector<section_access>& sections() {
         make_section("CapFloorVolatilities",
                      &curveconfiguration::CapFloorVolatilities,
                      &capFloorVolatilities::CapFloorVolatility),
-        make_section(
-            "CDSVolatilities", &curveconfiguration::CDSVolatilities, &cdsVolatilities::CDSVolatility),
+        make_section(cds_volatilities_section,
+                     &curveconfiguration::CDSVolatilities,
+                     &cdsVolatilities::CDSVolatility),
         make_section(
             default_curves_section, &curveconfiguration::DefaultCurves, &defaultCurves::DefaultCurve),
         make_section(yield_curves_section, &curveconfiguration::YieldCurves, &yieldCurves::YieldCurve),
         make_section(inflation_curves_section,
                      &curveconfiguration::InflationCurves,
                      &inflationCurves::InflationCurve),
-        make_section("InflationCapFloorVolatilities",
+        make_section(inflation_cap_floor_volatilities_section,
                      &curveconfiguration::InflationCapFloorVolatilities,
                      &inflationCapFloorVolatlities::InflationCapFloorVolatility),
         make_section(equity_curves_section, &curveconfiguration::EquityCurves, &equityCurves::EquityCurve),
@@ -989,6 +995,137 @@ void import_base_correlation(mapped_curve_configuration& out,
     out.base_correlations.push_back(std::move(r));
 }
 
+void import_strike_surface(mapped_curve_configuration& out,
+                           const boost::uuids::uuid& definition_id,
+                           const volatilityStrikeSurfaceConfig& v,
+                           int position) {
+    if (v.ParametricSmileConfiguration)
+        throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
+                      "modelled yet");
+    refdata::domain::curve_volatility_config c;
+    c.id = new_uuid();
+    c.curve_definition_id = definition_id;
+    c.kind = std::string(strike_surface_kind);
+    c.priority = optional_int(v.priority);
+    c.quote_type = optional_text(v.QuoteType);
+    c.volatility_type = optional_text(v.VolatilityType);
+    c.exercise_type = optional_text(v.ExerciseType);
+    c.strikes = text(v.Strikes);
+    c.expiries = text(v.Expiries);
+    c.time_interpolation = text(v.TimeInterpolation);
+    c.strike_interpolation = text(v.StrikeInterpolation);
+    c.extrapolation = to_string(v.Extrapolation);
+    c.time_extrapolation = to_string(v.TimeExtrapolation);
+    c.time_extrapolation_variance = optional_enum_text(v.TimeExtrapolationVariance);
+    c.strike_extrapolation = to_string(v.StrikeExtrapolation);
+    c.calendar = optional_text(v.Calendar);
+    c.position = position;
+    set_audit(c);
+    out.volatility_configs.push_back(std::move(c));
+}
+
+volatilityStrikeSurfaceConfig export_strike_surface(
+    const refdata::domain::curve_volatility_config& c) {
+    volatilityStrikeSurfaceConfig v;
+    assign_optional_int(v.priority, c.priority);
+    assign_optional_text(v.QuoteType, c.quote_type);
+    assign_optional_text(v.VolatilityType, c.volatility_type);
+    assign_optional_text(v.ExerciseType, c.exercise_type);
+    assign_text(v.Strikes, c.strikes.value_or(""));
+    assign_text(v.Expiries, c.expiries.value_or(""));
+    v.TimeInterpolation = c.time_interpolation.value_or("");
+    v.StrikeInterpolation = c.strike_interpolation.value_or("");
+    v.Extrapolation = enum_from_text<bool_>(c.extrapolation.value_or(""), "ORE boolean");
+    v.TimeExtrapolation =
+        enum_from_text<extrapolationType>(c.time_extrapolation.value_or(""), "extrapolation");
+    assign_optional_enum(v.TimeExtrapolationVariance, c.time_extrapolation_variance, "ORE boolean");
+    v.StrikeExtrapolation =
+        enum_from_text<extrapolationType>(c.strike_extrapolation.value_or(""), "extrapolation");
+    if (c.calendar)
+        v.Calendar = *c.calendar;
+    return v;
+}
+
+void import_cds_volatility(mapped_curve_configuration& out, const cdsVolatility& v, int position) {
+    const auto d = add_definition(
+        out, cds_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.Constant || v.Curve || v.ProxySurface)
+        throw refusal("CDS volatility " + d.curve_id +
+                      " writes a Constant, Curve or ProxySurface, which is not modelled yet");
+    if (v.PriceInfo)
+        throw refusal("CDS volatility " + d.curve_id + " writes a PriceInfo, which is not modelled yet");
+    if (v.Terms && v.Terms->Term.empty())
+        throw refusal("CDS volatility " + d.curve_id + " writes an empty Terms element");
+
+    refdata::domain::cds_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.expiries = optional_text(v.Expiries);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.calendar = optional_text(v.Calendar);
+    r.strike_type = optional_text(v.StrikeType);
+    r.quote_name = optional_text(v.QuoteName);
+    r.strike_factor = v.StrikeFactor ? std::optional<double>(*v.StrikeFactor) : std::nullopt;
+    set_audit(r);
+    out.cds_volatilities.push_back(std::move(r));
+
+    if (v.Terms) {
+        int term_position = 0;
+        for (const auto& t : v.Terms->Term) {
+            refdata::domain::cds_volatility_term term;
+            term.id = new_uuid();
+            term.curve_definition_id = d.id;
+            term.label = text(t.Label);
+            term.curve = text(t.Curve);
+            term.maturity = optional_text(t.Maturity);
+            term.position = term_position++;
+            set_audit(term);
+            out.cds_volatility_terms.push_back(std::move(term));
+        }
+    }
+    if (v.StrikeSurface)
+        import_strike_surface(out, d.id, *v.StrikeSurface, 0);
+}
+
+void import_inflation_cap_floor_volatility(mapped_curve_configuration& out,
+                                           const inflationCapFloorVolatility& v,
+                                           int position) {
+    const auto d = add_definition(out,
+                                  inflation_cap_floor_volatilities_section,
+                                  text(v.CurveId),
+                                  text(v.CurveDescription),
+                                  position);
+
+    refdata::domain::inflation_cap_floor_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.inflation_type = to_string(v.Type);
+    r.quote_type = text(v.QuoteType);
+    r.volatility_type = to_string(v.VolatilityType);
+    r.extrapolation = to_string(v.Extrapolation);
+    r.tenors = text(v.Tenors);
+    r.settlement_days = optional_int(v.SettlementDays);
+    r.cap_strikes = optional_text(v.CapStrikes);
+    r.floor_strikes = optional_text(v.FloorStrikes);
+    r.strikes = optional_text(v.Strikes);
+    r.calendar = text(v.Calendar);
+    r.day_counter = to_string(v.DayCounter);
+    r.business_day_convention = to_string(v.BusinessDayConvention);
+    r.index = text(v.Index);
+    r.index_curve = text(v.IndexCurve);
+    r.index_interpolated = optional_enum_text(v.IndexInterpolated);
+    r.observation_lag = text(v.ObservationLag);
+    r.yield_term_structure = text(v.YieldTermStructure);
+    r.quote_index = optional_text(v.QuoteIndex);
+    r.conventions = optional_text(v.Conventions);
+    set_audit(r);
+    out.inflation_cap_floor_volatilities.push_back(std::move(r));
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+    if (v.BootstrapConfig)
+        import_bootstrap(out, d.id, boost::uuids::uuid{}, *v.BootstrapConfig);
+}
+
 void import_correlation(mapped_curve_configuration& out, const correlation& v, int position) {
     const auto d = add_definition(
         out, correlations_section, text(v.CurveId), text(v.CurveDescription), position);
@@ -1100,6 +1237,14 @@ boost::uuids::uuid configuration_definition(
 
 boost::uuids::uuid factor_definition(const refdata::domain::inflation_seasonality_factor& f) {
     return f.curve_definition_id;
+}
+
+boost::uuids::uuid term_definition(const refdata::domain::cds_volatility_term& t) {
+    return t.curve_definition_id;
+}
+
+boost::uuids::uuid volatility_config_definition(const refdata::domain::curve_volatility_config& c) {
+    return c.curve_definition_id;
 }
 
 boost::uuids::uuid definition_of(const refdata::domain::curve_segment& s) {
@@ -1725,6 +1870,77 @@ baseCorrelation export_base_correlation(const refdata::domain::curve_definition&
     return r;
 }
 
+cdsVolatility export_cds_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::cds_volatility& v,
+    const std::vector<const refdata::domain::cds_volatility_term*>& terms,
+    const std::vector<const refdata::domain::curve_volatility_config*>& configs) {
+    cdsVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    if (!terms.empty()) {
+        cdsVolatility_Terms_t list;
+        for (const auto* t : terms) {
+            cdsVolatility_Terms_t_Term_t term;
+            assign_text(term.Label, t->label);
+            assign_text(term.Curve, t->curve);
+            assign_optional_text(term.Maturity, t->maturity);
+            list.Term.push_back(std::move(term));
+        }
+        r.Terms = std::move(list);
+    }
+    assign_optional_text(r.Expiries, v.expiries);
+    for (const auto* c : configs) {
+        if (c->kind != strike_surface_kind)
+            throw refusal("CDS volatility " + d.curve_id + " has a volatility config of kind " +
+                          c->kind + ", which is not modelled yet");
+        r.StrikeSurface = export_strike_surface(*c);
+    }
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_text(r.StrikeType, v.strike_type);
+    assign_optional_text(r.QuoteName, v.quote_name);
+    if (v.strike_factor)
+        r.StrikeFactor = *v.strike_factor;
+    return r;
+}
+
+inflationCapFloorVolatility export_inflation_cap_floor_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::inflation_cap_floor_volatility& v,
+    const refdata::domain::curve_report_configuration* report,
+    const refdata::domain::curve_bootstrap_config* bootstrap) {
+    inflationCapFloorVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Type = enum_from_text<inflationType>(v.inflation_type, "inflation type");
+    assign_text(r.QuoteType, v.quote_type);
+    r.VolatilityType = enum_from_text<volatilityType>(v.volatility_type, "volatility type");
+    r.Extrapolation = enum_from_text<bool_>(v.extrapolation, "ORE boolean");
+    assign_text(r.Tenors, v.tenors);
+    assign_optional_int(r.SettlementDays, v.settlement_days);
+    assign_optional_text(r.CapStrikes, v.cap_strikes);
+    assign_optional_text(r.FloorStrikes, v.floor_strikes);
+    assign_optional_text(r.Strikes, v.strikes);
+    r.Calendar = v.calendar;
+    r.DayCounter = enum_from_text<dayCounter>(v.day_counter, "day counter");
+    r.BusinessDayConvention =
+        enum_from_text<businessDayConvention>(v.business_day_convention, "business day convention");
+    assign_text(r.Index, v.index);
+    assign_text(r.IndexCurve, v.index_curve);
+    assign_optional_enum(r.IndexInterpolated, v.index_interpolated, "ORE boolean");
+    assign_text(r.ObservationLag, v.observation_lag);
+    assign_text(r.YieldTermStructure, v.yield_term_structure);
+    assign_optional_text(r.QuoteIndex, v.quote_index);
+    assign_optional_text(r.Conventions, v.conventions);
+    if (report)
+        r.Report = export_report(*report);
+    if (bootstrap)
+        r.BootstrapConfig = export_bootstrap(*bootstrap);
+    return r;
+}
+
 correlation export_correlation(const refdata::domain::curve_definition& d,
                                const refdata::domain::curve_correlation& v) {
     correlation r;
@@ -1862,6 +2078,12 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     if (v.Correlations)
         for (const auto& e : v.Correlations->Correlation)
             import_correlation(mapped, e, position++);
+    if (v.CDSVolatilities)
+        for (const auto& e : v.CDSVolatilities->CDSVolatility)
+            import_cds_volatility(mapped, e, position++);
+    if (v.InflationCapFloorVolatilities)
+        for (const auto& e : v.InflationCapFloorVolatilities->InflationCapFloorVolatility)
+            import_inflation_cap_floor_volatility(mapped, e, position++);
     if (v.IntradayPowerCurves)
         for (const auto& e : v.IntradayPowerCurves->IntradayPowerCurve)
             import_intraday_power_curve(mapped, e, position++);
@@ -1932,6 +2154,10 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
         return it == report_by_definition.end() ? nullptr : it->second;
     };
     const auto price_segments = group_by(v.commodity_price_segments, &price_segment_definition);
+    const auto cds_vol_by_definition = by_definition(v.cds_volatilities);
+    const auto cds_terms = group_by(v.cds_volatility_terms, &term_definition);
+    const auto volatility_configs = group_by(v.volatility_configs, &volatility_config_definition);
+    const auto inflation_vol_by_definition = by_definition(v.inflation_cap_floor_volatilities);
     const auto default_by_definition = by_definition(v.default_curves);
     const auto configurations = group_by(v.default_curve_configurations, &configuration_definition);
     ctx.curves = group_by(v.segment_curves, &parent_segment);
@@ -1979,6 +2205,32 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
                 document.BaseCorrelations = baseCorrelations{};
             document.BaseCorrelations->BaseCorrelation.push_back(
                 export_base_correlation(*d, settings_of(base_correlation_by_definition, *d)));
+            continue;
+        }
+        if (d->section_code == cds_volatilities_section) {
+            static const std::vector<const refdata::domain::cds_volatility_term*> no_terms;
+            static const std::vector<const refdata::domain::curve_volatility_config*> no_configs;
+            const auto t = cds_terms.find(d->id);
+            const auto c = volatility_configs.find(d->id);
+            if (!document.CDSVolatilities)
+                document.CDSVolatilities = cdsVolatilities{};
+            document.CDSVolatilities->CDSVolatility.push_back(
+                export_cds_volatility(*d,
+                                      settings_of(cds_vol_by_definition, *d),
+                                      t == cds_terms.end() ? no_terms : t->second,
+                                      c == volatility_configs.end() ? no_configs : c->second));
+            continue;
+        }
+        if (d->section_code == inflation_cap_floor_volatilities_section) {
+            const auto b = ctx.entry_bootstraps.find(d->id);
+            if (!document.InflationCapFloorVolatilities)
+                document.InflationCapFloorVolatilities = inflationCapFloorVolatlities{};
+            document.InflationCapFloorVolatilities->InflationCapFloorVolatility.push_back(
+                export_inflation_cap_floor_volatility(
+                    *d,
+                    settings_of(inflation_vol_by_definition, *d),
+                    report_of(*d),
+                    b == ctx.entry_bootstraps.end() ? nullptr : b->second));
             continue;
         }
         if (d->section_code == correlations_section) {

@@ -1348,3 +1348,11 @@ tangled into the runnable script library
 * Yield Volatility Configs
 
 - [[id:AA65A81E-54A8-55FB-9D44-C3B97EE6D3F8][How do I run the yield_volatility_configs commands from the shell?]]
+
+* Trade Bookings
+
+- [[id:77755A32-AB0A-5A90-9E9E-BFCE2E8A242B][How do I run the trade_bookings commands from the shell?]]
+
+* Trade States
+
+- [[id:6E6BC1D6-49C9-51CD-B678-A509660C6EEB][How do I run the trade_states commands from the shell?]]

@@ -71,10 +71,12 @@ set(files
     "settlement_type_commands_tests.cpp"
     "swap_leg_commands_tests.cpp"
     "swaption_instrument_commands_tests.cpp"
+    "trade_booking_commands_tests.cpp"
     "trade_commands_tests.cpp"
     "trade_id_type_commands_tests.cpp"
     "trade_identifier_commands_tests.cpp"
     "trade_party_role_commands_tests.cpp"
+    "trade_state_commands_tests.cpp"
     "trade_type_commands_tests.cpp"
     "vanilla_swap_instrument_commands_tests.cpp"
 )

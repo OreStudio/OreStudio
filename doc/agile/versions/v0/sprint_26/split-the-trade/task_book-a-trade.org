@@ -8,12 +8,12 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/book-a-trade
-#+pr:
+#+pr: 2576
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller books a trade through one service operation that writes the anchor, its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ A caller books a trade through one service operation that writes the anchor, its
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- An operation model, =ores.trading.trade_operations=, generates the
+  =book_trade_request= and =book_trade_response= messages on
+  =trading.v1.trades.book=. The handler and the service are hand-written,
+  because an operation model generates neither.
+- =ores_trading_book_trade_fn= writes the anchor, the booking and the state in
+  one statement, so a failure in any of them writes none. The anchor insert
+  uses =on conflict do nothing=: a trade id already booked writes nothing and
+  returns false, which the service answers as a conflict with code
+  =already_exists=. The function runs as the caller, so grants and row-level
+  security apply.
+- The service stamps the tenant, party and audit fields from the caller's
+  context, so the anchor's party is always the caller's.
+- The handler requires =trading::trades:write=, the permission the wide
+  trade's writers already hold.
 
 * Measurements
 
@@ -61,6 +72,20 @@ task and name that file in the Command column.
 
 * Notes
 
+- Review of PR 2573 (booking and state), recorded here because the merge took
+  no further commit: (1) run the full ctest, done after the merge, 90/90; (2) a
+  booking written without a state leaves an actual trade in a virtual book with
+  no status, so consider a commit-time check: declined, because every
+  generated write test seeds an anchor through its own committed write, so the
+  check would break each of them; this operation is the sanctioned path, and
+  it always writes both; (3) the generated booking trigger checks the book's
+  existence and then its pin, which covers it: declined, a generator concern
+  outside the story; (4) the security-definer helpers take a tenant argument:
+  declined, the same pattern as the reporting helpers, called only from
+  triggers with the validated tenant; (5) the purger's =alter table= takes a
+  strong lock: noted, the existing hard-delete pattern; (6) netting sets read
+  from ORE name no parties: recorded in the story's Decisions.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,12 +101,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2576][#2576]] | [trading] Book a trade in one write |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a check the trade fails (an unknown book, a virtual book for a live trade) answers =failed= with =internal_error= rather than =invalid= | =trade_operations_handler.hpp= | Decline for now | The store's message names the cause; mapping SQLSTATEs to outcomes is a cross-cutting change no service does yet. |
+| 2 | Local review: the operation books under =trading::trades:write=, not a permission of its own | =trade_operations_handler.hpp= | Accept as is | Booking writes trades; the wide trade's writers already hold it. |
+| 3 | @claude: the raw database message reaches the client | =trade_operations_handler.hpp= | Decline | The generated handlers do the same, and the trigger messages are the domain explanation the caller needs. |
+| 4 | @claude: an empty result is reported as a conflict | =trade_operations_service.cpp= | Accept | Only =false= is a conflict; any other result throws and is reported as failed. |
+| 5 | @claude: empty change reason or commentary | =trade_operations_service.cpp= | Decline | =stamp= fills the change reason when it is empty, and commentary is free text. |
+| 6 | @claude: cover the optional casts, another party, the permission | service tests | Accept in part | The booking test now sends an execution timestamp and reads it back; the party comes from the context by construction, and the permission check is the shared helper. |
+| 7 | @claude: a helper for the registrar block; a header-local logger | =registrar.cpp=, handler | Decline | Both follow the existing hand-written handler pattern. |
 
 * Result
+
+- =book_trade= on =trading.v1.trades.book= books a trade: the anchor, the
+  booking and the first state in one statement through
+  =ores_trading_book_trade_fn=, so a failure in any of them writes none.
+- A trade id already booked writes nothing and answers a conflict with code
+  =already_exists=.
+- Tenant, party and audit fields come from the caller's context.
+- Verified: build clean (=linux-clang-debug-make=); ctest 90/90, including the
+  three new service tests (books all three rows, a second booking is a
+  conflict, a failing booking writes no anchor); db recreate clean; pgTAP
+  40/40; codegen pytest 1120; drift shows only the known =trade_service.cpp=
+  diff; sweep, paste blocks, reachability, permissions, populate references,
+  CMake, SQL hygiene, lint, structure notes, misspell and site page clean.

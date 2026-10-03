@@ -1043,6 +1043,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_envelope_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_id_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_identifier_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_party_role_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_state_protocol.hpp"

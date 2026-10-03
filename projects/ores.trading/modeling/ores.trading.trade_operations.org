@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 5BD2DC7D-2D07-486E-AD1E-41900FDC4DFF
+:END:
+#+title: ores.trading.trade_operations
+#+description: Codegen operation model for the trading component's trade operations: messages that write a trade across its anchor and components, which no single entity verb can do.
+#+type: ores.codegen.operation
+#+component: trading
+#+subcomponent: api
+#+entity_singular: trade_operations
+#+namespace: ores::trading::messaging
+#+brief: Operations that write a trade across its anchor and components.
+#+filetags: :model:operation:trading:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A trade is an immutable [[id:4304A441-E532-45FB-837A-378F13693CAE][anchor]] with a [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][booking]] and a [[id:85F71403-ACE4-4032-B3D4-EA5A61DC6812][state]], each in its own
+table. Booking a trade writes all three, and a trade with an anchor but no
+booking or state is not a trade anyone can read. So booking is one operation
+rather than three entity writes: the three rows are written in one
+transaction, and a failure in any of them writes none.
+
+The anchor is written once. A second booking of the same trade id is
+answered with a conflict, because the trade it names already exists, rather
+than surfacing as a database key violation.
+
+The handler stays hand-written beside this model, because an operation model
+generates no service handler.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "ores.trading.api/domain/trade_anchor.hpp"
+#include "ores.trading.api/domain/trade_booking.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#+end_src
+
+* Messages
+
+** book_trade_request
+:PROPERTIES:
+:subject:  trading.v1.trades.book
+:response: book_trade_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Books a trade: its anchor, its booking and its first state.
+ *
+ * The three rows are written in one transaction. The booking's trade id,
+ * party and counterparty are taken from the anchor, so the caller states
+ * them once.
+ */
+#+end_src
+
+*** anchor
+:PROPERTIES:
+:cpp_type: ores::trading::domain::trade_anchor
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's immutable facts.
+ */
+#+end_src
+
+*** booking
+:PROPERTIES:
+:cpp_type: ores::trading::domain::trade_booking
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the trade is booked. Its trade id, party and counterparty
+ * are replaced by the anchor's.
+ */
+#+end_src
+
+*** activity_type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The activity that books the trade, which names the transition
+ * that starts its state: new_booking for a live trade, draft_capture for a
+ * draft.
+ */
+#+end_src
+
+** book_trade_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of booking a trade.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Outcome of the operation: conflict with code already_exists when
+ * the trade id is already booked.
+ */
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

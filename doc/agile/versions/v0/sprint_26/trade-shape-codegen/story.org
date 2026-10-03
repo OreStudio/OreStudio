@@ -46,7 +46,7 @@ common-date view to the rates instrument story, the first family reworked.
 |------+-------+-------+-----+-------------|
 | [[id:AC82A71D-8B50-4A8C-9B62-7FD5CAEBFDB9][Let a model declare an immutable entity]] | DONE | 2026-10-03 | 2026-10-03 | Add an immutable flag to current-state entities: the table rejects updates and deletes, and the generated service writes rows once and never changes them. |
 | [[id:764E3F6E-84E7-49CA-A661-0F263F92450B][Generate real foreign keys into immutable entities]] | DONE | 2026-10-03 | 2026-10-03 | Let a foreign key whose target is an immutable entity be declared as a real REFERENCES constraint instead of a trigger check. |
-| [[id:98EA1788-5614-4862-80CE-F568C5BFFABF][Pin copied facts with composite keys]] | BACKLOG | | | Let a model declare a unique key over several columns and a composite foreign key onto it, enforced as a constraint for an immutable target and as a trigger check for a temporal one. |
+| [[id:98EA1788-5614-4862-80CE-F568C5BFFABF][Pin copied facts with composite keys]] | DONE | 2026-10-03 | 2026-10-03 | Let a model declare a unique key over several columns and a composite foreign key onto it, enforced as a constraint for an immutable target and as a trigger check for a temporal one. |
 | [[id:384B992A-59D7-43C4-95D4-83D3E831C898][Guard every reflected struct against the C1202 limit]] | BACKLOG | | | Count the effective fields of every generated reflected struct and fail the codegen checks when one exceeds nine. |
 
 * Decisions
@@ -56,6 +56,9 @@ common-date view to the rates instrument story, the first family reworked.
 - An enforced foreign key is opt-in per key with =:enforce: true=. The
   generator refuses it for a temporal target, because a =REFERENCES=
   constraint would accept a closed version as current.
+- Composite keys are pinned keys in their own SQL table rather than
+  entries in =* Foreign keys=, which C++ consumers read one column at a
+  time. Named unique keys reuse the =** Indexes= table.
 
 * Out of scope
 

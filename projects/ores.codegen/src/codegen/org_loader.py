@@ -1480,6 +1480,22 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                     "column": props["amend_activity_column"],
                     "code": props["amend_activity_code"],
                 }
+        # A pinned key holds a row's copies of another row's facts to that
+        # row: the listed columns must equal the target's, so a copy cannot
+        # drift from its source.
+        pins_section = _section(sql_section, "Pinned keys")
+        if pins_section and pins_section.tables:
+            de["pinned_keys"] = [
+                {
+                    "name": r["name"],
+                    "columns": [c.strip() for c in r["columns"].split(",")],
+                    "table": r["table"],
+                    "target_columns": [
+                        c.strip() for c in r["target_columns"].split(",")],
+                    "error_message": _sql_literal_text(r["error_message"]),
+                }
+                for r in _parse_org_table_rows(pins_section) if r.get("name")
+            ]
         indexes_section = _section(sql_section, "Indexes")
         if indexes_section and indexes_section.tables:
             rows = _parse_org_table_rows(indexes_section)

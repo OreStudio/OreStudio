@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-shape-codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/composite-pinned-keys
+#+pr: 2531
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Let an instrument copy its trade's type and party, and a booking its netting set
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -41,9 +41,15 @@ Let an instrument copy its trade's type and party, and a booking its netting set
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Named unique keys already exist: a row of the SQL =** Indexes= table
+  with =unique= true and no predicate is a key PostgreSQL accepts as a
+  foreign key target. No new declaration is needed.
+- Composite keys go in a new =** Pinned keys= table under =* SQL=, not in
+  =* Foreign keys=. Each =* Foreign keys= entry is keyed by one column and
+  feeds C++ consumers (test seeding, list-by queries, group prefixes); a pin
+  is a SQL-only rule.
+- The source decides the check: a constraint for an immutable source, a
+  trigger check on the current row for a temporal one.
 
 * Measurements
 
@@ -76,12 +82,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2531][#2531]] | [codegen] Pin copied facts with composite keys |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Message not checked for one % | core.py | Accept | Refused unless it has exactly one %, for every pin, since a source can change mode. |
+| 2 | Columns not checked to exist | core.py | Accept | Both column lists are checked against the two models. |
+| 3 | Duplicate pin names | core.py | Accept | Refused. |
+| 4 | Source table quoted in one path only | template | Decline | The trigger form matches the existing copy validations; generated table names never need quoting. |
+| 5 | Notes on the insert-only rule and nulls | meta-model page | Accept | Both stated. |
+| 6 | Tenant column in the missing-key message | core.py | Decline | The message already lists tenant_id among the columns it needs. |
 
 * Result
+
+- A =** Pinned keys= table under =* SQL= declares a pin: name, copied
+  columns, source table, source columns and error message.
+- Against an immutable source the pin renders a constraint,
+  =<table>_<name>_pin=, that includes =tenant_id= when the row is
+  tenant-scoped. The generator refuses the pin unless the source declares
+  the referenced columns as its primary key or as a unique index with no
+  predicate.
+- Against a temporal source the insert trigger checks the source's current
+  row. The check holds at insert only, so a pin copies only facts the
+  source never changes.
+- The generator refuses an unknown source, column lists of different
+  lengths, columns either model does not declare, repeated pin names, a
+  message without exactly one =%=, tenant scopes that differ, a mutable
+  current-state source and a constraint name over 63 characters.
+- Nine tests in =projects/ores.codegen/tests/test_pinned_key.py=.
+- In Postgres, in transactions that rolled back, a copy whose kind differed
+  from its source was refused with 23503: by
+  =ores_testcomp_copier_records_source_pin= against an immutable source,
+  and by the pin's own trigger message against a temporal source. A
+  matching copy was accepted in both.
+- The SQL meta-model page documents pinned keys, and the variability index
+  lists =pinned_keys=.

@@ -1732,6 +1732,120 @@ def _immutable_tenant_key(de: dict[str, Any]) -> bool:
                 and not sql.get('nullable_tenant_id'))
 
 
+def _column_names(de: dict[str, Any]) -> set[str]:
+    """Every column a model declares, key columns included."""
+    names = set()
+    for source in (de.get('columns') or [],
+                   (de.get('primary_key') or {}).get('columns') or [],
+                   de.get('natural_keys') or []):
+        for column in source:
+            name = column.get('name') or column.get('column')
+            if name:
+                names.add(name)
+    return names
+
+
+def _unique_keys(de: dict[str, Any]) -> list[frozenset[str]]:
+    """The column sets a foreign key can reference: the primary key and
+    every unique index over plain columns with no predicate."""
+    pk = [c.get('column') for c in
+          (de.get('primary_key') or {}).get('columns') or []]
+    if _immutable_tenant_key(de):
+        pk = ['tenant_id', *pk]
+    keys = [frozenset(pk)] if pk else []
+    for index in de.get('indexes') or []:
+        columns = [c.strip() for c in (index.get('columns') or '').split(',')]
+        if (index.get('unique') and not index.get('current_only')
+                and not index.get('where_extra')
+                and all(re.fullmatch(r'[a-z_][a-z0-9_]*', c) for c in columns)):
+            keys.append(frozenset(columns))
+    return keys
+
+
+def _resolve_pinned_keys(domain_entity: dict[str, Any], model_path) -> None:
+    """Decide how each pinned key is checked and name its constraint.
+
+    A constraint is checked against every row, so only an immutable target
+    can be pinned by one, and the target must declare the referenced
+    columns as a key. A temporal target is pinned by a trigger check
+    against its current row. Either way the pin matches the row's own
+    tenant when the row has one.
+    """
+    pins = domain_entity.get('pinned_keys') or []
+    if not pins:
+        return
+    from .org_loader import _entity_org_by_table
+    org_by_table = _entity_org_by_table(_projects_dir_from(model_path))
+    has_tenant = bool(domain_entity.get('has_tenant_id'))
+    base = domain_entity['sql_name_base']
+    names = [pin['name'] for pin in pins]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    if duplicates:
+        raise ValueError(
+            f"{model_path}: pinned key names repeat: {', '.join(duplicates)}.")
+    own_columns = _column_names(domain_entity)
+    for pin in pins:
+        where = f"{model_path}: pinned key {pin['name']}"
+        if pin['error_message'].replace('%%', '').count('%') != 1:
+            raise ValueError(
+                f"{where}: the error message needs exactly one %, which "
+                "stands for the first column.")
+        unknown = [c for c in pin['columns'] if c not in own_columns]
+        if unknown:
+            raise ValueError(
+                f"{where}: this model declares no column {', '.join(unknown)}.")
+        if len(pin['columns']) != len(pin['target_columns']):
+            raise ValueError(
+                f"{where} lists {len(pin['columns'])} columns but "
+                f"{len(pin['target_columns'])} target columns.")
+        parent = _parent_entity_info(
+            (org_by_table.get(pin['table']) or {}).get('org'))
+        if not parent:
+            raise ValueError(
+                f"{where}: no model declares the table {pin['table']}.")
+        unknown = [c for c in pin['target_columns']
+                   if c not in parent['column_names']]
+        if unknown:
+            raise ValueError(
+                f"{where}: {pin['table']} declares no column "
+                f"{', '.join(unknown)}.")
+        if parent['has_tenant_id'] != has_tenant:
+            raise ValueError(
+                f"{where}: {pin['table']} and this table must both be "
+                "tenant-scoped or both not.")
+        if parent['current_state'] and not parent['immutable']:
+            raise ValueError(
+                f"{where}: {pin['table']} is a mutable current-state table, "
+                "which has neither the history a trigger check reads nor "
+                "the immutability a constraint needs.")
+        pin['matches_tenant'] = has_tenant
+        pin['enforced'] = parent['immutable']
+        pin['column_pairs'] = [
+            {'column': c, 'target_column': t}
+            for c, t in zip(pin['columns'], pin['target_columns'])]
+        pin['first_column'] = pin['columns'][0]
+        tenant = ['tenant_id'] if has_tenant else []
+        pin['column_list'] = ', '.join(
+            f'"{c}"' for c in tenant + pin['columns'])
+        pin['target_column_list'] = ', '.join(
+            f'"{c}"' for c in tenant + pin['target_columns'])
+        if pin['enforced']:
+            wanted = frozenset(tenant + pin['target_columns'])
+            if wanted not in parent['unique_keys']:
+                raise ValueError(
+                    f"{where}: {pin['table']} has no primary key or unique "
+                    f"index over {', '.join(sorted(wanted))}; declare one in "
+                    "its SQL Indexes table.")
+        pin['constraint_name'] = f"{base}_{pin['name']}_pin"
+        if len(pin['constraint_name']) > 63:
+            raise ValueError(
+                f"{where}: constraint {pin['constraint_name']} is longer "
+                "than 63 characters and PostgreSQL would truncate it.")
+    domain_entity['enforced_pinned_keys'] = [p for p in pins if p['enforced']]
+    domain_entity['checked_pinned_keys'] = [
+        p for p in pins if not p['enforced']]
+
+
 @functools.lru_cache(maxsize=None)
 def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
     """Raw model metadata of a soft-FK parent entity (no enrichment).
@@ -1773,6 +1887,10 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'mandatory_fks': mandatory,
         'immutable': bool((de.get('sql') or {}).get('immutable')),
         'immutable_tenant_key': _immutable_tenant_key(de),
+        'has_tenant_id': bool(de.get('has_tenant_id')),
+        'current_state': bool((de.get('sql') or {}).get('current_state')),
+        'unique_keys': _unique_keys(de),
+        'column_names': _column_names(de),
     }
 
 
@@ -4024,6 +4142,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f"{model_path}: constraint {fk['constraint_name']} is "
                     "longer than 63 characters and PostgreSQL would truncate "
                     "it; shorten the table name or the column name.")
+        _resolve_pinned_keys(domain_entity, model_path)
         # RLS policy names are composed from the short table base
         # (market_series_tbl_tenant_isolation_policy), the dominant
         # hand-written shape, while sql_name_base carries the full

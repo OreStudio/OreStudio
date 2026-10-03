@@ -51,6 +51,23 @@ returns void language sql as $$
     select set_config('ores.utility.allow_version_replace', 'on', true);
 $$;
 
+-- Whether the current transaction may delete rows of an immutable table.
+--
+-- An immutable table refuses every update, delete and truncate. A tenant purge
+-- is the one writer that must remove such rows, and it says so here. The
+-- signal is transaction-local, like the version replace signal above.
+create or replace function ores_utility_immutable_purge_allowed_fn()
+returns boolean language sql stable as $$
+    select coalesce(current_setting('ores.utility.allow_immutable_purge', true), 'off') = 'on';
+$$;
+
+-- Turns the purge signal on for the rest of the current transaction. Only a
+-- tenant purge calls it.
+create or replace function ores_utility_allow_immutable_purge_fn()
+returns void language sql as $$
+    select set_config('ores.utility.allow_immutable_purge', 'on', true);
+$$;
+
 create or replace function ores_utility_iso8601_timestamp_fn(p_ts timestamptz)
 returns text language sql immutable as $$
     select to_char(p_ts at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')

@@ -24,7 +24,7 @@ namespace ores::{{component}}::{{generator_facet_name}} {
 using ores::utility::generation::generation_keys;
 
 domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
-    utility::generation::generation_context& ctx) {
+    {{^has_audit_columns}}{{^has_tenant_id}}[[maybe_unused]] {{/has_tenant_id}}{{/has_audit_columns}}utility::generation::generation_context& ctx) {
 {{#needs_counter}}
     [[maybe_unused]] static std::atomic<int> counter{0};
 {{/needs_counter}}

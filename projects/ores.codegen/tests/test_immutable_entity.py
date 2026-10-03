@@ -123,6 +123,28 @@ def test_the_store_refuses_update_delete_and_truncate(tmp_path):
     assert "before truncate on \"ores_testcomp_anchor_records_tbl\"" in sql
 
 
+def test_only_a_purge_may_delete(tmp_path):
+    sql = _create_sql(tmp_path, _model())
+
+    assert ("if TG_OP = 'DELETE' and ores_utility_immutable_purge_allowed_fn() then\n"
+            "        return OLD;") in sql
+
+
+def test_a_table_with_no_tenant_announces_no_tenant(tmp_path):
+    trigger = _render(tmp_path, "sql_schema_notify_trigger.mustache",
+                      "anchor_record_notify_trigger_create.sql", _model())
+
+    assert "'tenant_id', changed_tenant_id" in trigger
+    assert "tenant_id::text" not in trigger
+
+
+def test_a_generator_with_no_tenant_or_audit_compiles_without_ctx(tmp_path):
+    generator = _render(tmp_path, "cpp_domain_type_generator.cpp.mustache",
+                        "anchor_record_generator.cpp", _model())
+
+    assert "[[maybe_unused]] utility::generation::generation_context& ctx" in generator
+
+
 def test_the_drop_script_removes_the_guard(tmp_path):
     sql = _drop_sql(tmp_path, _model())
 

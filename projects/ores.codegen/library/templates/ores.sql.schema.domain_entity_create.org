@@ -764,6 +764,11 @@ for each row execute function {{domain_entity.sql_name_base}}_insert_fn();
 create or replace function {{domain_entity.sql_name_base}}_immutable_fn()
 returns trigger as $$
 begin
+    -- A tenant purge is the one sanctioned delete: it turns the switch on
+    -- for its own transaction, so no other writer can reach this branch.
+    if TG_OP = 'DELETE' and ores_utility_immutable_purge_allowed_fn() then
+        return OLD;
+    end if;
     raise exception '{{domain_entity.sql_name_base}}_tbl rows are immutable: % is refused.', TG_OP
         using errcode = '55000';
 end;

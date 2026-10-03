@@ -82,6 +82,8 @@ TEST_CASE("the seeded day counters are the schema's dayCounter enumeration", tag
     const auto body = type_body(read_schema("ore_types.xsd"), "simpleType", "dayCounter");
     const auto values = matches(body, std::regex(R"re(<xs:enumeration value="([^"]+)")re"));
     const std::set<std::string> expected(values.begin(), values.end());
+    INFO("Values are read from the schema by text patterns that expect an element's "
+         "type attribute before its name; a schema that changes that layout fails here.");
     REQUIRE(expected.size() == 71);
 
     ores::refdata::repository::day_counter_repository repo;
@@ -102,6 +104,8 @@ TEST_CASE("the seeded curve sections are the curve configuration's entry section
         if (name != "ReportConfiguration")
             expected.insert(name);
     }
+    INFO("Values are read from the schema by text patterns that expect an element's "
+         "type attribute before its name; a schema that changes that layout fails here.");
     REQUIRE(expected.size() == 19);
 
     ores::refdata::repository::curve_section_repository repo;
@@ -141,6 +145,8 @@ TEST_CASE("the seeded segment types are the schema's segment types, each under i
         for (const auto& v : matches(type_body(schema, "simpleType", e.front()), value))
             expected.emplace(v, kind);
     }
+    INFO("Values are read from the schema by text patterns that expect an element's "
+         "type attribute before its name; a schema that changes that layout fails here.");
     REQUIRE(expected.size() == 21);
 
     ores::refdata::repository::curve_segment_type_repository repo;

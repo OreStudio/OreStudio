@@ -1434,6 +1434,76 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
+def _cpp_string_list(names):
+    return '{' + ', '.join(f'"{n}"' for n in names) + '}'
+
+
+def _parse_order_spec(entity_name, flag, spec):
+    parts = str(spec).split()
+    if not parts or len(parts) > 2 or (
+            len(parts) == 2 and parts[1].lower() not in ('asc', 'desc')):
+        raise ValueError(
+            f"{entity_name}: {flag} must be '<column>' or '<column> desc', "
+            f"not '{spec}'")
+    return parts[0], len(parts) == 2 and parts[1].lower() == 'desc'
+
+
+def apply_stated_order(domain_entity):
+    """
+    Derive the order a list reads in from the model, per the list contract.
+
+    A column opts in with :sortable: true, and the entity states its default
+    order with :default_order: "<column> [desc]", which must name a sortable
+    column. An entity with no default order reads in key order. Every order
+    ends in the key columns, so the rows that tie still page reproducibly.
+
+    A scoped read keeps its own :list_by_order_by: default when the model
+    states one, and otherwise takes the entity's default order.
+
+    Args:
+        domain_entity (dict): mutated in place with sortable_fields,
+            order_key_columns, default_order_columns and default_order_desc,
+            and each list_by foreign key with list_by_default_columns.
+
+    Raises:
+        ValueError: if :default_order: is malformed or names a column that
+            is not sortable.
+    """
+    name = domain_entity.get('entity_singular', '?')
+    pk = domain_entity.get('primary_key') or {}
+    key = [c['column'] for c in (pk.get('columns') or [])] or [pk.get('column', 'id')]
+    columns = ((pk.get('columns') or [])
+               + (domain_entity.get('natural_keys') or [])
+               + (domain_entity.get('columns') or []))
+    sortable = [c.get('column') or c.get('name') for c in columns
+                if c.get('sortable') is True]
+    domain_entity['sortable_fields'] = [{'name': n} for n in sortable]
+    domain_entity['order_key_columns'] = _cpp_string_list(key)
+    spec = domain_entity.get('default_order')
+    if spec:
+        column, desc = _parse_order_spec(name, ':default_order:', spec)
+        if column not in sortable:
+            raise ValueError(
+                f"{name}: :default_order: names '{column}', which is not a "
+                ":sortable: column")
+        default_columns = [column]
+    else:
+        default_columns, desc = key, False
+    domain_entity['default_order_columns'] = _cpp_string_list(default_columns)
+    domain_entity['default_order_desc'] = 'true' if desc else 'false'
+    for fk in domain_entity.get('foreign_keys', []):
+        if not fk.get('list_by'):
+            continue
+        if fk.get('list_by_order_by'):
+            column, fk_desc = _parse_order_spec(
+                name, ':list_by_order_by:', fk['list_by_order_by'])
+            fk['list_by_default_columns'] = _cpp_string_list([column])
+            fk['list_by_default_desc'] = 'true' if fk_desc else 'false'
+        else:
+            fk['list_by_default_columns'] = domain_entity['default_order_columns']
+            fk['list_by_default_desc'] = domain_entity['default_order_desc']
+
+
 def validate_cache_aux_type(domain_entity):
     """
     Validate the cache_aux_type messaging flag: the C++ type name of a
@@ -3699,6 +3769,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fk['list_by_order_column'] = order_by_spec[0]
             fk['list_by_order_desc'] = (
                 len(order_by_spec) > 1 and order_by_spec[1].lower() == 'desc')
+        apply_stated_order(domain_entity)
         # Soft-FK parent resolution for eventing-integration-test seeding: a
         # child write whose mandatory soft FK references another entity is
         # rejected by the parent's existence-check trigger unless an active

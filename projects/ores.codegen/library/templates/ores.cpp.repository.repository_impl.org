@@ -32,6 +32,7 @@ The full template source. Edit here and re-tangle with
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/stated_order.hpp"
 {{#system_tenant_visible}}
 #include "ores.database/service/tenant_context.hpp"
 {{/system_tenant_visible}}
@@ -48,9 +49,10 @@ The full template source. Edit here and re-tangle with
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 {{/has_parent_id}}
-{{#primary_key.is_compound}}
+#include <algorithm>
+#include <initializer_list>
 #include <stdexcept>
-{{/primary_key.is_compound}}
+#include <string_view>
 {{#primary_key.is_compound}}
 #include <set>
 #include <tuple>
@@ -68,6 +70,36 @@ using namespace ores::database::repository;
 
 std::string {{entity_singular}}_repository::sql() {
     return generate_create_table_sql<{{entity_singular}}_entity>(lg());
+}
+
+bool {{entity_singular}}_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {
+{{#domain_entity.sortable_fields}}
+        "{{name}}",
+{{/domain_entity.sortable_fields}}
+    };
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending,
+                          {{{domain_entity.order_key_columns}}});
+    if (!{{entity_singular}}_repository::is_sortable(order.field))
+        throw std::invalid_argument(
+            "A list of {{entity_plural_words}} cannot be ordered by " + order.field + ".");
+    return make_order({order.field}, order.descending, {{{domain_entity.order_key_columns}}});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -506,7 +538,8 @@ std::optional<domain::{{entity_singular}}>
 {{#list_by}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest_by_{{column}}(context ctx, const std::string& {{column}},
-                                                          std::uint32_t offset, std::uint32_t limit) {
+                                                          std::uint32_t offset, std::uint32_t limit,
+                                                          const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}}. {{column}}: " << {{column}}
                                << " offset: " << offset << " limit: " << limit;
 {{^current_state}}
@@ -518,12 +551,12 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
@@ -531,7 +564,7 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
@@ -541,12 +574,13 @@ std::vector<domain::{{entity_singular}}>
 {{#current_state}}
         where("{{column}}"_c == {{column}}) |
 {{/current_state}}
-        order_by("{{list_by_order_column}}"_c{{#list_by_order_desc}}.desc(){{/list_by_order_desc}}) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
+        list_order(order, {{{list_by_default_columns}}}, {{list_by_default_desc}}),
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} by {{column}}.");
 }
@@ -704,7 +738,8 @@ void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+{{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
+    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} with offset: " << offset
                                << " and limit: " << limit;
 {{^current_state}}
@@ -716,13 +751,11 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
                        where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
-                       order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
                        where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
-                       order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -731,7 +764,6 @@ std::vector<domain::{{entity_singular}}>
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
                        where("workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
-                       order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
@@ -739,13 +771,13 @@ std::vector<domain::{{entity_singular}}>
 {{^domain_entity.current_state}}
                        where("valid_to"_c == max.value()) |
 {{/domain_entity.current_state}}
-                       order_by({{{primary_key.order_by_cols}}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
-    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+    return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
+        list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} with pagination.");
 }

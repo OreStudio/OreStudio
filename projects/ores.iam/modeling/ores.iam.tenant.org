@@ -32,6 +32,7 @@ Tenants are identified by:
 :component:              iam
 :profile:                uuid-identified-lookup
 :system_tenant_visible:  true
+:default_order:          name
 :END:
 
 =:system_tenant_visible:= is stated because a tenant row is stored under the
@@ -71,6 +72,7 @@ The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffff
 :cpp_type:            std::string
 :natural_key:         true
 :no_generator_suffix: true
+:sortable:            true
 :END:
 
 Unique code for stable referencing. Its shape is the deployment's and not a
@@ -99,6 +101,7 @@ Examples: 'system', 'acme', 'demo'.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Human-readable display name for the tenant.

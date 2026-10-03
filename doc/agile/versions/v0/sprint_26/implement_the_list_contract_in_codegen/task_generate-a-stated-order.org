@@ -7,41 +7,66 @@
 #+level: s1
 #+filetags: :codegen:protocol:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-a-stated-order
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A generated list honours a stated order. The model declares which columns a
+list can be ordered by and the order it reads in by default; the generated
+repository orders by them with the key as the last tie-break, and the
+generated service refuses any other field with =order_not_supported=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- A column declares =:sortable: true= and the entity =:default_order:=; the
+  generator refuses a default order on a column that is not sortable.
+- The generated =list= and =list_by_<relation>= reads honour a sortable field
+  in either direction, read in the default order when no field is stated, and
+  end every order in the key, ascending.
+- The generated service refuses an undeclared field with
+  =order_not_supported= and names it.
+- The tenant model declares =code= and =name= sortable and orders by =name=.
+- Tests prove each rule.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A sqlgen query fixes its order at compile time, and a stated order is known
+only when the request arrives. The generated read keeps its typed conditions
+and page, turns the query into its =dynamic::SelectFrom=, sets the order on
+that, and runs it on the session.
+
+- =ores.database=: =repository/stated_order.hpp= holds =make_order= (the
+  ordered columns in the stated direction, then each key column not among
+  them, ascending) and =execute_ordered_read_query=.
+- Generator: =apply_stated_order= in =core.py= reads =:sortable:= and
+  =:default_order:= (the =:list_by_order_by:= form, =<column> [desc]=) and
+  validates them. A scoped read keeps its own =:list_by_order_by:= default and
+  otherwise takes the entity's.
+- Templates (edited in the =.org= sources and tangled): the repository gains
+  =is_sortable= and an order parameter, defaulted, on the two paged reads; the
+  service refuses only an undeclared field and passes the order on.
+- Out of scope: versions lists order by version, and junction lists have no
+  sortable columns, so both keep refusing a stated field.
 
 * Measurements
 
@@ -83,3 +108,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A generated list now honours a stated order.
+
+- The model declares =:sortable: true= columns and =:default_order:=; the
+  generator refuses a default order on a column that is not sortable or a
+  malformed one.
+- The generated paged =list= and =list_by_<relation>= reads take the order,
+  read in the default order when no field is stated, and end every order in
+  the key, ascending. A scoped read keeps its =:list_by_order_by:= default, so
+  its ties now page reproducibly too.
+- The generated service refuses an undeclared field with
+  =order_not_supported= and a message naming it, and passes a declared one on.
+- The tenant model orders by =name= and can be ordered by =code=.
+- Tests: 8 generator tests (=test_stated_order.py=), 4 =make_order= tests in
+  =ores.database.tests=, 5 tenant cases in =ores.iam.core.tests= (default order,
+  both directions, ties in key order, the store's and the service's refusal).
+- Regenerated: every registry component (931 files); =trade_service.cpp= is
+  left as it was. Components outside the registry keep refusing a stated
+  order until their own clean-up regenerates them.
+- Verified: full build with no errors or warnings; ctest 90 suites, all core
+  suites passing after the local database was recreated (four suites had
+  failed on tables main added after it was built).

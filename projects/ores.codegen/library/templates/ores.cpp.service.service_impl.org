@@ -147,11 +147,12 @@ messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
 {{#has_order}}
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::{{entity_singular}}_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of {{entity_plural_words}} cannot be ordered by " + request.order.field + ".";
         return response;
     }
 {{/has_order}}
@@ -163,7 +164,8 @@ messaging::{{response}}
         return response;
     }
 {{/has_filter}}
-    response.{{entity_plural_short}} = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.{{entity_plural_short}} = repo_.read_latest(
+        ctx_, request.offset, request.limit{{#has_order}}, request.order{{/has_order}});
     response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_);
     return response;
 }
@@ -174,11 +176,12 @@ messaging::{{response}}
 {{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
     messaging::{{response}} response;
 {{#has_order}}
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::{{entity_singular}}_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of {{entity_plural_words}} cannot be ordered by " + request.order.field + ".";
         return response;
     }
 {{/has_order}}
@@ -222,7 +225,7 @@ messaging::{{response}}
 {{/leading_is_uuid}}
 {{/leading_is_optional}}
     response.{{entity_plural_short}} = repo_.read_latest_by_{{leading}}(
-        ctx_, relation, request.offset, request.limit);
+        ctx_, relation, request.offset, request.limit{{#has_order}}, request.order{{/has_order}});
     response.total = repo_.get_total_{{entity_singular_short}}_count_by_{{leading}}(ctx_, relation);
     return response;
 }

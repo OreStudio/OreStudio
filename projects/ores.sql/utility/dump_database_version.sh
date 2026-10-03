@@ -72,12 +72,12 @@ echo ""
 
 "${RUN_SQL}" -c "
 with info as (
-    select schema_version, build_environment, git_commit, git_date, created_at
+    select schema_fingerprint, build_environment, git_commit, git_date, created_at
     from ores_database_info_tbl
     order by created_at desc
     limit 1
 )
-select 'Schema version  : ' || schema_version from info
+select 'Schema fingerprint: ' || schema_fingerprint from info
 union all
 select 'Build environment: ' || build_environment from info
 union all

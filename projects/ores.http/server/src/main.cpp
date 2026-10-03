@@ -43,6 +43,9 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
          * already been handled by the parser itself.
          */
         co_return EXIT_FAILURE;
+    } catch (const ores::database::schema_mismatch_exception& e) {
+        std::cerr << e.what() << std::endl;
+        co_return static_cast<int>(ores::service::service::exit_code::schema_mismatch);
     } catch (const ores::database::db_connection_exception&) {
         co_return static_cast<int>(ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {

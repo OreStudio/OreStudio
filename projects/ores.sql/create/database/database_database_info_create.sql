@@ -21,9 +21,13 @@
 /**
  * Database Info Table
  *
- * Stores the schema version, git commit and build environment recorded when
- * the database was created or recreated. Used to correlate service behaviour
- * with the schema in use. Holds exactly one row.
+ * Stores the schema fingerprint, git commit and build environment recorded
+ * when the database was created or recreated. Holds exactly one row.
+ *
+ * The schema fingerprint is a hash of the SQL scripts the database was built
+ * from (projects/ores.sql/schema_fingerprint.cmake defines it). Every service
+ * and test run compares it with the fingerprint compiled into the code and
+ * refuses to start when they differ.
  *
  * Deliberately not a temporal table and not a codegen entity. It records the
  * checkout that built the database before any service is running, so it
@@ -34,7 +38,7 @@
 
 create table if not exists "ores_database_info_tbl" (
     "id" uuid not null,
-    "schema_version" text not null,
+    "schema_fingerprint" text not null,
     "build_environment" text not null,
     "git_commit" text not null,
     "git_date" text not null,

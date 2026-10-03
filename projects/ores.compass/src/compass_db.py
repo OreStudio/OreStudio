@@ -155,10 +155,31 @@ def _svc_psql_args(env, names, with_passwords):
     return args
 
 
+def schema_fingerprint(project_root):
+    """The fingerprint of the SQL compass db recreate reads.
+
+    Twin of projects/ores.sql/schema_fingerprint.cmake, which compiles the same
+    value into the database library: every .sql file under create/, populate/
+    and instance/ and at the top of projects/ores.sql contributes the line
+    "<relative path> <sha256 of its bytes>"; the lines are sorted by path and
+    the fingerprint is the first sixteen hex digits of their sha256. Change
+    both together; test_schema_fingerprint checks they agree."""
+    import hashlib
+    sql_dir = Path(project_root) / "projects" / "ores.sql"
+    files = [p for sub in ("create", "populate", "instance")
+             for p in (sql_dir / sub).rglob("*.sql")]
+    files += sorted(sql_dir.glob("*.sql"))
+    relatives = sorted(p.relative_to(sql_dir).as_posix() for p in files)
+    lines = "".join(
+        f"{r} {hashlib.sha256((sql_dir / r).read_bytes()).hexdigest()}\n"
+        for r in relatives)
+    return hashlib.sha256(lines.encode()).hexdigest()[:16]
+
+
 def database_info(env):
     """Latest ores_database_info_tbl row, or None when unreachable.
 
-    Returns {restored_at, schema_version, git_commit, git_date}. Used by
+    Returns {restored_at, schema_fingerprint, git_commit, git_date}. Used by
     compass bearings for the environment status; degrades silently."""
     db_name = env.get("ORES_TEST_DB_DATABASE", "")
     pw = env.get("PGPASSWORD", "")
@@ -167,7 +188,7 @@ def database_info(env):
     try:
         out = _psql(env, "-At", "-c",
                     "SELECT to_char(created_at, 'YYYY-MM-DD HH24:MI'), "
-                    "schema_version, git_commit, git_date "
+                    "schema_fingerprint, git_commit, git_date "
                     "FROM ores_database_info_tbl "
                     "ORDER BY created_at DESC LIMIT 1;",
                     password=pw, database=db_name, check=False, capture=True)
@@ -176,8 +197,8 @@ def database_info(env):
     line = (out.stdout or "").strip()
     if out.returncode or not line:
         return None
-    restored, schema, commit, git_date = (line.split("|") + ["", "", ""])[:4]
-    return {"restored_at": restored, "schema_version": schema,
+    restored, fingerprint, commit, git_date = (line.split("|") + ["", "", ""])[:4]
+    return {"restored_at": restored, "schema_fingerprint": fingerprint,
             "git_commit": commit, "git_date": git_date}
 
 
@@ -342,9 +363,7 @@ def cmd_setup(project_root, env, args):
           database=db_name, cwd=str(sql_dir))
 
     print("--- Phase 3: Populating database metadata ---")
-    cmake = (project_root / "CMakeLists.txt").read_text()
-    m = re.search(r"project\(OreStudio VERSION (\d+\.\d+\.\d+)", cmake)
-    schema_version = m.group(1) if m else "0.0.0"
+    fingerprint = schema_fingerprint(project_root)
     build_env = env.get("ORES_BUILD_ENVIRONMENT", "local")
 
     def _git(*gargs, default=""):
@@ -358,14 +377,14 @@ def cmd_setup(project_root, env, args):
     git_date = _git("log", "-1", "--format=%ad",
                     "--date=format:%Y/%m/%d %H:%M:%S", "HEAD",
                     default="unknown")
-    print(f"  Schema version:    {schema_version}")
+    print(f"  Schema fingerprint: {fingerprint}")
     print(f"  Build environment: {build_env}")
     print(f"  Git commit:        {commit}")
     print(f"  Git date:          {git_date}")
     _psql(env, "--set", "ON_ERROR_STOP=on", "-c",
           f"INSERT INTO ores_database_info_tbl "
-          f"(id, schema_version, build_environment, git_commit, git_date) "
-          f"VALUES (gen_random_uuid(), '{schema_version}', '{build_env}', "
+          f"(id, schema_fingerprint, build_environment, git_commit, git_date) "
+          f"VALUES (gen_random_uuid(), '{fingerprint}', '{build_env}', "
           f"'{commit}', '{git_date}');",
           password=pw, database=db_name)
     _VALID_ENV_TYPES = {"development", "staging", "production"}
@@ -530,45 +549,48 @@ def cmd_reset_tenant(project_root, env, args):
 
 # --- entry point ------------------------------------------------------------
 
-def schema_drift(project_root, info):
-    """Compute schema drift between the DB's git_date and HEAD.
+def schema_sync(project_root, info):
+    """Compare the database's schema fingerprint with the checkout's.
 
-    Returns (delta_seconds_or_none, label, ansi_colour_code, warning_or_none).
-    Callers use this in both 'compass bearings' and 'compass db status' so the
-    thresholds and copy stay in one place.
-    """
-    import datetime as _dt
+    Returns (expected_fingerprint, label, ansi_colour_code, warning_or_none).
+    'compass bearings', 'compass db status' and 'compass env status' all use
+    it, so the wording stays in one place."""
+    _C_GREEN = "\033[32m"
+    _C_RED = "\033[31m"
+    _C_RESET = "\033[0m"
+    expected = schema_fingerprint(project_root)
+    actual = info.get("schema_fingerprint", "")
+    if actual == expected:
+        return expected, f"in sync ({actual})", _C_GREEN, None
+    warn = (f"{_C_RED}⚠  Database schema {actual or '(none)'} does not match this "
+            f"checkout's {expected} — run: compass services stop && "
+            f"compass db recreate -y -k{_C_RESET}")
+    return expected, f"out of sync (database {actual or '(none)'}, checkout {expected})", _C_RED, warn
 
-    _C_GREEN  = "\033[32m"
-    _C_YELLOW = "\033[33m"
-    _C_RED    = "\033[31m"
-    _C_RESET  = "\033[0m"
 
-    delta = None
-    try:
-        r = subprocess.run(
-            ["git", "log", "-1", "--format=%ct", "HEAD"],
-            capture_output=True, text=True, cwd=str(project_root))
-        if r.returncode == 0 and r.stdout.strip():
-            head_ct = int(r.stdout.strip())
-            db_dt = _dt.datetime.strptime(info["git_date"], "%Y/%m/%d %H:%M:%S")
-            delta = max(0, head_ct - int(db_dt.timestamp()))
-    except (OSError, ValueError):
-        pass
+def check_schema_in_sync(project_root, env):
+    """Refuse, loudly, when the database was built from other SQL.
 
-    if delta is None:
-        return None, "unknown", "", None
-    if delta >= 3 * 86400:
-        days = delta // 86400
-        warn = (f"{_C_RED}⚠  Schema is stale — run: compass services "
-                f"stop && compass db recreate -y -k{_C_RESET}")
-        return delta, f"{days}d behind HEAD — stale", _C_RED, warn
-    if delta >= 86400:
-        days = delta // 86400
-        warn = (f"{_C_YELLOW}⚠  Schema is drifting — consider: "
-                f"compass db recreate -y -k{_C_RESET}")
-        return delta, f"{days}d behind HEAD — drifting", _C_YELLOW, warn
-    return delta, "current", _C_GREEN, None
+    Returns True when the fingerprints match. Otherwise prints a banner naming
+    both fingerprints, the commit the database was built from and the fix, and
+    returns False so the caller stops."""
+    info = database_info(env)
+    expected = schema_fingerprint(project_root)
+    if info and info.get("schema_fingerprint") == expected:
+        print(f"✅ Database schema fingerprint {expected} matches this checkout.")
+        return True
+    actual = info.get("schema_fingerprint") if info else None
+    built = (f"built from commit {info.get('git_commit', '?')} at {info.get('git_date', '?')}"
+             if info else "unreachable, or never stamped by compass db recreate")
+    rule = "=" * 78
+    print(rule, file=sys.stderr)
+    print("REFUSING TO START: the database schema does not match this checkout.", file=sys.stderr)
+    print(f"  Expected schema fingerprint (this checkout): {expected}", file=sys.stderr)
+    print(f"  Actual schema fingerprint (database)       : {actual or '(none)'}", file=sys.stderr)
+    print(f"  Database {env.get('ORES_TEST_DB_DATABASE', '?')}: {built}", file=sys.stderr)
+    print("  Fix: compass services stop && compass db recreate -y -k", file=sys.stderr)
+    print(rule, file=sys.stderr)
+    return False
 
 
 def cmd_db_status(project_root, env):
@@ -621,7 +643,7 @@ def cmd_db_status(project_root, env):
         print(f"    {_ycmd('compass services stop && compass db recreate -y -k')}")
         return 1
 
-    delta, drift_label, drift_ansi, drift_warn = schema_drift(project_root, info)
+    expected, drift_label, drift_ansi, drift_warn = schema_sync(project_root, info)
     drift_str = f"{drift_ansi}{drift_label}{_C_RESET}" if drift_ansi else drift_label
 
     print(f"📦  Schema")
@@ -637,10 +659,10 @@ def cmd_db_status(project_root, env):
         col = {"ok": _green, "warn": _yellow}.get(level, _red)
         return col(f"{restored_at}  ({age_hours:.0f}h ago)")
 
-    print(f"    version   : {_cyan(info['schema_version'])}")
+    print(f"    fingerprint: {_cyan(info['schema_fingerprint'] or '(none)')}  (checkout {expected})")
     print(f"    restored  : {_restored_rag(info['restored_at'])}")
     print(f"    built from: {_cyan(info['git_commit'][:12] if info['git_commit'] else '?')}  ({info['git_date']})")
-    print(f"    drift     : {drift_str}")
+    print(f"    schema    : {drift_str}")
     if drift_warn:
         print(f"    {drift_warn}")
     print()

@@ -151,7 +151,7 @@ class TestGatherUnits:
         assert compass_services.gather_units(ctx)["units"] == []
 
 
-DB_INFO = {"restored_at": "2026-09-28 15:34", "schema_version": "0.0.25",
+DB_INFO = {"restored_at": "2026-09-28 15:34", "schema_fingerprint": "a1b2c3d4e5f60718",
            "git_commit": "5559b012aed", "git_date": "2026/09/28 14:19:46"}
 
 ENV = {"ORES_PRESET": "preset", "ORES_ENV_NAME": "eager_maxwell",
@@ -186,9 +186,10 @@ def _gather(monkeypatch, root, *, counts=None, drift=None, bootstrap=False,
         "counts": counts, "service_total": 2})
     monkeypatch.setattr(compass_db, "database_info",
                         lambda env: info if reachable else None)
-    monkeypatch.setattr(compass_db, "schema_drift",
-                        lambda project_root, i: drift or (0, "current",
-                                                          "\033[32m", None))
+    monkeypatch.setattr(compass_db, "schema_sync",
+                        lambda project_root, i: drift or (
+                            "a1b2c3d4e5f60718", "in sync (a1b2c3d4e5f60718)",
+                            "\033[32m", None))
     monkeypatch.setattr(compass_db, "bootstrap_mode", lambda env: bootstrap)
     monkeypatch.setattr(compass_env_status, "session_scope",
                         lambda: ("dsh-1.scope", "app.slice"))
@@ -265,24 +266,28 @@ class TestPayload:
         assert any(".env is stale" in reason
                    for reason in payload["health"]["reasons"])
 
-    def test_schema_drift_is_carried_with_its_level(self, monkeypatch,
-                                                    tmp_path):
+    def test_an_out_of_sync_schema_is_critical(self, monkeypatch, tmp_path):
         payload = _gather(monkeypatch, tmp_path,
-                          drift=(90000, "1d behind HEAD — drifting",
-                                 "\033[33m", "⚠  Schema is drifting"))
-        assert payload["database"]["driftLevel"] == "warn"
-        assert any("drifting" in reason
+                          drift=("9d8e7f6a5b4c3d2e",
+                                 "out of sync (database a1b2c3d4e5f60718, "
+                                 "checkout 9d8e7f6a5b4c3d2e)",
+                                 "\033[31m", "⚠  Database schema does not match"))
+        assert payload["database"]["driftLevel"] == "critical"
+        assert payload["database"]["schemaFingerprint"] == "a1b2c3d4e5f60718"
+        assert payload["database"]["expectedFingerprint"] == "9d8e7f6a5b4c3d2e"
+        assert payload["health"]["level"] == "critical"
+        assert any("out of sync" in reason
                    for reason in payload["health"]["reasons"])
 
     def test_the_payload_carries_no_terminal_colour(self, monkeypatch,
                                                     tmp_path):
         payload = _gather(monkeypatch, tmp_path,
-                          drift=(400000, "4d behind HEAD — stale",
+                          drift=("9d8e7f6a5b4c3d2e", "out of sync",
                                  "\033[31m",
-                                 "\033[31m⚠  Schema is stale\033[0m"))
+                                 "\033[31m⚠  Database schema does not match\033[0m"))
         text = json.dumps(payload)
         assert "\033[" not in text
-        assert "Schema is stale" in payload["database"]["warning"]
+        assert "does not match" in payload["database"]["warning"]
 
     def test_outstanding_activities_are_listed_and_warn(self, monkeypatch,
                                                         tmp_path):
@@ -305,7 +310,7 @@ class TestRender:
         assert any(line.startswith("  Preset   : preset  (label: eager_maxwell")
                    for line in lines)
         assert any("restored 2026-09-28 15:34" in line and
-                   "schema 0.0.25" in line for line in lines)
+                   "schema in sync (a1b2c3d4e5f60718)" in line for line in lines)
         assert any("running=2" in line and "failed=0" in line and
                    "(nats: running)" in line for line in lines)
 

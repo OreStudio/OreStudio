@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: A6B0E6DC-9A9C-44B5-B5C1-135BF71A0713
+:END:
+#+title: Story: Refuse to start against a database built from other SQL
+#+description: A service, a test run or compass services start refuses to run against a database whose schema was built from different SQL than the code expects, and says so plainly.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The code knows the schema it was built for and the database records the schema it was built from, as a fingerprint of the SQL scripts. Every service and test run compares the two at startup, logs both, and refuses to start when they differ, with a message that names the fix: compass db recreate.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Every service, test run and compass services start compares the schema fingerprint compiled into the code with the one the database records, logs both, and refuses to start on a mismatch. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-03                               |
+
+* Acceptance
+
+- A service started against a database built from other SQL logs the expected and actual fingerprints and exits with a dedicated exit code and an unmistakable message.
+- A service started against a matching database logs both fingerprints and starts.
+- compass services start, compass db status and compass bearings report whether the database is in sync with the checkout.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E87CC784-9CC8-46EA-899E-C1F76B90605E][Fingerprint the schema and check it at startup]] | DONE | 2026-10-03 | 2026-10-03 | Hash the SQL scripts a recreate reads into a fingerprint, stamp it into the database and into the build, and refuse to start when the two differ. |
+
+* Decisions
+
+* Out of scope
+
+-

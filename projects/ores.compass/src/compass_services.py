@@ -33,7 +33,7 @@ from pathlib import Path
 
 import systemctl_bus
 import systemd_generate
-from compass_db import load_env, validate_env_version
+from compass_db import check_schema_in_sync, load_env, validate_env_version
 
 
 class _Tee:
@@ -524,6 +524,8 @@ def _cmd_start(ctx, args):
         return 1
     if not ctx.env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    if not check_schema_in_sync(ctx.root, ctx.env):
         return 1
     ctx.log_dir.mkdir(parents=True, exist_ok=True)
     ctx.run_dir.mkdir(parents=True, exist_ok=True)

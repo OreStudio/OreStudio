@@ -37,6 +37,7 @@ enum class exit_code : int {
     nats_connection_failed = 4, ///< Could not connect to NATS
     startup_timeout = 5,        ///< Timed out waiting for a dependency
     auth_error = 6,             ///< Authentication or authorisation failure
+    schema_mismatch = 7,        ///< Database built from other SQL than the code
 };
 
 }

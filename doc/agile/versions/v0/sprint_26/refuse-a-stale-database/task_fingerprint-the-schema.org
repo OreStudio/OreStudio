@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: E87CC784-9CC8-46EA-899E-C1F76B90605E
+:END:
+#+title: Task: Fingerprint the schema and check it at startup
+#+description: Hash the SQL scripts a recreate reads into a fingerprint, stamp it into the database and into the build, and refuse to start when the two differ.
+#+type: task
+#+level: s1
+#+filetags: :refuse-a-stale-database:sprint_26:v0:
+#+owner: marco
+#+branch: feature/refuse-a-stale-database
+#+pr: 2574
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A6B0E6DC-9A9C-44B5-B5C1-135BF71A0713][Refuse to start against a database built from other SQL]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One fingerprint definition, computed by the build and by compass db recreate, compared by every service, test run and compass services start.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A6B0E6DC-9A9C-44B5-B5C1-135BF71A0713][Refuse to start against a database built from other SQL]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- Every service logs the expected and the actual fingerprint at startup.
+- On a mismatch a service exits with a dedicated exit code and a message that names both fingerprints, the commit the database was built from, and the fix.
+- A test proves the build's fingerprint and compass's fingerprint agree on the same tree.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2574][#2574]] | [database] Refuse to start against a database built from other SQL |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The schema fingerprint is the first sixteen hex digits of a sha256 over the
+SQL compass db recreate reads (every .sql under create/, populate/ and
+instance/ and at the top of projects/ores.sql), defined once in
+=projects/ores.sql/schema_fingerprint.cmake= and implemented again in
+=compass_db.schema_fingerprint=; =test_schema_fingerprint.py= runs both on
+the real tree and on a small one and requires the same answer.
+
+- =compass db recreate= stamps it into =ores_database_info_tbl=, whose
+  =schema_version= column (the CMake project version, which never tracked the
+  schema) is replaced by =schema_fingerprint=. Every service user may read
+  the table.
+- The build compiles it into =ores.database=, regenerating the header when an
+  SQL file changes. =context_factory::make_context=, which every service, the
+  HTTP server and the test database manager call, logs the expected and the
+  recorded fingerprint and throws =schema_mismatch_exception= on a mismatch.
+  Each service main prints the message and exits with the new
+  =exit_code::schema_mismatch= (7), and the systemd units do not restart on
+  it.
+- =compass services start= checks first and refuses with the same banner;
+  =compass db status=, =compass bearings= and =compass env status= report
+  in sync or out of sync instead of guessing drift from the commit date, and
+  the environment dashboard shows both fingerprints.
+
+Verified on 2026-10-03: build clean; database recreated; ctest 90/90; compass
+tests 301 passed; dashboard tests 42 passed. With the database's fingerprint
+changed to deadbeefdeadbeef, =compass services start= refused with both
+fingerprints and the fix, and the refdata unit, restarted through systemd,
+logged the FATAL banner (expected ceb50d4c0e992073, actual deadbeefdeadbeef,
+the commit the database was built from, and the fix) and failed with exit
+status 7 and no restarts. Recreated, the services started and logged the
+check as passed.
+
+The banner appears three times in a refusing service's log: once from the
+context factory, and twice from the service host's existing generic error
+handler, which logs every startup exception's message.

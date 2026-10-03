@@ -58,6 +58,15 @@ public:
     };
 
     static context make_context(const configuration& cfg);
+
+    /**
+     * @brief Refuses a database built from other SQL than this build.
+     *
+     * Logs the fingerprint this build expects and the one the database
+     * records, and throws schema_mismatch_exception when they differ.
+     * make_context calls it for every context it creates.
+     */
+    static void verify_schema_fingerprint(const context& ctx, const std::string& database);
 };
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s,

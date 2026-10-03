@@ -33,6 +33,16 @@ database is destroyed and recreated with =compass db recreate -y -k=.
 There are no migration scripts and no backwards compatibility code:
 nothing keeps an old table, column, name or permission code alive.
 
+*Schema fingerprint:* =schema_fingerprint.cmake= hashes the SQL a
+recreate reads (=create/=, =populate/=, =instance/= and the top-level
+=.sql= files). =compass db recreate= stamps it into
+=ores_database_info_tbl=, and the build compiles the same value into
+=ores.database=. Every service and test run compares the two when it
+creates its database context, logs both, and refuses to start on a
+mismatch; =compass services start= checks first. =compass_db.schema_fingerprint=
+is the second implementation of the same definition, and a compass test
+keeps the two in agreement.
+
 * Inputs
 
 - PostgreSQL superuser credentials for initial setup.

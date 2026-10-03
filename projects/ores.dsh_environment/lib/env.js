@@ -122,7 +122,7 @@ export function buildModel(payload) {
       value: reachable ? str(database.restoredAge, '?') : '—',
       tone: reachable ? str(database.restoredLevel, 'unknown') : 'critical',
       detail: reachable
-        ? [`schema ${str(database.schemaVersion, '?')}`, driftLabel].filter(Boolean).join(' · ')
+        ? `schema ${driftLabel || '?'}`
         : 'unreachable',
     },
     {
@@ -175,14 +175,12 @@ export function buildModel(payload) {
         ? null
         : num(database.restoredAgeSeconds),
       restoredLevel: str(database.restoredLevel, 'unknown'),
-      schemaVersion: str(database.schemaVersion),
+      schemaFingerprint: str(database.schemaFingerprint),
+      expectedFingerprint: str(database.expectedFingerprint),
       builtFrom: str(database.builtFrom),
       builtAt: str(database.builtAt),
       driftLabel,
       driftLevel,
-      driftSeconds: database.driftSeconds === null || database.driftSeconds === undefined
-        ? null
-        : num(database.driftSeconds),
       bootstrapMode: database.bootstrapMode === true,
       warning: str(database.warning),
       /* The name the restore dialog makes the operator type. */

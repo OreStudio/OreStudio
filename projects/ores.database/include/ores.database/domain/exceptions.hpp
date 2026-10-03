@@ -38,6 +38,20 @@ public:
         : std::runtime_error(msg) {}
 };
 
+/**
+ * @brief Thrown when the database was built from other SQL than the code.
+ *
+ * The database records the fingerprint of the SQL it was built from and the
+ * code carries the fingerprint of the SQL it was built against; a mismatch
+ * means the schema and the code disagree. Service main functions catch it,
+ * print its message and return exit_code::schema_mismatch.
+ */
+class schema_mismatch_exception : public std::runtime_error {
+public:
+    explicit schema_mismatch_exception(const std::string& msg)
+        : std::runtime_error(msg) {}
+};
+
 }
 
 #endif

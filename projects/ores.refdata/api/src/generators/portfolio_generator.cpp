@@ -63,6 +63,7 @@ domain::portfolio generate_synthetic_portfolio(utility::generation::generation_c
                         // overwrite this with a code it has written, or the insert is rejected.
         std::string("X-0");
     r.is_virtual = false;
+    r.sandbox_id = std::nullopt;
     r.status = std::string("Active");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

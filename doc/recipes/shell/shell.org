@@ -1208,3 +1208,11 @@ tangled into the runnable script library
 * Portfolio Rights
 
 - [[id:B0D65F25-06B1-5B18-8202-16E4741931BD][How do I run the portfolio_rights commands from the shell?]]
+
+* Sandbox Members
+
+- [[id:FC8CEBB6-D814-562E-96CA-1DA80EC783CC][How do I run the sandbox_members commands from the shell?]]
+
+* Sandboxes
+
+- [[id:7BAC8479-7066-5B7C-A103-B466F1B44D85][How do I run the sandboxes commands from the shell?]]

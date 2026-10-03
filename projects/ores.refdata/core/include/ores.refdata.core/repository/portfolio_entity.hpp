@@ -57,6 +57,7 @@ struct portfolio_entity {
     std::string purpose_type = "Risk";
     std::optional<std::string> aggregation_ccy;
     bool is_virtual = false;
+    std::optional<std::string> sandbox_id;
     std::string status = "Active";
     std::string modified_by;
     std::string performed_by;

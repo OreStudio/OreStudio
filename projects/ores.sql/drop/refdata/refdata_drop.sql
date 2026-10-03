@@ -126,6 +126,12 @@
 -- Books, portfolios, and business units (drop first, depend on parties and lookup tables)
 \ir ./refdata_books_notify_trigger_drop.sql
 \ir ./refdata_books_drop.sql
+-- Sandbox members, then sandboxes (before portfolios)
+\ir ./refdata_sandbox_members_notify_trigger_drop.sql
+\ir ./refdata_sandbox_members_drop.sql
+\ir ./refdata_sandboxes_notify_trigger_drop.sql
+\ir ./refdata_sandboxes_drop.sql
+
 -- Rights at portfolio nodes (before portfolios)
 \ir ./refdata_portfolio_rights_notify_trigger_drop.sql
 \ir ./refdata_portfolio_rights_drop.sql

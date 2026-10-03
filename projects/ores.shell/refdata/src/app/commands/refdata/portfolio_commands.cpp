@@ -142,7 +142,7 @@ void portfolio_commands::register_commands(cli::Menu& root_menu, nats_client& se
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> <purpose_type> "
-        "<aggregation_ccy> <is_virtual> <status> <reason> <commentary>");
+        "<aggregation_ccy> <is_virtual> <sandbox_id> <status> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,8 +150,8 @@ void portfolio_commands::register_commands(cli::Menu& root_menu, nats_client& se
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id> "
-        "<purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary> [--version "
-        "<n>]");
+        "<purpose_type> <aggregation_ccy> <is_virtual> <sandbox_id> <status> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,8 +159,8 @@ void portfolio_commands::register_commands(cli::Menu& root_menu, nats_client& se
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <name> <description> <parent_portfolio_id> "
-        "<owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> "
-        "<commentary>");
+        "<owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <sandbox_id> <status> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -175,6 +175,13 @@ void portfolio_commands::register_commands(cli::Menu& root_menu, nats_client& se
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
         "delete-many <name> <reason> <commentary>");
+
+    menu->Insert(
+        "by-sandbox-id",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_sandbox_id(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-sandbox-id <sandbox_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "versions",
@@ -355,8 +362,8 @@ void portfolio_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -372,6 +379,7 @@ void portfolio_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.aggregation_ccy, parsed->positionals[next++], "aggregation_ccy");
         read_token(req.change.write.is_virtual, parsed->positionals[next++], "is_virtual");
+        read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
         read_token(req.change.write.status, parsed->positionals[next++], "status");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -415,8 +423,8 @@ void portfolio_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,6 +440,7 @@ void portfolio_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.aggregation_ccy, parsed->positionals[next++], "aggregation_ccy");
         read_token(req.change.write.is_virtual, parsed->positionals[next++], "is_virtual");
+        read_token(req.change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
         read_token(req.change.write.status, parsed->positionals[next++], "status");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -487,8 +496,8 @@ void portfolio_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 11 + 2) {
+            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -506,6 +515,7 @@ void portfolio_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.aggregation_ccy, parsed->positionals[next++], "aggregation_ccy");
             read_token(change.write.is_virtual, parsed->positionals[next++], "is_virtual");
+            read_token(change.write.sandbox_id, parsed->positionals[next++], "sandbox_id");
             read_token(change.write.status, parsed->positionals[next++], "status");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -621,6 +631,61 @@ void portfolio_commands::process_delete_many(std::ostream& out,
     }
 
     auto result = do_auth_request<messaging::delete_many_portfolios_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void portfolio_commands::process_by_sandbox_id(std::ostream& out,
+                                               nats_client& session,
+                                               const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-sandbox-id request.";
+
+    using request_type = messaging::list_by_sandbox_id_portfolios_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-sandbox-id." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.sandbox_id = ores::shell::app::from_token<std::optional<boost::uuids::uuid>>(
+            parsed->positionals[next++], "sandbox_id");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_by_sandbox_id_portfolios_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

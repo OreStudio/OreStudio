@@ -49,6 +49,7 @@ struct portfolio_write {
     std::string purpose_type;
     std::string aggregation_ccy;
     bool is_virtual;
+    std::optional<boost::uuids::uuid> sandbox_id;
     std::string status;
 };
 
@@ -65,6 +66,10 @@ struct portfolio_removal {
 struct portfolio_lookup {
     portfolio_key key;
     std::optional<ores::refdata::domain::portfolio> portfolio;
+};
+
+struct portfolios_filter {
+    std::optional<std::optional<boost::uuids::uuid>> sandbox_id;
 };
 
 struct portfolio_event {
@@ -100,6 +105,7 @@ struct list_portfolios_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<portfolios_filter> filter;
 };
 
 struct list_portfolios_response {
@@ -216,6 +222,30 @@ struct delete_many_portfolios_request {
 
 struct delete_many_portfolios_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_sandbox_id_portfolios_request {
+    using response_type = struct list_by_sandbox_id_portfolios_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.list_by_sandbox_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::optional<boost::uuids::uuid> sandbox_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<portfolios_filter> filter;
+};
+
+struct list_by_sandbox_id_portfolios_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::portfolio> portfolios;
+    std::uint64_t total;
 };
 
 struct list_portfolio_versions_request {

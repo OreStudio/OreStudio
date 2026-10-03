@@ -47,6 +47,9 @@ std::vector<ores::diff::domain::field_value> render_portfolio_fields(const domai
     fields.push_back({.name = "Purpose Type", .value = v.purpose_type});
     fields.push_back({.name = "Aggregation Ccy", .value = v.aggregation_ccy});
     fields.push_back({.name = "Is Virtual", .value = v.is_virtual ? "true" : "false"});
+    fields.push_back(
+        {.name = "Sandbox ID",
+         .value = v.sandbox_id ? boost::uuids::to_string(*v.sandbox_id) : std::string{}});
     fields.push_back({.name = "Status", .value = v.status});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

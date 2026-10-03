@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 7BAC8479-7066-5B7C-A103-B466F1B44D85
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the sandboxes commands from the shell?
+#+description: Every command the sandboxes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:sandboxes:
+
+This file documents the sandboxes resource at the shell, one section per command. Every command is a subcommand of =sandboxes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: FCAB5EB0-63A9-58EC-9F22-F2EFA5DB77CD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.list=.
+
+#+name: sandboxes-list
+#+begin_src ores-shell :tangle sandboxes-list.ores :exports none
+sandboxes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D0C8C8C4-0A3F-540F-BF45-D5F557806BB4
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes get <name>
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.get=.
+
+#+name: sandboxes-get
+#+begin_src ores-shell :tangle sandboxes-get.ores :exports none
+sandboxes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 7953C626-FD63-5016-9F7F-41783B1BCE59
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes get-many <name>
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.get_many=.
+
+#+name: sandboxes-get-many
+#+begin_src ores-shell :tangle sandboxes-get-many.ores :exports none
+sandboxes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7A2485CC-9507-512E-9909-F42A3369A230
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes add <name> <purpose> <anchor_portfolio_id> <owner_account_id> <visibility> <status> <review_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.put=.
+
+#+name: sandboxes-add
+#+begin_src ores-shell :tangle sandboxes-add.ores :exports none
+sandboxes add __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01 - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 47AAE29E-AB2B-5C59-A1BD-61C1E1FFAFA4
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes set <id> <name> <purpose> <anchor_portfolio_id> <owner_account_id> <visibility> <status> <review_date> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.put=.
+
+#+name: sandboxes-set
+#+begin_src ores-shell :tangle sandboxes-set.ores :exports none
+sandboxes set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01 - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4AB6CA30-ADCF-5A98-87AD-FA661A218099
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes put-many --count <n> <id> <name> <purpose> <anchor_portfolio_id> <owner_account_id> <visibility> <status> <review_date> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.put_many=.
+
+#+name: sandboxes-put-many
+#+begin_src ores-shell :tangle sandboxes-put-many.ores :exports none
+sandboxes put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 1970-01-01 - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E5F3E139-A6A9-5E9F-8DB5-EE9DE6651349
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes delete <name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.delete=.
+
+#+name: sandboxes-delete
+#+begin_src ores-shell :tangle sandboxes-delete.ores :exports none
+sandboxes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: B1FE2642-BAB3-5153-BBA9-CF69A1E53C26
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes delete-many <name> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.delete_many=.
+
+#+name: sandboxes-delete-many
+#+begin_src ores-shell :tangle sandboxes-delete-many.ores :exports none
+sandboxes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-anchor-portfolio-id=
+:PROPERTIES:
+:ID: D3E95B57-1AC6-5E93-BABD-0BCE626F3637
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes by-anchor-portfolio-id <anchor_portfolio_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes.list_by_anchor_portfolio_id=.
+
+#+name: sandboxes-by-anchor-portfolio-id
+#+begin_src ores-shell :tangle sandboxes-by-anchor-portfolio-id.ores :exports none
+sandboxes by-anchor-portfolio-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9E18C891-11D4-5305-8469-7940F2E257FF
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes_versions.list=.
+
+#+name: sandboxes-versions
+#+begin_src ores-shell :tangle sandboxes-versions.ores :exports none
+sandboxes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1119E2AC-F723-58FC-884F-384CD9326BB3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+sandboxes version <name> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.sandboxes_versions.get=.
+
+#+name: sandboxes-version
+#+begin_src ores-shell :tangle sandboxes-version.ores :exports none
+sandboxes version __none__ --version 1
+#+end_src
+

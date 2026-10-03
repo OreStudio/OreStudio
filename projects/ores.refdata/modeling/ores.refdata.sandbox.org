@@ -1,0 +1,405 @@
+:PROPERTIES:
+:ID: 64BBDDFE-A118-4B46-BAF1-9532BED64C76
+:END:
+#+title: ores.refdata.sandbox
+#+description: Codegen entity model for the refdata =sandbox= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A space where users import and experiment without touching official data.
+#+entity_singular: sandbox
+#+entity_plural: sandboxes
+#+entity_title: Sandbox
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A sandbox is a space where actions have no effect outside it: users import
+samples, try what-ifs and run reports there without touching official data
+(see [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]).
+
+The anchor is the node of the official [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][portfolio]] tree the sandbox
+belongs to. It decides who may open the sandbox and who may see it; it
+does not place the sandbox in the official tree. The sandbox's own
+portfolios carry its id, and a portfolio always shares its parent's
+sandbox, so no official portfolio contains a sandbox portfolio.
+
+Opening a sandbox needs the =open_sandbox= [[id:F783F38A-C123-489A-881D-5BCB5DE6D05D][portfolio right]] at
+an official anchor; the check runs again when the owner changes.
+=ores_refdata_account_sees_sandbox_fn= answers whether an account may see a
+sandbox: its owner always may; anyone with =read= at the anchor may when it
+is shared; its [[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][members]] may when it is shared with members.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this sandbox.
+
+Surrogate key for the sandbox record.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The sandbox's name.
+
+Unique within the tenant.
+
+#+begin_src cpp :name generator
+std::string("SB-") + std::string(faker::string::alphanumeric(10))
+#+end_src
+
+** purpose
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
+:END:
+
+What the sandbox is for.
+
+=experiment=, =sample= or =import=.
+
+#+begin_src cpp :name generator
+std::string("experiment")
+#+end_src
+
+** anchor_portfolio_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:fixed:    true
+:END:
+
+The official portfolio node the sandbox belongs to.
+
+Fixed for the sandbox's life.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** owner_account_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The account answerable for the sandbox.
+
+It must hold =open_sandbox= at the anchor.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** visibility
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
+:END:
+
+Who may see the sandbox.
+
+=private= to the owner; =shared= with everyone who may read the anchor;
+=members= for the named members.
+
+#+begin_src cpp :name generator
+std::string("private")
+#+end_src
+
+** status
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
+:END:
+
+Whether the sandbox is in use.
+
+=open=, or =archived= and read-only.
+
+#+begin_src cpp :name generator
+std::string("open")
+#+end_src
+
+** review_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:END:
+
+When the owner must confirm the sandbox is still needed.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional description of the sandbox.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Test sandbox")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_sandboxes_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "purpose" in ('experiment', 'sample', 'import')             |
+| "visibility" in ('private', 'shared', 'members')            |
+| "status" in ('open', 'archived')                            |
+
+* Foreign keys
+
+** anchor_portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:nullable:      false
+:error_message: Invalid anchor_portfolio_id: %. No active portfolio found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+** owner_account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:error_message: Invalid owner_account_id: %. No account found with this id.
+:END:
+
+The seed is a service account granted =open_sandbox= at the seeded anchor:
+the insert trigger refuses an owner without the right, and a user account
+would end the test tenant's bootstrap.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.refdata.api/generators/portfolio_right_generator.hpp"
+#include "ores.refdata.core/repository/portfolio_right_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto owner = ores::iam::generators::generate_synthetic_account(ctx);
+        owner.account_type = "service";
+        owner.change_reason_code = "system.test";
+        ores::iam::repository::account_repository owner_repo;
+        owner_repo.write(party_ctx, owner);
+        v.owner_account_id = owner.id;
+
+        auto right = ores::refdata::generators::generate_synthetic_portfolio_right(ctx);
+        right.account_id = owner.id;
+        right.portfolio_id = v.anchor_portfolio_id;
+        right.right_code = "open_sandbox";
+        right.change_reason_code = "system.test";
+        ores::refdata::repository::portfolio_right_repository right_repo;
+        right_repo.write(party_ctx, right);
+    }
+#+end_src
+
+* Insert trigger
+
+#+begin_src sql :name anchor_and_owner_checks :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- The anchor is a node of the official tree, never a sandbox portfolio.
+    if exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.anchor_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and sandbox_id is not null
+    ) then
+        raise exception 'Invalid anchor_portfolio_id: %. A sandbox is anchored at an official portfolio.',
+            NEW.anchor_portfolio_id
+            using errcode = '23514';
+    end if;
+
+    -- Opening a sandbox, or handing it to a new owner, needs the right to
+    -- open sandboxes at the anchor. A version that keeps the owner, such as
+    -- archiving, does not ask again.
+    if not exists (
+        select 1 from ores_refdata_sandboxes_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and owner_account_id = NEW.owner_account_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) and not ores_refdata_account_holds_portfolio_right_fn(
+        NEW.tenant_id, NEW.owner_account_id, NEW.anchor_portfolio_id, 'open_sandbox'
+    ) then
+        raise exception 'Account % may not open a sandbox at portfolio %: it holds no open_sandbox right there.',
+            NEW.owner_account_id, NEW.anchor_portfolio_id
+            using errcode = '42501';
+    end if;
+#+end_src
+
+#+begin_src sql :name sees_sandbox_fn :implements 92432102-d405-46fc-911a-111dfed27358
+-- Whether an account may see a sandbox: its owner always may; anyone with
+-- read at the anchor may when it is shared; its members may when it is
+-- shared with members. Runs with the caller's rights, so row-level security
+-- confines it to the session's tenant. PL/pgSQL, so the members table, which
+-- is created after this one, is resolved when the function runs.
+create or replace function ores_refdata_account_sees_sandbox_fn(
+    p_tenant_id uuid,
+    p_account_id uuid,
+    p_sandbox_id uuid
+) returns boolean as $$
+declare
+    v_sandbox record;
+begin
+    select owner_account_id, anchor_portfolio_id, visibility into v_sandbox
+    from ores_refdata_sandboxes_tbl
+    where tenant_id = p_tenant_id
+      and id = p_sandbox_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if not found then
+        return false;
+    end if;
+    if v_sandbox.owner_account_id = p_account_id then
+        return true;
+    end if;
+    if v_sandbox.visibility = 'shared' then
+        return ores_refdata_account_holds_portfolio_right_fn(
+            p_tenant_id, p_account_id, v_sandbox.anchor_portfolio_id, 'read');
+    end if;
+    if v_sandbox.visibility = 'members' then
+        return exists (
+            select 1 from ores_refdata_sandbox_members_tbl
+            where tenant_id = p_tenant_id
+              and sandbox_id = p_sandbox_id
+              and account_id = p_account_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        );
+    end if;
+    return false;
+end;
+$$ language plpgsql stable set search_path = public, pg_temp;
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: sandbox
+:entity_plural_short:   sandboxes
+:entity_singular_words: sandbox
+:entity_plural_words:   sandboxes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sb
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| purpose     | Purpose     |
+| visibility  | Visibility  |
+| status      | Status      |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/sandbox.hpp
+:domain_class:            refdata::domain::sandbox
+:protocol_include:        ores.refdata.api/messaging/sandbox_protocol.hpp
+:collection_name:         sandboxes
+:key_field:               name
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder                     |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------------------|
+| name        | Name        | nameEdit        | line_edit | true   | true        | Sandbox name                    |
+| purpose     | Purpose     | purposeEdit     | line_edit | false  | true        | experiment, sample or import    |
+| visibility  | Visibility  | visibilityEdit  | line_edit | false  | true        | private, shared or members      |
+| status      | Status      | statusEdit      | line_edit | false  | true        | open or archived                |
+| description | Description | descriptionEdit | line_edit | false  | false       | Enter description               |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Name        | name        | Name        | string    |   160 |
+| Purpose     | purpose     | Purpose     | string    |   100 |
+| Visibility  | visibility  | Visibility  | string    |   100 |
+| Status      | status      | Status      | string    |    80 |
+| Version     | version     | Version     | int       |    80 |
+| ModifiedBy  | modified_by | Modified By | string    |   120 |
+| RecordedAt  | recorded_at | Recorded At | timestamp |   150 |
+
+** Paste blocks
+
+*** Extra drop statements
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_account_sees_sandbox_fn;
+#+end_src
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] — the tree a sandbox is anchored on and owns a part of.
+- [[id:F783F38A-C123-489A-881D-5BCB5DE6D05D][ores.refdata.portfolio_right]] — the rights that govern opening and seeing a sandbox.
+- [[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][ores.refdata.sandbox_member]] — the accounts a sandbox is shared with.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — the analysis this entity follows.

@@ -181,6 +181,25 @@ Not persisted in trade attribution when virtual.
 false
 #+end_src
 
+** sandbox_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:fixed:    true
+:END:
+
+The sandbox the portfolio belongs to; absent for an official portfolio.
+
+A portfolio belongs to the same sandbox as its parent, or both to none, so
+no official portfolio contains a sandbox portfolio and no official
+aggregation can reach one. A sandbox's root portfolios have no parent.
+Fixed for the portfolio's life.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** status
 :PROPERTIES:
 :type:          text
@@ -304,7 +323,33 @@ entity versioning" architecture doc, "Multi-level composition".
 :error_message: Invalid owner_unit_id: %. No active business unit found.
 :END:
 
+** sandbox_id
+:PROPERTIES:
+:table:         ores_refdata_sandboxes_tbl
+:nullable:      true
+:error_message: Invalid sandbox_id: %. No active sandbox found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
 * Insert trigger
+
+#+begin_src sql :name same_sandbox_as_parent :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- A portfolio belongs to its parent's sandbox, or both to none: an
+    -- official portfolio never sits under a sandbox one, nor a sandbox
+    -- portfolio under an official one.
+    if NEW.parent_portfolio_id is not null and exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and sandbox_id is distinct from NEW.sandbox_id
+    ) then
+        raise exception 'Invalid parent_portfolio_id: %. A portfolio and its parent belong to the same sandbox, or both to none.',
+            NEW.parent_portfolio_id
+            using errcode = '23514';
+    end if;
+#+end_src
 
 ** Validations
 

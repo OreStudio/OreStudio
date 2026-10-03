@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id>
-     * <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
+     * <purpose_type> <aggregation_ccy> <is_virtual> <sandbox_id> <status> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,8 @@ public:
 
     /**
      * @brief set <id> <party_id> <name> <description> <parent_portfolio_id> <owner_unit_id>
-     * <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary> [--version <n>]
+     * <purpose_type> <aggregation_ccy> <is_virtual> <sandbox_id> <status> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <party_id> <name> <description> <parent_portfolio_id>
-     * <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <status> <reason> <commentary>
+     * <owner_unit_id> <purpose_type> <aggregation_ccy> <is_virtual> <sandbox_id> <status> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -123,6 +125,13 @@ public:
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief by-sandbox-id <sandbox_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     */
+    static void process_by_sandbox_id(std::ostream& out,
+                                      ores::nats::service::nats_client& session,
+                                      const std::vector<std::string>& args);
 
     /**
      * @brief versions <name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

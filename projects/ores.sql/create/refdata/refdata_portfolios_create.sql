@@ -41,6 +41,7 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "purpose_type" text not null,
     "aggregation_ccy" text null,
     "is_virtual" boolean not null,
+    "sandbox_id" uuid null,
     "status" text not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -231,6 +232,19 @@ begin
         end if;
     end if;
 
+    -- Validate sandbox_id (optional soft FK to ores_refdata_sandboxes_tbl)
+    if NEW.sandbox_id is not null then
+        if not exists (
+            select 1 from ores_refdata_sandboxes_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.sandbox_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid sandbox_id: %. No active sandbox found with this id.', NEW.sandbox_id
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate purpose_type
     NEW.purpose_type := ores_refdata_validate_purpose_type_fn(NEW.tenant_id, NEW.purpose_type);
 
@@ -239,6 +253,20 @@ begin
         NEW.aggregation_ccy := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.aggregation_ccy);
     end if;
 
+    -- A portfolio belongs to its parent's sandbox, or both to none: an
+    -- official portfolio never sits under a sandbox one, nor a sandbox
+    -- portfolio under an official one.
+    if NEW.parent_portfolio_id is not null and exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and sandbox_id is distinct from NEW.sandbox_id
+    ) then
+        raise exception 'Invalid parent_portfolio_id: %. A portfolio and its parent belong to the same sandbox, or both to none.',
+            NEW.parent_portfolio_id
+            using errcode = '23514';
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -280,6 +308,16 @@ begin
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
+        end if;
+        if exists (
+            select 1 from "ores_refdata_portfolios_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "sandbox_id" is distinct from NEW."sandbox_id"
+        ) then
+            raise exception 'sandbox_id cannot change: it is fixed for the life of the portfolio.'
+                using errcode = '23514';
         end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is

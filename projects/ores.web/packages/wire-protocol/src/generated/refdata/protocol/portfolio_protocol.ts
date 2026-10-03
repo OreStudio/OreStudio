@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface PortfolioKey {
     name: string;
@@ -42,6 +43,7 @@ export interface PortfolioWrite {
     purpose_type: string;
     aggregation_ccy: string;
     is_virtual: boolean;
+    sandbox_id: string | null;
     status: string;
 }
 
@@ -58,6 +60,10 @@ export interface PortfolioRemoval {
 export interface PortfolioLookup {
     key: PortfolioKey;
     portfolio: Portfolio | null;
+}
+
+export interface PortfoliosFilter {
+    sandbox_id: string | null | null;
 }
 
 export interface PortfolioEvent {
@@ -84,6 +90,7 @@ export interface ListPortfoliosRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PortfoliosFilter | null;
 }
 
 export interface ListPortfoliosResponse {
@@ -148,6 +155,21 @@ export interface DeleteManyPortfoliosResponse {
     result: Result;
 }
 
+export interface ListBySandboxIdPortfoliosRequest {
+    sandbox_id: string | null;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: PortfoliosFilter | null;
+}
+
+export interface ListBySandboxIdPortfoliosResponse {
+    result: Result;
+    portfolios: Portfolio[];
+    total: number;
+}
+
 export interface ListPortfolioVersionsRequest {
     key: PortfolioKey;
     offset: number;
@@ -179,6 +201,7 @@ export const subjects = {
     put_many_portfolios_request: 'refdata.v1.portfolios.put_many',
     delete_portfolio_request: 'refdata.v1.portfolios.delete',
     delete_many_portfolios_request: 'refdata.v1.portfolios.delete_many',
+    list_by_sandbox_id_portfolios_request: 'refdata.v1.portfolios.list_by_sandbox_id',
     list_portfolio_versions_request: 'refdata.v1.portfolios_versions.list',
     get_portfolio_version_request: 'refdata.v1.portfolios_versions.get',
 } as const;
@@ -195,6 +218,7 @@ export const requiresSession = {
     put_many_portfolios_request: true,
     delete_portfolio_request: true,
     delete_many_portfolios_request: true,
+    list_by_sandbox_id_portfolios_request: true,
     list_portfolio_versions_request: true,
     get_portfolio_version_request: true,
 } as const;

@@ -1978,3 +1978,35 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Sandboxes
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_sandboxes_tbl enable row level security;
+
+drop policy if exists sandboxes_tenant_isolation_policy
+    on ores_refdata_sandboxes_tbl;
+
+create policy sandboxes_tenant_isolation_policy on ores_refdata_sandboxes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Sandbox members
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_sandbox_members_tbl enable row level security;
+
+drop policy if exists sandbox_members_tenant_isolation_policy
+    on ores_refdata_sandbox_members_tbl;
+
+create policy sandbox_members_tenant_isolation_policy on ores_refdata_sandbox_members_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

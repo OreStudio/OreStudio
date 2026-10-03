@@ -68,6 +68,10 @@ register_portfolio_handlers(ores::nats::service::client& nats,
             h->delete_many_portfolios(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_by_sandbox_id_portfolios_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_sandbox_id_portfolios(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_portfolio_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->list_portfolio_versions(std::move(msg));
         }));

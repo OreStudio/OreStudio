@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 0844FFAF-8E10-5875-9A96-4853A0E595DD
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the day_counters commands from the shell?
+#+description: Every command the day_counters submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:day_counters:
+
+This file documents the day_counters resource at the shell, one section per command. Every command is a subcommand of =day_counters=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A7CD082B-86CC-5EC1-BE13-5AF3764685BC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.list=.
+
+#+name: day_counters-list
+#+begin_src ores-shell :tangle day_counters-list.ores :exports none
+day_counters list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 4C582FFD-9556-5F8D-9C49-A31CED0F02A2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters get <code>
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.get=.
+
+#+name: day_counters-get
+#+begin_src ores-shell :tangle day_counters-get.ores :exports none
+day_counters get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 22B02D9C-FE79-5951-963E-E64183D5F273
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.get_many=.
+
+#+name: day_counters-get-many
+#+begin_src ores-shell :tangle day_counters-get-many.ores :exports none
+day_counters get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: AA23C648-F20A-5682-AA78-EAAE98852DDC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters add <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.put=.
+
+#+name: day_counters-add
+#+begin_src ores-shell :tangle day_counters-add.ores :exports none
+day_counters add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6D6EB18A-689A-5AF6-8A0C-50078F7F3A9A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters set <code> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.put=.
+
+#+name: day_counters-set
+#+begin_src ores-shell :tangle day_counters-set.ores :exports none
+day_counters set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 22D05519-7AB8-5027-BDAE-A1DF2E5A2C74
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters put-many --count <n> <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.put_many=.
+
+#+name: day_counters-put-many
+#+begin_src ores-shell :tangle day_counters-put-many.ores :exports none
+day_counters put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 5FE2B336-95D7-5B71-8829-CD3320D91562
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.delete=.
+
+#+name: day_counters-delete
+#+begin_src ores-shell :tangle day_counters-delete.ores :exports none
+day_counters delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 8DAF2A9A-5118-5775-8C88-9AF21356ADFF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.day_counters.delete_many=.
+
+#+name: day_counters-delete-many
+#+begin_src ores-shell :tangle day_counters-delete-many.ores :exports none
+day_counters delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 67EA0C62-EC28-5787-9515-ED492E9A7718
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.day_counters_versions.list=.
+
+#+name: day_counters-versions
+#+begin_src ores-shell :tangle day_counters-versions.ores :exports none
+day_counters versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D6D4CE0F-B1AF-55D4-A632-BCA2E0E742F6
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+day_counters version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.day_counters_versions.get=.
+
+#+name: day_counters-version
+#+begin_src ores-shell :tangle day_counters-version.ores :exports none
+day_counters version __none__ --version 1
+#+end_src
+

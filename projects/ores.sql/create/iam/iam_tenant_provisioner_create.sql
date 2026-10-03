@@ -37,6 +37,8 @@
 --     ledger_feed_types, purpose_types: Book and purpose lookups
 --   - business_day_convention_types: Business day adjustment conventions
 --   - day_count_fraction_types: Day count fraction conventions
+--   - day_counters, curve_sections, curve_segment_types: ORE curve
+--     configuration vocabulary
 --   - rounding_types: Rounding method definitions
 --   - monetary_natures, currency_market_tiers: Currency classification
 --   - tenor_anchors, tenors, tenor_conventions, tenor_convention_resolutions:
@@ -384,6 +386,54 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % day count fraction types', v_copied_count;
+
+    -- ORE day counter spellings (e.g. A365, Actual/365 (Fixed))
+    insert into ores_refdata_day_counters_tbl (
+        code, description, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, description, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_day_counters_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % day counters', v_copied_count;
+
+    -- ORE curve configuration sections (e.g. YieldCurves, DefaultCurves)
+    insert into ores_refdata_curve_sections_tbl (
+        code, entry_element, description, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, entry_element, description, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_curve_sections_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % curve sections', v_copied_count;
+
+    -- ORE yield curve segment types (e.g. Deposit, FX Forward)
+    insert into ores_refdata_curve_segment_types_tbl (
+        code, segment_kind, description, tenant_id, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, segment_kind, description, v_tenant_id, 0,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_curve_segment_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % curve segment types', v_copied_count;
 
     -- Rounding types (e.g. Up, Down, Closest, Floor, Ceiling)
     insert into ores_refdata_rounding_types_tbl (

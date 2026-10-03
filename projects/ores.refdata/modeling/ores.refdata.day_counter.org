@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 971124D8-FE93-422C-AE6F-742BAF83FD7A
+:END:
+#+title: ores.refdata.day_counter
+#+description: Codegen entity model for the refdata =day_counter= table. The day counter spellings ORE accepts.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One spelling of a day counter that an ORE document may write.
+#+entity_singular: day_counter
+#+entity_plural: day_counters
+#+entity_title: Day Counter
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+ORE names a day counter by text, and its schema accepts about seventy
+spellings: =A365=, =A365F=, =Actual/365 (Fixed)= and =ACT/365.FIXED= are four
+of them. The curve configuration corpus writes nine distinct spellings, and five
+of them have no row in =day_count_fraction_type=, whose codes are canonical
+names rather than ORE's text.
+
+A curve keeps the spelling its document used, so the export writes it back
+unchanged, and refers to this table by it, so an unknown spelling is refused.
+The set is the schema's =dayCounter= enumeration in =ore_types.xsd=. Which
+canonical day count fraction each spelling means is not recorded here: nothing
+reads it yet, and a wrong mapping would be worse than none.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The day counter exactly as an ORE document may write it: 'A365', 'Actual/365
+(Fixed)', 'ACT/ACT', '30E/360'. One row per spelling, because ORE accepts
+several spellings of one day counter and the export writes back the one the
+document used.
+
+#+begin_src cpp :name generator
+std::string("A365")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    true
+:END:
+
+What the spelling means, in one line, for a reader who does not know ORE.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_day_counters_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: day_counter
+:entity_plural_short:   day_counters
+:entity_singular_words: day counter
+:entity_plural_words:   day counters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: d
+:END:
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/day_counter.hpp
+:domain_class:           refdata::domain::day_counter
+:protocol_include:       ores.refdata.api/messaging/day_counter_protocol.hpp
+:collection_name:        day_counters
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | e.g. A365           |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 200   |
+| Description | description | Description | string    | 350   |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

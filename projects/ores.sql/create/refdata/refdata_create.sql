@@ -297,6 +297,10 @@
 -- from, and the curve entries themselves, which reference those sections.
 \ir ./refdata_curve_sections_create.sql
 \ir ./refdata_curve_sections_notify_trigger_create.sql
+\ir ./refdata_curve_segment_types_create.sql
+\ir ./refdata_curve_segment_types_notify_trigger_create.sql
+\ir ./refdata_day_counters_create.sql
+\ir ./refdata_day_counters_notify_trigger_create.sql
 \ir ./refdata_curve_definitions_create.sql
 \ir ./refdata_curve_definitions_notify_trigger_create.sql
 \ir ./refdata_curve_segments_create.sql

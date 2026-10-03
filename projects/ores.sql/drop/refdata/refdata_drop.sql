@@ -66,6 +66,10 @@
 \ir ./refdata_curve_segments_drop.sql
 \ir ./refdata_curve_definitions_notify_trigger_drop.sql
 \ir ./refdata_curve_definitions_drop.sql
+\ir ./refdata_day_counters_notify_trigger_drop.sql
+\ir ./refdata_day_counters_drop.sql
+\ir ./refdata_curve_segment_types_notify_trigger_drop.sql
+\ir ./refdata_curve_segment_types_drop.sql
 \ir ./refdata_curve_sections_notify_trigger_drop.sql
 \ir ./refdata_curve_sections_drop.sql
 

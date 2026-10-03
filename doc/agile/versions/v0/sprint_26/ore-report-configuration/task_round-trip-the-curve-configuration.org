@@ -104,7 +104,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Corpus documents with root =CurveConfiguration= | 89 | Python =ElementTree= walk of =external/ore/examples/**/*.xml= counting roots | fe244a3331 |
+| Entry sections in the schema (excluding =ReportConfiguration=) | 19 | children of =curveconfiguration= in =external/ore/xsd/curveconfig.xsd= | fe244a3331 |
+| Yield curve segment types in the schema | 21 | =Type= enumerations and =fixed= values under =segmentsType= in =curveconfig.xsd= | fe244a3331 |
+| Day counter spellings in the schema | 71 | =dayCounter= enumeration in =external/ore/xsd/ore_types.xsd= | fe244a3331 |
+| Corpus day counter values with no =day_count_fraction_type= code | 657 (=Actual/365 (Fixed)= 533, =ACT= 113, =Actual/360= 8, =ActActISDA= 2, =30E/360E= 1) | corpus walk of =DayCounter=, =YieldCurveDayCounter=, =DayCountConvention= against the seeded codes | fe244a3331 |
+| Distinct convention ids named by curve segments | 219 | corpus walk of =Conventions= elements | fe244a3331 |
 
 * Notes
 

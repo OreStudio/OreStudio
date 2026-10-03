@@ -14,10 +14,11 @@
 #+updated: 2026-06-01
 
 Reference data table defining valid report type classifications.
-Examples: 'risk', 'grid'.
+Example: 'risk'.
 
-Report types are managed by the system tenant and drive which
-configuration block is used when creating a report definition.
+Report types are managed by the system tenant. A report type names the
+workflow its reports run and, through the report type configuration type
+junction, the configuration types a run requires.
 
 * Flags
 :PROPERTIES:
@@ -39,7 +40,7 @@ configuration block is used when creating a report definition.
 
 Unique report type code.
 
-Examples: 'risk', 'grid'.
+Example: 'risk'.
 
 ** name
 :PROPERTIES:
@@ -78,6 +79,23 @@ Order for UI display purposes.
 
 #+begin_src cpp :name generator
 faker::number::integer(1, 100)
+#+end_src
+
+** workflow_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The registered workflow a report of this type runs.
+
+The type name a workflow definition registers under, so starting a report
+selects its workflow from its type rather than from code. Example:
+'report_execution_workflow'.
+
+#+begin_src cpp :name generator
+std::string("report_execution_workflow")
 #+end_src
 
 * SQL
@@ -157,6 +175,7 @@ faker::number::integer(1, 100)
 | code        | Code        | line_edit | true   | true        | Enter report type code |
 | name        | Name        | line_edit |        | true        | Enter display name     |
 | description | Description | text_edit |        |             | Enter a description    |
+| workflow_type | Workflow  | line_edit |        | true        | Enter the workflow type |
 
 *** Columns
 

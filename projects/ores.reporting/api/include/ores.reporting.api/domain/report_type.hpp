@@ -36,10 +36,11 @@ namespace ores::reporting::domain {
  * @brief Supported report category classifications.
  *
  * Reference data table defining valid report type classifications.
- * Examples: 'risk', 'grid'.
+ * Example: 'risk'.
  *
- * Report types are managed by the system tenant and drive which
- * configuration block is used when creating a report definition.
+ * Report types are managed by the system tenant. A report type names the
+ * workflow its reports run and, through the report type configuration type
+ * junction, the configuration types a run requires.
  */
 struct report_type final {
     /**
@@ -55,7 +56,7 @@ struct report_type final {
     /**
      * @brief Unique report type code.
      *
-     * Examples: 'risk', 'grid'.
+     * Example: 'risk'.
      */
     std::string code;
 
@@ -73,6 +74,14 @@ struct report_type final {
      * @brief Order for UI display purposes.
      */
     int display_order = 0;
+
+    /**
+     * @brief The registered workflow a report of this type runs.
+     *
+     * The type name a workflow definition registers under, so starting a report selects its
+     * workflow from its type rather than from code. Example: 'report_execution_workflow'.
+     */
+    std::string workflow_type;
 
     /**
      * @brief Username of the person who last modified this report type.

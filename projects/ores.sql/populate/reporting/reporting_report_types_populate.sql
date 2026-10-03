@@ -21,8 +21,13 @@
 /**
  * Report Types Population Script
  *
- * Seeds the report_types enum table for the system tenant.
- * This script is idempotent.
+ * Seeds the report_types lookup for the system tenant. This script is
+ * idempotent.
+ *
+ * A report type names the registered workflow a report of that type runs.
+ * Only risk is seeded, because report_execution_workflow is the only report
+ * workflow; a type no workflow can run is not seeded. A version of risk that
+ * predates the workflow column has it filled in place.
  */
 
 \echo '--- Report Types ---'
@@ -31,6 +36,10 @@ do $$
 declare
     v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
 begin
+    update ores_reporting_report_types_tbl
+    set workflow_type = 'report_execution_workflow'
+    where tenant_id = v_sys_tenant and code = 'risk' and workflow_type is null;
+
     if not exists (
         select 1 from ores_reporting_report_types_tbl
         where tenant_id = v_sys_tenant and code = 'risk'
@@ -38,39 +47,18 @@ begin
     ) then
         insert into ores_reporting_report_types_tbl (
             code, tenant_id, version,
-            name, description, display_order,
+            name, description, display_order, workflow_type,
             modified_by, change_reason_code, change_commentary
         ) values (
             'risk', v_sys_tenant, 0,
             'Risk Report',
             'Full ORE risk analytics run: NPV, cashflows, sensitivities, XVA, VaR, and SIMM.',
-            1,
+            1, 'report_execution_workflow',
             current_user, 'system.initial_load', 'Seed report type: risk'
         );
         raise debug 'Created report type: risk';
     else
         raise debug 'Report type already exists: risk';
-    end if;
-
-    if not exists (
-        select 1 from ores_reporting_report_types_tbl
-        where tenant_id = v_sys_tenant and code = 'grid'
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        insert into ores_reporting_report_types_tbl (
-            code, tenant_id, version,
-            name, description, display_order,
-            modified_by, change_reason_code, change_commentary
-        ) values (
-            'grid', v_sys_tenant, 0,
-            'Grid Report',
-            'Tabular portfolio data export without analytics computation.',
-            2,
-            current_user, 'system.initial_load', 'Seed report type: grid'
-        );
-        raise debug 'Created report type: grid';
-    else
-        raise debug 'Report type already exists: grid';
     end if;
 end;
 $$;

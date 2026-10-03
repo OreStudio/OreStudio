@@ -31,8 +31,12 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.reporting.core/repository/report_type_configuration_type_repository.hpp"
+#include "ores.reporting.core/service/report_configuration_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.reporting.core/service/report_type_service.hpp"
+#include "ores.reporting.core/service/run_requirements.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -44,10 +48,12 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
+#include <limits>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::reporting::messaging {
 
@@ -210,6 +216,44 @@ private:
             return;
         }
 
+        // Report types and their requirements are system-wide lookups seeded
+        // for the system tenant only, so they are read there whatever tenant
+        // owns the definition.
+        const auto system_ctx =
+            ores::database::service::tenant_context::with_system_tenant(req_ctx);
+        service::report_type_service type_svc(system_ctx);
+        const auto type = type_svc.get_type(def->report_type);
+        if (!type) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "unknown_report_type";
+            response.result.message =
+                std::format("Report definition {} states report type '{}', which is not seeded.",
+                            definition_id,
+                            def->report_type);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
+        const auto missing = find_missing_configuration_types(system_ctx, tenant_ctx, *def);
+        if (!missing.empty()) {
+            std::string names;
+            for (const auto& code : missing) {
+                if (!names.empty())
+                    names += ", ";
+                names += code;
+            }
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "missing_configuration";
+            response.result.message =
+                std::format("Report definition {} does not bind these configuration types, "
+                            "which report type '{}' requires: {}.",
+                            definition_id,
+                            def->report_type,
+                            names);
+            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            return;
+        }
+
         const auto in_flight = find_in_flight(tenant, definition_id);
 
         boost::uuids::uuid initial_state = instance_states_.require("pending");
@@ -266,11 +310,37 @@ private:
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
         if (dispatch) {
-            dispatch_workflow(req, *def, inst_id_str, rg, msg);
+            dispatch_workflow(req, *def, type->workflow_type, inst_id_str, rg, msg);
         }
 
         response.result.code = dispatch ? "triggered" : "not_dispatched";
         response.result.message = std::format("Report instance {} created.", inst_id_str);
+    }
+
+    /**
+     * @brief The configuration types the definition's report type requires
+     * and the definition does not bind.
+     *
+     * The requirements are read under the system tenant, where they are
+     * seeded; the bindings under the definition's own tenant.
+     */
+    std::vector<std::string>
+    find_missing_configuration_types(const ores::database::context& system_ctx,
+                                     const ores::database::context& tenant_ctx,
+                                     const ores::reporting::domain::report_definition& def) {
+        repository::report_type_configuration_type_repository requirement_repo(system_ctx);
+        std::vector<std::string> required;
+        for (const auto& r : requirement_repo.read_latest_by_report_type(def.report_type))
+            required.push_back(r.configuration_type_code);
+
+        service::report_configuration_service binding_svc(tenant_ctx);
+        const auto definition_id = boost::uuids::to_string(def.id);
+        std::vector<std::string> bound;
+        for (const auto& b : binding_svc.list_report_configurations_by_report_definition_id(
+                 definition_id, 0, std::numeric_limits<std::uint32_t>::max()))
+            bound.push_back(b.configuration_type_code);
+
+        return service::missing_configuration_types(required, bound);
     }
 
     /**
@@ -295,11 +365,15 @@ private:
 
     void dispatch_workflow(const trigger_report_instance_request& req,
                            const ores::reporting::domain::report_definition& def,
+                           const std::string& workflow_type,
                            const std::string& instance_id,
                            boost::uuids::random_generator& rg,
                            const ores::nats::message& msg) {
         // The run's configuration travels into the start message so the chain
         // the workflow builds is reproducible from the definition row alone.
+        // The workflow is the one the report type names, so a new kind of
+        // report is a seeded type and a registered workflow, not a code change
+        // here.
         report_execution_request exec_req{.report_instance_id = instance_id,
                                           .definition_id = boost::uuids::to_string(def.id),
                                           .tenant_id = boost::uuids::to_string(req.tenant_id),
@@ -308,7 +382,7 @@ private:
                                           .prepared_input_key = def.prepared_input_key,
                                           .post_processing = def.post_processing};
         ores::workflow::messaging::start_workflow_message swm{
-            .type = "report_execution_workflow",
+            .type = workflow_type,
             .tenant_id = boost::uuids::to_string(req.tenant_id),
             .request_json = rfl::json::write(exec_req),
             .correlation_id = instance_id,

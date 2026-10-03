@@ -140,6 +140,7 @@ public:
     std::optional<domain::report_definition>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest report definitions with pagination support.
      * @param ctx Repository context with database connection

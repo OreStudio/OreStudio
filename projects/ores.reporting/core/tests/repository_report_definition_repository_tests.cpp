@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
-#include "ores.reporting.api/generators/report_type_generator.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_type_repository.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -50,18 +50,18 @@ boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
 }
 
 /**
- * @brief Inserts a synthetic report type into the test tenant and returns its code.
+ * @brief The code of a report type seeded in the system catalogue.
  *
- * report_definition.report_type is FK-constrained to the report_types table
- * for the same tenant. Since test tenants are created fresh per test run with
- * no seeded report types, we insert one here to satisfy the constraint.
+ * report_definition.report_type is a soft FK resolved under the system tenant,
+ * where report types are seeded, so a test references a seeded code rather
+ * than writing a type of its own into the test tenant.
  */
-std::string setup_test_report_type(ores::testing::database_helper& h,
-                                   ores::utility::generation::generation_context& ctx) {
+std::string seeded_report_type(ores::testing::database_helper& h) {
     ores::reporting::repository::report_type_repository rt_repo;
-    auto rt = ores::reporting::generators::generate_synthetic_report_type(ctx);
-    rt_repo.write(h.context(), rt);
-    return rt.code;
+    const auto types =
+        rt_repo.read_latest(ores::database::service::tenant_context::with_system_tenant(h.context()));
+    REQUIRE_FALSE(types.empty());
+    return types.front().code;
 }
 
 }
@@ -78,7 +78,7 @@ TEST_CASE("write_single_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = setup_test_report_type(h, ctx);
+    const auto report_type = seeded_report_type(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
@@ -95,7 +95,7 @@ TEST_CASE("write_multiple_report_definitions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = setup_test_report_type(h, ctx);
+    const auto report_type = seeded_report_type(h);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
@@ -114,7 +114,7 @@ TEST_CASE("read_latest_report_definitions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = setup_test_report_type(h, ctx);
+    const auto report_type = seeded_report_type(h);
 
     report_definition_repository repo;
     auto written = generate_synthetic_report_definitions(3, ctx);
@@ -138,7 +138,7 @@ TEST_CASE("read_latest_report_definition_by_id", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = setup_test_report_type(h, ctx);
+    const auto report_type = seeded_report_type(h);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
@@ -164,7 +164,7 @@ TEST_CASE("read_all_versions_of_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = setup_test_report_type(h, ctx);
+    const auto report_type = seeded_report_type(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
@@ -188,7 +188,7 @@ TEST_CASE("remove_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = setup_test_report_type(h, ctx);
+    const auto report_type = seeded_report_type(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);

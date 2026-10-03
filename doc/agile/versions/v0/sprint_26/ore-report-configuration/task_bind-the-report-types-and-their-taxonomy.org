@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/ore-report-configuration
-#+pr:
+#+branch: feature/bind-the-report-types-and-their-taxonomy
+#+pr: 2530
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-09-27
-#+environment:
+#+updated: 2026-10-03
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A report type is our own classification, not ORE's. It decides which workflow ru
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
 
 * Acceptance
 
@@ -41,9 +41,40 @@ A report type is our own classification, not ORE's. It decides which workflow ru
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measured on 2026-10-03 before any change:
+
+- One report workflow exists, =report_execution_workflow=, and the trigger
+  handler hard-codes it for every definition whatever its type.
+- Two report types are seeded: =risk=, which that workflow runs, and =grid=
+  ("tabular export without analytics"), which no workflow can run because the
+  workflow always submits to the compute grid. No seeded definition and no DQ
+  template uses =grid=; every one uses =risk=.
+- =report_definition.report_type= is a text column with no foreign key check.
+- Nearly every shipped run document names pricing engines, today's market,
+  curve configuration and conventions (777, 532, 415 and 414 of 416); the rest
+  depend on the analytics chosen.
+
+Decided with the operator:
+
+- Seed =risk= only, selecting =report_execution_workflow=. =grid= goes until a
+  workflow can run it; other kinds (imported, composite, diff) come with
+  [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]].
+- A =risk= report requires the four configuration types every run uses. The
+  analytic-specific ones belong on the analytic types, as a follow-up.
+- This task enforces the requirement and chooses the workflow from the report
+  type at run time, not only the data.
+
+Steps:
+
+1. Report types gain the workflow they select.
+2. A junction lists each report type's required configuration types.
+3. The definition's =report_type= gains its foreign key check. The column keeps
+   its name: renaming it reaches the DQ report-definition templates, the publish
+   function, the shell and tests for no gain, and the foreign key is what the
+   acceptance wants.
+4. The trigger handler takes the workflow from the report type and refuses a
+   definition whose bound configurations miss a required type, with a test.
+5. One migration for databases created before the change.
 
 * Measurements
 
@@ -61,6 +92,20 @@ task and name that file in the Command column.
 
 * Notes
 
+- The trigger refuses every definition that binds fewer than the four
+  configurations =risk= requires. No seeded definition binds any configuration
+  yet, so after this change no seeded report can be triggered until its
+  configurations are bound. That is the enforcement the operator chose; it is
+  stated here so the refusal is not mistaken for a regression.
+- The check runs when a report is triggered, not when it is scheduled. A
+  definition's configuration can change between scheduling and a run, so the
+  trigger is the one place the answer is current.
+- The existing foreign key from =report_configuration.configuration_type_code=
+  resolves under the definition's tenant, while configuration types are seeded
+  only for the system tenant. A report configuration in a non-system tenant is
+  therefore refused today. Not changed here; it belongs with binding real
+  configurations to definitions.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,12 +121,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2530][#2530]] | [reporting] Bind report types to their workflow and required configuration |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bindings read by a count then a list, so a binding added between them is dropped | report_instance_trigger_handler.hpp | Accept | One read with no effective limit; the repository passes the limit straight to SQL. |
+| 2 | A failed DELETE could leave the delete rule disabled | reporting_report_types_bind_workflow_and_requirements_migration.sql | Accept | The migration runs in one transaction. Rerun on a migrated database committed with the rule enabled. |
+| 3 | Physically deleting grid may orphan history joins | migration | Decline | No SQL object joins definitions to report types; the history mapper shows the stored text. |
+| 4 | Add a release note for the behaviour change | PR | Decline | Release notes come from merged PRs at sprint close; the PR states the change. |
+| 5 | No handler-level test of the refusal paths | report_instance_trigger_handler.hpp | Decline | No fixture for this handler exists; the decision is the pure function with six tests. |
+| 6 | Generated tests could write report types the FK rejects | tests | No change | The template references a seeded system-tenant type; the hand-written test reads the seeded catalogue. |
+| 7 | Refusal message reads oddly for several types | report_instance_trigger_handler.hpp | Accept | Message lists the required types after a colon. |
 
 * Result
+
+- =report_type= gains =workflow_type=; only =risk= is seeded, selecting
+  =report_execution_workflow=. =grid= is gone.
+- New junction =ores_reporting_report_type_configuration_types_tbl=, seeded with
+  =risk= requiring =pricing_engines=, =todays_market=, =curve_configuration= and
+  =conventions=. System-wide like the other reporting lookups (RLS exception
+  recorded), with its permissions seeded.
+- =report_definition.report_type= gains a soft foreign key resolved under the
+  system tenant. The column keeps its name; see the plan.
+- The trigger handler reads the workflow from the report type and refuses an
+  unknown type (=unknown_report_type=) or a definition missing a required
+  configuration type (=missing_configuration=, naming them). The comparison is
+  =service::missing_configuration_types=, pinned by six unit tests.
+- Migration =reporting_report_types_bind_workflow_and_requirements_migration.sql=
+  for existing databases, exercised in a rolled-back transaction: it refuses
+  while a current definition names a non-=risk= type, and otherwise leaves =risk=
+  with its workflow and four requirements.

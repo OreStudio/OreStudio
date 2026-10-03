@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: B88F964B-0525-4475-94DE-7F94EDC40F71
+:END:
+#+title: ores.reporting.report_type_configuration_type
+#+description: Codegen junction model for the reporting =report_type_configuration_type= table. The configuration types a run of a report type requires.
+#+type: ores.codegen.junction
+#+component: reporting
+#+filetags: :model:junction:reporting:
+#+name: report_type_configuration_types
+#+name_singular: report_type_configuration_type
+#+name_title: Report Type Configuration Type
+#+name_singular_words: report type requirement
+#+brief: A configuration type a run of a report type requires.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+Many-to-many junction between report types and configuration types: one row
+for each configuration type a run of the report type cannot start without. A
+risk report needs pricing engines, today's market, curve configuration and
+conventions whatever its analytics; a configuration type is needed by more than
+one report type. Starting a report checks that its definition binds one
+configuration of every type its report type requires.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        report_type_code
+:column_short:  report_type
+:column_title:  Report Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for looking up the configuration types a report type requires
+:list_by:       true
+:END:
+
+The report type that has the requirement.
+
+#+begin_src cpp :name generator
+std::string("risk")
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        configuration_type_code
+:column_short:  configuration_type
+:column_title:  Configuration Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the report types that require a configuration type
+:END:
+
+The configuration type a run of the report type requires.
+
+#+begin_src cpp :name generator
+std::string("pricing_engines")
+#+end_src
+
+* Columns
+
+* Foreign keys
+
+** report_type_code
+:PROPERTIES:
+:table:         ores_reporting_report_types_tbl
+:target_column: code
+:error_message: Invalid report_type_code: %. No report type found with this code.
+:END:
+
+The report type; must exist in ores_reporting_report_types_tbl.
+
+** configuration_type_code
+:PROPERTIES:
+:table:         ores_reporting_configuration_types_tbl
+:target_column: code
+:error_message: Invalid configuration_type_code: %. No configuration type found with this code.
+:END:
+
+The configuration type; must exist in ores_reporting_configuration_types_tbl.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_type_configuration_types_tbl
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: report_type_configuration_type
+:name_short:          report_type_configuration_types
+:name_singular_words: report type configuration type
+:name_words:          report type configuration types
+:order_column:        configuration_type_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rc
+:END:
+
+** Table display
+
+| column                  | header             |
+|-------------------------+--------------------|
+| report_type_code        | Report Type        |
+| configuration_type_code | Configuration Type |
+| modified_by             | Modified By        |
+| version                 | Version            |
+
+* See also
+
+- [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] — parent story.

@@ -34,6 +34,7 @@ set(files
     "app/commands/reporting/report_market_binding_commands.cpp"
     "app/commands/reporting/report_operations_operations_commands.cpp"
     "app/commands/reporting/report_type_commands.cpp"
+    "app/commands/reporting/report_type_configuration_type_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -52,4 +53,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_market_binding_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_type_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/reporting/report_type_configuration_type_commands.hpp"
 )

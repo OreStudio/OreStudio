@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/base_correlations/base_correlation.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+base_correlations list --limit 1

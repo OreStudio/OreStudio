@@ -96,14 +96,16 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
     check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}}{{^skip_empty_check}},
     check ("{{column}}" <> ''){{/skip_empty_check}}{{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}{{#domain_entity.enforced_foreign_keys}},
-    constraint {{constraint_name}} foreign key ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{column}}") references "{{table}}" ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{target_column}}"){{/domain_entity.enforced_foreign_keys}}
+    constraint {{constraint_name}} foreign key ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{column}}") references "{{table}}" ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{target_column}}"){{/domain_entity.enforced_foreign_keys}}{{#domain_entity.enforced_pinned_keys}},
+    constraint {{constraint_name}} foreign key ({{{column_list}}}) references "{{table}}" ({{{target_column_list}}}){{/domain_entity.enforced_pinned_keys}}
 {{/domain_entity.current_state}}
 {{#domain_entity.current_state}}
     primary key ({{#domain_entity.immutable_tenant_key}}tenant_id, {{/domain_entity.immutable_tenant_key}}{{domain_entity.primary_key.column_list}}){{#domain_entity.primary_key.columns}}{{#is_uuid}}{{^skip_uuid_check}},
     check ("{{column}}" <> {{uuid_check_fn}}){{/skip_uuid_check}}{{/is_uuid}}{{#is_text}}{{^skip_empty_check}},
     check ("{{column}}" <> ''){{/skip_empty_check}}{{/is_text}}{{/domain_entity.primary_key.columns}}{{#domain_entity.sql.extra_checks}},
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}{{#domain_entity.enforced_foreign_keys}},
-    constraint {{constraint_name}} foreign key ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{column}}") references "{{table}}" ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{target_column}}"){{/domain_entity.enforced_foreign_keys}}
+    constraint {{constraint_name}} foreign key ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{column}}") references "{{table}}" ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{target_column}}"){{/domain_entity.enforced_foreign_keys}}{{#domain_entity.enforced_pinned_keys}},
+    constraint {{constraint_name}} foreign key ({{{column_list}}}) references "{{table}}" ({{{target_column_list}}}){{/domain_entity.enforced_pinned_keys}}
 {{/domain_entity.current_state}}
 );
 {{#domain_entity.has_multiple_natural_keys}}
@@ -510,6 +512,19 @@ begin
 {{/nullable}}
 {{/skip_check}}
 {{/domain_entity.foreign_keys}}
+{{#domain_entity.checked_pinned_keys}}
+    -- Validate the {{name}} pin to {{table}}
+    if {{#column_pairs}}NEW.{{column}} is not null and {{/column_pairs}}not exists (
+        select 1 from {{table}}
+        where {{#matches_tenant}}tenant_id = NEW.tenant_id
+          and {{/matches_tenant}}{{#column_pairs}}{{target_column}} = NEW.{{column}}
+          and {{/column_pairs}}valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{error_message}}', NEW.{{first_column}}
+            using errcode = '23503';
+    end if;
+
+{{/domain_entity.checked_pinned_keys}}
 {{#domain_entity.sql.fk_copy_validations}}
     -- Validate {{column}}; copy {{select_fields}} from {{table}} if not provided
     select {{select_fields}}

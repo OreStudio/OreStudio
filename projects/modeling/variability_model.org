@@ -223,6 +223,7 @@ table is the cross-facet index only.
 | =current_state= | bool | false |
 | =immutable= | bool | false |
 | =extra_checks= | collection<string> | ∅ |
+| =pinned_keys= | collection<struct> | ∅ |
 | =extra_delete_sets= | collection<string> | ∅ |
 | =fk_copy_validations= | collection<struct> | ∅ |
 | =text_code_validations= | collection<struct> | ∅ |

@@ -111,6 +111,7 @@ set(files
     "repository_currency_pair_convention_calendar_repository_tests.cpp"
     "repository_currency_repository_tests.cpp"
     "repository_curve_vocabulary_seed_tests.cpp"
+    "repository_floating_point_precision_tests.cpp"
     "repository_monetary_nature_repository_tests.cpp"
     "repository_party_contact_information_repository_tests.cpp"
     "repository_party_counterparty_repository_tests.cpp"

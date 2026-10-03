@@ -4,6 +4,10 @@ vcpkg_from_github(
     REF 47e571149b5e40f63cf7afb5fded134872cc68c0
     SHA512 84831e35e527fa7dc991402322a9e97405a277e094a45d9a51d41ba838f32c1bc9891f424d51ceb551fddfda7bf875f77a71e237b235ff9e416501aa3751f921
     HEAD_REF main
+    PATCHES
+        # Upstream Parser_default::write formats floats with std::to_string,
+        # which keeps six decimal places. Unfixed upstream as of 816ca6adec.
+        fix-floating-point-precision.patch
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)

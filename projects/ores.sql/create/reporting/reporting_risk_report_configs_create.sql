@@ -144,6 +144,15 @@ begin
             using errcode = '23503';
     end if;
 
+    -- An official report reads no sandbox: a config whose scope names a
+    -- sandbox portfolio or a virtual book cannot belong to an official
+    -- definition, including by moving to one.
+    if ores_reporting_definition_is_official_fn(NEW.tenant_id, NEW.report_definition_id)
+       and ores_reporting_config_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
+        raise exception 'Invalid report_definition_id: %. The configuration scopes sandbox data and the definition is official.',
+            NEW.report_definition_id
+            using errcode = '23514';
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

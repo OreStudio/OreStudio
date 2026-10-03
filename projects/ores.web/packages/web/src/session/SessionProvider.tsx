@@ -247,8 +247,10 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
 
     const signOut = useCallback<SessionContextValue['signOut']>(async () => {
         await api.logout();
+        queryClient.removeQueries({
+            predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
+        });
         queryClient.setQueryData(SESSION_QUERY_KEY, null);
-        queryClient.removeQueries({ queryKey: ['accounts'] });
         setState({ status: 'anonymous' });
     }, [queryClient]);
 

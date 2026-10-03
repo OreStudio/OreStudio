@@ -42,6 +42,8 @@ export async function readPartiesPage(
     caller: AuthenticatedCaller,
     query: PartyPageQuery,
 ): Promise<PartyPage> {
+    // The generated service refuses a stated order; the capture "Implement
+    // order and filter in the generated list contract" tracks it.
     const reply = await caller.callAuthenticated(
         SUBJECTS.listParties,
         { offset: query.offset, limit: query.limit, order: { field: '', descending: false } },

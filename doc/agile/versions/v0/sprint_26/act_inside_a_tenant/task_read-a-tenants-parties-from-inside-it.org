@@ -84,6 +84,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | L1 | A parent on another page is not named | =party-page.ts= | Decline | Party =get= and =get_many= key by short code and nothing reads by id, so naming it would mean reading every page. The list contract capture records the read it needs. |
 | L2 | The parties page in key order, not by name | =party-page.ts= | Decline | The generated service refuses a stated order; the list contract capture covers it. |
+| R1.1 | Sign-out keeps the cached parties | =SessionProvider.tsx= | Accept | Sign-out empties every cached read but the session, as entering and leaving do. |
+| R1.2 | Query parsing accepts "" and "1e1" | =server.ts= | Decline | Both are valid whole numbers after parsing, and anything else fails the schema with a 400. |
+| R1.4 | The empty order needs a pointer to the capture | =party-page.ts= | Accept | A comment names the capture. |
+| #2525.1 | Two @startuml lines in the wireframe | =wireframe_act_inside_a_tenant.puml= | Accept | Fixed here and in =wireframe_see_one_tenant.puml=, which had the same copy defect; both re-rendered. |
+| #2525.2 | Settle the source of the read permissions, how read only is enforced, the claim, the BFF state, the audit and the refusals | =journey_act_inside_a_tenant.org= | Accept | The journey states each, matching the code in #2533 and #2534; the audit is one row in the tenant's trail. |
+| #2525.3 | The wireframe shows 1-3 of 5 beside three rows | =wireframe_act_inside_a_tenant.puml= | Decline | It is the first page of five, with Next, which is what the screen shows. |
 
 * Result
 

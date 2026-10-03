@@ -1316,3 +1316,19 @@ tangled into the runnable script library
 * Inflation Cap Floor Volatilities
 
 - [[id:6C85A0A9-1646-5B73-A131-A0F78EB386F9][How do I run the inflation_cap_floor_volatilities commands from the shell?]]
+
+* Cap Floor Volatilities
+
+- [[id:A873138C-5F76-57B7-AA19-E605D8039F68][How do I run the cap_floor_volatilities commands from the shell?]]
+
+* Curve Parametric Smile Parameters
+
+- [[id:724CBD9F-7CD3-5A89-A0EF-558B3418FDDF][How do I run the curve_parametric_smile_parameters commands from the shell?]]
+
+* Curve Parametric Smiles
+
+- [[id:0F93DB5C-6783-5CDD-B84C-B557D3972FDC][How do I run the curve_parametric_smiles commands from the shell?]]
+
+* Swaption Volatilities
+
+- [[id:AF6DAA28-6415-51CA-945C-7C0AB301EF62][How do I run the swaption_volatilities commands from the shell?]]

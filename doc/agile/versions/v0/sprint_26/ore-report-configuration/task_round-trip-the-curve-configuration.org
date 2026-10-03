@@ -232,6 +232,21 @@ Step 4b, decided while building it:
   configurations. They hold configurations only; the naming question waits in
   [[id:1027E041-1B39-4150-8725-3C0C78F0F1D1][Discuss the _config suffix for the curve configuration tables]].
 
+Step 4c, decided while building it:
+
+- Swaption and cap and floor volatilities are flat. A =ProxyConfig= is one per
+  entry, so its fields are =proxy_= columns with =has_proxy_config= holding its
+  presence. The corpus writes two swaption and four cap and floor proxies.
+- FX, swaption and cap and floor volatilities write a
+  =ParametricSmileConfiguration= on the entry. It is one row of
+  =curve_parametric_smile= per entry, with its parameters as ordered rows of
+  =curve_parametric_smile_parameter=. That lifts the step 4a refusal for FX.
+  A smile inside a strike surface stays refused, because it would hang off the
+  volatility configuration, not the entry, and no corpus document writes one.
+- The cap and floor schema has both =UseEffeciveVolatility=, a misspelling kept
+  for old documents, and =UseEffectiveVolatility=. Each has a column, so either
+  round trips.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -2186,6 +2186,74 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Curve Parametric Smiles
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_parametric_smiles_tbl enable row level security;
+
+drop policy if exists curve_parametric_smiles_tbl_tenant_isolation_policy
+    on ores_refdata_curve_parametric_smiles_tbl;
+
+create policy curve_parametric_smiles_tbl_tenant_isolation_policy
+on ores_refdata_curve_parametric_smiles_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Parametric Smile Parameters
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_parametric_smile_parameters_tbl enable row level security;
+
+drop policy if exists curve_parametric_smile_parameters_tbl_tenant_isolation_policy
+    on ores_refdata_curve_parametric_smile_parameters_tbl;
+
+create policy curve_parametric_smile_parameters_tbl_tenant_isolation_policy
+on ores_refdata_curve_parametric_smile_parameters_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Swaption Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_swaption_volatilities_tbl enable row level security;
+
+drop policy if exists swaption_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_swaption_volatilities_tbl;
+
+create policy swaption_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_swaption_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Cap Floor Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_cap_floor_volatilities_tbl enable row level security;
+
+drop policy if exists cap_floor_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_cap_floor_volatilities_tbl;
+
+create policy cap_floor_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_cap_floor_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

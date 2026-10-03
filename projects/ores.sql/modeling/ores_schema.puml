@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T16:49:53.680189Z
+' Generated: 2026-10-03T17:06:05.670559Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1582,6 +1582,74 @@ package "refdata" #FFF3E0 {
     than a nullable country reference, since no single country owns them.
     end note
 
+    entity ores_refdata_cap_floor_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          volatility_type : text
+          output_volatility_type : text
+          model_shift : double
+          output_shift : double
+          extrapolation : text
+          interpolation_method : text
+          include_atm : text
+          day_counter : text
+          calendar : text
+          business_day_convention : text
+          tenors : text
+          strikes : text
+          optional_quotes : text
+          ibor_index : text
+          index : text
+          rate_computation_period : text
+          on_cap_settlement_days : integer
+          discount_curve : text
+          atm_tenors : text
+          settlement_days : integer
+          interpolate_on : text
+          time_interpolation : text
+          strike_interpolation : text
+          input_type : text
+          quote_includes_index_name : text
+          flat_first_period : text
+          use_effecive_volatility : text
+          use_effective_volatility : text
+        * has_proxy_config : boolean
+          proxy_source_curve_id : text <<FK>>
+          proxy_source_index : text
+          proxy_source_rate_computation_period : text
+          proxy_target_index : text
+          proxy_target_rate_computation_period : text
+          proxy_target_on_cap_settlement_days : integer
+          proxy_scaling_factor : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cap_floor_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cap Floor Volatility Table
+    The settings of one CapFloorVolatility entry of a curveconfig.xml, one row
+    per curve_definition in the CapFloorVolatilities section: the cap and floor
+    surface's tenors and strikes, the index and discount curve it is stripped with,
+    and how it interpolates. Its Report is a row of curve_report_configuration,
+    its BootstrapConfig a row of curve_bootstrap_config and its
+    ParametricSmileConfiguration a row of curve_parametric_smile.
+    A ProxyConfig builds the surface from another one; it is one per entry, so
+    its fields are the proxy_ columns, and has_proxy_config says whether the
+    entry wrote it. The schema allows both UseEffeciveVolatility, a misspelling
+    kept for old documents, and UseEffectiveVolatility; each has its own column so
+    either round trips.
+    end note
+
     entity ores_refdata_cashflow_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -2827,6 +2895,63 @@ package "refdata" #FFF3E0 {
     The natural key is the document, the section and the curve id together:
     EUR-ESTR names a curve inside one section of one document, another section
     may name its own, and two documents may define the same curve differently.
+    end note
+
+    entity ores_refdata_curve_parametric_smile_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * name : text
+          initial_value : text
+        * calibration : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_parametric_smile_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Parametric Smile Parameter Table
+    One Parameter of a parametric smile, such as SABR's alpha: its name, its
+    initial value and how it is calibrated, in the order the document lists them.
+    end note
+
+    entity ores_refdata_curve_parametric_smiles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * max_calibration_attempts : integer
+        * exit_early_error_threshold : double
+        * max_acceptable_error : double
+          residual_correction_dimension : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_parametric_smiles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Parametric Smile Table
+    The ParametricSmileConfiguration of a volatility entry: how the smile's
+    parameters are calibrated, and its residual correction. FX, swaption and cap and
+    floor volatilities write it on the entry, so it is one row per entry, keyed to
+    the entry's curve_definition. Its parameters are rows of
+    curve_parametric_smile_parameter.
     end note
 
     entity ores_refdata_curve_quotes_tbl <<temporal>> #C6F0D8 {
@@ -5070,6 +5195,60 @@ package "refdata" #FFF3E0 {
     follows rather than by restating that convention's fields. Corresponds to the
     <SwapIndex> element in ORE conventions.xml. The id field is the natural key
     (ORE <Id> element).
+    end note
+
+    entity ores_refdata_swaption_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          dimension : text
+          volatility_type : text
+          interpolation : text
+          extrapolation : text
+          output_volatility_type : text
+          model_shift : text
+          output_shift : text
+          day_counter : text
+          calendar : text
+          business_day_convention : text
+          option_tenors : text
+          swap_tenors : text
+          short_swap_index_base : text
+          swap_index_base : text
+          smile_option_tenors : text
+          smile_swap_tenors : text
+          smile_spreads : text
+          quote_tag : text
+        * has_proxy_config : boolean
+          proxy_source_curve_id : text <<FK>>
+          proxy_source_short_swap_index_base : text
+          proxy_source_swap_index_base : text
+          proxy_target_short_swap_index_base : text
+          proxy_target_swap_index_base : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_swaption_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swaption Volatility Table
+    The settings of one SwaptionVolatility entry of a curveconfig.xml, one row
+    per curve_definition in the SwaptionVolatilities section: the surface's
+    dimension and volatility type, the option and swap tenors of its ATM matrix and
+    smile, and the swap indices it is built on. Its Report is a row of
+    curve_report_configuration and its ParametricSmileConfiguration a row of
+    curve_parametric_smile.
+    A ProxyConfig builds the surface from another one; it is one per entry, so
+    its fields are the proxy_ columns, and has_proxy_config says whether the
+    entry wrote it.
     end note
 
     entity ores_refdata_tenor_anchors_tbl <<temporal>> #C6F0D8 {

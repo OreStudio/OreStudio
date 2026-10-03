@@ -72,6 +72,7 @@ set(files
     "curve_configuration_section_eventing_integration_tests.cpp"
     "curve_correlation_eventing_integration_tests.cpp"
     "curve_definition_eventing_integration_tests.cpp"
+    "curve_global_report_eventing_integration_tests.cpp"
     "curve_parametric_smile_eventing_integration_tests.cpp"
     "curve_parametric_smile_parameter_eventing_integration_tests.cpp"
     "curve_quote_eventing_integration_tests.cpp"

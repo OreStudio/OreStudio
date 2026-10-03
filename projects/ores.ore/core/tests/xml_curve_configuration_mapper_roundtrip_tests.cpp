@@ -31,13 +31,10 @@
  * @file xml_curve_configuration_mapper_roundtrip_tests.cpp
  * @brief The curve configuration document, mapped and mapped back.
  *
- * The mapper models the yield curve, default curve, equity curve, inflation
- * curve, commodity curve, security, FX spot and intraday power curve sections
- * so far, so the walk compares each corpus
- * document projected onto them: every section element is kept, the entries of
- * the other sections are cleared, and the report configuration is dropped. The cases below the walk cover what the projection
- * hides: the refusal of entries the mapper cannot hold, and every segment
- * element in one document.
+ * The walk maps every curve configuration document in the corpus to rows and
+ * back, and compares the whole document. The cases below the walk cover what
+ * no corpus document writes: the refusal of elements the mapper cannot hold,
+ * every segment element in one document, and an FX parametric smile.
  */
 
 namespace {
@@ -50,28 +47,19 @@ std::filesystem::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-curveconfiguration modelled_only(curveconfiguration d) {
-    d.ReportConfiguration = decltype(d.ReportConfiguration){};
-    return d;
-}
-
-mapped_curve_configuration map_projected(const curveconfiguration& d) {
-    return curve_configuration_mapper::map(modelled_only(d));
-}
-
-std::string compare_projected(const curveconfiguration& original,
+std::string compare_documents(const curveconfiguration& original,
                               const curveconfiguration& exported,
                               const std::string& path) {
-    return ores::ore::xml::parsed_text_difference(modelled_only(original), exported, path);
+    return ores::ore::xml::parsed_text_difference(original, exported, path);
 }
 
-ores::ore::xml::roundtrip_kind yield_curves_kind() {
+ores::ore::xml::roundtrip_kind curve_configuration_kind() {
     return ores::ore::xml::make_roundtrip_kind<curveconfiguration, mapped_curve_configuration>(
-        "curve configuration modelled sections",
+        "curve configuration documents",
         "curveconfig",
-        &map_projected,
+        &curve_configuration_mapper::map,
         &curve_configuration_mapper::reverse,
-        &compare_projected);
+        &compare_documents);
 }
 
 template <typename T>
@@ -211,12 +199,14 @@ curveconfiguration every_segment() {
 
 }
 
-TEST_CASE("every curve configuration document round trips its modelled sections", tags) {
-    const auto walk = ores::ore::xml::walk_kind(yield_curves_kind(), corpus_root());
+TEST_CASE("every curve configuration document round trips", tags) {
+    const auto walk = ores::ore::xml::walk_kind(curve_configuration_kind(), corpus_root());
 
-    INFO("files: " << walk.files << ", passed: " << walk.passed);
+    std::string failures;
     for (const auto& failure : walk.failures)
-        INFO(failure);
+        failures += failure + "\n";
+    INFO("files: " << walk.files << ", passed: " << walk.passed);
+    INFO(failures);
 
     CHECK(walk.files > 0);
     CHECK(walk.passed == walk.files);
@@ -313,7 +303,7 @@ TEST_CASE("a base correlation with a recovery grid is refused", tags) {
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
 }
 
-TEST_CASE("a report configuration is refused", tags) {
+TEST_CASE("a report configuration that writes no curve family is refused", tags) {
     curveconfiguration d;
     d.ReportConfiguration = globalReportConfiguration{};
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);

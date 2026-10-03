@@ -77,6 +77,7 @@ set(files
     "curve_configuration_section_commands_tests.cpp"
     "curve_correlation_commands_tests.cpp"
     "curve_definition_commands_tests.cpp"
+    "curve_global_report_commands_tests.cpp"
     "curve_parametric_smile_commands_tests.cpp"
     "curve_parametric_smile_parameter_commands_tests.cpp"
     "curve_quote_commands_tests.cpp"

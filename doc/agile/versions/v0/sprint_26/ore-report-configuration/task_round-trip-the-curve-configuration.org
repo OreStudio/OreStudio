@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2564
+#+pr: 2566
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -26,11 +26,11 @@ Curves are referenced by name from five of the analytics documents, so a curve t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -268,6 +268,19 @@ Step 4d, decided while building it:
 - Every section is now modelled, so the test of an unmodelled section is
   replaced by refusals of a solver configuration and an APO future surface.
 
+Step 4e, decided while building it:
+
+- The document's =ReportConfiguration= gives report settings per curve family.
+  Each family element is one row of =curve_global_report=, keyed to the
+  document, with =has_report= and the columns of
+  =curve_report_configuration=. The yield curve family's report writes only
+  =PillarDates=, which those columns already hold. A =ReportConfiguration= that
+  writes no family is refused, because rows cannot record it.
+- An entry's =Report= and a family's =Report= share one pair of mapper
+  functions over the shared columns.
+- The corpus walk now compares every whole document, with nothing projected
+  away.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -283,6 +296,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2566][#2566]] | [refdata] Map the curve report configuration and close the round trip |
 | [[https://github.com/OreStudio/OreStudio/pull/2564][#2564]] | [refdata] Map the equity, commodity and bond future volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2562][#2562]] | [refdata] Map the swaption and cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2560][#2560]] | [refdata] Map the CDS and inflation cap and floor volatility sections |
@@ -304,3 +318,38 @@ via its "Verifies task" field.
 | 4 | PR 2536: note that day counters are not unique by meaning | ores.refdata.day_counter.org | No change | The model already states that ORE accepts several spellings of one day counter. |
 
 * Result
+
+Every =curveconfig.xml= in the vendored corpus imports to typed rows and
+exports back to a document that matches the original, with nothing projected
+away: the corpus walk in =xml_curve_configuration_mapper_roundtrip_tests.cpp=
+compares whole documents and passed on every file in the 2026-10-03 run
+(ctest 90/90 on the step 4e branch).
+
+Shipped in ten PRs, listed above, one per step:
+
+- Step 1: the curve section, segment type and ORE day counter vocabularies,
+  seeded by a script that reads the ORE schemas.
+- Step 2: the document, section and curve header tables, and yield curves with
+  their bootstrap settings, segments and quotes; conventions are checked
+  against every convention table by =ores_refdata_validate_convention_id_fn=.
+- Steps 3a to 3d: equity curves, securities, FX spots, intraday power curves,
+  inflation curves and seasonality, default curves and their configurations,
+  and commodity curves with price segments; calendars are checked by
+  =ores_refdata_validate_calendar_fn= against the 471 names the schema lists.
+- Steps 4a to 4e: every volatility and correlation section, the shared entry
+  =Report=, the shared volatility configurations and parametric smile, and the
+  document's =ReportConfiguration=.
+
+Acceptance met: every corpus document round trips; a curve resolves its day
+counter, segment type and index by foreign key and its conventions and
+calendar through validation functions, so a name the database does not hold is
+refused; segment types are a seeded lookup.
+
+Each step also round trips at least one corpus document through the database.
+Elements no corpus document writes (for example =PriceInfo=,
+=MoneynessSurface=, =ApoFutureSurface=, =OneDimSolverConfig=) are refused rather
+than dropped, and are listed in each step's notes above.
+
+Left open, each with its own task: the owner columns of =curve_quote= (noted in
+step 3d), keeping each FX convention's ORE id, and the =_config= suffix
+question for these tables.

@@ -66,6 +66,8 @@
 \ir ./refdata_curve_segment_curves_drop.sql
 \ir ./refdata_curve_segments_notify_trigger_drop.sql
 \ir ./refdata_curve_segments_drop.sql
+\ir ./refdata_curve_global_reports_notify_trigger_drop.sql
+\ir ./refdata_curve_global_reports_drop.sql
 \ir ./refdata_bond_future_volatilities_notify_trigger_drop.sql
 \ir ./refdata_bond_future_volatilities_drop.sql
 \ir ./refdata_commodity_volatilities_notify_trigger_drop.sql

@@ -34,6 +34,7 @@
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
 #include "ores.refdata.api/domain/curve_definition.hpp"
+#include "ores.refdata.api/domain/curve_global_report.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile_parameter.hpp"
 #include "ores.refdata.api/domain/curve_correlation.hpp"
@@ -91,6 +92,7 @@ struct mapped_curve_configuration {
     std::vector<refdata::domain::equity_volatility> equity_volatilities;
     std::vector<refdata::domain::commodity_volatility> commodity_volatilities;
     std::vector<refdata::domain::bond_future_volatility> bond_future_volatilities;
+    std::vector<refdata::domain::curve_global_report> global_reports;
     std::vector<refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<refdata::domain::default_curve_configuration> default_curve_configurations;
     std::vector<refdata::domain::inflation_seasonality_factor> seasonality_factors;
@@ -106,9 +108,10 @@ struct mapped_curve_configuration {
  * @brief Maps between an ORE CurveConfiguration document and the refdata curve
  * entities.
  *
- * Every curve section is mapped. Elements of an entry the mapper cannot hold
- * yet, and the global report configuration, are refused rather than dropped,
- * because a dropped element would pass as a round trip while losing data.
+ * Every curve section and the document's report configuration are mapped.
+ * Elements of an entry the mapper cannot hold yet are refused rather than
+ * dropped, because a dropped element would pass as a round trip while losing
+ * data.
  *
  * Segments are restored in the order the document wrote them within each
  * segment element. The binding keeps one list per element, so the order across

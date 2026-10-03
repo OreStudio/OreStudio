@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -82,6 +82,22 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | A parent on another page is not named | =party-page.ts= | Decline | Party =get= and =get_many= key by short code and nothing reads by id, so naming it would mean reading every page. The list contract capture records the read it needs. |
+| L2 | The parties page in key order, not by name | =party-page.ts= | Decline | The generated service refuses a stated order; the list contract capture covers it. |
 
 * Result
+
+=refdata.v1.parties.list-of-tenant= is removed with its model, service,
+handler, registrar, tests, shell command, recipe and script, because a request
+that names a tenant breaks the protocol's tenancy rule. =GET /api/parties=
+pages the session's own parties through =refdata.v1.parties.list= with the
+server total and refuses system administration, whose tenant the party policy
+lets read every tenant's parties. The *Parties* screen pages them with the
+pager the roster now shares, and entering a tenant lands on it. The tenant's
+screen in system administration reads no party and points inside. Both tenancy
+journeys say where the parties are read.
+
+Tests: two wire cases, three BFF route cases, two screen cases, and the tenant
+screen's cases rewritten. Live, the parties of Acme read 2, 2 and 1 across
+three pages with a total of 5, and system administration was refused.
+

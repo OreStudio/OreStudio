@@ -25,7 +25,8 @@
  * - Report definitions are official unless set otherwise
  * - An official report's scope refuses a virtual book and a sandbox portfolio
  * - A report that is not official may scope sandbox inputs
- * - A definition cannot become official while its scope holds sandbox inputs
+ * - A definition cannot become official while its scope holds sandbox inputs,
+ *   through a virtual book or a sandbox portfolio
  * - An official report resolves its official books; one that is not official
  *   resolves its virtual books
  *
@@ -34,7 +35,7 @@
 
 begin;
 
-select plan(9);
+select plan(11);
 
 -- =============================================================================
 -- Setup: a sandbox with a virtual book, an official book, and a report
@@ -133,6 +134,8 @@ from t_ctx, (values ('00000000-0000-0000-0000-00000000ac30'::uuid, 'OFFREP-VIRTU
 -- Official scope
 -- =============================================================================
 
+select isnt((select config_id from t_ctx), null,
+    'the fixture found a seeded risk report configuration');
 select ok((select is_official from ores_reporting_report_definitions_tbl
            where id = pg_temp.definition_id() and valid_to = ores_utility_infinity_timestamp_fn()),
     'a report definition is official unless set otherwise');
@@ -161,6 +164,8 @@ select lives_ok($$select pg_temp.set_official(false)$$,
     'a definition can stop being official');
 select lives_ok($$select pg_temp.scope_book('00000000-0000-0000-0000-00000000ac32')$$,
     'a report that is not official may scope a virtual book');
+select lives_ok($$select pg_temp.scope_portfolio('00000000-0000-0000-0000-00000000ac10')$$,
+    'a report that is not official may scope a sandbox portfolio');
 select ok('00000000-0000-0000-0000-00000000ac32'::uuid in (select pg_temp.resolved()),
     'a report that is not official resolves its virtual books');
 select throws_ok($$select pg_temp.set_official(true)$$,

@@ -510,6 +510,19 @@ checks the template emits on its own.
 
 * Insert trigger
 
+#+begin_src sql :name official_scope_check :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- An official report reads no sandbox: a config whose scope names a
+    -- sandbox portfolio or a virtual book cannot belong to an official
+    -- definition, including by moving to one.
+    if ores_reporting_definition_is_official_fn(NEW.tenant_id, NEW.report_definition_id)
+       and ores_reporting_config_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
+        raise exception 'Invalid report_definition_id: %. The configuration scopes sandbox data and the definition is official.',
+            NEW.report_definition_id
+            using errcode = '23514';
+    end if;
+
+#+end_src
+
 ** Validations
 
 | column | validation_function |

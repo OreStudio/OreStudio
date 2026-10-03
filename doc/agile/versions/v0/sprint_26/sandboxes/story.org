@@ -43,6 +43,7 @@ Let users import and experiment without disturbing official data, as the Sandbox
 | [[id:9F4588CF-9024-48FC-A53B-ADF333327B8A][Model sandboxes]] | DONE | 2026-10-03 | 2026-10-03 | Generate sandbox and sandbox_member in ores.refdata, give portfolios a sandbox so each sandbox has its own tree, and check the right to open one at its anchor. |
 | [[id:F1569F86-743C-4377-AF54-51BEB8DA5F01][Model virtual books]] | DONE | 2026-10-03 | 2026-10-03 | Let a book belong to a sandbox: a virtual book sits in its sandbox's portfolio tree, never maps to the ledger, and is seen only by those who may see the sandbox. |
 | [[id:002F3C62-BD7D-475C-925F-4E656AD10E98][Keep sandboxes out of official reports]] | DONE | 2026-10-03 | 2026-10-03 | Mark report definitions as official or not, and keep sandbox portfolios and virtual books out of an official report's scope and of the books it resolves. |
+| [[id:A97F6C9D-41B7-4D6A-A61F-BBF9ECEBAB53][Close the official report loopholes]] | DONE | 2026-10-03 | 2026-10-03 | Refuse moving a risk report configuration with sandbox scope under an official definition, and keep a sandbox portfolio's books out of an official report's resolved set. |
 
 * Decisions
 
@@ -71,7 +72,8 @@ data, and the database enforces it.
 - Virtual books: books in a sandbox, with no ledger reference, never a
   sweep target, covered by the same policy (PR 2552).
 - Official reports: report definitions are official by default, and an
-  official report can neither scope nor resolve sandbox data.
-- 33 pgTAP cases cover the story's database rules.
+  official report can neither scope nor resolve sandbox data (PR 2561, with
+  the review's two loopholes closed in a follow-up).
+- 35 pgTAP cases cover the story's database rules.
 - The rule that a booking names a virtual book only for a draft, a test or
   a hypothetical moved to the story that splits the trade.

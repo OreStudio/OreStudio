@@ -24,6 +24,8 @@ drop function if exists ores_reporting_suspended_definition_state_fn();
 drop function if exists ores_reporting_in_flight_instance_fn(uuid, uuid);
 drop function if exists ores_reporting_resolve_book_ids_for_config_fn(uuid, uuid);
 drop function if exists ores_reporting_definition_scope_has_sandbox_fn(uuid, uuid);
+drop function if exists ores_reporting_definition_is_official_fn(uuid, uuid);
+drop function if exists ores_reporting_config_scope_has_sandbox_fn(uuid, uuid);
 drop function if exists ores_reporting_portfolio_is_sandbox_fn(uuid, uuid);
 drop function if exists ores_reporting_book_is_virtual_fn(uuid, uuid);
 drop function if exists ores_reporting_config_is_official_fn(uuid, uuid);

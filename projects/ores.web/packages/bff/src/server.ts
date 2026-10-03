@@ -89,6 +89,7 @@ import {
     type TenantSetup,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
+import type { ListChangeReasonsRequest } from '@ores/wire-protocol/generated/dq/protocol/change_reason_protocol';
 import type { LoadedSiteConfiguration } from './site-config.js';
 import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
@@ -1324,12 +1325,19 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/change-reasons', async (request) => {
         const session = requireSession(request);
         const query = request.query as Record<string, string | undefined>;
+        /*
+         * The request is the generated type, so every field the server's
+         * decoder requires is present or the typecheck fails; it refused this
+         * request for want of an order.
+         */
+        const listRequest: ListChangeReasonsRequest = {
+            offset: query['offset'] === undefined ? 0 : Number(query['offset']),
+            limit: query['limit'] === undefined ? 200 : Number(query['limit']),
+            order: { field: '', descending: false },
+        };
         const response = await session.client.callAuthenticated(
             SUBJECTS.listChangeReasons,
-            {
-                offset: query['offset'] === undefined ? 0 : Number(query['offset']),
-                limit: query['limit'] === undefined ? 200 : Number(query['limit']),
-            },
+            listRequest,
             changeReasonPageSchema,
         );
         return {

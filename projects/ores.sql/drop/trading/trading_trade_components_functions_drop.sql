@@ -22,6 +22,7 @@
 -- Drop trade component helpers
 -- =============================================================================
 
+drop function if exists ores_trading_book_trade_fn(uuid, uuid, uuid, text, text, text, text, uuid, uuid, date, timestamptz, text, text, text, text);
 drop function if exists ores_trading_trade_booked_virtual_fn(uuid, uuid);
 drop function if exists ores_trading_trade_may_be_virtual_fn(uuid, uuid);
 drop function if exists ores_trading_status_may_be_virtual_fn(uuid, uuid, uuid);

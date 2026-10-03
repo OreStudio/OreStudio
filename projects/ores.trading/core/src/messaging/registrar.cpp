@@ -99,11 +99,14 @@
 #include "ores.trading.core/messaging/trade_id_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_identifier_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_identifier_registrar.hpp"
+#include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
+
+#include <memory>
 
 namespace ores::trading::messaging {
 
@@ -164,6 +167,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_return_type_handlers(nats, ctx, verifier));
     append(register_settlement_type_handlers(nats, ctx, verifier));
     append(register_trade_anchor_handlers(nats, ctx, verifier));
+    {
+        // Trade operations (hand-written handler, not codegen).
+        auto toh = std::make_shared<trade_operations_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            book_trade_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
+                toh->book_trade(std::move(msg));
+            }));
+    }
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_envelope_additional_field_handlers(nats, ctx, verifier));
     append(register_trade_envelope_handlers(nats, ctx, verifier));

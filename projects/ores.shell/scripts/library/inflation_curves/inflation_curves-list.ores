@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/inflation_curves/inflation_curve.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+inflation_curves list --limit 1

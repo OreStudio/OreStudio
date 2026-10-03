@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T14:03:34.453546Z
+' Generated: 2026-10-03T14:03:55.981880Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3225,6 +3225,77 @@ package "refdata" #FFF3E0 {
     Defines the fixing calendar, day count, settlement lag, and business day
     convention for a term IBOR index such as EURIBOR or USD LIBOR.
     Corresponds to the <IborIndex> element in ORE conventions.xml.
+    end note
+
+    entity ores_refdata_inflation_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * nominal_term_structure : text
+        * inflation_type : text
+          conventions : text
+        * has_quotes : boolean
+          extrapolation : text
+        * calendar : text
+          day_counter : text
+        * lag : text
+        * frequency : text
+          base_rate : text
+          tolerance : double
+        * has_seasonality : boolean
+          seasonality_base_date : text
+          seasonality_frequency : text
+          use_last_fixing_date : text
+          interpolation_variable : text
+          interpolation_method : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Curve Table
+    The settings of one InflationCurve entry of a curveconfig.xml, one row per
+    curve_definition in the InflationCurves section: the nominal curve it is
+    built over, whether it is zero coupon or year on year, its lag and frequency,
+    and its seasonality. The quotes it is built from are rows of curve_quote, and
+    the seasonality factors rows of inflation_seasonality_factor.
+    The schema also allows a list of segments, each a convention and quotes. No
+    corpus document writes one, and the mapper refuses an entry that does rather
+    than lose it.
+    end note
+
+    entity ores_refdata_inflation_seasonality_factors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * factor : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_inflation_seasonality_factors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Inflation Seasonality Factor Table
+    One factor of the seasonality adjustment an inflation curve applies, one per
+    period of the seasonality frequency, in the order the document lists them.
     end note
 
     entity ores_refdata_inflation_swap_conventions_tbl <<temporal>> #C6F0D8 {

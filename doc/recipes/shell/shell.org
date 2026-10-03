@@ -1256,3 +1256,11 @@ tangled into the runnable script library
 * Intraday Power Curves
 
 - [[id:FD0054AF-F29F-5C8A-8C04-3F78AE74F65F][How do I run the intraday_power_curves commands from the shell?]]
+
+* Inflation Curves
+
+- [[id:E20E118B-EF21-5FC0-A390-F856D5C5005A][How do I run the inflation_curves commands from the shell?]]
+
+* Inflation Seasonality Factors
+
+- [[id:D10D373B-D722-5932-B59F-5D3C0CCD548E][How do I run the inflation_seasonality_factors commands from the shell?]]

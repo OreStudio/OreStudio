@@ -1913,6 +1913,40 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Inflation Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_inflation_curves_tbl enable row level security;
+
+drop policy if exists inflation_curves_tbl_tenant_isolation_policy
+    on ores_refdata_inflation_curves_tbl;
+
+create policy inflation_curves_tbl_tenant_isolation_policy
+on ores_refdata_inflation_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Inflation Seasonality Factors
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_inflation_seasonality_factors_tbl enable row level security;
+
+drop policy if exists inflation_seasonality_factors_tbl_tenant_isolation_policy
+    on ores_refdata_inflation_seasonality_factors_tbl;
+
+create policy inflation_seasonality_factors_tbl_tenant_isolation_policy
+on ores_refdata_inflation_seasonality_factors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

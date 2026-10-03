@@ -81,6 +81,8 @@ set(files
     "future_convention_eventing_integration_tests.cpp"
     "fx_option_convention_eventing_integration_tests.cpp"
     "ibor_index_convention_eventing_integration_tests.cpp"
+    "inflation_curve_eventing_integration_tests.cpp"
+    "inflation_seasonality_factor_eventing_integration_tests.cpp"
     "inflation_swap_convention_eventing_integration_tests.cpp"
     "instrument_code_eventing_integration_tests.cpp"
     "intraday_power_curve_eventing_integration_tests.cpp"

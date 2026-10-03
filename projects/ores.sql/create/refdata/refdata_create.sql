@@ -331,6 +331,10 @@
 \ir ./refdata_intraday_power_curves_notify_trigger_create.sql
 \ir ./refdata_equity_curves_create.sql
 \ir ./refdata_equity_curves_notify_trigger_create.sql
+\ir ./refdata_inflation_curves_create.sql
+\ir ./refdata_inflation_curves_notify_trigger_create.sql
+\ir ./refdata_inflation_seasonality_factors_create.sql
+\ir ./refdata_inflation_seasonality_factors_notify_trigger_create.sql
 \ir ./refdata_curve_segments_create.sql
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql

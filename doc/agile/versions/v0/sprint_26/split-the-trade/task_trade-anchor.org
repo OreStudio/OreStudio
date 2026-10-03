@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trade-anchor
-#+pr:
+#+pr: 2569
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2569][#2569]] | [trading] Add the immutable trade anchor |
 
 * Review
 

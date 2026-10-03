@@ -67,7 +67,8 @@ create table if not exists "ores_refdata_netting_sets_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("netting_agreement_id" is null or ("counterparty_id" is not null and "party_id" is not null))
+    check ("netting_agreement_id" is null or ("counterparty_id" is not null and "party_id" is not null)),
+    check ("risk_weight" is null or "risk_weight" >= 0)
 );
 
 -- Unique code for active records

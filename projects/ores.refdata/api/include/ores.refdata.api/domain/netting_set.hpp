@@ -102,19 +102,23 @@ struct netting_set final {
     /**
      * @brief ORE's call type for the set.
      *
-     * Part of ORE's netting set details. Free text, as ORE leaves it.
+     * Part of ORE's netting set details. Free text: ORE's schema types it as a plain string and no
+     * example uses it, so there is no list to check against.
      */
     std::optional<std::string> call_type;
 
     /**
      * @brief ORE's initial margin type for the set.
      *
-     * Part of ORE's netting set details. Free text, as ORE leaves it.
+     * Part of ORE's netting set details. Free text: ORE's schema types it as a plain string and no
+     * example uses it, so there is no list to check against.
      */
     std::optional<std::string> initial_margin_type;
 
     /**
      * @brief ORE's risk weight for the set.
+     *
+     * Not negative.
      */
     std::optional<double> risk_weight;
 

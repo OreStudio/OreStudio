@@ -31,9 +31,13 @@
  * belongs to the agreement's two parties, and a set with no agreement holds
  * trades that do not net.
  *
- * The agreement's two parties never change across its versions. A netting
- * set copies them and pins the copy to the agreement, so a set cannot be
- * filed under another counterparty's agreement.
+ * The agreement's two parties never change across its versions: both
+ * columns are fixed, so a new version that changes either is refused. A
+ * netting set copies them and pins the copy to the agreement, so a set
+ * cannot be filed under another counterparty's agreement, and the copy stays
+ * true. Closing an agreement does not close its sets, as for every soft
+ * foreign key in the schema; a set's agreement is checked when the set is
+ * written.
  */
 
 create table if not exists "ores_refdata_netting_agreements_tbl" (
@@ -137,6 +141,26 @@ begin
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
+        end if;
+        if exists (
+            select 1 from "ores_refdata_netting_agreements_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "counterparty_id" is distinct from NEW."counterparty_id"
+        ) then
+            raise exception 'counterparty_id cannot change: it is fixed for the life of the netting_agreement.'
+                using errcode = '23514';
+        end if;
+        if exists (
+            select 1 from "ores_refdata_netting_agreements_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "party_id" is distinct from NEW."party_id"
+        ) then
+            raise exception 'party_id cannot change: it is fixed for the life of the netting_agreement.'
+                using errcode = '23514';
         end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is

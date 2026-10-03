@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 23379DE2-8C3E-4CE6-AE7F-D13748E643E3
+:END:
+#+title: Key netting sets by their credit limit
+#+description: The netting sets analysis names the credit limit as part of a set's identity, but no credit limit entity exists, so netting_set leaves it out.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:netting:credit:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Where one netting agreement covers trades under several credit limits,
+netting is restricted to the trades within one limit, so the limit is part
+of what identifies a netting set. The =netting_set= entity has no limit
+column, because no credit limit entity exists to reference. Model the
+credit limit, then add it to the netting set and to the pin that holds a
+set to its agreement.
+
+* Why
+
+The netting sets note lists the limit among a set's dimensions, and its
+open questions ask whether restricting netting to one limit is general
+practice. Raised in the review of PR 2537, where the omission was listed
+as a limitation.
+
+* References
+
+- PR 2537
+
+* See also
+
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the analysis.
+- [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][ores.refdata.netting_set]] — the entity that would gain the limit.

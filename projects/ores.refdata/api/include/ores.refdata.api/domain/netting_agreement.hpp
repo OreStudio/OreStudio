@@ -45,9 +45,13 @@ namespace ores::refdata::domain {
  * under an agreement belongs to the agreement's two parties, and a set with no agreement holds
  * trades that do not net.
  *
- * The agreement's two parties never change across its versions. A netting
- * set copies them and pins the copy to the agreement, so a set cannot be
- * filed under another counterparty's agreement.
+ * The agreement's two parties never change across its versions: both
+ * columns are fixed, so a new version that changes either is refused. A
+ * netting set copies them and pins the copy to the agreement, so a set
+ * cannot be filed under another counterparty's agreement, and the copy stays
+ * true. Closing an agreement does not close its sets, as for every soft
+ * foreign key in the schema; a set's agreement is checked when the set is
+ * written.
  */
 struct netting_agreement final {
     /**

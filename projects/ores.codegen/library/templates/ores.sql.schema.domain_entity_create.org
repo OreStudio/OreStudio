@@ -699,6 +699,18 @@ begin
                 NEW.version, current_version
                 using errcode = 'P0002';
         end if;
+{{#domain_entity.fixed_columns}}
+        if exists (
+            select 1 from "{{domain_entity.sql_name_base}}_tbl"
+            where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
+              and {{/domain_entity.has_tenant_in_pk}}{{{domain_entity.primary_key.where_new}}}
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "{{column}}" is distinct from NEW."{{column}}"
+        ) then
+            raise exception '{{column}} cannot change: it is fixed for the life of the {{domain_entity.entity_singular}}.'
+                using errcode = '23514';
+        end if;
+{{/domain_entity.fixed_columns}}
         NEW.version = current_version + 1;
 <<paste:59F4313F-B119-44D8-8E4E-05AE8B18DE95>>
         -- clock_timestamp(), not current_timestamp: current_timestamp is

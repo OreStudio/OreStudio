@@ -25,6 +25,10 @@
 
 -- Books
 drop policy if exists books_tenant_isolation_policy on "ores_refdata_books_tbl";
+drop policy if exists netting_agreements_party_isolation_policy on "ores_refdata_netting_agreements_tbl";
+drop policy if exists netting_agreements_tenant_isolation_policy on "ores_refdata_netting_agreements_tbl";
+drop policy if exists netting_sets_party_isolation_policy on "ores_refdata_netting_sets_tbl";
+drop policy if exists netting_sets_tenant_isolation_policy on "ores_refdata_netting_sets_tbl";
 
 -- Portfolios
 drop policy if exists portfolios_tenant_isolation_policy on "ores_refdata_portfolios_tbl";

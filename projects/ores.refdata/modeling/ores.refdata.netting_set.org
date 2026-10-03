@@ -119,7 +119,8 @@ std::nullopt
 
 ORE's call type for the set.
 
-Part of ORE's netting set details. Free text, as ORE leaves it.
+Part of ORE's netting set details. Free text: ORE's schema types it as a
+plain string and no example uses it, so there is no list to check against.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -134,7 +135,8 @@ std::nullopt
 
 ORE's initial margin type for the set.
 
-Part of ORE's netting set details. Free text, as ORE leaves it.
+Part of ORE's netting set details. Free text: ORE's schema types it as a
+plain string and no example uses it, so there is no list to check against.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -148,6 +150,8 @@ std::nullopt
 :END:
 
 ORE's risk weight for the set.
+
+Not negative.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -178,6 +182,7 @@ std::optional<std::string>("Test netting set")
 | expression                                                                                     |
 |------------------------------------------------------------------------------------------------|
 | "netting_agreement_id" is null or ("counterparty_id" is not null and "party_id" is not null)   |
+| "risk_weight" is null or "risk_weight" >= 0                                                    |
 
 ** Pinned keys
 

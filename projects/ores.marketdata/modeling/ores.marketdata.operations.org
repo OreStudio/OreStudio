@@ -495,7 +495,7 @@ Requests a curve-evolution view: =bucket_count= as-of snapshots, one every
 :END:
 
 Request to import ORE =market.txt= and/or =fixings.txt= content. The service
-parses both files, decomposes keys through the series key registry, upserts
+parses both files, names each key and index through the ORE codecs, upserts
 market series catalog entries, and bulk-inserts observations and fixings.
 Either content field may be empty when only one file type is imported.
 
@@ -503,10 +503,10 @@ Either content field may be empty when only one file type is imported.
 /**
  * @brief Request to import ORE market.txt and/or fixings.txt content.
  *
- * The service parses both files, decomposes keys via the series key registry,
- * upserts market series catalog entries, and bulk-inserts observations and
- * fixings. Either content field may be empty if only one file type is being
- * imported.
+ * The service parses both files, names each key and index through the ORE
+ * codecs, upserts market series catalog entries, and bulk-inserts
+ * observations and fixings. Either content field may be empty if only one
+ * file type is being imported.
  */
 #+end_src
 

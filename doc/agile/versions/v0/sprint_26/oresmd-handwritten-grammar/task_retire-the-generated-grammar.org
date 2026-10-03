@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/retire-the-generated-grammar
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The key grammar exists in one place: the hand-written codecs.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,7 +44,18 @@ The key grammar exists in one place: the hand-written codecs.
 
 * Plan
 
-Delete after the cut-over, so each deletion is proved by a green build.
+Delete after the cut-over, so each deletion is proved by a green build. Two
+units, one commit each, each ending in a build:
+
+1. *The generated grammar.* The oresmd templates and their literate sources,
+   the quote-type models and their manifest, the generated parser,
+   projections, resolver, identifier and requirement types and their tests,
+   the codegen loader for the =oresmd_quote_type= model type, and
+   =check_oresmd_ore_coverage.py= with its tests.
+2. *The key shape registry.* =series_key_registry=, the
+   =ores.ore.series_key_shape= entity with its generated stack and SQL, the
+   tenant provisioner's copy of its rows, the test seed, and the split fields
+   on =ores.ore='s parsed datum.
 
 * Measurements
 
@@ -61,6 +72,39 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What stays, and why
+
+- =pillar_quote_key= stays in =ores.marketdata.core/oresmd/=. It is
+  hand-written, and the curve republish service, the curve pillar reader and
+  the synthetic IR curve feed use it.
+- =asset_class_for_authority= stays; =asset_class_for_identifier= goes. The
+  classifier reads the first, and nothing called the second.
+- =market_data_urn.org= still describes the old grammar. Rewriting it is
+  its own task in this story.
+
+** One behaviour change
+
+The registry refused a market data key with fewer than two segments, and the
+refusal aborted the whole file. The file reader now keeps every line it can
+tokenise, and the ORE key codec decides what a key names: a key it refuses is
+reported and skipped, one row at a time, as every other refused key already
+is.
+
+** What moved
+
+=classification_key_of= moved from the import service's anonymous namespace
+to =series_classifier.hpp=, so the corpus classification test computes the
+classification key the import computes, through the key codec, instead of
+splitting keys with the registry.
+
+** What the deletion simplified
+
+- =manifest.py= scanned one level of subdirectories under =modeling/= and
+  routed a directory holding =model.org= through it alone. The oresmd specs
+  were the only such directory, so the scan now reads direct children only.
+- =ores.ore= persists no tables, so =ore_create.sql= and =ore_drop.sql= are
+  gone, and its data model diagram says so.
 
 Depends on [[id:FE1151D5-5433-41C1-8F05-835818FEC1F9][Write the ORE index codec]]: after the cut-over, fixings are the
 last production consumer of the generated grammar, through =from_index_name=

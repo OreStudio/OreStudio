@@ -92,8 +92,8 @@ whichever point arrived first.
      *
      * The natural key with party_id, and unique per party: one party holds one series per identity.
 It is the only name the row carries: the registry's series_type, metric and qualifier columns have
-gone, and a reader that wants the key's tokens decomposes the key itself through
-ores_series_key_shapes rather than reading them off a series.
+gone, and a reader that wants the key's parts reads the identity through oresmd_uri_codec rather
+than off a series.
 
 Every writer supplies one. A caller that leaves it empty stores nothing, because the column is not
 null and the generated service copies the write's fields straight through -- so an update carries

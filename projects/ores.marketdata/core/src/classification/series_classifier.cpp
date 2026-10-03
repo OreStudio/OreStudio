@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.marketdata.core/datum/ore_index_codec.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <string_view>
@@ -90,6 +91,15 @@ std::vector<std::string> correlation_asset_classes(const std::string& qualifier)
     return classes;
 }
 
+}
+
+classification_key classification_key_of(const datum::market_datum& d) {
+    classification_key k{std::string(datum::ore_key_codec::token_of(d.type())),
+                         std::string(datum::ore_name(d.quote())),
+                         {}};
+    if (d.type() == datum::instrument_type::correlation)
+        k.qualifier = *d.get<datum::field::index1>() + "/" + *d.get<datum::field::index2>();
+    return k;
 }
 
 series_classifier::series_classifier(std::vector<domain::series_classification_rule> rules) {

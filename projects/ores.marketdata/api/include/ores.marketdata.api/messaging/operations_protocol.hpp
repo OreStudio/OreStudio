@@ -260,10 +260,10 @@ struct get_curve_snapshot_buckets_response {
 /**
  * @brief Request to import ORE market.txt and/or fixings.txt content.
  *
- * The service parses both files, decomposes keys via the series key registry,
- * upserts market series catalog entries, and bulk-inserts observations and
- * fixings. Either content field may be empty if only one file type is being
- * imported.
+ * The service parses both files, names each key and index through the ORE
+ * codecs, upserts market series catalog entries, and bulk-inserts
+ * observations and fixings. Either content field may be empty if only one
+ * file type is being imported.
  */
 struct import_market_data_request {
     using response_type = struct import_market_data_response;

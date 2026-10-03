@@ -250,9 +250,6 @@ relates; the subclass is the correlation itself.'
 
 * See also
 
-- [[id:8316E5A7-9BDA-4C88-856C-C933290F7396][ores.ore.series_key_shape]] —
-  the sibling table that says how a key of each type splits into a
-  series and a point. A type needs a row in both tables to import.
 - [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][market_series_asset_class]] —
   the junction these rules populate for each series an import creates.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] — the

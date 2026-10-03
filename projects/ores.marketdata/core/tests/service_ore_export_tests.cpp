@@ -27,8 +27,6 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
-#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
@@ -119,14 +117,11 @@ std::vector<std::string> body_keys(const std::string& text) {
 
 /// The same file put through the parser and the serializer with no database in
 /// the way, as the content the round trip has to return.
-std::string serialize_without_the_database(const std::string& content,
-                                           ores::database::context ctx) {
-    const ores::ore::market::series_key_registry registry{
-        ores::ore::repository::series_key_shape_repository{}.read_latest(ctx)};
+std::string serialize_without_the_database(const std::string& content) {
     std::istringstream in(content);
     ores::ore::market::parse_report report;
     const auto data = ores::ore::market::parse_market_data(
-        in, registry, ores::ore::market::duplicate_policy::warn, &report);
+        in, ores::ore::market::duplicate_policy::warn, &report);
     std::ostringstream out;
     ores::ore::market::serialize_market_data(out, data);
     return out.str();
@@ -174,7 +169,7 @@ TEST_CASE("export_reproduces_the_market_data_file_it_imported", tags) {
 
     // And the values and dates with them, compared against the parser and
     // serializer run with no database in the way.
-    std::istringstream expected_lines(serialize_without_the_database(content, t.ctx));
+    std::istringstream expected_lines(serialize_without_the_database(content));
     std::istringstream actual_lines(exported.market_data);
     std::vector<std::string> expected;
     std::vector<std::string> actual;

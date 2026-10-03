@@ -35,8 +35,8 @@ namespace ores::marketdata::service {
 /**
  * @brief Imports ORE market data and fixings files into the database.
  *
- * Parses market.txt and fixings.txt content, decomposes keys via the series
- * key registry, upserts market series catalog entries, and bulk-inserts
+ * Parses market.txt and fixings.txt content, names each key and index through
+ * the ORE codecs, upserts market series catalog entries, and bulk-inserts
  * observations and fixings into the TimescaleDB hypertables.
  */
 class ORES_MARKETDATA_CORE_EXPORT import_service {

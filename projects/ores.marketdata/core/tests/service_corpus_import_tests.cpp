@@ -27,8 +27,6 @@
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
-#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
@@ -225,8 +223,7 @@ std::vector<dated_value> stored_fixings(ores::database::context ctx, const std::
 /// carried, so a caller can total them across files.
 std::size_t import_and_verify(const std::filesystem::path& path,
                               ores::marketdata::service::import_service& svc,
-                              ores::database::context ctx,
-                              const ores::ore::market::series_key_registry& registry) {
+                              ores::database::context ctx) {
     using namespace ores::marketdata;
     const auto content = ores::platform::filesystem::file::read_content(path);
     const auto tag = source_tag_for(path);
@@ -235,7 +232,7 @@ std::size_t import_and_verify(const std::filesystem::path& path,
     std::istringstream in(content);
     ores::ore::market::parse_report report;
     const auto data = ores::ore::market::parse_market_data(
-        in, registry, ores::ore::market::duplicate_policy::warn, &report);
+        in, ores::ore::market::duplicate_policy::warn, &report);
 
     // The import warns once per repeated (date, key) and once per key it stores
     // under another spelling.
@@ -318,12 +315,6 @@ std::size_t import_fixings_and_verify(const std::filesystem::path& path,
     return data.size() + report.warnings.size();
 }
 
-/// The shape table the production tokeniser still asks for.
-ores::ore::market::series_key_registry registry_for(ores::database::context ctx) {
-    return ores::ore::market::series_key_registry{
-        ores::ore::repository::series_key_shape_repository{}.read_latest(ctx)};
-}
-
 } // namespace
 
 using namespace ores::logging;
@@ -339,11 +330,10 @@ TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", tags) {
 
     const auto sample = sample_payloads(50);
     REQUIRE_FALSE(sample.empty());
-    const auto registry = registry_for(tenant.ctx);
 
     std::size_t total = 0;
     for (const auto& path : sample)
-        total += import_and_verify(path, svc, tenant.ctx, registry);
+        total += import_and_verify(path, svc, tenant.ctx);
 
     BOOST_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << sample.size()
                             << " corpus file(s).";
@@ -360,11 +350,10 @@ TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]"
     const auto all = ores::marketdata::test::market_payloads(
         ores::testing::project_root::resolve("external/ore/examples"));
     REQUIRE_FALSE(all.empty());
-    const auto registry = registry_for(tenant.ctx);
 
     std::size_t total = 0;
     for (const auto& path : all)
-        total += import_and_verify(path, svc, tenant.ctx, registry);
+        total += import_and_verify(path, svc, tenant.ctx);
 
     BOOST_LOG_SEV(lg, info) << "Verified " << total << " line(s) over " << all.size()
                             << " corpus file(s).";

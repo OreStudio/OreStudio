@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/market/market_data_parser.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <algorithm>
 #include <istream>
@@ -156,10 +155,8 @@ line_tokens tokenize(std::string_view line) {
 
 } // namespace
 
-std::vector<market_datum> parse_market_data(std::istream& in,
-                                            const series_key_registry& registry,
-                                            duplicate_policy on_duplicate,
-                                            parse_report* report) {
+std::vector<market_datum>
+parse_market_data(std::istream& in, duplicate_policy on_duplicate, parse_report* report) {
     std::vector<market_datum> result;
     std::vector<int> line_numbers;
     std::string line;
@@ -188,11 +185,6 @@ std::vector<market_datum> parse_market_data(std::istream& in,
             datum.date = ores::platform::time::time_utils::parse_date(date_str);
             datum.key = std::string(key_str);
             datum.value = std::string(val_str);
-            const auto dk = registry.decompose(datum.key);
-            datum.series_type = dk.series_type;
-            datum.metric = dk.metric;
-            datum.qualifier = dk.qualifier;
-            datum.point_id = dk.point_id;
             result.push_back(std::move(datum));
             line_numbers.push_back(line_no);
         } catch (const std::invalid_argument& ex) {

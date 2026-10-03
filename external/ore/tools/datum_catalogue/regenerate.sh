@@ -27,7 +27,10 @@ cmake --build "${work}/build" > /dev/null
 
 mkdir -p "${out}"
 "${work}/build/datum_catalogue" < "${here}/forms.txt" > "${out}/forms.jsonl"
-python3 "${here}/extract_instrument_types.py" "${ore_source}" > "${out}/instrument_types.txt"
+python3 "${here}/extract_enum_tokens.py" "${ore_source}" InstrumentType > "${out}/instrument_types.txt"
+python3 "${here}/extract_enum_tokens.py" "${ore_source}" QuoteType > "${out}/quote_types.txt"
+python3 "${here}/generate_quote_matrix.py" "${out}/forms.jsonl" "${out}/quote_types.txt" \
+    | "${work}/build/datum_catalogue" > "${out}/quote_matrix.jsonl"
 python3 "${here}/extract_corpus_keys.py" "${ore_root}/examples" > "${work}/corpus_keys.txt"
 "${work}/build/datum_catalogue" < "${work}/corpus_keys.txt" | gzip -n -9 > "${out}/corpus.jsonl.gz"
 

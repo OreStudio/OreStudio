@@ -39,7 +39,9 @@ market_datum read_inflation(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
         case it::zc_inflation_swap:
         case it::yy_inflation_swap:
-            // ZC_INFLATIONSWAP|YY_INFLATIONSWAP/RATE/index/term
+            // ZC_INFLATIONSWAP|YY_INFLATIONSWAP/RATE/index/term. ORE reads any quote
+            // token here and records RATE, so another token could not be written back.
+            require_quote(q, {quote_type::rate});
             require_size(rest, {2});
             return datum_builder(t, q)
                 .set(f::index, text(rest[0]))
@@ -56,7 +58,9 @@ market_datum read_inflation(instrument_type t, quote_type q, tokens rest) {
                 .set(f::strike_level, number(rest[3]))
                 .build();
         case it::seasonality:
-            // SEASONALITY/RATE/type/index/month
+            // SEASONALITY/RATE/type/index/month. ORE reads any quote token here and
+            // records RATE.
+            require_quote(q, {quote_type::rate});
             require_size(rest, {3});
             return datum_builder(t, q)
                 .set(f::seasonality_type, text(rest[0]))

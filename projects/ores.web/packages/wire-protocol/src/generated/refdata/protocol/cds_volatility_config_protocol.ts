@@ -1,0 +1,209 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: ts_protocol.ts.mustache
+ * To modify, update the template and regenerate.
+ */
+import type { CdsVolatilityConfig } from '../domain/cds_volatility_config.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
+import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
+import type { Result } from '../../../utility/protocol.js';
+
+export interface CdsVolatilityConfigKey {
+    id: string;
+}
+
+export interface CdsVolatilityConfigWrite {
+    id: string;
+    curve_definition_id: string;
+    expiries: string | null;
+    day_counter: string | null;
+    calendar: string | null;
+    strike_type: string | null;
+    quote_name: string | null;
+    strike_factor: number | null;
+}
+
+export interface CdsVolatilityConfigChange {
+    write: CdsVolatilityConfigWrite;
+    precondition: Precondition;
+}
+
+export interface CdsVolatilityConfigRemoval {
+    key: CdsVolatilityConfigKey;
+    precondition: Precondition;
+}
+
+export interface CdsVolatilityConfigLookup {
+    key: CdsVolatilityConfigKey;
+    cds_volatility_config: CdsVolatilityConfig | null;
+}
+
+export interface CdsVolatilityConfigEvent {
+    event_id: string;
+    key: CdsVolatilityConfigKey;
+    action: string;
+    version: number;
+    occurred_at: string;
+    correlation_id: string | null;
+}
+
+export interface CdsVolatilityConfigVersionKey {
+    cds_volatility_config: CdsVolatilityConfigKey;
+    version: number;
+}
+
+export interface CdsVolatilityConfigVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
+export interface ListCdsVolatilityConfigsRequest {
+    offset: number;
+    limit: number;
+    order: Order;
+}
+
+export interface ListCdsVolatilityConfigsResponse {
+    result: Result;
+    cds_volatility_configs: CdsVolatilityConfig[];
+    total: number;
+}
+
+export interface GetCdsVolatilityConfigRequest {
+    key: CdsVolatilityConfigKey;
+}
+
+export interface GetCdsVolatilityConfigResponse {
+    result: Result;
+    cds_volatility_config: CdsVolatilityConfig | null;
+}
+
+export interface GetManyCdsVolatilityConfigsRequest {
+    keys: CdsVolatilityConfigKey[];
+}
+
+export interface GetManyCdsVolatilityConfigsResponse {
+    result: Result;
+    entries: CdsVolatilityConfigLookup[];
+}
+
+export interface PutCdsVolatilityConfigRequest {
+    change: CdsVolatilityConfigChange;
+    intent: ChangeIntent;
+}
+
+export interface PutCdsVolatilityConfigResponse {
+    result: Result;
+    cds_volatility_config: CdsVolatilityConfig | null;
+}
+
+export interface PutManyCdsVolatilityConfigsRequest {
+    changes: CdsVolatilityConfigChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyCdsVolatilityConfigsResponse {
+    result: Result;
+    cds_volatility_configs: CdsVolatilityConfig[];
+}
+
+export interface DeleteCdsVolatilityConfigRequest {
+    removal: CdsVolatilityConfigRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteCdsVolatilityConfigResponse {
+    result: Result;
+}
+
+export interface DeleteManyCdsVolatilityConfigsRequest {
+    removals: CdsVolatilityConfigRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyCdsVolatilityConfigsResponse {
+    result: Result;
+}
+
+export interface ListCdsVolatilityConfigVersionsRequest {
+    key: CdsVolatilityConfigKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: CdsVolatilityConfigVersionsFilter | null;
+}
+
+export interface ListCdsVolatilityConfigVersionsResponse {
+    result: Result;
+    versions: CdsVolatilityConfig[];
+    total: number;
+}
+
+export interface GetCdsVolatilityConfigVersionRequest {
+    key: CdsVolatilityConfigVersionKey;
+}
+
+export interface GetCdsVolatilityConfigVersionResponse {
+    result: Result;
+    version: CdsVolatilityConfig | null;
+}
+
+export const subjects = {
+    list_cds_volatility_configs_request: 'refdata.v1.cds_volatility_configs.list',
+    get_cds_volatility_config_request: 'refdata.v1.cds_volatility_configs.get',
+    get_many_cds_volatility_configs_request: 'refdata.v1.cds_volatility_configs.get_many',
+    put_cds_volatility_config_request: 'refdata.v1.cds_volatility_configs.put',
+    put_many_cds_volatility_configs_request: 'refdata.v1.cds_volatility_configs.put_many',
+    delete_cds_volatility_config_request: 'refdata.v1.cds_volatility_configs.delete',
+    delete_many_cds_volatility_configs_request: 'refdata.v1.cds_volatility_configs.delete_many',
+    list_cds_volatility_config_versions_request: 'refdata.v1.cds_volatility_configs_versions.list',
+    get_cds_volatility_config_version_request: 'refdata.v1.cds_volatility_configs_versions.get',
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    list_cds_volatility_configs_request: true,
+    get_cds_volatility_config_request: true,
+    get_many_cds_volatility_configs_request: true,
+    put_cds_volatility_config_request: true,
+    put_many_cds_volatility_configs_request: true,
+    delete_cds_volatility_config_request: true,
+    delete_many_cds_volatility_configs_request: true,
+    list_cds_volatility_config_versions_request: true,
+    get_cds_volatility_config_version_request: true,
+} as const;
+
+/**
+ * The subjects this resource's changes are announced on. One payload is
+ * addressed by three subjects, because the last segment is the action the
+ * payload reports.
+ */
+export const eventSubjects = {
+    created: 'refdata.v1.cds_volatility_configs_events.created',
+    updated: 'refdata.v1.cds_volatility_configs_events.updated',
+    deleted: 'refdata.v1.cds_volatility_configs_events.deleted',
+} as const;

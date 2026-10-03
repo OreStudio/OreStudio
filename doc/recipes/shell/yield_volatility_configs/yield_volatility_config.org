@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: AA65A81E-54A8-55FB-9D44-C3B97EE6D3F8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the yield_volatility_configs commands from the shell?
+#+description: Every command the yield_volatility_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:yield_volatility_configs:
+
+This file documents the yield_volatility_configs resource at the shell, one section per command. Every command is a subcommand of =yield_volatility_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 185CB69F-2104-50F3-9BD4-AEA1370D21BD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.list=.
+
+#+name: yield_volatility_configs-list
+#+begin_src ores-shell :tangle yield_volatility_configs-list.ores :exports none
+yield_volatility_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 6CFF6A96-B5BB-5399-B5C7-8F7A8BBAB70A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.get=.
+
+#+name: yield_volatility_configs-get
+#+begin_src ores-shell :tangle yield_volatility_configs-get.ores :exports none
+yield_volatility_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 17790309-4D87-5355-8939-0BF7C459106D
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.get_many=.
+
+#+name: yield_volatility_configs-get-many
+#+begin_src ores-shell :tangle yield_volatility_configs-get-many.ores :exports none
+yield_volatility_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B9A69CD2-1FD2-532C-BBAB-00F83EC43FEF
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs add <curve_definition_id> <qualifier> <dimension> <volatility_type> <extrapolation> <day_counter> <calendar> <business_day_convention> <option_tenors> <bond_tenors> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.put=.
+
+#+name: yield_volatility_configs-add
+#+begin_src ores-shell :tangle yield_volatility_configs-add.ores :exports none
+yield_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 582C69A4-FA66-57F4-AA93-566502C0406A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs set <id> <curve_definition_id> <qualifier> <dimension> <volatility_type> <extrapolation> <day_counter> <calendar> <business_day_convention> <option_tenors> <bond_tenors> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.put=.
+
+#+name: yield_volatility_configs-set
+#+begin_src ores-shell :tangle yield_volatility_configs-set.ores :exports none
+yield_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7576DB2F-14B8-5786-88F4-2254BF18EF75
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs put-many --count <n> <id> <curve_definition_id> <qualifier> <dimension> <volatility_type> <extrapolation> <day_counter> <calendar> <business_day_convention> <option_tenors> <bond_tenors> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.put_many=.
+
+#+name: yield_volatility_configs-put-many
+#+begin_src ores-shell :tangle yield_volatility_configs-put-many.ores :exports none
+yield_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ __none__ __none__ __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D2E44831-EE36-58B3-9601-DD7514CB9970
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.delete=.
+
+#+name: yield_volatility_configs-delete
+#+begin_src ores-shell :tangle yield_volatility_configs-delete.ores :exports none
+yield_volatility_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 116F9B2E-10E6-54F8-859E-40FF76876C93
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs.delete_many=.
+
+#+name: yield_volatility_configs-delete-many
+#+begin_src ores-shell :tangle yield_volatility_configs-delete-many.ores :exports none
+yield_volatility_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F25880DB-F5F4-5209-975C-B0A628A579EF
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs_versions.list=.
+
+#+name: yield_volatility_configs-versions
+#+begin_src ores-shell :tangle yield_volatility_configs-versions.ores :exports none
+yield_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C01D6FF9-2DC8-5892-B82F-6B3BF0A3EE23
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+yield_volatility_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.yield_volatility_configs_versions.get=.
+
+#+name: yield_volatility_configs-version
+#+begin_src ores-shell :tangle yield_volatility_configs-version.ores :exports none
+yield_volatility_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

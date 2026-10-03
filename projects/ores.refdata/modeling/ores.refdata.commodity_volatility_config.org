@@ -1,0 +1,306 @@
+:PROPERTIES:
+:ID: 30D31E66-B7D0-429D-8D60-4D73EC32C82C
+:END:
+#+title: ores.refdata.commodity_volatility_config
+#+description: Codegen entity model for the refdata =commodity_volatility_config= table. The settings of one ORE commodity volatility.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE commodity volatility entry.
+#+entity_singular: commodity_volatility_config
+#+entity_plural: commodity_volatility_configs
+#+entity_title: Commodity Volatility Config
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =CommodityVolatility= entry of a =curveconfig.xml=, one row
+per =curve_definition= in the =CommodityVolatilities= section: the currency, the
+instrument the surface is quoted on, and the price curve, yield curve and
+future convention it is built with. Its volatility configurations, written directly or inside a =VolatilityConfig=
+element, are rows of =curve_volatility_config=. Its =Report= is a row of
+=curve_report_configuration=.
+
+The schema also allows a =OneDimSolverConfig=, which no corpus document writes;
+the mapper refuses an entry that has one rather than lose it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The surface's currency, as the document writes it.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** instrument_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The instrument the surface is quoted on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar_spread_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The offset of a calendar spread's second contract.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar_spread_underlying_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The underlying of a calendar spread.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter of the surface, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The surface's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** future_conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention of the commodity's futures, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** option_expiry_roll_days
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The number of days before expiry an option rolls, as the document writes it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** price_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The commodity price curve the surface is built with.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** yield_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The yield curve the surface is built with.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** quote_suffix
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The suffix of the surface's quotes.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** prefer_out_of_the_money
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether out of the money quotes are preferred, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_volatility_config
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the entry writes a =VolatilityConfig= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| calendar             | ores_refdata_validate_calendar_fn             |
+| future_conventions   | ores_refdata_validate_convention_id_fn        |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_volatility_configs_tbl
+:END:
+
+** Checks
+
+| expression       |
+|------------------|
+| "currency" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: commodity_volatility_config
+:entity_plural_short:   commodity_volatility_configs
+:entity_singular_words: commodity volatility config
+:entity_plural_words:   commodity volatility configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cmv
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 7CF30319-64FA-575D-9CF9-8109F38D79B9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_volatility_configs commands from the shell?
+#+description: Every command the commodity_volatility_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_volatility_configs:
+
+This file documents the commodity_volatility_configs resource at the shell, one section per command. Every command is a subcommand of =commodity_volatility_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 2A3F4B93-F989-5708-BEEF-92EC75C67D27
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.list=.
+
+#+name: commodity_volatility_configs-list
+#+begin_src ores-shell :tangle commodity_volatility_configs-list.ores :exports none
+commodity_volatility_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: DD8CCE05-ECED-5C83-963E-DA7A8A1D3F91
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.get=.
+
+#+name: commodity_volatility_configs-get
+#+begin_src ores-shell :tangle commodity_volatility_configs-get.ores :exports none
+commodity_volatility_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: CEDDC55E-E720-5FD2-A670-DC49FCBABA4F
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.get_many=.
+
+#+name: commodity_volatility_configs-get-many
+#+begin_src ores-shell :tangle commodity_volatility_configs-get-many.ores :exports none
+commodity_volatility_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4A734EBE-029C-585C-A18A-C600E9AF6B3B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs add <curve_definition_id> <currency> <instrument_type> <calendar_spread_offset> <calendar_spread_underlying_name> <day_counter> <calendar> <future_conventions> <option_expiry_roll_days> <price_curve_id> <yield_curve_id> <quote_suffix> <prefer_out_of_the_money> <has_volatility_config> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.put=.
+
+#+name: commodity_volatility_configs-add
+#+begin_src ores-shell :tangle commodity_volatility_configs-add.ores :exports none
+commodity_volatility_configs add 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A55AA3A0-0387-5EA9-914A-1F5BF9C77BD9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs set <id> <curve_definition_id> <currency> <instrument_type> <calendar_spread_offset> <calendar_spread_underlying_name> <day_counter> <calendar> <future_conventions> <option_expiry_roll_days> <price_curve_id> <yield_curve_id> <quote_suffix> <prefer_out_of_the_money> <has_volatility_config> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.put=.
+
+#+name: commodity_volatility_configs-set
+#+begin_src ores-shell :tangle commodity_volatility_configs-set.ores :exports none
+commodity_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 95E975CF-7F2F-5389-9D11-7192C5CAAFEC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs put-many --count <n> <id> <curve_definition_id> <currency> <instrument_type> <calendar_spread_offset> <calendar_spread_underlying_name> <day_counter> <calendar> <future_conventions> <option_expiry_roll_days> <price_curve_id> <yield_curve_id> <quote_suffix> <prefer_out_of_the_money> <has_volatility_config> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.put_many=.
+
+#+name: commodity_volatility_configs-put-many
+#+begin_src ores-shell :tangle commodity_volatility_configs-put-many.ores :exports none
+commodity_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - - - - - - - - - - false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 7AA38967-C245-5026-895E-C510284FD55B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.delete=.
+
+#+name: commodity_volatility_configs-delete
+#+begin_src ores-shell :tangle commodity_volatility_configs-delete.ores :exports none
+commodity_volatility_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 9C3783A5-2D38-5828-9BDD-3446CEAF460D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs.delete_many=.
+
+#+name: commodity_volatility_configs-delete-many
+#+begin_src ores-shell :tangle commodity_volatility_configs-delete-many.ores :exports none
+commodity_volatility_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F1F3CF5E-AB04-525A-A888-CA27EC9F6E06
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs_versions.list=.
+
+#+name: commodity_volatility_configs-versions
+#+begin_src ores-shell :tangle commodity_volatility_configs-versions.ores :exports none
+commodity_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C9D78D68-C4D4-5C6F-8812-0F48939E1729
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_volatility_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_volatility_configs_versions.get=.
+
+#+name: commodity_volatility_configs-version
+#+begin_src ores-shell :tangle commodity_volatility_configs-version.ores :exports none
+commodity_volatility_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

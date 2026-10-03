@@ -101,7 +101,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unrelated generated shell scripts in the diff | projects/ores.shell/scripts/library | No change | The tangle regenerates every script from the recipes, and the shell script drift gate fails a PR whose scripts lag the recipes; these caught up with recipes merged in PR 2539. |
+| 2 | The migration guard skips a null family | analytics_stress_shift_vocabulary_migration.sql | No change | =family= is not null in the model and the table. |
+| 3 | The follow-up must remove the in-memory comparison | task_type-the-stress-shift-extras.org | Accept | Added to that task's acceptance. |
+| 4 | Generated lookup code is near-identical | generated files | No change | Generated; fixes belong in the templates. |
 
 * Result
 

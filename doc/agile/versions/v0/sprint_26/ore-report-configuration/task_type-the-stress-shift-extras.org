@@ -38,6 +38,7 @@ Every value a stress shift carries is a typed column or a child row, and the ext
 - stress_test_shift has no extras column; each element it held is a typed column, and a repeated element such as a second shift type is a child row.
 - Every shift type a shift names is checked against the shift_type lookup, not only the first.
 - An empty family element, such as =<YieldCurves/>= in =MarketRisk/Input/stresstest.xml=, is written back. Today the mapper drops it, and its own round trip documents the loss.
+- =stress_test_database_roundtrip_tests.cpp= compares the database result with the original document, not with the mapper's in-memory round trip.
 - The stress test corpus and database round trips still pass.
 
 * Plan

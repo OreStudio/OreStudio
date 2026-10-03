@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 7878D057-5504-4117-98DF-6CEA9BB5D6B9
+:END:
+#+title: MSVC fails C1202 on the bond export carrier
+#+description: The Windows MSVC build stops with C1202 in instrument_payload.cpp, because reflect-cpp tags the trade_instrument variant over every field name reachable from bond_instrument_data; no sprint-26 story owns it.
+#+type: capture
+#+level: cross
+#+filetags: :ci:windows:msvc:trading:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Both Windows MSVC jobs of =continuous-windows.yml= stop with =fatal error
+C1202: recursive type or function dependency context too complex= in
+=rfl/internal/no_duplicate_field_names.hpp=. The instantiation chain runs
+from =encode_instrument= at =instrument_payload.cpp:301= through
+=encode_leaf= at =instrument_payload.cpp:319= to the =rfl::json::write=
+call at =instrument_payload.cpp:81=, with =Leaf = bond_instrument_data=. That struct is a hand-written export
+carrier of 27 members, most of them other reflected structs. Writing a
+variant with tags makes reflect-cpp build one literal over every field
+name reachable from the alternative. Per the CI log, the bond carrier's
+literal is past MSVC's limit; no local MSVC build has reproduced it. Restore the build by splitting how the bond carrier
+is written, for example by writing its parts separately, as sprint 19 did
+for the 502-name trade detail wrapper.
+
+* Why
+
+Every =continuous-windows.yml= run on main from 2026-09-30 to 2026-10-02
+fails. The run on 2026-10-02 at 17:36 shows the C1202 above. The hotfix
+that restored the other red builds recorded this cause and left it
+unowned. No Windows artefact can be built until it is fixed.
+
+The limit is on the names reachable from one reflected literal, not on
+the members of one struct: 220 of the 287 reflected structs the models
+generate have more than nine members, some as many as 59, and they
+compile, because nothing tags them.
+
+* References
+
+- =projects/ores.trading/api/src/domain/instrument_payload.cpp=
+- =projects/ores.trading/api/include/ores.trading.api/domain/bond_instrument_data.hpp=
+
+* See also
+
+- [[id:384B992A-59D7-43C4-95D4-83D3E831C898][Guard every reflected struct against the C1202 limit]] — the task that found the nine-member rule does not hold.

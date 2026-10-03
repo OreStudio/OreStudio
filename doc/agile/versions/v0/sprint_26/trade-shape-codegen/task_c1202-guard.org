@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-shape-codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/c1202-guard
+#+pr: 2532
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -22,15 +22,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Turn the nine-field rule of Data-Oriented Design in ORE Studio into a check, so a model that would break the MSVC build fails before it is generated.
 
+Abandoned: the rule does not hold. See the Result.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned: the premise does not hold.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -41,9 +43,8 @@ Turn the nine-field rule of Data-Oriented Design in ORE Studio into a check, so 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Before building the check, render every model's reflected struct and
+count its top-level members, to size the set of exceptions.
 
 * Measurements
 
@@ -57,7 +58,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reflected structs rendered from models (entities and field groups) | 287 | A scratch script rendering =cpp_domain_type_class.hpp= and =cpp_field_group.hpp= for every =projects/*/modeling/*.org= and counting top-level members | 7f78712d27 |
+| Of those, structs with more than nine members | 220 | Same script | 7f78712d27 |
+| Largest member count | 59 (=commodity_future_convention=) | Same script; confirmed by counting the committed header | 7f78712d27 |
+| Type in today's MSVC C1202 | =bond_instrument_data=, 27 members, hand-written | =gh run view= on the =continuous-windows.yml= run of 2026-10-02 17:36, =instrument_payload.cpp:81= | main |
 
 * Notes
 
@@ -76,12 +80,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2532][#2532]] | [agile] Abandon the C1202 guard and close the code generator story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale C1202 claims elsewhere | investigation, dq capture | Accept | Pointers to the correction added. |
+| 2 | Line 81 not in instrument_payload.cpp | capture | Clarify | The CI log puts the rfl::json::write call at instrument_payload.cpp(81); the capture now names the file for each line. |
+| 3 | Sprint row start date empty | sprint.org | Accept | Filled; the row description now matches the re-scoped story. |
+| 4 | Goal reads as live | task | Accept | Pointer to the Result under the goal. |
+| 5 | Cause stated from the CI log only | capture | Accept | Worded as per the CI log, not reproduced locally. |
+| 6 | Schedule the capture soon | capture | Leave | A prioritisation call for the product owner. |
 
 * Result
+
+Abandoned before any code was written. The nine-member rule it set out to
+enforce does not hold:
+
+- 220 of the 287 reflected structs the models generate have more than
+  nine members, up to 59, and the Windows build compiles them.
+- The C1202 that fails main today is in =instrument_payload.cpp=, on
+  =bond_instrument_data=, a hand-written carrier. reflect-cpp writes it as
+  a tagged variant alternative and builds one literal over every field
+  name reachable from it.
+
+A cap on generated structs would need 220 recorded exceptions and would
+still not see the failing type. Instead:
+
+- The decomposition section of Data-Oriented Design now states what the
+  limit counts, with these measurements.
+- The field group doc template no longer cites the nine-member figure.
+- Section 16 of the trade shape investigation carries a dated note that
+  supersedes it.
+- The story's acceptance line now asks for the measured rule, not the
+  guard.
+- [[id:7878D057-5504-4117-98DF-6CEA9BB5D6B9][MSVC fails C1202 on the bond export carrier]] files the Windows
+  break, which no sprint-26 story owned.

@@ -2,7 +2,7 @@
 :ID: DBF5FE8D-6B25-492E-8DEB-B6A0931F6835
 :END:
 #+title: Story: Teach the code generator the trade shape
-#+description: Add the generator capabilities the first trade shape stories need: immutable entities, real foreign keys into them, composite keys that pin copied facts, and a guard on the nine-field reflection limit.
+#+description: Add the generator capabilities the first trade shape stories need: immutable entities, real foreign keys into them, and composite keys that pin copied facts.
 #+type: story
 #+level: s2
 #+filetags: :sprint_26:v0:
@@ -21,18 +21,18 @@ Give the code generator the capabilities the netting-set and trade-split stories
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with the immutable entities task. |
-| Last touched  | 2026-10-02                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-03                               |
 
 * Acceptance
 
 - An entity can be declared immutable (non-temporal), and other entities reference it with real foreign keys.
 - A model can pin a copied fact with a composite foreign key to its source.
-- Every generated reflected struct stays within nine effective fields, and a check enforces it.
+- The rule that limits reflected structs is measured and recorded where the design reads it.
 
 Moved on 2026-10-03, to the story that first consumes each: the
 catalogue-driven trade-type checks and routing to Split the trade into an
@@ -47,7 +47,7 @@ common-date view to the rates instrument story, the first family reworked.
 | [[id:AC82A71D-8B50-4A8C-9B62-7FD5CAEBFDB9][Let a model declare an immutable entity]] | DONE | 2026-10-03 | 2026-10-03 | Add an immutable flag to current-state entities: the table rejects updates and deletes, and the generated service writes rows once and never changes them. |
 | [[id:764E3F6E-84E7-49CA-A661-0F263F92450B][Generate real foreign keys into immutable entities]] | DONE | 2026-10-03 | 2026-10-03 | Let a foreign key whose target is an immutable entity be declared as a real REFERENCES constraint instead of a trigger check. |
 | [[id:98EA1788-5614-4862-80CE-F568C5BFFABF][Pin copied facts with composite keys]] | DONE | 2026-10-03 | 2026-10-03 | Let a model declare a unique key over several columns and a composite foreign key onto it, enforced as a constraint for an immutable target and as a trigger check for a temporal one. |
-| [[id:384B992A-59D7-43C4-95D4-83D3E831C898][Guard every reflected struct against the C1202 limit]] | BACKLOG | | | Count the effective fields of every generated reflected struct and fail the codegen checks when one exceeds nine. |
+| [[id:384B992A-59D7-43C4-95D4-83D3E831C898][Guard every reflected struct against the C1202 limit]] | ABANDONED | 2026-10-03 | 2026-10-03 | Count the effective fields of every generated reflected struct and fail the codegen checks when one exceeds nine. |
 
 * Decisions
 
@@ -59,7 +59,29 @@ common-date view to the rates instrument story, the first family reworked.
 - Composite keys are pinned keys in their own SQL table rather than
   entries in =* Foreign keys=, which C++ consumers read one column at a
   time. Named unique keys reuse the =** Indexes= table.
+- The C1202 guard was abandoned before it was built. A nine-member cap on
+  generated structs would flag 220 models that compile and miss the
+  struct that fails, a hand-written carrier written as a tagged variant.
 
 * Out of scope
 
 -
+
+* Result
+
+The generator can now express the first trade shape tables. Three tasks
+shipped and one was abandoned on evidence.
+
+- A model can declare an immutable entity. The store refuses every
+  update, delete and truncate, and the repository inserts rather than
+  upserts (PR 2526).
+- A foreign key into an immutable entity can be a real constraint,
+  matching the row's tenant (PR 2529).
+- A pinned key holds a copied fact to its source: a constraint against an
+  immutable source, a trigger check against a temporal one (PR 2531).
+- Each capability was tested against PostgreSQL in transactions that
+  rolled back.
+- The C1202 guard was abandoned. Its nine-member rule does not hold, and
+  the measured rule is now in the Data-Oriented Design note. The Windows
+  build that fails on main today is filed as a capture.
+

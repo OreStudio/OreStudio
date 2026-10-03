@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:modelling:performance:data_oriented_design:
 #+created: 2026-09-08
-#+updated: 2026-09-08
+#+updated: 2026-10-03
 
 * Summary
 
@@ -107,33 +107,34 @@ A struct that =rfl= reflects for JSON has a hard shape limit that
 nothing in the type system expresses, and crossing it fails the build
 on MSVC with =C1202= rather than with anything naming the field.
 
-MSVC caps the recursive type-dependency graph. The count that matters
-is a struct's /effective/ field count: its own direct fields plus every
-field of everything it flattens, recursively. The ceiling sits below 19
-effective fields — sub-structs of 9 or fewer compile cleanly, and 19 in
-one effective literal does not.
+MSVC caps the recursive type-dependency graph that reflect-cpp builds.
+The count that matters is the number of field names in one =rfl=
+literal, and which literal reflect-cpp builds depends on how the type is
+written:
 
-Two consequences are not obvious and both have cost us builds:
+- A plain struct gets a literal of its own members. A nested struct
+  member adds one name, not its members' names. Generated entities with
+  as many as 59 plain members compile on MSVC; on 2026-10-03, 220 of the
+  287 reflected structs the models generate had more than nine members.
+- =rfl::Flatten= adds the flattened struct's names to the parent's
+  literal, recursively. Flatten is a JSON-shape decision, never a
+  decomposition fix.
+- Writing a =std::variant= with tags (=rfl::AddTagsToVariants=) builds
+  one literal over every field name reachable from the alternative being
+  written. This is the shape that has failed: the 502-name trade detail
+  wrapper in sprint 19, and the bond export carrier
+  =bond_instrument_data= on main in October 2026.
 
-- =rfl::Flatten= does *not* reduce the count. Flattening is recursive, so
-  a parent of three =Flatten= members whose sub-structs hold 5, 9 and 5
-  fields still presents a 19-field literal. Flatten is a JSON-shape
-  decision, never a decomposition fix.
-- The limit is per reflected literal, not per struct or per translation
-  unit. A single struct's literal saturates it regardless of what
-  surrounds it, so moving a type between headers does not help and no
-  compiler flag raises it.
+The limit is per literal, not per struct or per translation unit, so
+moving a type between headers does not help, and no compiler flag
+raises it on MSVC.
 
-The rule: *keep every =rfl=-reflected literal at 9 effective fields or
-fewer, splitting a struct through =field_group= nesting rather than
-=Flatten=. Space the margin, not the limit.* A 19-field struct is
-fragile — a twentieth field re-triggers C1202 — while nesting makes
-later fields free, because a new field joins a sub-struct that already
-has room.
-
-This applies to any type =rfl= reflects: entities, their =field_group=
-parts, and hand-written message types. It is most often hit by a wide
-generated entity, which the field-group split exists to prevent.
+The rule: *keep the names reachable from one tagged write small, by
+writing the parts of a large carrier separately rather than as one
+tagged aggregate.* Splitting a wide entity into =field_group= members
+shapes its JSON and keeps each group readable, but no direct-member
+count is the C1202 limit; the nine-member figure this page once gave
+was a margin, not a measured ceiling.
 
 ** The data model of a component
 

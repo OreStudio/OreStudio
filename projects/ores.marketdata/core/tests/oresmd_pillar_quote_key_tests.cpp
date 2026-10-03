@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <stdexcept>
 #include <string>
 
 /**
@@ -93,4 +94,12 @@ TEST_CASE("two_pillars_are_two_series", "[oresmd][pillar]") {
           "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D");
     CHECK(pillar_series_uri(dated) ==
           "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=20260128&tenor=1D");
+}
+
+TEST_CASE("a_spot_pillar_that_does_not_end_after_spot_is_refused", "[oresmd][pillar]") {
+    CHECK_THROWS_AS(make_pillar_quote_key("USD", "SPOT", spot_start, spot_start),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        make_pillar_quote_key("USD", "SPOT", spot_start, std::chrono::year{2026} / 1 / 25),
+        std::invalid_argument);
 }

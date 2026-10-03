@@ -110,19 +110,23 @@ ore_export_result ore_export_service::write_all() const {
         // A quote series has a URI the datum codec reads; every other series is a
         // fixing, whose index identity keeps the richer grammar. A series neither
         // reads is a data-integrity error and names itself.
-        if (!datum::oresmd_uri_codec::read(s.oresmd_uri)) {
+        if (const auto quote_series = datum::oresmd_uri_codec::read(s.oresmd_uri); !quote_series) {
+            // Neither reading is a fixing: name both reasons, so a quote URI the
+            // codec refuses says why rather than that the old grammar disagrees.
+            const auto refusal = [&](const std::string& fixing_reason) {
+                return std::runtime_error(
+                    "market data export: series " + boost::uuids::to_string(s.id) + " carries '" +
+                    s.oresmd_uri + "', which is no quote series (" + quote_series.error() +
+                    ") and no fixing series (" + fixing_reason + ")");
+            };
             domain::market_data_identifier identifier;
             try {
                 identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
             } catch (const std::exception& e) {
-                throw std::runtime_error("market data export: series " +
-                                         boost::uuids::to_string(s.id) + " carries the identity '" +
-                                         s.oresmd_uri + "', which does not parse: " + e.what());
+                throw refusal(e.what());
             }
             if (!is_fixing_series(identifier))
-                throw std::runtime_error("market data export: series " +
-                                         boost::uuids::to_string(s.id) + " carries '" +
-                                         s.oresmd_uri + "', which is neither a quote nor a fixing");
+                throw refusal("it names no fixing");
             const auto index_name = core::oresmd_projections::to_index_name(identifier);
             if (!index_name)
                 throw std::runtime_error("market data export: fixing series " +

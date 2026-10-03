@@ -74,7 +74,8 @@ std::string ore_key_to_publish_subject(const std::string& tenant_id_str,
 }
 
 // "FX/RATE/EUR/USD" -> {"FX", "RATE", "EUR/USD"}: the three parts the tick
-// protocol carries a key in. A key with fewer than three parts is no ORE key.
+// protocol carries a key in. This only splits; the ORE key codec, which reads
+// the parts joined back together, is what decides whether they make a key.
 struct key_parts final {
     std::string series_type;
     std::string metric;

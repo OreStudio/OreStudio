@@ -38,6 +38,12 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
     if (start_tenor_code == "SPOT") {
         key.qualifier = ccy + "/0D/1D";
         const auto days = std::chrono::sys_days{end_date} - std::chrono::sys_days{start_date};
+        if (days.count() <= 0)
+            throw std::invalid_argument(
+                std::format("pillar key: a spot pillar must end after spot, but {:%Y-%m-%d} is not "
+                            "after {:%Y-%m-%d}",
+                            std::chrono::sys_days{end_date},
+                            std::chrono::sys_days{start_date}));
         key.point = std::format("{}D", days.count());
     } else {
         key.qualifier = ccy + "/" + std::format("{:%Y%m%d}", start_date) + "/1D";

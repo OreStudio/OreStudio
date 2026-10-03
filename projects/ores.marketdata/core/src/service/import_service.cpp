@@ -45,6 +45,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
 #include <expected>
+#include <functional>
 #include <map>
 #include <optional>
 #include <rfl/enums.hpp>
@@ -131,14 +132,19 @@ struct named_key final {
     bool fx_pair_reversed = false;
 };
 
+// The checker, read on first use: an import with no FX spot rate never reads
+// the reference data.
+using fx_checker_source = std::function<const ores::ore::market::fx_quote_convention_checker&()>;
+
 // The datum with its FX spot pair put the way refdata knows it. Only an FX spot
 // rate is checked, as the vendored ORE files that store a pair reversed only do
-// so there; the value is never touched.
-bool correct_fx_pair(datum::market_datum& d,
-                     const ores::ore::market::fx_quote_convention_checker& checker) {
+// so there; the value is never touched. Refdata holds upper-case codes, so a
+// pair written in another case is left as written rather than guessed at.
+bool correct_fx_pair(datum::market_datum& d, const fx_checker_source& fx_checker) {
     using datum::field;
     if (d.type() != datum::instrument_type::fx_spot || d.quote() != datum::quote_type::rate)
         return false;
+    const auto& checker = fx_checker();
     const auto unit = *d.get<field::unit_ccy>();
     const auto ccy = *d.get<field::ccy>();
     const auto result = checker.check(unit, ccy);
@@ -156,14 +162,13 @@ bool correct_fx_pair(datum::market_datum& d,
 // stored under the canonical spelling its datum writes, so two spellings of one
 // instrument reach one series; a key it refuses returns the reason, and the
 // caller drops the row rather than filing it under a series with no identity.
-std::expected<named_key, std::string>
-name_key(const std::string& key, const ores::ore::market::fx_quote_convention_checker* fx_checker) {
+std::expected<named_key, std::string> name_key(const std::string& key,
+                                               const fx_checker_source& fx_checker) {
     auto read = datum::ore_key_codec::read(key);
     if (!read)
         return std::unexpected(read.error());
     named_key result{std::move(*read), {}, {}, {}, false};
-    if (fx_checker)
-        result.fx_pair_reversed = correct_fx_pair(result.datum, *fx_checker);
+    result.fx_pair_reversed = correct_fx_pair(result.datum, fx_checker);
     auto canonical = datum::ore_key_codec::write(result.datum);
     auto datum_uri = datum::oresmd_uri_codec::write(result.datum);
     auto series_uri = datum::oresmd_uri_codec::write(datum::series_of(result.datum));
@@ -301,14 +306,16 @@ import_service::import(const messaging::import_market_data_request& req) {
         // market.txt files store GBP/USD under FX/RATE/USD/GBP; see
         // fx_quote_convention_checker) is corrected against ores.refdata's
         // currency pairs before persistence, so the series and the row hold
-        // the corrected pair only. The reference data is read once, and only
-        // when a key in the batch would consult it.
+        // the corrected pair only. The reference data is read once, on the
+        // first datum that is an FX spot rate.
         std::optional<ores::ore::market::fx_quote_convention_checker> fx_checker;
-        if (std::any_of(data.begin(), data.end(), [](const auto& d) {
-                return d.key.starts_with("FX/RATE/") || d.key.starts_with("FX_SPOT/RATE/");
-            }))
-            fx_checker.emplace(known_pairs_ ? known_pairs_() :
-                                              fetch_known_currency_pairs(auth_nats_));
+        const fx_checker_source checker_source =
+            [&]() -> const ores::ore::market::fx_quote_convention_checker& {
+            if (!fx_checker)
+                fx_checker.emplace(known_pairs_ ? known_pairs_() :
+                                                  fetch_known_currency_pairs(auth_nats_));
+            return *fx_checker;
+        };
 
         // parse_market_data already de-duplicated repeated (date, key)
         // pairs (last-line-wins) -- see duplicate_policy. In error mode,
@@ -318,7 +325,7 @@ import_service::import(const messaging::import_market_data_request& req) {
             std::vector<domain::market_observation> observations;
             observations.reserve(data.size());
             for (const auto& d : data) {
-                const auto named = name_key(d.key, fx_checker ? &*fx_checker : nullptr);
+                const auto named = name_key(d.key, checker_source);
                 if (!named) {
                     resp.warnings.push_back(d.key + " = " + d.value + " skipped: " + named.error());
                     continue;

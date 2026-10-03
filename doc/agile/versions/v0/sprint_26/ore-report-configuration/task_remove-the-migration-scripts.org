@@ -26,11 +26,11 @@ No migration scripts and no policy that invites them: a schema change edits the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -84,3 +84,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+On the operator's instruction (2026-10-03: no migrations, trash and recreate,
+no backwards compatibility code), the twenty-seven migration scripts other work
+had left under =projects/ores.sql/migration= are deleted. The thirteen this
+story had added went with
+[[id:57EE13B8-4975-4919-A8E7-747B7EE931C0][Rename the curve configuration tables with a _config suffix]], so the
+directory is gone. No tool executed those files; a database recreate reads only
+the create and populate scripts.
+
+The schema upgrade policy in =projects/ores.sql/modeling/component_overview.org=
+no longer allows one-shot scripts: a schema change edits the =create/= scripts
+and the database is recreated. The rule is also a project memory,
+=doc/llm/memory/no_migrations_trash_and_recreate.org=.

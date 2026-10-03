@@ -47,7 +47,7 @@ it says for a person as well as for a service.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9056525B-7B7A-4530-ACBE-A47EDE51D52A][Decide what a person's token carries]] | DONE | 2026-10-03 | 2026-10-03 | Design note: the permission list in each token, its size, how a role change reaches the next token, and how party switching and the tenant session fit. |
-| [[id:CF478751-4C76-4238-8235-731373FA05DC][Issue tokens with their permissions]] | BACKLOG | | | Login, party selection, party switching and refresh fill the token's permissions from the database, and a role change reaches the next token. |
+| [[id:CF478751-4C76-4238-8235-731373FA05DC][Issue tokens with their permissions]] | DONE | 2026-10-03 | 2026-10-03 | Login, party selection, party switching and refresh fill the token's permissions from the database, and a role change reaches the next token. |
 | [[id:D0C66840-F2A2-4F30-A39C-C1587763EF0D][Refuse a token with no permissions]] | BACKLOG | | | has_permission refuses an empty permission list instead of passing it, with tests; any caller that relied on the pass-through is found and fixed. |
 | [[id:D1EAE179-FD17-4CFB-82C9-A436CBCEF23F][Walk each role through its journeys]] | BACKLOG | | | SuperAdmin, TenantAdmin and an ordinary member are walked through their journeys against the running deployment; every refusal is one that should happen, and missing seeded permissions are fixed. |
 

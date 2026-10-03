@@ -7,35 +7,42 @@
 #+level: s1
 #+filetags: :iam:security:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/issue-tokens-with-their-permissions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every token a person holds carries the permissions their roles grant, read
+from the database, and a role change reaches the next token, as the story's
+decisions 1 to 3 say.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- Login with one party, party selection, party switching and refresh issue
+  tokens carrying the account's effective permissions.
+- Refresh reads the permissions again, so a granted or revoked role shows in
+  the next token.
+- The party-choice token still carries none.
+- Proved against the running deployment.
 
 * Plan
 
@@ -83,3 +90,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Login with one party, party selection and party switching now read the
+account's effective permissions with =authorization_service= in the tenant's
+context and put them in the token. Refresh reads them again through
+=refreshed_permissions= instead of copying the old list; a token whose subject
+or tenant cannot be read fails the refresh. The party-choice token is unchanged
+and carries none.
+
+Proof, against the running deployment, with the probes in =evidence/=, which
+sign in over NATS the way the BFF does and decode the token:
+
+| Token | Before | After |
+|-------+--------+-------|
+| System administrator, login and refresh | =[]= | =*= and the nine tenant codes |
+| Acme administrator, party choice pending | =[]= | =[]= |
+| Acme administrator, after selection, switch and refresh | =[]= | =*= |
+
+=refresh_rereads.mjs= grants Viewer to Acme's administrator and refreshes, and
+the token gains Viewer's three read codes; it revokes Viewer and refreshes, and
+they go (=evidence/refresh_rereads.out=). The build is clean with no warnings,
+=ores.iam.core.tests= passes 187 of 187, and the tenant live check passes 15 of
+15.
+
+Until the next task, an empty list still passes the token check, so a token
+issued before this change keeps working until its next refresh fills it.

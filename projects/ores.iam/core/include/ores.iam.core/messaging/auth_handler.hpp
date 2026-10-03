@@ -55,6 +55,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -336,6 +337,22 @@ public:
      */
     [[nodiscard]] std::shared_ptr<const domain::token_settings> token_settings() const {
         return token_settings_.load();
+    }
+
+    /**
+     * @brief The permissions a refreshed token carries, read from the database.
+     *
+     * The account belongs to the token's tenant, so the read runs there.
+     */
+    std::vector<std::string> refreshed_permissions(const security::jwt::jwt_claims& claims) const {
+        const auto tenant =
+            ores::utility::uuid::tenant_id::from_string(claims.tenant_id.value_or(""));
+        if (!tenant)
+            throw std::runtime_error("The token names no tenant to read permissions in.");
+        const auto account_id = boost::lexical_cast<boost::uuids::uuid>(claims.subject);
+        return service::authorization_service(
+                   ctx_.with_tenant(*tenant, claims.username.value_or("")))
+            .get_effective_permissions(account_id);
     }
 
     void reload_token_settings() {
@@ -664,6 +681,8 @@ public:
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
                 claims.party_id = boost::uuids::to_string(party_id);
+                claims.roles =
+                    service::authorization_service(login_ctx).get_effective_permissions(acct.id);
                 claims.session_id = session_id_str;
                 claims.session_start_time = now;
                 for (const auto& vid : visible)
@@ -982,7 +1001,9 @@ public:
             new_claims.party_id = claims_result->party_id;
             new_claims.session_id = claims_result->session_id;
             new_claims.session_start_time = claims_result->session_start_time;
-            new_claims.roles = claims_result->roles;
+            // The permissions are read again rather than copied, so a role
+            // granted or revoked since the last token reaches this one.
+            new_claims.roles = refreshed_permissions(*claims_result);
             new_claims.visible_party_ids = claims_result->visible_party_ids;
 
             const auto new_token = signer_.create_token(new_claims).value_or("");

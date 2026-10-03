@@ -127,7 +127,7 @@ begin
         -- marketdata_ir_deposit_rates_populate.sql), whose MM/RATE/USD/2D/3M key names
         -- the series below; the other three stay 'fixed'
         -- pending their own real DEPOSIT-tenor observations.
-        ('USD', 'libor',    '3M', 0.0025, 'USD LIBOR ceased 30 June 2023 (most tenors); superseded by SOFR.', 'vintage', 'ore.samples.2016-02-05', '2016-02-05', 'oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm'),
+        ('USD', 'libor',    '3M', 0.0025, 'USD LIBOR ceased 30 June 2023 (most tenors); superseded by SOFR.', 'vintage', 'ore.samples.2016-02-05', '2016-02-05', 'oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D'),
         ('EUR', 'euribor',  '3M', 0.0000, 'EURIBOR was never fully retired, unlike LIBOR, but €STR (since Oct 2019) is now EUR''s primary risk-free reference.', 'fixed', '', '', ''),
         ('GBP', 'libor',    '6M', 0.0050, 'GBP LIBOR ceased 31 December 2021; superseded by SONIA.', 'fixed', '', '', ''),
         ('JPY', 'libor',    '6M', 0.0010, 'JPY LIBOR ceased end 2021; superseded by TONA/TONAR.', 'fixed', '', '', '')

@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -191,8 +192,9 @@ std::vector<std::pair<std::string, std::string>> stored_pairs(ores::database::co
 /// Imports @p path and asserts the rows it wrote match the file.
 ///
 /// The check compares (key, value) pairs, so a value that reached the database
-/// under another key fails it. The key is the one the file carried, which the
-/// import keeps beside the canonical identity.
+/// under another key fails it. A row holds its datum's canonical key, which is the
+/// file's key with an alias ORE also reads respelled, so the file's keys are
+/// compared in that spelling.
 ///
 /// Returns the number of observations the file carried, so a caller can total
 /// them across files.
@@ -234,13 +236,22 @@ std::size_t import_and_verify(const std::filesystem::path& path,
     INFO("file: " << path.string());
     REQUIRE(resp.success);
     REQUIRE(resp.observation_count == static_cast<int>(distinct.size()));
-    CHECK(resp.warnings.size() == expected.size() - distinct.size());
     CHECK(resp.errors.empty());
 
+    // The import warns once per repeated (date, key) and once per key it stores
+    // under another spelling.
     std::vector<std::pair<std::string, std::string>> wanted;
     wanted.reserve(distinct.size());
-    for (const auto& [date_and_key, line] : distinct)
-        wanted.emplace_back(line.key, line.value);
+    std::size_t respelled = 0;
+    for (const auto& [date_and_key, line] : distinct) {
+        const auto datum = datum::ore_key_codec::read(line.key);
+        REQUIRE(datum);
+        const auto canonical = datum::ore_key_codec::write(*datum).value();
+        if (canonical != line.key)
+            ++respelled;
+        wanted.emplace_back(canonical, line.value);
+    }
+    CHECK(resp.warnings.size() == expected.size() - distinct.size() + respelled);
     std::sort(wanted.begin(), wanted.end());
 
     CHECK(stored_pairs(ctx, tag) == wanted);

@@ -33,7 +33,7 @@ namespace ores::marketdata::core {
  * A pillar of a short-end curve is the meeting-dated OIS quote that starts it, and
  * the corpus spells that instrument as IR_SWAP/RATE/<CCY>/<start>/1D/<end>. The
  * qualifier therefore carries the currency, the start slot and the overnight index
- * tenor, and the point is the pillar's end date.
+ * tenor, and the point is where the pillar ends.
  */
 struct pillar_quote_key final {
     std::string series_type;
@@ -46,10 +46,12 @@ struct pillar_quote_key final {
  * @brief Builds the key above from the currency the curve is quoted in and the
  * pillar's own dates.
  *
- * The start slot holds 0D for the pillar that starts at spot -- which the config
- * spells by setting its start tenor code to SPOT -- and the pillar's start date
- * otherwise. Every dated OIS quote in the corpus carries 1D as its index tenor, and
- * the pillar's end date is the observation's point.
+ * ORE reads a swap's start and end as two periods or two dates. The pillar that
+ * starts at spot -- which the config spells by setting its start tenor code to
+ * SPOT -- holds 0D in the start slot and, as its point, the number of days its
+ * end date lies after @p start_date, such as 50D. Every other pillar holds its
+ * start date and, as its point, its end date. Every dated OIS quote in the corpus
+ * carries 1D as its index tenor.
  *
  * Both the feed that publishes the pillar and the bootstrap that reads it call this,
  * so the series one writes is the series the other looks for.

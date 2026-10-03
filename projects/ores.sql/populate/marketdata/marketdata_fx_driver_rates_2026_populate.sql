@@ -162,11 +162,10 @@ begin
         0,
         -- See marketdata_fx_driver_rates_populate.sql: the row is an ORE FX spot quote,
         -- so the key is the ORE key for its pair and the identity is that key's series.
-        'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
+        'oresmd://fx/' || split_part(r.qualifier, '/', 1) || '?type=series&instrument=fx_spot&quote=rate&ccy=' || split_part(r.qualifier, '/', 2),
         'FX/RATE/' || r.qualifier,
-        -- An FX spot carries no coordinate of its own, so the datum names the same
-        -- URI the series does.
-        'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
+        -- An FX spot has no coordinate, so the datum is the series with type=quote.
+        'oresmd://fx/' || split_part(r.qualifier, '/', 1) || '?type=quote&instrument=fx_spot&quote=rate&ccy=' || split_part(r.qualifier, '/', 2),
         r.observation_date,
         r.value,
         'fed.h10.' || r.observation_date::text,

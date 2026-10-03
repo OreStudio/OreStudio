@@ -124,12 +124,16 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
     REQUIRE(resp.observation_count == 1);
 
     const auto series =
-        series_with_uri(series_repo, h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
+        series_with_uri(series_repo,
+                        h.context(),
+                        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
     REQUIRE(series.size() == 1);
 
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
-    CHECK(observations.front().oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
+    CHECK(observations.front().oresmd_uri ==
+          "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    CHECK(observations.front().key == "FX/RATE/EUR/USD");
 }
 
 TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
@@ -140,13 +144,9 @@ TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
     import_service svc(h.context(), auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
-    // IR_SWAP has qualifier_depth 3 (currency/index_tenor/fixed_freq), so a key
-    // with only 2 qualifier segments is short: the registry folds the whole
-    // remainder into the qualifier and returns no point_id. The oresmd grammar
-    // has no class for a five-segment swap key either, so the row has no identity
-    // to be filed under and the import reports it and drops it -- rather than
-    // storing a series nothing can read, which is what keeping the row would
-    // have meant once the identity keys the catalog.
+    // An IR swap key needs a currency, a start, an index tenor and a term, as ORE
+    // reads it, so a five-segment swap key names no datum: the row has no
+    // identity to be filed under, and the import reports it and drops it.
     req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/1D 0.01\n";
     req.source = "test.import_service";
 
@@ -191,28 +191,26 @@ TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
     REQUIRE(resp.warnings.size() == 1);
     CHECK(resp.warnings[0].find("reversed relative to refdata's canonical currency pair") !=
           std::string::npos);
-    REQUIRE(series_with_uri(series_repo, h.context(), "oresmd://fx/gbpusd?type=quote&quote=spot")
+    REQUIRE(series_with_uri(series_repo,
+                            h.context(),
+                            "oresmd://fx/GBP?type=series&instrument=fx_spot&quote=rate&ccy=USD")
                 .size() == 1);
 }
 
 TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) {
     auto lg(make_logger(test_suite));
 
-    // The settlement segment is part of the series' own qualifier, so it is
-    // stored as the file wrote it -- a spot lag, or a date. An earlier reading
-    // of the corpus held that this segment was discarded and rebuilt as the
-    // projection's "2D" fallback, which would store the 821 USD 0D keys and the
-    // explicit-date keys as 2D. It is the fallback that is unreachable here, not
-    // the segment: the identifier records settle whenever it is not "2D", and
-    // the projection emits what it recorded.
+    // The settlement segment is an identity field of the swap, stored as the file
+    // wrote it -- a spot lag, or a start date -- so a 0D and a dated swap are two
+    // series and neither is rebuilt as a 2D default.
     database_helper h;
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
     ores::marketdata::repository::market_series_repository series_repo;
 
     ores::marketdata::messaging::import_market_data_request req;
-    req.market_data_content = "20160205 IR_SWAP/RATE/USD/0D/3M/PAR_RATE 0.043120\n"
-                              "20160205 IR_SWAP/RATE/GBP/20220922/3M/PAR_RATE 0.051000\n";
+    req.market_data_content = "20160205 IR_SWAP/RATE/USD/0D/3M/5Y 0.043120\n"
+                              "20160205 IR_SWAP/RATE/GBP/20220922/3M/20270922 0.051000\n";
     req.source = "test.import_service";
 
     const auto resp = svc.import(req);
@@ -221,37 +219,57 @@ TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) 
     CHECK(resp.observation_count == 2);
     CHECK(resp.errors.empty());
 
-    // The identity carries the settlement segment the file wrote and nothing when it
-    // wrote the 2D default, so the 2D spelling names no series here.
-    CHECK(series_with_uri(series_repo,
-                          h.context(),
-                          "oresmd://ir/usd?tenor=3m&type=quote&metric=rate&quote=ir_swap")
-              .empty());
-    CHECK(series_with_uri(series_repo,
-                          h.context(),
-                          "oresmd://ir/gbp?tenor=3m&type=quote&metric=rate&quote=ir_swap")
-              .empty());
-    REQUIRE(
-        series_with_uri(series_repo,
-                        h.context(),
-                        "oresmd://ir/usd?tenor=3m&settle=0D&type=quote&metric=rate&quote=ir_swap")
-            .size() == 1);
-    REQUIRE(series_with_uri(
-                series_repo,
-                h.context(),
-                "oresmd://ir/gbp?tenor=3m&settle=20220922&type=quote&metric=rate&quote=ir_swap")
+    REQUIRE(series_with_uri(series_repo,
+                            h.context(),
+                            "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate"
+                            "&fwd_start=0D&tenor=3M")
+                .size() == 1);
+    REQUIRE(series_with_uri(series_repo,
+                            h.context(),
+                            "oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate"
+                            "&fwd_start=20220922&tenor=3M")
                 .size() == 1);
 }
 
-TEST_CASE("import_stores_a_named_key_under_its_canonical_spelling", tags) {
+TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", tags) {
     auto lg(make_logger(test_suite));
 
-    // The oresmd grammar is the authority for what a key means, so a key it can
-    // name becomes the series its own projection emits. Two spellings of one
-    // instrument then reach one series rather than two, which is what the
-    // lower-case pair below would otherwise produce: the shape registry
-    // decomposes a key without touching its case, and the series table is
-    // matched on the qualifier verbatim.
+    // ORE reads FX_SPOT as FX, so the two spellings name one datum: the row is
+    // stored under the canonical key and the import reports the respelling.
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+    ores::marketdata::repository::market_observations_repository obs_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX_SPOT/RATE/EUR/USD 1.09\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].contains("-> FX/RATE/EUR/USD"));
+    CHECK(resp.warnings[0].contains("not the canonical spelling"));
+
+    const auto series =
+        series_with_uri(series_repo,
+                        h.context(),
+                        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
+    REQUIRE(series.size() == 1);
+    const auto observations = obs_repo.read_latest(h.context(), series.front().id);
+    REQUIRE(observations.size() == 1);
+    CHECK(observations.front().key == "FX/RATE/EUR/USD");
+}
+
+TEST_CASE("import_stores_a_key_in_the_case_it_was_written", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The datum keeps every token as ORE reads it, and ORE does not change the case
+    // of a currency, so the import stores the key as written and reports no
+    // respelling: a lower-case pair is its own series.
     database_helper h;
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
@@ -265,13 +283,10 @@ TEST_CASE("import_stores_a_named_key_under_its_canonical_spelling", tags) {
 
     REQUIRE(resp.success);
     CHECK(resp.observation_count == 1);
-    REQUIRE(resp.warnings.size() == 1);
-    CHECK(resp.warnings[0].find("FX/RATE/GBP/JPY") != std::string::npos);
-
-    // The identity is the canonical spelling, so the lower-case key names the same
-    // series rather than a second one: one row, under the canonical identity. The
-    // identity is the natural key, so one row is all two spellings can reach.
-    REQUIRE(series_with_uri(series_repo, h.context(), "oresmd://fx/gbpjpy?type=quote&quote=spot")
+    CHECK(resp.warnings.empty());
+    REQUIRE(series_with_uri(series_repo,
+                            h.context(),
+                            "oresmd://fx/gbp?type=series&instrument=fx_spot&quote=rate&ccy=jpy")
                 .size() == 1);
 }
 
@@ -300,7 +315,9 @@ TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable"
     CHECK(resp.warnings.empty());
 
     const auto series =
-        series_with_uri(series_repo, h.context(), "oresmd://fx/usdgbp?type=quote&quote=spot");
+        series_with_uri(series_repo,
+                        h.context(),
+                        "oresmd://fx/USD?type=series&instrument=fx_spot&quote=rate&ccy=GBP");
     REQUIRE(series.size() == 1);
 }
 
@@ -329,9 +346,12 @@ TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
     CHECK(resp.fixing_count == 1);
 
     const auto fx =
-        series_with_uri(series_repo, h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
+        series_with_uri(series_repo,
+                        h.context(),
+                        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
     REQUIRE(fx.size() == 1);
-    CHECK(fx.front().oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
+    CHECK(fx.front().oresmd_uri ==
+          "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
 
     const auto inflation =
         series_with_uri(series_repo, h.context(), "oresmd://inflation/ukrpi?type=fixing");
@@ -355,10 +375,11 @@ TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
     req.source = "test.import_service";
     REQUIRE(svc.import(req).success);
 
-    const auto by_identity =
-        series_repo.read_latest_by_uri(h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
+    const auto by_identity = series_repo.read_latest_by_uri(
+        h.context(), "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
     REQUIRE(by_identity.size() == 1);
-    CHECK(by_identity.front().oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
+    CHECK(by_identity.front().oresmd_uri ==
+          "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
 }
 
 TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tags) {
@@ -384,11 +405,11 @@ TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tag
     // Both points land in one series, which is what one identity buys.
     CHECK(resp.series_count == 1);
 
-    const auto by_identity = series_repo.read_latest_by_uri(
-        h.context(), "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+    const auto uri =
+        "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
+    const auto by_identity = series_repo.read_latest_by_uri(h.context(), uri);
     REQUIRE(by_identity.size() == 1);
-    CHECK(by_identity.front().oresmd_uri ==
-          "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+    CHECK(by_identity.front().oresmd_uri == uri);
 }
 
 TEST_CASE("import_skips_a_market_data_key_oresmd_cannot_name", tags) {
@@ -410,7 +431,9 @@ TEST_CASE("import_skips_a_market_data_key_oresmd_cannot_name", tags) {
     REQUIRE(resp.warnings.size() == 1);
     CHECK(resp.warnings[0].find("NOSUCHTYPE/RATE/USD") != std::string::npos);
     CHECK(resp.warnings[0].find("skipped") != std::string::npos);
-    REQUIRE(series_with_uri(series_repo, h.context(), "oresmd://fx/eurusd?type=quote&quote=spot")
+    REQUIRE(series_with_uri(series_repo,
+                            h.context(),
+                            "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD")
                 .size() == 1);
 }
 

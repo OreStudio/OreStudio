@@ -24,16 +24,14 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
-#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
@@ -75,29 +73,41 @@ std::string ore_key_to_publish_subject(const std::string& tenant_id_str,
            "." + ore_key;
 }
 
-// "FX/RATE/EUR/USD" → {series_type="FX", metric="RATE", qualifier="EUR/USD"} -- thin
-// throwing adapter over the shared oresmd split, preserving this file's existing
-// try/catch-based error handling at both call sites.
-ores::marketdata::core::market_series_key parse_ore_key(const std::string& ore_key) {
-    auto kp = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
-    if (!kp)
+// "FX/RATE/EUR/USD" -> {"FX", "RATE", "EUR/USD"}: the three parts the tick
+// protocol carries a key in. This only splits; the ORE key codec, which reads
+// the parts joined back together, is what decides whether they make a key.
+struct key_parts final {
+    std::string series_type;
+    std::string metric;
+    std::string qualifier;
+};
+
+key_parts parse_ore_key(const std::string& ore_key) {
+    const auto first = ore_key.find('/');
+    const auto second = first == std::string::npos ? first : ore_key.find('/', first + 1);
+    if (second == std::string::npos)
         throw std::invalid_argument("Unparseable ORE key: " + ore_key);
-    return *kp;
+    return {ore_key.substr(0, first),
+            ore_key.substr(first + 1, second - first - 1),
+            ore_key.substr(second + 1)};
 }
 
-// A binding names its series by the identity, and the loop needs the ORE key for two
-// things: the subject it republishes the tick under, and the registry's decomposition
-// the observation is filed by. The identity projects back to that key, and nullopt
-// means the binding holds something the grammar cannot read -- an identity for a
-// fixing, say, which has no quote key, or a string that is not an oresmd URI at all.
+// A binding names its series by its URI, and the loop needs the ORE key for two
+// things: the subject it republishes the tick under, and the key the observation
+// is filed by. A bound series has no coordinate, so its key is the series' own;
+// nullopt means the binding holds something that is not such a series -- a fixing,
+// say, or a string that is not an oresmd URI at all.
 std::optional<std::string> ore_key_from_identity(const std::string& oresmd_uri) {
-    namespace core = ores::marketdata::core;
-    try {
-        const auto identifier = core::oresmd_parser::parse(domain::oresmd_uri{oresmd_uri});
-        return core::oresmd_projections::to_quote_key(identifier);
-    } catch (const std::exception&) {
+    const auto series = datum::oresmd_uri_codec::read(oresmd_uri);
+    if (!series || !series->is_series())
         return std::nullopt;
-    }
+    const auto d = datum::datum_at(*series, {});
+    if (!d)
+        return std::nullopt;
+    const auto key = datum::ore_key_codec::write(*d);
+    if (!key)
+        return std::nullopt;
+    return *key;
 }
 
 } // namespace
@@ -120,8 +130,6 @@ void feed_ingest_loop::start() {
                               << unified_wildcard_subject << "'";
     // Before the subscription, so the tick callback never races the read and
     // no tick pays for it.
-    series_key_registry_.emplace(
-        ores::ore::repository::series_key_shape_repository{}.read_latest(ctx_));
     tick_sub_ = nats_.subscribe(unified_wildcard_subject,
                                 [this](ores::nats::message msg) { on_tick(msg); });
     refresh();
@@ -170,7 +178,7 @@ void feed_ingest_loop::refresh() {
                 if (!ore_key)
                     BOOST_LOG_SEV(lg(), warn)
                         << "Binding for source '" << source_name << "' names " << b.oresmd_uri
-                        << ", which projects to no ORE key to republish under";
+                        << ", which has no ORE key to republish under";
             }
         }
     }
@@ -207,10 +215,10 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                                                 boost::uuids::to_string(b.workspace_id)};
         const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
         std::uint64_t prev_count = 0;
-        // The key the identity projects to is what the republished subject and the
-        // registry's decomposition are built from, and it is projected when the
-        // binding's stats entry is made rather than once per tick. A binding whose
-        // identity projects to no key keeps an empty one and is skipped whole, so
+        // The binding's ORE key is what the republished subject and the stored row
+        // are built from, and it is written when the binding's stats entry is made
+        // rather than once per tick. A binding whose series has no ORE key keeps an
+        // empty one and is skipped whole, so
         // no tick is republished under a subject nothing can address; refresh()
         // reports it once, and this path reports a binding it is the first to see.
         std::string ore_key;
@@ -232,7 +240,7 @@ void feed_ingest_loop::ingest_bound_tick(ores::nats::message msg, const std::str
                 if (!projected)
                     BOOST_LOG_SEV(lg(), warn)
                         << "Binding for source '" << source_name << "' names " << b.oresmd_uri
-                        << ", which projects to no ORE key to republish under";
+                        << ", which has no ORE key to republish under";
             }
             ore_key = st->ore_key;
             publish_subject = st->publish_subject;
@@ -404,39 +412,26 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         const std::string ore_key = series_type + "/" + metric + "/" + qualifier;
         repository::market_series_repository series_repo;
         repository::market_series_asset_class_repository series_asset_class_repo(tenant_ctx);
-        // The identity this key is, written on the series this loop creates and used
-        // to find one it did not. The tick names one datum, so its key is the series'
-        // key plus the point the datum sits at, and the identity is that key's
-        // projection with the point dropped: every point of one series resolves to
-        // one identity. A tick that names no point, or a class whose key carries
-        // none, is named by the series key alone. A tick whose key the grammar cannot
-        // name is dropped here, before any lookup, and reported once per key: the
-        // series is keyed by its identity, so a tick with none has nothing to be filed
-        // under, and a row that predates the identities cannot rescue it because that
-        // row has none either.
-        // A tick that names no point is read as the series' own key, and a series
-        // type whose key needs a point -- an IR swap, say -- is therefore dropped
-        // here. That is the behaviour the default_point_for() fallback never
-        // changed: it filled the stored column after this lookup had already
-        // refused the tick, so a producer that names no point loses the tick
-        // whether or not the grammar has an answer for the type.
-        std::optional<domain::market_data_identifier> identity;
-        if (!point_id.empty())
-            identity = core::oresmd_projections::from_ore_key(ore_key + "/" + point_id);
-        if (!identity)
-            identity = core::oresmd_projections::from_ore_key(ore_key);
-        if (!identity) {
+        // The tick names one datum: the series' key plus the point it sits at, or the
+        // series' key alone for a type whose key carries no point. The series is
+        // that datum without its coordinates, and a tick whose key the codec refuses
+        // is dropped here, before any lookup, and reported once per key.
+        auto read = point_id.empty() ? datum::ore_key_codec::read(ore_key) :
+                                       datum::ore_key_codec::read(ore_key + "/" + point_id);
+        if (!read && !point_id.empty())
+            read = datum::ore_key_codec::read(ore_key);
+        if (!read) {
             {
                 std::lock_guard lock(mu_);
                 if (!unnameable_warned_.insert(ore_key).second)
                     return false;
             }
-            BOOST_LOG_SEV(lg(), warn)
-                << "Dropping ticks for " << ore_key
-                << ": oresmd names no series for this key, and its series is keyed by one.";
+            BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for " << ore_key << ": " << read.error();
             return false;
         }
-        const auto oresmd_uri = core::oresmd_parser::to_series_uri(*identity).value;
+        const auto& tick_datum = *read;
+        const auto oresmd_uri =
+            datum::oresmd_uri_codec::write(datum::series_of(tick_datum)).value();
         // Found by the identity, which is what the row is keyed by; there is no
         // triple fallback, because every row carries an identity.
         auto existing = series_repo.read_latest_by_uri(
@@ -477,18 +472,8 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.observation_datetime = datetime;
         obs.value = value;
         obs.source = source;
-        // The datum's coordinate, in the grammar's own syntax: the identity this
-        // tick resolved to, with the coordinate keys a tick that named a point
-        // added. A producer that names none gets the identity's own keys, which
-        // for a type with no coordinate is none at all.
-        obs.oresmd_uri = core::oresmd_parser::to_uri(*identity).value;
-        // The key the datum is written under, kept with the row the way the import
-        // keeps the file's. A tick has no producer text to preserve, so the row
-        // takes the canonical spelling the grammar projects: the series' key plus
-        // the point the tick named, or the series' key alone for a type whose key
-        // carries no coordinate -- which is why an FX rate is FX/RATE/EUR/USD and
-        // not .../SPOT.
-        obs.key = core::oresmd_projections::to_quote_key(*identity).value_or(ore_key);
+        obs.oresmd_uri = datum::oresmd_uri_codec::write(tick_datum).value();
+        obs.key = datum::ore_key_codec::write(tick_datum).value();
 
         repository::market_observations_repository obs_repo;
         obs_repo.write(tenant_ctx, obs);

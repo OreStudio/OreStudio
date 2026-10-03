@@ -198,8 +198,8 @@ struct ir_curve_generation_config final {
 
     /**
      * @brief Identity of the market-data series this curve's vintage observation is read from, as
-     * an oresmd URI (e.g. "oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm"). Only
-     * populated (and required) when price_source is "vintage"; empty when "fixed" -- see
+     * an oresmd URI (e.g. "oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D").
+     * Only populated (and required) when price_source is "vintage"; empty when "fixed" -- see
      * price_source.
      *
      * The series is named by the config rather than looked up by the registry's decomposition of

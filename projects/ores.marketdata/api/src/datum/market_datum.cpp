@@ -20,6 +20,7 @@
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include <algorithm>
 #include <format>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 
@@ -159,6 +160,61 @@ market_datum series_of(const market_datum& d) {
     }
     // The fields came from a checked datum of the same row, so this cannot fail.
     return market_datum::make_series(d.type(), d.quote(), std::move(identity)).value();
+}
+
+std::expected<market_datum, std::string> datum_at(const market_datum& series,
+                                                  std::vector<field_value> coordinates) {
+    if (!series.is_series())
+        return refuse(series.type(), "a datum is placed from its series, not from a datum");
+    std::vector<field_value> fields(series.fields().begin(), series.fields().end());
+    for (const auto& spec : schema_of(series.type()).fields) {
+        if (spec.role != field_role::coordinate)
+            continue;
+        const auto given = std::ranges::find_if(
+            coordinates, [&](const field_value& fv) { return fv.name == spec.name; });
+        if (given == coordinates.end())
+            fields.push_back({spec.name, none});
+    }
+    fields.insert(fields.end(),
+                  std::make_move_iterator(coordinates.begin()),
+                  std::make_move_iterator(coordinates.end()));
+    return market_datum::make(series.type(), series.quote(), std::move(fields));
+}
+
+std::expected<market_datum, std::string> datum_at_point(const market_datum& series,
+                                                        std::string_view point) {
+    std::optional<field> coordinate;
+    for (const auto& spec : schema_of(series.type()).fields) {
+        if (spec.role != field_role::coordinate)
+            continue;
+        if (coordinate)
+            return refuse(series.type(), "a series with two coordinates has no single point");
+        coordinate = spec.name;
+    }
+    if (!coordinate)
+        return refuse(series.type(), "a series with no coordinate has no point");
+    auto held = parse_value(*coordinate, point);
+    if (!held)
+        return refuse(series.type(), held.error());
+    return datum_at(series, {{*coordinate, std::move(*held)}});
+}
+
+std::expected<value, std::string> parse_value(field f, std::string_view text) {
+    switch (kind_of(f)) {
+        case value_kind::text:
+            if (text.empty())
+                return std::unexpected(std::format("{} cannot be empty text", name_of(f)));
+            return value(std::string(text));
+        case value_kind::term:
+            return term::parse(text).transform([](term t) { return value(std::move(t)); });
+        case value_kind::decimal:
+            return decimal::parse(text).transform([](decimal d) { return value(std::move(d)); });
+        case value_kind::strike:
+            return strike::parse(text).transform([](strike s) { return value(std::move(s)); });
+        case value_kind::code:
+            return code::parse(text).transform([](code c) { return value(std::move(c)); });
+    }
+    return std::unexpected(std::string("unknown value kind"));
 }
 
 }

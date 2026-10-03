@@ -53,9 +53,9 @@ the ordinary reads do the rest.
    Corporation as admin*, with *Leave*. The session's mode is tenant
    administration, so the menus are the ones a tenant's administrator sees, and
    the system administration screens are not offered.
-3. *Read the tenant.* The administrator uses the tenant's own screens. The
-   tenant's screen lists its parties with =refdata.v1.parties.list=, paged with
-   the server's total. *Who has access*, *Rescue access* and *Audit* read the
+3. *Read the tenant.* The administrator lands on the tenant's *Parties*
+   screen, which lists its parties with =refdata.v1.parties.list=, a page at a
+   time with the server's total. *Who has access*, *Rescue access* and *Audit* read the
    tenant's accounts, sessions and sign-ins. Every read is the ordinary one,
    scoped by the session's token.
 4. *Leave.* The administrator chooses *Leave*. The system ends the tenant
@@ -67,12 +67,21 @@ the ordinary reads do the rest.
    system session and says the time in the tenant ended. The administrator can
    enter again.
 6. *Refused.* An account without =iam::tenants:impersonate=, a session that is
-   not in system administration, or the system tenant as the target is refused
-   with a reason, and the browser stays where it was.
+   not in system administration, a session already inside a tenant, the system
+   tenant, or a tenant no row names is refused with a reason, and the browser
+   stays where it was. A suspended or terminated tenant can be entered: its
+   data is still there, and reading it is how an administrator decides what to
+   do with it.
 
-Entering writes only the audit records. Inside a tenant, data is read only. The
-session carries the read permissions of the administrator's roles and no write
-permission, and the BFF refuses every change while the session is in a tenant.
+Entering writes only the audit records. Inside a tenant, data is read only, and
+two things hold it so. The token carries the administrator's own read
+permissions, resolved from their roles in the system tenant and filtered to the
+=:read= codes, so every service refuses a write that checks its permission. The
+BFF also refuses every change while the session is in a tenant, before the
+route runs, so a route that checks no permission cannot write either. The token
+names the tenant the administrator acts from in the claim
+=acting_from_tenant_id=, refresh refuses a token that carries it, and entering
+refuses it, so a session inside one tenant cannot enter another.
 A system administrator changes a tenant in one way only: by deleting the whole
 tenant, from system administration, in
 [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]].
@@ -100,10 +109,10 @@ screen inside the tenant with the banner and the parties.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Enter the tenant | Issue a session scoped to one tenant, record the entry | =iam.v1.ops.enter_tenant= | missing |
+| Enter the tenant | Issue a session scoped to one tenant, record the entry | =iam.v1.ops.enter_tenant= | exists |
 | Read the tenant | List the tenant's parties, paged | =refdata.v1.parties.list= | exists |
 | Read the tenant | The tenant's accounts, sessions and sign-ins | the reads behind Who has access, Rescue access and Audit | exists |
-| Leave | End the tenant session, record the exit | =iam.v1.ops.leave_tenant= | missing |
+| Leave | End the tenant session, record the exit | =iam.v1.ops.leave_tenant= | exists |
 
 =iam.v1.ops.enter_tenant= is a domain operation, because it acts on a session
 and not on an entity. Its request names the tenant by id. Its reply is the
@@ -114,22 +123,32 @@ claim that names the tenant the administrator acts from, so audit columns and
 the banner can say who is really acting.
 
 The browser reaches both operations through the BFF: =POST /api/session/tenant=
-enters and =DELETE /api/session/tenant= leaves. The BFF keeps the system
-session while the tenant session is in use, so leaving needs no sign-in.
+enters and =DELETE /api/session/tenant= leaves. The BFF's client for the
+browser session holds the system token beside the tenant token while the
+administrator is inside, so leaving needs no sign-in. Leaving does not revoke
+the tenant token, because no token is revoked in this system: the client
+discards it, and it lasts at most one access lifetime. If the system session
+itself ends while the administrator is inside, the browser signs in again, as
+it would from any screen.
 
 * What is missing
 
-1. *A session scoped to another tenant.* Nothing issues one. The permission
-   =iam::tenants:impersonate= is seeded and granted to =SuperAdmin=, and no
-   code checks it. =iam.v1.ops.enter_tenant= and =iam.v1.ops.leave_tenant= are
-   the candidates, in an operation model in =ores.iam=.
-2. *A claim that says who is really acting.* The token names one subject and
-   one tenant. An administrator acting in Acme is not an Acme account, so the
-   token needs a claim naming the tenant they act from, and the audit trail
-   needs to show it.
-3. *Removing the cross-tenant party read.* =refdata.v1.parties.list-of-tenant=
-   was added for the tenant's screen before this journey existed. It goes once
-   the parties are read from inside the tenant.
+1. *Closed: a session scoped to another tenant.* =iam.v1.ops.enter_tenant=
+   and =iam.v1.ops.leave_tenant=, in the operation model
+   =ores.iam.tenant_session_messages=, issue and end it. The entry checks
+   =iam::tenants:impersonate= against the database, because a person's token
+   carries no permissions.
+2. *Closed: a claim that says who is really acting.* The token carries
+   =acting_from_tenant_id=, and refresh refuses a token that carries it.
+3. *Closed: the cross-tenant party read.* =refdata.v1.parties.list-of-tenant=
+   is removed; the parties are read inside the tenant.
+4. *A person's token carries no permissions.* Login issues none, and the
+   token check passes an empty list, so every permission check a handler makes
+   against the token passes for a person. The tenant session is safe from this
+   because it carries an explicit read-only list, but the gap is wider than
+   this journey; the capture
+   [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][A token with no permissions passes every permission check]]
+   tracks it.
 
 * Related journeys
 

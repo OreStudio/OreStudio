@@ -107,7 +107,6 @@ set(files
     "series_subclass_code_commands_tests.cpp"
     "swap_convention_commands_tests.cpp"
     "swap_index_convention_commands_tests.cpp"
-    "tenant_party_operations_commands_tests.cpp"
     "tenor_anchor_commands_tests.cpp"
     "tenor_basis_swap_convention_commands_tests.cpp"
     "tenor_basis_two_swap_convention_commands_tests.cpp"

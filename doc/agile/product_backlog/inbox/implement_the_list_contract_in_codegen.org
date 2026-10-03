@@ -28,6 +28,9 @@ code generator, so every entity gets it from its model:
    language; a typed member is not one.
 4. *One of.* Key and relation columns may take a list-typed member, so a screen
    can read the rows for the keys on its current page in one call.
+   The parties screen needs it too: a party's parent is named only when it is
+   on the same page, because party =get= and =get_many= key by short code and
+   nothing reads a party by its id.
 
 Then move the hand-written reads onto the contract: =iam.v1.tenants.search=
 becomes =iam.v1.tenants.list= with a filter, its SQL function

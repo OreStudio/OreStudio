@@ -170,13 +170,16 @@ function SessionCard({
              * tenant is not: the Tenants area of system administration is where
              * one is created, and this card is shown to sessions that cannot.
              */}
-            {!readOnly && (
-                <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
+                <LinkButton to="/parties" variant="secondary">
+                    {t('home.parties')}
+                </LinkButton>
+                {!readOnly && (
                     <LinkButton to="/parties/new" variant="secondary">
                         {t('home.newParty')}
                     </LinkButton>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

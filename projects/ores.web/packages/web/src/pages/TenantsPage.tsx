@@ -26,6 +26,7 @@ import type { TenantStatus, TenantSummary, TenantType } from '@ores/wire-protoco
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
+import { Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Input, LinkButton, Notice, PageHeader, Select } from '../ui/Primitives.js';
 
 /** How many tenants one page of the roster shows. */
@@ -235,6 +236,12 @@ export function TenantsPage(): ReactNode {
                         offset={offset}
                         shown={tenants.length}
                         total={totalCount}
+                        pageSize={TENANT_PAGE_SIZE}
+                        showing={plural(
+                            'tenants.showing',
+                            totalCount,
+                            pageBounds(offset, tenants.length),
+                        )}
                         onMove={setOffset}
                     />
                 </>
@@ -308,49 +315,6 @@ function Roster({
                     ))}
                 </tbody>
             </table>
-        </div>
-    );
-}
-
-/**
- * Which rows the roster shows, and the way to the pages either side.
- *
- * The count is the server's, so it is every tenant that matches the search,
- * not the rows on this page.
- */
-function Pager({
-    offset,
-    shown,
-    total,
-    onMove,
-}: {
-    readonly offset: number;
-    readonly shown: number;
-    readonly total: number;
-    readonly onMove: (offset: number) => void;
-}): ReactNode {
-    const { t, plural } = useTranslation();
-    const first = shown === 0 ? 0 : offset + 1;
-    const last = offset + shown;
-    return (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-muted">
-            <span>{plural('tenants.showing', total, { first, last })}</span>
-            <span className="flex gap-2">
-                <Button
-                    size="sm"
-                    disabled={offset === 0}
-                    onClick={() => onMove(Math.max(0, offset - TENANT_PAGE_SIZE))}
-                >
-                    {t('tenants.previous')}
-                </Button>
-                <Button
-                    size="sm"
-                    disabled={last >= total}
-                    onClick={() => onMove(offset + TENANT_PAGE_SIZE)}
-                >
-                    {t('tenants.next')}
-                </Button>
-            </span>
         </div>
     );
 }

@@ -21,7 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { AuthenticatedCaller } from './account-operations.js';
-import { readTenantParties } from './tenant-parties.js';
+import { readPartiesPage } from './party-page.js';
 import { readTenant, readTenantSetups } from './tenants.js';
 
 /**
@@ -115,38 +115,49 @@ describe('the run read for one tenant', () => {
     });
 });
 
-describe('the party read for one tenant', () => {
-    it('names the tenant, lists the system party first and resolves each parent', async () => {
+/*
+ * The parties are the session's own tenant's, so the read names no tenant:
+ * row-level security scopes it from the token. Each read is one page.
+ */
+describe('the party page', () => {
+    function reply(parties: unknown[], total: number) {
+        return { result: { outcome: 'ok' }, parties, total };
+    }
+
+    it('reads one page with the server total and names parents on the page', async () => {
         const sent: Recorded[] = [];
-        const read = await readTenantParties(
+        const page = await readPartiesPage(
             callerAnswering(
-                {
-                    success: true,
-                    parties: [
-                        party(LONDON, 'acme_london', 'Acme London', 'Operational', GROUP),
-                        party(GROUP, 'acme_group', 'Acme Group', 'Operational', SYSTEM_PARTY),
+                reply(
+                    [
                         party(SYSTEM_PARTY, 'system', 'Acme System', 'System', null),
+                        party(GROUP, 'acme_group', 'Acme Group', 'Operational', SYSTEM_PARTY),
+                        party(LONDON, 'acme_london', 'Acme London', 'Operational', ACME),
                     ],
-                    total: 3,
-                },
+                    40,
+                ),
                 sent,
             ),
-            ACME,
+            { offset: 20, limit: 3 },
         );
 
-        expect(sent[0]?.subject).toBe('refdata.v1.parties.list-of-tenant');
-        expect(sent[0]?.body).toMatchObject({ tenant_id: ACME });
-        expect(read.parties.map((p) => p.code)).toEqual(['system', 'acme_group', 'acme_london']);
-        expect(read.parties[2]?.parentName).toBe('Acme Group');
-        expect(read.parties[0]?.parentName).toBeNull();
-        expect(read.total).toBe(3);
+        expect(sent[0]?.subject).toBe('refdata.v1.parties.list');
+        expect(sent[0]?.body).toMatchObject({ offset: 20, limit: 3 });
+        expect(sent[0]?.body).not.toHaveProperty('tenant_id');
+        expect(page.totalCount).toBe(40);
+        expect(page.parties.map((p) => p.parentName)).toEqual([null, 'Acme System', null]);
+        expect(page.parties[2]?.parentId).toBe(ACME);
     });
 
     it('fails with the server words when the read is refused', async () => {
         await expect(
-            readTenantParties(
-                callerAnswering({ success: false, message: 'Refused.', parties: [] }),
-                ACME,
+            readPartiesPage(
+                callerAnswering({
+                    result: { outcome: 'denied', message: 'Refused.' },
+                    parties: [],
+                    total: 0,
+                }),
+                { offset: 0, limit: 20 },
             ),
         ).rejects.toThrow('Refused.');
     });

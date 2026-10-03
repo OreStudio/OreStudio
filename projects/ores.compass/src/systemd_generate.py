@@ -231,6 +231,9 @@ EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
+# Exit code 7 is schema_mismatch: the database was built from other SQL.
+# A restart cannot fix it, so the unit fails once with the refusal.
+RestartPreventExitStatus=7
 
 [Install]
 WantedBy={target_name}
@@ -347,6 +350,9 @@ EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
+# Exit code 7 is schema_mismatch: the database was built from other SQL.
+# A restart cannot fix it, so the unit fails once with the refusal.
+RestartPreventExitStatus=7
 
 [Install]
 WantedBy={target_name}

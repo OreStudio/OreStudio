@@ -33,6 +33,12 @@ infrastructure, and every type it exposes stays below the audit, history and
 eventing stacks it would otherwise have to link. The =ores_database_info_tbl=
 table lives in the SQL technical space under =projects/ores.sql=.
 
+=context_factory::make_context= refuses a database built from other SQL. The
+build compiles in the schema fingerprint of =projects/ores.sql=; the context
+factory reads the fingerprint the database recorded at recreate, logs both,
+and throws =schema_mismatch_exception= when they differ. Service mains map
+it to =exit_code::schema_mismatch= after printing its message.
+
 * Inputs
 
 - PostgreSQL connection string from service configuration.

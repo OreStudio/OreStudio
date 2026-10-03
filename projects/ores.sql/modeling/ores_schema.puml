@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T20:46:52.476425Z
+' Generated: 2026-10-03T21:18:34.792036Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -12382,7 +12382,7 @@ package "database" #EFEBE9 {
     entity ores_database_info_tbl  #F7E5FF {
         * id : uuid <<PK>>
         --
-        * schema_version : text
+        * schema_fingerprint : text
         * build_environment : text
         * git_commit : text
         * git_date : text
@@ -12390,9 +12390,12 @@ package "database" #EFEBE9 {
     }
 
     note right of ores_database_info_tbl
-    Stores the schema version, git commit and build environment recorded when
-    the database was created or recreated. Used to correlate service behaviour
-    with the schema in use. Holds exactly one row.
+    Stores the schema fingerprint, git commit and build environment recorded
+    when the database was created or recreated. Holds exactly one row.
+    The schema fingerprint is a hash of the SQL scripts the database was built
+    from (projects/ores.sql/schema_fingerprint.cmake defines it). Every service
+    and test run compares it with the fingerprint compiled into the code and
+    refuses to start when they differ.
     Deliberately not a temporal table and not a codegen entity. It records the
     checkout that built the database before any service is running, so it
     cannot depend on the audit, history or eventing stacks a generated entity

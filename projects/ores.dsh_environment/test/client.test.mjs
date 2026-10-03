@@ -278,7 +278,7 @@ test('the view renders a whole environment without throwing', async () => {
   assert.match(painted, /services/)
   assert.match(painted, /config/)
   assert.match(painted, /restored 2026-09-28 15:34/)
-  assert.match(painted, /1d behind HEAD/)
+  assert.match(painted, /out of sync/)
   assert.match(painted, /running 0 starting 0 stopped 24 failed 0 missing 0/)
   assert.match(painted, /Restore database…/)
   assert.match(painted, /24 of 24 services are stopped/)

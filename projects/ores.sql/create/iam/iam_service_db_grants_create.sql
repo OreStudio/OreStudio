@@ -136,6 +136,30 @@ alter default privileges in schema public
     :storage_service_user;
 
 -- ---------------------------------------------------------------------------
+-- Schema fingerprint — read by every service at startup, which refuses to
+-- start when the database was built from other SQL than the service.
+-- ---------------------------------------------------------------------------
+grant select on ores_database_info_tbl
+    to
+    :iam_service_user,
+    :refdata_service_user,
+    :workspace_service_user,
+    :dq_service_user,
+    :variability_service_user,
+    :assets_service_user,
+    :scheduler_service_user,
+    :reporting_service_user,
+    :telemetry_service_user,
+    :trading_service_user,
+    :compute_service_user,
+    :synthetic_service_user,
+    :workflow_service_user,
+    :ore_service_user,
+    :marketdata_service_user,
+    :analytics_service_user,
+    :storage_service_user;
+
+-- ---------------------------------------------------------------------------
 -- Per-service grants
 -- ---------------------------------------------------------------------------
 -- ---------------------------------------------------------------------------

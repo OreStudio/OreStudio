@@ -91,9 +91,11 @@ authority is `projects/ores.compass/src/compass_env_status.py`.
     "reachable": true, "name": "ores_dev_brave_hopper",
     "restoredAt": "2026-09-28 15:34", "restoredAgeSeconds": 162000,
     "restoredAge": "1d", "restoredLevel": "critical",
-    "schemaVersion": "0.0.25", "builtFrom": "5559b012aed",
-    "builtAt": "2026/09/28 14:19:46", "driftSeconds": 90000,
-    "driftLabel": "1d behind HEAD — drifting", "driftLevel": "warn",
+    "schemaFingerprint": "a1b2c3d4e5f60718",
+    "expectedFingerprint": "9d8e7f6a5b4c3d2e", "builtFrom": "5559b012aed",
+    "builtAt": "2026/09/28 14:19:46",
+    "driftLabel": "out of sync (database a1b2c3d4e5f60718, checkout 9d8e7f6a5b4c3d2e)",
+    "driftLevel": "critical",
     "bootstrapMode": true, "warning": ""
   },
   "services": {
@@ -146,9 +148,9 @@ owns exactly two rules:
           "slice", "envVersion", "requiredEnvVersion", "envStale",
           "activities", "vcpkgWarning"},
   "database": {"reachable", "name", "restoredAt", "restoredAge",
-               "restoredAgeSeconds", "restoredLevel", "schemaVersion",
-               "builtFrom", "builtAt", "driftLabel", "driftLevel",
-               "driftSeconds", "bootstrapMode", "warning", "confirmPhrase"},
+               "restoredAgeSeconds", "restoredLevel", "schemaFingerprint",
+               "expectedFingerprint", "builtFrom", "builtAt", "driftLabel",
+               "driftLevel", "bootstrapMode", "warning", "confirmPhrase"},
   "services": {"total", "counts", "states": [{"id", "title", "count"}],
                "units": [{"unit", "selector", "service", "replica", "label",
                           "state", "detail"}],
@@ -163,7 +165,7 @@ owns exactly two rules:
 ```
 
 Missing values become `""`, `0`, `[]` or `false`, never `null`, except
-`restoredAgeSeconds`, `driftSeconds` and `requiredEnvVersion`, which are `null`
+`restoredAgeSeconds` and `requiredEnvVersion`, which are `null`
 when compass could not read them. The browser defaults every field before
 rendering and never indexes a missing object, so a partial payload renders as
 an incomplete panel rather than a blank one.

@@ -136,13 +136,12 @@ window.__ModuleLoader__.load({
           restoredAgeSeconds: database.restoredAgeSeconds === null
             || database.restoredAgeSeconds === undefined ? null : num(database.restoredAgeSeconds),
           restoredLevel: str(database.restoredLevel) || 'unknown',
-          schemaVersion: str(database.schemaVersion),
+          schemaFingerprint: str(database.schemaFingerprint),
+          expectedFingerprint: str(database.expectedFingerprint),
           builtFrom: str(database.builtFrom),
           builtAt: str(database.builtAt),
           driftLabel: str(database.driftLabel),
           driftLevel: str(database.driftLevel) || 'unknown',
-          driftSeconds: database.driftSeconds === null
-            || database.driftSeconds === undefined ? null : num(database.driftSeconds),
           bootstrapMode: database.bootstrapMode === true,
           warning: str(database.warning),
           confirmPhrase: str(database.confirmPhrase) || str(env.name),
@@ -1061,14 +1060,18 @@ window.__ModuleLoader__.load({
               ? `${snapshot.database.restoredAt}  (${snapshot.database.restoredAge} ago)`
               : 'unreachable',
           }),
-          h(KeyValue, { key: 'v', label: 'schema', value: snapshot.database.schemaVersion || '?' }),
+          h(KeyValue, {
+            key: 'v', label: 'fingerprint',
+            value: snapshot.database.schemaFingerprint || '(none)',
+            mono: true,
+          }),
           h(KeyValue, {
             key: 'b', label: 'built from',
             value: [snapshot.database.builtFrom, snapshot.database.builtAt].filter(Boolean).join('  '),
             mono: true,
           }),
           h(KeyValue, {
-            key: 'd', label: 'drift', value: snapshot.database.driftLabel || 'unknown',
+            key: 'd', label: 'schema', value: snapshot.database.driftLabel || 'unknown',
           }),
           snapshot.database.bootstrapMode ? h('div', {
             key: 'boot',

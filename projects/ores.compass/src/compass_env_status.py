@@ -6,7 +6,7 @@ DSH environment plugin reads, and the environment section of `compass
 bearings`. They cannot disagree about an environment, because every rule
 they depend on is called rather than copied:
 
-    compass_db.database_info / schema_drift
+    compass_db.database_info / schema_sync
         when the database was restored, and how its schema compares to HEAD
     compass_db.bootstrap_mode
         whether the provisioning wizard has run
@@ -23,8 +23,9 @@ Payload shape. The plugin's CONTRACT.md names these same fields.
                     requiredEnvVersion, envStale, scope, slice,
                     activities[], vcpkgWarning
     database        reachable, reason, name, restoredAt, restoredAgeSeconds,
-                    restoredAge, restoredLevel, schemaVersion, builtFrom,
-                    builtAt, driftSeconds, driftLabel, driftLevel,
+                    restoredAge, restoredLevel, schemaFingerprint,
+                    expectedFingerprint, builtFrom, builtAt, driftLabel,
+                    driftLevel,
                     bootstrapMode
     services        total, counts{running,starting,stopped,failed,missing},
                     nats{unit,label,state,detail}, units[], logDir
@@ -173,7 +174,7 @@ def gather(project_root, env, preset=None):
                     "reason": "credentials" if not (db_name and env.get("PGPASSWORD"))
                               else "unreachable"}
     else:
-        delta, drift_label, drift_ansi, drift_warning = _cdb.schema_drift(
+        expected, drift_label, drift_ansi, drift_warning = _cdb.schema_sync(
             project_root, info)
         age = _restored_age_seconds(info["restored_at"])
         database = {
@@ -185,12 +186,12 @@ def gather(project_root, env, preset=None):
             "restoredLevel": _cdb.level_of(
                 age / 3600 if age is not None else None,
                 _cdb.RESTORED_WARN_HOURS, _cdb.RESTORED_CRITICAL_HOURS),
-            "schemaVersion": info["schema_version"],
+            "schemaFingerprint": info["schema_fingerprint"],
+            "expectedFingerprint": expected,
             "builtFrom": info["git_commit"],
             "builtAt": info["git_date"],
-            "driftSeconds": delta,
             "driftLabel": _plain(drift_label),
-            "driftLevel": {"\033[32m": "ok", "\033[33m": "warn",
+            "driftLevel": {"\033[32m": "ok",
                            "\033[31m": "critical"}.get(drift_ansi, "unknown"),
             "warning": _plain(drift_warning) if drift_warning else "",
             "bootstrapMode": _cdb.bootstrap_mode(env),
@@ -231,8 +232,6 @@ def gather(project_root, env, preset=None):
     if database.get("reachable"):
         if database["driftLevel"] == "critical":
             critical.append(f"the schema is {database['driftLabel']}")
-        elif database["driftLevel"] == "warn":
-            warnings.append(f"the schema is {database['driftLabel']}")
         if database["restoredLevel"] in ("warn", "critical"):
             warnings.append(f"the database was restored {database['restoredAge']} "
                             f"ago")
@@ -319,10 +318,7 @@ def render_lines(payload):
         lines.append(f"  Database : {red}unreachable{reset}  "
                      f"({ycmd('compass db recreate -y -k')})")
     else:
-        chip = f" (schema {database['schemaVersion']}"
-        if database["driftSeconds"] is not None:
-            chip += f", built {_age(database['driftSeconds'])} behind HEAD"
-        chip += ")"
+        chip = f" (schema {database['driftLabel']})"
         col = {"ok": green, "warn": yellow}.get(database["driftLevel"], red)
         lines.append(f"  Database : {col}restored {database['restoredAt']}"
                      f"{chip}{reset}")

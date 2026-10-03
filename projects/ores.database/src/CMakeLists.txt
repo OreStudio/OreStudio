@@ -23,7 +23,26 @@ set(lib_target_name ${name}.lib)
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
-add_library(${lib_target_name} ${lib_files})
+# The fingerprint of the SQL the database is built from, compiled in so that
+# context_factory can refuse a database built from other SQL. It is recomputed
+# whenever an SQL file changes; a new SQL file triggers a reconfigure.
+set(sql_dir "${CMAKE_SOURCE_DIR}/projects/ores.sql")
+set(fingerprint_script "${sql_dir}/schema_fingerprint.cmake")
+file(GLOB_RECURSE fingerprint_globbed CONFIGURE_DEPENDS
+    "${sql_dir}/create/*.sql" "${sql_dir}/populate/*.sql" "${sql_dir}/instance/*.sql")
+file(GLOB fingerprint_top CONFIGURE_DEPENDS "${sql_dir}/*.sql")
+set(fingerprint_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(fingerprint_header "${fingerprint_dir}/ores.database/schema_fingerprint.hpp")
+add_custom_command(
+    OUTPUT "${fingerprint_header}"
+    COMMAND ${CMAKE_COMMAND} -DSQL_DIR=${sql_dir} -DOUTPUT=${fingerprint_header}
+        -P ${fingerprint_script}
+    DEPENDS ${fingerprint_globbed} ${fingerprint_top} ${fingerprint_script}
+    COMMENT "Fingerprinting the SQL schema"
+    VERBATIM)
+
+add_library(${lib_target_name} ${lib_files} ${fingerprint_header})
+target_include_directories(${lib_target_name} PRIVATE ${fingerprint_dir})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_DATABASE_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE

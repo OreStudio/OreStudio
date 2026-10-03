@@ -40,7 +40,7 @@ test('the database tile carries the restore age and compass own level', () => {
   const tile = model.tiles.find((entry) => entry.id === 'database')
   assert.equal(tile.value, '1d')
   assert.equal(tile.tone, 'critical')
-  assert.equal(tile.detail, 'schema 0.0.25 · 1d behind HEAD — drifting')
+  assert.equal(tile.detail, 'schema out of sync (database a1b2c3d4e5f60718, checkout 9d8e7f6a5b4c3d2e)')
 })
 
 test('a failed service makes the services tile critical', () => {

@@ -31,8 +31,8 @@
  * The attribute is not one name. It is name for nineteen collections,
  * currency for DiscountingCurves, pair for the two FX collections and the
  * literal string key for SwaptionVolatilities and CapFloorVolatilities.
- * key_attribute records which one this row used, so a column named key_value
- * does not have to pretend the attribute is always the same word.
+ * Which one is a fact about the collection's kind, so it is held once on
+ * todays_market_collection_kind rather than repeated on every entry.
  *
  * SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
  * once, so key_value_2 carries the second. SwapIndexCurves is the only
@@ -45,7 +45,6 @@ create table if not exists "ores_analytics_todays_market_entries_tbl" (
     "version" integer not null,
     "todays_market_config_id" uuid not null,
     "todays_market_collection_id" uuid not null,
-    "key_attribute" text not null,
     "key_value" text null,
     "key_value_2" text null,
     "target" text not null,

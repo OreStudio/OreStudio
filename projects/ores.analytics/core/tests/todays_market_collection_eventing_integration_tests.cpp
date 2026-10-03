@@ -22,6 +22,11 @@
  * Template: cpp_nats_integration_test.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.analytics.api/domain/todays_market_collection.hpp"
 #include "ores.analytics.api/domain/todays_market_collection_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/eventing/todays_market_collection_event.hpp"
@@ -29,7 +34,6 @@
 #include "ores.analytics.api/messaging/todays_market_collection_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_collection_repository.hpp"
 #include "ores.analytics.core/service/todays_market_collection_service.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -39,6 +43,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+// Soft-FK parent seeding (ores_analytics_todays_market_collection_kinds_tbl): the parent may live
+// in another component, so its own component names the headers.
+#include "ores.analytics.api/generators/todays_market_collection_kind_generator.hpp"
+#include "ores.analytics.core/repository/todays_market_collection_kind_repository.hpp"
 // Soft-FK parent seeding (ores_analytics_todays_market_configs_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.analytics.api/generators/todays_market_config_generator.hpp"
@@ -118,6 +127,19 @@ TEST_CASE("write_todays_market_collection_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_todays_market_collection(ctx);
     v.change_reason_code = "system.test";
+    // todays_market_collection_kind is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::analytics::repository::todays_market_collection_kind_repository
+            collection_catalogue_repo;
+        const auto collection_catalogue = collection_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(collection_catalogue.empty());
+        v.collection = collection_catalogue.front().code;
+    }
     // Seed the active todays_market_config row ores_analytics_todays_market_configs_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.

@@ -80,6 +80,24 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Today's Market Collection Kinds
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_todays_market_collection_kinds_tbl enable row level security;
+
+drop policy if exists todays_market_collection_kinds_tenant_isolation_policy
+    on ores_analytics_todays_market_collection_kinds_tbl;
+
+create policy todays_market_collection_kinds_tenant_isolation_policy
+on ores_analytics_todays_market_collection_kinds_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system collection kinds visible to all
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Pricing Model Configs (tenant-scoped)
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_pricing_model_configs_tbl enable row level security;

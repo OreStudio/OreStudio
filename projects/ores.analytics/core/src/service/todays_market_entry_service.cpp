@@ -86,7 +86,6 @@ domain::todays_market_entry to_domain(const messaging::todays_market_entry_write
     v.id = write.id;
     v.todays_market_config_id = write.todays_market_config_id;
     v.todays_market_collection_id = write.todays_market_collection_id;
-    v.key_attribute = write.key_attribute;
     v.key_value = write.key_value;
     v.key_value_2 = write.key_value_2;
     v.target = write.target;

@@ -43,7 +43,6 @@ struct todays_market_entry_write {
     boost::uuids::uuid id;
     boost::uuids::uuid todays_market_config_id;
     boost::uuids::uuid todays_market_collection_id;
-    std::string key_attribute;
     std::optional<std::string> key_value;
     std::optional<std::string> key_value_2;
     std::string target;

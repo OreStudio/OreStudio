@@ -37,7 +37,6 @@ export interface TodaysMarketEntryWrite {
     id: string;
     todays_market_config_id: string;
     todays_market_collection_id: string;
-    key_attribute: string;
     key_value: string | null;
     key_value_2: string | null;
     target: string;

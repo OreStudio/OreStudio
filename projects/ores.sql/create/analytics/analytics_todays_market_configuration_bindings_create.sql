@@ -80,6 +80,17 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate collection (soft FK to ores_analytics_todays_market_collection_kinds_tbl)
+    if not exists (
+        select 1 from ores_analytics_todays_market_collection_kinds_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.collection
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid collection: %. No active collection kind found with this code.', NEW.collection
+            using errcode = '23503';
+    end if;
+
     -- Validate todays_market_configuration_id (soft FK to ores_analytics_todays_market_configurations_tbl)
     if not exists (
         select 1 from ores_analytics_todays_market_configurations_tbl
